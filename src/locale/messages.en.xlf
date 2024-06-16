@@ -1,0 +1,1234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="4067030395523381277" datatype="html">
+        <source> Compétitions </source>
+        <target> Leagues </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.component.html</context>
+          <context context-type="linenumber">22,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2500501053575012915" datatype="html">
+        <source> Clubs </source>
+        <target> Clubs </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.component.html</context>
+          <context context-type="linenumber">27,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5829380065548494521" datatype="html">
+        <source>Rechercher</source>
+        <target>Search</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.component.html</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.component.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8322805830027241847" datatype="html">
+        <source>Charger le site</source>
+        <target>Loading</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.component.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6247655537407473696" datatype="html">
+        <source>3 caractères minimum pour effectuer une recherche</source>
+        <target>At least 3 digits</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.component.ts</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2440704269859439294" datatype="html">
+        <source>Joueurs actuels du club</source>
+        <target>Current players</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/club-item/club-item.component.html</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="957091682019602098" datatype="html">
+        <source>Palmarès</source>
+        <target>Prizelists</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/club-item/club-item.component.html</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competition-detail/competition-detail.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/joueurs/joueurs.component.html</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5144386833736128334" datatype="html">
+        <source>Clubs </source>
+        <target>Clubs </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="15336090284122047" datatype="html">
+        <source>Equipes </source>
+        <target>Teams </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8757150445675024816" datatype="html">
+        <source>Changer de saison</source>
+        <target>Change the season</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">347</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9004334984468055592" datatype="html">
+        <source>Changer</source>
+        <target>Change</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="187187500641108332" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{visu.thisClub.name}}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4852497151998016388" datatype="html">
+        <source>Joueurs</source>
+        <target>Players</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">220</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4394468328466097035" datatype="html">
+        <source>Matchs</source>
+        <target>Games</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">207</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competition-detail/competition-detail.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/joueurs/joueurs.component.html</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/round-detail/round-detail.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8911283872507402092" datatype="html">
+        <source>Classements</source>
+        <target>Rankings</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">214</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5600624973698538236" datatype="html">
+        <source>Pointeurs</source>
+        <target>Player's Ranking</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.html</context>
+          <context context-type="linenumber">227</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competition-detail/competition-detail.component.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/round-detail/round-detail.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7162939723861441806" datatype="html">
+        <source>Charger les joueurs de l&apos;équipe</source>
+        <target>Loading the player of the team</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4412306510564508902" datatype="html">
+        <source>Charger les classements</source>
+        <target>Loading the ranking</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2795947599800700820" datatype="html">
+        <source>Charger le club</source>
+        <target>Loading the club</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.ts</context>
+          <context context-type="linenumber">180</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5575380207412976696" datatype="html">
+        <source>Charger les clubs</source>
+        <target>Loading the clubs</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.ts</context>
+          <context context-type="linenumber">230</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1161693222622467228" datatype="html">
+        <source>Charger les équipes</source>
+        <target>Loading the teams</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.ts</context>
+          <context context-type="linenumber">258</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clubs/clubs.component.ts</context>
+          <context context-type="linenumber">319</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1430790112714083303" datatype="html">
+        <source>Gardiens</source>
+        <target>Goalies</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competition-detail/competition-detail.component.html</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/round-detail/round-detail.component.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1854389666582409787" datatype="html">
+        <source>Filtrer : </source>
+        <target>Filter : </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2735775440803933212" datatype="html">
+        <source>Saison</source>
+        <target>Season</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5161529698668123590" datatype="html">
+        <source>Choisir la saison</source>
+        <target>Choose the season</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5831985829809767394" datatype="html">
+        <source>Catégorie</source>
+        <target>Category</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3006503757338103685" datatype="html">
+        <source>Choisir la catégorie</source>
+        <target>Choose the category</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3961913764761616810" datatype="html">
+        <source>Aucune catégorie sélectionnée</source>
+        <target>No category selected</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8266583882202371831" datatype="html">
+        <source>Compétition</source>
+        <target>League</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3989451489651495303" datatype="html">
+        <source>Choisir la compétition</source>
+        <target>Choose the league</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5677947656920843604" datatype="html">
+        <source>Aucune compétition sélectionnée</source>
+        <target>No league selected</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="14142409052185215" datatype="html">
+        <source>Tour</source>
+        <target>Round</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4708294006823739898" datatype="html">
+        <source>Choisir le tour</source>
+        <target>Choose the round</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8901908438558359897" datatype="html">
+        <source>Aucun tour sélectionné</source>
+        <target>No round selected</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.html</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4552695614251731456" datatype="html">
+        <source>Charger les saisons</source>
+        <target>Loading the seasons</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7550419066196822329" datatype="html">
+        <source>Charger les catégories</source>
+        <target>Loading the categories</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">170</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9029486572689824647" datatype="html">
+        <source>Charger les tournois</source>
+        <target>Loading the leagues</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">141</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8936912221261531471" datatype="html">
+        <source>Charger les tours</source>
+        <target>Loading the rounds</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">175</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8024885138873233298" datatype="html">
+        <source>Charger le tours</source>
+        <target>Loading the round</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">136</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5586050149158153873" datatype="html">
+        <source>Charger les matchs</source>
+        <target>Loading the games</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">442</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">517</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="66128734529656427" datatype="html">
+        <source>Charger les gardiens</source>
+        <target>Loading the goalies</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">202</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">275</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">464</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">539</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9183142256817057388" datatype="html">
+        <source>Charger les joueurs</source>
+        <target>Loading the players</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">216</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">289</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">478</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">553</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9111585676816531791" datatype="html">
+        <source>Charger le classement</source>
+        <target>Loading the ranking</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">234</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">571</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1971340998737872914" datatype="html">
+        <source>Charger le palmares</source>
+        <target>Loading the prizelist</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">306</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">495</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4598276890284362634" datatype="html">
+        <source>Changer de catégorie</source>
+        <target>Category switch</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">368</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6120752661353262670" datatype="html">
+        <source>Changer de compétition</source>
+        <target>League switch</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">386</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9086336899658679777" datatype="html">
+        <source>Changer de tour</source>
+        <target>Round switch</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/competitions/competitions.component.ts</context>
+          <context context-type="linenumber">403</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8610504659433544583" datatype="html">
+        <source>Live</source>
+        <target>Live</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="656733660325275889" datatype="html">
+        <source>Terminé</source>
+        <target>Finished</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8053375962094688259" datatype="html">
+        <source>Prochainement</source>
+        <target>Coming soon</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1322776552185968741" datatype="html">
+        <source>Tous les matchs</source>
+        <target>All the games</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5407347497604039946" datatype="html">
+        <source>Choisir le tournoi</source>
+        <target>Choose the league</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3936218703276275195" datatype="html">
+        <source>Toutes les compétitions</source>
+        <target>All the leagues</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8462857492338997345" datatype="html">
+        <source>Filtrer par compétition</source>
+        <target>Filter by league</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3361778036833957347" datatype="html">
+        <source>Afficher tout</source>
+        <target>Display all</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1526962900108223702" datatype="html">
+        <source>Equipe</source>
+        <target>Team</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8722745394243558855" datatype="html">
+        <source>Choisir l&apos;équipe</source>
+        <target>Choose the team</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5136012671612088822" datatype="html">
+        <source>Gymnase</source>
+        <target>Sporthall</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.html</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6318228294578533586" datatype="html">
+        <source>Charger les matchs en cours</source>
+        <target>Loading current games</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4196705916062136601" datatype="html">
+        <source>Erreur inconnue</source>
+        <target>Unknown error</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">115</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/services/error.service.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5090472307740237672" datatype="html">
+        <source>Charger les matchs déjà terminés</source>
+        <target>Loading finished games</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3568367825184072172" datatype="html">
+        <source>Charger les matchs à jouer</source>
+        <target>Loading games to come</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/defaut/defaut.component.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1500808959906935917" datatype="html">
+        <source>Contre son camp</source>
+        <target>Own Goal</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/game-event/game-event.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/game-event/game-event.component.html</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="898238311213368723" datatype="html">
+        <source> Ajout d&apos;un gardien </source>
+        <target> Adding a GK </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/game-event/game-event.component.html</context>
+          <context context-type="linenumber">148,150</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5038058098438917044" datatype="html">
+        <source>Referees</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/game-item/game-item.component.html</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5078567940016723769" datatype="html">
+        <source>Annulé</source>
+        <target>Cancel</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7156013760002668792" datatype="html">
+        <source>Planifié</source>
+        <target>Scheduled</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6268972579787033221" datatype="html">
+        <source>Compositions</source>
+        <target>Lines-up</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5562450159315635425" datatype="html">
+        <source>Déroulement</source>
+        <target>Events</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5148916028088347449" datatype="html">
+        <source>Informations</source>
+        <target>Infos</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1688898708118854334" datatype="html">
+        <source>Classement live</source>
+        <target>Live table</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.html</context>
+          <context context-type="linenumber">122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6739299914809312174" datatype="html">
+        <source>Charger un match</source>
+        <target>Loading a game</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/games/games.component.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4697559553280514168" datatype="html">
+        <source>ans</source>
+        <target>y.o</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/joueur-item/joueur-item.component.html</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4448865243143856411" datatype="html">
+        <source>Saisons</source>
+        <target>Seasons</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/joueurs/joueurs.component.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2744220263238810269" datatype="html">
+        <source>Cat</source>
+        <target>Cat</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1288161048854407423" datatype="html">
+        <source>Pos</source>
+        <target>Pos</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4056790565067412294" datatype="html">
+        <source>MJ</source>
+        <target>CP</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8261454744434133485" datatype="html">
+        <source>Buts</source>
+        <target>G</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="83365194465665564" datatype="html">
+        <source>P.D</source>
+        <target>Ass</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1656073729485347827" datatype="html">
+        <source>Fautes</source>
+        <target>Flt</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4892175490141979839" datatype="html">
+        <source>MVP</source>
+        <target>MVP</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5651564056090704462" datatype="html">
+        <source>% Saves</source>
+        <target>% Saves</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/list-saison/list-saison.component.html</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3097001576774852758" datatype="html">
+        <source>Vainqueur du championnat</source>
+        <target>Championship winner</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/prizelist/prizelist.component.html</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7028308241256601988" datatype="html">
+        <source>Finaliste du championnat</source>
+        <target>Championship Runner-up</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/prizelist/prizelist.component.html</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6166080671226301638" datatype="html">
+        <source>3ème du championnat</source>
+        <target>Championship 3rd</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/prizelist/prizelist.component.html</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="10524368647766690" datatype="html">
+        <source>#</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">3</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5363451304863092478" datatype="html">
+        <source>Nom</source>
+        <target>Name</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4590935645008458014" datatype="html">
+        <source>Buts <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;BUT_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;BUT_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">5,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3694064700380976075" datatype="html">
+        <source>Passes D <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;ASS_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;ASS_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">8,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5326663544999765931" datatype="html">
+        <source>Pts <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;PTS_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;PTS_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">5,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7807873820126196399" datatype="html">
+        <source>Arrêts <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;ARR_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;ARR_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">14,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7243607137763987897" datatype="html">
+        <source>Concédés <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;CONC_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;CONC_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">17,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6818945569090228519" datatype="html">
+        <source>% <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;PERC_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;PERC_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">20,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2892024129481124797" datatype="html">
+        <source>Matchs joués <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;MJ_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;MJ_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking-player/ranking-player.component.html</context>
+          <context context-type="linenumber">23,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5254622645701859101" datatype="html">
+        <source>Points</source>
+        <target>Points</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6323884503559806608" datatype="html">
+        <source>Victoire</source>
+        <target>Win</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8655929228314770724" datatype="html">
+        <source>V <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;VIC_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;VIC_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">8,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5207927279767031543" datatype="html">
+        <source>Victoire après prolongtation / tirs aux buts</source>
+        <target>Win after S.O</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3677251783270331441" datatype="html">
+        <source>V.A.P <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;VIC_OT_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;VIC_OT_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6853601740293040958" datatype="html">
+        <source>Nul</source>
+        <target>Draw</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5966850020728883013" datatype="html">
+        <source>N <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;NUL_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;NUL_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">14,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7484751766125671292" datatype="html">
+        <source>Défaite</source>
+        <target>Lost</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8555641942309395853" datatype="html">
+        <source>D <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;DEF_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;DEF_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">17,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6792508198988110665" datatype="html">
+        <source>Défaite après prolongation / tirs aux buts</source>
+        <target>Lost after S.O</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2092381830246560579" datatype="html">
+        <source>D.A.P <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;DEF_OT_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;DEF_OT_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">20,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8769456319150436236" datatype="html">
+        <source>Forfait</source>
+        <target>Forfeit</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2817024384286004066" datatype="html">
+        <source>F <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;FFT_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;FFT_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">23,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="125300833535814347" datatype="html">
+        <source>Matchs joués</source>
+        <target>Games played</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6954744094959436026" datatype="html">
+        <source>MJ <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;MJ_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;MJ_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">26,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6336207255413695739" datatype="html">
+        <source>Buts pour</source>
+        <target>Goals For</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2448613702536996381" datatype="html">
+        <source>BP <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;BUT_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;BUT_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4024595446086728488" datatype="html">
+        <source>Buts contre</source>
+        <target>Goals against</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7232250516699879394" datatype="html">
+        <source>BC <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;CONC_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;CONC_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">34,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8011494570205483503" datatype="html">
+        <source>Différence de buts</source>
+        <target>Goals difference</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8082602940629890758" datatype="html">
+        <source>+/- <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i *ngIf=&quot;sort==&apos;DIFF_ASC&apos;&quot; class=&quot;fas fa-sort-up&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_ITALIC_TEXT_1" equiv-text="&lt;i *ngIf=&quot;sort==&apos;DIFF_DESC&apos;&quot; class=&quot;fas fa-sort-down&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ranking/ranking.component.html</context>
+          <context context-type="linenumber">38,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4242937041384260306" datatype="html">
+        <source>Classement</source>
+        <target>Table</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/round-detail/round-detail.component.html</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="713218714554093765" datatype="html">
+        <source>Pas de résultat</source>
+        <target>No result</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="892280989451036531" datatype="html">
+        <source>Joueurs (<x id="INTERPOLATION" equiv-text="{{visu.players_results_count}}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6591701425155965274" datatype="html">
+        <source>Equipes (<x id="INTERPOLATION" equiv-text="{{visu.teams_results_count}}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9129776580152153119" datatype="html">
+        <source>Clubs (<x id="INTERPOLATION" equiv-text="{{visu.clubs_results_count}}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.html</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4483453467681665261" datatype="html">
+        <source>Compétitions (<x id="INTERPOLATION" equiv-text="{{visu.competitions_results_count}}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3615546274413788119" datatype="html">
+        <source>Gymnase (<x id="INTERPOLATION" equiv-text="{{visu.sporthalls_results_count}}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.html</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3416254222587938400" datatype="html">
+        <source>Effectuer une rechercher</source>
+        <target>Search</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/search/search.component.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6093020643266727210" datatype="html">
+        <source>Erreur lors de la mise à jour</source>
+        <target>Erreur while updating</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/services/error.service.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8457125754025767002" datatype="html">
+        <source>Jeton invalide</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/services/error.service.ts</context>
+          <context context-type="linenumber">101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6324117927373519814" datatype="html">
+        <source>Compte inactif</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/services/error.service.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6309731068194864941" datatype="html">
+        <source>Pas d&apos;adhérent rattaché au compte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/services/error.service.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7824526270014822276" datatype="html">
+        <source>Aucun projet rattaché au compte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/services/error.service.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
