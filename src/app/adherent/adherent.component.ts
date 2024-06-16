@@ -6,5 +6,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./adherent.component.css']
 })
 export class AdherentComponent {
-
+  context:"VUE"|"LIST" = "VUE";
+  thisAdherent = null;
 }

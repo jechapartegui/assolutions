@@ -17,6 +17,7 @@ import { StaticClass } from './global';
 import { DatePipe } from '@angular/common';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import {  HttpClientModule } from '@angular/common/http';
+import { ContactItemComponent } from './contact-item/contact-item.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,7 @@ import {  HttpClientModule } from '@angular/common/http';
     CoursComponent,
     SeanceComponent,
     ComptabiliteComponent,
-    ProfComponent, NotifJechaComponent
+    ProfComponent, NotifJechaComponent, ContactItemComponent
   ],
   imports: [
     BrowserModule, HttpClientModule  ,
