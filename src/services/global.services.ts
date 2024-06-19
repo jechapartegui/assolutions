@@ -4,13 +4,14 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { environment } from 'src/environments/environment.prod';
-import { projet } from 'src/class/projet';
 import { compte } from 'src/class/compte';
+import { projet } from 'src/class/projet';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GlobalService {
+  static instance: GlobalService;
   private isSelectedMenu = new BehaviorSubject<"MATCH" | "CLUB" | "COMPETITION">("MATCH");
   static selected_menu: "MATCH" | "CLUB" | "COMPETITION" = "MATCH";
   SelectedMenu$: Observable<"MATCH" | "CLUB" | "COMPETITION"> = this.isSelectedMenu.asObservable();
@@ -29,7 +30,9 @@ export class GlobalService {
   Projet$: Observable<projet> = this.isProjet.asObservable();
 
   thisLanguage: "FR" | "EN" ;
-  constructor(private http: HttpClient, private datepipe: DatePipe) { }
+  constructor(private http: HttpClient, private datepipe: DatePipe) { 
+    GlobalService.instance = this;
+  }
   updateSelectedMenuStatus(selected: "MATCH" | "CLUB" | "COMPETITION" ): void {
     this.isSelectedMenu.next(selected);
     GlobalService.selected_menu = selected;
@@ -39,6 +42,10 @@ export class GlobalService {
     GlobalService.compte = _c;
     this.isLoggedIn.next(true);
     GlobalService.is_logged_in = true;
+  }
+  updateLoggedin(b: boolean ): void {
+    this.isLoggedIn.next(b);
+    GlobalService.is_logged_in = b;
   }
   updateProjet(_p: projet ): void {
     this.isProjet.next(_p);

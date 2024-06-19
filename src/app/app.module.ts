@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
+import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
@@ -32,7 +33,7 @@ import { ContactItemComponent } from './contact-item/contact-item.component';
     ProfComponent, NotifJechaComponent, ContactItemComponent
   ],
   imports: [
-    BrowserModule, HttpClientModule  ,
+    BrowserModule, HttpClientModule  , FormsModule,
     AppRoutingModule
   ],
   providers: [GlobalService,  ErrorService, StaticClass, DatePipe],

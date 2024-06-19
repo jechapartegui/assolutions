@@ -1,0 +1,224 @@
+import { Injectable } from '@angular/core';
+import { KeyValuePair } from 'src/class/keyvaluepair';
+import { liste_projet, projet } from 'src/class/projet';
+import { environment } from 'src/environments/environment.prod';
+import { GlobalService } from './global.services';
+import { saison } from 'src/class/saison';
+import { lieu } from 'src/class/lieu';
+import { Groupe } from 'src/class/groupe';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProjetService {
+
+
+  constructor(public global: GlobalService) {
+  }
+  url = environment.maseance;
+  public Get(id:number): Promise<projet> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get",
+      id:id
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: projet) => {
+        
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public GetAll(): Promise<projet[]> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_all"
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: projet[]) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public GetAllLight(): Promise<KeyValuePair[]> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_all_light"
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: KeyValuePair[]) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
+  public ConnectToProject(projet: liste_projet, login: string, psw_projet: string): Promise<boolean> {
+    if (projet.droit != 0 || !projet.password) {
+      return Promise.resolve(true);
+    } else {
+      this.url = environment.maseance + 'maseance/projet_manage.php';
+      //  this.url = this.url + "login.php";
+      const body = {
+        command: "check_mdp_admin",
+        projet:projet.id,
+        login:login,
+        psw_projet:psw_projet
+      };
+  
+      return this.global.POST(this.url, body)
+        .then((response: boolean) => {
+          return response;
+        })
+        .catch(error => {
+          // Gestion de l'erreur
+          return Promise.reject(error);
+        });
+    }
+  }
+
+  public Create(projet:projet, compte:number): Promise<number>{
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+       //  this.url = this.url + "login.php";
+    const body = {
+      command: "create",
+      projet: projet,
+      compte_id: compte
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
+
+
+  public Add(projet: projet, groupes: Groupe[], saisons: saison[], compte_id: number, ll: lieu[]): Promise<number> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "add",
+      projet: projet,
+      groupes: groupes,
+      saisons: saisons,
+      lieu:ll,
+      compte_id: compte_id,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Activate(token: string): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "activate",
+      token: token,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Update(projet: projet): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "update",
+      projet: projet,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public UpdateInfo(projet: projet): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "update_info",
+      projet: projet,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public UpdateParam(projet: projet): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "update_param",
+      projet: projet,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Delete(id: number): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "delete",
+      id: id,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+}
