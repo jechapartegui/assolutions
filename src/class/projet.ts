@@ -401,12 +401,12 @@ export class ValidationProjet {
 }
 
 
-
 export class liste_projet{
-    public id:number;
-    public nom:string;
-    public droit:number;
-    public password:boolean;
-    public actif:boolean;
-  }
-  
+  public id:number;
+  public nom:string;
+  public adherent:boolean;
+  public admin:boolean;
+  public prof:boolean;
+  public password:boolean;
+  public actif:boolean;
+}
