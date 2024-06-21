@@ -66,6 +66,12 @@
           "namedChunks": true,
           "localize": [
             "fr"
+          ],
+          "fileReplacements": [
+            {
+              "replace": "src/environments/environment.prod.ts",
+              "with": "src/environments/environment.ts"
+            }
           ]
         },
         "development-en": {

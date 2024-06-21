@@ -73,26 +73,24 @@ export class Validation_Compte {
         }
     }
     checkIfEmailInString(text): boolean {
-        var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
-        return re.test(text);
+        const emailRegEx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  
+        return emailRegEx.test(text);
     }
     checkFormatPsw(password: string): boolean {
-        // L'expression régulière pour vérifier le format du mot de passe
-        const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
 
-        // Retourne true si le mot de passe respecte le format, sinon false
-        return re.test(password);
+        const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        return passwordRegEx.test(password);
     }
     private validateLogin(value: string) {
         // Code de validation du nom
         // Mettre à jour this.nom en conséquence
-        if (value && value.length < 7) {
+        if (value && value.length > 7) {
             if (this.checkIfEmailInString(value)) {
-                this.login = false;
-                this.control = false;
-            } else {
                 this.login = true;
                 this.checkcontrolvalue();
+            } else {
+                this.login = false;
+                this.control = false;
             }
         } else {
             this.login = false;
@@ -103,13 +101,13 @@ export class Validation_Compte {
     private validatePassword(value: string) {
         // Code de validation du prénom
         // Mettre à jour this.prenom en conséquence
-        if (value && value.length < 8) {
-            if (this.checkIfEmailInString(value)) {
-                this.password = false;
-                this.control = false;
-            } else {
+        if (value && value.length > 8) {
+            if (this.checkFormatPsw(value)) {
                 this.password = true;
                 this.checkcontrolvalue();
+            } else {
+                this.password = false;
+                this.control = false;
             }
         } else {
             this.password = false;

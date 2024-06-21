@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,7 +17,7 @@ import { ErrorService } from 'src/services/error.service';
 import { StaticClass } from './global';
 import { DatePipe } from '@angular/common';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
-import {  HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { ContactItemComponent } from './contact-item/contact-item.component';
 
 @NgModule({
@@ -30,13 +30,19 @@ import { ContactItemComponent } from './contact-item/contact-item.component';
     CoursComponent,
     SeanceComponent,
     ComptabiliteComponent,
-    ProfComponent, NotifJechaComponent, ContactItemComponent
+    ProfComponent,
+    NotifJechaComponent,
+    ContactItemComponent
   ],
   imports: [
-    BrowserModule, HttpClientModule  , FormsModule,
-    AppRoutingModule
+    BrowserModule,
+    HttpClientModule,
+    FormsModule,
+    AppRoutingModule,
+    // Ajoutez ici l'un des modules d'animations selon vos besoins
+    BrowserAnimationsModule
   ],
-  providers: [GlobalService,  ErrorService, StaticClass, DatePipe],
+  providers: [GlobalService, ErrorService, StaticClass, DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -3,14 +3,15 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  url: '/',
+  production: true,
+  maseance: "http://localhost/",
   password:'jecha266',
-  defaultlogin:'jechapartegui@gmail.com',
-  defaultpassword:'Gulfed2606',
+  defaultlogin:'',
+  defaultpassword:'',
   environment: 'dev'
-
+  
 };
+
 
 
 /*

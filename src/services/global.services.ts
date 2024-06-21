@@ -14,12 +14,18 @@ export class GlobalService {
   static instance: GlobalService;
   private isSelectedMenu = new BehaviorSubject<"MATCH" | "CLUB" | "COMPETITION">("MATCH");
   static selected_menu: "MATCH" | "CLUB" | "COMPETITION" = "MATCH";
+  
   SelectedMenu$: Observable<"MATCH" | "CLUB" | "COMPETITION"> = this.isSelectedMenu.asObservable();
 
 
   private isCompte = new BehaviorSubject<compte>(null);
   static compte: compte = null;
   Compte$: Observable<compte> = this.isCompte.asObservable();
+
+  
+  private isMenu = new BehaviorSubject<"ADHERENT" | "PROF" | "ADMIN">(null);
+  static menu: "ADHERENT" | "PROF" | "ADMIN" = null;
+  Menu$: Observable<"ADHERENT" | "PROF" | "ADMIN"> = this.isMenu.asObservable();
 
   private isLoggedIn = new BehaviorSubject<boolean>(false);
   static is_logged_in: boolean = false;
@@ -32,6 +38,10 @@ export class GlobalService {
   thisLanguage: "FR" | "EN" ;
   constructor(private http: HttpClient, private datepipe: DatePipe) { 
     GlobalService.instance = this;
+  }
+  updateMenuType(men: "ADHERENT" | "PROF" | "ADMIN"): void {
+    this.isMenu.next(men);
+    GlobalService.menu = men;
   }
   updateSelectedMenuStatus(selected: "MATCH" | "CLUB" | "COMPETITION" ): void {
     this.isSelectedMenu.next(selected);
@@ -74,12 +84,13 @@ export class GlobalService {
       let _varid:string = "0";
       let project_id:string = "-1";
       const timeoutMilliseconds = 50000;
-      if(this.isLoggedIn){
+      if(GlobalService.is_logged_in){
         _varid = GlobalService.compte.id.toString();
       }
-      if(this.isProjet){
+      if(GlobalService.projet){
         project_id = GlobalService.projet.id.toString();
       }
+
     const password = _varid + date_ref_string; // Remplacez par le mot de passe à hacher
     const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
 
@@ -106,10 +117,10 @@ export class GlobalService {
   );
   return response;
 } catch (error) {
+  console.log(error);
       if (error instanceof HttpErrorResponse) {      
         this.handleError(error);
       } else {
-        console.log(error);
         throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
       }
     }

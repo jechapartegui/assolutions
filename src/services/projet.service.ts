@@ -16,18 +16,18 @@ export class ProjetService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id:number): Promise<projet> {
+  public Get(id: number): Promise<projet> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/projet_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
       command: "get",
-      id:id
+      id: id
     };
 
     return this.global.POST(this.url, body)
       .then((response: projet) => {
-        
+
         return response;
       })
       .catch(error => {
@@ -71,32 +71,29 @@ export class ProjetService {
   }
 
   public ConnectToProject(projet: liste_projet, login: string, psw_projet: string): Promise<boolean> {
-    if (projet.droit != 0 || !projet.password) {
-      return Promise.resolve(true);
-    } else {
-      this.url = environment.maseance + 'maseance/projet_manage.php';
-      //  this.url = this.url + "login.php";
-      const body = {
-        command: "check_mdp_admin",
-        projet:projet.id,
-        login:login,
-        psw_projet:psw_projet
-      };
-  
-      return this.global.POST(this.url, body)
-        .then((response: boolean) => {
-          return response;
-        })
-        .catch(error => {
-          // Gestion de l'erreur
-          return Promise.reject(error);
-        });
-    }
+
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "check_mdp_admin",
+      projet: projet.id,
+      login: login,
+      psw_projet: psw_projet
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
   }
 
-  public Create(projet:projet, compte:number): Promise<number>{
+  public Create(projet: projet, compte: number): Promise<number> {
     this.url = environment.maseance + 'maseance/projet_manage.php';
-       //  this.url = this.url + "login.php";
+    //  this.url = this.url + "login.php";
     const body = {
       command: "create",
       projet: projet,
@@ -123,7 +120,7 @@ export class ProjetService {
       projet: projet,
       groupes: groupes,
       saisons: saisons,
-      lieu:ll,
+      lieu: ll,
       compte_id: compte_id,
     };
 
