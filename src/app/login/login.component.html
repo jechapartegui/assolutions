@@ -31,7 +31,7 @@
       </div>
       <ng-container *ngIf="projets">
         <ng-container *ngIf="projets.length == 1">
-
+          <span>{{projets[0].nom}}</span>
         </ng-container>
         <ng-container *ngIf="projets.length>2">
           <div class="field">

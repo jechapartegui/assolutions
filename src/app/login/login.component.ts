@@ -26,6 +26,7 @@ export class LoginComponent {
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
     this.compte_serv.Login(this.Source.Login, this.Source.Password, true).then((pr) => {
+      this.projets = pr;
       if (pr.length == 0) {
         let o = errorService.CreateError(this.action, $localize`Aucun projet lié`);
         errorService.emitChange(o);
