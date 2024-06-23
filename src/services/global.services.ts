@@ -12,17 +12,17 @@ import { projet } from 'src/class/projet';
 })
 export class GlobalService {
   static instance: GlobalService;
-  private isSelectedMenu = new BehaviorSubject<"MATCH" | "CLUB" | "COMPETITION">("MATCH");
-  static selected_menu: "MATCH" | "CLUB" | "COMPETITION" = "MATCH";
-  
-  SelectedMenu$: Observable<"MATCH" | "CLUB" | "COMPETITION"> = this.isSelectedMenu.asObservable();
+  private isSelectedMenu = new BehaviorSubject<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU" | "COMPTE" >("MENU");
+  static selected_menu: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE" = "MENU";
+
+  SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"> = this.isSelectedMenu.asObservable();
 
 
   private isCompte = new BehaviorSubject<compte>(null);
   static compte: compte = null;
   Compte$: Observable<compte> = this.isCompte.asObservable();
 
-  
+
   private isMenu = new BehaviorSubject<"ADHERENT" | "PROF" | "ADMIN">(null);
   static menu: "ADHERENT" | "PROF" | "ADMIN" = null;
   Menu$: Observable<"ADHERENT" | "PROF" | "ADMIN"> = this.isMenu.asObservable();
@@ -35,29 +35,29 @@ export class GlobalService {
   static projet: projet = null;
   Projet$: Observable<projet> = this.isProjet.asObservable();
 
-  thisLanguage: "FR" | "EN" ;
-  constructor(private http: HttpClient, private datepipe: DatePipe) { 
+  thisLanguage: "FR" | "EN";
+  constructor(private http: HttpClient, private datepipe: DatePipe) {
     GlobalService.instance = this;
   }
   updateMenuType(men: "ADHERENT" | "PROF" | "ADMIN"): void {
     this.isMenu.next(men);
     GlobalService.menu = men;
   }
-  updateSelectedMenuStatus(selected: "MATCH" | "CLUB" | "COMPETITION" ): void {
+  updateSelectedMenuStatus(selected: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"): void {
     this.isSelectedMenu.next(selected);
     GlobalService.selected_menu = selected;
   }
-  updateCompte(_c: compte ): void {
+  updateCompte(_c: compte): void {
     this.isCompte.next(_c);
     GlobalService.compte = _c;
     this.isLoggedIn.next(true);
     GlobalService.is_logged_in = true;
   }
-  updateLoggedin(b: boolean ): void {
+  updateLoggedin(b: boolean): void {
     this.isLoggedIn.next(b);
     GlobalService.is_logged_in = b;
   }
-  updateProjet(_p: projet ): void {
+  updateProjet(_p: projet): void {
     this.isProjet.next(_p);
     GlobalService.projet = _p;
   }
@@ -80,45 +80,45 @@ export class GlobalService {
   public async POST(url: string, body: any): Promise<any> {
     try {
       let date_ref = new Date();
-      let date_ref_string = this.datepipe.transform(date_ref,"yyyy-MM-dd")
-      let _varid:string = "0";
-      let project_id:string = "-1";
+      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
+      let _varid: string = "0";
+      let project_id: string = "-1";
       const timeoutMilliseconds = 50000;
-      if(GlobalService.is_logged_in){
+      if (GlobalService.is_logged_in) {
         _varid = GlobalService.compte.id.toString();
       }
-      if(GlobalService.projet){
+      if (GlobalService.projet) {
         project_id = GlobalService.projet.id.toString();
       }
 
-    const password = _varid + date_ref_string; // Remplacez par le mot de passe à hacher
-    const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
+      const password = _varid + date_ref_string; // Remplacez par le mot de passe à hacher
+      const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
 
-      const headers= new HttpHeaders()
-  .set('content-type', 'application/json')
-  .set('Access-Control-Allow-Origin', '*')
-  .set('password', hashedPassword)
-  .set('dateref', date_ref_string)
-  .set('projectid', project_id)
-  .set('lang', this.getCurrentLanguage())
-  .set('userid', _varid)
-  .set('project',"1")
-  const response = await firstValueFrom(
-    this.http.post(url, body, { headers }).pipe(
-      timeout(timeoutMilliseconds),
-      catchError((error) => {
-        if (error.name === 'TimeoutError') {
-          throw new Error('La requête a expiré en raison du délai dépassé.');
-        } else {
-          throw error; // Gérer d'autres erreurs ici
-        }
-      })
-    )
-  );
-  return response;
-} catch (error) {
-  console.log(error);
-      if (error instanceof HttpErrorResponse) {      
+      const headers = new HttpHeaders()
+        .set('content-type', 'application/json')
+        .set('Access-Control-Allow-Origin', '*')
+        .set('password', hashedPassword)
+        .set('dateref', date_ref_string)
+        .set('projectid', project_id)
+        .set('lang', this.getCurrentLanguage())
+        .set('userid', _varid)
+        .set('project', "1")
+      const response = await firstValueFrom(
+        this.http.post(url, body, { headers }).pipe(
+          timeout(timeoutMilliseconds),
+          catchError((error) => {
+            if (error.name === 'TimeoutError') {
+              throw new Error('La requête a expiré en raison du délai dépassé.');
+            } else {
+              throw error; // Gérer d'autres erreurs ici
+            }
+          })
+        )
+      );
+      return response;
+    } catch (error) {
+      console.log(error);
+      if (error instanceof HttpErrorResponse) {
         this.handleError(error);
       } else {
         throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
@@ -138,16 +138,17 @@ export class GlobalService {
   }
   public getCurrentLanguage(): string {
     if (navigator.languages && navigator.languages.length) {
-        if(navigator.languages[0].toLowerCase().includes("EN")){
-          return "EN";
-        }
-        if(navigator.languages[0].toLowerCase().includes("US")){
-          return "EN";
-        } else {
-          return "FR";
-        }
-    } else {return "FR";
+      if (navigator.languages[0].toLowerCase().includes("EN")) {
+        return "EN";
+      }
+      if (navigator.languages[0].toLowerCase().includes("US")) {
+        return "EN";
+      } else {
+        return "FR";
+      }
+    } else {
+      return "FR";
     }
-}
+  }
 
 }

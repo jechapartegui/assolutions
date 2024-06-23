@@ -71,7 +71,9 @@ export class ProjetService {
   }
 
   public ConnectToProject(projet: liste_projet, login: string, psw_projet: string): Promise<boolean> {
-
+    if(projet.password == false ){ 
+      return Promise.resolve(true);
+    }
     this.url = environment.maseance + 'maseance/projet_manage.php';
     //  this.url = this.url + "login.php";
     const body = {

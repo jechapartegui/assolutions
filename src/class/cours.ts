@@ -17,7 +17,9 @@ export class cours {
   public saison_id: number = 0;
   public place_maximum: number = 10;
   public groupes: Groupe[] = [];
+  public type: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" = "ENTRAINEMENT";
   public convocation_nominative :boolean=false;
+  public afficher_present :boolean=false;
   public est_place_maximum:boolean=false;
   public est_limite_age_requis:boolean=false;
   public est_limite_age_maximum:boolean=false;
@@ -29,26 +31,7 @@ export class cours {
     LG.groupes = this.groupes.map( x => x.id);
     return LG;
   }  
-  public static comparerCours(cours1: cours, cours2: cours): boolean {
-    // Comparaison des valeurs de chaque propriété
-    return cours1.id === cours2.id &&
-      cours1.nom === cours2.nom &&
-      cours1.jour_semaine === cours2.jour_semaine &&
-      cours1.heure === cours2.heure &&
-      cours1.duree === cours2.duree &&
-      cours1.prof_principal_id === cours2.prof_principal_id &&
-      cours1.prof_principal_nom === cours2.prof_principal_nom &&
-      cours1.lieu_id === cours2.lieu_id &&
-      cours1.lieu_nom === cours2.lieu_nom &&
-      cours1.age_requis === cours2.age_requis &&
-      cours1.age_maximum === cours2.age_maximum &&
-      cours1.saison_id === cours2.saison_id &&
-      cours1.place_maximum === cours2.place_maximum &&
-      cours1.convocation_nominative === cours2.convocation_nominative &&
-     cours1.est_place_maximum === cours2.est_place_maximum &&
-      cours1.est_limite_age_requis === cours2.est_limite_age_requis &&
-      cours1.est_limite_age_maximum === cours2.est_limite_age_maximum;
-  }
+
 }
 export class Cours {
   public datasource: cours;

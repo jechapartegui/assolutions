@@ -30,50 +30,80 @@
         </p>
       </div>
       <ng-container *ngIf="projets">
-        <ng-container *ngIf="projets.length == 1">
-          <span>{{projets[0].nom}}</span>
-        </ng-container>
-        <ng-container *ngIf="projets.length>2">
-          <div class="field">
-            <label>Projet</label>
-            <div class="select">
-              <select [(ngModel)]="projets_select" (ngModelChange)="SelectProject($event)">
-                <ng-container *ngFor="let season of projets">
-                  <option [value]="season.id">{{season.nom}}</option>
-                </ng-container>
-              </select>
+        <div class="columns">
+          <div class="column">
+
+
+            <ng-container *ngIf="projets.length == 1">
+              <span>{{projets[0].nom}}</span>
+            </ng-container>
+            <ng-container *ngIf="projets.length>1">
+                <div class="field">
+                    <label for="projet" class="label" i18n>Projet</label>
+                    <div class="select ">
+                        <select id="projet" [(ngModel)]="projets_select" i18n-placeholder
+                            placeholder="Choisir le projet">
+                            <!-- Options pour les professeurs -->
+                             <option [ngValue]="null" selected i18n>Aucune sélection</option>
+                            <ng-container *ngFor="let tt of projets">
+                                <option [ngValue]="tt">{{tt.nom}}</option>
+                            </ng-container>
+                        </select>
+                    </div>
+            </div>
+            </ng-container>
+
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column">
+            <div class="field" *ngIf="projets_select && projets_select.adherent">
+              <p class="control">
+                <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('ADHERENT')">
+                  Vue adhérent
+                </button>
+              </p>
             </div>
           </div>
-        </ng-container>
-        <div class="field" *ngIf="projets_select && projets_select.adherent">
-          <p class="control">
-            <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('ADHERENT')">
-              Vue adhérent
-            </button>
-          </p>
-        </div>
-        <div class="field" *ngIf="projets_select && projets_select.prof">
-          <p class="control">
-            <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('PROF')">
-              Vue professeur
-            </button>
-          </p>
-        </div>
-        <div class="field" *ngIf="projets_select && projets_select.prof">
-          <p class="control">
-            <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('ADMIN')">
-              Vue professeur
-            </button>
-          </p>
+          <div class="column">
+            <div class="field" *ngIf="projets_select && projets_select.prof">
+              <p class="control">
+                <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('PROF')">
+                  Vue professeur
+                </button>
+              </p>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field" *ngIf="projets_select && projets_select.prof">
+              <p class="control">
+                <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('ADMIN')">
+                  Vue administrateur
+                </button>
+              </p>
+            </div>
+          </div>
         </div>
       </ng-container>
-      <div class="field">
-        <p class="control">
-          <button [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded" (click)="Login()">
-            Se connecter
-          </button>
-        </p>
+      <div class="columns">
+        <div class="column">
+          <div class="field" *ngIf="!projets">
+            <p class="control">
+              <button [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded" (click)="Login()">
+                Se connecter
+              </button>
+            </p>
+          </div>
+          <div class="field" *ngIf="projets">
+            <p class="control">
+              <button  class="button is-danger is-outlined is-rounded" (click)="LogOut()">
+                Se déconnecter
+              </button>
+            </p>
+          </div>
+        </div>
       </div>
+      
     </div>
   </ng-container>
 

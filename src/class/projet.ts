@@ -31,7 +31,10 @@ export class projet {
   public essai_possible:boolean=false;
   public convocation_nominative:boolean=false;
   public mail_relance_actif:boolean=false;
-  constructor() {
+  constructor(private pr: liste_projet) {
+    this.id = pr.id;
+    this.actif = pr.actif;
+    this.nom = pr.nom;
     // Initialize any other properties if needed
   }
 }

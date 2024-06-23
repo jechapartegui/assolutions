@@ -1,4 +1,5 @@
 import { Subject } from "rxjs";
+import { seance } from "./seance";
 
 export class adherent{
     public id:number;
@@ -13,6 +14,7 @@ export class adherent{
     public date_creation:Date;
     public photo:string;
     public sexe:boolean;
+    public seance:seance[];
 }
 
 export class Adherent{

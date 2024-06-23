@@ -13,14 +13,14 @@ export class seance {
     public libelle:string;
     public statut:StatutSeance=StatutSeance.prévue;
     public professeurs: KeyValuePair[]= [];
-    public age_requis:number =0 ;
+    public age_minimum:number =0 ;
     public age_maximum:number =99 ;
     public groupes: Groupe[] = [];
     public place_maximum:number =-1;
     public essai_possible:boolean=false;
     public convocation_nominative :boolean=false;
     public est_place_maximum:boolean=false;
-    public est_limite_age_requis:boolean=false;
+    public est_limite_age_minimum:boolean=false;
     public est_limite_age_maximum:boolean=false;
     public notes:string="";
     public info_seance:string="";
@@ -40,14 +40,14 @@ export class seance {
         seance1.libelle === seance2.libelle &&
         seance1.statut === seance2.statut &&
         this.comparerTableauxKeyValuePair(seance1.professeurs, seance2.professeurs) &&
-        seance1.age_requis === seance2.age_requis &&
+        seance1.age_minimum === seance2.age_minimum &&
         seance1.age_maximum === seance2.age_maximum &&
         this.comparerTableauxGroupe(seance1.groupes, seance2.groupes) &&
         seance1.place_maximum === seance2.place_maximum &&
         seance1.essai_possible === seance2.essai_possible &&
         seance1.convocation_nominative === seance2.convocation_nominative &&
         seance1.est_place_maximum === seance2.est_place_maximum &&
-        seance1.est_limite_age_requis === seance2.est_limite_age_requis &&
+        seance1.est_limite_age_minimum === seance2.est_limite_age_minimum &&
         seance1.est_limite_age_maximum === seance2.est_limite_age_maximum &&
         seance1.notes === seance2.notes &&
         seance1.info_seance === seance2.info_seance;
@@ -103,7 +103,7 @@ export class Seance {
   dureeSubject = new Subject<number>(); // Changer le type de string à number
   lieu_idSubject = new Subject<number>();
   saison_idSubject = new Subject<number>();
-  age_requisSubject = new Subject<number>(); // Ajout du sujet pour la propriété age_requis
+  age_minimumSubject = new Subject<number>(); // Ajout du sujet pour la propriété age_minimum
   age_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété age_maximum
   place_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété place_maximum
   libelleSubject = new Subject<string>();
@@ -174,16 +174,16 @@ export class Seance {
     this.datasource.groupes = value;
   }
   get AgeRequis(): number {
-    if(this.datasource.age_requis == -1){
-      this.datasource.age_requis = 1;
+    if(this.datasource.age_minimum == -1){
+      this.datasource.age_minimum = 1;
       return 1;
     } else {
-      return this.datasource.age_requis;
+      return this.datasource.age_minimum;
     }
   }
   set AgeRequis(value: number) {
-    this.datasource.age_requis = value;
-    this.age_requisSubject.next(value);
+    this.datasource.age_minimum = value;
+    this.age_minimumSubject.next(value);
   }
 
   // Propriété age_maximum avec get et set
@@ -221,10 +221,10 @@ export class Seance {
     this.datasource.est_place_maximum = value;
   }
   get EstAgeRequis(): boolean {
-    return this.datasource.est_limite_age_requis;
+    return this.datasource.est_limite_age_minimum;
   }
   set EstAgeRequis(value: boolean) {
-    this.datasource.est_limite_age_requis = value;
+    this.datasource.est_limite_age_minimum = value;
   }
   get EstAgeMaximum(): boolean {
     return this.datasource.est_limite_age_maximum;

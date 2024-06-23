@@ -41,6 +41,10 @@ export class AppComponent {
     }
   }
 
+  LogOut(){
+    
+  }
+
 
   DisplayError(val) {
     this.child.display_notification(val);

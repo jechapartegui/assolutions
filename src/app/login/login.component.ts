@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Compte, compte } from 'src/class/compte';
-import { liste_projet } from 'src/class/projet';
+import { liste_projet, projet } from 'src/class/projet';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
@@ -16,10 +16,13 @@ export class LoginComponent {
   Source: Compte = new Compte(new compte());
   action: string;
   projets: liste_projet[];
-  projets_select: liste_projet;
+  projets_select: liste_projet =null;
   loading: boolean;
   psw_projet: string = null;
-  constructor(private compte_serv: CompteService, private project_serv: ProjetService, private router: Router) { }
+  constructor(private compte_serv: CompteService, private project_serv: ProjetService, private router: Router) { 
+    this.Source.Login = "jechapartegui@gmail.com";
+    this.Source.Password = "Gulfed2606";
+  }
   Login() {
     this.action = $localize`Se connecter`;
     this.loading = true;
@@ -50,6 +53,9 @@ export class LoginComponent {
       this.loading = false;
     });
   }
+  LogOut(){
+
+  }
 
   SelectProject(event) {
     this.projets_select = this.projets.find(x => x.id == event);
@@ -60,12 +66,15 @@ export class LoginComponent {
     this.loading = true;
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
+    console.log(this.projets_select);
     this.project_serv.ConnectToProject(this.projets_select, this.Source.Login, this.psw_projet).then((result) => {
       if (result) {
         if (this.projets_select.actif) {
           GlobalService.instance.updateMenuType(charg);         
-          this.loading = false;
+          GlobalService.instance.updateSelectedMenuStatus("MENU");
+          GlobalService.instance.updateProjet(new projet(this.projets_select))
           this.router.navigate(['/menu']);
+          this.loading = false;
         } else {
           let o = errorService.CreateError(this.action, $localize`Projet inactif`);
           errorService.emitChange(o);
