@@ -18,6 +18,7 @@ export class LoginComponent {
   projets: liste_projet[];
   projets_select: liste_projet =null;
   loading: boolean;
+  profil:"ADHERENT" | "PROF" | "ADMIN" = null;
   psw_projet: string = null;
   constructor(private compte_serv: CompteService, private project_serv: ProjetService, private router: Router) { 
     this.Source.Login = "jechapartegui@gmail.com";
@@ -36,6 +37,7 @@ export class LoginComponent {
         this.loading = false;
       } else if (pr.length == 1) {
         let _pr: liste_projet = pr[0];
+        this.projets_select = _pr;
         if (_pr.adherent && !_pr.prof && !_pr.admin) {
           this.ConnectToProject("ADHERENT");
         } else if (!_pr.adherent && _pr.prof && !_pr.admin) {

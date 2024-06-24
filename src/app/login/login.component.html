@@ -4,106 +4,99 @@
     <p>Chargement en cours</p>
   </ng-container>
   <ng-container *ngIf="!loading">
-    <div class="box">
-      <div class="field">
-        <p class="control has-icons-left has-icons-right">
-          <input [class]="Source.valid.login ? 'input' : 'input is-danger'" [(ngModel)]="Source.Login" type="email"
-            placeholder="Email">
-          <span class="icon is-small is-left">
-            <i class="fas fa-envelope"></i>
-          </span>
-          <span *ngIf="Source.valid.login" class="icon is-small is-right">
-            <i class="fas fa-check"></i>
-          </span>
-        </p>
-      </div>
-      <div class="field">
-        <p class="control has-icons-left has-icons-right">
-          <input [class]="Source.valid.password ? 'input' : 'input is-danger'" [(ngModel)]="Source.Password"
-            type="password" placeholder="Password">
-          <span class="icon is-small is-left">
-            <i class="fas fa-lock"></i>
-          </span>
-          <span *ngIf="Source.valid.password" class="icon is-small is-right">
-            <i class="fas fa-check"></i>
-          </span>
-        </p>
-      </div>
-      <ng-container *ngIf="projets">
-        <div class="columns">
-          <div class="column">
-
-
+    <div class="columns is-justify-content-center">
+      <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+        <div class="box">
+          <h3 class="title is-3" i18n>Connexion</h3>
+          <div class="field">
+            <p class="control has-icons-left has-icons-right">
+              <input [class]="Source.valid.login ? 'input' : 'input is-danger'" [(ngModel)]="Source.Login" type="email"
+                placeholder="Email">
+              <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+              </span>
+              <span *ngIf="Source.valid.login" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+              </span>
+            </p>
+          </div>
+          <div class="field">
+            <p class="control has-icons-left has-icons-right">
+              <input [class]="Source.valid.password ? 'input' : 'input is-danger'" [(ngModel)]="Source.Password"
+                type="password" placeholder="Password">
+              <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+              </span>
+              <span *ngIf="Source.valid.password" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+              </span>
+            </p>
+          </div>
+          <ng-container *ngIf="projets">
             <ng-container *ngIf="projets.length == 1">
-              <span>{{projets[0].nom}}</span>
+
+              <div class="field">
+                <span>{{projets[0].nom}}</span>
+              </div>
             </ng-container>
             <ng-container *ngIf="projets.length>1">
-                <div class="field">
-                    <label for="projet" class="label" i18n>Projet</label>
-                    <div class="select ">
-                        <select id="projet" [(ngModel)]="projets_select" i18n-placeholder
-                            placeholder="Choisir le projet">
-                            <!-- Options pour les professeurs -->
-                             <option [ngValue]="null" selected i18n>Aucune sélection</option>
-                            <ng-container *ngFor="let tt of projets">
-                                <option [ngValue]="tt">{{tt.nom}}</option>
-                            </ng-container>
-                        </select>
-                    </div>
-            </div>
+              <div class="field">
+                <label for="projet" class="label" i18n>Projet</label>
+                <div class="select ">
+                  <select id="projet" [(ngModel)]="projets_select" i18n-placeholder placeholder="Choisir le projet">
+                    <!-- Options pour les professeurs -->
+                    <option [ngValue]="null" selected i18n>Aucune sélection</option>
+                    <ng-container *ngFor="let tt of projets">
+                      <option [ngValue]="tt">{{tt.nom}}</option>
+                    </ng-container>
+                  </select>
+                </div>
+              </div>
             </ng-container>
+            <div class="field">
+              <label class="label" for="profil" i18n>Profil</label>
+              <div class="select">
+                <select [(ngModel)]="profil">
+                  <option [ngValue]="null">Aucun</option>
+                  <option *ngIf="projets_select && projets_select.adherent" [ngValue]="'ADHERENT'">Adhérent</option>
+                  <option *ngIf="projets_select && projets_select.prof" [ngValue]="'PROF'">Professeur</option>
+                  <option *ngIf="projets_select && projets_select.admin" [ngValue]="'ADMIN'">Administrateur</option>
+                </select>
+              </div>
+              </div>
+              <div class="field" *ngIf="profil">
+                <p class="control">
+                  <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject(profil)">
+                    Charger le profil
+                  </button>
+                </p>
+              </div>
+          </ng-container>
+
+          <div class="field" *ngIf="!projets">
 
           </div>
-        </div>
-        <div class="columns">
-          <div class="column">
-            <div class="field" *ngIf="projets_select && projets_select.adherent">
-              <p class="control">
-                <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('ADHERENT')">
-                  Vue adhérent
-                </button>
-              </p>
+          <div class="columns">
+            <div class="column">
+              <div class="field" *ngIf="!projets">
+                <p class="control">
+                  <button [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded"
+                    (click)="Login()">
+                    Se connecter
+                  </button>
+                </p>
+              </div>
+              <div class="field" *ngIf="projets">
+                <p class="control">
+                  <button class="button is-danger is-outlined is-rounded" (click)="LogOut()">
+                    Se déconnecter
+                  </button>
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="column">
-            <div class="field" *ngIf="projets_select && projets_select.prof">
-              <p class="control">
-                <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('PROF')">
-                  Vue professeur
-                </button>
-              </p>
-            </div>
-          </div>
-          <div class="column">
-            <div class="field" *ngIf="projets_select && projets_select.prof">
-              <p class="control">
-                <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject('ADMIN')">
-                  Vue administrateur
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-      <div class="columns">
-        <div class="column">
-          <div class="field" *ngIf="!projets">
-            <p class="control">
-              <button [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded" (click)="Login()">
-                Se connecter
-              </button>
-            </p>
-          </div>
-          <div class="field" *ngIf="projets">
-            <p class="control">
-              <button  class="button is-danger is-outlined is-rounded" (click)="LogOut()">
-                Se déconnecter
-              </button>
-            </p>
           </div>
         </div>
       </div>
-      
     </div>
   </ng-container>
 

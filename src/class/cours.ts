@@ -12,17 +12,18 @@ export class cours {
   public prof_principal_nom: string = "";
   public lieu_id: number = 0;
   public lieu_nom: string = "";
-  public age_requis: number = 0;
+  public age_minimum: number = 0;
   public age_maximum: number = 99;
   public saison_id: number = 0;
   public place_maximum: number = 10;
   public groupes: Groupe[] = [];
-  public type: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" = "ENTRAINEMENT";
+  public type_cours: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" = "ENTRAINEMENT";
   public convocation_nominative :boolean=false;
   public afficher_present :boolean=false;
   public est_place_maximum:boolean=false;
-  public est_limite_age_requis:boolean=false;
+  public est_limite_age_minimum:boolean=false;
   public est_limite_age_maximum:boolean=false;
+
   constructor() { }
   ToLienGroupe() : Lien_Groupe{
     let LG = new Lien_Groupe();
@@ -133,16 +134,16 @@ export class Cours {
   }
 
   // Propriété age_requis avec get et set
-  get AgeRequis(): number {
-    if(this.datasource.age_requis == -1){
-      this.datasource.age_requis = 1;
+  get AgeMinimum(): number {
+    if(this.datasource.age_minimum == -1){
+      this.datasource.age_minimum = 1;
       return 1;
     } else {
-      return this.datasource.age_requis;
+      return this.datasource.age_minimum;
     }
   }
-  set AgeRequis(value: number) {
-    this.datasource.age_requis = value;
+  set AgeMinimum(value: number) {
+    this.datasource.age_minimum = value;
     this.age_requisSubject.next(value);
   }
 
@@ -180,11 +181,11 @@ export class Cours {
   set EstPlaceMaximum(value: boolean) {
     this.datasource.est_place_maximum = value;
   }
-  get EstAgeRequis(): boolean {
-    return this.datasource.est_limite_age_requis;
+  get EstAgeMinimum(): boolean {
+    return this.datasource.est_limite_age_minimum;
   }
-  set EstAgeRequis(value: boolean) {
-    this.datasource.est_limite_age_requis = value;
+  set EstAgeMinimum(value: boolean) {
+    this.datasource.est_limite_age_minimum = value;
   }
   get EstAgeMaximum(): boolean {
     return this.datasource.est_limite_age_maximum;
