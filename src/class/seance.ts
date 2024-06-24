@@ -22,62 +22,14 @@ export class seance {
     public est_place_maximum:boolean=false;
     public est_limite_age_minimum:boolean=false;
     public est_limite_age_maximum:boolean=false;
+    public type_seance:"ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" = "ENTRAINEMENT";
+    public afficher_present:boolean = false;
     public notes:string="";
     public info_seance:string="";
   constructor() {
     
   }
-    // Fonction de comparaison pour vérifier si deux objets Seance sont identiques
-    public static comparerSeance(seance1: seance, seance2: seance): boolean {
-      // Comparaison des valeurs de chaque propriété
-      return seance1.seance_id === seance2.seance_id &&
-        seance1.cours === seance2.cours &&
-        seance1.date_seance === seance2.date_seance &&
-        seance1.heure_debut === seance2.heure_debut &&
-        seance1.duree_seance === seance2.duree_seance &&
-        seance1.lieu_id === seance2.lieu_id &&
-        seance1.lieu === seance2.lieu &&
-        seance1.libelle === seance2.libelle &&
-        seance1.statut === seance2.statut &&
-        this.comparerTableauxKeyValuePair(seance1.professeurs, seance2.professeurs) &&
-        seance1.age_minimum === seance2.age_minimum &&
-        seance1.age_maximum === seance2.age_maximum &&
-        this.comparerTableauxGroupe(seance1.groupes, seance2.groupes) &&
-        seance1.place_maximum === seance2.place_maximum &&
-        seance1.essai_possible === seance2.essai_possible &&
-        seance1.convocation_nominative === seance2.convocation_nominative &&
-        seance1.est_place_maximum === seance2.est_place_maximum &&
-        seance1.est_limite_age_minimum === seance2.est_limite_age_minimum &&
-        seance1.est_limite_age_maximum === seance2.est_limite_age_maximum &&
-        seance1.notes === seance2.notes &&
-        seance1.info_seance === seance2.info_seance;
-    }
-  
-    // Fonction pour comparer deux tableaux de type KeyValuePair
-    private static comparerTableauxKeyValuePair(tableau1: KeyValuePair[], tableau2: KeyValuePair[]): boolean {
-      if (tableau1.length !== tableau2.length) {
-        return false;
-      }
-      for (let i = 0; i < tableau1.length; i++) {
-        if (tableau1[i].key !== tableau2[i].key || tableau1[i].value !== tableau2[i].value) {
-          return false;
-        }
-      }
-      return true;
-    }
-  
-    // Fonction pour comparer deux tableaux de type Groupe
-    private static comparerTableauxGroupe(tableau1: Groupe[], tableau2: Groupe[]): boolean {
-      if (tableau1.length !== tableau2.length) {
-        return false;
-      }
-      for (let i = 0; i < tableau1.length; i++) {
-        if (!tableau2.find(x => x.id == tableau1[i].id)) {
-          return false;
-        }
-      }
-      return true;
-    }
+
   ToLienGroupe() : Lien_Groupe{
     let LG = new Lien_Groupe();
     LG.objet_id = this.seance_id;
@@ -108,6 +60,7 @@ export class Seance {
   place_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété place_maximum
   libelleSubject = new Subject<string>();
   dateSubject = new Subject<Date>();
+  typeSeanceSubject = new Subject<"ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT">();
   constructor(L: seance) {
     this.datasource = L;
     if (this.ID == 0) {
@@ -129,7 +82,21 @@ export class Seance {
 
   // Utilisez des sujets pour chaque propriété
 
+  get TypeSeance(): "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" {
+    return this.datasource.type_seance;
+  }
+  set TypeSeance(value: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT") {
+    this.datasource.type_seance = value;
+    this.typeSeanceSubject.next(value);
+  }
 
+
+  get AfficherPresent(): boolean {
+    return this.datasource.afficher_present;
+  }
+  set AfficherPresent(value: boolean) {
+    this.datasource.afficher_present = value;
+  }
   // Propriété nom avec get et set
   get libelle(): string {
     return this.datasource.libelle;
