@@ -190,8 +190,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let cours of listeCours_VM | filterName : filter_nom | filterJour : filter_jour | filterGroupe : filter_groupe | filterLieu : filter_lieu | filterProf : filter_prof"
-                                style="cursor: pointer;">
+                            <tr
+                                *ngFor="let cours of listeCours_VM | filterName : filter_nom | filterJour : filter_jour | filterGroupe : filter_groupe | filterLieu : filter_lieu | filterProf : filter_prof">
                                 <td>
                                     {{cours.Nom}}
                                 </td>
@@ -229,7 +229,6 @@
                                     {{trouverLieu(cours.LieuId)}}
                                 </td>
                                 <td>
-
                                     <div class="tags is-small">
                                         <ng-container *ngFor="let gr of cours.Groupes">
                                             <span class="tag is-success">
@@ -237,10 +236,8 @@
                                             </span>
                                         </ng-container>
                                     </div>
-
                                 </td>
                                 <td>
-
                                     <div class="buttons">
                                         <button i18n-title title="Supprimer"
                                             class="button is-danger is-rounded is-outlined" type="button"
@@ -249,7 +246,6 @@
                                                 <use xlink:href=".\assets\liste.svg#delete"></use>
                                             </svg>
                                         </button>
-
                                         <button i18n-title title="Editer" class="button is-info is-rounded is-outlined"
                                             type="button" style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(cours)">
                                             <svg width="20" height="20">
@@ -430,15 +426,23 @@
                     <app-groupe-detail *ngIf="editCours.ConvocationNominative == false"
                         [Select_Groupe]="editCours.Groupes" [ListeGroupe]="liste_groupe"></app-groupe-detail>
                     <div class="buttons">
-                        <button [disabled]="!editCours.valid.control" (click)="Save(editCours)"
-                            class="button is-primary is-rounded is-outlined">
-                            S
+                        <button class="button is-primary is-rounded is-outlined" [disabled]="!editCours.valid.control"
+                            type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(editCours)">
+                            <svg width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#save"></use>
+                            </svg>
                         </button>
-                        <button (click)="Refresh()" class="button is-warning is-rounded is-outlined">
-                            R
+                        <button (click)="Refresh()" class="button is-warning is-rounded is-outlined"
+                            style="fill:#FFB70F">
+                            <svg width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#refresh"></use>
+                            </svg>
                         </button>
-                        <button (click)="Retour()" class="button is-danger is-rounded is-outlined">
-                            D
+                        <button (click)="Retour()" class="button is-danger is-rounded is-outlined"
+                            style="fill:hsl(348, 100%, 61%)">
+                            <svg width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#delete"></use>
+                            </svg>
                         </button>
                     </div>
                 </div>

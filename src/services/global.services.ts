@@ -102,7 +102,6 @@ export class GlobalService {
         .set('projectid', project_id)
         .set('lang', this.getCurrentLanguage())
         .set('userid', _varid)
-        .set('project', "1")
       const response = await firstValueFrom(
         this.http.post(url, body, { headers }).pipe(
           timeout(timeoutMilliseconds),

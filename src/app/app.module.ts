@@ -45,7 +45,7 @@ import { GroupeDetailComponent } from './groupe-detail/groupe-detail.component';
     ProfComponent,
     NotifJechaComponent,
     ContactItemComponent, FilterCoursPipe, FilterFirstnamePipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
-  , GroupeDetailComponent],
+  , GroupeDetailComponent, ProfComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

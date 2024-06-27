@@ -19,7 +19,7 @@ import { SeancesService } from 'src/services/seance.service';
   templateUrl: './seance.component.html',
   styleUrls: ['./seance.component.css']
 })
-export class SeanceComponent  implements OnInit {
+export class SeanceComponent implements OnInit {
   listeprof: KeyValuePair[];
   listelieu: KeyValuePair[];
   prof_dispo: KeyValuePair[];
@@ -33,7 +33,7 @@ export class SeanceComponent  implements OnInit {
   editMode_serie: boolean = false;
   list_seance_VM: Seance[] = [];
   editSeance: Seance | null = null;
-  all_seance:boolean=false;
+  all_seance: boolean = false;
   jour_semaine: string = "";
   date_fin_serie: Date;
   list_saison: KeyValuePair[];
@@ -69,96 +69,96 @@ export class SeanceComponent  implements OnInit {
     private seancesservice: SeancesService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
 
-    ngOnInit(): void {
-      const errorService = ErrorService.instance;
-      this.action = $localize`Charger les cours`;
-      if (GlobalService.is_logged_in) {
-  
-        if (GlobalService.menu === "ADHERENT") {
-          this.router.navigate(['/menu']);
+  ngOnInit(): void {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Charger les cours`;
+    if (GlobalService.is_logged_in) {
+
+      if (GlobalService.menu === "ADHERENT") {
+        this.router.navigate(['/menu']);
+        return;
+      }
+      // Chargez la liste des cours
+      this.grServ.GetAll().then((groupes) => {
+        if (groupes.length == 0) {
+          let o = errorService.CreateError($localize`Récupérer les groupes`, $localize`Il faut au moins un groupe pour créer un cours`);
+          errorService.emitChange(o);
+          this.router.navigate(['/groupe']);
           return;
         }
-        // Chargez la liste des cours
-        this.grServ.GetAll().then((groupes) => {
-          if (groupes.length == 0) {
-            let o = errorService.CreateError($localize`Récupérer les groupes`, $localize`Il faut au moins un groupe pour créer un cours`);
+        this.liste_groupe = groupes;
+        this.ridersService.GetProf().then((profs) => {
+          if (profs.length == 0) {
+            let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
             errorService.emitChange(o);
-            this.router.navigate(['/groupe']);
+            this.router.navigate(['/adherent']);
             return;
           }
-          this.liste_groupe = groupes;
-          this.ridersService.GetProf().then((profs) => {
-            if (profs.length == 0) {
-              let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
+          this.listeprof = profs;
+          this.lieuserv.GetAllLight().then((lieux) => {
+            if (lieux.length == 0) {
+              let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
               errorService.emitChange(o);
-              this.router.navigate(['/adherent']);
+              if (GlobalService.menu === "ADMIN") {
+                this.router.navigate(['/lieu']);
+
+              }
               return;
             }
-            this.listeprof = profs;
-            this.lieuserv.GetAllLight().then((lieux) => {
-              if (lieux.length == 0) {
-                let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
+            this.listelieu = lieux;
+            this.saisonserv.GetAllLight().then((sa) => {
+              if (sa.length == 0) {
+                let o = errorService.CreateError($localize`Récupérer les saisons`, $localize`Il faut au moins une saison pour créer un cours`);
                 errorService.emitChange(o);
                 if (GlobalService.menu === "ADMIN") {
-                  this.router.navigate(['/lieu']);
-  
+                  this.router.navigate(['/saison']);
+
                 }
                 return;
               }
-              this.listelieu = lieux;
-              this.saisonserv.GetAllLight().then((sa) => {
-                if (sa.length == 0) {
-                  let o = errorService.CreateError($localize`Récupérer les saisons`, $localize`Il faut au moins une saison pour créer un cours`);
-                  errorService.emitChange(o);
-                  if (GlobalService.menu === "ADMIN") {
-                    this.router.navigate(['/saison']);
-    
-                  }
-                  return;
-                }
-                this.seasons = sa;
-                this.coursservice.GetCours().then((c) =>{
-                  this.listeCours = c;
-                }).catch((err: HttpErrorResponse) => {
-                  let o = errorService.CreateError($localize`récupérer les cours`, err.message);
-                  errorService.emitChange(o);
-                  this.router.navigate(['/menu']);
-                  return;
-                })
-                this.UpdateListeSeance();
-                let o = errorService.OKMessage(this.action);
-                errorService.emitChange(o);
+              this.seasons = sa;
+              this.coursservice.GetCours().then((c) => {
+                this.listeCours = c;
               }).catch((err: HttpErrorResponse) => {
-                let o = errorService.CreateError($localize`récupérer les saisons`, err.message);
+                let o = errorService.CreateError($localize`récupérer les cours`, err.message);
                 errorService.emitChange(o);
                 this.router.navigate(['/menu']);
                 return;
               })
+              this.UpdateListeSeance();
+              let o = errorService.OKMessage(this.action);
+              errorService.emitChange(o);
             }).catch((err: HttpErrorResponse) => {
-              let o = errorService.CreateError($localize`récupérer les lieux`, err.message);
+              let o = errorService.CreateError($localize`récupérer les saisons`, err.message);
               errorService.emitChange(o);
               this.router.navigate(['/menu']);
               return;
             })
           }).catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError($localize`récupérer les profs`, err.message);
+            let o = errorService.CreateError($localize`récupérer les lieux`, err.message);
             errorService.emitChange(o);
             this.router.navigate(['/menu']);
             return;
           })
         }).catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError($localize`Récupérer les groupes`, err.message);
+          let o = errorService.CreateError($localize`récupérer les profs`, err.message);
           errorService.emitChange(o);
-          this.router.navigate(['/groupe']);
+          this.router.navigate(['/menu']);
           return;
-        });
-  
-      } else {
-        let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
+        })
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError($localize`Récupérer les groupes`, err.message);
         errorService.emitChange(o);
-        this.router.navigate(['/login']);
-      }
+        this.router.navigate(['/groupe']);
+        return;
+      });
+
+    } else {
+      let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
+      errorService.emitChange(o);
+      this.router.navigate(['/login']);
     }
+  }
 
   UpdateListSeance() {
     const errorService = ErrorService.instance;
@@ -188,6 +188,22 @@ export class SeanceComponent  implements OnInit {
     }
   }
 
+  GetCours(cours) {
+    return this.listeCours.find(x => x.id == cours).nom;
+  }
+  GetType(type) {
+    switch (type) {
+      case "ENTRAINEMENT":
+        return $localize`Entraînement`;
+      case "SORTIE":
+        return $localize`Sortie`;
+      case "MATCH":
+        return $localize`Match`;
+      case "EVENEMENT":
+        return $localize`Evénement`;
+    }
+    return "";
+  }
 
   AjouterProf() {
     let kvp = this.prof_dispo.filter(e => e.key == this.current_prof)[0];
@@ -225,7 +241,7 @@ export class SeanceComponent  implements OnInit {
     this.editSeance = new Seance(this_seance);
     this.MAJListeProf();
     this.MAJListeGroupe();
-    if(this.editSeance.Cours){
+    if (this.editSeance.Cours) {
       this.coursselectionne = true;
 
     } else {
@@ -241,17 +257,17 @@ export class SeanceComponent  implements OnInit {
       const newValue = this.listeCours[indexToUpdate];
       this.coursselectionne = true;
       this.editSeance.duree_seance = newValue.duree;
-      this.editSeance.AgeRequis = newValue.age_minimum;
+      this.editSeance.AgeMinimum = newValue.age_minimum;
       this.editSeance.AgeMaximum = newValue.age_maximum;
       this.editSeance.EstAgeMaximum = newValue.est_limite_age_maximum;
-      this.editSeance.EstAgeRequis = newValue.est_limite_age_minimum
+      this.editSeance.EstAgeMinimum = newValue.est_limite_age_minimum
       this.editSeance.libelle = newValue.nom;
       this.editSeance.heure_debut = newValue.heure;
       this.editSeance.ConvocationNominative = newValue.convocation_nominative;
       this.editSeance.EstPlaceMaximum = newValue.est_place_maximum;
       this.editSeance.PlaceMaximum = newValue.place_maximum;
       this.editSeance.AfficherPresent = newValue.afficher_present;
-      this.editSeance.TypeSeance = newValue.type_cours;
+      this.editSeance.TypeSeance = "ENTRAINEMENT";
       this.editSeance.date_seance = null;
       this.editSeance.Groupes = [];
       newValue.groupes.forEach((el) => {
@@ -370,7 +386,7 @@ export class SeanceComponent  implements OnInit {
     }
   }
 
-  AnnulerCetteSeanceListe(seance : Seance) {
+  AnnulerCetteSeanceListe(seance: Seance) {
     let errorService = ErrorService.instance;
     this.action = $localize`Annuler la séance`
     let confirmation = window.confirm($localize`La séance sera annulée et ne sera plus visible pour les adhérents et professeurs, vous allez être basculé sur le mail d'annulation. Confirmez vous l'opération ?`);
@@ -391,7 +407,7 @@ export class SeanceComponent  implements OnInit {
       });
     }
   }
-  TerminerCetteSeanceListe(seance : Seance) {
+  TerminerCetteSeanceListe(seance: Seance) {
     let errorService = ErrorService.instance;
     this.action = $localize`Terminer la séance`
     let confirmation = window.confirm($localize`La séance sera terminée et ne sera plus visible pour les adhérents et professeurs. Confirmez vous l'opération ?`);
@@ -436,18 +452,18 @@ export class SeanceComponent  implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les séances`;
     if (this.season_id && this.season_id > 0) {
-      this.seancesservice.GetSeancesSeason(this.season_id, this.all_seance).then((seances) => {
+      this.seancesservice.GetSeancesSeason(this.season_id, true).then((seances) => {
         this.list_seance = seances;
         this.list_seance_VM = this.list_seance.map(x => new Seance(x));
         this.UpdateListeFiltre();
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-        this.router.navigate(['/menu-inscription']);
+        this.router.navigate(['/menu']);
         return;
       })
     } else {
-      this.seancesservice.GetSeances(this.all_seance).then((seances) => {
+      this.seancesservice.GetSeances(true).then((seances) => {
         this.list_seance = seances;
         this.list_seance_VM = this.list_seance.map(x => new Seance(x));
         this.UpdateListeFiltre();
@@ -521,7 +537,7 @@ export class SeanceComponent  implements OnInit {
     }
   }
 
-  supprimerSeance(seance: Seance): void {
+  Delete(seance: Seance): void {
     const errorService = ErrorService.instance;
 
     let confirmation = window.confirm($localize`Voulez-vous supprimer cette séance ? Cette action est définitive. `);
@@ -602,7 +618,22 @@ export class SeanceComponent  implements OnInit {
 
 
 
-  Message() {
+  Refresh(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Rafraichir la séance`;
+    this.seancesservice.Get(this.editSeance.ID).then((c)=>{
+      this.editSeance = new Seance(c);
+      let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
+     }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        return;
+      })
+  }
+
+  Retour(): void {
+
     let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
     if (confirm) {
       this.editMode = false;

@@ -1,437 +1,310 @@
 <div class="container">
-    <div class="columns" *ngIf="!editMode && est_admin">
-      <div class="column">
-        <div class="card" style="width: 100%;">
-          <header class="card-header">
-            <p class="card-header-title" i18n>
-              Filtres
-            </p>
-            <button (click)="afficher_menu_admin ? afficher_menu_admin = false : afficher_menu_admin= true"
-              class="card-header-icon" aria-label="more options">
-              <span class="icon">
-                <svg *ngIf="!afficher_menu_admin" width="20" height="20">
-                  <use xlink:href=".\assets\liste.svg#chevron-up" style="fill:blue"></use>
-                </svg>
-                <svg *ngIf="afficher_menu_admin" width="20" height="20">
-                  <use xlink:href=".\assets\liste.svg#chevron-down" style="fill:blue"></use>
-                </svg>
-              </span>
-            </button>
-          </header>
-          <div class="card-content" *ngIf="afficher_menu_admin">
-            <div class="content">
-              <div class="columns">
-                <div class="column">
-                  <div class="field field-jecha">
-                    <label for="seasons" class="label">Changer la saison</label>
-                    <div class="select">
-                      <select id="seasons" [(ngModel)]="season_id" i18n-placeholder placeholder="Choisir la saison">
-                        <!-- Options pour les professeurs -->
-                        <ng-container *ngFor="let season of seasons">
-                          <option [value]="season.key">{{season.value}}</option>
-                        </ng-container>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="field field-jecha">
-                    <label class="checkbox">
-                      <input type="checkbox" [(ngModel)]="all_seance"/>
-                      <span i18n>Inclure les séances terminées et annulées</span>
-                    </label>         
-                  </div>
-                  <div class="field field-jecha">
-                    <button type="button" class="button is-outlined is-rounded is-primary" (click)="Filtrer()"
-                      i18n>Afficher la saison sélectionnée</button>
-                  </div>
-                  <div class="field field-jecha">
-                    <button type="button" class="button is-outlined is-rounded is-danger" (click)="FiltrerBack()"
-                      i18n>Afficher saison active</button>
+  <div class="columns" *ngIf="!editMode && est_admin">
+    <div class="column">
+      <div class="card" style="width: 100%;">
+        <header class="card-header">
+          <p class="card-header-title" i18n>
+            Filtres
+          </p>
+          <button (click)="afficher_menu_admin ? afficher_menu_admin = false : afficher_menu_admin= true"
+            class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <svg *ngIf="!afficher_menu_admin" width="20" height="20">
+                <use xlink:href=".\assets\liste.svg#chevron-up" style="fill:blue"></use>
+              </svg>
+              <svg *ngIf="afficher_menu_admin" width="20" height="20">
+                <use xlink:href=".\assets\liste.svg#chevron-down" style="fill:blue"></use>
+              </svg>
+            </span>
+          </button>
+        </header>
+        <div class="card-content" *ngIf="afficher_menu_admin">
+          <div class="content">
+            <div class="columns">
+              <div class="column">
+                <div class="field field-jecha">
+                  <label for="seasons" class="label">Changer la saison</label>
+                  <div class="select">
+                    <select id="seasons" [(ngModel)]="season_id" i18n-placeholder placeholder="Choisir la saison">
+                      <!-- Options pour les professeurs -->
+                      <ng-container *ngFor="let season of seasons">
+                        <option [value]="season.key">{{season.value}}</option>
+                      </ng-container>
+                    </select>
                   </div>
                 </div>
-  
-                <div class="column">
-                  <div style="gap: 6px;" class="field is-horizontal field-jecha">
-                    <label for="nom" class="label">Nom</label>
-                    <input style="width: fit-content;font-size:smaller;" class="input" i18n-placeholder
-                      placeholder="Nom du cours" type="text" [(ngModel)]="filter_nom">
-                  </div>
-                  <div style="gap: 6px;" class="field is-horizontal field-jecha">
-                    <label for="prof" class="label">Professeur</label>
-                    <div class="select">
-                      <select style="font-size:smaller;" [(ngModel)]="filter_prof">
-                        <option [value]="0" i18n>Tous</option>
-                        <ng-container *ngFor="let pr of liste_prof_filter">
-                          <option [value]="pr.key" i18n>{{pr.value}}</option>
-                        </ng-container>
-                      </select>
-                    </div>
-                  </div>
-                  <div style="gap: 6px;" class="field is-horizontal  field-jecha">
-                    <label for="lieu" class="label">Lieu</label>
-                    <div class="select">
-                      <select style="font-size:smaller;" [(ngModel)]="filter_lieu">
-                        <option [value]="0" i18n>Tous</option>
-                        <ng-container *ngFor="let li of liste_lieu_filter">
-                          <option [value]="li.key">{{li.value}}</option>
-                        </ng-container>
-                      </select>
-                    </div>
-                  </div>
-                  <div style="gap: 6px;" class="field is-horizontal  field-jecha">
-                    <label for="lieu" class="label">Groupe</label>
-                    <div class="select">
-                      <select style="font-size:smaller;" [(ngModel)]="filter_groupe">
-                        <option [value]="0" i18n>Tous</option>
-                        <ng-container *ngFor="let gr of liste_groupe_filter">
-                          <option [value]="gr.id" i18n>{{gr.nom}}</option>
-                        </ng-container>
-                      </select>
-                    </div>
-                  </div>
-                  <div style="gap: 6px;" class="field is-horizontal field-jecha">
-                    <label for="groupe" class="label">Avant le </label>
-                    <input style="width: fit-content;" class="input" i18n-placeholder
-                    placeholder="Filtre date avant" type="date" [(ngModel)]="filter_date_avant">
-  
-                  </div>
-                  <div style="gap: 6px;" class="field is-horizontal field-jecha">
-                    <label for="groupe" class="label">Après le </label>
-                    <input style="width: fit-content;" class="input" i18n-placeholder
-                    placeholder="Filtre date après" type="date" [(ngModel)]="filter_date_apres">
-                  </div>
-                  <button type="button" class="button is-outlined is-rounded is-primary" (click)="ReinitFiltre()"
-                    i18n>Reinitialiser les filtres</button>
-  
+                <div class="field field-jecha">
+                  <label class="checkbox">
+                    <input type="checkbox" [(ngModel)]="all_seance" />
+                    <span i18n>Inclure les séances terminées et annulées</span>
+                  </label>
                 </div>
-                <div class="column">
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-primary"
-                      (click)="Creer(true)" i18n>Créer une série</button></div>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="TerminerSeance()" i18n>Terminer les séances passées</button></div>
+                <div class="field field-jecha">
+                  <button type="button" class="button is-outlined is-rounded is-primary" (click)="Filtrer()"
+                    i18n>Afficher la saison sélectionnée</button>
                 </div>
+                <div class="field field-jecha">
+                  <button type="button" class="button is-outlined is-rounded is-danger" (click)="FiltrerBack()"
+                    i18n>Afficher saison active</button>
+                </div>
+              </div>
+
+              <div class="column">
+                <div style="gap: 6px;" class="field is-horizontal field-jecha">
+                  <label for="nom" class="label">Nom</label>
+                  <input style="width: fit-content;font-size:smaller;" class="input" i18n-placeholder
+                    placeholder="Nom du cours" type="text" [(ngModel)]="filter_nom">
+                </div>
+                <div style="gap: 6px;" class="field is-horizontal field-jecha">
+                  <label for="prof" class="label">Professeur</label>
+                  <div class="select">
+                    <select style="font-size:smaller;" [(ngModel)]="filter_prof">
+                      <option [value]="0" i18n>Tous</option>
+                      <ng-container *ngFor="let pr of liste_prof_filter">
+                        <option [value]="pr.key" i18n>{{pr.value}}</option>
+                      </ng-container>
+                    </select>
+                  </div>
+                </div>
+                <div style="gap: 6px;" class="field is-horizontal  field-jecha">
+                  <label for="lieu" class="label">Lieu</label>
+                  <div class="select">
+                    <select style="font-size:smaller;" [(ngModel)]="filter_lieu">
+                      <option [value]="0" i18n>Tous</option>
+                      <ng-container *ngFor="let li of liste_lieu_filter">
+                        <option [value]="li.key">{{li.value}}</option>
+                      </ng-container>
+                    </select>
+                  </div>
+                </div>
+                <div style="gap: 6px;" class="field is-horizontal  field-jecha">
+                  <label for="lieu" class="label">Groupe</label>
+                  <div class="select">
+                    <select style="font-size:smaller;" [(ngModel)]="filter_groupe">
+                      <option [value]="0" i18n>Tous</option>
+                      <ng-container *ngFor="let gr of liste_groupe_filter">
+                        <option [value]="gr.id" i18n>{{gr.nom}}</option>
+                      </ng-container>
+                    </select>
+                  </div>
+                </div>
+                <div style="gap: 6px;" class="field is-horizontal field-jecha">
+                  <label for="groupe" class="label">Avant le </label>
+                  <input style="width: fit-content;" class="input" i18n-placeholder placeholder="Filtre date avant"
+                    type="date" [(ngModel)]="filter_date_avant">
+
+                </div>
+                <div style="gap: 6px;" class="field is-horizontal field-jecha">
+                  <label for="groupe" class="label">Après le </label>
+                  <input style="width: fit-content;" class="input" i18n-placeholder placeholder="Filtre date après"
+                    type="date" [(ngModel)]="filter_date_apres">
+                </div>
+                <button type="button" class="button is-outlined is-rounded is-primary" (click)="ReinitFiltre()"
+                  i18n>Reinitialiser les filtres</button>
+
+              </div>
+              <div class="column">
+                <div class="column"><button type="button" class="button is-outlined is-rounded is-primary"
+                    (click)="Creer(true)" i18n>Créer une série</button></div>
+                <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
+                    (click)="TerminerSeance()" i18n>Terminer les séances passées</button></div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div *ngIf="!editMode" class="columns">
-      <div class="column">
-        <div class="card">
-          <header class="card-header">
-            <p class="card-header-title" i18n>Liste des séances</p>
-            <button type="button" (click)="Creer(false)" class="button is-primary is-rounded is-outlined"
-              style="align-self: center; ;fill:hsl(171, 100%, 41%)">
-              <svg width="20" height="20">
-                <use xlink:href=".\assets\liste.svg#plus"></use>
-              </svg>
-            </button>
-          </header>
-          <div class="card-content">
-            <table class="table" style="width: 100%;" *ngIf="list_seance_VM && list_seance_VM.length> 0">
-              <thead>
-                <tr>
-                  <th><span style="font-size: smaller;" i18n>Nom</span>
-                    <span style="cursor: pointer;">
-                      <svg class="svg" *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                      </svg>
-                    </span>
-                  </th>
-                  <th><span style="font-size: smaller;" i18n>Cours</span>
-                    <span style="cursor: pointer;">
-                      <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'nom')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'nom')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'nom')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                      </svg>
-                    </span>
-                  </th>
-                  <th><span style="font-size: smaller;" i18n>Date</span><span style="cursor: pointer;">
-                      <svg class="svg" *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'jour')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'jour')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'jour')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                      </svg>
-                    </span></th>
-                  <th><span style="font-size: smaller;" i18n>Heure</span></th>
-                  <th><span style="font-size: smaller;" i18n>Durée</span></th>
-                  <th><span style="font-size: smaller;" i18n>Professeurs</span></th>
-                  <th><span style="font-size: smaller;" i18n>Lieu</span><span style="cursor: pointer;">
-                      <svg class="svg" *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                      </svg>
-                      <svg class="svg" *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu')" width="12" height="12">
-                        <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                      </svg>
-                    </span></th>
-                  <th><span style="font-size: smaller;" i18n>Groupes</span></th>
-                  <th><span style="font-size: smaller;" i18n>Statut</span></th>
-                  <th><span style="font-size: smaller;" i18n>Action</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  *ngFor="let seance of list_seance_VM | filterLibelle : filter_nom | filterCours : filter_cours |  filterDateAvant : filter_date_avant|  filterDateApres : filter_date_apres |filterGroupe : filter_groupe | filterLieu : filter_lieu | filterListProf : filter_prof">
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      <span style="font-size:smaller;cursor: pointer;">{{seance.libelle}}</span>
-                    </div>
-                    <div *ngIf="seance.editing">
-                      <input style="width: fit-content;font-size:smaller;"
-                        [class]="seance.valid.libelle ? 'input' : 'input is-danger'" i18n-placeholder
-                        placeholder="Nom du cours" type="text" [(ngModel)]="seance.libelle">
-                      <p *ngIf="!seance.valid.libelle" class="help is-danger" style="font-size:smaller;" i18n>Le nom doit faire au moins 3 caractères</p>
-                    </div>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      <ng-container (ngModel)="filter_cours" *ngFor="let cours of listeCours">
-                        <ng-container *ngIf="seance.Cours==cours.id">
-                          <span style="font-size:smaller;cursor: pointer;">{{cours.nom}}</span>
-                        </ng-container>
+  </div>
+  <div *ngIf="!editMode" class="columns">
+    <div class="column">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title" i18n>Liste des séances</p>
+          <button type="button" (click)="Creer(false)" class="button is-primary is-rounded is-outlined"
+            style="align-self: center; ;fill:hsl(171, 100%, 41%)">
+            <svg width="20" height="20">
+              <use xlink:href=".\assets\liste.svg#plus"></use>
+            </svg>
+          </button>
+        </header>
+        <div class="card-content">
+          <table class="table" style="width: 100%;font-size:smaller" *ngIf="list_seance_VM && list_seance_VM.length> 0">
+            <thead>
+              <tr>
+                <th><span style="font-size: smaller;" i18n>Nom</span>
+                  <span style="cursor: pointer;">
+                    <svg class="svg" *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                    </svg>
+                  </span>
+                </th>
+                <th><span style="font-size: smaller;" i18n>Cours</span>
+                  <span style="cursor: pointer;">
+                    <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'nom')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'nom')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'nom')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                    </svg>
+                  </span>
+                </th>
+                <th><span style="font-size: smaller;" i18n>Type</span>
+                  <span style="cursor: pointer;">
+                    <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'type')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'type')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'type')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                    </svg>
+                  </span>
+                </th>
+                <th><span style="font-size: smaller;" i18n>Date</span><span style="cursor: pointer;">
+                    <svg class="svg" *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'jour')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'jour')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'jour')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                    </svg>
+                  </span></th>
+                <th><span style="font-size: smaller;" i18n>Heure</span></th>
+                <th><span style="font-size: smaller;" i18n>Durée</span></th>
+                <th><span style="font-size: smaller;" i18n>Professeurs</span></th>
+                <th><span style="font-size: smaller;" i18n>Lieu</span><span style="cursor: pointer;">
+                    <svg class="svg" *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                    </svg>
+                    <svg class="svg" *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu')" width="12" height="12">
+                      <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                    </svg>
+                  </span></th>
+                <th><span style="font-size: smaller;" i18n>Groupes</span></th>
+                <th><span style="font-size: smaller;" i18n>Statut</span></th>
+                <th><span style="font-size: smaller;" i18n>Action</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let seance of list_seance_VM | filterLibelle : filter_nom | filterCours : filter_cours |  filterDateAvant : filter_date_avant|  filterDateApres : filter_date_apres |filterGroupe : filter_groupe | filterLieu : filter_lieu | filterListProf : filter_prof">
+                <td>
+                 {{seance.libelle}}
+                </td>
+                <td>
+                    <ng-container (ngModel)="filter_cours" *ngFor="let cours of listeCours">
+                      <ng-container *ngIf="seance.Cours==cours.id">
+                        <span >{{cours.nom}}</span>
+                      </ng-container>
+                    </ng-container>                
+                </td>
+                <td>
+                  <ng-container *ngIf="seance.TypeSeance==='ENTRAINEMENT'">
+                    <span i18n>Entraînement</span>
+                  </ng-container>   
+                  <ng-container *ngIf="seance.TypeSeance==='MATCH'">
+                    <span i18n>Match</span>
+                  </ng-container>
+                  <ng-container *ngIf="seance.TypeSeance==='EVENEMENT'">
+                    <span i18n>Evénement</span>
+                  </ng-container>
+                  <ng-container *ngIf="seance.TypeSeance==='SORTIE'">
+                    <span i18n>Sortie</span>
+                  </ng-container>          
+              </td>
+                <td>{{ seance.date_seance | date: 'dd/MM/yyyy' }}
+                </td>
+                <td>{{seance.heure_debut}} </td>
+                <td> {{seance.duree_seance}} 
+                </td>
+                <td>
+                    <div class="tags is-small">
+                      <ng-container *ngFor="let gr of seance.professeurs">
+                        <span class="tag is-success">
+                          {{gr.value}}
+                        </span>
                       </ng-container>
                     </div>
-                    <div *ngIf="seance.editing" class="select"> <select style="font-size:smaller;" id="cours"
-                        [(ngModel)]="seance.Cours" placeholder="Cours de la séance">
-                        <!-- Options pour les professeurs -->
-                        <ng-container *ngFor="let cours of listeCours">
-                          <option [value]="cours.id">{{cours.nom}}</option>
-                        </ng-container>
-                      </select>
-                    </div>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      <span style="font-size:smaller;cursor: pointer;">{{ seance.date_seance | date: 'dd/MM/yyyy'
-                        }}</span>
-                    </div>
-                    <div *ngIf="seance.editing">
-                      <input style="width: fit-content;font-size:smaller;"
-                        [class]="seance.valid.date ? 'input' : 'input is-danger'" i18n-placeholder
-                        placeholder="Date de la séance" type="date" [(ngModel)]="seance.date_seance">
-                      <p *ngIf="!seance.valid.date" class="help is-danger" style="font-size:smaller;" i18n>La date doit
-                        être saisie</p>
-                    </div>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      {{seance.heure_debut}}
-                    </div>
-                    <div *ngIf="seance.editing">
-                      <input style="font-size:smaller;" [class]="seance.valid.heure ? 'input' : 'input is-danger'"
-                        id="heure_cours" type="time" [(ngModel)]="seance.heure_debut">
-                      <p class="help is-danger" style="font-size:smaller;" *ngIf="!seance.valid.heure" i18n>L'heure doit
-                        être saisie</p>
-                    </div>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      {{seance.duree_seance}}
-                    </div>
-                    <div *ngIf="seance.editing">
-                      <input style="font-size:smaller;min-width: 60px;"
-                        [class]="seance.valid.duree ? 'input' : 'input is-danger'" min="0" max="1440" type="number"
-                        id="duree_cours" [(ngModel)]="seance.duree_seance" i18n-placeholder
-                        placeholder="Durée (en minutes)">
-                      <p class="help is-danger" style="font-size:smaller;" *ngIf="!seance.valid.duree" i18n>La durée doit
-                        être saisie</p>
-                    </div>
-                  </td>
-  
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      <div class="tags is-small">
-                        <ng-container *ngFor="let gr of seance.professeurs">
-                          <span class="tag is-success">
-                            {{gr.value}}
-                          </span>
-                        </ng-container>
-                      </div>
-                    </div>
-                    <app-gerer-prof-detail *ngIf="seance.editing" [est_admin]="est_admin" [Profs]="seance.professeurs"
-                      [liste_prof]="listeprof"></app-gerer-prof-detail>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      {{trouverLieu(seance.LieuId)}}
-  
-                    </div>
-                    <div *ngIf="seance.editing" class="select"> <select style="font-size:smaller;" id="lieu_seance"
-                        [(ngModel)]="seance.LieuId" placeholder="Lieu de la séance">
-                        <!-- Options pour les professeurs -->
-                        <ng-container *ngFor="let lieu of listelieu">
-                          <option [value]="lieu.key">{{lieu.value}}</option>
-                        </ng-container>
-                      </select>
-                    </div>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      <div class="tags is-small">
-                        <ng-container *ngFor="let gr of seance.Groupes">
-                          <span class="tag is-success">
-                            {{gr.nom}}
-                          </span>
-                        </ng-container>
-                      </div>
-                    </div>
-                    <app-groupe-detail *ngIf="seance.editing" 
-                      [Select_Groupe]="seance.Groupes" [ListeGroupe]="liste_groupe"></app-groupe-detail>
-                  </td>
-                  <td>
-                    <div (click)="seance.editing = true" *ngIf="!seance.editing">
-                      <ng-container *ngIf="seance.Statut == 'prévue'">
-                        <svg width="20" style="fill:blue" height="20">
-                          <use xlink:href=".\assets\liste.svg#prevu"></use>
-                        </svg>
+                </td>
+                <td>{{trouverLieu(seance.LieuId)}}
+                </td>
+                <td>
+                    <div class="tags is-small">
+                      <ng-container *ngFor="let gr of seance.Groupes">
+                        <span class="tag is-success">
+                          {{gr.nom}}
+                        </span>
                       </ng-container>
-                      <ng-container *ngIf="seance.Statut == 'réalisée'">
-                        <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
-                          <use xlink:href=".\assets\liste.svg#termine"></use>
-                        </svg>
-                      </ng-container>
-                      <ng-container *ngIf="seance.Statut == 'annulée'">
-                        <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
-                          <use xlink:href=".\assets\liste.svg#annuler"></use>
-                        </svg>
-                      </ng-container>
-                    </div>
-                    <div *ngIf="seance.editing">
-                      <ng-container *ngIf="seance.Statut == 'prévue'">
-                        <span style="font-size:smaller;" i18n>Prévue</span>
-                        <div class="column"><button type="button" class="button is-outlined is-primary is-rounded"
-                            style="fill:hsl(171, 100%, 41%)" (click)="TerminerCetteSeanceListe(seance)" i18n><svg
-                              width="20" height="20">
-                              <use xlink:href=".\assets\liste.svg#termine"></use>
-                            </svg></button></div>
-                        <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                            style="fill:hsl(348, 100%, 61%)" (click)="AnnulerCetteSeanceListe(seance)" i18n><svg
-                              width="20" height="20">
-                              <use xlink:href=".\assets\liste.svg#annuler"></use>
-                            </svg></button></div>
-                      </ng-container>
-                      <ng-container *ngIf="seance.Statut == 'annulée'">
-                        <span style="font-size:smaller;" i18n>Annulée</span>
-                        <div class="column"><button type="button" class="button is-outlined is-primary is-rounded"
-                            style="fill:hsl(171, 100%, 41%)" (click)="TerminerCetteSeanceListe(seance)" i18n><svg
-                              width="20" height="20">
-                              <use xlink:href=".\assets\liste.svg#termine"></use>
-                            </svg></button></div>
-                        <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
-                            style="fill:blue" (click)="RePlanifierCetteSeanceListe(seance)" i18n><svg width="20"
-                              height="20">
-                              <use xlink:href=".\assets\liste.svg#prevu"></use>
-                            </svg></button></div>
-                      </ng-container>
-                      <ng-container *ngIf="seance.Statut == 'réalisée'">
-                        <span style="font-size:smaller;" i18n>Réalisée</span>
-                        <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                            style="fill:hsl(348, 100%, 61%)" (click)="AnnulerCetteSeanceListe(seance)" i18n><svg
-                              width="20" height="20">
-                              <use xlink:href=".\assets\liste.svg#annuler"></use>
-                            </svg></button></div>
-                        <div class="column"><button type="button" class="button is-outlined is-rounded is- info"
-                            style="fill:blue" (click)="RePlanifierCetteSeanceListe(seance)" i18n><svg width="20"
-                              height="20">
-                              <use xlink:href=".\assets\liste.svg#prevu"></use>
-                            </svg></button></div>
-                      </ng-container>
-                    </div>
-                  </td>
-                  <td>
-                    <div *ngIf="seance.editing " class="buttons">
-  
-                      <button i18n-title title="Recharger" class="button is-danger is-rounded is-outlined" type="button"
-                        (click)="RefreshLine(seance)" style="fill:hsl(348, 100%, 61%)">
+                    </div>                
+                </td>
+                <td>
+                    <ng-container *ngIf="seance.Statut == 'prévue'">
+                      <svg width="20" style="fill:blue" height="20">
+                        <use xlink:href=".\assets\liste.svg#prevu"></use>
+                      </svg>
+                    </ng-container>
+                    <ng-container *ngIf="seance.Statut == 'réalisée'">
+                      <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
+                        <use xlink:href=".\assets\liste.svg#termine"></use>
+                      </svg>
+                    </ng-container>
+                    <ng-container *ngIf="seance.Statut == 'annulée'">
+                      <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
+                        <use xlink:href=".\assets\liste.svg#annuler"></use>
+                      </svg>
+                    </ng-container>
+                </td>
+                <td>
+                  <div class="buttons">
+                    <button i18n-title title="Supprimer"
+                        class="button is-danger is-rounded is-outlined" type="button"
+                        (click)="Delete(seance)" style="fill:hsl(348, 100%, 61%)">
                         <svg width="20" height="20">
-                          <use xlink:href=".\assets\liste.svg#refresh"></use>
+                            <use xlink:href=".\assets\liste.svg#delete"></use>
                         </svg>
-                      </button>
-                      <button class="button is-primary is-rounded is-outlined" [disabled]="!seance.valid.control"
-                        type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(seance)">
+                    </button>
+
+                    <button i18n-title title="Editer" class="button is-info is-rounded is-outlined"
+                        type="button" style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(seance)">
                         <svg width="20" height="20">
-                          <use xlink:href=".\assets\liste.svg#save"></use>
+                            <use xlink:href=".\assets\liste.svg#edit"></use>
                         </svg>
-                      </button>
-  
-                    </div>
-                    <div *ngIf="!seance.editing" class="buttons">
-                      <button i18n-title title="Supprimer" class="button is-danger is-rounded is-outlined" type="button"
-                        (click)="supprimerSeance(seance)" style="fill:hsl(348, 100%, 61%)">
-                        <svg width="20" height="20">
-                          <use xlink:href=".\assets\liste.svg#delete"></use>
-                        </svg>
-                      </button>
-  
-                      <button i18n-title title="Editer" class="button is-info is-rounded is-outlined" type="button"
-                        style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(seance)">
-                        <svg width="20" height="20">
-                          <use xlink:href=".\assets\liste.svg#edit"></use>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="!list_seance_VM || list_seance_VM.length ==0">Pas de séances disponible</p>
-          </div>
+                    </button>
+                </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="!list_seance_VM || list_seance_VM.length ==0">Pas de séances disponible</p>
         </div>
       </div>
     </div>
-    <div *ngIf="editMode" class="columns">
-      <div class="column">
-        <div class="tabs" style="margin-bottom: 3px;">
-          <div class="tabs is-left" style="margin-bottom: 0;">
-            <ul>
-              <li><button
-                  [disabled]="!editSeance.valid.control || !editSeance.Cours || editSeance.professeurs.length < 1 || (editSeance.Groupes.length <1 && !editSeance.ConvocationNominative)"
-                  (click)="Save(editSeance)" class="button is-primary is-rounded is-outlined" type="button">
-                  <span i18n *ngIf="editSeance.ID>0">Sauvegarder les modifications</span>
-                  <span i18n *ngIf="editSeance.ID<1 && editMode_serie">Créer la série de séances</span>
-                  <span i18n *ngIf="editSeance.ID<1 && !editMode_serie">Créer la séance</span>
-                </button></li>
-              <li><button *ngIf="est_admin && editSeance.ID > 0" class="button is-info is-rounded is-outlined"
-                  (click)="VoirMaSeance()">Vue
-                  professeur
-                </button></li>
-              <li><button (click)="Retour()" class="button is-danger is-rounded is-outlined" type="button">
-                  <span i18n *ngIf="editSeance.ID>0">Annuler les modifications</span>
-                  <span i18n *ngIf="editSeance.ID<1">Retour</span>
-                </button></li>
-                <li><button *ngIf="editSeance.ID>0" (click)="Refresh()" class="button is-danger is-rounded is-outlined"
-                  type="button">
-                  <span i18n>Rafraichir</span>
-                </button></li>
-            </ul>
-          </div>
-        </div>
-  
-  
-        <div class="panel is-primary">
-          <p *ngIf="editSeance.ID==0 && editMode_serie" class="panel-heading" i18n>Créer une série de séances</p>
-          <p *ngIf="editSeance.ID==0 && !editMode_serie" class="panel-heading" i18n>Créer une séance</p>
-          <p *ngIf="editSeance.ID>0" class="panel-heading" i18n>Editer un cours</p>
-          <div class="panel-block">
-            <div class="field field-jecha">
+  </div>
+  <div *ngIf="editMode" class="container">
+    <div class="columns is-justify-content-center">
+      <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+        <div class="box">
+
+          <h2 *ngIf="editSeance.ID==0 && editMode_serie" class="title is-2" i18n>Créer une série de séances</h2>
+          <h2 *ngIf="editSeance.ID==0 && !editMode_serie" class="title is-2" i18n>Créer une séance</h2>
+          <h2 *ngIf="editSeance.ID>0" class="title is-2" i18n>Editer une séance</h2>
+          <ng-container *ngIf="editSeance.ID==0">
+            <div class="field">
               <label class="label" i18n>Cours</label>
               <div class="select">
                 <select id="cours" (ngModelChange)="onCoursSelectionChange($event)" [(ngModel)]="editSeance.Cours">
@@ -440,10 +313,22 @@
               </div>
               <p class="help is-danger" *ngIf="!editSeance.Cours" i18n>La sélection d'un cours est obligatoire</p>
             </div>
-          </div>
-          <ng-container *ngIf="editMode_serie">
-            <div class="panel-block">
-              <div class="field field-jecha">
+          </ng-container>
+          <ng-container *ngIf="editSeance.ID>0">
+            <div *ngIf="editSeance.Cours>0" class="field">
+              <label class="label" i18n>Cours</label>
+              <span>{{GetCours(editSeance.Cours)}}</span>
+            </div>
+            <div class="field">
+              <label class="label" i18n>Type de séance</label>
+              <span>{{GetType(editSeance.TypeSeance)}}</span>
+            </div>
+          </ng-container>
+          <ng-container
+            *ngIf="(editSeance.TypeSeance === 'ENTRAINEMENT' && editSeance.Cours>0) || (editSeance.TypeSeance != 'ENTRAINEMENT')">
+
+            <ng-container *ngIf="editMode_serie">
+              <div class="field">
                 <label class="label" i18n>Jour de la semaine</label>
                 <div class="select">
                   <select id="jour" [(ngModel)]="jour_semaine" placeholder="Jour">
@@ -457,62 +342,52 @@
                   </select>
                 </div>
               </div>
-            </div>
-            <div class="panel-block">
-              <div class="field field-jecha">
+
+              <div class="field">
                 <label class="label" i18n>Date de début de la série</label>
                 <input class="input" id="date_seance" type="date" [(ngModel)]="editSeance.date_seance">
                 <p class="help is-danger" *ngIf="!editSeance.valid.date" i18n>La date de début de la série doit être
                   saisie
                 </p>
               </div>
-            </div>
-            <div class="panel-block">
-              <div class="field field-jecha">
+
+              <div class="field">
                 <label class="label" i18n>Date de fin de la série</label>
                 <input class="input" id="date_seance" type="date" [(ngModel)]="date_fin_serie">
                 <p class="help is-danger" *ngIf="!date_fin_serie" i18n>La date de fin de la série doit être saisie
                 </p>
               </div>
-            </div>
-          </ng-container>
-          <ng-container *ngIf="!editMode_serie">
-            <div class="panel-block">
-              <div class="field field-jecha">
+            </ng-container>
+            <ng-container *ngIf="!editMode_serie">
+              <div class="field">
                 <label class="label" i18n>Date de la séance</label>
                 <span class="title_label" *ngIf="editSeance.Cours">&nbsp;({{jour_semaine}})</span>
                 <input class="input" id="date_seance" type="date" [(ngModel)]="editSeance.date_seance">
                 <p class="help is-danger" *ngIf="!editSeance.valid.date" i18n>La date de la séance doit être saisie
                 </p>
               </div>
-            </div>
+            </ng-container>
           </ng-container>
-          <div class="panel-block">
-            <div class="field field-jecha">
+          <div class="field">
               <label class="label" i18n>Libellé</label>
               <input [class]="editSeance.valid.libelle ? 'input' : 'input is-danger'" type="text" id="nom_rider"
                 name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="editSeance.libelle" required>
-              <p class="help is-danger" *ngIf="!editSeance.valid.libelle" i18n>Le libellé doit faire au moins 5 caractères
+              <p class="help is-danger" *ngIf="!editSeance.valid.libelle" i18n>Le libellé doit faire au moins 5
+                caractères
               </p>
             </div>
-          </div>
-          <div class="panel-block">
-            <div class="field field-jecha">
+            <div class="field">
               <label class="label" i18n>Heure de début :</label>
               <input matInput class="input" id="heure_debut" type="time" [disabled]="!coursselectionne"
                 [(ngModel)]="editSeance.heure_debut">
               <p class="help is-danger" *ngIf="!editSeance.valid.heure" i18n>L'heure doit être saisie</p>
             </div>
-          </div>
-          <div class="panel-block">
-            <div class="field field-jecha">
+            <div class="field">
               <label class="label" i18n>Durée de la séance</label>
               <input class="input" id="duree_seance" type="number" [(ngModel)]="editSeance.duree_seance">
               <p class="help is-danger" *ngIf="!editSeance.valid.duree" i18n>La durée doit être saisie</p>
             </div>
-          </div>
-          <div class="panel-block">
-            <div class="field field-jecha">
+            <div class="field">
               <label class="label" i18n>Lieu</label>
               <div class="select">
                 <select class="form-control" id="lieu" [(ngModel)]="editSeance.LieuId" [disabled]="!coursselectionne"
@@ -522,9 +397,7 @@
                 <p class="help is-danger" *ngIf="!editSeance.valid.lieu" i18n>Le lieu doit être renseigné</p>
               </div>
             </div>
-          </div>
-          <div class="panel-block">
-            <div class="field field-jecha">
+            <div class="field">
               <label class="label" i18n>Statut</label>
               <ng-container *ngIf="editSeance.ID <1">
                 <span i18n>Prévue</span>
@@ -532,14 +405,14 @@
               <ng-container *ngIf="editSeance.ID >0">
                 <ng-container *ngIf="editSeance.Statut == 'prévue'">
                   <span i18n>Prévue</span>
-                  <div class="column"><button type="button" class="button is-outlined is-info is-danger"
+                  <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
                       (click)="TerminerCetteSeance()" i18n>Terminer la séance</button></div>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
                       (click)="AnnulerCetteSeance()" i18n>Annuler la séance</button></div>
                 </ng-container>
                 <ng-container *ngIf="editSeance.Statut == 'annulée'">
                   <span i18n>Prévue</span>
-                  <div class="column"><button type="button" class="button is-outlined is-info is-danger"
+                  <div class="column"><button type="button" class="button is-outlined is-rounded is-info "
                       (click)="TerminerCetteSeance()" i18n>Terminer la séance</button></div>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
                       (click)="RePlanifierCetteSeance()" i18n>Replanifier cette séance</button></div>
@@ -548,76 +421,32 @@
                   <span i18n>Prévue</span>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
                       (click)="AnnulerCetteSeance()" i18n>Annuler la séance</button></div>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
+                  <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
                       (click)="RePlanifierCetteSeance()" i18n>Replanifier cette séance</button></div>
                 </ng-container>
               </ng-container>
             </div>
-          </div>
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title" i18n>Professeurs</p>
-            </header>
-            <div class="card-content">
-              <div class="field field-jecha">
-                <label class="label" i18n>Professeurs sélectionnés</label>
-                <div class="tags are-medium">
-                  <ng-container *ngFor="let prof of editSeance.professeurs">
-                    <span class="tag is-success">
-                      {{prof.value}}
-                      <button class="delete is-small" (click)="RemoveProf(prof)"></button>
-                    </span>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-            <div class="panel-block">
-              <ng-container *ngIf="prof_dispo.length >0">
-                <div class="field field-jecha">
-                  <label class="label" i18n>Professeurs disponibles</label>
-                  <div class="select">
-                    <select id="professeurs" [(ngModel)]="current_prof">
-                      <ng-container *ngFor="let prof of prof_dispo;let first = first	">
-                        <option [value]="prof.key">{{ prof.value }}</option>
-                      </ng-container>
-                    </select>
-                  </div>
-                  <button type="button" [disabled]="!current_prof" (click)="AjouterProf()"
-                    class="button is-primary is-rounded is-outlined"
-                    style="align-self: center; ;fill:hsl(171, 100%, 41%)">
-                    <svg width="20" height="20">
-                      <use xlink:href=".\assets\liste.svg#plus"></use>
-                    </svg>
-                  </button>
-                </div>
-              </ng-container>
-              <ng-container *ngIf="prof_dispo.length == 0">
-                <p i18n>Pas de professeur disponible</p>
-              </ng-container>
-            </div>
-            <div class="panel-block">
-              <div class="field field-jecha">
+         
+            <app-prof [liste_prof]="listeprof" [Profs]="editSeance.professeurs"></app-prof>
+            <div class="field">
                 <label class="label" i18n for="place_maximum">Age minimum ? :</label>
                 <div class="buttons has-addons">
                   <button type="button"
-                    [class]="editSeance.EstAgeRequis == true ? 'button is-link is-active' : 'button is-active'"
-                    (click)="editSeance.EstAgeRequis == true ? editSeance.EstAgeRequis = false : editSeance.EstAgeRequis = true">
+                    [class]="editSeance.EstAgeMinimum == true ? 'button is-link is-active' : 'button is-active'"
+                    (click)="editSeance.EstAgeMinimum == true ? editSeance.EstAgeMinimum = false : editSeance.EstAgeMinimum = true">
                     <span i18n>Age minimum requis</span></button>
                   <button type="button"
-                    [class]="editSeance.EstAgeRequis == false ? 'button is-link is-active' : 'button is-active'"
-                    (click)="editSeance.EstAgeRequis == true ? editSeance.EstAgeRequis = false : editSeance.EstAgeRequis = true">
+                    [class]="editSeance.EstAgeMinimum == false ? 'button is-link is-active' : 'button is-active'"
+                    (click)="editSeance.EstAgeMinimum == true ? editSeance.EstAgeMinimum = false : editSeance.EstAgeMinimum = true">
                     <span i18n>Pas de limite</span></button>
                 </div>
               </div>
-              <div *ngIf="editSeance.EstAgeRequis == true" class="field field-jecha">
+              <div *ngIf="editSeance.EstAgeMinimum == true" class="field field-jecha">
                 <label class="label" i18n for="age_minimum">Age minimum :</label>
                 <input class="input" min="1" max="99" matInput type="number" id="age_minimum"
-                  [(ngModel)]="editSeance.AgeRequis" i18n-placeholder placeholder="Age requis">
+                  [(ngModel)]="editSeance.AgeMinimum" i18n-placeholder placeholder="Age requis">
               </div>
-            </div>
-  
-            <div class="panel-block">
-              <div class="field field-jecha">
+              <div class="field">
                 <label class="label" i18n for="place_maximum">Age maximum ? :</label>
                 <div class="buttons has-addons">
                   <button type="button"
@@ -629,15 +458,12 @@
                     (click)="editSeance.EstAgeMaximum == true ? editSeance.EstAgeMaximum = false : editSeance.EstAgeMaximum = true">
                     <span i18n>Pas de limite</span></button>
                 </div>
-              </div>
-              <div *ngIf="editSeance.EstAgeMaximum == true" class="field field-jecha">
+                <div class="field" *ngIf="editSeance.EstAgeMaximum == true">
                 <label class="label" i18n for="age_maximum">Age maximum :</label>
                 <input class="input" min="1" max="99" matInput type="number" id="age_maximum"
                   [(ngModel)]="editSeance.AgeMaximum" placeholder="Age maximum">
               </div>
-            </div>
-            <div class="panel-block" >
-              <div class="field field-jecha">
+              <div class="field">
                 <label class="label" i18n for="place_maximum">Place limitée ? :</label>
                 <div class="buttons has-addons">
                   <button type="button"
@@ -649,15 +475,12 @@
                     (click)="editSeance.EstPlaceMaximum == true ? editSeance.EstPlaceMaximum = false : editSeance.EstPlaceMaximum = true">
                     <span i18n>Places illimitées</span></button>
                 </div>
-              </div>
-              <div *ngIf="editSeance.EstPlaceMaximum == true" class="field field-jecha">
+                <div class="field" *ngIf="editSeance.EstPlaceMaximum == true" >
                 <label class="label" i18n for="place_maximum">Place maximum :</label>
                 <input class="input" type="number" id="place_maximum" min="1" max="999"
                   [(ngModel)]="editSeance.PlaceMaximum">
               </div>
-            </div>
-            <div class="panel-block" >
-              <div class="field field-jecha">
+              <div class="field">
                 <label class="label" i18n for="place_maximum">Convocation nominative ? :</label>
                 <div class="buttons has-addons">
                   <button type="button"
@@ -670,9 +493,7 @@
                     <span i18n>Groupe entier convoqué</span></button>
                 </div>
               </div>
-            </div>
-            <div class="panel-block" >
-              <div class="field field-jecha">
+              <div class="field">
                 <label class="label" i18n for="place_maximum">Essai possible ? :</label>
                 <div class="buttons has-addons">
                   <button type="button"
@@ -685,15 +506,33 @@
                     <span i18n>Pas d'essai</span></button>
                 </div>
               </div>
-            </div>
-            <app-groupe-detail *ngIf="editSeance.ConvocationNominative == false"  [title]="titre_groupe" [Select_Groupe]="editSeance.Groupes"
-              [ListeGroupe]="liste_groupe"></app-groupe-detail>
-  
-            <div class="panel-block">
-              <div class="field field-jecha">
+            <app-groupe-detail *ngIf="editSeance.ConvocationNominative == false" [title]="titre_groupe"
+              [Select_Groupe]="editSeance.Groupes" [ListeGroupe]="liste_groupe"></app-groupe-detail>
+
+              <div class="field">
                 <label class="label" i18n for="place_maximum">Info séance : </label>
                 <textarea class="textarea" [(ngModel)]="editSeance.InfoSeance"></textarea>
               </div>
+              <div class="buttons">
+                <button class="button is-primary is-rounded is-outlined" [disabled]="!editSeance.valid.control"
+                    type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(editSeance)">
+                    <svg width="20" height="20">
+                        <use xlink:href=".\assets\liste.svg#save"></use>
+                    </svg>
+                </button>
+                <button (click)="Refresh()" class="button is-warning is-rounded is-outlined"
+                    style="fill:#FFB70F">
+                    <svg width="20" height="20">
+                        <use xlink:href=".\assets\liste.svg#refresh"></use>
+                    </svg>
+                </button>
+                <button (click)="Retour()" class="button is-danger is-rounded is-outlined"
+                    style="fill:hsl(348, 100%, 61%)">
+                    <svg width="20" height="20">
+                        <use xlink:href=".\assets\liste.svg#delete"></use>
+                    </svg>
+                </button>
+            </div>
             </div>
           </div>
         </div>

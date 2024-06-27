@@ -17,7 +17,6 @@ export class cours {
   public saison_id: number = 0;
   public place_maximum: number = 10;
   public groupes: Groupe[] = [];
-  public type_cours: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" = "ENTRAINEMENT";
   public convocation_nominative :boolean=false;
   public afficher_present :boolean=false;
   public est_place_maximum:boolean=false;
@@ -51,7 +50,6 @@ export class Cours {
   age_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété age_maximum
   place_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété place_maximum
   convocation_nominativeSubject = new Subject<boolean>(); // Ajout du sujet pour la propriété convocation_nominative
-  typeCoursSubject = new Subject<"ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT">();
   constructor(L: cours) {
     this.datasource = L;
     if (this.ID == 0) {
@@ -79,16 +77,7 @@ export class Cours {
     this.nomSubject.next(value);
   }
 
-  get TypeCours(): "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" {
-    return this.datasource.type_cours;
-  }
-  set TypeCours(value: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT") {
-    this.datasource.type_cours = value;
-    this.typeCoursSubject.next(value);
-  }
-
-
-  get AfficherPresent(): boolean {
+   get AfficherPresent(): boolean {
     return this.datasource.afficher_present;
   }
   set AfficherPresent(value: boolean) {

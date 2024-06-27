@@ -150,7 +150,9 @@ export class CoursComponent implements OnInit {
     } else {
       this.coursservice.GetCours().then((c) => {
         this.listeCours = c;
+        console.log(c);
         this.listeCours_VM = this.listeCours.map(x => new Cours(x));
+        console.log(this.listeCours_VM);
         this.UpdateListeFiltre();
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);

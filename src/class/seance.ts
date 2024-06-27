@@ -5,6 +5,7 @@ import { KeyValuePair } from "./keyvaluepair";
 export class seance {
     public seance_id:number =0;
     public cours: number = 0;
+    public saison_id: number = 0;
     public date_seance: Date = new Date();
     public heure_debut: string = "";
     public duree_seance: number = 0;
@@ -22,7 +23,7 @@ export class seance {
     public est_place_maximum:boolean=false;
     public est_limite_age_minimum:boolean=false;
     public est_limite_age_maximum:boolean=false;
-    public type_seance:"ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" = "ENTRAINEMENT";
+    public type_seance:string = "ENTRAINEMENT";
     public afficher_present:boolean = false;
     public notes:string="";
     public info_seance:string="";
@@ -60,7 +61,7 @@ export class Seance {
   place_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété place_maximum
   libelleSubject = new Subject<string>();
   dateSubject = new Subject<Date>();
-  typeSeanceSubject = new Subject<"ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT">();
+  typeSeanceSubject = new Subject<string>();
   constructor(L: seance) {
     this.datasource = L;
     if (this.ID == 0) {
@@ -82,10 +83,10 @@ export class Seance {
 
   // Utilisez des sujets pour chaque propriété
 
-  get TypeSeance(): "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT" {
+  get TypeSeance(): string {
     return this.datasource.type_seance;
   }
-  set TypeSeance(value: "ENTRAINEMENT" | "MATCH" | "SORTIE" | "EVENEMENT") {
+  set TypeSeance(value: string) {
     this.datasource.type_seance = value;
     this.typeSeanceSubject.next(value);
   }
@@ -140,7 +141,7 @@ export class Seance {
   set Groupes(value: Groupe[]) {
     this.datasource.groupes = value;
   }
-  get AgeRequis(): number {
+  get AgeMinimum(): number {
     if(this.datasource.age_minimum == -1){
       this.datasource.age_minimum = 1;
       return 1;
@@ -148,7 +149,7 @@ export class Seance {
       return this.datasource.age_minimum;
     }
   }
-  set AgeRequis(value: number) {
+  set AgeMinimum(value: number) {
     this.datasource.age_minimum = value;
     this.age_minimumSubject.next(value);
   }
@@ -187,10 +188,10 @@ export class Seance {
   set EstPlaceMaximum(value: boolean) {
     this.datasource.est_place_maximum = value;
   }
-  get EstAgeRequis(): boolean {
+  get EstAgeMinimum(): boolean {
     return this.datasource.est_limite_age_minimum;
   }
-  set EstAgeRequis(value: boolean) {
+  set EstAgeMinimum(value: boolean) {
     this.datasource.est_limite_age_minimum = value;
   }
   get EstAgeMaximum(): boolean {
