@@ -205,42 +205,12 @@ export class SeanceComponent implements OnInit {
     return "";
   }
 
-  AjouterProf() {
-    let kvp = this.prof_dispo.filter(e => e.key == this.current_prof)[0];
-    this.editSeance.professeurs.push(kvp);
-    this.current_prof = null;
-    this.MAJListeProf();
-  }
-  RemoveProf(item) {
-    this.editSeance.professeurs = this.editSeance.professeurs.filter(e => e.key !== item.key);
-    this.MAJListeProf();
-  }
-  MAJListeProf() {
-    this.prof_dispo = this.listeprof;
-    this.editSeance.professeurs.forEach(element => {
-      let element_to_remove = this.listeprof.find(e => e.key == element.key);
-      if (element_to_remove) {
-        this.prof_dispo = this.prof_dispo.filter(e => e.key !== element_to_remove.key);
-      }
-    });
-  }
 
-  MAJListeGroupe() {
-    this.groupe_dispo = this.liste_groupe;
-    this.editSeance.Groupes.forEach((element: Groupe) => {
-      let element_to_remove = this.liste_groupe.find(e => e.id == element.id);
-      if (element_to_remove) {
-        this.groupe_dispo = this.groupe_dispo.filter(e => e.id !== element_to_remove.id);
-      }
-    });
-  }
 
 
   Edit(seance: Seance): void {
     var this_seance = this.list_seance.find(x => x.seance_id == seance.ID);
     this.editSeance = new Seance(this_seance);
-    this.MAJListeProf();
-    this.MAJListeGroupe();
     if (this.editSeance.Cours) {
       this.coursselectionne = true;
 
@@ -266,6 +236,7 @@ export class SeanceComponent implements OnInit {
       this.editSeance.ConvocationNominative = newValue.convocation_nominative;
       this.editSeance.EstPlaceMaximum = newValue.est_place_maximum;
       this.editSeance.PlaceMaximum = newValue.place_maximum;
+      this.editSeance.EssaiPossible = newValue.essai_possible;
       this.editSeance.AfficherPresent = newValue.afficher_present;
       this.editSeance.TypeSeance = "ENTRAINEMENT";
       this.editSeance.date_seance = null;
@@ -280,14 +251,8 @@ export class SeanceComponent implements OnInit {
     } else {
       this.coursselectionne = false;
     }
-    this.MAJListeGroupe();
-    this.MAJListeProf();
     this.editSeance.valid.controler();
     // Faites ce que vous voulez avec la nouvelle valeur sélectionnée ici
-  }
-
-  isProfInEditSeance(prof: KeyValuePair): boolean {
-    return this.editSeance.professeurs.some(p => p.value === prof.value);
   }
 
 
@@ -301,151 +266,32 @@ export class SeanceComponent implements OnInit {
       this.date_fin_serie = new Date();
     }
     this.editMode = true;
-    this.MAJListeProf();
-    this.MAJListeGroupe();
   }
 
   VoirMaSeance() {
     let confirmation = window.confirm("Voulez-vous aller vers la vue du professeur ? les modifications non sauvegardées seront perdues");
     if (confirmation) {
       this.router.navigate(['/ma-seance'], { queryParams: { id: this.editSeance.ID } });
-
     }
   }
-
-  AjouterSerie() {
-    this.editMode_serie = false;
-  }
-  TerminerSeance() {
-    let confirmation = window.confirm("Voulez-vous aller vers la vue du professeur ? les modifications non sauvegardées seront perdues");
+  TerminerSeances(){
+    
   }
 
 
-
-
-
-  AnnulerCetteSeance() {
-    let errorService = ErrorService.instance;
-    this.action = $localize`Annuler la séance`
-    let confirmation = window.confirm($localize`La séance sera annulée et ne sera plus visible pour les adhérents et professeurs, vous allez être basculé sur le mail d'annulation. Confirmez vous l'opération ?`);
-    if (confirmation) {
-      this.seancesservice.MAJStatut(this.editSeance.ID, StatutSeance.annulée).then((retour) => {
-        if (retour) {
-          this.editSeance.Statut = StatutSeance.annulée;
-          this.editSeance.MailAnnulation = true;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-          errorService.emitChange(o);
-        }
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
+  ChangerStatut(statut: string) {
+    switch (statut) {
+      case 'réalisée':
+        
+        break;    
+        case 'prévue':
+        
+        break; 
+        case 'annulée':
+        
+        break; 
     }
-  }
-  TerminerCetteSeance() {
-    let errorService = ErrorService.instance;
-    this.action = $localize`Terminer la séance`
-    let confirmation = window.confirm($localize`La séance sera terminée et ne sera plus visible pour les adhérents et professeurs. Confirmez vous l'opération ?`);
-    if (confirmation) {
-      this.seancesservice.MAJStatut(this.editSeance.ID, StatutSeance.réalisée).then((retour) => {
-        if (retour) {
-          this.editSeance.Statut = StatutSeance.réalisée;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-          errorService.emitChange(o);
-        }
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    }
-  }
-  RePlanifierCetteSeance() {
-    let errorService = ErrorService.instance;
-    this.action = $localize`Planifier à nouveau la séance`
-    let confirmation = window.confirm($localize`La séance sera à nouveau planifiée et sera à nouveau visible pour les adhérents et professeurs. Confirmez vous l'opération ?`);
-    if (confirmation) {
-      this.seancesservice.MAJStatut(this.editSeance.ID, StatutSeance.prévue).then((retour) => {
-        if (retour) {
-          this.editSeance.Statut = StatutSeance.prévue;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-          errorService.emitChange(o);
-        }
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    }
-  }
 
-  AnnulerCetteSeanceListe(seance: Seance) {
-    let errorService = ErrorService.instance;
-    this.action = $localize`Annuler la séance`
-    let confirmation = window.confirm($localize`La séance sera annulée et ne sera plus visible pour les adhérents et professeurs, vous allez être basculé sur le mail d'annulation. Confirmez vous l'opération ?`);
-    if (confirmation) {
-      this.seancesservice.MAJStatut(seance.ID, StatutSeance.annulée).then((retour) => {
-        if (retour) {
-          seance.Statut = StatutSeance.annulée;
-          seance.MailAnnulation = true;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-          errorService.emitChange(o);
-        }
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    }
-  }
-  TerminerCetteSeanceListe(seance: Seance) {
-    let errorService = ErrorService.instance;
-    this.action = $localize`Terminer la séance`
-    let confirmation = window.confirm($localize`La séance sera terminée et ne sera plus visible pour les adhérents et professeurs. Confirmez vous l'opération ?`);
-    if (confirmation) {
-      this.seancesservice.MAJStatut(seance.ID, StatutSeance.réalisée).then((retour) => {
-        if (retour) {
-          seance.Statut = StatutSeance.réalisée;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-          errorService.emitChange(o);
-        }
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    }
-  }
-  RePlanifierCetteSeanceListe(seance: Seance) {
-    let errorService = ErrorService.instance;
-    this.action = $localize`Planifier à nouveau la séance`
-    let confirmation = window.confirm($localize`La séance sera à nouveau planifiée et sera à nouveau visible pour les adhérents et professeurs. Confirmez vous l'opération ?`);
-    if (confirmation) {
-      this.seancesservice.MAJStatut(seance.ID, StatutSeance.prévue).then((retour) => {
-        if (retour) {
-          seance.Statut = StatutSeance.prévue;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-          errorService.emitChange(o);
-        }
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    }
   }
 
   UpdateListeSeance() {
@@ -566,7 +412,25 @@ export class SeanceComponent implements OnInit {
     this.action = $localize`Ajouter une séance`;
     if (seance) {
       if (seance.ID == 0) {
+        if (this.editMode_serie) {
+          this.action = $localize`Ajouter une série de séances`;
+          this.seancesservice.AddRange(seance.datasource, seance.datasource.date_seance, this.date_fin_serie, this.jour_semaine).then((seances) => {
+            if (seances.length > 0) {
+              let o = errorService.OKMessage(this.action);
+              errorService.emitChange(o);
+              this.editMode = false;
+              this.editSeance = null;
+              this.UpdateListeSeance();
+            } else {
+              let o = errorService.CreateError(this.action, $localize`Aucune séance créée`);
+              errorService.emitChange(o);
+            }
+          }).catch((err) => {
+            let o = errorService.CreateError(this.action, err.message);
+            errorService.emitChange(o);
+          });
 
+        }
         this.seancesservice.Add(seance.datasource).then((id) => {
           if (id > 0) {
             this.editSeance.ID = id;
@@ -618,18 +482,18 @@ export class SeanceComponent implements OnInit {
 
 
 
-  Refresh(){
+  Refresh() {
     const errorService = ErrorService.instance;
     this.action = $localize`Rafraichir la séance`;
-    this.seancesservice.Get(this.editSeance.ID).then((c)=>{
+    this.seancesservice.Get(this.editSeance.ID).then((c) => {
       this.editSeance = new Seance(c);
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
-     }).catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        return;
-      })
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+      return;
+    })
   }
 
   Retour(): void {

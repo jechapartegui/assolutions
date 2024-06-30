@@ -22,6 +22,7 @@ export class cours {
   public est_place_maximum:boolean=false;
   public est_limite_age_minimum:boolean=false;
   public est_limite_age_maximum:boolean=false;
+  public essai_possible:boolean = false;
 
   constructor() { }
   ToLienGroupe() : Lien_Groupe{
@@ -82,6 +83,12 @@ export class Cours {
   }
   set AfficherPresent(value: boolean) {
     this.datasource.afficher_present = value;
+  }
+  get EssaiPossible(): boolean {
+    return this.datasource.essai_possible;
+  }
+  set EssaiPossible(value: boolean) {
+    this.datasource.essai_possible = value;
   }
   // Propriété jour_semaine avec get et set
   get JourSemaine(): string {

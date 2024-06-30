@@ -1,5 +1,5 @@
 <div class="container">
-  <div class="columns" *ngIf="!editMode && est_admin">
+  <div class="columns" *ngIf="!editMode">
     <div class="column">
       <div class="card" style="width: 100%;">
         <header class="card-header">
@@ -107,7 +107,7 @@
                 <div class="column"><button type="button" class="button is-outlined is-rounded is-primary"
                     (click)="Creer(true)" i18n>Créer une série</button></div>
                 <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                    (click)="TerminerSeance()" i18n>Terminer les séances passées</button></div>
+                    (click)="TerminerSeances()" i18n>Terminer les séances passées</button></div>
               </div>
             </div>
           </div>
@@ -406,23 +406,23 @@
                 <ng-container *ngIf="editSeance.Statut == 'prévue'">
                   <span i18n>Prévue</span>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
-                      (click)="TerminerCetteSeance()" i18n>Terminer la séance</button></div>
+                      (click)="ChangerStatut('réalisée')" i18n>Terminer la séance</button></div>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="AnnulerCetteSeance()" i18n>Annuler la séance</button></div>
+                    (click)="ChangerStatut('annulée')" i18n>Annuler la séance</button></div>
                 </ng-container>
                 <ng-container *ngIf="editSeance.Statut == 'annulée'">
                   <span i18n>Prévue</span>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-info "
-                      (click)="TerminerCetteSeance()" i18n>Terminer la séance</button></div>
+                    (click)="ChangerStatut('réalisée')" i18n>Terminer la séance</button></div>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="RePlanifierCetteSeance()" i18n>Replanifier cette séance</button></div>
+                    (click)="ChangerStatut('prévue')" i18n>Replanifier cette séance</button></div>
                 </ng-container>
                 <ng-container *ngIf="editSeance.Statut == 'réalisée'">
                   <span i18n>Prévue</span>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="AnnulerCetteSeance()" i18n>Annuler la séance</button></div>
+                    (click)="ChangerStatut('annulée')" i18n>Annuler la séance</button></div>
                   <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
-                      (click)="RePlanifierCetteSeance()" i18n>Replanifier cette séance</button></div>
+                    (click)="ChangerStatut('prévue')" i18n>Replanifier cette séance</button></div>
                 </ng-container>
               </ng-container>
             </div>
@@ -520,16 +520,20 @@
                         <use xlink:href=".\assets\liste.svg#save"></use>
                     </svg>
                 </button>
-                <button (click)="Refresh()" class="button is-warning is-rounded is-outlined"
+                <button (click)="VoirMaSeance()" class="button is-info is-rounded is-outlined"
                     style="fill:#FFB70F">
                     <svg width="20" height="20">
-                        <use xlink:href=".\assets\liste.svg#refresh"></use>
-                    </svg>
+                      <use xlink:href=".\assets\liste.svg#save"></use>
+                  </svg>
+                </button>
+                <button (click)="Refresh()" class="button is-warning is-rounded is-outlined"
+                    style="fill:#FFB70F">
+                    <span class=reload>&#x21bb;</span>
                 </button>
                 <button (click)="Retour()" class="button is-danger is-rounded is-outlined"
                     style="fill:hsl(348, 100%, 61%)">
                     <svg width="20" height="20">
-                        <use xlink:href=".\assets\liste.svg#delete"></use>
+                        <use xlink:href=".\assets\liste.svg#refresh"></use>
                     </svg>
                 </button>
             </div>
