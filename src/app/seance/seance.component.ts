@@ -159,7 +159,6 @@ export class SeanceComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
-
   UpdateListSeance() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les séances`;
@@ -171,7 +170,7 @@ export class SeanceComponent implements OnInit {
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-        this.router.navigate(['/menu-inscription']);
+        this.router.navigate(['/menu']);
         return;
       })
     } else {
@@ -182,7 +181,7 @@ export class SeanceComponent implements OnInit {
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-        this.router.navigate(['/menu-inscription']);
+        this.router.navigate(['/menu']);
         return;
       })
     }
@@ -316,7 +315,7 @@ export class SeanceComponent implements OnInit {
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-        this.router.navigate(['/menu-inscription']);
+        this.router.navigate(['/menu']);
         return;
       })
     }

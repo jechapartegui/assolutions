@@ -1,5 +1,7 @@
 import { Subject } from "rxjs";
 import { seance } from "./seance";
+import { Groupe } from "./groupe";
+import { InscriptionSeance } from "./inscription";
 
 export class adherent{
     public id:number;
@@ -8,13 +10,19 @@ export class adherent{
     public surnom:string;
     public date_naissance:Date;
     public adresse:string;
-    public contact:string;
-    public contact_prevenir:string;
+    public contact:string= "[]";
+    public contact_prevenir:string= "[]";
     public nationalite:string;
     public date_creation:Date;
     public photo:string;
     public sexe:boolean;
     public seance:seance[];
+    public groupes: Groupe[] = [];
+    public mot_de_passe: string = "";
+    public contacts_prevenir: string = "[]";
+    public compte: number = 0;
+    public inscriptions: InscriptionSeance[] = [];
+    public seances_prof: seance[] = [];
 }
 
 export class Adherent{

@@ -46,4 +46,41 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+  public GetAllThisSeason(): Promise<adherent[]> {
+    const body = {
+      command: "get_all"
+    }
+    return this.GetAll(body);
+  }
+  public GetAllSeason(season_id: number): Promise<adherent[]> {
+    const body = {
+      command: "get_all",
+      season_id: season_id
+    }
+    return this.GetAll(body);
+  }
+  public GetAll(body): Promise<adherent[]> {
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+
+    return this.global.POST(this.url, body)
+      .then((response: adherent[]) => {
+
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+  public GetAllLight(body): Promise<KeyValuePair[]> {
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+
+    return this.global.POST(this.url, body)
+      .then((response: KeyValuePair[]) => {
+
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
 }

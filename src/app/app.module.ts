@@ -31,6 +31,7 @@ import { FilterListProfPipe } from 'src/filters/filter-listeprof.pipe';
 import { FilterNamePipe } from 'src/filters/filter-name.pipe';
 import { FilterProfPipe } from 'src/filters/filter-prof.pipe';
 import { GroupeDetailComponent } from './groupe-detail/groupe-detail.component';
+import { FilterLibelleNomPipe } from 'src/filters/filter-libellenom.pipe';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,7 @@ import { GroupeDetailComponent } from './groupe-detail/groupe-detail.component';
     ComptabiliteComponent,
     ProfComponent,
     NotifJechaComponent,
-    ContactItemComponent, FilterCoursPipe, FilterFirstnamePipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
+    ContactItemComponent, FilterCoursPipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
   , GroupeDetailComponent, ProfComponent],
   imports: [
     BrowserModule,

@@ -8,7 +8,7 @@ export class Groupe{
 }
 
 export class Groupe_Lie extends Groupe{
-    public riders:Adherent[] =[];
+    public adherents:Adherent[] =[];
 }
 
 export class Lien_Groupe {
