@@ -12,21 +12,21 @@ export class FilterLibelleNomPipe implements PipeTransform {
 
     function check(item) {
       let lib:string = "";
-      if(item.prenom && item.prenom.length>0){
-        lib = item.prenom;
+      if(item.Prenom && item.Prenom.length>0){
+        lib = item.Prenom;
     }
-    if(item.nom && item.nom.length>0){
+    if(item.Nom && item.Nom.length>0){
         if(lib && lib.length>0){
-          lib = lib + " " + item.nom;
+          lib = lib + " " + item.Nom;
         } else {
-          lib = item.nom;
+          lib = item.Nom;
         }
     }
-    if(item.surnom && item.surnom.length>0){
+    if(item.Surnom && item.Surnom.length>0){
         if(lib && lib.length>0){
-          lib = lib + " " + item.surnom;
+          lib = lib + " " + item.Surnom;
         } else {
-          lib = item.surnom;
+          lib = item.Surnom;
         }
     }
       return lib.toLowerCase().includes(filter.toString().toLowerCase());
