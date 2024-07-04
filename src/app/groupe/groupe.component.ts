@@ -117,6 +117,8 @@ export class GroupeComponent implements OnInit {
       this.groupeserv.Add(g).then((id) => {
         g.id = id;
         this.liste_groupe.push(g);
+        let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
       }).catch((error) => {
         let n = errorService.CreateError(this.action, error);
         errorService.emitChange(n);
@@ -131,28 +133,30 @@ export class GroupeComponent implements OnInit {
       if (confirm) {
         let list = this.liste_adherent.filter(rider => this.isGroupe(this.groupe_to_delete.id, rider));
         list.forEach((rider) => {
-          rider.Groupes = rider.Groupes.filter(e => e.id !== this.groupe_to_delete.id);
-          let LG = new Lien_Groupe();
-          LG.objet_id = rider.ID;
-          LG.objet_type = 'rider';
-          LG.groupes = [];
-          LG.groupes = rider.Groupes.map(x => x.id);
-          this.groupeserv.UpdateLienGroupe(LG).then((retour) => {
-            if (!retour) {
-              let o = errorService.CreateError(this.action, $localize`Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);
+          let groupe = rider.Groupes.find(x => x.id == this.groupe_to_delete.id);
+          if(groupe){
+            this.groupeserv.DeleteLien(groupe.lien_groupe_id).then((retour) => {
+              if(retour){
+                rider.Groupes = rider.Groupes.filter(e => e.id !== groupe.id);
+              }
+              else {
+                let o = errorService.CreateError(this.action, $localize`Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);
+                errorService.emitChange(o);
+                return;  
+              }
+            }).catch((error) => {
+              let o = errorService.CreateError(this.action, error + $localize` : Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);
               errorService.emitChange(o);
               return;
-            }
-          }).catch((error) => {
-            let o = errorService.CreateError(this.action, error + $localize` : Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);
-            errorService.emitChange(o);
-            return;
-          });
+            })
+          }
+
         })
         this.groupeserv.Delete(this.groupe_to_delete.id).then((retour) => {
           if (retour) {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
+            this.liste_groupe = this.liste_groupe.filter(e => e.id !== this.groupe_to_delete.id);
             
           } else {
             let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
@@ -176,7 +180,6 @@ export class GroupeComponent implements OnInit {
       }).catch((error) => {
         let o = errorService.CreateError(this.action, error);
         errorService.emitChange(o);
-        this.liste_groupe = this.liste_groupe.filter(e => e.id !== this.groupe_to_delete.id);
       })
     }
   }
@@ -201,43 +204,24 @@ export class GroupeComponent implements OnInit {
     }
   }
 
-  AddOrRemove(groupe: Groupe, rider: Adherent, add: boolean) {
-    let texte = "Ajout dans le groupe " + groupe.nom + " de " + rider.Libelle;
-    if (add) {
-      rider.Groupes.push(groupe);
-    } else {
-      rider.Groupes = rider.Groupes.filter(e => e.id !== groupe.id);
-      texte = "Suppression du groupe " + groupe.nom + " de " + rider.Libelle;
-    }
-    let LG = new Lien_Groupe();
-    LG.objet_id = rider.ID;
-    LG.objet_type = 'rider';
-    LG.groupes = [];
-    LG.groupes = rider.Groupes.map(x => x.id);
+  DeleteLien(groupe : Groupe, rider:Adherent) {
     let errorService = ErrorService.instance;
-    this.groupeserv.UpdateLienGroupe(LG).then((retour) => {
-      if (retour) {
-        let o = errorService.OKMessage(texte);
+    this.action = $localize`Suppression du groupe ` + groupe.nom +  $localize` de ` + rider.Libelle;
+    let lien_groupe_id  = rider.Groupes.find(x => x.id == groupe.id).lien_groupe_id;
+    this.groupeserv.DeleteLien(lien_groupe_id).then((retour) => {
+      if(retour){
+        rider.Groupes = rider.Groupes.filter(e => e.id !== groupe.id);
+        let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-
-      } else {
-        let o = errorService.CreateError(texte, $localize`Erreur inconnue`);
-        errorService.emitChange(o);
-        if (add) {
-          rider.Groupes = rider.Groupes.filter(e => e.id !== groupe.id);
-        } else {
-          rider.Groupes.push(groupe);
-        }
+      }
+      else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);      
       }
     }).catch((error) => {
-      let n = errorService.CreateError(texte, error);
-      errorService.emitChange(n);
-      if (add) {
-        rider.Groupes = rider.Groupes.filter(e => e.id !== groupe.id);
-      } else {
-        rider.Groupes.push(groupe);
-      }
-    });
+      let o = errorService.CreateError(this.action, error);
+      errorService.emitChange(o);
+    })
   }
 
 
