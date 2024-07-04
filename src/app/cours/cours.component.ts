@@ -191,7 +191,8 @@ export class CoursComponent implements OnInit {
             id: groupe.id,
             nom: groupe.nom, // Assurez-vous que votre classe Groupe a un attribut nom
             saison_id: groupe.saison_id, // Assurez-vous que votre classe Groupe a un attribut saison_id
-            temp_id: groupe.id, display:false // Utilisez l'ID du groupe comme temp_id, si nécessaire
+            temp_id: groupe.id, display:false,
+            lien_groupe_id:0 // Utilisez l'ID du groupe comme temp_id, si nécessaire
           });
         }
       });

@@ -164,6 +164,42 @@ export class GroupeService {
         return Promise.reject(error);
       });
   }
+  public AddLien(groupe_id:number, objet_type:string, objet_id:number): Promise<number> {
+    this.url = environment.maseance + 'maseance/groupe_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "add_lien",
+      id: groupe_id,
+      objet_type:objet_type,
+      objet_id:objet_id
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public DeleteLien(lien_groupe_id: number): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/groupe_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "delete_lien",
+      lien_groupe_id: lien_groupe_id,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
 
 
   

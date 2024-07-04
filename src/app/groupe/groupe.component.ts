@@ -71,21 +71,18 @@ export class GroupeComponent implements OnInit {
         this.action += Ad.Libelle;
         this.action += $localize` au groupe `;
         this.action += this.groupe_to.nom;
-        Ad.Groupes.push(this.groupe_to);
-        let LG = new Lien_Groupe();
-        LG.objet_id = Ad.ID;
-        LG.objet_type = 'rider';
-        LG.groupes = [];
-        LG.groupes = Ad.Groupes.map(x => x.id);
-        console.log(Ad.Groupes);
-        console.log(LG.groupes);
-        LG.groupes.push(this.groupe_to.id);
+       
         let errorService = ErrorService.instance;
-        this.groupeserv.UpdateLienGroupe(LG).then((retour) => {
-          if (retour) {
+        this.groupeserv.AddLien(this.groupe_to.id, 'rider', Ad.ID).then((id) => {
+          if (id) {
+            let g = new Groupe();
+            g.id = this.groupe_to.id;
+            g.nom = this.groupe_to.nom;
+            g.saison_id = this.groupe_to.saison_id;
+            g.lien_groupe_id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-            Ad.Groupes.push(this.groupe_to);
+            Ad.Groupes.push(g);
           } else {
             let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
             errorService.emitChange(o);
