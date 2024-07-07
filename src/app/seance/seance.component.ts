@@ -49,6 +49,7 @@ export class SeanceComponent implements OnInit {
   sort_cours = "NO";
   sort_date = "NO";
   sort_lieu = "NO";
+  afficher_filtre:boolean = false;
   season_id: number;
   filter_date_avant: Date;
   filter_date_apres: Date;

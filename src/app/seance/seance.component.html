@@ -4,7 +4,7 @@
       <div class="card" style="width: 100%;">
         <header class="card-header">
           <p class="card-header-title" i18n>
-            Filtres
+            Administration
           </p>
           <button (click)="afficher_menu_admin ? afficher_menu_admin = false : afficher_menu_admin= true"
             class="card-header-icon" aria-label="more options">
@@ -143,33 +143,22 @@
                       <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
                     </svg>
                   </span>
+                  <input style="width: fit-content;font-size:smaller;" class="input is-small" i18n-placeholder
+                    placeholder="Nom du cours" type="text" [(ngModel)]="filter_nom">
                 </th>
-                <th><span style="font-size: smaller;" i18n>Cours</span>
+                <th><span style="font-size: smaller;" i18n>Cours / Type</span>
                   <span style="cursor: pointer;">
-                    <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'nom')" width="12" height="12">
+                    <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'cours')" width="12" height="12">
                       <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
                     </svg>
-                    <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'nom')" width="12" height="12">
+                    <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'cours')" width="12" height="12">
                       <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
                     </svg>
-                    <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'nom')" width="12" height="12">
+                    <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'cours')" width="12" height="12">
                       <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
                     </svg>
                   </span>
-                </th>
-                <th><span style="font-size: smaller;" i18n>Type</span>
-                  <span style="cursor: pointer;">
-                    <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'type')" width="12" height="12">
-                      <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                    </svg>
-                    <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'type')" width="12" height="12">
-                      <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                    </svg>
-                    <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'type')" width="12" height="12">
-                      <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                    </svg>
-                  </span>
-                </th>
+                </th>              
                 <th><span style="font-size: smaller;" i18n>Date</span><span style="cursor: pointer;">
                     <svg class="svg" *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'jour')" width="12" height="12">
                       <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
@@ -180,10 +169,27 @@
                     <svg class="svg" *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'jour')" width="12" height="12">
                       <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
                     </svg>
-                  </span></th>
-                <th><span style="font-size: smaller;" i18n>Heure</span></th>
-                <th><span style="font-size: smaller;" i18n>Durée</span></th>
-                <th><span style="font-size: smaller;" i18n>Professeurs</span></th>
+                  </span><div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
+                    <label for="groupe" class="label">Avant le </label>
+                    <input style="width: fit-content;" class="input" i18n-placeholder placeholder="Filtre date avant"
+                      type="date" [(ngModel)]="filter_date_avant">
+  
+                  </div>
+                  <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
+                    <label for="groupe" class="label">Après le </label>
+                    <input style="width: fit-content;" class="input" i18n-placeholder placeholder="Filtre date après"
+                      type="date" [(ngModel)]="filter_date_apres">
+                  </div></th>
+                <th><span style="font-size: smaller;" i18n>Heure / Durée</span></th>
+                <th class="no_mobile"><span style="font-size: smaller;" i18n>Professeurs</span>
+                  <div class="select">
+                    <select style="font-size:smaller;" [(ngModel)]="filter_prof">
+                      <option [value]="0" i18n>Tous</option>
+                      <ng-container *ngFor="let pr of liste_prof_filter">
+                        <option [value]="pr.key" i18n>{{pr.value}}</option>
+                      </ng-container>
+                    </select>
+                  </div></th>
                 <th><span style="font-size: smaller;" i18n>Lieu</span><span style="cursor: pointer;">
                     <svg class="svg" *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')" width="12" height="12">
                       <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
@@ -195,7 +201,7 @@
                       <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
                     </svg>
                   </span></th>
-                <th><span style="font-size: smaller;" i18n>Groupes</span></th>
+                <th class="no_mobile"><span style="font-size: smaller;" i18n>Groupes</span></th>
                 <th><span style="font-size: smaller;" i18n>Statut</span></th>
                 <th><span style="font-size: smaller;" i18n>Action</span></th>
               </tr>
@@ -207,15 +213,14 @@
                  {{seance.libelle}}
                 </td>
                 <td>
+                              
+               
+                  <ng-container *ngIf="seance.TypeSeance==='ENTRAINEMENT'">
                     <ng-container (ngModel)="filter_cours" *ngFor="let cours of listeCours">
                       <ng-container *ngIf="seance.Cours==cours.id">
                         <span >{{cours.nom}}</span>
                       </ng-container>
-                    </ng-container>                
-                </td>
-                <td>
-                  <ng-container *ngIf="seance.TypeSeance==='ENTRAINEMENT'">
-                    <span i18n>Entraînement</span>
+                    </ng-container>     
                   </ng-container>   
                   <ng-container *ngIf="seance.TypeSeance==='MATCH'">
                     <span i18n>Match</span>
@@ -229,10 +234,9 @@
               </td>
                 <td>{{ seance.date_seance | date: 'dd/MM/yyyy' }}
                 </td>
-                <td>{{seance.heure_debut}} </td>
-                <td> {{seance.duree_seance}} 
+                <td>{{seance.heure_debut}} ({{seance.duree_seance}} <span i18n>&nbsp;min</span>)
                 </td>
-                <td>
+                <td  class="no_mobile">
                     <div class="tags is-small">
                       <ng-container *ngFor="let gr of seance.professeurs">
                         <span class="tag is-success">
@@ -243,7 +247,7 @@
                 </td>
                 <td>{{trouverLieu(seance.LieuId)}}
                 </td>
-                <td>
+                <td  class="no_mobile">
                     <div class="tags is-small">
                       <ng-container *ngFor="let gr of seance.Groupes">
                         <span class="tag is-success">
