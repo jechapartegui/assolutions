@@ -61,7 +61,7 @@ export class Seance {
   place_maximumSubject = new Subject<number>(); // Ajout du sujet pour la propriété place_maximum
   libelleSubject = new Subject<string>();
   dateSubject = new Subject<Date>();
-  typeSeanceSubject = new Subject<string>();
+ 
   constructor(L: seance) {
     this.datasource = L;
     if (this.ID == 0) {
@@ -88,7 +88,6 @@ export class Seance {
   }
   set TypeSeance(value: string) {
     this.datasource.type_seance = value;
-    this.typeSeanceSubject.next(value);
   }
 
 

@@ -238,7 +238,6 @@ export class SeanceComponent implements OnInit {
       this.editSeance.PlaceMaximum = newValue.place_maximum;
       this.editSeance.EssaiPossible = newValue.essai_possible;
       this.editSeance.AfficherPresent = newValue.afficher_present;
-      this.editSeance.TypeSeance = "ENTRAINEMENT";
       this.editSeance.date_seance = null;
       this.editSeance.Groupes = [];
       newValue.groupes.forEach((el) => {
@@ -275,23 +274,57 @@ export class SeanceComponent implements OnInit {
     }
   }
   TerminerSeances(){
-    
+    const errorService = ErrorService.instance;
+    this.action = $localize`Terminer les séances passées`;
+    let list_s : number[] = [];
+    this.list_seance_VM.forEach((SVM) =>{
+      if(SVM.date_seance < new Date()) {
+        list_s.push(SVM.ID);
+      }
+    })
+    this.seancesservice.TerminerSeances(list_s).then((retour) =>{
+      if(retour == list_s.length){
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Nombre de séances mise à jour : ` + retour.toString() + "/" + list_s.length.toString());
+        errorService.emitChange(o);
+      }
+      this.UpdateListSeance();
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
   }
 
 
   ChangerStatut(statut: string) {
+    const errorService = ErrorService.instance;
     switch (statut) {
       case 'réalisée':
-        
+        this.action = $localize`Terminer la séance`;
+      
         break;    
         case 'prévue':
-        
+          this.action = $localize`Planifier la séance`;
         break; 
         case 'annulée':
-        
+          this.action = $localize`Annuler la séance`;
         break; 
     }
-
+    this.seancesservice.MAJStatutSeance(this.editSeance.ID, statut).then((retour) =>{
+      if(retour){
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+      this.UpdateListSeance();
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
   }
 
   UpdateListeSeance() {
@@ -301,6 +334,19 @@ export class SeanceComponent implements OnInit {
       this.seancesservice.GetSeancesSeason(this.season_id, true).then((seances) => {
         this.list_seance = seances;
         this.list_seance_VM = this.list_seance.map(x => new Seance(x));
+        this.list_seance_VM.sort((a, b) => {
+          let dateA = a.date_seance;
+          let dateB = b.date_seance;
+
+          let comparaison = 0;
+          if (dateA > dateB) {
+            comparaison = -1;
+          } else if (dateA < dateB) {
+            comparaison = 1;
+          }
+
+          return -comparaison; // Inverse pour le tri descendant
+        });
         this.UpdateListeFiltre();
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);

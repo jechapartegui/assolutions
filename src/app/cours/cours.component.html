@@ -424,7 +424,7 @@
                         </div>
                     </div>
                     <app-groupe-detail *ngIf="editCours.ConvocationNominative == false"
-                        [Select_Groupe]="editCours.Groupes" [ListeGroupe]="liste_groupe"></app-groupe-detail>
+                        [Groupes]="editCours.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
                     <div class="buttons">
                         <button class="button is-primary is-rounded is-outlined" [disabled]="!editCours.valid.control"
                             type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(editCours)">

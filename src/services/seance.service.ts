@@ -38,23 +38,7 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public MAJStatut(id: number, statut:StatutSeance): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "maj_statut",
-      id: id,
-      statut:statut
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
+  
   public Delete(id: number): Promise<boolean> {
     this.url = environment.maseance + 'maseance/seance_manage.php';
     //  this.url = this.url + "login.php";
@@ -114,24 +98,7 @@ export class SeancesService {
       });
   }
 
-  public NotifierAnnulation(id: number, message: string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "notifier_annulation",
-      seance_id: id,
-      message: message
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
   public GetSeances(all:boolean =false): Promise<seance[]> {
     this.url = environment.maseance + "maseance/seance_manage.php";
     const body = {
@@ -233,13 +200,13 @@ export class SeancesService {
   }
 
 
-
-  public inscrire(inscription: Inscription): Promise<number> {
-    this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+  
+  public TerminerSeances(list_id: number[]): Promise<number> {
+    this.url = environment.maseance + 'maseance/seance_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
-      inscription: inscription,
-      command: "add"
+      command: "terminer_seances",
+      list_id: list_id,
     };
 
     return this.global.POST(this.url, body)
@@ -247,38 +214,16 @@ export class SeancesService {
         return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }
-
-  public desinscrire(inscription: Inscription): Promise<boolean> {
-    let act = "Se désinscrire de la séance";
-    let errorservice = ErrorService;
-    this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+  public MAJStatutSeance(id: number, statut:string): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/seance_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
-      inscription: inscription,
-      command: "update"
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Delete_inscription(id: number): Promise<boolean> {
-    let act = "Supprimer l'inscription";
-    let errorservice = ErrorService;
-    this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
+      command: "maj_statut_seance",
       id: id,
-      command: "delete"
+      statut:statut
     };
 
     return this.global.POST(this.url, body)
@@ -286,10 +231,7 @@ export class SeancesService {
         return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }
-
-
 }

@@ -69,6 +69,9 @@ export class ErrorService {
   interpret_error(text: string): string {
     console.log(text);
     switch (text) {
+      case "DELETE_FAILED":
+      case "Unauthorized DELETE_FAILED":
+        return $localize`Erreur lors de la suppression`;
       default:
         return "Erreur inconnue : " + text;
       case "Unauthorized NO_USER_FOUND":

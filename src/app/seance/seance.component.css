@@ -1,0 +1,12 @@
+.th{
+    display: flex;
+    flex-direction: column;
+    font-size: smaller;
+    flex-wrap: nowrap;
+}
+.ligne{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+}
