@@ -29,7 +29,7 @@ export class GroupeDetailComponent {
     this.MAJListeGroupe();
   }
   MAJListeGroupe() {
-    this.groupe_dispo = this.groupe_dispo;
+    this.groupe_dispo = this.liste_groupe;
     this.Groupes.forEach((element: Groupe) => {
       let element_to_remove = this.groupe_dispo.find(e => e.id == element.id);
       if (element_to_remove) {

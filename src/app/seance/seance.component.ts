@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { cours } from 'src/class/cours';
 import { Groupe } from 'src/class/groupe';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
+import { Professeur } from 'src/class/professeur';
 import { Seance, StatutSeance, seance } from 'src/class/seance';
 import { AdherentService } from 'src/services/adherent.service';
 import { CoursService } from 'src/services/cours.service';
@@ -20,9 +21,9 @@ import { SeancesService } from 'src/services/seance.service';
   styleUrls: ['./seance.component.css']
 })
 export class SeanceComponent implements OnInit {
-  listeprof: KeyValuePair[];
+  listeprof: Professeur[];
   listelieu: KeyValuePair[];
-  prof_dispo: KeyValuePair[];
+  prof_dispo: Professeur[];
   est_prof: boolean = false;
   est_admin: boolean = false;
   seasons: KeyValuePair[];
@@ -209,16 +210,23 @@ export class SeanceComponent implements OnInit {
 
 
   Edit(seance: Seance): void {
-    var this_seance = this.list_seance.find(x => x.seance_id == seance.ID);
-    this.editSeance = new Seance(this_seance);
-    if (this.editSeance.Cours) {
-      this.coursselectionne = true;
-
-    } else {
-      this.coursselectionne = false;
-
-    }
-    this.editMode = true;
+    const errorService = ErrorService.instance;
+    this.action = $localize`Charger la séance`;
+    this.seancesservice.Get(seance.ID).then((ss) =>{
+      this.editSeance = new Seance(ss);
+      if (this.editSeance.Cours) {
+        this.coursselectionne = true;
+  
+      } else {
+        this.coursselectionne = false;
+  
+      }
+      this.editMode = true;
+   }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
+   
   }
   onCoursSelectionChange(cours_id: any): void {
     //  console.log('Nouvelle valeur sélectionnée :', newValue);
@@ -407,11 +415,11 @@ export class SeanceComponent implements OnInit {
   trouverProfesseur(profId: number): any {
     // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
     // que vous pouvez stocker dans une variable
-    const indexToUpdate = this.listeprof.findIndex(prof => prof.key === profId);
+    const indexToUpdate = this.listeprof.findIndex(prof => prof.id === profId);
 
     if (indexToUpdate !== -1) {
       // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-      return this.listeprof[indexToUpdate].value;
+      return this.listeprof[indexToUpdate].nom;
     } else {
       return $localize`Professeur non trouvé`;
     }

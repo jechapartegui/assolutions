@@ -1,26 +1,45 @@
-<div class="tags">
-    <ng-container *ngFor="let niv of Profs">
-        <span class="tag is-success">
-            {{niv.value}}
-            <button  class="delete is-small" (click)="RemoveProf(niv)"></button>
-        </span>
-    </ng-container>
-</div> 
+<div class="all-small">
+    <table>
+        <thead>
+            <th i18n>Nom</th>
+            <th i18n>Durée</th>
+            <th i18n>Statut</th>
+            <th i18n>€/H</th>
+            <th></th>
+        </thead>
+        <tbody>
+            <ng-container *ngFor="let niv of Profs">
+                <tr>
+                    <td><span class="limited-width">{{niv.prenom}}&nbsp;{{niv.nom}}</span></td>
+                    <td><input class="limit50"  [(ngModel)]="niv.minutes"></td>
+                    <td><select [(ngModel)]="niv.statut" >
+                        <ng-container *ngFor="let n of LVSeanceProf">
+                            <option [ngValue]="n.key">{{n.value}}</option>
+                        </ng-container>
+                    </select>
+                    </td>
+                    <td><input  class="limit50" [(ngModel)]="niv.taux_horaire"></td>
+                    <td><button>MAJ</button></td>
+                </tr>
+            </ng-container>
+        </tbody>
+    </table>
+</div>
 <ng-container *ngIf="prof_dispo.length >0">
     <div class="select">
         <select style="font-size: smaller;" id="professeurs" [(ngModel)]="current_prof_key">
             <ng-container *ngFor="let ni of prof_dispo;let first = first	">
-                <option [value]="ni.key">{{ ni.value }}</option>
+                <option [value]="ni.id">{{ ni.prenom }}&nbsp;{{ ni.nom }}</option>
             </ng-container>
         </select>
     </div>
-    <button type="button" [disabled]="!current_prof_key" (click)="AjouterProf()" class="button is-primary is-small is-rounded is-outlined"
-        style="align-self: center; ;fill:hsl(171, 100%, 41%)">
+    <button type="button" [disabled]="!current_prof_key" (click)="AjouterProf()"
+        class="button is-primary is-small is-rounded is-outlined" style="align-self: center; ;fill:hsl(171, 100%, 41%)">
         <svg width="20" height="20">
             <use xlink:href=".\assets\liste.svg#plus"></use>
         </svg>
     </button>
 </ng-container>
 <ng-container *ngIf="prof_dispo.length == 0">
-<p style="font-size: smaller;" i18n>Pas de professeur disponible</p>
+    <p style="font-size: smaller;" i18n>Pas de professeur disponible</p>
 </ng-container>

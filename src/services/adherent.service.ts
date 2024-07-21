@@ -3,6 +3,7 @@ import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
 import { adherent } from 'src/class/adherent';
 import { KeyValuePair } from 'src/class/keyvaluepair';
+import { Professeur } from 'src/class/professeur';
 
 @Injectable({
   providedIn: 'root'
@@ -31,14 +32,14 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
-  public GetProf(): Promise<KeyValuePair[]> {
-    this.url = environment.maseance + "maseance/adherents_manage.php";
+  public GetProf(): Promise<Professeur[]> {
+    this.url = environment.maseance + "maseance/professeur_manage.php";
     const body = {
-      command: "get_prof_light",
+      command: "get_all",
     };
 
     return this.global.POST(this.url, body)
-      .then((response: KeyValuePair[]) => {
+      .then((response: Professeur[]) => {
         return response;
       })
       .catch(error => {

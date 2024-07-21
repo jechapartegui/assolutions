@@ -338,7 +338,7 @@
                                 placeholder="Professeur Principal">
                                 <!-- Options pour les professeurs -->
                                 <ng-container *ngFor="let prof of listeprof">
-                                    <option [value]="prof.key">{{prof.value}}</option>
+                                    <option [value]="prof.id">{{prof.prenom}}&nbsp;{{prof.nom}}</option>
                                 </ng-container>
                             </select>
                         </div>
@@ -423,8 +423,11 @@
                                 <span i18n>Groupe entier convoqué</span></button>
                         </div>
                     </div>
-                    <app-groupe-detail *ngIf="editCours.ConvocationNominative == false"
-                        [Groupes]="editCours.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
+                    <div class="field">
+                        <label class="label" i18n for="groupes">Groupes :</label>
+                        <app-groupe-detail *ngIf="editCours.ConvocationNominative == false"
+                            [Groupes]="editCours.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
+                    </div>
                     <div class="buttons">
                         <button class="button is-primary is-rounded is-outlined" [disabled]="!editCours.valid.control"
                             type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(editCours)">

@@ -207,10 +207,10 @@ export class Seance {
   set ConvocationNominative(value: boolean) {
     this.datasource.convocation_nominative = value;
   }
-  get professeurs(): KeyValuePair[] {
+  get professeurs(): any[] {
     return this.datasource.professeurs;
   }
-  set professeurs(value:  KeyValuePair[] ) {
+  set professeurs(value:  any[] ) {
     this.datasource.professeurs = value;
   }
 

@@ -12,6 +12,7 @@ import { LieuService } from 'src/services/lieu.service';
 import { SaisonService } from 'src/services/saison.service';
 import { CoursService } from 'src/services/cours.service';
 import { GroupeService } from 'src/services/groupe.service';
+import { Professeur } from 'src/class/professeur';
 
 @Component({
   selector: 'app-cours',
@@ -22,7 +23,7 @@ export class CoursComponent implements OnInit {
   // cours.component.ts
   constructor(private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
-  listeprof: KeyValuePair[];
+  listeprof: Professeur[];
   listelieu: KeyValuePair[];
 
   seasons: KeyValuePair[];
@@ -212,11 +213,11 @@ export class CoursComponent implements OnInit {
   trouverProfesseur(profId: number): any {
     // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
     // que vous pouvez stocker dans une variable
-    const indexToUpdate = this.listeprof.findIndex(prof => prof.key === profId);
+    const indexToUpdate = this.listeprof.findIndex(prof => prof.id === profId);
 
     if (indexToUpdate !== -1) {
       // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-      return this.listeprof[indexToUpdate].value;
+      return this.listeprof[indexToUpdate].prenom + " " + this.listeprof[indexToUpdate].nom;
     } else {
       return $localize`Professeur non trouvé`;
     }

@@ -6,6 +6,7 @@ import { DatePipe } from '@angular/common';
 import { environment } from 'src/environments/environment.prod';
 import { compte } from 'src/class/compte';
 import { projet } from 'src/class/projet';
+import { KeyValuePair } from 'src/class/keyvaluepair';
 
 @Injectable({
   providedIn: 'root'
@@ -61,6 +62,13 @@ export class GlobalService {
     this.isProjet.next(_p);
     GlobalService.projet = _p;
   }
+
+  public ListeSeanceProf: KeyValuePair[] = [
+    { key: 0, value: $localize`Prévue` },
+    { key: 1, value: $localize`Réalisé` },
+    { key: 2, value: $localize`Annulé` }
+    // Ajoutez d'autres paires key-value selon vos besoins
+  ];
 
   public async GET(url: string): Promise<any> {
 
