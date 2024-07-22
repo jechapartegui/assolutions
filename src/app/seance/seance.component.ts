@@ -6,6 +6,7 @@ import { Groupe } from 'src/class/groupe';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
 import { Professeur } from 'src/class/professeur';
 import { Seance, StatutSeance, seance } from 'src/class/seance';
+import { SeanceProf } from 'src/class/seanceprof';
 import { AdherentService } from 'src/services/adherent.service';
 import { CoursService } from 'src/services/cours.service';
 import { ErrorService } from 'src/services/error.service';
@@ -14,6 +15,7 @@ import { GroupeService } from 'src/services/groupe.service';
 import { LieuService } from 'src/services/lieu.service';
 import { SaisonService } from 'src/services/saison.service';
 import { SeancesService } from 'src/services/seance.service';
+import { SeanceprofService } from 'src/services/seanceprof.service';
 
 @Component({
   selector: 'app-seance',
@@ -27,6 +29,7 @@ export class SeanceComponent implements OnInit {
   est_prof: boolean = false;
   est_admin: boolean = false;
   seasons: KeyValuePair[];
+  manage_prof:boolean = false;
   titre_groupe: string = $localize`Liste des groupes de la séance`;
   listeCours: cours[] = [];
   list_seance: seance[] = []; // Initialisez la liste des séances (vous pouvez la charger à partir d'une API, par exemple)
@@ -68,7 +71,7 @@ export class SeanceComponent implements OnInit {
   listeStatuts: StatutSeance[];
 
   constructor(
-    private seancesservice: SeancesService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
+    private seancesservice: SeancesService, private spservice:SeanceprofService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
 
   ngOnInit(): void {
@@ -252,7 +255,14 @@ export class SeanceComponent implements OnInit {
         this.editSeance.Groupes.push(el);
       })
       this.editSeance.professeurs = [];
-      this.editSeance.professeurs.push(new KeyValuePair(newValue.prof_principal_id, newValue.prof_principal_nom));
+      let pr = new SeanceProf();
+      pr.professeur_id = newValue.prof_principal_id;
+      pr.prenom = this.listeprof.filter(x => x.id == pr.professeur_id)[0].prenom;
+      pr.prenom = this.listeprof.filter(x => x.id == pr.professeur_id)[0].nom;
+      pr.taux_horaire = this.listeprof.filter(x => x.id == pr.professeur_id)[0].taux;
+      pr.minutes = newValue.duree;
+      pr.statut = 0;
+      this.editSeance.professeurs.push(pr);
       this.editSeance.LieuId = newValue.lieu_id;
       this.jour_semaine = newValue.jour_semaine;
     } else {
@@ -446,6 +456,9 @@ export class SeanceComponent implements OnInit {
       if (seance) {
         this.seancesservice.Delete(seance.ID).then((result) => {
           if (result) {
+            seance.professeurs.forEach((sp) =>{
+              this.spservice.Delete(sp);
+            })
             this.UpdateListeSeance();
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
@@ -488,6 +501,10 @@ export class SeanceComponent implements OnInit {
         this.seancesservice.Add(seance.datasource).then((id) => {
           if (id > 0) {
             this.editSeance.ID = id;
+            this.editSeance.professeurs.forEach((ss) =>{
+              ss.seance_id = id;
+              this.spservice.Add(ss);
+            })
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
             this.UpdateListeSeance();
@@ -502,9 +519,8 @@ export class SeanceComponent implements OnInit {
         });
       }
       else {
+        this.action = $localize`Mettre à jour une séance`;
         this.seancesservice.Update(seance.datasource).then((ok) => {
-
-          this.action = $localize`Mettre à jour une séance`;
           if (ok) {
 
 

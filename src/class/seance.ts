@@ -23,7 +23,7 @@ export class seance {
     public est_place_maximum:boolean=false;
     public est_limite_age_minimum:boolean=false;
     public est_limite_age_maximum:boolean=false;
-    public type_seance:string = "ENTRAINEMENT";
+    public type_seance:string;
     public afficher_present:boolean = false;
     public notes:string="";
     public info_seance:string="";

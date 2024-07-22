@@ -8,6 +8,6 @@ export class SeanceProf{
     public statut:number;
     public minutes:number;
     public taux_horaire:number;
-    public minutes_payees:number;
+    public minutes_payees:number = 0;
     public info:string;
 }

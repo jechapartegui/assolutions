@@ -3,10 +3,20 @@
     display: none;
 }
 .fullscreen{
-    display: block;
+    display: contents;
 }
 @media screen and (max-width: 767px) {
     .mobile{
-        display: block;
+        display: contents;
+    }
+    .fullscreen{
+        display: none;
+    }
+    .title {
+        cursor: pointer;
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: smaller;
+        text-align: start;
     }
 }

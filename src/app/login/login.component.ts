@@ -30,7 +30,29 @@ export class LoginComponent {
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
     this.compte_serv.Login(this.Source.Login, this.Source.Password, true).then((pr) => {
-      this.projets = pr;
+      this.projets = [];
+      pr.forEach((pp) => {
+        let curpro = this.projets.find(x => x.id == pp.id);
+        if(curpro){
+          if(pp.adherent == true){
+            curpro.adherent = true;
+          }
+          if(pp.prof == true){
+            curpro.prof = true;
+          }
+          if(pp.admin == true){
+            curpro.admin = true;
+          }
+          if(pp.password == true){
+            curpro.password = true;
+          }
+          if(pp.actif == true){
+            curpro.actif = true;
+          }
+        } else {
+          this.projets.push(pp);
+        }
+      })
       if (pr.length == 0) {
         let o = errorService.CreateError(this.action, $localize`Aucun projet lié`);
         errorService.emitChange(o);

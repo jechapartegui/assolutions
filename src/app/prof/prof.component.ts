@@ -12,6 +12,7 @@ import { GlobalService } from 'src/services/global.services';
 })
 export class ProfComponent implements OnInit { 
   @Input() liste_prof:Professeur[]=[];
+  @Input() manage = false;
   @Input() thisSeance:Seance;
   @Input() Profs:SeanceProf[] = [];
   current_prof_key:number;

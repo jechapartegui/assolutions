@@ -65,8 +65,8 @@ export class GlobalService {
 
   public ListeSeanceProf: KeyValuePair[] = [
     { key: 0, value: $localize`Prévue` },
-    { key: 1, value: $localize`Réalisé` },
-    { key: 2, value: $localize`Annulé` }
+    { key: 1, value: $localize`Réalisée` },
+    { key: 2, value: $localize`Annulée` }
     // Ajoutez d'autres paires key-value selon vos besoins
   ];
 
