@@ -20,7 +20,7 @@
                 <div class="column">
                     <div class="card">
                         <header class="card-header">
-                            <p class="card-header-title" i18n>Liste des adhérents</p>                         
+                            <p class="card-header-title" i18n>Liste des adhérents</p>
                             <button type="button" (click)="Creer(false)"
                                 class="button is-primary is-rounded is-outlined"
                                 style="align-self: center; ;fill:hsl(171, 100%, 41%)">
@@ -81,19 +81,23 @@
                                                                     style="fill:black"></use>
                                                             </svg>
                                                         </span></span>
-                                                        <span *ngIf="afficher_filtre" class="ligne">
-                                                            <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
-                                                              <label for="groupe" class="label is-small">Après le</label>
-                                                              <input style="width: fit-content;" class="input is-small" i18n-placeholder
-                                                                placeholder="Filtre date avant" type="date" [(ngModel)]="filter_date_avant">
-                                    
-                                                            </div>
-                                                            <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
-                                                              <label for="groupe" class="label is-small">Avant le</label>
-                                                              <input style="width: fit-content;" class="input is-small" i18n-placeholder
-                                                                placeholder="Filtre date après" type="date" [(ngModel)]="filter_date_apres">
-                                                            </div>
-                                                          </span>
+                                                    <span *ngIf="afficher_filtre" class="ligne">
+                                                        <div style="gap: 6px;"
+                                                            class="field is-small is-horizontal field-jecha">
+                                                            <label for="groupe" class="label is-small">Après le</label>
+                                                            <input style="width: fit-content;" class="input is-small"
+                                                                i18n-placeholder placeholder="Filtre date avant"
+                                                                type="date" [(ngModel)]="filter_date_avant">
+
+                                                        </div>
+                                                        <div style="gap: 6px;"
+                                                            class="field is-small is-horizontal field-jecha">
+                                                            <label for="groupe" class="label is-small">Avant le</label>
+                                                            <input style="width: fit-content;" class="input is-small"
+                                                                i18n-placeholder placeholder="Filtre date après"
+                                                                type="date" [(ngModel)]="filter_date_apres">
+                                                        </div>
+                                                    </span>
                                                 </span>
                                             </th>
                                             <th><span class="th">
@@ -127,10 +131,28 @@
                                                             </div>
                                                         </span>
                                                     </span>
-                                                  
+
                                                 </span>
                                             </th>
-                                           
+                                            <th><span class="th">
+                                                    <span class="ligne">
+                                                        <span style="font-size: smaller;" i18n>Groupes</span>
+                                                        <span *ngIf="afficher_filtre" class="ligne">
+                                                            <div class="select">
+                                                                <select style="font-size:smaller;"
+                                                                    [(ngModel)]="filter_groupe">
+                                                                    <option [ngValue]="null" i18n>Tous</option>
+                                                                    <ng-container *ngFor="let gr of liste_groupe">
+                                                                        <option [ngValue]="gr.id">{{gr.nom}}</option>
+                                                                    </ng-container>
+                                                                </select>
+                                                            </div>
+                                                        </span>
+                                                    </span>
+
+                                                </span>
+                                            </th>
+
                                             <th><span style="font-size: smaller;" i18n>Action</span></th>
                                         </tr>
                                     </thead>
@@ -141,50 +163,25 @@
                                                 {{adherent.Libelle}}
                                             </td>
                                             <td>
-                                                {{ adherent.DDN | date: 'dd/MM/yyyy' }} (calculerAge(adherent.DDN))
+                                                {{ adherent.DDN | date: 'dd/MM/yyyy' }} ({{calculerAge(adherent.DDN)}})
                                             </td>
                                             <td>
-
+                                                <svg *ngIf="adherent.sexe" class="svg" style="cursor: pointer;" width="20" height="20">
+                                                    <use xlink:href=".\assets\liste.svg#homme" style="fill:black"></use>
+                                                  </svg>
+                                                  <svg *ngIf="!adherent.sexe" class="svg" style="cursor: pointer;" width="20" height="20">
+                                                    <use xlink:href=".\assets\liste.svg#femme" style="fill:black"></use>
+                                                  </svg>
                                             </td>
-                                            <td>{{seance.heure_debut}} ({{seance.duree_seance}} <span
-                                                    i18n>&nbsp;min</span>)
-                                            </td>
-                                            <td class="no_mobile">
-                                                <div class="tags is-small">
-                                                    <ng-container *ngFor="let gr of seance.professeurs">
-                                                        <span class="tag is-success">
-                                                            {{gr.value}}
-                                                        </span>
-                                                    </ng-container>
-                                                </div>
-                                            </td>
-                                            <td>{{trouverLieu(seance.LieuId)}}
-                                            </td>
-                                            <td class="no_mobile">
-                                                <div class="tags is-small">
-                                                    <ng-container *ngFor="let gr of seance.Groupes">
+                          
+                                            <td>
+                                                <div class="tags">
+                                                    <ng-container *ngFor="let gr of thisAdherent.Groupes">
                                                         <span class="tag is-success">
                                                             {{gr.nom}}
                                                         </span>
                                                     </ng-container>
                                                 </div>
-                                            </td>
-                                            <td>
-                                                <ng-container *ngIf="seance.Statut == 'prévue'">
-                                                    <svg width="20" style="fill:blue" height="20">
-                                                        <use xlink:href=".\assets\liste.svg#prevu"></use>
-                                                    </svg>
-                                                </ng-container>
-                                                <ng-container *ngIf="seance.Statut == 'réalisée'">
-                                                    <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
-                                                        <use xlink:href=".\assets\liste.svg#termine"></use>
-                                                    </svg>
-                                                </ng-container>
-                                                <ng-container *ngIf="seance.Statut == 'annulée'">
-                                                    <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
-                                                        <use xlink:href=".\assets\liste.svg#annuler"></use>
-                                                    </svg>
-                                                </ng-container>
                                             </td>
                                             <td>
                                                 <div class="buttons">
@@ -208,7 +205,8 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                <p *ngIf="!liste_adherents_VM || liste_adherents_VM.length ==0">Pas de séances disponible</p>
+                                <p *ngIf="!liste_adherents_VM || liste_adherents_VM.length ==0">Pas de séances
+                                    disponible</p>
                             </div>
                         </span>
                         <span class="mobile">
@@ -218,10 +216,11 @@
                                         <div class="media-content">
                                             <span class="title"
                                                 (click)="Edit(adherent)"><strong>{{adherent.Libelle}}</strong></span>
-                                            <div>{{adherent.DDN | date: 'dd/MM/yyyy' }}&nbsp;{{calculerAge(adherent.DDN)}}
-                                               
-                                                
-                                               
+                                            <div>{{adherent.DDN | date: 'dd/MM/yyyy'
+                                                }}&nbsp;{{calculerAge(adherent.DDN)}}
+
+
+
                                             </div>
 
                                         </div>
