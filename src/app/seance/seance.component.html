@@ -480,8 +480,8 @@
               </ng-container>
             </div>
             <div class="field">
-              <label class="label" i18n for="place_maximum">Professeurs</label>
-              <button (click)="manage_prof ? manage_prof = false : manage_prof = true">Man</button>
+              <label class="label" for="place_maximum"><span i18n>Professeurs</span>&nbsp;<button *ngIf="editSeance.professeurs.length>0" (click)="manage_prof ? manage_prof = false : manage_prof = true">Man</button></label>
+             
               <app-prof [liste_prof]="listeprof" [thisSeance]="editSeance" [manage]="manage_prof"
                 [Profs]="editSeance.professeurs"></app-prof>
             </div>

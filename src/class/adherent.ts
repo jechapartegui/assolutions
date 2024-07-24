@@ -11,7 +11,7 @@ export class adherent{
     public prenom:string;
     public nom:string;
     public surnom:string;
-    public date_naissance:Date;
+    public date_naissance:string = "";
     public adresse:string;
     public contacts:string= "[]";
     public contacts_prevenir:string= "[]";
@@ -24,15 +24,9 @@ export class adherent{
     public mot_de_passe: string = "";
     public compte: number = 0;
     public inscriptions: InscriptionSeance[] = [];
+    public adhesions: Adhesion[] = [];
     public seances_prof: seance[] = [];
-    public ToLienGroupe(): Lien_Groupe {
-      let LG = new Lien_Groupe();
-      LG.objet_id = this.id;
-      LG.objet_type = 'rider';
-      LG.groupes = [];
-      LG.groupes = this.groupes.map(x => x.id);
-      return LG;
-    }
+   
 }
 
 export class Adherent{
@@ -41,6 +35,7 @@ export class Adherent{
      
    
     sLibelle = new Subject<string>();
+    dateNaissanceSubject = new Subject<string>();
     constructor(L:adherent){
         this.datasource=L;
         this.Compte = new compte();
@@ -89,6 +84,15 @@ export class Adherent{
         this.datasource.prenom = v;
         this.SetLibelle(this.datasource.nom, v, this.datasource.surnom);
     }
+ // Propriété date_naissance avec get et set
+ get DDN(): string {
+    return this.datasource.date_naissance.toString();
+  }
+  set DDN(value: string) {
+    this.datasource.date_naissance = value;
+   this.dateNaissanceSubject.next(this.datasource.date_naissance);
+  }
+
 
     public get Surnom() : string {
         return this.datasource.surnom;

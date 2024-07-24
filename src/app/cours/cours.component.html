@@ -134,131 +134,155 @@
                         </svg>
                     </button>
                 </header>
-                <div class="card-content">
-                    <table class="table" style="width: 100%;" *ngIf="listeCours_VM && listeCours_VM.length> 0">
-                        <thead>
-                            <tr>
-                                <th>Nom
-                                    <span style="cursor: pointer;">
-                                        <svg class="svg" *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                                        </svg>
-                                        <svg class="svg" *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                                        </svg>
-                                        <svg class="svg" *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                                        </svg>
-                                    </span>
-                                </th>
-                                <th>Jour<span style="cursor: pointer;">
-                                        <svg class="svg" *ngIf="sort_jour === 'NO'" (click)="Sort('ASC', 'jour')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                                        </svg>
-                                        <svg class="svg" *ngIf="sort_jour === 'ASC'" (click)="Sort('DESC', 'jour')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                                        </svg>
-                                        <svg class="svg" *ngIf="sort_jour === 'DESC'" (click)="Sort('ASC', 'jour')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                                        </svg>
-                                    </span></th>
-                                <th>Heure</th>
-                                <th>Durée </th>
-                                <th>Responsable</th>
-                                <th>Lieu<span style="cursor: pointer;">
-                                        <svg class="svg" *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                                        </svg>
-                                        <svg class="svg" *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                                        </svg>
-                                        <svg class="svg" *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu')"
-                                            width="12" height="12">
-                                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                                        </svg>
-                                    </span></th>
-                                <th>Groupe</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                *ngFor="let cours of listeCours_VM | filterName : filter_nom | filterJour : filter_jour | filterGroupe : filter_groupe | filterLieu : filter_lieu | filterProf : filter_prof">
-                                <td>
-                                    {{cours.Nom}}
-                                </td>
-                                <td>
-                                    <ng-container *ngIf="cours.JourSemaine == 'lundi'">
-                                        <span style="cursor: pointer;" i18n>Lundi</span>
-                                    </ng-container> <ng-container *ngIf="cours.JourSemaine == 'mardi'">
-                                        <span style="cursor: pointer;" i18n>Mardi</span>
-                                    </ng-container> <ng-container *ngIf="cours.JourSemaine == 'mercredi'">
-                                        <span style="cursor: pointer;" i18n>Mercredi</span>
-                                    </ng-container> <ng-container *ngIf="cours.JourSemaine == 'jeudi'">
-                                        <span style="cursor: pointer;" i18n>Jeudi</span>
-                                    </ng-container> <ng-container *ngIf="cours.JourSemaine == 'vendredi'">
-                                        <span style="cursor: pointer;" i18n>Vendredi</span>
-                                    </ng-container> <ng-container *ngIf="cours.JourSemaine == 'samedi'">
-                                        <span style="cursor: pointer;" i18n>Samedi</span>
-                                    </ng-container> <ng-container *ngIf="cours.JourSemaine == 'dimanche'">
-                                        <span style="cursor: pointer;" i18n>Dimanche</span>
-                                    </ng-container>
-
-                                </td>
-                                <td>
-                                    {{cours.Heure}}
-
-                                </td>
-                                <td>
-                                    {{cours.Duree}}
-
-                                </td>
-                                <td>
-                                    {{trouverProfesseur(cours.ProfPrincipalId)}}
-
-                                </td>
-                                <td>
-                                    {{trouverLieu(cours.LieuId)}}
-                                </td>
-                                <td>
-                                    <div class="tags is-small">
-                                        <ng-container *ngFor="let gr of cours.Groupes">
-                                            <span class="tag is-success">
-                                                {{gr.nom}}
-                                            </span>
+                <span class="fullscreen">
+                    <div class="card-content">
+                        <table class="table" style="width: 100%;" *ngIf="listeCours_VM && listeCours_VM.length> 0">
+                            <thead>
+                                <tr>
+                                    <th>Nom
+                                        <span style="cursor: pointer;">
+                                            <svg class="svg" *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black">
+                                                </use>
+                                            </svg>
+                                            <svg class="svg" *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                                            </svg>
+                                            <svg class="svg" *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                                            </svg>
+                                        </span>
+                                    </th>
+                                    <th>Jour<span style="cursor: pointer;">
+                                            <svg class="svg" *ngIf="sort_jour === 'NO'" (click)="Sort('ASC', 'jour')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black">
+                                                </use>
+                                            </svg>
+                                            <svg class="svg" *ngIf="sort_jour === 'ASC'" (click)="Sort('DESC', 'jour')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                                            </svg>
+                                            <svg class="svg" *ngIf="sort_jour === 'DESC'" (click)="Sort('ASC', 'jour')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                                            </svg>
+                                        </span></th>
+                                    <th>Heure</th>
+                                    <th>Durée </th>
+                                    <th>Responsable</th>
+                                    <th>Lieu<span style="cursor: pointer;">
+                                            <svg class="svg" *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black">
+                                                </use>
+                                            </svg>
+                                            <svg class="svg" *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
+                                            </svg>
+                                            <svg class="svg" *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu')"
+                                                width="12" height="12">
+                                                <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
+                                            </svg>
+                                        </span></th>
+                                    <th>Groupe</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                    *ngFor="let cours of listeCours_VM | filterName : filter_nom | filterJour : filter_jour | filterGroupe : filter_groupe | filterLieu : filter_lieu | filterProf : filter_prof">
+                                    <td>
+                                        {{cours.Nom}}
+                                    </td>
+                                    <td>
+                                        <ng-container *ngIf="cours.JourSemaine == 'lundi'">
+                                            <span style="cursor: pointer;" i18n>Lundi</span>
+                                        </ng-container> <ng-container *ngIf="cours.JourSemaine == 'mardi'">
+                                            <span style="cursor: pointer;" i18n>Mardi</span>
+                                        </ng-container> <ng-container *ngIf="cours.JourSemaine == 'mercredi'">
+                                            <span style="cursor: pointer;" i18n>Mercredi</span>
+                                        </ng-container> <ng-container *ngIf="cours.JourSemaine == 'jeudi'">
+                                            <span style="cursor: pointer;" i18n>Jeudi</span>
+                                        </ng-container> <ng-container *ngIf="cours.JourSemaine == 'vendredi'">
+                                            <span style="cursor: pointer;" i18n>Vendredi</span>
+                                        </ng-container> <ng-container *ngIf="cours.JourSemaine == 'samedi'">
+                                            <span style="cursor: pointer;" i18n>Samedi</span>
+                                        </ng-container> <ng-container *ngIf="cours.JourSemaine == 'dimanche'">
+                                            <span style="cursor: pointer;" i18n>Dimanche</span>
                                         </ng-container>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="buttons">
-                                        <button i18n-title title="Supprimer"
-                                            class="button is-danger is-rounded is-outlined" type="button"
-                                            (click)="Delete(cours)" style="fill:hsl(348, 100%, 61%)">
-                                            <svg width="20" height="20">
-                                                <use xlink:href=".\assets\liste.svg#delete"></use>
-                                            </svg>
-                                        </button>
-                                        <button i18n-title title="Editer" class="button is-info is-rounded is-outlined"
-                                            type="button" style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(cours)">
-                                            <svg width="20" height="20">
-                                                <use xlink:href=".\assets\liste.svg#edit"></use>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p *ngIf="!listeCours_VM || listeCours_VM.length ==0">Pas de cours disponible</p>
-                </div>
+
+                                    </td>
+                                    <td>
+                                        {{cours.Heure}}
+
+                                    </td>
+                                    <td>
+                                        {{cours.Duree}}
+
+                                    </td>
+                                    <td>
+                                        {{trouverProfesseur(cours.ProfPrincipalId)}}
+
+                                    </td>
+                                    <td>
+                                        {{trouverLieu(cours.LieuId)}}
+                                    </td>
+                                    <td>
+                                        <div class="tags is-small">
+                                            <ng-container *ngFor="let gr of cours.Groupes">
+                                                <span class="tag is-success">
+                                                    {{gr.nom}}
+                                                </span>
+                                            </ng-container>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="buttons">
+                                            <button i18n-title title="Supprimer"
+                                                class="button is-danger is-rounded is-outlined" type="button"
+                                                (click)="Delete(cours)" style="fill:hsl(348, 100%, 61%)">
+                                                <svg width="20" height="20">
+                                                    <use xlink:href=".\assets\liste.svg#delete"></use>
+                                                </svg>
+                                            </button>
+                                            <button i18n-title title="Editer"
+                                                class="button is-info is-rounded is-outlined" type="button"
+                                                style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(cours)">
+                                                <svg width="20" height="20">
+                                                    <use xlink:href=".\assets\liste.svg#edit"></use>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p *ngIf="!listeCours_VM || listeCours_VM.length ==0">Pas de cours disponible</p>
+                    </div>
+                </span>
+                
+        <span class="mobile">
+            <ng-container *ngFor="let cours of listeCours_VM">
+              <div class="box">
+                <article class="media">
+                  <div class="media-content">
+                    <span class="title" (click)="Edit(cours)"><strong>{{cours.Nom}}&nbsp;{{ cours.JourSemaine }}</strong></span>
+                    <div>                    
+                     {{cours.Heure}} ({{cours.Duree}} <span i18n>&nbsp;min</span>)
+                  {{trouverLieu(cours.LieuId)}}
+
+                    </div>
+  
+                  </div>
+                </article>
+              </div>
+            </ng-container>
+          </span>
             </div>
         </div>
     </div>

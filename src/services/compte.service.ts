@@ -49,17 +49,16 @@ public LoginToken(token:string, username: string): Promise<boolean> {
 
   return this.global.POST(this.url, body)
     .then((response: retour_login) => {
+      
       GlobalService.is_logged_in = true;
       let ct = new compte();
       ct.login = username;
       ct.id = response.user_id;
       ct.actif = response.actif;
       GlobalService.instance.updateCompte(ct);
-      let pr: any = null;
 
-      // Vérification et récupération du premier projet
-      if (response.project && response.project.length > 0) {
-        pr = response.project[0];
+      let pr: any = response.project;
+     
         if(pr.adherent){
           GlobalService.instance.updateMenuType("ADHERENT");   
           GlobalService.instance.updateSelectedMenuStatus("MENU"); 
@@ -70,9 +69,7 @@ public LoginToken(token:string, username: string): Promise<boolean> {
           GlobalService.instance.updateSelectedMenuStatus("MENU");  
           GlobalService.instance.updateProjet(new projet(pr));  
         }
-      } else {
-        return false;
-      }   
+     
       return true;
     })
     .catch(error => {
@@ -303,5 +300,5 @@ export class retour_login {
   public login: string;
   public user_id: number;
   public actif: boolean;
-  public project: any[];
+  public project: any[] = [];
 }

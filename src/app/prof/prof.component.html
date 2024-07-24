@@ -1,13 +1,18 @@
 <div class="all-small" *ngIf="!manage">
     <h6 class="title is-6" i18n>Encadrants du cours</h6>
-    <div class="tags">
-        <ng-container *ngFor="let niv of Profs">
-            <span class="tag is-success">
-                {{niv.prenom}}&nbsp;{{niv.nom}}
-                <button class="delete is-small" (click)="RemoveProf(niv)"></button>
-            </span>
-        </ng-container>
-    </div>
+    <ng-container *ngIf="Profs.length==0">
+        <span i18n>Aucun encadrant sélectionné</span>
+    </ng-container>
+    <ng-container *ngIf="Profs.length>0">
+        <div class="tags">
+            <ng-container *ngFor="let niv of Profs">
+                <span class="tag is-success">
+                    {{niv.prenom}}&nbsp;{{niv.nom}}
+                    <button class="delete is-small" (click)="RemoveProf(niv)"></button>
+                </span>
+            </ng-container>
+        </div>
+    </ng-container>
     <h6 class="title is-6" i18n>Encadrants disponibles</h6>
     <ng-container *ngIf="prof_dispo.length >0">
         <div class="select">
@@ -26,7 +31,7 @@
         </button>
     </ng-container>
     <ng-container *ngIf="prof_dispo.length == 0">
-        <p i18n>Pas de professeur disponible</p>
+        <span i18n>Aucun encadrant disponible</span>
     </ng-container>
 </div>
 <div *ngIf="manage">

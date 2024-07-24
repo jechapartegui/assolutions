@@ -38,8 +38,11 @@ export class LoginComponent implements OnInit {
           user = params['username'];
           this.compte_serv.LoginToken(token,user).then((retour) =>{
             if(retour){
+              this.loading = false;
               this.router.navigate(['/menu']);
-            } 
+            } else {
+              this.loading = false;
+            }
           }).catch((error: Error) => {
             let o = errorService.CreateError(this.action, error.message);
             errorService.emitChange(o);
