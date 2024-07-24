@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
 import { compte } from 'src/class/compte';
+import { projet } from 'src/class/projet';
 
 @Injectable({
   providedIn: 'root'
@@ -29,6 +30,50 @@ export class CompteService {
       ct.actif = response.actif;
       GlobalService.instance.updateCompte(ct);
       return response.project;
+    })
+    .catch(error => {
+      GlobalService.instance.updateLoggedin(false);
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+
+public LoginToken(token:string, username: string): Promise<boolean> {
+  this.url = environment.maseance + 'maseance/compte_manage.php';
+  //  this.url = this.url + "login.php";
+  const body = {
+    command:"login_token",
+    username: username,
+    token: token
+  };
+
+  return this.global.POST(this.url, body)
+    .then((response: retour_login) => {
+      GlobalService.is_logged_in = true;
+      let ct = new compte();
+      ct.login = username;
+      ct.id = response.user_id;
+      ct.actif = response.actif;
+      GlobalService.instance.updateCompte(ct);
+      let pr: any = null;
+
+      // Vérification et récupération du premier projet
+      if (response.project && response.project.length > 0) {
+        pr = response.project[0];
+        if(pr.adherent){
+          GlobalService.instance.updateMenuType("ADHERENT");   
+          GlobalService.instance.updateSelectedMenuStatus("MENU"); 
+          GlobalService.instance.updateProjet(new projet(pr));  
+        }
+        if(pr.prof){
+          GlobalService.instance.updateMenuType("PROF");  
+          GlobalService.instance.updateSelectedMenuStatus("MENU");  
+          GlobalService.instance.updateProjet(new projet(pr));  
+        }
+      } else {
+        return false;
+      }   
+      return true;
     })
     .catch(error => {
       GlobalService.instance.updateLoggedin(false);
@@ -258,5 +303,5 @@ export class retour_login {
   public login: string;
   public user_id: number;
   public actif: boolean;
-  public project: [];
+  public project: any[];
 }
