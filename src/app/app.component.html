@@ -64,9 +64,10 @@
           <div class="buttons">
             <a [class]="(GlobalService.SelectedMenu$ | async) === 'MENU' ? 'button is-primary is-rounded' : 'button is-rounded is-primary is-outlined'"
               (click)="GlobalService.updateSelectedMenuStatus('MENU')" [routerLink]="['/menu']" i18n>
-              Menu
+              <i *ngIf="(GlobalService.SelectedMenu$ | async) === 'MENU'" class="fa-solid fa-square-caret-up"></i>
+              <i *ngIf="(GlobalService.SelectedMenu$ | async) != 'MENU'" class="fa-solid fa-square-caret-down"></i>
             </a> <a class="button is-rounded is-outlined is-danger" (click)="LogOut()">
-              D
+              <i class="fa-solid fa-right-from-bracket"></i>
             </a>
           </div>
         </div>

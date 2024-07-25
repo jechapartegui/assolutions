@@ -32,6 +32,10 @@ import { FilterNamePipe } from 'src/filters/filter-name.pipe';
 import { FilterProfPipe } from 'src/filters/filter-prof.pipe';
 import { GroupeDetailComponent } from './groupe-detail/groupe-detail.component';
 import { FilterLibelleNomPipe } from 'src/filters/filter-libellenom.pipe';
+import { FilterDDNApresPipe } from 'src/filters/filter-ddnapres.pipe';
+import { FilterDDNAvantPipe } from 'src/filters/filter-ddnavant.pipe';
+import { FilterSexePipe } from 'src/filters/filter-sexe.pipe';
+import { filterInscriptionSaison } from 'src/filters/filter-inscriptionsaison.pipe';
 
 @NgModule({
   declarations: [
@@ -45,7 +49,7 @@ import { FilterLibelleNomPipe } from 'src/filters/filter-libellenom.pipe';
     ComptabiliteComponent,
     ProfComponent,
     NotifJechaComponent,
-    ContactItemComponent, FilterCoursPipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
+    ContactItemComponent, filterInscriptionSaison, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
   , GroupeDetailComponent, ProfComponent],
   imports: [
     BrowserModule,

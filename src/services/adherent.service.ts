@@ -32,6 +32,63 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+  public Get_Adherent_My(id: number): Promise<adherent> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_adherent_my",
+      id: id
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: adherent) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Get_Adherent_Prof(id: number): Promise<adherent> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_adherent_prof",
+      id: id
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: adherent) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Get_Adherent_Admin(id: number): Promise<adherent> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_adherent_admin",
+      id: id
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: adherent) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
   public GetProf(): Promise<Professeur[]> {
     this.url = environment.maseance + "maseance/professeur_manage.php";
     const body = {
@@ -81,6 +138,24 @@ export class AdherentService {
         return response;
       })
       .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+  public GetAdherentAdhesion(): Promise<adherent[]> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "adherents_adhesions"
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: adherent[]) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }

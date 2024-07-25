@@ -77,9 +77,7 @@
           </span>
           <button type="button" (click)="Creer(false)" class="button is-primary is-rounded is-outlined"
             style="align-self: center; ;fill:hsl(171, 100%, 41%)">
-            <svg width="20" height="20">
-              <use xlink:href=".\assets\liste.svg#plus"></use>
-            </svg>
+            <i class="fa-solid fa-plus"></i>
           </button>
         </header>
         <span class="fullscreen">
@@ -91,18 +89,9 @@
                   <th><span class="th">
                       <span class="ligne"> <span style="font-size: smaller;" i18n>Nom</span>
                         <span style="cursor: pointer;">
-                          <svg class="svg" *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                          </svg>
+                          <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort"></i>
+                          <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" class="fa-solid fa-sort-up"></i>
+                          <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort-down"></i>
                         </span></span>
                       <input *ngIf="afficher_filtre" style="width: fit-content;font-size:smaller;"
                         class="input is-small" i18n-placeholder placeholder="Nom du cours" type="text"
@@ -113,36 +102,24 @@
                       <span class="ligne">
                         <span style="font-size: smaller;" i18n>Cours / Type</span>
                         <span style="cursor: pointer;">
-                          <svg class="svg" *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'cours')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'cours')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'cours')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                          </svg>
-                        </span></span>
+                          <i *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'cours')" class="fa-solid fa-sort"></i>
+                          <i *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'cours')"
+                            class="fa-solid fa-sort-up"></i>
+                          <i *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'cours')"
+                            class="fa-solid fa-sort-down"></i>
+                        </span>
+                      </span>
                     </span>
                   </th>
                   <th><span class="th">
                       <span class="ligne">
-                        <span style="font-size: smaller;" i18n>Date</span><span style="cursor: pointer;">
-                          <svg class="svg" *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'jour')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'jour')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'jour')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                          </svg>
+                        <span style="font-size: smaller;" i18n>Date</span>
+                        <span style="cursor: pointer;">
+                          <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort"></i>
+                          <i *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'date')"
+                            class="fa-solid fa-sort-up"></i>
+                          <i *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'date')"
+                            class="fa-solid fa-sort-down"></i>
                         </span>
                       </span>
                       <span *ngIf="afficher_filtre" class="ligne">
@@ -178,20 +155,14 @@
                     </span>
                   </th>
                   <th><span class="th">
-                      <span class="ligne"><span style="font-size: smaller;" i18n>Lieu</span><span
+                      <span class="ligne"><span style="font-size: smaller;" i18n>Lieu</span>
+                      <span
                           style="cursor: pointer;">
-                          <svg class="svg" *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#doublemenu" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menuhaut" style="fill:black"></use>
-                          </svg>
-                          <svg class="svg" *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu')" width="12"
-                            height="12">
-                            <use xlink:href=".\assets\liste.svg#menubas" style="fill:black"></use>
-                          </svg>
+                          <i *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')" class="fa-solid fa-sort"></i>
+                          <i *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu')"
+                            class="fa-solid fa-sort-up"></i>
+                          <i *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu')"
+                            class="fa-solid fa-sort-down"></i>
                         </span>
                       </span>
                     </span>
@@ -252,20 +223,14 @@
                     </div>
                   </td>
                   <td>
-                    <ng-container *ngIf="seance.Statut == 'prévue'">
-                      <svg width="20" style="fill:blue" height="20">
-                        <use xlink:href=".\assets\liste.svg#prevu"></use>
-                      </svg>
+                    <ng-container *ngIf="seance.Statut == 'prévue'" style="fill:hsl(348, 100%, 61%)">
+                      <i class="fa-solid fa-calendar-check"></i>
                     </ng-container>
-                    <ng-container *ngIf="seance.Statut == 'réalisée'">
-                      <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
-                        <use xlink:href=".\assets\liste.svg#termine"></use>
-                      </svg>
+                    <ng-container *ngIf="seance.Statut == 'réalisée'" style="fill:hsl(348, 100%, 61%)">
+                      <i class="fa-solid fa-flag-checkered"></i>
                     </ng-container>
-                    <ng-container *ngIf="seance.Statut == 'annulée'">
-                      <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
-                        <use xlink:href=".\assets\liste.svg#annuler"></use>
-                      </svg>
+                    <ng-container *ngIf="seance.Statut == 'annulée'" style="fill:hsl(348, 100%, 61%)">
+                      <i class="fa-solid fa-ban"></i>
                     </ng-container>
                   </td>
                   <td>
@@ -296,10 +261,11 @@
             <div class="box">
               <article class="media">
                 <div class="media-content">
-                  <span class="title" (click)="Edit(seance)"><strong>{{seance.libelle}}&nbsp;{{ seance.date_seance | date: 'dd/MM/yyyy' }}</strong></span>
-                  <div>                    
+                  <span class="title" (click)="Edit(seance)"><strong>{{seance.libelle}}&nbsp;{{ seance.date_seance |
+                      date: 'dd/MM/yyyy' }}</strong></span>
+                  <div>
                     <ng-container *ngIf="seance.TypeSeance==='ENTRAINEMENT'">
-                      
+
                       <span i18n>Cours</span>
                     </ng-container>
                     <ng-container *ngIf="seance.TypeSeance==='MATCH'">
@@ -311,23 +277,23 @@
                     <ng-container *ngIf="seance.TypeSeance==='SORTIE'">
                       <span i18n>Sortie</span>
                     </ng-container>
-                  - {{seance.heure_debut}} ({{seance.duree_seance}} <span i18n>&nbsp;min</span>)
-                {{trouverLieu(seance.LieuId)}}
-                <ng-container *ngIf="seance.Statut == 'prévue'">
-                  <svg width="20" style="fill:blue" height="20">
-                    <use xlink:href=".\assets\liste.svg#prevu"></use>
-                  </svg>
-                </ng-container>
-                <ng-container *ngIf="seance.Statut == 'réalisée'">
-                  <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
-                    <use xlink:href=".\assets\liste.svg#termine"></use>
-                  </svg>
-                </ng-container>
-                <ng-container *ngIf="seance.Statut == 'annulée'">
-                  <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
-                    <use xlink:href=".\assets\liste.svg#annuler"></use>
-                  </svg>
-                </ng-container>
+                    - {{seance.heure_debut}} ({{seance.duree_seance}} <span i18n>&nbsp;min</span>)
+                    {{trouverLieu(seance.LieuId)}}
+                    <ng-container *ngIf="seance.Statut == 'prévue'">
+                      <svg width="20" style="fill:blue" height="20">
+                        <use xlink:href=".\assets\liste.svg#prevu"></use>
+                      </svg>
+                    </ng-container>
+                    <ng-container *ngIf="seance.Statut == 'réalisée'">
+                      <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
+                        <use xlink:href=".\assets\liste.svg#termine"></use>
+                      </svg>
+                    </ng-container>
+                    <ng-container *ngIf="seance.Statut == 'annulée'">
+                      <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
+                        <use xlink:href=".\assets\liste.svg#annuler"></use>
+                      </svg>
+                    </ng-container>
                   </div>
 
                 </div>
@@ -480,8 +446,10 @@
               </ng-container>
             </div>
             <div class="field">
-              <label class="label" for="place_maximum"><span i18n>Professeurs</span>&nbsp;<button *ngIf="editSeance.professeurs.length>0" (click)="manage_prof ? manage_prof = false : manage_prof = true">Man</button></label>
-             
+              <label class="label" for="place_maximum"><span i18n>Professeurs</span>&nbsp;<button
+                  *ngIf="editSeance.professeurs.length>0"
+                  (click)="manage_prof ? manage_prof = false : manage_prof = true">Man</button></label>
+
               <app-prof [liste_prof]="listeprof" [thisSeance]="editSeance" [manage]="manage_prof"
                 [Profs]="editSeance.professeurs"></app-prof>
             </div>
@@ -579,18 +547,16 @@
           <div class="buttons">
             <button class="button is-primary is-rounded is-outlined" [disabled]="!editSeance.valid.control"
               type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(editSeance)">
-              <svg width="20" height="20">
-                <use xlink:href=".\assets\liste.svg#save"></use>
-              </svg>
+              <i class="fa-solid fa-floppy-disk"></i>
             </button>
             <button (click)="VoirMaSeance()" class="button is-info is-rounded is-outlined">
-              Voir
+              <i class="fa-solid fa-binoculars"></i>
             </button>
             <button (click)="Refresh()" class="button is-warning is-rounded is-outlined" style="fill:#FFB70F">
-              Refresh
+              <i class="fa-solid fa-arrows-rotate"></i>
             </button>
             <button (click)="Retour()" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
-              Retour Liste
+              <i class="fa-solid fa-backward-fast"></i>
             </button>
           </div>
         </div>
