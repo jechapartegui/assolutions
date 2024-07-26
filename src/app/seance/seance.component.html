@@ -1,65 +1,53 @@
 <div class="container">
-  <div class="columns" *ngIf="!editMode">
-    <div class="column">
-      <div class="card" style="width: 100%;">
-        <header class="card-header">
-          <p class="card-header-title" i18n>
-            Administration
-          </p>
-          <button (click)="afficher_menu_admin ? afficher_menu_admin = false : afficher_menu_admin= true"
-            class="card-header-icon" aria-label="more options">
-            <span class="icon">
-              <svg *ngIf="!afficher_menu_admin" width="20" height="20">
-                <use xlink:href=".\assets\liste.svg#chevron-up" style="fill:blue"></use>
-              </svg>
-              <svg *ngIf="afficher_menu_admin" width="20" height="20">
-                <use xlink:href=".\assets\liste.svg#chevron-down" style="fill:blue"></use>
-              </svg>
-            </span>
-          </button>
-        </header>
-        <div class="card-content" *ngIf="afficher_menu_admin">
-          <div class="content">
-            <div class="columns">
-              <div class="column">
-                <div class="field field-jecha">
-                  <label for="seasons" class="label">Changer la saison</label>
-                  <div class="select">
-                    <select id="seasons" [(ngModel)]="season_id" i18n-placeholder placeholder="Choisir la saison">
-                      <!-- Options pour les professeurs -->
-                      <ng-container *ngFor="let season of seasons">
-                        <option [value]="season.key">{{season.value}}</option>
-                      </ng-container>
-                    </select>
-                  </div>
-                </div>
-                <div class="field field-jecha">
-                  <label class="checkbox">
-                    <input type="checkbox" [(ngModel)]="all_seance" />
-                    <span i18n>Inclure les séances terminées et annulées</span>
-                  </label>
-                </div>
-                <div class="field field-jecha">
-                  <button type="button" class="button is-outlined is-rounded is-primary" (click)="Filtrer()"
-                    i18n>Afficher la saison sélectionnée</button>
-                </div>
-                <div class="field field-jecha">
-                  <button type="button" class="button is-outlined is-rounded is-danger" (click)="FiltrerBack()"
-                    i18n>Afficher saison active</button>
-                </div>
-              </div>
+  <div class="columns" *ngIf="!editMode"  style="margin-top: 0.5rem;">
+        <div class="column">            
+            <hover-button [nomclass]="filter_statut == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded'"
+            [nomicon]="'fa-solid fa-calendar-check'"
+            [libelle]="filter_statut == null ? 'Séance prévue' : 'Toutes les séances'"
+             (click)="filter_statut == null ? filter_statut = 'prévue' : filter_statut = null;">
+            </hover-button>
 
-              <div class="column">
-                <div class="column"><button type="button" class="button is-outlined is-rounded is-primary"
-                    (click)="Creer(true)" i18n>Créer une série</button></div>
-                <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                    (click)="TerminerSeances()" i18n>Terminer les séances passées</button></div>
-              </div>
-            </div>
-          </div>
+            <span class="fullscreen">
+              <hover-button [nomclass]="afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined'"
+              [nomicon]="'fa-solid fa-filter'"
+              [libelle]="afficher_filtre  ? 'Masquer les filtres' : 'Afficher les filtres'"
+              (click)="afficher_filtre ? afficher_filtre = false : afficher_filtre = true;">
+              </hover-button>
+            </span>
+            <ng-container *ngIf="(GlobalService.Menu$ | async) == 'ADMIN' || (GlobalService.Menu$ | async) == 'PROF'" >
+              <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+              [nomicon]="'fas fa-layer-plus'"
+              [libelle]="'Créer une série'"
+              (click)="Creer(true)">
+              </hover-button>
+              <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+              [nomicon]="'fas fa-check-double'"
+              [libelle]="'Terminer les séances'" 
+              (click)="TerminerSeances()">
+              </hover-button>              
+            </ng-container>
+            <ng-container *ngIf="(GlobalService.Menu$ | async) == 'ADMIN'">             
+                <div class="field has-addons">
+                  <p class="control">
+                    <span class="select">
+                      <select id="seasons" [(ngModel)]="active_saison" i18n-placeholder placeholder="Choisir la saison">
+                        <!-- Options pour les professeurs -->
+                        <ng-container *ngFor="let season of liste_saison">
+                          <option [value]="season.id">{{season.nom}}</option>
+                        </ng-container>
+                      </select>
+                    </span>
+                  </p>
+                  <p class="control">
+                    <button type="button" class="button is-primary is-outlined">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  </p>
+                </div>
+            </ng-container>
         </div>
-      </div>
     </div>
+   
   </div>
   <div *ngIf="!editMode" class="columns">
     <div class="column">
@@ -223,32 +211,42 @@
                     </div>
                   </td>
                   <td>
-                    <ng-container *ngIf="seance.Statut == 'prévue'" style="fill:hsl(348, 100%, 61%)">
-                      <i class="fa-solid fa-calendar-check"></i>
+                    <ng-container *ngIf="seance.Statut == 'prévue'">
+                      <div class="icon-text">
+                        <span class="icon has-text-info">
+                          <i class="fa-solid fa-calendar-check"></i>
+                        </span>
+                      </div>
                     </ng-container>
-                    <ng-container *ngIf="seance.Statut == 'réalisée'" style="fill:hsl(348, 100%, 61%)">
-                      <i class="fa-solid fa-flag-checkered"></i>
+                    <ng-container *ngIf="seance.Statut == 'réalisée'">
+                      <div class="icon-text">
+                        <span class="icon has-text-success">
+                          <i class="fa-solid fa-flag-checkered"></i>
+                        </span>
+                        </div>
                     </ng-container>
-                    <ng-container *ngIf="seance.Statut == 'annulée'" style="fill:hsl(348, 100%, 61%)">
-                      <i class="fa-solid fa-ban"></i>
+                    <ng-container *ngIf="seance.Statut == 'annulée'">
+                      <div class="icon-text">
+                        <span class="icon has-text-danger">
+                          <i class="fa-solid fa-ban"></i>
+                        </span>
+                        </div>
                     </ng-container>
                   </td>
                   <td>
                     <div class="buttons">
-                      <button i18n-title title="Supprimer" class="button is-danger is-rounded is-outlined" type="button"
-                        (click)="Delete(seance)" style="fill:hsl(348, 100%, 61%)">
-                        <svg width="20" height="20">
-                          <use xlink:href=".\assets\liste.svg#delete"></use>
-                        </svg>
+                      <button i18n-title title="Supprimer"
+                          class="button is-danger is-rounded is-outlined" type="button"
+                          (click)="Delete(seance)" >
+                          <i class="fa-solid fa-trash-can"></i>
                       </button>
 
-                      <button i18n-title title="Editer" class="button is-info is-rounded is-outlined" type="button"
-                        style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(seance)">
-                        <svg width="20" height="20">
-                          <use xlink:href=".\assets\liste.svg#edit"></use>
-                        </svg>
+                      <button i18n-title title="Editer"
+                          class="button is-info is-rounded is-outlined" type="button"
+                           (click)="Edit(seance)">
+                          <i class="fa-solid fa-pen-to-square"></i>
                       </button>
-                    </div>
+                  </div>
                   </td>
                 </tr>
               </tbody>
@@ -419,30 +417,66 @@
             <div class="field">
               <label class="label" i18n>Statut</label>
               <ng-container *ngIf="editSeance.ID <1">
-                <span i18n>Prévue</span>
+                <div class="icon-text">
+                  <span class="icon has-text-info">
+                    <i class="fa-solid fa-calendar-check"></i>&nbsp;<span i18n>Prévue</span>
+                  </span>
+                </div>
               </ng-container>
               <ng-container *ngIf="editSeance.ID >0">
                 <ng-container *ngIf="editSeance.Statut == 'prévue'">
-                  <span i18n>Prévue</span>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
-                      (click)="ChangerStatut('réalisée')" i18n>Terminer la séance</button></div>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="ChangerStatut('annulée')" i18n>Annuler la séance</button></div>
-                </ng-container>
-                <ng-container *ngIf="editSeance.Statut == 'annulée'">
-                  <span i18n>Prévue</span>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-info "
-                      (click)="ChangerStatut('réalisée')" i18n>Terminer la séance</button></div>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="ChangerStatut('prévue')" i18n>Replanifier cette séance</button></div>
+                  <div class="field">
+                  <div class="icon-text">
+                    <span class="icon has-text-info">
+                      <i class="fa-solid fa-calendar-check"></i>&nbsp;<span i18n>Prévue</span>
+                    </span>
+                  </div></div>
+                  <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+                  [nomicon]="'fas fa-check'"
+                  [libelle]="'Terminer la séance'" 
+                  (click)="ChangerStatut('réalisée')" >
+                  </hover-button>  
+                  <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                  [nomicon]="'fa-solid fa-ban'"
+                  [libelle]="'Annuler la séance'" 
+                  (click)="ChangerStatut('annulée')" >
+                  </hover-button>            
                 </ng-container>
                 <ng-container *ngIf="editSeance.Statut == 'réalisée'">
-                  <span i18n>Prévue</span>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-danger"
-                      (click)="ChangerStatut('annulée')" i18n>Annuler la séance</button></div>
-                  <div class="column"><button type="button" class="button is-outlined is-rounded is-info"
-                      (click)="ChangerStatut('prévue')" i18n>Replanifier cette séance</button></div>
+                  <div class="icon-text">
+                    <span class="icon has-text-info">
+                      <i class="fas fa-check"></i>&nbsp;<span i18n>Terminée</span>
+                    </span>
+                  </div>
+                  <hover-button [nomclass]="'button is-outlined is-rounded is-info'"
+                  [nomicon]="'fa-solid fa-calendar-check'"
+                  [libelle]="'Planifier la séance'" 
+                  (click)="ChangerStatut('prévue')" >
+                  </hover-button>  
+                  <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                  [nomicon]="'fa-solid fa-ban'"
+                  [libelle]="'Annuler la séance'" 
+                  (click)="ChangerStatut('annulée')" >
+                  </hover-button>           
+                 
                 </ng-container>
+                <ng-container *ngIf="editSeance.Statut == 'annulée'">
+                  <div class="icon-text">
+                    <span class="icon has-text-danger">
+                      <i class="fa-solid fa-ban"></i>&nbsp;<span i18n>Annulée</span>
+                    </span>
+                  </div>
+                  <hover-button [nomclass]="'button is-outlined is-rounded is-info'"
+                  [nomicon]="'fa-solid fa-calendar-check'"
+                  [libelle]="'Planifier la séance'" 
+                  (click)="ChangerStatut('prévue')" >
+                  </hover-button>  
+                  <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+                  [nomicon]="'fas fa-check'"
+                  [libelle]="'Terminer la séance'" 
+                  (click)="ChangerStatut('réalisée')" >
+                  </hover-button>           
+                </ng-container>                
               </ng-container>
             </div>
             <div class="field">
@@ -563,4 +597,3 @@
       </div>
     </div>
   </div>
-</div>

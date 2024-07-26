@@ -36,6 +36,7 @@ import { FilterDDNApresPipe } from 'src/filters/filter-ddnapres.pipe';
 import { FilterDDNAvantPipe } from 'src/filters/filter-ddnavant.pipe';
 import { FilterSexePipe } from 'src/filters/filter-sexe.pipe';
 import { filterInscriptionSaison } from 'src/filters/filter-inscriptionsaison.pipe';
+import { HoverButtonComponent } from './hover-button.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +51,7 @@ import { filterInscriptionSaison } from 'src/filters/filter-inscriptionsaison.pi
     ProfComponent,
     NotifJechaComponent,
     ContactItemComponent, filterInscriptionSaison, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
-  , GroupeDetailComponent, ProfComponent],
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

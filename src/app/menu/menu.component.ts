@@ -22,15 +22,13 @@ export class MenuComponent implements OnInit {
       switch (GlobalService.menu) {
         default:
         case "ADHERENT":
+          case "PROF":
           this.adherent_serv.Get(GlobalService.compte.id).then((riders) => {
             this.Riders = riders.map( x => new Adherent(x));
           }).catch((error: Error) => {
             let o = errorService.CreateError(this.action, error.message);
             errorService.emitChange(o);
           });
-          break;
-        case "PROF":
-
           break;
         case "ADMIN":
 

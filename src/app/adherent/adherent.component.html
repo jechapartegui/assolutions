@@ -1,7 +1,7 @@
 <div class="container">
 
     <ng-container *ngIf="context == 'LISTE'">
-        <div class="columns">
+        <div class="columns" style="margin-top: 0.5rem;">
             <div class="column">
                 <button type="button" (click)="inscrits == null ? inscrits = active_saison.id : inscrits = null;"
                     [class]="inscrits == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' ">
@@ -15,7 +15,7 @@
                 </span>
             </div>
         </div>
-        <div class="columns">
+        <div class="columns" >
             <div class="column">
                 <div class="card">
                     <header class="card-header">
@@ -144,13 +144,13 @@
                                             <div class="buttons">
                                                 <button i18n-title title="Supprimer"
                                                     class="button is-danger is-rounded is-outlined" type="button"
-                                                    (click)="Delete(adherent)" style="fill:hsl(348, 100%, 61%)">
+                                                    (click)="Delete(adherent)" >
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
 
                                                 <button i18n-title title="Editer"
                                                     class="button is-info is-rounded is-outlined" type="button"
-                                                    style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(adherent)">
+                                                     (click)="Edit(adherent)">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                             </div>

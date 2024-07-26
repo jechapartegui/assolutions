@@ -5,6 +5,7 @@ import { cours } from 'src/class/cours';
 import { Groupe } from 'src/class/groupe';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
 import { Professeur } from 'src/class/professeur';
+import { Saison } from 'src/class/saison';
 import { Seance, StatutSeance, seance } from 'src/class/seance';
 import { SeanceProf } from 'src/class/seanceprof';
 import { AdherentService } from 'src/services/adherent.service';
@@ -28,7 +29,6 @@ export class SeanceComponent implements OnInit {
   prof_dispo: Professeur[];
   est_prof: boolean = false;
   est_admin: boolean = false;
-  seasons: KeyValuePair[];
   manage_prof:boolean = false;
   titre_groupe: string = $localize`Liste des groupes de la séance`;
   listeCours: cours[] = [];
@@ -40,8 +40,8 @@ export class SeanceComponent implements OnInit {
   all_seance: boolean = false;
   jour_semaine: string = "";
   date_fin_serie: Date;
-  list_saison: KeyValuePair[];
   current_prof: number;
+  filter_statut:string='prévue';
   coursselectionne: boolean = false;
 
   current_groupe_id: number;
@@ -49,28 +49,30 @@ export class SeanceComponent implements OnInit {
   liste_groupe: Groupe[] = []
 
 
-  sort_nom = "NO";
-  sort_cours = "NO";
-  sort_date = "NO";
-  sort_lieu = "NO";
-  afficher_filtre:boolean = false;
-  season_id: number;
-  filter_date_avant: Date;
-  filter_date_apres: Date;
-  filter_nom: string;
-  filter_cours: number;
-  filter_groupe: number;
-  filter_lieu: number;
-  filter_prof: number;
-  liste_groupe_filter: Groupe[];
-  liste_prof_filter: KeyValuePairAny[];
-  liste_lieu_filter: KeyValuePairAny[];
-  action: string = "";
-  afficher_menu_admin: boolean = false;
-
-  listeStatuts: StatutSeance[];
+  public  sort_nom = "NO";
+  public  sort_cours = "NO";
+  public  sort_date = "NO";
+  public  sort_lieu = "NO";
+  public  afficher_filtre:boolean = false;
+  public  season_id: number;
+  public   filter_date_avant: Date;
+  public   filter_date_apres: Date;
+  public  filter_nom: string;
+  public  filter_cours: number;
+  public  filter_groupe: number;
+  public  filter_lieu: number;
+  public  filter_prof: number;
+  public  liste_groupe_filter: Groupe[];
+  public  liste_prof_filter: KeyValuePairAny[];
+  public  liste_lieu_filter: KeyValuePairAny[];  
+  public liste_saison: Saison[] = [];
+  public active_saison:Saison;
+  public showText:boolean = false;
+  public action: string = "";
+  public listeStatuts: StatutSeance[];
 
   constructor(
+    public GlobalService:GlobalService,
     private seancesservice: SeancesService, private spservice:SeanceprofService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
 
@@ -111,7 +113,7 @@ export class SeanceComponent implements OnInit {
               return;
             }
             this.listelieu = lieux;
-            this.saisonserv.GetAllLight().then((sa) => {
+            this.saisonserv.GetAll().then((sa) => {
               if (sa.length == 0) {
                 let o = errorService.CreateError($localize`Récupérer les saisons`, $localize`Il faut au moins une saison pour créer un cours`);
                 errorService.emitChange(o);
@@ -121,7 +123,8 @@ export class SeanceComponent implements OnInit {
                 }
                 return;
               }
-              this.seasons = sa;
+              this.liste_saison = sa.map(x => new Saison(x));
+              this.active_saison = this.liste_saison.filter(x => x.active == true)[0];
               this.coursservice.GetCours().then((c) => {
                 this.listeCours = c;
               }).catch((err: HttpErrorResponse) => {
