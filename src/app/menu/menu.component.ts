@@ -25,6 +25,17 @@ export class MenuComponent implements OnInit {
           case "PROF":
           this.adherent_serv.Get(GlobalService.compte.id).then((riders) => {
             this.Riders = riders.map( x => new Adherent(x));
+            this.Riders.sort((a, b) => {
+           
+              let comparaison = 0;
+              if (a.ID > b.ID) {
+                comparaison = 1;
+              } else if (a.ID < b.ID) {
+                comparaison = -1;
+              }
+
+              return comparaison; // Inverse pour le tri descendant
+            });
           }).catch((error: Error) => {
             let o = errorService.CreateError(this.action, error.message);
             errorService.emitChange(o);
