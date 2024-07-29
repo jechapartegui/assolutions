@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { StatutSeance, seance } from 'src/class/seance';
 import { environment } from 'src/environments/environment.prod';
 import { GlobalService } from './global.services';
-import { Inscription, InscriptionSeance } from 'src/class/inscription';
+import {  InscriptionSeance } from 'src/class/inscription';
 import { ErrorService } from './error.service';
 
 @Injectable({

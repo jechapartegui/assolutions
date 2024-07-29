@@ -1,54 +1,44 @@
 import { Groupe } from "./groupe";
 import { KeyValuePair } from "./keyvaluepair";
+import { seance } from "./seance";
 
-export class Inscription {
+export class inscription_seance {
 
       public id: number = 0;
       public rider_id: number;
       public seance_id: number;
       public date_inscription: Date = new Date();
-      public statut: StatutPresence = StatutPresence.Présent;
+      public statut_inscription: StatutPresence = null;
+      public statut_seance: StatutPresence = null;
 
 
 }
 export enum StatutPresence {
       Présent = "présent",
       Absent = "absent",
-      Convoqué = "convoqué",
-      NonInscrit = "non inscrit",
-  
+      Convoqué = "convoqué"
+
 }
 
 export class InscriptionSeance {
-      public id: number = 0;
-      public rider_id: number;
-      public seance_id: number;
-      public date_inscription: Date = new Date();
-      public statut: StatutPresence = StatutPresence.Présent;
-      public date_seance: Date;
-      public heure_debut: string;
-      public duree_seance: number;
-      public lieu: string;
-      public libelle: string;
-      public professeurs: KeyValuePair[] = [];
-      public rider_libelle: string = "";
-      public edit: boolean = false;
-      public hors_liste:boolean=false;
-      public contact_urgence: string = "";
-      public statut_seance?: StatutPresence = null ;
-      public info_seance:string = "";
-      public groupes:Groupe[] = [];
+      public thisSeance: seance;
+      public thisInscription: inscription_seance;
 
-      public constructor(inscription?:Inscription){
-            if(inscription){
-                  this.id = inscription.id;
-                  this.rider_id = inscription.rider_id;
-                  this.seance_id = inscription.seance_id;
-                  this.date_inscription = inscription.date_inscription;
-                  this.statut = inscription.statut;
-                  this.statut_seance = null;
-                  this.hors_liste = true;
-                        }
+      public constructor(seance: seance, inscription: inscription_seance, rider_id:number) {
+            this.thisSeance = seance;
+
+            if (inscription) {
+                  this.thisInscription = inscription;
+            } else {
+                  this.thisInscription = new inscription_seance();
+                  this.thisInscription.id = 0;
+                  this.thisInscription.date_inscription = null;
+                  this.thisInscription.rider_id = rider_id;
+                  this.thisInscription.seance_id = seance.seance_id;
+                  this.thisInscription.statut_inscription = null;
+                  this.thisInscription.statut_seance = null;
+            }
+
       }
 }
 

@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 import { seance } from "./seance";
 import { Groupe, Lien_Groupe } from "./groupe";
-import { InscriptionSeance } from "./inscription";
+import { inscription_seance, InscriptionSeance } from "./inscription";
 import { Contact } from "./contact";
 import { compte } from "./compte";
 import { Adresse, adresse } from "./address";
@@ -25,7 +25,7 @@ export class adherent{
     public mot_de_passe: string = "";
     public compte_id: number = 0;
     public login: string = "";
-    public inscriptions: InscriptionSeance[] = [];
+    public inscriptions: inscription_seance[] = [];
     public adhesions: Adhesion[] = [];
     public seances_prof: seance[] = [];
     
@@ -177,7 +177,7 @@ export class Adherent{
   }
   
   public Groupes: Groupe[] = [];
-  public inscriptions: InscriptionSeance[] = [];
+  public inscriptions: inscription_seance[] = [];
   public seances: seance[] = [];
   public seances_prof: seance[] = [];
 }
@@ -243,6 +243,82 @@ export class Validation_Adherent{
       this.control = false;
     }
   }
+
+
+}
+
+export class Adherent_VM{
+  constructor (_adh:adherent){
+    this.datasource = _adh;
+    this.Mois = 1;
+    this.SeancePassee = false;
+    this.afficher_filtre = false;
+    this.InscriptionSeances = [];
+    if(this.datasource.seance){
+      this.datasource.seance.forEach((ss) =>{
+        let ins = this.datasource.inscriptions.find(x => x.seance_id == ss.seance_id);
+        let i = new InscriptionSeance(ss, ins, _adh.id)
+        this.InscriptionSeances.push(i);
+      })
+    }
+      this.Libelle = "";
+      if(_adh.prenom && _adh.prenom.length>0){
+          this.Libelle = _adh.prenom;
+      }
+      if(_adh.nom && _adh.nom.length>0){
+          if(this.Libelle && this.Libelle.length>0){
+              this.Libelle = this.Libelle + " " + _adh.nom;
+          } else {
+              this.Libelle = _adh.nom;
+          }
+      }
+      if(_adh.surnom && _adh.surnom.length>0){
+          if(this.Libelle && this.Libelle.length>0){
+              this.Libelle = this.Libelle + " " + _adh.surnom;
+          } else {
+              this.Libelle = _adh.surnom;
+          }
+      }
+    
+  
+
+  }
+  public Libelle:string;
+  public datasource:adherent;
+  public InscriptionSeances:InscriptionSeance[];
+  
+  //mois
+
+  private _Mois : number;
+  public get Mois() : number {
+    return this._Mois;
+  }
+  public set Mois(v : number) {
+    this._Mois = v;
+  }
+  
+  
+  private _SeancePassee : boolean;
+  public get SeancePassee() : boolean {
+    return this._SeancePassee;
+  }
+  public set SeancePassee(v : boolean) {
+    this._SeancePassee = v;
+  }
+
+  
+  private _afficher_filtre : boolean;
+  public get afficher_filtre() : boolean {
+    return this._afficher_filtre;
+  }
+  public set afficher_filtre(v : boolean) {
+    this._afficher_filtre = v;
+  }
+  
+
+
+
+  
 
 
 }
