@@ -7,6 +7,7 @@ import { Adherent } from 'src/class/adherent';
 import { AdherentComponent } from './adherent/adherent.component';
 import { SeanceComponent } from './seance/seance.component';
 import { CoursComponent } from './cours/cours.component';
+import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 
 
 
@@ -19,6 +20,7 @@ const routes: Routes = [
    { path: 'seance', component: SeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
    { path: 'adherent', component: AdherentComponent }, // Route 'defaut' qui affiche ImportRidersComponent
    { path: 'groupe', component: GroupeComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+   { path: 'ma-seance', component: MaSeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   
  ];
  

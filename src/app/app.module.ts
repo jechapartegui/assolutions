@@ -36,7 +36,14 @@ import { FilterDDNApresPipe } from 'src/filters/filter-ddnapres.pipe';
 import { FilterDDNAvantPipe } from 'src/filters/filter-ddnavant.pipe';
 import { FilterSexePipe } from 'src/filters/filter-sexe.pipe';
 import { filterInscriptionSaison } from 'src/filters/filter-inscriptionsaison.pipe';
-import { HoverButtonComponent } from './hover-button.component';
+import { HoverButtonComponent } from './hover-button/hover-button.component';
+import { FilterNomSeanceMenuPipe } from 'src/filters/filter-nomseance.pipe';
+import { FilterCoursMenuPipe } from 'src/filters/filter-coursmenu.pipe';
+import { FilterDateApresMenuPipe } from 'src/filters/filter-dateapresmenu.pipe';
+import { FilterDateAvantMenuPipe } from 'src/filters/filter-dateavantmenu.pipe';
+import { FilterLieuMenuPipe } from 'src/filters/filter-lieumenu.pipe';
+import { FilterListProfMenuPipe } from 'src/filters/filter-listeprofmenu.pipe';
+import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 
 @NgModule({
   declarations: [
@@ -50,8 +57,8 @@ import { HoverButtonComponent } from './hover-button.component';
     ComptabiliteComponent,
     ProfComponent,
     NotifJechaComponent,
-    ContactItemComponent, filterInscriptionSaison, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe
-  , GroupeDetailComponent, ProfComponent, HoverButtonComponent],
+    ContactItemComponent, filterInscriptionSaison, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

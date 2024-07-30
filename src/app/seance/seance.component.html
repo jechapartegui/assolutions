@@ -112,15 +112,15 @@
                       </span>
                       <span *ngIf="afficher_filtre" class="ligne">
                         <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
-                          <label for="groupe" class="label is-small">Après le</label>
+                          <label for="groupe" class="label is-small">Du</label>
                           <input style="width: fit-content;" class="input is-small" i18n-placeholder
-                            placeholder="Filtre date avant" type="date" [(ngModel)]="filter_date_avant">
+                            placeholder="Filtre date avant" type="date" [(ngModel)]="filter_date_apres">
 
                         </div>
                         <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
-                          <label for="groupe" class="label is-small">Avant le</label>
+                          <label for="groupe" class="label is-small">Au</label>
                           <input style="width: fit-content;" class="input is-small" i18n-placeholder
-                            placeholder="Filtre date après" type="date" [(ngModel)]="filter_date_apres">
+                            placeholder="Filtre date après" type="date" [(ngModel)]="filter_date_avant">
                         </div>
                       </span>
                     </span>

@@ -1,0 +1,20 @@
+<div class="container">
+    <div class="columns is-justify-content-center">
+        <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+            <div class="box">
+
+                <h2 class="title is-2" i18n>{{thisSeance.libelle}}</h2>
+                
+                <h4 class="title is-4" i18n>Présents</h4>
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="potentiel.statut_inscription == null">
+                        <ng-container *ngIf="potentiel.statut_seance == 'présent'">
+
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+
+            </div>
+        </div>
+    </div>
+</div>

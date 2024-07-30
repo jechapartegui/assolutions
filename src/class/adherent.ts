@@ -20,7 +20,7 @@ export class adherent{
     public date_creation:Date;
     public photo:string;
     public sexe:boolean = false;
-    public seance:seance[];
+    public seances:seance[];
     public groupes: Groupe[] = [];
     public mot_de_passe: string = "";
     public compte_id: number = 0;
@@ -56,7 +56,7 @@ export class Adherent{
         this.Groupes = L.groupes;  
         this.inscriptions = L.inscriptions;
         this.seances_prof = L.seances_prof;
-        this.seances = L.seance;
+        this.seances = L.seances;
         this.valid = new Validation_Adherent(this);
         this.valid.controler();
     }
@@ -250,12 +250,11 @@ export class Validation_Adherent{
 export class Adherent_VM{
   constructor (_adh:adherent){
     this.datasource = _adh;
-    this.Mois = 1;
     this.SeancePassee = false;
     this.afficher_filtre = false;
     this.InscriptionSeances = [];
-    if(this.datasource.seance){
-      this.datasource.seance.forEach((ss) =>{
+    if(this.datasource.seances){
+      this.datasource.seances.forEach((ss) =>{
         let ins = this.datasource.inscriptions.find(x => x.seance_id == ss.seance_id);
         let i = new InscriptionSeance(ss, ins, _adh.id)
         this.InscriptionSeances.push(i);
@@ -289,13 +288,6 @@ export class Adherent_VM{
   
   //mois
 
-  private _Mois : number;
-  public get Mois() : number {
-    return this._Mois;
-  }
-  public set Mois(v : number) {
-    this._Mois = v;
-  }
   
   
   private _SeancePassee : boolean;

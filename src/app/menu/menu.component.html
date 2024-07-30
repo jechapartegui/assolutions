@@ -1,187 +1,236 @@
-<div class="container">
+<div class="container" *ngIf="Riders">
     <ng-container *ngFor="let rider of Riders">
         <div class="box">
             <article class="panel is-primary">
                 <p class="panel-heading">{{rider.Libelle}}</p>
                 <div class="panel-block">
                     <hover-button
-                        [nomclass]="rider.SeancePassee  == false ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded'"
+                        [nomclass]="filter_date_apres  == false ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded'"
                         [nomicon]="'fa-solid fa-calendar-check'"
                         [libelle]="rider.SeancePassee  ? 'Séance prévue uniquement' : 'Toutes les séances'"
                         (click)="rider.SeancePassee  == false ? rider.SeancePassee  = true : rider.SeancePassee = false;">
                     </hover-button>
-                    <hover-button [nomclass]="rider.afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined'"
-                    [nomicon]="'fa-solid fa-filter'"
-                    [libelle]="rider.afficher_filtre  ? 'Masquer les filtres' : 'Afficher les filtres'"
-                    (click)="rider.afficher_filtre ? rider.afficher_filtre = false : rider.afficher_filtre = true;">
+                    <hover-button
+                        [nomclass]="rider.afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined'"
+                        [nomicon]="'fa-solid fa-filter'"
+                        [libelle]="rider.afficher_filtre  ? 'Masquer les filtres' : 'Afficher les filtres'"
+                        (click)="rider.afficher_filtre ? rider.afficher_filtre = false : rider.afficher_filtre = true;">
                     </hover-button>
-                    <input type="number" min="1" max="12" class="input" [(ngModel)]="rider.Mois">
                 </div>
                 <div class="panel-block">
                     <span class="fullscreen">
-                            <ng-container *ngIf="rider.InscriptionSeances && rider.InscriptionSeances.length>0">
-                                <table class="table">
+                        <ng-container *ngIf="rider.InscriptionSeances && rider.InscriptionSeances.length>0">
+                            <table class="table" style="width: 100%;font-size: small;">
                                 <thead>
                                     <tr>
-                                      <th><span class="th">
-                                          <span class="ligne"> <span style="font-size: smaller;" i18n>Nom</span>
-                                            <span style="cursor: pointer;">
-                                              <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom', rider.datasource.id)" class="fa-solid fa-sort"></i>
-                                              <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom', rider.datasource.id)" class="fa-solid fa-sort-up"></i>
-                                              <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom', rider.datasource.id)" class="fa-solid fa-sort-down"></i>
-                                            </span></span>
-                                          <input *ngIf="rider.afficher_filtre" style="width: fit-content;font-size:smaller;"
-                                            class="input is-small" i18n-placeholder placeholder="Nom du cours" type="text"
-                                            [(ngModel)]="filter_nom">
-                                        </span>
-                                      </th>
-                                      <th><span class="th">
-                                          <span class="ligne">
-                                            <span style="font-size: smaller;" i18n>Cours / Type</span>
-                                            <span style="cursor: pointer;">
-                                              <i *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'cours', rider.datasource.id)" class="fa-solid fa-sort"></i>
-                                              <i *ngIf="sort_cours === 'ASC'" (click)="Sort('DESC', 'cours', rider.datasource.id)"
-                                                class="fa-solid fa-sort-up"></i>
-                                              <i *ngIf="sort_cours === 'DESC'" (click)="Sort('ASC', 'cours', rider.datasource.id)"
-                                                class="fa-solid fa-sort-down"></i>
+                                        <th><span class="th">
+                                                <span class="ligne"> <span style="font-size: smaller;" i18n>Nom</span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_nom === 'NO'"
+                                                            (click)="Sort('ASC', 'nom', rider.datasource.id)"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_nom === 'ASC'"
+                                                            (click)="Sort('DESC', 'nom', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_nom === 'DESC'"
+                                                            (click)="Sort('ASC', 'nom', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span></span>
+                                                <input *ngIf="rider.afficher_filtre"
+                                                    style="width: fit-content;font-size:smaller;" class="input is-small"
+                                                    i18n-placeholder placeholder="Nom du cours" type="text"
+                                                    [(ngModel)]="filter_nom">
                                             </span>
-                                          </span>
-                                        </span>
-                                      </th>
-                                      <th><span class="th">
-                                          <span class="ligne">
-                                            <span style="font-size: smaller;" i18n>Date</span>
-                                            <span style="cursor: pointer;">
-                                              <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date', rider.datasource.id)" class="fa-solid fa-sort"></i>
-                                              <i *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'date', rider.datasource.id)"
-                                                class="fa-solid fa-sort-up"></i>
-                                              <i *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'date', rider.datasource.id)"
-                                                class="fa-solid fa-sort-down"></i>
+                                        </th>
+                                        <th><span class="th">
+                                                <span class="ligne">
+                                                    <span style="font-size: smaller;" i18n>Cours / Type</span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_cours === 'NO'"
+                                                            (click)="Sort('ASC', 'cours', rider.datasource.id)"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_cours === 'ASC'"
+                                                            (click)="Sort('DESC', 'cours', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_cours === 'DESC'"
+                                                            (click)="Sort('ASC', 'cours', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span>
+                                                </span>
                                             </span>
-                                          </span>
-                                          <span *ngIf="rider.afficher_filtre" class="ligne">
-                                            <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
-                                              <label for="groupe" class="label is-small">Après le</label>
-                                              <input style="width: fit-content;" class="input is-small" i18n-placeholder
-                                                placeholder="Filtre date avant" type="date" [(ngModel)]="filter_date_avant">
-                    
-                                            </div>
-                                            <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
-                                              <label for="groupe" class="label is-small">Avant le</label>
-                                              <input style="width: fit-content;" class="input is-small" i18n-placeholder
-                                                placeholder="Filtre date après" type="date" [(ngModel)]="filter_date_apres">
-                                            </div>
-                                          </span>
-                                        </span>
-                                      </th>
-                                      <th><span class="th">
-                                          <span class="ligne"><span style="font-size: smaller;" i18n>Heure / Durée</span></span>
-                                        </span></th>
-                                      <th class="no_mobile"><span class="th"><span class="ligne" style="font-size: smaller;"
-                                            i18n>Professeurs</span>
-                                          <span *ngIf="rider.afficher_filtre" class="ligne">
-                                            <div class="select">
-                                              <select style="font-size:smaller;" [(ngModel)]="filter_prof">
-                                                <option [value]="0" i18n>Tous</option>
-                                                <ng-container *ngFor="let pr of liste_prof_filter">
-                                                  <option [value]="pr.key" i18n>{{pr.value}}</option>
-                                                </ng-container>
-                                              </select>
-                                            </div>
-                                          </span>
-                                        </span>
-                                      </th>
-                                      <th><span class="th">
-                                          <span class="ligne"><span style="font-size: smaller;" i18n>Lieu</span>
-                                          <span
-                                              style="cursor: pointer;">
-                                              <i *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu', rider.datasource.id)" class="fa-solid fa-sort"></i>
-                                              <i *ngIf="sort_lieu === 'ASC'" (click)="Sort('DESC', 'lieu', rider.datasource.id)"
-                                                class="fa-solid fa-sort-up"></i>
-                                              <i *ngIf="sort_lieu === 'DESC'" (click)="Sort('ASC', 'lieu', rider.datasource.id)"
-                                                class="fa-solid fa-sort-down"></i>
+                                        </th>
+                                        <th><span class="th">
+                                                <span class="ligne">
+                                                    <span style="font-size: smaller;" i18n>Date</span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_date === 'NO'"
+                                                            (click)="Sort('ASC', 'date', rider.datasource.id)"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_date === 'ASC'"
+                                                            (click)="Sort('DESC', 'date', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_date === 'DESC'"
+                                                            (click)="Sort('ASC', 'date', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="rider.afficher_filtre" class="ligne">
+                                                    <div style="gap: 6px;"
+                                                        class="field is-small is-horizontal field-jecha">
+                                                        <label for="groupe" class="label is-small">Du</label>
+                                                        <input style="width: fit-content;" class="input is-small"
+                                                            i18n-placeholder placeholder="Filtre date avant" type="date"
+                                                            [(ngModel)]="filter_date_apres">
+
+                                                    </div>
+                                                    <div style="gap: 6px;"
+                                                        class="field is-small is-horizontal field-jecha">
+                                                        <label for="groupe" class="label is-small">au</label>
+                                                        <input style="width: fit-content;" class="input is-small"
+                                                            i18n-placeholder placeholder="Filtre date après" type="date"
+                                                            [(ngModel)]="filter_date_avant">
+                                                    </div>
+                                                </span>
                                             </span>
-                                          </span>
-                                        </span>
-                                      </th>
-                                      <th class="no_mobile"><span style="font-size: smaller;" i18n>Groupes</span></th>
-                                      <th><span style="font-size: smaller;" i18n>Statut</span></th>
-                                      <th><span style="font-size: smaller;" i18n>Action</span></th>
+                                        </th>
+                                        <th><span class="th">
+                                                <span class="ligne"><span style="font-size: smaller;" i18n>Heure /
+                                                        Durée</span></span>
+                                            </span></th>
+                                        <th class="no_mobile"><span class="th"><span class="ligne"
+                                                    style="font-size: smaller;" i18n>Professeurs</span>
+                                                <span *ngIf="rider.afficher_filtre" class="ligne">
+                                                    <div class="select">
+                                                        <select style="font-size:smaller;" [(ngModel)]="filter_prof">
+                                                            <option [value]="0" i18n>Tous</option>
+                                                            <ng-container *ngFor="let pr of liste_prof_filter">
+                                                                <option [value]="pr.key" i18n>{{pr.value}}</option>
+                                                            </ng-container>
+                                                        </select>
+                                                    </div>
+                                                </span>
+                                            </span>
+                                        </th>
+                                        <th><span class="th">
+                                                <span class="ligne"><span style="font-size: smaller;" i18n>Lieu</span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_lieu === 'NO'"
+                                                            (click)="Sort('ASC', 'lieu', rider.datasource.id)"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_lieu === 'ASC'"
+                                                            (click)="Sort('DESC', 'lieu', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_lieu === 'DESC'"
+                                                            (click)="Sort('ASC', 'lieu', rider.datasource.id)"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span>
+                                                </span>
+                                            </span>
+                                        </th>
+                                        <th><span style="font-size: smaller;" i18n>Statut</span></th>
+                                        <th><span style="font-size: smaller;" i18n>Présence</span></th>
                                     </tr>
-                                  </thead>
-                                  <tbody>
+                                </thead>
+                                <tbody>
                                     <tr
-                                      *ngFor="let seance of rider.InscriptionSeances| filterLibelle : filter_nom | filterCours : filter_cours |  filterDateAvant : filter_date_avant|  filterDateApres : filter_date_apres | filterLieu : filter_lieu | filterListProf : filter_prof">
-                                      <td>
-                                        {{seance.thisSeance.libelle}}
-                                      </td>
-                                      <td>
-                    
-                    
-                                        <ng-container *ngIf="seance.thisSeance.TypeSeance==='ENTRAINEMENT'">
-                                          <ng-container (ngModel)="filter_cours" *ngFor="let cours of listeCours">
-                                            <ng-container *ngIf="seance.thisSeance.Cours==cours.id">
-                                              <span>{{cours.nom}}</span>
+                                        *ngFor="let seance of rider.InscriptionSeances| filternomseanceMenu : filter_nom | filterCoursMenu : filter_cours |  filterDateAvantMenu : filter_date_avant|  filterDateApresMenu : filter_date_apres | filterLieuMenu : filter_lieu | filterListProfMenu : filter_prof">
+                                        <td>
+                                            {{seance.thisSeance.libelle}}
+                                        </td>
+                                        <td>
+
+                                            <ng-container *ngIf="seance.thisSeance.type_seance==='ENTRAINEMENT'">
+                                                <ng-container (ngModel)="filter_cours" *ngFor="let cours of listeCours">
+                                                    <ng-container *ngIf="seance.thisSeance.cours==cours.id">
+                                                        <span>{{cours.nom}}</span>
+                                                    </ng-container>
+                                                </ng-container>
                                             </ng-container>
-                                          </ng-container>
-                                        </ng-container>
-                                        <ng-container *ngIf="seance.thisSeance.TypeSeance==='MATCH'">
-                                          <span i18n>Match</span>
-                                        </ng-container>
-                                        <ng-container *ngIf="seance.thisSeance.TypeSeance==='EVENEMENT'">
-                                          <span i18n>Evénement</span>
-                                        </ng-container>
-                                        <ng-container *ngIf="seance.thisSeance.TypeSeance==='SORTIE'">
-                                          <span i18n>Sortie</span>
-                                        </ng-container>
-                                      </td>
-                                      <td>{{ seance.thisSeance.date_seance | date: 'dd/MM/yyyy' }}
-                                      </td>
-                                      <td>{{seance.thisSeance.heure_debut}} ({{seance.duree_seance}} <span i18n>&nbsp;min</span>)
-                                      </td>
-                                      <td class="no_mobile">
-                                        <div class="tags is-small">
-                                          <ng-container *ngFor="let gr of seance.thisSeance.professeurs">
-                                            <span class="tag is-success">
-                                              {{gr.value}}
-                                            </span>
-                                          </ng-container>
-                                        </div>
-                                      </td>
-                                      <td>{{trouverLieu(seance.thisSeance.LieuId)}}
-                                      </td>
-                                    
-                                      <td>
-                                        <ng-container *ngIf="seance.thisSeance.Statut == 'prévue'">
-                                          <div class="icon-text">
-                                            <span class="icon has-text-info">
-                                              <i class="fa-solid fa-calendar-check"></i>
-                                            </span>
-                                          </div>
-                                        </ng-container>
-                                        <ng-container *ngIf="seance.thisSeance.Statut == 'réalisée'">
-                                          <div class="icon-text">
-                                            <span class="icon has-text-success">
-                                              <i class="fa-solid fa-flag-checkered"></i>
-                                            </span>
+                                            <ng-container *ngIf="seance.thisSeance.type_seance==='MATCH'">
+                                                <span i18n>Match</span>
+                                            </ng-container>
+                                            <ng-container *ngIf="seance.thisSeance.type_seance==='EVENEMENT'">
+                                                <span i18n>Evénement</span>
+                                            </ng-container>
+                                            <ng-container *ngIf="seance.thisSeance.type_seance==='SORTIE'">
+                                                <span i18n>Sortie</span>
+                                            </ng-container>
+                                        </td>
+                                        <td>{{ seance.thisSeance.date_seance | date: 'dd/MM/yyyy' }}
+                                        </td>
+                                        <td>{{seance.thisSeance.heure_debut}} ({{seance.duree_seance}} <span
+                                                i18n>&nbsp;min</span>)
+                                        </td>
+                                        <td class="no_mobile">
+                                            <div class="tags is-small">
+                                                <ng-container *ngFor="let gr of seance.thisSeance.professeurs">
+                                                    <span class="tag is-success">
+                                                        {{gr.value}}
+                                                    </span>
+                                                </ng-container>
                                             </div>
-                                        </ng-container>
-                                        <ng-container *ngIf="seance.thisSeance.Statut == 'annulée'">
-                                          <div class="icon-text">
-                                            <span class="icon has-text-danger">
-                                              <i class="fa-solid fa-ban"></i>
-                                            </span>
-                                            </div>
-                                        </ng-container>
-                                      </td>
-                                      
+                                        </td>
+                                        <td> <span *ngIf="seance.thisSeance">{{trouverLieu(seance.thisSeance.lieu_id)}}</span> 
+                                        </td>
+
+                                        <td>
+                                            <ng-container *ngIf="seance.thisSeance.statut == 'prévue'">
+                                                <div class="icon-text">
+                                                    <span class="icon has-text-info">
+                                                        <i class="fa-solid fa-calendar-check"></i>
+                                                    </span>
+                                                </div>
+                                            </ng-container>
+                                            <ng-container *ngIf="seance.thisSeance.statut == 'réalisée'">
+                                                <div class="icon-text">
+                                                    <span class="icon has-text-success">
+                                                        <i class="fa-solid fa-flag-checkered"></i>
+                                                    </span>
+                                                </div>
+                                            </ng-container>
+                                            <ng-container *ngIf="seance.thisSeance.statut == 'annulée'">
+                                                <div class="icon-text">
+                                                    <span class="icon has-text-danger">
+                                                        <i class="fa-solid fa-ban"></i>
+                                                    </span>
+                                                </div>
+                                            </ng-container>
+                                        </td>
+                                        <td>
+                                            <ng-container *ngIf="seance.thisSeance.statut == 'réalisée'">
+
+                                            </ng-container>
+                                            <ng-container *ngIf="seance.thisSeance.statut == 'prévue'">
+                                                <span *ngIf="seance.thisInscription.statut_inscription == 'présent'" class="icon is-large" >
+                                                    <span class="fa-stack fa-lg">
+                                                        <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                    </span>
+                                                </span>
+                                                <span (click)="MAJInscription(seance.thisInscription,true)" *ngIf="seance.thisInscription.statut_inscription == 'absent' || seance.thisInscription.statut_inscription == null" style="cursor: pointer;" class="icon is-large">
+                                                    <span class="fa-stack fa-lg">
+                                                        <i class="far fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="seance.thisInscription.statut_inscription == 'absent'"  class="icon is-large">
+                                                    <span class="fa-stack fa-lg">
+                                                        <i class="fas fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                    </span>
+                                                </span>
+                                                <span  (click)="MAJInscription(seance.thisInscription,false)"  *ngIf="seance.thisInscription.statut_inscription == 'présent' || seance.thisInscription.statut_inscription == null" style="cursor: pointer;"  class="icon is-large">
+                                                    <span class="fa-stack fa-lg">
+                                                        <i class="far fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                    </span>
+                                                </span>
+                                            </ng-container>
+                                        </td>
+
                                     </tr>
-                                  </tbody>
-                                </table>
-                            </ng-container>
-                            <ng-container *ngIf="!rider.InscriptionSeances || rider.InscriptionSeances.length == 0">
-                                <p i18n>Pas de séance disponible</p>
-                            </ng-container>
+                                </tbody>
+                            </table>
+                        </ng-container>
+                        <ng-container *ngIf="!rider.InscriptionSeances || rider.InscriptionSeances.length == 0">
+                            <p i18n>Pas de séance disponible</p>
+                        </ng-container>
                     </span>
                     <span class="mobile">
 

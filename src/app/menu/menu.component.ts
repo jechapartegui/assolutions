@@ -1,12 +1,18 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Adherent, Adherent_VM } from 'src/class/adherent';
 import { cours } from 'src/class/cours';
+import { inscription_seance, InscriptionSeance, StatutPresence } from 'src/class/inscription';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
 import { Professeur } from 'src/class/professeur';
 import { AdherentService } from 'src/services/adherent.service';
+import { CoursService } from 'src/services/cours.service';
 import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
+import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
+import { LieuService } from 'src/services/lieu.service';
+import { StaticClass } from '../global';
 
 @Component({
   selector: 'app-menu',
@@ -14,26 +20,27 @@ import { GlobalService } from 'src/services/global.services';
   styleUrls: ['./menu.component.css']
 })
 export class MenuComponent implements OnInit {
-  action:string
-  Riders:Adherent_VM[];
+  action: string
+  Riders: Adherent_VM[];
   listeprof: Professeur[];
   listelieu: KeyValuePair[];
 
-  public  sort_nom = "NO";
-  public  sort_cours = "NO";
-  public  sort_date = "NO";
-  public  sort_lieu = "NO";
+  public sort_nom = "NO";
+  public sort_cours = "NO";
+  public sort_date = "NO";
+  public sort_lieu = "NO";
   listeCours: cours[] = [];
-  public   filter_date_avant: Date;
-  public   filter_date_apres: Date;
-  public  filter_nom: string;
-  public  filter_cours: number;
-  public  filter_groupe: number;
-  public  filter_lieu: number;
-  public  filter_prof: number;
-  public  liste_prof_filter: KeyValuePairAny[];
-  public  liste_lieu_filter: KeyValuePairAny[];  
-  constructor(private router: Router, private adherent_serv:AdherentService) { }
+  public filter_date_avant: any;
+  public filter_date_apres: any;
+  public filter_nom: string;
+  public filter_cours: number;
+  public filter_groupe: number;
+  public filter_lieu: number;
+  public filter_prof: number;
+  public liste_prof_filter: KeyValuePairAny[];
+  public liste_lieu_filter: KeyValuePairAny[];
+  public g: StaticClass;
+  constructor(private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -42,11 +49,18 @@ export class MenuComponent implements OnInit {
       switch (GlobalService.menu) {
         default:
         case "ADHERENT":
-          case "PROF":
+        case "PROF":
+          const auj = new Date();
+          this.filter_date_apres = this.formatDate(auj);
+      
+          // Date dans un mois
+          const nextMonth = new Date(auj);
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+          this.filter_date_avant = this.formatDate(nextMonth);
           this.adherent_serv.Get(GlobalService.compte.id).then((riders) => {
-            this.Riders = riders.map( x => new Adherent_VM(x));
+            this.Riders = riders.map(x => new Adherent_VM(x));
             this.Riders.sort((a, b) => {
-           
+
               let comparaison = 0;
               if (a.datasource.id > b.datasource.id) {
                 comparaison = 1;
@@ -56,6 +70,43 @@ export class MenuComponent implements OnInit {
 
               return comparaison; // Inverse pour le tri descendant
             });
+            this.adherent_serv.GetProf().then((profs) => {
+              if (profs.length == 0) {
+                let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
+                errorService.emitChange(o);
+                this.router.navigate(['/adherent']);
+                return;
+              }
+              this.listeprof = profs;
+              this.lieuserv.GetAllLight().then((lieux) => {
+                if (lieux.length == 0) {
+                  let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
+                  errorService.emitChange(o);
+                  if (GlobalService.menu === "ADMIN") {
+                    this.router.navigate(['/lieu']);
+
+                  }
+                  return;
+                }
+                this.listelieu = lieux;
+                this.coursservice.GetCours().then((c) => {
+                  this.listeCours = c;
+                }).catch((err: HttpErrorResponse) => {
+                  let o = errorService.CreateError($localize`récupérer les cours`, err.message);
+                  errorService.emitChange(o);
+                  return;
+                })
+
+              }).catch((err: HttpErrorResponse) => {
+                let o = errorService.CreateError($localize`récupérer les lieux`, err.message);
+                errorService.emitChange(o);
+                return;
+              })
+            }).catch((err: HttpErrorResponse) => {
+              let o = errorService.CreateError($localize`récupérer les profs`, err.message);
+              errorService.emitChange(o);
+              return;
+            })
           }).catch((error: Error) => {
             let o = errorService.CreateError(this.action, error.message);
             errorService.emitChange(o);
@@ -66,25 +117,38 @@ export class MenuComponent implements OnInit {
           break;
       }
 
-    } else { let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
+    } else {
+      let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
       errorService.emitChange(o);
       this.router.navigate(['/login']);
     }
   }
+  formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+    return `${year}-${month}-${day}`;
+  }
 
   trouverLieu(lieuId: number): any {
-    // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
-    // que vous pouvez stocker dans une variable
-    const indexToUpdate = this.listelieu.findIndex(lieu => lieu.key === lieuId);
+    if (this.listelieu) {
+      const indexToUpdate = this.listelieu.findIndex(lieu => lieu.key === lieuId);
 
-    if (indexToUpdate !== -1) {
-      // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-      return this.listelieu[indexToUpdate].value;
-    } else {
+      if (indexToUpdate !== -1) {
+        // Remplacer l'élément à l'index trouvé par la nouvelle valeur
+        return this.listelieu[indexToUpdate].value;
+      } else {
+        return $localize`Lieu non trouvé`;
+      }
+    } // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
+    // que vous pouvez stocker dans une variable
+    else {
+
       return $localize`Lieu non trouvé`;
     }
+
   }
-  Sort(sens: "NO" | "ASC" | "DESC", champ: string, id:number) {
+  Sort(sens: "NO" | "ASC" | "DESC", champ: string, id: number) {
     let liste_seance_VM = this.Riders.find(x => x.datasource.id == id).InscriptionSeances;
     switch (champ) {
       case "nom":
@@ -150,6 +214,56 @@ export class MenuComponent implements OnInit {
     }
 
 
+  }
+
+  MAJInscription(inscription: inscription_seance, statut: boolean) {
+    const errorService = ErrorService.instance;
+    let oldstatut = inscription.statut_inscription;
+    let libellenom = this.Riders.find(x => x.datasource.id == inscription.rider_id).Libelle;
+    let libelleseab = this.Riders.find(x => x.datasource.id == inscription.rider_id).InscriptionSeances.find(x => x.thisSeance.seance_id == inscription.seance_id).thisSeance.libelle;
+    if (statut) {
+      inscription.statut_inscription = StatutPresence.Présent;
+      this.action = libellenom + $localize` prévoit d'être présent à la séance ` + libelleseab;
+    } else {
+      inscription.statut_inscription = StatutPresence.Absent;
+      this.action = libellenom + $localize` prévoit d'être absent à la séance ` + libelleseab;
+    }
+    if (inscription.id == 0) {
+
+      this.inscriptionserv.Add(inscription).then((id) => {
+        inscription.id = id;
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        this.inscriptionserv.Get(id).then((ins) => {
+          inscription = ins;
+        })
+
+      }).catch((err: HttpErrorResponse) => {
+        inscription.statut_inscription = oldstatut
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        return;
+      })
+    } else {
+      this.inscriptionserv.Update(inscription).then((retour) => {
+        if (retour) {
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+          this.inscriptionserv.Get(inscription.id).then((ins) => {
+            inscription = ins;
+          })
+        } else {
+          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          errorService.emitChange(o);
+        }
+
+      }).catch((err: HttpErrorResponse) => {
+        inscription.statut_inscription = oldstatut
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        return;
+      })
+    }
   }
 
 }

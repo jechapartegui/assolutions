@@ -20,6 +20,7 @@ export enum StatutPresence {
 
 }
 
+
 export class InscriptionSeance {
       public thisSeance: seance;
       public thisInscription: inscription_seance;
