@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adherent, Adherent_VM } from 'src/class/adherent';
+import {  Adherent_VM } from 'src/class/adherent';
 import { cours } from 'src/class/cours';
 import { inscription_seance, InscriptionSeance, StatutPresence } from 'src/class/inscription';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
