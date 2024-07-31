@@ -1,19 +1,173 @@
-<div class="container">
+<div *ngIf="thisSeance" class="container">
     <div class="columns is-justify-content-center">
         <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
             <div class="box">
 
-                <h2 class="title is-2" i18n>{{thisSeance.libelle}}</h2>
-                
-                <h4 class="title is-4" i18n>Présents</h4>
+                <h3 class="title is-3" i18n>{{thisSeance.libelle}}</h3>
+                <div class="panel is-primary">
+                    <div class="panel-heading">
+                        <span i18n>Convoquer un adhérent à la séance</span>
+                    </div>
+                    <div class="panel-block">
+                        <div class="select">
+                            <select id="seasons" [(ngModel)]="adherent_to" i18n-placeholder
+                                placeholder="Sélectionner l'adhérent">
+                                <!-- Options pour les professeurs -->
+                                <ng-container *ngFor="let add of AdherentsHorsGroupe">
+                                    <option [ngValue]="add">{{add.Libelle}}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                        <hover-button [nomclass]="'button is-outlined is-rounded is-primary'" [disabled]="!adherent_to"
+                            [nomicon]="'fas fa-plus'" [libelle]="'Ajouter'"
+                            (click)="AjouterAdherentsHorsGroupe()">
+                        </hover-button>
+                    </div>
+                </div>
+                <h6 class="title is-6" i18n>Présences potentielles</h6>
                 <ng-container *ngFor="let potentiel of liste_inscription">
-                    <ng-container *ngIf="potentiel.statut_inscription == null">
-                        <ng-container *ngIf="potentiel.statut_seance == 'présent'">
-
+                    <ng-container *ngIf="!potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_inscription === 'présent'">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>contact d'urgence</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                    </span>
+                                </span>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+                                    [disabled]="!GetNbPersonne()" [nomicon]="'fas fa-check'" [libelle]="'Présent'"
+                                    (click)="MAJInscription(potentiel, true)">
+                                </hover-button>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                                    [nomicon]="'fas fa-times'" [libelle]="'Absent'"
+                                    (click)="MAJInscription(potentiel, false)">
+                                </hover-button>
+                            </div>
                         </ng-container>
                     </ng-container>
                 </ng-container>
-
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="!potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_inscription === 'convoqué'">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>contact d'urgence</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-hand-point-up has-text-info"></i>
+                                    </span>
+                                </span>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+                                    [disabled]="!GetNbPersonne()" [nomicon]="'fas fa-check'" [libelle]="'Présent'"
+                                    (click)="MAJInscription(potentiel, true)">
+                                </hover-button>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                                    [nomicon]="'fas fa-times'" [libelle]="'Absent'"
+                                    (click)="MAJInscription(potentiel, false)">
+                                </hover-button>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="!potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_inscription === 'absent'">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>contact d'urgence</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-thumbs-down has-text-success"></i>
+                                    </span>
+                                </span>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+                                    [disabled]="!GetNbPersonne()" [nomicon]="'fas fa-check'" [libelle]="'Présent'"
+                                    (click)="MAJInscription(potentiel, true)">
+                                </hover-button>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                                    [nomicon]="'fas fa-times'" [libelle]="'Absent'"
+                                    (click)="MAJInscription(potentiel, false)">
+                                </hover-button>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="!potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_inscription === null">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>contact d'urgence</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-question"></i>
+                                    </span>
+                                </span>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
+                                [disabled]="!GetNbPersonne()" [nomicon]="'fas fa-check'" [libelle]="'Présent'"
+                                (click)="MAJInscription(potentiel, true)">
+                            </hover-button>
+                            <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                                [nomicon]="'fas fa-times'" [libelle]="'Absent'"
+                                (click)="MAJInscription(potentiel, false)">
+                            </hover-button>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+                <h6 class="title is-6" i18n>Présents</h6>
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_seance === 'présent'">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>contact d'urgence</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                    </span>
+                                </span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-check has-text-success"></i>
+                                    </span>
+                                </span>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                                    [nomicon]="'fas fa-times'" [libelle]="'Absent'"
+                                    (click)="MAJInscription(potentiel, false)">
+                                </hover-button>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+                <h6 class="title is-6" i18n>Absents</h6>
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_seance === 'absent'">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>contact d'urgence</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                    </span>
+                                </span>
+                                <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
+                                [nomicon]="'fas fa-check'" [libelle]="'Présent'"
+                                (click)="MAJInscription(potentiel, true)">
+                            </hover-button>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-times has-text-danger"></i>
+                                    </span>
+                                </span>                               
+                               
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
             </div>
         </div>
     </div>
