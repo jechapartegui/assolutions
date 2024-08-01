@@ -1,21 +1,32 @@
 <div class="container">
-
     <ng-container *ngIf="context == 'LISTE'">
         <div class="columns" style="margin-top: 0.5rem;">
             <div class="column">
-                <button type="button" (click)="inscrits == null ? inscrits = active_saison.id : inscrits = null;"
-                    [class]="inscrits == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' ">
-                    <i class="fa-solid fa-registered"></i>
-                </button>
-                <span class="fullscreen">
-                    <button type="button" title="Filtrer" i18n-title (click)="afficher_filtre ? afficher_filtre = false : afficher_filtre = true;"
-                        [class]="afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined' ">
-                        <i class="fa-solid fa-filter"></i>
-                    </button>
-                </span>
+                <hover-button
+                    [nomclass]="inscrits == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' "
+                    [nomicon]="'fas fa-signature'" [libelle]="'Inscrits'"
+                    (click)="inscrits == null ? inscrits = active_saison.id : inscrits = null;">
+                </hover-button>
+                
+                <hover-button
+                    [nomclass]="afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined' "
+                    [nomicon]="'fa-solid fa-filter'" [libelle]="'Afficher le filtre'"
+                    (click)="afficher_filtre ? afficher_filtre = false : afficher_filtre = true;">
+                </hover-button>
+                <hover-button
+                    [nomclass]="'button  is-rounded is-primary is-outlined' "
+                    [nomicon]="'fas fa-file-excel'" [libelle]="'Exporter vers Excel'"
+                    (click)="ExporterExcel()">
+                </hover-button>
+                
+                <hover-button
+                    [nomclass]="'button  is-rounded is-primary is-outlined' "
+                    [nomicon]="'far fa-file-excel'" [libelle]="'Importer un fichier Excel'"
+                    (click)="ImporterExcel()">
+                </hover-button>
             </div>
         </div>
-        <div class="columns" >
+        <div class="columns">
             <div class="column">
                 <div class="card">
                     <header class="card-header">
@@ -33,12 +44,15 @@
                                     <tr>
                                         <th><span class="th">
                                                 <span class="ligne"> <span style="font-size: smaller;" i18n>Nom</span>
-                                                <span style="cursor: pointer;">
-                                                    <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort"></i>
-                                                    <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" class="fa-solid fa-sort-up"></i>
-                                                    <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort-down"></i>
-                                                 </span>
-                                                      </span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span>
+                                                </span>
                                                 <input *ngIf="afficher_filtre"
                                                     style="width: fit-content;font-size:smaller;" class="input is-small"
                                                     i18n-placeholder placeholder="Nom du cours" type="text"
@@ -49,10 +63,13 @@
                                                 <span class="ligne">
                                                     <span style="font-size: smaller;" i18n>Date de naissance</span>
                                                     <span style="cursor: pointer;">
-                                                        <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort"></i>
-                                                        <i *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'date')" class="fa-solid fa-sort-up"></i>
-                                                        <i *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort-down"></i>
-                                                     </span></span>
+                                                        <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date')"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'date')"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'date')"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span></span>
                                                 <span *ngIf="afficher_filtre" class="ligne">
                                                     <div style="gap: 6px;"
                                                         class="field is-small is-horizontal field-jecha">
@@ -76,9 +93,12 @@
                                                 <span class="ligne">
                                                     <span style="font-size: smaller;" i18n>Sexe</span><span
                                                         style="cursor: pointer;">
-                                                        <i *ngIf="sort_sexe === 'NO'" (click)="Sort('ASC', 'sexe')" class="fa-solid fa-sort"></i>
-                                                        <i *ngIf="sort_sexe === 'ASC'" (click)="Sort('DESC', 'sexe')" class="fa-solid fa-sort-up"></i>
-                                                        <i *ngIf="sort_sexe === 'DESC'" (click)="Sort('ASC', 'sexe')" class="fa-solid fa-sort-down"></i>
+                                                        <i *ngIf="sort_sexe === 'NO'" (click)="Sort('ASC', 'sexe')"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_sexe === 'ASC'" (click)="Sort('DESC', 'sexe')"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_sexe === 'DESC'" (click)="Sort('ASC', 'sexe')"
+                                                            class="fa-solid fa-sort-down"></i>
                                                     </span>
                                                     <span *ngIf="afficher_filtre" class="ligne">
                                                         <div class="select">
@@ -128,7 +148,7 @@
                                         <td>
                                             <i *ngIf="adherent.Sexe" class="fa-solid fa-mars"></i>
                                             <i *ngIf="!adherent.Sexe" class="fa-solid fa-venus"></i>
-                                            
+
                                         </td>
 
                                         <td>
@@ -144,13 +164,13 @@
                                             <div class="buttons">
                                                 <button i18n-title title="Supprimer"
                                                     class="button is-danger is-rounded is-outlined" type="button"
-                                                    (click)="Delete(adherent)" >
+                                                    (click)="Delete(adherent)">
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
 
                                                 <button i18n-title title="Editer"
                                                     class="button is-info is-rounded is-outlined" type="button"
-                                                     (click)="Edit(adherent)">
+                                                    (click)="Edit(adherent)">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
                                             </div>
@@ -200,7 +220,8 @@
                             <input [class]="thisAdherent.valid.libelle ? 'input' : 'input is-danger'" type="text"
                                 id="nom_rider" name="nom_rider" i18n-placeholder placeholder="Nom"
                                 [(ngModel)]="thisAdherent.Nom">
-                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom / Surnom doit contenir au moins 2 caractères
+                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
+                                Surnom doit contenir au moins 2 caractères
                             </p>
                         </div>
                     </div>
@@ -210,8 +231,9 @@
                             <input [class]="thisAdherent.valid.libelle? 'input' : 'input is-danger'" type="text"
                                 id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
                                 [(ngModel)]="thisAdherent.Prenom">
-                                <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom / Surnom doit contenir au moins 2 caractères
-                                </p>
+                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
+                                Surnom doit contenir au moins 2 caractères
+                            </p>
                         </div>
                     </div>
                     <div class="field">
@@ -220,8 +242,9 @@
                             <input [class]="thisAdherent.valid.libelle? 'input' : 'input is-danger'" type="text"
                                 id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
                                 [(ngModel)]="thisAdherent.Surnom">
-                                <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom / Surnom doit contenir au moins 2 caractères
-                                </p>
+                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
+                                Surnom doit contenir au moins 2 caractères
+                            </p>
                         </div>
                     </div>
                     <div class="field">
@@ -269,9 +292,9 @@
                         style="fill:#FFB70F">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </button>
-                    <button *ngIf="thisAdherent.ID>0 && (GlobalService.Menu$ | async) != 'ADHERENT'" (click)="Retour('LECTURE')" class="button is-info is-rounded is-outlined"
-                       >
-                       <i class="fa-solid fa-binoculars"></i>
+                    <button *ngIf="thisAdherent.ID>0 && (GlobalService.Menu$ | async) != 'ADHERENT'"
+                        (click)="Retour('LECTURE')" class="button is-info is-rounded is-outlined">
+                        <i class="fa-solid fa-binoculars"></i>
                     </button>
                     <button (click)="Retour('LISTE')" class="button is-danger is-rounded is-outlined"
                         style="fill:hsl(348, 100%, 61%)">
