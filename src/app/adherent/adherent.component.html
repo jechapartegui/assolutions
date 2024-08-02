@@ -1,29 +1,53 @@
 <div class="container">
     <ng-container *ngIf="context == 'LISTE'">
         <div class="columns" style="margin-top: 0.5rem;">
-            <div class="column">
+            <div class="column menuligne">
                 <hover-button
                     [nomclass]="inscrits == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' "
                     [nomicon]="'fas fa-signature'" [libelle]="'Inscrits'"
                     (click)="inscrits == null ? inscrits = active_saison.id : inscrits = null;">
                 </hover-button>
-                
+
                 <hover-button
                     [nomclass]="afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined' "
                     [nomicon]="'fa-solid fa-filter'" [libelle]="'Afficher le filtre'"
                     (click)="afficher_filtre ? afficher_filtre = false : afficher_filtre = true;">
                 </hover-button>
-                <hover-button
-                    [nomclass]="'button  is-rounded is-primary is-outlined' "
-                    [nomicon]="'fas fa-file-excel'" [libelle]="'Exporter vers Excel'"
-                    (click)="ExporterExcel()">
+                <button *ngIf="afficher_filtre" (click)="ReinitFiltre()"
+                    class="button is-danger is-rounded is-outlined">
+                    <span class="icon is-large">
+                        <span class="fa-stack fa-lg">
+                            <i class="fas fa-filter fa-stack-1x"></i>
+                            <i class="fas fa-slash fa-stack-1x has-text-danger"></i>
+                        </span>
+                    </span>
+                </button>
+                <hover-button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
+                    [nomclass]="'button  is-rounded is-primary is-outlined' " [nomicon]="'fas fa-file-excel'"
+                    [libelle]="'Exporter vers Excel'" (click)="ExporterExcel()">
                 </hover-button>
-                
-                <hover-button
-                    [nomclass]="'button  is-rounded is-primary is-outlined' "
-                    [nomicon]="'far fa-file-excel'" [libelle]="'Importer un fichier Excel'"
-                    (click)="ImporterExcel()">
+
+                <hover-button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
+                    [nomclass]="'button  is-rounded is-primary is-outlined' " [nomicon]="'far fa-file-excel'"
+                    [libelle]="'Importer un fichier Excel'" (click)="ImporterExcel()">
                 </hover-button>
+                <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field has-addons">
+                    <div class="control">
+                        <div class="select">
+                            <select [(ngModel)]="active_saison">
+                                <ng-container *ngFor="let saison of liste_saison">
+                                    <option [ngValue]="saison">{{saison.nom}}</option>
+                                </ng-container>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-info" (click)="ChangerSaison()">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
         <div class="columns">
@@ -42,8 +66,9 @@
                                 *ngIf="liste_adherents_VM && liste_adherents_VM.length> 0">
                                 <thead>
                                     <tr>
-                                        <th><span class="th">
-                                                <span class="ligne"> <span style="font-size: smaller;" i18n>Nom</span>
+                                        <th><span class="th_filtre">
+                                                <span class="ligne">
+                                                    <span style="font-size: smaller;" i18n>Nom</span>
                                                     <span style="cursor: pointer;">
                                                         <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')"
                                                             class="fa-solid fa-sort"></i>
@@ -59,7 +84,7 @@
                                                     [(ngModel)]="filter_nom">
                                             </span>
                                         </th>
-                                        <th><span class="th">
+                                        <th><span class="th_filtre">
                                                 <span class="ligne">
                                                     <span style="font-size: smaller;" i18n>Date de naissance</span>
                                                     <span style="cursor: pointer;">
@@ -73,23 +98,25 @@
                                                 <span *ngIf="afficher_filtre" class="ligne">
                                                     <div style="gap: 6px;"
                                                         class="field is-small is-horizontal field-jecha">
-                                                        <label for="groupe" class="label is-small">Après le</label>
+                                                        <label for="groupe" class="label is-small" i18n>Du</label>
                                                         <input style="width: fit-content;" class="input is-small"
                                                             i18n-placeholder placeholder="Filtre date avant" type="date"
-                                                            [(ngModel)]="filter_date_avant">
+                                                            [(ngModel)]="filter_date_apres">
 
                                                     </div>
+                                                </span>
+                                                <span *ngIf="afficher_filtre" class="ligne">
                                                     <div style="gap: 6px;"
                                                         class="field is-small is-horizontal field-jecha">
-                                                        <label for="groupe" class="label is-small">Avant le</label>
+                                                        <label for="groupe" class="label is-small" i18n>Au</label>
                                                         <input style="width: fit-content;" class="input is-small"
                                                             i18n-placeholder placeholder="Filtre date après" type="date"
-                                                            [(ngModel)]="filter_date_apres">
+                                                            [(ngModel)]="filter_date_avant">
                                                     </div>
                                                 </span>
                                             </span>
                                         </th>
-                                        <th><span class="th">
+                                        <th><span class="th_filtre">
                                                 <span class="ligne">
                                                     <span style="font-size: smaller;" i18n>Sexe</span><span
                                                         style="cursor: pointer;">
@@ -100,39 +127,36 @@
                                                         <i *ngIf="sort_sexe === 'DESC'" (click)="Sort('ASC', 'sexe')"
                                                             class="fa-solid fa-sort-down"></i>
                                                     </span>
-                                                    <span *ngIf="afficher_filtre" class="ligne">
-                                                        <div class="select">
-                                                            <select style="font-size:smaller;"
-                                                                [(ngModel)]="filter_sexe">
-                                                                <option [ngValue]="null" i18n>Tous</option>
-                                                                <option [ngValue]="0" i18n>Femme</option>
-                                                                <option [ngValue]="1" i18n>Homme</option>
-                                                            </select>
-                                                        </div>
-                                                    </span>
+                                                </span>
+                                                <span *ngIf="afficher_filtre" class="ligne">
+                                                    <div class="select">
+                                                        <select style="font-size:smaller;" [(ngModel)]="filter_sexe">
+                                                            <option [ngValue]="null" i18n>Tous</option>
+                                                            <option [ngValue]="0" i18n>Femme</option>
+                                                            <option [ngValue]="1" i18n>Homme</option>
+                                                        </select>
+                                                    </div>
                                                 </span>
 
                                             </span>
                                         </th>
-                                        <th><span class="th">
-                                                <span class="ligne">
-                                                    <span style="font-size: smaller;" i18n>Groupes</span>
-                                                    <span *ngIf="afficher_filtre" class="ligne">
-                                                        <div class="select">
-                                                            <select style="font-size:smaller;"
-                                                                [(ngModel)]="filter_groupe">
-                                                                <option [ngValue]="null" i18n>Tous</option>
-                                                                <ng-container *ngFor="let gr of liste_groupe">
-                                                                    <option [ngValue]="gr.id">{{gr.nom}}</option>
-                                                                </ng-container>
-                                                            </select>
-                                                        </div>
-                                                    </span>
+                                        <th><span class="th_filtre">
+                                                <span style="font-size: smaller;" i18n>Groupes</span>
+                                                <span *ngIf="afficher_filtre" class="ligne">
+                                                    <div class="select">
+                                                        <select style="font-size:smaller;" [(ngModel)]="filter_groupe">
+                                                            <option [ngValue]="null" i18n>Tous</option>
+                                                            <ng-container *ngFor="let gr of liste_groupe">
+                                                                <option [ngValue]="gr.id">{{gr.nom}}</option>
+                                                            </ng-container>
+                                                        </select>
+                                                    </div>
                                                 </span>
 
                                             </span>
                                         </th>
-
+                                        <th>Contact</th>
+                                        <th>Inscrit</th>
                                         <th><span style="font-size: smaller;" i18n>Action</span></th>
                                     </tr>
                                 </thead>
@@ -143,11 +167,12 @@
                                             {{adherent.Libelle}}
                                         </td>
                                         <td>
-                                            {{ adherent.DDN | date: 'dd/MM/yyyy' }} ({{calculateAge(adherent.DDN)}})
+                                            {{ adherent.DDN | date: 'dd/MM/yyyy' }}
+                                            ({{calculateAge(adherent.DDN)}}&nbsp;<span i18n>ans</span>)
                                         </td>
                                         <td>
-                                            <i *ngIf="adherent.Sexe" class="fa-solid fa-mars"></i>
-                                            <i *ngIf="!adherent.Sexe" class="fa-solid fa-venus"></i>
+                                            <i *ngIf="adherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
+                                            <i *ngIf="!adherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
 
                                         </td>
 
@@ -161,13 +186,34 @@
                                             </div>
                                         </td>
                                         <td>
+                                            <span *ngIf="adherent.ContactPrefereType=='EMAIL'"><i
+                                                    class="fas fa-at"></i></span>
+                                            <span *ngIf="adherent.ContactPrefereType=='PHONE'"><i
+                                                    class="fas fa-phone"></i></span>
+                                            <span *ngIf="adherent.ContactPrefereType=='INSTA'"><i
+                                                    class="fab fa-instagram-square"></i></span>
+                                            <span *ngIf="adherent.ContactPrefereType=='FACEBOOK'"><i
+                                                    class="fab fa-facebook-square"></i></span>
+                                            <span *ngIf="adherent.ContactPrefereType=='TWITTER'"><i
+                                                    class="fab fa-twitter-square"></i></span>
+                                            <span>&nbsp;{{adherent.ContactPrefere}}</span>
+                                        </td>
+                                        <td>
+                                            <i *ngIf="!isRegistred(adherent)" class="fas fa-times "></i>
+                                            <i *ngIf="isRegistred(adherent)" class="fas fa-check has-text-success"></i>
+                                        </td>
+                                        <td>
                                             <div class="buttons">
                                                 <button i18n-title title="Supprimer"
                                                     class="button is-danger is-rounded is-outlined" type="button"
                                                     (click)="Delete(adherent)">
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
-
+                                                <button *ngIf="!isRegistred(adherent)" i18n-title title="Inscrire"
+                                                    class="button is-info is-rounded is-outlined" type="button"
+                                                    (click)="Register(adherent)">
+                                                    <i class="fas fa-signature"></i>
+                                                </button>
                                                 <button i18n-title title="Editer"
                                                     class="button is-info is-rounded is-outlined" type="button"
                                                     (click)="Edit(adherent)">
@@ -276,6 +322,8 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n>Contact :</label>
+                        <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel"
+                            [datasource]="thisAdherent.ContactEdit"></app-contact-item>
                     </div>
                     <div class="field">
                         <label class="label" i18n>Contact à prévenir :</label>

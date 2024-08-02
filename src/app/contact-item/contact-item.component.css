@@ -1,0 +1,26 @@
+/* src/app/app.component.css */
+.dropdown {
+    position: relative;
+  }
+  
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  .dropdown.is-active .dropdown-menu {
+    display: block;
+  }
+  
+  .dropdown-item {
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f1f1f1;
+  }
+  

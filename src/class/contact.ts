@@ -170,3 +170,42 @@ export class Validation_LigneContact  {
  
 }
 
+export class ItemContact{
+  
+  private _Type : string;
+  public get Type() : string {
+    return this._Type;
+  }
+  public set Type(v : string) {
+    this._Type = v;
+  }
+  
+  private _Value : string;
+  public get Value() : string {
+    return this._Value;
+  }
+  public set Value(v : string) {
+    this._Value = v;
+  }
+  
+  private _Pref : boolean;
+  public get Pref() : boolean {
+    return this._Pref;
+  }
+  public set Pref(v : boolean) {
+    this._Pref = v;
+  }
+  
+  private _Notes : string;
+  public get Notes() : string {
+    return this._Notes;
+  }
+  public set Notes(v : string) {
+    this._Notes = v;
+  }
+  
+  
+  
+  
+}
+

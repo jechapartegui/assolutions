@@ -69,6 +69,11 @@ public LoginToken(token:string, username: string): Promise<boolean> {
           GlobalService.instance.updateSelectedMenuStatus("MENU");  
           GlobalService.instance.updateProjet(new projet(pr));  
         }
+        if(pr.admin){
+          GlobalService.instance.updateMenuType("ADMIN");  
+          GlobalService.instance.updateSelectedMenuStatus("MENU");  
+          GlobalService.instance.updateProjet(new projet(pr));  
+        }
      
       return true;
     })

@@ -2,152 +2,184 @@ import { Subject } from "rxjs";
 import { seance } from "./seance";
 import { Groupe, Lien_Groupe } from "./groupe";
 import { inscription_seance, InscriptionSeance } from "./inscription";
-import { Contact } from "./contact";
+import { Contact, ItemContact } from "./contact";
 import { compte } from "./compte";
 import { Adresse, adresse } from "./address";
 import { Adhesion } from "./adhesion";
 
-export class adherent{
-    public id:number = 0;
-    public prenom:string;
-    public nom:string;
-    public surnom:string;
-    public date_naissance:string = "";
-    public adresse:string;
-    public contacts:string= "[]";
-    public contacts_prevenir:string= "[]";
-    public nationalite:string;
-    public date_creation:Date;
-    public photo:string;
-    public sexe:boolean = false;
-    public seances:seance[];
-    public groupes: Groupe[] = [];
-    public mot_de_passe: string = "";
-    public compte_id: number = 0;
-    public login: string = "";
-    public inscriptions: inscription_seance[] = [];
-    public adhesions: Adhesion[] = [];
-    public seances_prof: seance[] = [];
-    
-   
+export class adherent {
+  public id: number = 0;
+  public prenom: string;
+  public nom: string;
+  public surnom: string;
+  public date_naissance: string = "";
+  public adresse: string;
+  public contacts: string = "[]";
+  public contacts_prevenir: string = "[]";
+  public nationalite: string;
+  public date_creation: Date;
+  public photo: string;
+  public sexe: boolean = false;
+  public seances: seance[];
+  public groupes: Groupe[] = [];
+  public mot_de_passe: string = "";
+  public compte_id: number = 0;
+  public login: string = "";
+  public inscriptions: inscription_seance[] = [];
+  public adhesions: Adhesion[] = [];
+  public seances_prof: seance[] = [];
+
+
 }
 
-export class Adherent{
-    datasource:adherent;
-    public valid: Validation_Adherent;
-     
-   
-    sLibelle = new Subject<string>();
-    dateNaissanceSubject = new Subject<string>();
-    constructor(L:adherent){
-        this.datasource=L;
-        this.SetLibelle(this);
-     
-        this.Contacts = new Contact(this.datasource.contacts);   
-        this.Contacts_prevenir = new Contact(this.datasource.contacts_prevenir);   
-        if(this.datasource.adresse){
-          var add = JSON.parse(this.datasource.adresse);
-          this.address_kvp = new Adresse(add);
-        } else { 
-          this.address_kvp = new Adresse(new adresse());
-        }
-        this.Adhesions = L.adhesions;
-        this.Adresse.valid.Update(this.Adresse);
-        this.Groupes = L.groupes;  
-        this.inscriptions = L.inscriptions;
-        this.seances_prof = L.seances_prof;
-        this.seances = L.seances;
-        this.valid = new Validation_Adherent(this);
-        this.valid.controler();
-    }
-    public get ID() : number {
-        return this.datasource.id;
-    }
-    public set ID(v : number) {
-        this.datasource.id = v;
-    }
-    public Adhesions:Adhesion[];
-    public get CompteID() : number {
-        return this.datasource.compte_id;
-    }
-    public set CompteID(v : number) {
-        this.datasource.compte_id = v;
-    }
-    public get Login() : string {
-        return this.datasource.login;
-    }
-    public set Login(v : string) {
-        this.datasource.login = v;
-    }
-    public get Sexe() : boolean {
-        return this.datasource.sexe;
-    }
-    public set Sexe(v : boolean) {
-        this.datasource.sexe = v;
-    }
+export class Adherent {
+  datasource: adherent;
+  public valid: Validation_Adherent;
 
-    
-    public get Nom() : string {
-        return this.datasource.nom;
-    }
-    public set Nom(v : string) {
-        this.datasource.nom = v;
-        this.SetLibelle(this);
-    }
 
-    public get Prenom() : string {
-        return this.datasource.prenom;
+  sLibelle = new Subject<string>();
+  dateNaissanceSubject = new Subject<string>();
+  constructor(L: adherent) {
+    this.datasource = L;
+    this.SetLibelle(this);
+    let CT: ItemContact[] = JSON.parse(this.datasource.contacts);
+    console.log(CT);
+    const foundContact = CT.find(x => x.Pref === true);
+    this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
+    this.ContactPrefereType = foundContact ? foundContact.Type : null;
+    this.Contacts = new Contact(this.datasource.contacts);
+    this.Contacts_prevenir = new Contact(this.datasource.contacts_prevenir);
+    if (this.datasource.adresse) {
+      var add = JSON.parse(this.datasource.adresse);
+      this.address_kvp = new Adresse(add);
+    } else {
+      this.address_kvp = new Adresse(new adresse());
     }
-    public set Prenom(v : string) {
-        this.datasource.prenom = v;
-        this.SetLibelle(this);
-    }
- // Propriété date_naissance avec get et set
- get DDN(): string {
+    this.Adhesions = L.adhesions;
+    this.Adresse.valid.Update(this.Adresse);
+    this.Groupes = L.groupes;
+    this.inscriptions = L.inscriptions;
+    this.seances_prof = L.seances_prof;
+    this.seances = L.seances;
+    this.valid = new Validation_Adherent(this);
+    this.valid.controler();
+  }
+  public get ID(): number {
+    return this.datasource.id;
+  }
+  public set ID(v: number) {
+    this.datasource.id = v;
+  }
+  public Adhesions: Adhesion[];
+  public get CompteID(): number {
+    return this.datasource.compte_id;
+  }
+  public set CompteID(v: number) {
+    this.datasource.compte_id = v;
+  }
+  public get Login(): string {
+    return this.datasource.login;
+  }
+  public set Login(v: string) {
+    this.datasource.login = v;
+  }
+  public get Sexe(): boolean {
+    return this.datasource.sexe;
+  }
+  public set Sexe(v: boolean) {
+    this.datasource.sexe = v;
+  }
+
+
+  public get Nom(): string {
+    return this.datasource.nom;
+  }
+  public set Nom(v: string) {
+    this.datasource.nom = v;
+    this.SetLibelle(this);
+  }
+
+  public get Prenom(): string {
+    return this.datasource.prenom;
+  }
+  public set Prenom(v: string) {
+    this.datasource.prenom = v;
+    this.SetLibelle(this);
+  }
+  // Propriété date_naissance avec get et set
+  get DDN(): string {
     return this.datasource.date_naissance.toString();
   }
   set DDN(value: string) {
     this.datasource.date_naissance = value;
-   this.dateNaissanceSubject.next(this.datasource.date_naissance);
+    this.dateNaissanceSubject.next(this.datasource.date_naissance);
   }
 
 
-    public get Surnom() : string {
-        return this.datasource.surnom;
-    }
-    public set Surnom(v : string) {
-        this.datasource.surnom = v;
-        this.SetLibelle(this);
-    }
+  public get Surnom(): string {
+    return this.datasource.surnom;
+  }
+  public set Surnom(v: string) {
+    this.datasource.surnom = v;
+    this.SetLibelle(this);
+  }
 
-    
-    public Libelle:string;
-    
-    
-    public SetLibelle(adh:Adherent) {
-        let t = adh.datasource;
-        this.Libelle = "";
-        if(t.prenom && t.prenom.length>0){
-            this.Libelle = t.prenom;
-        }
-        if(t.nom && t.nom.length>0){
-            if(this.Libelle && this.Libelle.length>0){
-                this.Libelle = this.Libelle + " " + t.nom;
-            } else {
-                this.Libelle = t.nom;
-            }
-        }
-        if(t.surnom && t.surnom.length>0){
-            if(this.Libelle && this.Libelle.length>0){
-                this.Libelle = this.Libelle + " " + t.surnom;
-            } else {
-                this.Libelle = t.surnom;
-            }
-        }
-        this.sLibelle.next(this.Libelle);
+  
+  private _ContactPrefere : string;
+  public get ContactPrefere() : string {
+    return this._ContactPrefere;
+  }
+  public set ContactPrefere(v : string) {
+    this._ContactPrefere = v;
+  }
+  
+  private _ContactPrefereType : string;
+  public get ContactPrefereType() : string {
+    return this._ContactPrefereType;
+  }
+  public set ContactPrefereType(v : string) {
+    this._ContactPrefereType = v;
+  }
+
+  
+  public get ContactEdit() : string {
+    return this.datasource.contacts;
+  }
+  public set ContactEdit(v : string) {
+    this.datasource.contacts = v;
+  }
+  
+  
+  
+
+
+  public Libelle: string;
+
+
+  public SetLibelle(adh: Adherent) {
+    let t = adh.datasource;
+    this.Libelle = "";
+    if (t.prenom && t.prenom.length > 0) {
+      this.Libelle = t.prenom;
     }
-    
-    private _contact: Contact;
+    if (t.nom && t.nom.length > 0) {
+      if (this.Libelle && this.Libelle.length > 0) {
+        this.Libelle = this.Libelle + " " + t.nom;
+      } else {
+        this.Libelle = t.nom;
+      }
+    }
+    if (t.surnom && t.surnom.length > 0) {
+      if (this.Libelle && this.Libelle.length > 0) {
+        this.Libelle = this.Libelle + " " + t.surnom;
+      } else {
+        this.Libelle = t.surnom;
+      }
+    }
+    this.sLibelle.next(this.Libelle);
+  }
+
+  private _contact: Contact;
   public get Contacts(): Contact {
     return this._contact;
   }
@@ -175,15 +207,15 @@ export class Adherent{
     this.address_kvp = value;
     this.datasource.adresse = JSON.stringify(value.dataaddress);
   }
-  
+
   public Groupes: Groupe[] = [];
   public inscriptions: inscription_seance[] = [];
   public seances: seance[] = [];
   public seances_prof: seance[] = [];
 }
 
-export class Validation_Adherent{
-    public control: boolean;
+export class Validation_Adherent {
+  public control: boolean;
   public libelle: boolean;
   public date_naissance: boolean;
 
@@ -191,21 +223,21 @@ export class Validation_Adherent{
 
     this.rider.sLibelle.subscribe((value) => this.validateLibelle(value));
     this.rider.dateNaissanceSubject.subscribe((value) => this.validateDateNaissance(value));
-    
+
   }
 
   controler() {
     this.control = true;
     // Appeler les méthodes de validation pour tous les champs lors de la première validation
     this.validateLibelle(this.rider.Libelle);
-     this.validateDateNaissance(this.rider.datasource.date_naissance);
-   
+    this.validateDateNaissance(this.rider.datasource.date_naissance);
+
   }
   checkcontrolvalue() {
-   
-      if (this.libelle && this.date_naissance) {
-        this.control = true;
-      }
+
+    if (this.libelle && this.date_naissance) {
+      this.control = true;
+    }
   }
 
   private validateLibelle(value: string) {
@@ -225,7 +257,7 @@ export class Validation_Adherent{
     }
   }
 
-  
+
 
   private validateDateNaissance(value: string) {
     // Code de validation de la date de naissance
@@ -247,70 +279,70 @@ export class Validation_Adherent{
 
 }
 
-export class Adherent_VM{
-  constructor (_adh:adherent){
+export class Adherent_VM {
+  constructor(_adh: adherent) {
     this.datasource = _adh;
     this.SeancePassee = false;
     this.afficher_filtre = false;
     this.InscriptionSeances = [];
-    if(this.datasource.seances){
-      this.datasource.seances.forEach((ss) =>{
+    if (this.datasource.seances) {
+      this.datasource.seances.forEach((ss) => {
         let ins = this.datasource.inscriptions.find(x => x.seance_id == ss.seance_id);
         let i = new InscriptionSeance(ss, ins, _adh.id)
         this.InscriptionSeances.push(i);
       })
     }
-      this.Libelle = "";
-      if(_adh.prenom && _adh.prenom.length>0){
-          this.Libelle = _adh.prenom;
+    this.Libelle = "";
+    if (_adh.prenom && _adh.prenom.length > 0) {
+      this.Libelle = _adh.prenom;
+    }
+    if (_adh.nom && _adh.nom.length > 0) {
+      if (this.Libelle && this.Libelle.length > 0) {
+        this.Libelle = this.Libelle + " " + _adh.nom;
+      } else {
+        this.Libelle = _adh.nom;
       }
-      if(_adh.nom && _adh.nom.length>0){
-          if(this.Libelle && this.Libelle.length>0){
-              this.Libelle = this.Libelle + " " + _adh.nom;
-          } else {
-              this.Libelle = _adh.nom;
-          }
+    }
+    if (_adh.surnom && _adh.surnom.length > 0) {
+      if (this.Libelle && this.Libelle.length > 0) {
+        this.Libelle = this.Libelle + " " + _adh.surnom;
+      } else {
+        this.Libelle = _adh.surnom;
       }
-      if(_adh.surnom && _adh.surnom.length>0){
-          if(this.Libelle && this.Libelle.length>0){
-              this.Libelle = this.Libelle + " " + _adh.surnom;
-          } else {
-              this.Libelle = _adh.surnom;
-          }
-      }
-    
-  
+    }
+
+
 
   }
-  public Libelle:string;
-  public datasource:adherent;
-  public InscriptionSeances:InscriptionSeance[];
-  
+  public Libelle: string;
+  public datasource: adherent;
+  public InscriptionSeances: InscriptionSeance[];
+
   //mois
 
-  
-  
-  private _SeancePassee : boolean;
-  public get SeancePassee() : boolean {
+
+
+  private _SeancePassee: boolean;
+  public get SeancePassee(): boolean {
     return this._SeancePassee;
   }
-  public set SeancePassee(v : boolean) {
+  public set SeancePassee(v: boolean) {
     this._SeancePassee = v;
   }
 
-  
-  private _afficher_filtre : boolean;
-  public get afficher_filtre() : boolean {
+
+  private _afficher_filtre: boolean;
+  public get afficher_filtre(): boolean {
     return this._afficher_filtre;
   }
-  public set afficher_filtre(v : boolean) {
+  public set afficher_filtre(v: boolean) {
     this._afficher_filtre = v;
   }
-  
 
 
 
-  
+
+
 
 
 }

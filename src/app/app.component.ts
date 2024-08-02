@@ -12,7 +12,7 @@ import { GlobalService } from 'src/services/global.services';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'Visu Floorball';
+  title = 'AsSolutions';
   action: string;
   isactive: boolean = false;
   g: StaticClass;

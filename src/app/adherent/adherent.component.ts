@@ -3,7 +3,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { adherent, Adherent } from 'src/class/adherent';
 import { Groupe } from 'src/class/groupe';
-import { KeyValuePair } from 'src/class/keyvaluepair';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
 import { ErrorService } from 'src/services/error.service';
@@ -36,6 +35,9 @@ export class AdherentComponent implements OnInit {
   public filter_sexe: boolean;
   public filter_groupe: number;
   public liste_groupe_filter: Groupe[];
+
+  public valid_mail:boolean = false;
+  public valid_tel:boolean = false;
   constructor(public GlobalService: GlobalService,private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -140,14 +142,6 @@ export class AdherentComponent implements OnInit {
     }
     return age;
   }
-  DetectChange() {
-    this.thisAdherent.datasource.contacts = this.thisAdherent.Contacts.Extract();
-    this.thisAdherent.Contacts.CheckAll();
-    this.thisAdherent.datasource.contacts_prevenir = this.thisAdherent.Contacts_prevenir.Extract();
-    this.thisAdherent.Contacts_prevenir.CheckAll();
-    this.thisAdherent.datasource.adresse = JSON.stringify(this.thisAdherent.Adresse.dataaddress);
-    this.thisAdherent.valid.controler();
-  }
 
   Creer(){  
     let adh:adherent = new adherent();
@@ -164,6 +158,16 @@ export class AdherentComponent implements OnInit {
     this.context = "LECTURE";
     this.id = adh.ID;
     this.ChargerAdherent();
+  }
+  Register(adh:Adherent){  
+
+  }
+  isRegistred(adh:Adherent) : boolean{  
+    if(adh.Adhesions.filter(x => x.saison_id == this.active_saison.id).length>0){
+      return true;
+    } else {
+      return false;
+    }
   }
 
   ChargerAdherent(){
@@ -287,20 +291,20 @@ export class AdherentComponent implements OnInit {
 
   }
 
-
-  Filtrer() {
-    this.UpdateListeAdherents();
-  }
-  FiltrerBack() {
-    this.active_saison = this.liste_saison.filter(x => x.active == true)[0];
-    this.UpdateListeAdherents();
-  }
-
   ReinitFiltre() {
     this.filter_date_apres = null;
     this.filter_date_avant = null;
     this.filter_sexe = null;
     this.filter_groupe = null;
     this.filter_nom = null;
+  }
+  ImporterExcel(){
+
+  } 
+  ExporterExcel(){
+
+  }
+  ChangerSaison(){
+
   }
 }
