@@ -1,0 +1,27 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Adresse } from 'src/class/address';
+
+@Component({
+  selector: 'app-address',
+  templateUrl: './address.component.html',
+  styleUrls: ['./address.component.css']
+})
+export class AddressComponent implements OnInit {
+  @Input() Adresse: Adresse;
+  @Input() valid_address:boolean;
+  @Output() validAdresseChange = new EventEmitter<boolean>();
+  
+  ngOnInit(): void {
+    this.CheckAdresse();
+  }
+  CheckAdresse() {
+    this.valid_address = false;
+    this.validateAdresse(false); 
+
+  }
+  validateAdresse(isValid: boolean) {
+    this.valid_address = isValid;
+    this.validAdresseChange.emit(this.valid_address);
+  }
+
+}

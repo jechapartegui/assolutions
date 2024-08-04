@@ -23,6 +23,7 @@ export class AdherentComponent implements OnInit {
   public afficher_filtre: boolean = false;
   @Input() public id: number;
   public liste_groupe: Groupe[] = [];
+  public titre_groupe = $localize`Groupe de l'adhérent`;
   public liste_saison: Saison[] = [];
   public active_saison:Saison;
   public liste_adherents_VM:Adherent[]= [];
@@ -211,6 +212,32 @@ export class AdherentComponent implements OnInit {
   }
 
   Save(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Sauvegarder l'adhérent`;
+    if(this.thisAdherent.ID == 0){
+      this.ridersService.Add(this.thisAdherent.datasource).then((id) =>{
+        this.thisAdherent.ID = id;
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
+    } else{
+      this.ridersService.Update(this.thisAdherent.datasource).then((retour) =>{
+        if(retour){
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+
+        } else {
+          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          errorService.emitChange(o);
+        }
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
+    }
 
   }
  
@@ -306,5 +333,18 @@ export class AdherentComponent implements OnInit {
   }
   ChangerSaison(){
 
+  }
+  onValidMailChange(isValid: boolean) {
+    this.valid_mail = isValid;
+  }
+
+  onValidTelChange(isValid: boolean) {
+    this.valid_tel = isValid;
+  }
+  onValidContactChange(data: string) {
+    this.thisAdherent.ContactEdit = data;
+  }
+  onValidContactUrgenceChange(data: string) {
+    this.thisAdherent.ContactUrgenceEdit = data;
   }
 }

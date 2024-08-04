@@ -32,6 +32,44 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+  public Add(adherent: adherent): Promise<number> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "add",
+      adherent: adherent
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Update(adherent: adherent): Promise<boolean> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "update",
+      adherent: adherent
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
   public Get_Adherent_My(id: number): Promise<adherent> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/adherents_manage.php';

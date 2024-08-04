@@ -1,6 +1,5 @@
 import { Subject } from 'rxjs';
-import { Contact, LigneContact } from './contact';
-import { Adresse, adresse } from './address';
+import { Adresse } from './address';
 import { compte } from './compte';
 import { Groupe } from './groupe';
 import { Saison } from './saison';
@@ -48,14 +47,7 @@ export class Projet {
     } else {
       this.editing = false;
     }
-    this.Contact = new Contact(this.datasource.contact);   
-    if(this.datasource.adresse_facturation){
-      var add = JSON.parse(this.datasource.adresse_facturation);
-      this.address_kvp = new Adresse(add);
-    } else { 
-      this.address_kvp = new Adresse(new adresse());
-    }
-    this.Adresse_Facturation.valid.Update(this.Adresse_Facturation);
+
     this.valid = new ValidationProjet(this);
     this.valid.controler();
     this.Compte = new compte();
@@ -69,7 +61,6 @@ export class Projet {
   libelleFacturationSubject = new Subject<string>();
   activiteSubject = new Subject<string>();
   mailSubject = new Subject<string>();
-  contactSubject = new Subject<Contact>();
   adresseSubject = new Subject<Adresse>();
 
   public get ID(): number {
@@ -101,15 +92,7 @@ export class Projet {
     this.dateDebutSubject.next(value);
   }
 
-  private _contact: Contact;
-  public get Contact(): Contact {
-    return this._contact;
-  }
-  public set Contact(value: Contact) {
-    this._contact = value;
-    this.datasource.contact = value.Extract();
-    this.contactSubject.next(value);
-  }
+
   private compte: compte;
   public get Compte(): compte {
     return this.compte;
@@ -118,18 +101,6 @@ export class Projet {
     this.compte = value;
   }
 
-
-
-  private address_kvp: Adresse;
-  public get Adresse_Facturation(): Adresse {
-    return this.address_kvp;
-  }
-
-  public set Adresse_Facturation(value: Adresse) {
-    this.address_kvp = value;
-    this.datasource.adresse_facturation = JSON.stringify(value.dataaddress);
-    this.adresseSubject.next(value);
-  }
 
   get libelle_facturation(): string {
     return this.datasource.libelle_facturation;
@@ -284,19 +255,14 @@ export class ValidationProjet {
     this.projet_vm.dateDebutSubject.subscribe((value) => this.validateDateDebut(value));
     this.projet_vm.libelleFacturationSubject.subscribe((value) => this.validateLibelleFacturation(value));
     this.projet_vm.activiteSubject.subscribe((value) => this.validateActivite(value));
-    this.projet_vm.contactSubject.subscribe((value) => this.validatecontact(value));
-    this.projet_vm.adresseSubject.subscribe((value) => this.validateadresse(value));
   }
 
   controler() {
     this.control = true;
-    this.projet_vm.Contact.CheckAll();
     this.validateNom(this.projet_vm.nom);
     this.validateDateDebut(this.projet_vm.date_debut);
     this.validateLibelleFacturation(this.projet_vm.libelle_facturation);
     this.validateActivite(this.projet_vm.activite);
-    this.validatecontact(this.projet_vm.Contact);
-    this.validateadresse(this.projet_vm.Adresse_Facturation);
   }
 
   checkControlValue() {
@@ -312,34 +278,7 @@ export class ValidationProjet {
     }
   }
 
-  private validatecontact(value: Contact) {
-    if (value) {
-      if (!value.valid_email_et_phone) {
-        this.contact = false;
-        this.control = false;
-      } else {
-        this.contact = true;
-        this.checkControlValue();
-      }
-    } else {
-      this.contact = false;
-      this.control = false;
-    }
-  }
-  private validateadresse(value: Adresse) {
-    if (value) {
-      if (!value.valid.control) {
-        this.adresse = false;
-        this.control = false;
-      } else {
-        this.adresse = true;
-        this.checkControlValue();
-      }
-    } else {
-      this.adresse = false;
-      this.control = false;
-    }
-  }
+
   private validateNom(value: string) {
     if (value) {
       if (value.length < 6) {

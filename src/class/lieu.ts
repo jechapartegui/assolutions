@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import { Adresse, adresse } from "./address";
+import { Adresse } from "./address";
 
 export class lieu {
     public id: number = 0;
@@ -11,6 +11,7 @@ export class Lieu {
     public editing: boolean = false;
     public valid: ValidationLieu;
     public datasource: lieu;
+    public Adresse:Adresse;
     // Utilisez des sujets pour chaque propriété
     nomSubject = new Subject<string>();
     adresseSubject = new Subject<Adresse>();
@@ -22,14 +23,8 @@ export class Lieu {
             this.editing = true;
         } else {
             this.editing = false;
-        }
-        if (this.datasource.adresse) {
-            var add = JSON.parse(this.datasource.adresse);
-            this.address_kvp = new Adresse(add);
-        } else {
-            this.address_kvp = new Adresse(new adresse());
-        }
-        this.Adresse.valid.Update(this.Adresse);
+        }   
+        this.Adresse = JSON.parse(this.datasource.adresse);
         this.valid = new ValidationLieu(this);
         this.valid.controler();
         console.log(this);
@@ -54,16 +49,7 @@ export class Lieu {
     }
 
     // Propriété prenom avec get et set
-    private address_kvp: Adresse;
-    public get Adresse(): Adresse {
-        return this.address_kvp;
-    }
-
-    public set Adresse(value: Adresse) {
-        this.address_kvp = value;
-        this.datasource.adresse = JSON.stringify(value.dataaddress);
-        this.adresseSubject.next(value);
-    }
+   
 }
 
 export class ValidationLieu {
@@ -73,7 +59,6 @@ export class ValidationLieu {
 
     constructor(private lieu: Lieu) {
         this.lieu.nomSubject.subscribe((value) => this.validateNom(value));
-        this.lieu.adresseSubject.subscribe((value) => this.validateadresse(value));
 
     }
 
@@ -81,7 +66,7 @@ export class ValidationLieu {
         this.control = true;
         // Appeler les méthodes de validation pour tous les champs lors de la première validation
         this.validateNom(this.lieu.nom);
-        this.validateadresse(this.lieu.Adresse);
+        
 
     }
     checkcontrolvalue() {
@@ -108,20 +93,7 @@ export class ValidationLieu {
         }
     }
 
-    private validateadresse(value: Adresse) {
-        if (value) {
-            if (!value.valid.control) {
-                this.adresse = false;
-                this.control = false;
-            } else {
-                this.adresse = true;
-                this.checkcontrolvalue();
-            }
-        } else {
-            this.adresse = false;
-            this.control = false;
-        }
-    }
+   
 
 
 }

@@ -254,7 +254,7 @@
     <ng-container *ngIf="context == 'ECRITURE'">
         <div class="columns is-justify-content-center">
             <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
-                <div class="box">
+                <div *ngIf="thisAdherent" class="box">
 
                     <h2 *ngIf="thisAdherent.ID==0" class="title is-2" i18n>Créer un adhérent
                     </h2>
@@ -319,20 +319,22 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n>Adresse :</label>
+                        <app-address [Adresse]="thisAdherent.Adresse"></app-address>
                     </div>
-                    <div class="field">
-                        <label class="label" i18n>Contact :</label>
-                        <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel"
-                            [datasource]="thisAdherent.ContactEdit"></app-contact-item>
-                    </div>
-                    <div class="field">
-                        <label class="label" i18n>Contact à prévenir :</label>
-
-                    </div>
+                    <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel" [Notes]="'Notes'" [Titre]="'Contacts : '"
+                    [datasource]="thisAdherent.ContactEdit"  (validMailChange)="onValidMailChange($event)"
+                    (validTelChange)="onValidTelChange($event)" (validContactChange)="onValidContactChange($event)"></app-contact-item>
+                    <app-contact-item  [Notes]="'Relation'" [Titre]="'Contact à prévenir : '"
+                    [datasource]="thisAdherent.ContactUrgenceEdit"   (validContactChange)="onValidContactUrgenceChange($event)">
+                </app-contact-item>
+                <div  *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' " class="field">
+                    <label class="label" i18n for="place_maximum">Groupes :</label>
+                    <app-groupe-detail  [title]="titre_groupe"
+                      [Groupes]="thisAdherent.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
+                  </div>
                 </div>
-
-                <div class="buttons">
-                    <button class="button is-primary is-rounded is-outlined" [disabled]="!thisAdherent.valid.control"
+                <div *ngIf="thisAdherent" class="buttons">
+                    <button class="button is-primary is-rounded is-outlined" [disabled]="!thisAdherent.valid.control || !this.valid_mail || !this.valid_tel"
                         type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save()">
                         <i class="fa-solid fa-floppy-disk"></i>
                     </button>

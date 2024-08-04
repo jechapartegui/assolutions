@@ -44,6 +44,7 @@ import { FilterDateAvantMenuPipe } from 'src/filters/filter-dateavantmenu.pipe';
 import { FilterLieuMenuPipe } from 'src/filters/filter-lieumenu.pipe';
 import { FilterListProfMenuPipe } from 'src/filters/filter-listeprofmenu.pipe';
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
+import { AddressComponent } from './address/address.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +59,7 @@ import { MaSeanceComponent } from './ma-seance/ma-seance.component';
     ProfComponent,
     NotifJechaComponent,
     ContactItemComponent, filterInscriptionSaison, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
-  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent],
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

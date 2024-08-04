@@ -1,4 +1,4 @@
-import { Renderer2, Component, Input, OnInit } from '@angular/core';
+import { Renderer2, Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import { ItemContact } from 'src/class/contact';
 
 @Component({
@@ -8,44 +8,107 @@ import { ItemContact } from 'src/class/contact';
 })
 export class ContactItemComponent implements OnInit {
   @Input() datasource: string;
-  @Input() valid_mail: boolean = false;
-  @Input() valid_tel: boolean = false;
-  Contacts: ItemContact[];
+  @Input() valid_mail: boolean;
+  @Input() valid_tel: boolean;
+  @Input() Notes: string = $localize`Notes`;
+  @Input() Titre: string = $localize`Contacts : `;
+  @Output() validMailChange = new EventEmitter<boolean>();
+  @Output() validTelChange = new EventEmitter<boolean>();
+  @Output() validContactChange = new EventEmitter<string>();
 
-  constructor(private renderer: Renderer2) {}
+  // Exemple de méthode qui change la validité de l'email
+ 
+  Contacts: ItemContact[];
+  thisContact: ItemContact;
+  EditIndex:number;
+
+  constructor() { }
 
   ngOnInit(): void {
     this.Contacts = JSON.parse(this.datasource);
     this.CheckContact();
   }
- 
- 
-  CheckContact(){
+  validateEmail(isValid: boolean) {
+    this.valid_mail = isValid;
+    this.validMailChange.emit(this.valid_mail);
+  }
+
+  // Exemple de méthode qui change la validité du téléphone
+  validateTel(isValid: boolean) {
+    this.valid_tel = isValid;
+    this.validTelChange.emit(this.valid_tel);
+  }
+
+   // Exemple de méthode qui change la validité du téléphone
+   validateContact(datas: string) {
+    this.datasource = datas;
+    this.validContactChange.emit(this.datasource);
+  }
+
+  Save() {
+    if(this.EditIndex >= 0){
+      this.Contacts[this.EditIndex] = this.thisContact;
+    } else {
+      this.Contacts.push(this.thisContact);
+    }
+    this.thisContact = null;
+    this.EditIndex = null;
+    this.CheckContact();
+  }
+  DontSave(){
+    this.thisContact = null;
+    this.EditIndex = null;
+  }
+  Add() {
+    this.EditIndex = -1;
+    this.thisContact = new ItemContact();
+  }
+
+
+
+  CheckContact() {
     this.valid_mail = false;
-    this.valid_tel = false;    
-    let ToSerialize : ItemContact[] = [];
-    this.Contacts.forEach((cont) =>{
-      if(this.IsValid(cont)){
+    this.validateEmail(false);
+    this.valid_tel = false;
+    this.validateTel(false);
+    let ToSerialize: ItemContact[] = [];
+    this.Contacts.forEach((cont) => {
+      if (this.IsValid(cont)) {
         ToSerialize.push(cont);
-        if(cont.Type == "EMAIL"){
+        if (cont.Type == "EMAIL") {
           this.valid_mail = true;
+          this.validateEmail(true);
         }
-        if(cont.Type == "PHONE"){
+        if (cont.Type == "PHONE") {
           this.valid_mail = true;
+          this.validateTel(true);
         }
       }
     })
+    this.datasource = JSON.stringify(ToSerialize);
+    this.validateContact(this.datasource);
+
   }
   NewPref(index: number) {
     this.Contacts.forEach(contact => contact.Pref = false);
     if (index >= 0 && index < this.Contacts.length) {
       this.Contacts[index].Pref = true;
     }
+    this.CheckContact();
   }
 
   Delete(index: number) {
     if (index >= 0 && index < this.Contacts.length) {
       this.Contacts.splice(index, 1);
+    }
+    this.CheckContact();
+  }
+
+  Edit(index: number) {
+    if (index >= 0 && index < this.Contacts.length) {
+      const clonedObject = JSON.parse(JSON.stringify(this.Contacts[index]));
+      this.EditIndex = index;
+      this.thisContact = clonedObject;
     }
   }
 
@@ -53,11 +116,14 @@ export class ContactItemComponent implements OnInit {
     return index;
   }
 
-  IsValid(item :ItemContact) :boolean{
-    if(item.Type == "EMAIL"){
+  IsValid(item: ItemContact): boolean {
+    if (!item.Type) {
+      return false;
+    }
+    if (item.Type == "EMAIL") {
       return this.checkIfEmailInString(item.Value);
-    } 
-    if(item.Type == "PHONE"){
+    }
+    if (item.Type == "PHONE") {
       return this.checkIfTelInstring(item.Value);
     }
     return item.Value.length > 3;

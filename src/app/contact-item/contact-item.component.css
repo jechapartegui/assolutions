@@ -1,26 +1,21 @@
-/* src/app/app.component.css */
-.dropdown {
-    position: relative;
-  }
-  
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: white;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    z-index: 1;
-  }
-  
-  .dropdown.is-active .dropdown-menu {
-    display: block;
-  }
-  
-  .dropdown-item {
-    padding: 8px 16px;
-    cursor: pointer;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #f1f1f1;
-  }
-  
+.actions{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 2px;
+  align-items: flex-start;
+
+}
+td{
+  padding: 0px;
+}
+
+.listofbox{
+  font-size: small;
+    padding-left: 2px;
+    padding-top: 2px;
+    padding-right: 2px;
+    padding-bottom: 2px;
+    display: flex;
+    flex-direction: row
+}

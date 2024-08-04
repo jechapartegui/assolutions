@@ -2,9 +2,8 @@ import { Subject } from "rxjs";
 import { seance } from "./seance";
 import { Groupe, Lien_Groupe } from "./groupe";
 import { inscription_seance, InscriptionSeance } from "./inscription";
-import { Contact, ItemContact } from "./contact";
-import { compte } from "./compte";
-import { Adresse, adresse } from "./address";
+import {  ItemContact } from "./contact";
+import { Adresse } from "./address";
 import { Adhesion } from "./adhesion";
 
 export class adherent {
@@ -43,20 +42,12 @@ export class Adherent {
     this.datasource = L;
     this.SetLibelle(this);
     let CT: ItemContact[] = JSON.parse(this.datasource.contacts);
-    console.log(CT);
     const foundContact = CT.find(x => x.Pref === true);
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
-    this.Contacts = new Contact(this.datasource.contacts);
-    this.Contacts_prevenir = new Contact(this.datasource.contacts_prevenir);
-    if (this.datasource.adresse) {
-      var add = JSON.parse(this.datasource.adresse);
-      this.address_kvp = new Adresse(add);
-    } else {
-      this.address_kvp = new Adresse(new adresse());
-    }
+    this.Adresse = JSON.parse(this.datasource.adresse);
+    
     this.Adhesions = L.adhesions;
-    this.Adresse.valid.Update(this.Adresse);
     this.Groupes = L.groupes;
     this.inscriptions = L.inscriptions;
     this.seances_prof = L.seances_prof;
@@ -89,6 +80,10 @@ export class Adherent {
   public set Sexe(v: boolean) {
     this.datasource.sexe = v;
   }
+
+  
+public Adresse :Adresse;
+  
 
 
   public get Nom(): string {
@@ -148,6 +143,13 @@ export class Adherent {
   public set ContactEdit(v : string) {
     this.datasource.contacts = v;
   }
+
+  public get ContactUrgenceEdit() : string {
+    return this.datasource.contacts_prevenir;
+  }
+  public set ContactUrgenceEdit(v : string) {
+    this.datasource.contacts_prevenir = v;
+  }
   
   
   
@@ -179,34 +181,7 @@ export class Adherent {
     this.sLibelle.next(this.Libelle);
   }
 
-  private _contact: Contact;
-  public get Contacts(): Contact {
-    return this._contact;
-  }
-  public set Contacts(value: Contact) {
-    this._contact = value;
-    this.datasource.contacts = value.Extract();
-  }
-
-  private _contact_prevenir: Contact;
-  public get Contacts_prevenir(): Contact {
-    return this._contact_prevenir;
-  }
-  public set Contacts_prevenir(value: Contact) {
-    this._contact_prevenir = value;
-    this.datasource.contacts_prevenir = value.Extract();
-  }
-
-
-  private address_kvp: Adresse;
-  public get Adresse(): Adresse {
-    return this.address_kvp;
-  }
-
-  public set Adresse(value: Adresse) {
-    this.address_kvp = value;
-    this.datasource.adresse = JSON.stringify(value.dataaddress);
-  }
+ 
 
   public Groupes: Groupe[] = [];
   public inscriptions: inscription_seance[] = [];
