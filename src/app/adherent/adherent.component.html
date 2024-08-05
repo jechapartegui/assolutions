@@ -205,6 +205,7 @@
                                         <td>
                                             <div class="buttons">
                                                 <button i18n-title title="Supprimer"
+                                                    *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
                                                     class="button is-danger is-rounded is-outlined" type="button"
                                                     (click)="Delete(adherent)">
                                                     <i class="fa-solid fa-trash-can"></i>
@@ -213,6 +214,11 @@
                                                     class="button is-info is-rounded is-outlined" type="button"
                                                     (click)="Register(adherent)">
                                                     <i class="fas fa-signature"></i>
+                                                </button>
+                                                <button i18n-title title="Editer"
+                                                    class="button is-info is-rounded is-outlined" type="button"
+                                                    (click)="Read(adherent)">
+                                                    <i class="fa-solid fa-binoculars"></i>
                                                 </button>
                                                 <button i18n-title title="Editer"
                                                     class="button is-info is-rounded is-outlined" type="button"
@@ -259,16 +265,13 @@
                     <h2 *ngIf="thisAdherent.ID==0" class="title is-2" i18n>Créer un adhérent
                     </h2>
                     <h2 *ngIf="thisAdherent.ID>0" class="title is-2" i18n>Editer un adhérent</h2>
-                    {{thisAdherent.Libelle}}
                     <div class="field">
                         <label class="label" i18n>Nom</label>
                         <div class="control ">
                             <input [class]="thisAdherent.valid.libelle ? 'input' : 'input is-danger'" type="text"
                                 id="nom_rider" name="nom_rider" i18n-placeholder placeholder="Nom"
                                 [(ngModel)]="thisAdherent.Nom">
-                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
-                                Surnom doit contenir au moins 2 caractères
-                            </p>
+
                         </div>
                     </div>
                     <div class="field">
@@ -277,9 +280,6 @@
                             <input [class]="thisAdherent.valid.libelle? 'input' : 'input is-danger'" type="text"
                                 id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
                                 [(ngModel)]="thisAdherent.Prenom">
-                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
-                                Surnom doit contenir au moins 2 caractères
-                            </p>
                         </div>
                     </div>
                     <div class="field">
@@ -288,11 +288,11 @@
                             <input [class]="thisAdherent.valid.libelle? 'input' : 'input is-danger'" type="text"
                                 id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
                                 [(ngModel)]="thisAdherent.Surnom">
-                            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
-                                Surnom doit contenir au moins 2 caractères
-                            </p>
                         </div>
                     </div>
+                    <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>L'ensemble Prénom / Nom /
+                        Surnom doit contenir au moins 2 caractères
+                    </p>
                     <div class="field">
                         <label class="label" i18n>Date de naissance</label>
                         <div class="control ">
@@ -319,22 +319,33 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n>Adresse :</label>
-                        <app-address [Adresse]="thisAdherent.Adresse"></app-address>
+                        <app-address [valid_address]="valid_address" [Adresse]="thisAdherent.Adresse"
+                            (validAdresseChange)="onValidAdresseChange($event)"
+                            (AdresseChange)="onAdresseChange($event)"></app-address>
                     </div>
-                    <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel" [Notes]="'Notes'" [Titre]="'Contacts : '"
-                    [datasource]="thisAdherent.ContactEdit"  (validMailChange)="onValidMailChange($event)"
-                    (validTelChange)="onValidTelChange($event)" (validContactChange)="onValidContactChange($event)"></app-contact-item>
-                    <app-contact-item  [Notes]="'Relation'" [Titre]="'Contact à prévenir : '"
-                    [datasource]="thisAdherent.ContactUrgenceEdit"   (validContactChange)="onValidContactUrgenceChange($event)">
-                </app-contact-item>
-                <div  *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' " class="field">
-                    <label class="label" i18n for="place_maximum">Groupes :</label>
-                    <app-groupe-detail  [title]="titre_groupe"
-                      [Groupes]="thisAdherent.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
-                  </div>
+                    <p class="help is-danger" *ngIf="!valid_address" i18n>L'adresse doit être saisie (voie, code postal
+                        et ville)</p>
+                    <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel" [Notes]="'Notes'"
+                        [Titre]="'Contacts : '" [Contacts]="thisAdherent.Contacts"
+                        (validMailChange)="onValidMailChange($event)" (validTelChange)="onValidTelChange($event)"
+                        (validContactChange)="onValidContactChange($event)"></app-contact-item>
+                    <p class="help is-danger" *ngIf="!valid_mail" i18n>Au moins un mail doit être saisi</p>
+                    <p class="help is-danger" *ngIf="!valid_mail" i18n>Au moins un téléphone doit être saisi</p>
+
+                    <app-contact-item [Notes]="'Relation'" [Titre]="'Contact à prévenir : '"
+                        [Contacts]="thisAdherent.ContactsUrgence"
+                        (validContactChange)="onValidContactUrgenceChange($event)">
+                    </app-contact-item>
+                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' "
+                        class="field">
+                        <label class="label" i18n for="place_maximum">Groupes :</label>
+                        <app-groupe-detail [title]="titre_groupe" [Groupes]="thisAdherent.Groupes"
+                            [liste_groupe]="liste_groupe"></app-groupe-detail>
+                    </div>
                 </div>
                 <div *ngIf="thisAdherent" class="buttons">
-                    <button class="button is-primary is-rounded is-outlined" [disabled]="!thisAdherent.valid.control || !this.valid_mail || !this.valid_tel"
+                    <button class="button is-primary is-rounded is-outlined"
+                        [disabled]="!thisAdherent.valid.control || !this.valid_address || !this.valid_mail || !this.valid_tel"
                         type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save()">
                         <i class="fa-solid fa-floppy-disk"></i>
                     </button>
@@ -346,7 +357,8 @@
                         (click)="Retour('LECTURE')" class="button is-info is-rounded is-outlined">
                         <i class="fa-solid fa-binoculars"></i>
                     </button>
-                    <button (click)="Retour('LISTE')" class="button is-danger is-rounded is-outlined"
+                    <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF'"
+                        (click)="Retour('LISTE')" class="button is-danger is-rounded is-outlined"
                         style="fill:hsl(348, 100%, 61%)">
                         <i class="fa-solid fa-backward-fast"></i>
                     </button>
@@ -355,7 +367,45 @@
         </div>
     </ng-container>
     <ng-container *ngIf="context == 'LECTURE'">
+        <div class="columns is-justify-content-center">
+            <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+                <div *ngIf="thisAdherent" class="box">
+                    <h3 class="title is-3" i18n>{{thisAdherent.Libelle}}</h3>
+                    <div>{{thisAdherent.DDN | date: 'dd/MM/yyyy'
+                        }}&nbsp;{{calculateAge(thisAdherent.DDN)}}
+                    </div>
+                    <div>
+                        <i *ngIf="thisAdherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
+                        <i *ngIf="!thisAdherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
 
+                    </div>
+
+                    <div>
+                        <div class="tags">
+                            <ng-container *ngFor="let gr of thisAdherent.Groupes">
+                                <span class="tag is-success">
+                                    {{gr.nom}}
+                                </span>
+                            </ng-container>
+                        </div>
+                    </div>
+                    <div>
+                        <ng-container *ngFor="let cont of thisAdherent.Contacts">
+                            <span *ngIf="cont.Type"><i class="fas fa-at"></i></span>
+                            <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
+                            <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
+                            <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
+                            <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
+                            <span>&nbsp;{{cont.Value}}</span>
+                        </ng-container>
+                    </div>
+                    <div>
+                        <i *ngIf="!isRegistred(thisAdherent)" class="fas fa-times "></i>
+                        <i *ngIf="isRegistred(thisAdherent)" class="fas fa-check has-text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </ng-container>
 </div>

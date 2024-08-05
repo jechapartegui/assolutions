@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Adresse } from 'src/class/address';
 import { adherent, Adherent } from 'src/class/adherent';
+import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
@@ -17,7 +19,7 @@ import { SaisonService } from 'src/services/saison.service';
 })
 export class AdherentComponent implements OnInit {
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
-  public thisAdherent = null;
+  public thisAdherent:Adherent = null;
   public action: string = "";
   public inscrits: number = null;
   public afficher_filtre: boolean = false;
@@ -26,6 +28,7 @@ export class AdherentComponent implements OnInit {
   public titre_groupe = $localize`Groupe de l'adhérent`;
   public liste_saison: Saison[] = [];
   public active_saison:Saison;
+  public valid_address:boolean;
   public liste_adherents_VM:Adherent[]= [];
   public sort_nom = "NO";
   public sort_date = "NO";
@@ -59,6 +62,7 @@ export class AdherentComponent implements OnInit {
 
             } else {
               this.router.navigate(['/menu']);
+              GlobalService.selected_menu = "MENU";
             }
             return;
           }
@@ -76,6 +80,7 @@ export class AdherentComponent implements OnInit {
           if (this.context == "LISTE") {
             if (GlobalService.menu === "ADHERENT") {
               this.router.navigate(['/menu']);
+              GlobalService.selected_menu = "MENU";
               return;
             }
           }
@@ -103,6 +108,7 @@ export class AdherentComponent implements OnInit {
           let o = errorService.CreateError($localize`récupérer les saisons`, err.message);
           errorService.emitChange(o);
           this.router.navigate(['/menu']);
+          GlobalService.selected_menu = "MENU";
           return;
         })
 
@@ -111,6 +117,7 @@ export class AdherentComponent implements OnInit {
         let o = errorService.CreateError($localize`Récupérer les groupes`, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/groupe']);
+        GlobalService.selected_menu = "GROUPE";
         return;
       });
 
@@ -172,6 +179,7 @@ export class AdherentComponent implements OnInit {
   }
 
   ChargerAdherent(){
+    this.thisAdherent = null;
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer l'adhérent`;
     if (GlobalService.menu == "ADHERENT") {
@@ -181,6 +189,7 @@ export class AdherentComponent implements OnInit {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
+        GlobalService.selected_menu = "MENU";
         return;
       })
     }
@@ -191,6 +200,7 @@ export class AdherentComponent implements OnInit {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
+        GlobalService.selected_menu = "MENU";
         return;
       })
     }
@@ -201,6 +211,7 @@ export class AdherentComponent implements OnInit {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
+        GlobalService.selected_menu = "MENU";
         return;
       })
     }
@@ -341,10 +352,20 @@ export class AdherentComponent implements OnInit {
   onValidTelChange(isValid: boolean) {
     this.valid_tel = isValid;
   }
-  onValidContactChange(data: string) {
-    this.thisAdherent.ContactEdit = data;
+  onValidContactChange(data: ItemContact[]) {
+    this.thisAdherent.datasource.contacts = JSON.stringify(data);
+    this.thisAdherent.Contacts = data;
+
   }
-  onValidContactUrgenceChange(data: string) {
-    this.thisAdherent.ContactUrgenceEdit = data;
+  onValidContactUrgenceChange(data: ItemContact[])  {
+    this.thisAdherent.datasource.contacts_prevenir = JSON.stringify(data);
+    this.thisAdherent.ContactsUrgence = data;
+  }
+  onValidAdresseChange(isValid: boolean) {
+    this.valid_address = isValid;
+  }
+  onAdresseChange(data: Adresse) {
+    this.thisAdherent.Adresse = data;
+    this.thisAdherent.datasource.adresse = JSON.stringify(data);
   }
 }

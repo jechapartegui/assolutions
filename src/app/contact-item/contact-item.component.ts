@@ -7,25 +7,24 @@ import { ItemContact } from 'src/class/contact';
   styleUrls: ['./contact-item.component.css']
 })
 export class ContactItemComponent implements OnInit {
-  @Input() datasource: string;
+  @Input()   Contacts: ItemContact[];
   @Input() valid_mail: boolean;
   @Input() valid_tel: boolean;
   @Input() Notes: string = $localize`Notes`;
   @Input() Titre: string = $localize`Contacts : `;
   @Output() validMailChange = new EventEmitter<boolean>();
   @Output() validTelChange = new EventEmitter<boolean>();
-  @Output() validContactChange = new EventEmitter<string>();
+  @Output() validContactChange = new EventEmitter<ItemContact[]>();
 
   // Exemple de méthode qui change la validité de l'email
  
-  Contacts: ItemContact[];
+
   thisContact: ItemContact;
   EditIndex:number;
 
   constructor() { }
 
   ngOnInit(): void {
-    this.Contacts = JSON.parse(this.datasource);
     this.CheckContact();
   }
   validateEmail(isValid: boolean) {
@@ -40,9 +39,8 @@ export class ContactItemComponent implements OnInit {
   }
 
    // Exemple de méthode qui change la validité du téléphone
-   validateContact(datas: string) {
-    this.datasource = datas;
-    this.validContactChange.emit(this.datasource);
+   validateContact() {  
+    this.validContactChange.emit(this.Contacts);
   }
 
   Save() {
@@ -71,10 +69,8 @@ export class ContactItemComponent implements OnInit {
     this.validateEmail(false);
     this.valid_tel = false;
     this.validateTel(false);
-    let ToSerialize: ItemContact[] = [];
     this.Contacts.forEach((cont) => {
       if (this.IsValid(cont)) {
-        ToSerialize.push(cont);
         if (cont.Type == "EMAIL") {
           this.valid_mail = true;
           this.validateEmail(true);
@@ -85,8 +81,7 @@ export class ContactItemComponent implements OnInit {
         }
       }
     })
-    this.datasource = JSON.stringify(ToSerialize);
-    this.validateContact(this.datasource);
+    this.validateContact();
 
   }
   NewPref(index: number) {

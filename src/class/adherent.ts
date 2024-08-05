@@ -12,7 +12,7 @@ export class adherent {
   public nom: string;
   public surnom: string;
   public date_naissance: string = "";
-  public adresse: string;
+  public adresse: string = JSON.stringify(new Adresse());
   public contacts: string = "[]";
   public contacts_prevenir: string = "[]";
   public nationalite: string;
@@ -41,8 +41,8 @@ export class Adherent {
   constructor(L: adherent) {
     this.datasource = L;
     this.SetLibelle(this);
-    let CT: ItemContact[] = JSON.parse(this.datasource.contacts);
-    const foundContact = CT.find(x => x.Pref === true);
+    this.Contacts = JSON.parse(this.datasource.contacts);
+    const foundContact = this.Contacts.find(x => x.Pref === true);
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
     this.Adresse = JSON.parse(this.datasource.adresse);
@@ -137,19 +137,9 @@ public Adresse :Adresse;
   }
 
   
-  public get ContactEdit() : string {
-    return this.datasource.contacts;
-  }
-  public set ContactEdit(v : string) {
-    this.datasource.contacts = v;
-  }
 
-  public get ContactUrgenceEdit() : string {
-    return this.datasource.contacts_prevenir;
-  }
-  public set ContactUrgenceEdit(v : string) {
-    this.datasource.contacts_prevenir = v;
-  }
+  public Contacts : ItemContact[];
+  public ContactsUrgence : ItemContact[];
   
   
   
