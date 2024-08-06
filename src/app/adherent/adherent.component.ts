@@ -2,12 +2,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from 'src/class/address';
-import { adherent, Adherent } from 'src/class/adherent';
+import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
 import { ErrorService } from 'src/services/error.service';
+import { ExcelService } from 'src/services/excel.service';
 import { GlobalService } from 'src/services/global.services';
 import { GroupeService } from 'src/services/groupe.service';
 import { SaisonService } from 'src/services/saison.service';
@@ -19,7 +20,7 @@ import { SaisonService } from 'src/services/saison.service';
 })
 export class AdherentComponent implements OnInit {
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
-  public thisAdherent:Adherent = null;
+  public thisAdherent: Adherent = null;
   public action: string = "";
   public inscrits: number = null;
   public afficher_filtre: boolean = false;
@@ -27,9 +28,9 @@ export class AdherentComponent implements OnInit {
   public liste_groupe: Groupe[] = [];
   public titre_groupe = $localize`Groupe de l'adhérent`;
   public liste_saison: Saison[] = [];
-  public active_saison:Saison;
-  public valid_address:boolean;
-  public liste_adherents_VM:Adherent[]= [];
+  public active_saison: Saison;
+  public valid_address: boolean;
+  public liste_adherents_VM: Adherent[] = [];
   public sort_nom = "NO";
   public sort_date = "NO";
   public sort_sexe = "NO";
@@ -40,9 +41,13 @@ export class AdherentComponent implements OnInit {
   public filter_groupe: number;
   public liste_groupe_filter: Groupe[];
 
-  public valid_mail:boolean = false;
-  public valid_tel:boolean = false;
-  constructor(public GlobalService: GlobalService,private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute) { }
+  public valid_mail: boolean = false;
+  public valid_tel: boolean = false;
+
+
+  public libelle_inscription = $localize`Inscrire`;
+  public libelle_retirer_inscription = $localize`Retirer l'inscription`;
+  constructor(public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -71,6 +76,7 @@ export class AdherentComponent implements OnInit {
           this.route.queryParams.subscribe(params => {
             if ('id' in params) {
               this.id = params['id'];
+              this.context = "LECTURE";
             }
             if ('context' in params) {
               this.context = params['context'];
@@ -90,7 +96,7 @@ export class AdherentComponent implements OnInit {
               this.thisAdherent = new Adherent(adh);
             }
             if (this.id > 0) {
-             this.ChargerAdherent();
+              this.ChargerAdherent();
 
             }
 
@@ -128,10 +134,10 @@ export class AdherentComponent implements OnInit {
     }
   }
 
-  UpdateListeAdherents(){
+  UpdateListeAdherents() {
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les adhérents`;
-    this.ridersService.GetAdherentAdhesion().then((adh) =>{
+    this.ridersService.GetAdherentAdhesion().then((adh) => {
       this.liste_adherents_VM = adh.map(x => new Adherent(x));
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
@@ -151,34 +157,41 @@ export class AdherentComponent implements OnInit {
     return age;
   }
 
-  Creer(){  
-    let adh:adherent = new adherent();
+  Creer() {
+    let adh: adherent = new adherent();
     this.thisAdherent = new Adherent(adh);
     this.context = "ECRITURE";
     this.id = 0;
   }
-  Edit(adh:Adherent){  
+  Edit(adh: Adherent) {
     this.context = "ECRITURE";
     this.id = adh.ID;
     this.ChargerAdherent();
   }
-  Read(adh:Adherent){  
+  Read(adh: Adherent) {
     this.context = "LECTURE";
     this.id = adh.ID;
     this.ChargerAdherent();
   }
-  Register(adh:Adherent){  
+  Register(adh: Adherent, saison_id: number) {
 
   }
-  isRegistred(adh:Adherent) : boolean{  
-    if(adh.Adhesions.filter(x => x.saison_id == this.active_saison.id).length>0){
+  RemoveRegister(adh: Adherent, saison_id: number) {
+
+  }
+  isRegistred(adh: Adherent): boolean {
+    if (adh.Adhesions.filter(x => x.saison_id == this.active_saison.id).length > 0) {
       return true;
     } else {
       return false;
     }
   }
 
-  ChargerAdherent(){
+  getSaison(id: number): string {
+    return this.liste_saison.filter(x => x.id == id)[0].nom;
+  }
+
+  ChargerAdherent() {
     this.thisAdherent = null;
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer l'adhérent`;
@@ -218,15 +231,15 @@ export class AdherentComponent implements OnInit {
 
   }
 
-  Delete(adh:Adherent){
+  Delete(adh: Adherent) {
 
   }
 
-  Save(){
+  Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder l'adhérent`;
-    if(this.thisAdherent.ID == 0){
-      this.ridersService.Add(this.thisAdherent.datasource).then((id) =>{
+    if (this.thisAdherent.ID == 0) {
+      this.ridersService.Add(this.thisAdherent.datasource).then((id) => {
         this.thisAdherent.ID = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
@@ -234,9 +247,9 @@ export class AdherentComponent implements OnInit {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       })
-    } else{
-      this.ridersService.Update(this.thisAdherent.datasource).then((retour) =>{
-        if(retour){
+    } else {
+      this.ridersService.Update(this.thisAdherent.datasource).then((retour) => {
+        if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
 
@@ -251,21 +264,21 @@ export class AdherentComponent implements OnInit {
     }
 
   }
- 
 
-  Retour(lieu:"LISTE" | "LECTURE"): void {
+
+  Retour(lieu: "LISTE" | "LECTURE"): void {
 
     let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
     if (confirm) {
-     if(lieu == "LISTE"){
-      this.context = "LISTE";
-      this.UpdateListeAdherents();
-     } else {
-      this.context = "LECTURE";
-      this.ChargerAdherent();
-     }
+      if (lieu == "LISTE") {
+        this.context = "LISTE";
+        this.UpdateListeAdherents();
+      } else {
+        this.context = "LECTURE";
+        this.ChargerAdherent();
+      }
+    }
   }
-}
 
   Sort(sens: "NO" | "ASC" | "DESC", champ: string) {
     switch (champ) {
@@ -294,7 +307,7 @@ export class AdherentComponent implements OnInit {
           const lieuA = a.Sexe;
           const lieuB = b.Sexe;
 
-         
+
           let comparaison = 0;
           if (lieuA > lieuB) {
             comparaison = 1;
@@ -323,7 +336,7 @@ export class AdherentComponent implements OnInit {
           return this.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
-      
+
     }
 
 
@@ -336,13 +349,40 @@ export class AdherentComponent implements OnInit {
     this.filter_groupe = null;
     this.filter_nom = null;
   }
-  ImporterExcel(){
-
-  } 
-  ExporterExcel(){
+  ImporterExcel() {
 
   }
-  ChangerSaison(){
+  ExporterExcel() {
+    const headers = {
+      ID: 'ID',
+      Nom: 'Nom',
+      Prenom: 'Prénom',
+      DDN: 'Date de naissance',
+      Sexe: 'Sexe',
+      Contacts: 'Contact',
+      Street: 'Numéro et voie',
+      PostCode: 'Code postal',
+      City: 'Ville',
+      Country: 'Pays',
+      Surnom: 'Surnom',
+      Login: 'Login',
+      Mail: 'Email',
+      MailPref: 'Contact préféré email ?',
+      Phone: 'Téléphone',
+      PhonePref: 'Contact préféré téléphone ?',
+      MailUrgence: 'Mail si urgence',
+      NomMailUrgence: 'Contact mail si urgence',
+      PhoneUrgence: 'Téléphone si urgence',
+      NomPhoneUrgence: 'Contact téléphone si urgence',
+      Adhesion: 'Inscrit'
+
+      // Ajoutez d'autres mappages si nécessaire
+    };
+
+    this.excelService.exportAsExcelFile(this.liste_adherents_VM.map(x => new AdherentExport(x, this.active_saison.id)), 'liste_adherent', headers);
+  }
+  ChangerSaison() {
+
 
   }
   onValidMailChange(isValid: boolean) {
@@ -357,7 +397,7 @@ export class AdherentComponent implements OnInit {
     this.thisAdherent.Contacts = data;
 
   }
-  onValidContactUrgenceChange(data: ItemContact[])  {
+  onValidContactUrgenceChange(data: ItemContact[]) {
     this.thisAdherent.datasource.contacts_prevenir = JSON.stringify(data);
     this.thisAdherent.ContactsUrgence = data;
   }
@@ -367,5 +407,17 @@ export class AdherentComponent implements OnInit {
   onAdresseChange(data: Adresse) {
     this.thisAdherent.Adresse = data;
     this.thisAdherent.datasource.adresse = JSON.stringify(data);
+  }
+
+  isRegistredSaison(saison_id: number) {
+    let u = this.thisAdherent.Adhesions.find(x => x.saison_id == saison_id);
+    if (u) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  VoirPaiement() {
+
   }
 }

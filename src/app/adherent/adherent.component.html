@@ -212,7 +212,7 @@
                                                 </button>
                                                 <button *ngIf="!isRegistred(adherent)" i18n-title title="Inscrire"
                                                     class="button is-info is-rounded is-outlined" type="button"
-                                                    (click)="Register(adherent)">
+                                                    (click)="Register(adherent, active_saison.id)">
                                                     <i class="fas fa-signature"></i>
                                                 </button>
                                                 <button i18n-title title="Editer"
@@ -353,7 +353,7 @@
                         style="fill:#FFB70F">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </button>
-                    <button *ngIf="thisAdherent.ID>0 && (GlobalService.Menu$ | async) != 'ADHERENT'"
+                    <button *ngIf="thisAdherent.ID>0"
                         (click)="Retour('LECTURE')" class="button is-info is-rounded is-outlined">
                         <i class="fa-solid fa-binoculars"></i>
                     </button>
@@ -371,16 +371,21 @@
             <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
                 <div *ngIf="thisAdherent" class="box">
                     <h3 class="title is-3" i18n>{{thisAdherent.Libelle}}</h3>
-                    <div>{{thisAdherent.DDN | date: 'dd/MM/yyyy'
-                        }}&nbsp;{{calculateAge(thisAdherent.DDN)}}
+                    <div class="field">
+                        <label class="label" i18n>Date de naissance (Age)</label>
+                        <div>{{thisAdherent.DDN | date: 'dd/MM/yyyy'
+                            }}&nbsp;({{calculateAge(thisAdherent.DDN)}}&nbsp;<span i18n>ans</span>)
+                        </div>
                     </div>
-                    <div>
+                    <div class="field">
+                        <label class="label" i18n>Sexe</label>
                         <i *ngIf="thisAdherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
                         <i *ngIf="!thisAdherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
 
                     </div>
 
-                    <div>
+                    <div class="field">
+                        <label class="label" i18n>Groupes</label>
                         <div class="tags">
                             <ng-container *ngFor="let gr of thisAdherent.Groupes">
                                 <span class="tag is-success">
@@ -389,20 +394,85 @@
                             </ng-container>
                         </div>
                     </div>
-                    <div>
+                    <div class="field">
+                        <label class="label" i18n>Contacts</label>
                         <ng-container *ngFor="let cont of thisAdherent.Contacts">
-                            <span *ngIf="cont.Type"><i class="fas fa-at"></i></span>
+                            <span *ngIf="cont.Type=='EMAIL'"><i class="fas fa-at"></i></span>
                             <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
                             <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
                             <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
                             <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
                             <span>&nbsp;{{cont.Value}}</span>
+                            <br>
                         </ng-container>
                     </div>
-                    <div>
-                        <i *ngIf="!isRegistred(thisAdherent)" class="fas fa-times "></i>
-                        <i *ngIf="isRegistred(thisAdherent)" class="fas fa-check has-text-success"></i>
+                    <div class="field">
+                        <label class="label" i18n>Contacts en cas d'urgence</label>
+                        <ng-container *ngFor="let cont of thisAdherent.ContactsUrgence">
+                            <span *ngIf="cont.Type"><i class="fas fa-at"></i></span>
+                            <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
+                            <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
+                            <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
+                            <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
+                            <span>&nbsp;{{cont.Value}} - {{cont.Notes}}</span>
+                            <br>
+                        </ng-container>
                     </div>
+                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field">
+                        <label class="label" i18n>Inscriptions</label>
+                        <table *ngIf="thisAdherent.Adhesions && thisAdherent.Adhesions.length > 0">
+                            <thead>
+                                <th>Saison</th>
+                                <th>Inscrit</th>
+                                <th></th>
+                            </thead>
+                            <ng-container *ngFor="let ss of liste_saison">
+                                <tr>
+                                    <td>{{getSaison(ss.id)}}</td>
+                                    <td>
+                                        <i *ngIf="!isRegistredSaison(ss.id)" class="fas fa-times "></i>
+                                        <i *ngIf="isRegistredSaison(ss.id)" class="fas fa-check has-text-success"></i>
+                                    </td>
+                                    <td>
+                                        <hover-button *ngIf="!isRegistredSaison(ss.id)"
+                                            [nomclass]="'button  is-rounded is-primary is-outlined' "
+                                            [nomicon]="'fas fa-signature'" [libelle]="libelle_inscription"
+                                            (click)="Register(thisAdherent, ss.id)">
+                                        </hover-button>
+                                        <hover-button *ngIf="isRegistredSaison(ss.id)"
+                                            [nomclass]="'button is-outlined is-rounded is-danger' " [remove]="true"
+                                            [nomicon]="'fas fa-signature'" [libelle]="libelle_retirer_inscription"
+                                            (click)="RemoveRegister(thisAdherent, ss.id)">
+                                        </hover-button>
+                                        <hover-button *ngIf="isRegistredSaison(ss.id)"
+                                            [nomclass]="'button  is-rounded is-info is-outlined' "
+                                            [nomicon]="'fas fa-money-check-alt'" [libelle]="'Voir paiement'"
+                                            (click)="VoirPaiement()">
+                                        </hover-button>
+
+                                    </td>
+                                </tr>
+
+                            </ng-container>
+
+                        </table>
+
+                    </div>
+                    <div class="field">
+                        <label class="label" i18n>Compte</label>
+
+                    </div>
+                </div>
+                <div *ngIf="thisAdherent" class="buttons">
+                    <button i18n-title title="Editer" class="button is-info is-rounded is-outlined" type="button"
+                        (click)="Edit(thisAdherent)">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF'"
+                        (click)="Retour('LISTE')" class="button is-danger is-rounded is-outlined"
+                        style="fill:hsl(348, 100%, 61%)">
+                        <i class="fa-solid fa-backward-fast"></i>
+                    </button>
                 </div>
             </div>
         </div>

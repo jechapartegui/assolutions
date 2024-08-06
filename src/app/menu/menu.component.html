@@ -2,7 +2,11 @@
     <ng-container *ngFor="let rider of Riders">
         <div class="box">
             <article class="panel is-primary">
-                <p class="panel-heading">{{rider.Libelle}}</p>
+                <p class="panel-heading">{{rider.Libelle}}  <button i18n-title title="Editer"
+                    class="button is-info is-rounded is-outlined" type="button"
+                    (click)="Voir(rider.datasource.id)">
+                    <i class="fa-solid fa-binoculars"></i>
+                </button></p>
                 <div class="panel-block">
                     <hover-button
                         [nomclass]="filter_date_apres  == false ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded'"

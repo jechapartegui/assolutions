@@ -10,5 +10,6 @@ export class HoverButtonComponent {
   @Input() public nomclass:string = "button";
   @Input() public libelle:string;
   @Input() public nomicon:string;
+  @Input() public remove:boolean = false;
   @Input() public disabled:boolean=false;
 }

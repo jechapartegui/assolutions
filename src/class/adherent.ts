@@ -42,6 +42,7 @@ export class Adherent {
     this.datasource = L;
     this.SetLibelle(this);
     this.Contacts = JSON.parse(this.datasource.contacts);
+    this.ContactsUrgence = JSON.parse(this.datasource.contacts_prevenir);
     const foundContact = this.Contacts.find(x => x.Pref === true);
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
@@ -177,6 +178,64 @@ public Adresse :Adresse;
   public inscriptions: inscription_seance[] = [];
   public seances: seance[] = [];
   public seances_prof: seance[] = [];
+}
+
+export class AdherentExport{
+  ID: number;
+  Nom: string;
+  Prenom: string;
+  DDN: string;
+  Sexe: boolean;
+  Street: string;
+  PostCode: string;
+  City: string;
+  Mail: string;
+  MailPref: boolean;
+  Phone: string;
+  PhonePref: boolean;
+  MailUrgence: string;
+  PhoneUrgence: string;
+  Surnom: string;
+  Login: string;
+  Country: string;
+  Adhesion: boolean;
+  NomMailUrgence: string;
+  NomPhoneUrgence: string;
+
+  constructor(a: Adherent, saison_id) {
+    this.safeAssign(() => this.ID = a.ID);
+    this.safeAssign(() => this.Nom = a.Nom);
+    this.safeAssign(() => this.Prenom = a.Prenom);
+    this.safeAssign(() => this.Surnom = a.Surnom);
+    this.safeAssign(() => this.Login = a.Login);
+    this.safeAssign(() => this.DDN = a.DDN);
+    this.safeAssign(() => this.Sexe = a.Sexe);
+    this.safeAssign(() => this.Street = a.Adresse.Street);
+    this.safeAssign(() => this.PostCode = a.Adresse.PostCode);
+    this.safeAssign(() => this.City = a.Adresse.City);
+    this.safeAssign(() => this.Country = a.Adresse.Country);
+    this.safeAssign(() => this.Mail = a.Contacts.filter(x => x.Type === 'EMAIL')[0]?.Value);
+    this.safeAssign(() => this.MailPref = a.Contacts.filter(x => x.Type === 'EMAIL')[0]?.Pref);
+    this.safeAssign(() => this.Phone = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Value);
+    this.safeAssign(() => this.PhonePref = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Pref);
+    this.safeAssign(() => this.MailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Value);
+    this.safeAssign(() => this.PhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Value);
+    this.safeAssign(() => this.NomMailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Notes);
+    this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes);
+    let u = a.Adhesions.find(x => x.saison_id == saison_id);
+    if(u){
+      this.Adhesion = true;
+    } else {
+      this.Adhesion = false;
+    }
+  }
+
+  private safeAssign(assignFn: () => void) {
+    try {
+      assignFn();
+    } catch (e) {
+    }
+  }
 }
 
 export class Validation_Adherent {

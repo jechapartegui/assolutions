@@ -1,6 +1,15 @@
-<button type="button" [disabled]="disabled"
-                  (mouseenter)="showText=true" 
-                  (mouseleave)="showText=false" [class]="nomclass">
-                    <i [class]="nomicon"></i>&nbsp;
-                    <span [ngClass]="{'visible': showText, 'hidden': !showText}">{{libelle}}</span>
-                  </button>
+<button *ngIf="!remove" type="button" [disabled]="disabled" (mouseenter)="showText=true" (mouseleave)="showText=false"
+  [class]="nomclass">
+  <i [class]="nomicon"></i>&nbsp;
+  <span [ngClass]="{'visible': showText, 'hidden': !showText}">{{libelle}}</span>
+</button>
+<button *ngIf="remove" type="button" [disabled]="disabled" (mouseenter)="showText=true" (mouseleave)="showText=false"
+  [class]="nomclass">
+  <span class="icon is-large">
+    <span class="fa-stack fa-lg">
+        <i [class]="nomicon"></i>
+        <i class="fas fa-slash fa-stack-1x has-text-danger"></i>
+    </span>
+</span>&nbsp;
+  <span [ngClass]="{'visible': showText, 'hidden': !showText}">{{libelle}}</span>
+</button>

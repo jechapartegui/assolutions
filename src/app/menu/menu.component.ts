@@ -266,4 +266,8 @@ export class MenuComponent implements OnInit {
     }
   }
 
+  Voir(id:number){
+    this.router.navigate(['/adherent'], { queryParams: { id: id } });
+  }
+
 }
