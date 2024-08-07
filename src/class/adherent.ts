@@ -304,9 +304,20 @@ export class Validation_Adherent {
 }
 
 export class Adherent_VM {
+  public sort_nom = "NO";
+  public sort_cours = "NO";
+  public sort_date = "NO";
+  public sort_lieu = "NO";
+  public filter_date_avant: any;
+  public filter_date_apres: any;
+  public filter_nom: string;
+  public filter_cours: number;
+  public filter_groupe: number;
+  public filter_lieu: number;
+  public filter_prof: number;
   constructor(_adh: adherent) {
     this.datasource = _adh;
-    this.SeancePassee = false;
+    
     this.afficher_filtre = false;
     this.InscriptionSeances = [];
     if (this.datasource.seances) {

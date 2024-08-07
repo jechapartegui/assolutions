@@ -51,6 +51,25 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+  public Delete(id: number): Promise<boolean> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "delete",
+      id: id
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
   public Update(adherent: adherent): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/adherents_manage.php';

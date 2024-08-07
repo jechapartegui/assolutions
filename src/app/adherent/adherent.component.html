@@ -2,7 +2,7 @@
     <ng-container *ngIf="context == 'LISTE'">
         <div class="columns" style="margin-top: 0.5rem;">
             <div class="column menuligne">
-                <hover-button
+                <hover-button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
                     [nomclass]="inscrits == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' "
                     [nomicon]="'fas fa-signature'" [libelle]="'Inscrits'"
                     (click)="inscrits == null ? inscrits = active_saison.id : inscrits = null;">
@@ -40,11 +40,6 @@
                                 </ng-container>
                             </select>
                         </div>
-                    </div>
-                    <div class="control">
-                        <button class="button is-info" (click)="ChangerSaison()">
-                            <i class="fas fa-exchange-alt"></i>
-                        </button>
                     </div>
                 </div>
 
@@ -212,7 +207,7 @@
                                                 </button>
                                                 <button *ngIf="!isRegistred(adherent)" i18n-title title="Inscrire"
                                                     class="button is-info is-rounded is-outlined" type="button"
-                                                    (click)="Register(adherent, active_saison.id)">
+                                                    (click)="Register(adherent, active_saison.id, true)">
                                                     <i class="fas fa-signature"></i>
                                                 </button>
                                                 <button i18n-title title="Editer"
@@ -418,13 +413,13 @@
                             <br>
                         </ng-container>
                     </div>
-                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field">
+                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF'" class="field">
                         <label class="label" i18n>Inscriptions</label>
-                        <table *ngIf="thisAdherent.Adhesions && thisAdherent.Adhesions.length > 0">
+                        <table *ngIf="thisAdherent.Adhesions">
                             <thead>
                                 <th>Saison</th>
                                 <th>Inscrit</th>
-                                <th></th>
+                                <th *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"></th>
                             </thead>
                             <ng-container *ngFor="let ss of liste_saison">
                                 <tr>
@@ -433,16 +428,21 @@
                                         <i *ngIf="!isRegistredSaison(ss.id)" class="fas fa-times "></i>
                                         <i *ngIf="isRegistredSaison(ss.id)" class="fas fa-check has-text-success"></i>
                                     </td>
-                                    <td>
+                                    <td *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
                                         <hover-button *ngIf="!isRegistredSaison(ss.id)"
                                             [nomclass]="'button  is-rounded is-primary is-outlined' "
                                             [nomicon]="'fas fa-signature'" [libelle]="libelle_inscription"
-                                            (click)="Register(thisAdherent, ss.id)">
+                                            (click)="Register(thisAdherent, ss.id, false)">
+                                        </hover-button>
+                                        <hover-button *ngIf="!isRegistredSaison(ss.id)"
+                                            [nomclass]="'button  is-rounded is-primary is-outlined' "
+                                            [nomicon]="'fas fa-receipt'" [libelle]="libelle_inscription_avec_paiement"
+                                            (click)="Register(thisAdherent, ss.id, true)">
                                         </hover-button>
                                         <hover-button *ngIf="isRegistredSaison(ss.id)"
                                             [nomclass]="'button is-outlined is-rounded is-danger' " [remove]="true"
                                             [nomicon]="'fas fa-signature'" [libelle]="libelle_retirer_inscription"
-                                            (click)="RemoveRegister(thisAdherent, ss.id)">
+                                            (click)="RemoveRegister(ss.id)">
                                         </hover-button>
                                         <hover-button *ngIf="isRegistredSaison(ss.id)"
                                             [nomclass]="'button  is-rounded is-info is-outlined' "

@@ -3,6 +3,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from 'src/class/address';
 import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
+import { Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
@@ -11,6 +12,7 @@ import { ErrorService } from 'src/services/error.service';
 import { ExcelService } from 'src/services/excel.service';
 import { GlobalService } from 'src/services/global.services';
 import { GroupeService } from 'src/services/groupe.service';
+import { InscriptionSaisonService } from 'src/services/inscription-saison.service';
 import { SaisonService } from 'src/services/saison.service';
 
 @Component({
@@ -46,8 +48,9 @@ export class AdherentComponent implements OnInit {
 
 
   public libelle_inscription = $localize`Inscrire`;
+  public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
-  constructor(public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute) { }
+  constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -173,11 +176,64 @@ export class AdherentComponent implements OnInit {
     this.id = adh.ID;
     this.ChargerAdherent();
   }
-  Register(adh: Adherent, saison_id: number) {
+  Register(adh: Adherent, saison_id: number, paiement: boolean) {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Effectuer une inscription`;
+    if (paiement) {
+      let confirm = window.confirm($localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`);
+      if (confirm) {
+        this.router.navigate(['/inscription']);
+      }
+    } else {
+      let confirm = window.confirm($localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`);
+      if (confirm) {
+        this.inscription_saison_serv.Add(saison_id, adh.ID).then((id) => {
+          let i = new Adhesion();
+          i.id = id;
+          i.rider_id = adh.ID;
+          i.saison_id = saison_id;
+          if (!adh.Adhesions) {
+            adh.Adhesions = [];
+          }
+          adh.Adhesions.push(i);
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+        }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        })
+      }
+    }
 
   }
-  RemoveRegister(adh: Adherent, saison_id: number) {
+  RemoveRegister(saison_id: number) {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Supprimer une inscription`;
+    let u = this.thisAdherent.Adhesions.find(x => x.saison_id == saison_id);
+    if (u) {
 
+      let confirm = window.confirm($localize`Voulez-vous supprimer l'inscription ?`);
+      if (confirm) {
+        this.inscription_saison_serv.Delete(u.id).then((retour) => {
+          if (retour) {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+            this.thisAdherent.Adhesions = this.thisAdherent.Adhesions.filter(x => x.saison_id !== saison_id);
+          } else {
+            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            errorService.emitChange(o);
+          }
+
+        }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        })
+      }
+    } else {
+      
+      let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+      errorService.emitChange(o);
+    }
   }
   isRegistred(adh: Adherent): boolean {
     if (adh.Adhesions.filter(x => x.saison_id == this.active_saison.id).length > 0) {
@@ -232,7 +288,31 @@ export class AdherentComponent implements OnInit {
   }
 
   Delete(adh: Adherent) {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Supprimer l'adhérent`;    
+    let confirm = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
+    if (confirm) {
+      adh.Adhesions.forEach((adhesion) =>{
+        this.inscription_saison_serv.Delete(adhesion.id);
+      })
+      adh.Groupes.forEach((gr) =>{
+        this.grServ.DeleteLien(gr.lien_groupe_id);
+      })
+      this.ridersService.Delete(adh.ID).then((retour) => {
+        if (retour) {
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+          this.ChargerAdherent();
+        } else {
+          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          errorService.emitChange(o);
+        }
 
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
+    }
   }
 
   Save() {
@@ -380,10 +460,6 @@ export class AdherentComponent implements OnInit {
     };
 
     this.excelService.exportAsExcelFile(this.liste_adherents_VM.map(x => new AdherentExport(x, this.active_saison.id)), 'liste_adherent', headers);
-  }
-  ChangerSaison() {
-
-
   }
   onValidMailChange(isValid: boolean) {
     this.valid_mail = isValid;

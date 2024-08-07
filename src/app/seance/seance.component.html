@@ -53,16 +53,7 @@
     <div class="column">
       <div class="card">
         <header class="card-header">
-          <p class="card-header-title" i18n>Liste des séances</p>
-          <span class="fullscreen">
-            <button type="button" (click)="afficher_filtre ? afficher_filtre = false : afficher_filtre = true"
-              class="button is-info is-rounded is-outlined" style="align-self: center; ;fill:hsl(225, 94%, 45%)">
-              <svg width="20" height="20">
-                <use *ngIf="afficher_filtre" xlink:href=".\assets\liste.svg#filter_off"></use>
-                <use *ngIf="!afficher_filtre" xlink:href=".\assets\liste.svg#filter"></use>
-              </svg>
-            </button>
-          </span>
+          <p class="card-header-title" i18n>Liste des séances</p> 
           <button type="button" (click)="Creer(false)" class="button is-primary is-rounded is-outlined"
             style="align-self: center; ;fill:hsl(171, 100%, 41%)">
             <i class="fa-solid fa-plus"></i>
@@ -74,20 +65,22 @@
               *ngIf="list_seance_VM && list_seance_VM.length> 0">
               <thead>
                 <tr>
-                  <th><span class="th">
-                      <span class="ligne"> <span style="font-size: smaller;" i18n>Nom</span>
+                  <th><span class="th_filtre">
+                    <span class="ligne">
+                       <span style="font-size: smaller;" i18n>Nom</span>
                         <span style="cursor: pointer;">
                           <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort"></i>
                           <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" class="fa-solid fa-sort-up"></i>
                           <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort-down"></i>
-                        </span></span>
+                        </span>
+                      </span>
                       <input *ngIf="afficher_filtre" style="width: fit-content;font-size:smaller;"
                         class="input is-small" i18n-placeholder placeholder="Nom du cours" type="text"
                         [(ngModel)]="filter_nom">
                     </span>
                   </th>
-                  <th><span class="th">
-                      <span class="ligne">
+                  <th><span class="th_filtre">
+                    <span class="ligne">
                         <span style="font-size: smaller;" i18n>Cours / Type</span>
                         <span style="cursor: pointer;">
                           <i *ngIf="sort_cours === 'NO'" (click)="Sort('ASC', 'cours')" class="fa-solid fa-sort"></i>
@@ -99,8 +92,8 @@
                       </span>
                     </span>
                   </th>
-                  <th><span class="th">
-                      <span class="ligne">
+                  <th><span class="th_filtre">
+                    <span class="ligne">
                         <span style="font-size: smaller;" i18n>Date</span>
                         <span style="cursor: pointer;">
                           <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort"></i>
@@ -117,6 +110,8 @@
                             placeholder="Filtre date avant" type="date" [(ngModel)]="filter_date_apres">
 
                         </div>
+                      </span>
+                      <span *ngIf="afficher_filtre" class="ligne">
                         <div style="gap: 6px;" class="field is-small is-horizontal field-jecha">
                           <label for="groupe" class="label is-small">Au</label>
                           <input style="width: fit-content;" class="input is-small" i18n-placeholder
@@ -125,8 +120,8 @@
                       </span>
                     </span>
                   </th>
-                  <th><span class="th">
-                      <span class="ligne"><span style="font-size: smaller;" i18n>Heure / Durée</span></span>
+                  <th><span class="th_filtre">
+                    <span class="ligne"><span style="font-size: smaller;" i18n>Heure / Durée</span></span>
                     </span></th>
                   <th class="no_mobile"><span class="th"><span class="ligne" style="font-size: smaller;"
                         i18n>Professeurs</span>
@@ -142,8 +137,8 @@
                       </span>
                     </span>
                   </th>
-                  <th><span class="th">
-                      <span class="ligne"><span style="font-size: smaller;" i18n>Lieu</span>
+                  <th><span class="th_filtre">
+                    <span class="ligne"><span style="font-size: smaller;" i18n>Lieu</span>
                       <span
                           style="cursor: pointer;">
                           <i *ngIf="sort_lieu === 'NO'" (click)="Sort('ASC', 'lieu')" class="fa-solid fa-sort"></i>

@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import {  Adherent_VM } from 'src/class/adherent';
+import { Adherent_VM } from 'src/class/adherent';
 import { cours } from 'src/class/cours';
 import { inscription_seance, InscriptionSeance, StatutPresence } from 'src/class/inscription';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
@@ -25,20 +25,10 @@ export class MenuComponent implements OnInit {
   listeprof: Professeur[];
   listelieu: KeyValuePair[];
 
-  public sort_nom = "NO";
-  public sort_cours = "NO";
-  public sort_date = "NO";
-  public sort_lieu = "NO";
-  listeCours: cours[] = [];
-  public filter_date_avant: any;
-  public filter_date_apres: any;
-  public filter_nom: string;
-  public filter_cours: number;
-  public filter_groupe: number;
-  public filter_lieu: number;
-  public filter_prof: number;
   public liste_prof_filter: KeyValuePairAny[];
   public liste_lieu_filter: KeyValuePairAny[];
+  listeCours: cours[] = [];
+ 
   public g: StaticClass;
   constructor(private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
 
@@ -51,14 +41,20 @@ export class MenuComponent implements OnInit {
         case "ADHERENT":
         case "PROF":
           const auj = new Date();
-          this.filter_date_apres = this.formatDate(auj);
-      
+          let date_apres = this.formatDate(auj);
+
           // Date dans un mois
           const nextMonth = new Date(auj);
           nextMonth.setMonth(nextMonth.getMonth() + 1);
-          this.filter_date_avant = this.formatDate(nextMonth);
+          let date_avant = this.formatDate(nextMonth);
           this.adherent_serv.Get(GlobalService.compte.id).then((riders) => {
-            this.Riders = riders.map(x => new Adherent_VM(x));
+            this.Riders = riders.map(x => {
+              const rider = new Adherent_VM(x);
+              rider.filter_date_apres = date_apres;
+              rider.filter_date_avant = date_avant;
+              return rider;
+            });
+            
             this.Riders.sort((a, b) => {
 
               let comparaison = 0;
@@ -129,6 +125,17 @@ export class MenuComponent implements OnInit {
     const day = ('0' + date.getDate()).slice(-2);
     return `${year}-${month}-${day}`;
   }
+  ChangeFiltreDateApres(rider) {
+    if (rider.filter_date_apres) {
+      rider.filter_date_apres = null;
+    } else {
+      const auj = new Date();
+      rider.filter_date_apres = this.formatDate(auj);
+      const nextMonth = new Date(auj);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      rider.filter_date_avant = this.formatDate(nextMonth);
+    }
+  }
 
   trouverLieu(lieuId: number): any {
     if (this.listelieu) {
@@ -148,14 +155,14 @@ export class MenuComponent implements OnInit {
     }
 
   }
-  Sort(sens: "NO" | "ASC" | "DESC", champ: string, id: number) {
+  Sort(sens: "NO" | "ASC" | "DESC", champ: string, id: number, rider:Adherent_VM) {
     let liste_seance_VM = this.Riders.find(x => x.datasource.id == id).InscriptionSeances;
     switch (champ) {
       case "nom":
-        this.sort_nom = sens;
-        this.sort_date = "NO";
-        this.sort_lieu = "NO";
-        this.sort_cours = "NO";
+        rider.sort_nom = sens;
+        rider.sort_date = "NO";
+        rider.sort_lieu = "NO";
+        rider.sort_cours = "NO";
         liste_seance_VM.sort((a, b) => {
           const nomA = a.thisSeance.libelle.toUpperCase(); // Ignore la casse lors du tri
           const nomB = a.thisSeance.libelle.toUpperCase();
@@ -166,14 +173,14 @@ export class MenuComponent implements OnInit {
             comparaison = -1;
           }
 
-          return this.sort_nom === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          return rider.sort_nom === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
       case "lieu":
-        this.sort_lieu = sens;
-        this.sort_date = "NO";
-        this.sort_nom = "NO";
-        this.sort_cours = "NO";
+        rider.sort_lieu = sens;
+        rider.sort_date = "NO";
+        rider.sort_nom = "NO";
+        rider.sort_cours = "NO";
         liste_seance_VM.sort((a, b) => {
           const lieuA = this.listelieu.find(lieu => lieu.key === a.thisSeance.lieu_id)?.value || '';
           const lieuB = this.listelieu.find(lieu => lieu.key === b.thisSeance.lieu_id)?.value || '';
@@ -189,14 +196,14 @@ export class MenuComponent implements OnInit {
             comparaison = -1;
           }
 
-          return this.sort_lieu === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          return rider.sort_lieu === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
       case "date":
-        this.sort_lieu = "NO";
-        this.sort_date = sens;
-        this.sort_cours = "NO";
-        this.sort_nom = "NO";
+        rider.sort_lieu = "NO";
+        rider.sort_date = sens;
+        rider.sort_cours = "NO";
+        rider.sort_nom = "NO";
         liste_seance_VM.sort((a, b) => {
           let dateA = a.thisSeance.date_seance;
           let dateB = b.thisSeance.date_seance;
@@ -208,7 +215,7 @@ export class MenuComponent implements OnInit {
             comparaison = -1;
           }
 
-          return this.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          return rider.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
     }
@@ -266,7 +273,7 @@ export class MenuComponent implements OnInit {
     }
   }
 
-  Voir(id:number){
+  Voir(id: number) {
     this.router.navigate(['/adherent'], { queryParams: { id: id } });
   }
 
