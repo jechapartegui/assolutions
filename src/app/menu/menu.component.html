@@ -20,6 +20,13 @@
                         [libelle]="rider.afficher_filtre  ? 'Masquer les filtres' : 'Afficher les filtres'"
                         (click)="rider.afficher_filtre ? rider.afficher_filtre = false : rider.afficher_filtre = true;">
                     </hover-button>
+                    <hover-button *ngIf="rider.afficher_filtre"
+                        [nomclass]="'button is-danger is-rounded  is-outlined'"
+                        [nomicon]="'fa-solid fa-filter'"
+                        [remove]="true"
+                        [libelle]="'Réinitialisaer les filtres'"
+                        (click)="ReinitFiltre(rider)">
+                    </hover-button>
                 </div>
                 <div class="panel-block">
                     <span class="fullscreen">
@@ -171,7 +178,7 @@
                                         </td>
                                         <td>{{ seance.thisSeance.date_seance | date: 'dd/MM/yyyy' }}
                                         </td>
-                                        <td>{{seance.thisSeance.heure_debut}} ({{seance.duree_seance}} <span
+                                        <td>{{seance.thisSeance.heure_debut}} ({{seance.thisSeance.duree_seance}} <span
                                                 i18n>&nbsp;min</span>)
                                         </td>
                                         <td class="no_mobile">
@@ -222,7 +229,7 @@
                                                     </span>
                                                 </span>
                                                 <span (click)="MAJInscription(seance.thisInscription,true)"
-                                                    *ngIf="seance.thisInscription.statut_inscription == 'absent' || seance.thisInscription.statut_inscription == null"
+                                                    *ngIf="seance.thisInscription.statut_inscription == 'absent'|| seance.thisInscription.statut_inscription == 'convoqué' || seance.thisInscription.statut_inscription == null"
                                                     style="cursor: pointer;" class="icon is-large">
                                                     <span class="fa-stack fa-lg">
                                                         <i class="far fa-stack-2x fa-thumbs-up has-text-success"></i>
@@ -235,7 +242,7 @@
                                                     </span>
                                                 </span>
                                                 <span (click)="MAJInscription(seance.thisInscription,false)"
-                                                    *ngIf="seance.thisInscription.statut_inscription == 'présent' || seance.thisInscription.statut_inscription == null"
+                                                    *ngIf="seance.thisInscription.statut_inscription == 'présent' || seance.thisInscription.statut_inscription == 'convoqué'|| seance.thisInscription.statut_inscription == null"
                                                     style="cursor: pointer;" class="icon is-large">
                                                     <span class="fa-stack fa-lg">
                                                         <i class="far fa-stack-2x fa-thumbs-down has-text-danger"></i>

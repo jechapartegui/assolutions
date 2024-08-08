@@ -74,6 +74,7 @@ export class MenuComponent implements OnInit {
                 return;
               }
               this.listeprof = profs;
+              this.liste_prof_filter = profs.map(x=> new KeyValuePairAny(x.id, x.prenom + ' ' + x.nom));
               this.lieuserv.GetAllLight().then((lieux) => {
                 if (lieux.length == 0) {
                   let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
@@ -275,6 +276,16 @@ export class MenuComponent implements OnInit {
 
   Voir(id: number) {
     this.router.navigate(['/adherent'], { queryParams: { id: id } });
+  }
+
+  ReinitFiltre(adh:Adherent_VM){
+    adh.filter_date_avant= null;
+    adh.filter_date_apres= null;
+    adh.filter_nom= null;
+    adh.filter_cours= null;
+    adh.filter_groupe= null;
+    adh.filter_lieu= null;
+    adh.filter_prof= null;
   }
 
 }

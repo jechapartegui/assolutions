@@ -11,7 +11,11 @@ export class FilterListProfMenuPipe implements PipeTransform {
     }
 
     function check(item) {
-      return item.thisSeanceprofesseurs.find(x=> x.key == filter);
+      if(item.thisSeance.professeurs.find(x=> x.key == filter)){
+        return true;
+      } else {
+        return false;
+      }
     }
 
     return items.filter(check);
