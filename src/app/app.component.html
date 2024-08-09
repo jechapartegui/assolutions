@@ -43,6 +43,10 @@
             Groupes
           </a>
           <ng-container *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
+            <a [class]="(GlobalService.SelectedMenu$ | async) === 'PROF' ? 'navbar-item is-selected' : 'navbar-item'"
+            (click)="GlobalService.updateSelectedMenuStatus('PROF')" [routerLink]="['/professeur']" i18n>
+            Lieux
+          </a>
             <a [class]="(GlobalService.SelectedMenu$ | async) === 'LIEU' ? 'navbar-item is-selected' : 'navbar-item'"
               (click)="GlobalService.updateSelectedMenuStatus('LIEU')" [routerLink]="['/lieu']" i18n>
               Lieux

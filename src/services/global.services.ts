@@ -13,10 +13,10 @@ import { KeyValuePair } from 'src/class/keyvaluepair';
 })
 export class GlobalService {
   static instance: GlobalService;
-  private isSelectedMenu = new BehaviorSubject<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU" | "COMPTE" >("MENU");
-  static selected_menu: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE" = "MENU";
+  private isSelectedMenu = new BehaviorSubject<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU" | "COMPTE"| "PROF" >("MENU");
+  static selected_menu: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF" = "MENU";
 
-  SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"> = this.isSelectedMenu.asObservable();
+  SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"> = this.isSelectedMenu.asObservable();
 
 
   private isCompte = new BehaviorSubject<compte>(null);
@@ -44,7 +44,7 @@ export class GlobalService {
     this.isMenu.next(men);
     GlobalService.menu = men;
   }
-  updateSelectedMenuStatus(selected: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"): void {
+  updateSelectedMenuStatus(selected: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"): void {
     this.isSelectedMenu.next(selected);
     GlobalService.selected_menu = selected;
   }
