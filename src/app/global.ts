@@ -47,6 +47,8 @@ export class StaticClass{
         return StatutPresence.Absent;
       case "convoqué":
         return StatutPresence.Convoqué;
+        case "essai":
+          return StatutPresence.Essai;
       default:
         return StatutPresence.Présent; // ou vous pouvez lancer une erreur si la valeur n'est pas valide
     }

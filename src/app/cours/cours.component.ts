@@ -13,6 +13,7 @@ import { SaisonService } from 'src/services/saison.service';
 import { CoursService } from 'src/services/cours.service';
 import { GroupeService } from 'src/services/groupe.service';
 import { Professeur } from 'src/class/professeur';
+import { ProfesseurService } from 'src/services/professeur.service';
 
 @Component({
   selector: 'app-cours',
@@ -21,7 +22,7 @@ import { Professeur } from 'src/class/professeur';
 })
 export class CoursComponent implements OnInit {
   // cours.component.ts
-  constructor(private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
+  constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
   listeprof: Professeur[];
   listelieu: KeyValuePair[];
@@ -69,7 +70,7 @@ export class CoursComponent implements OnInit {
           return;
         }
         this.liste_groupe = groupes;
-        this.ridersService.GetProf().then((profs) => {
+        this.prof_serv.GetProf().then((profs) => {
           if (profs.length == 0) {
             let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
             errorService.emitChange(o);

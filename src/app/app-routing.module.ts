@@ -9,6 +9,7 @@ import { SeanceComponent } from './seance/seance.component';
 import { CoursComponent } from './cours/cours.component';
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { ProfesseurComponent } from './professeur/professeur.component';
+import { CompteComponent } from './compte/compte.component';
 
 
 
@@ -23,6 +24,7 @@ const routes: Routes = [
    { path: 'groupe', component: GroupeComponent }, // Route 'defaut' qui affiche ImportRidersComponent
    { path: 'ma-seance', component: MaSeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
    { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+   { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   
  ];
  

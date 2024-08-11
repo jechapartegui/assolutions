@@ -30,7 +30,7 @@ export class GroupeComponent implements OnInit {
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
-    this.action = $localize`Charger les groupe`;
+    this.action = $localize`Charger les groupes`;
     if (GlobalService.is_logged_in) {
 
       if (GlobalService.menu === "ADHERENT") {

@@ -50,7 +50,7 @@
                 <div class="card">
                     <header class="card-header">
                         <p class="card-header-title" i18n>Liste des adhérents</p>
-                        <button type="button" (click)="Creer()" class="button is-primary is-rounded is-outlined"
+                        <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" type="button" (click)="Creer()" class="button is-primary is-rounded is-outlined"
                             style="align-self: center; ;fill:hsl(171, 100%, 41%)">
                             <i class="fa-solid fa-plus"></i>
                         </button>

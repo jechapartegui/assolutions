@@ -16,38 +16,42 @@ export class LoginComponent implements OnInit {
   Source: Compte = new Compte(new compte());
   action: string;
   projets: liste_projet[];
-  projets_select: liste_projet =null;
+  projets_select: liste_projet = null;
   loading: boolean;
-  profil:"ADHERENT" | "PROF" | "ADMIN" = null;
+  profil: "ADHERENT" | "PROF" | "ADMIN" = null;
   psw_projet: string = null;
-  constructor(private compte_serv: CompteService, private project_serv: ProjetService, private router: Router, private route:ActivatedRoute) { 
+  constructor(private compte_serv: CompteService, private project_serv: ProjetService, private router: Router, private route: ActivatedRoute) {
     this.Source.Login = "jechapartegui@gmail.com";
     this.Source.Password = "Gulfed2606";
   }
 
-  ngOnInit() : void{
-    let token:string;
-    let user:string;
+  ngOnInit(): void {
+    let token: string;
+    let user: string;
+    let droit: number;
     this.route.queryParams.subscribe(params => {
       const errorService = ErrorService.instance;
       this.action = $localize`Connexion par token`;
       if ('token_connexion' in params) {
         token = params['token_connexion'];
         if ('username' in params) {
-          this.loading = true;
           user = params['username'];
-          this.compte_serv.LoginToken(token,user).then((retour) =>{
-            if(retour){
+          if ('droit' in params) {
+            this.loading = true;
+            droit = params['droit'];
+            this.compte_serv.LoginToken(token, user, droit).then((retour) => {
+              if (retour) {
+                this.loading = false;
+                this.router.navigate(['/menu']);
+              } else {
+                this.loading = false;
+              }
+            }).catch((error: Error) => {
+              let o = errorService.CreateError(this.action, error.message);
+              errorService.emitChange(o);
               this.loading = false;
-              this.router.navigate(['/menu']);
-            } else {
-              this.loading = false;
-            }
-          }).catch((error: Error) => {
-            let o = errorService.CreateError(this.action, error.message);
-            errorService.emitChange(o);
-            this.loading = false;
-          });
+            });
+          }
         }
       }
     })
@@ -61,20 +65,18 @@ export class LoginComponent implements OnInit {
       this.projets = [];
       pr.forEach((pp) => {
         let curpro = this.projets.find(x => x.id == pp.id);
-        if(curpro){
-          if(pp.adherent == true){
+        if (curpro) {
+          if (pp.adherent == true) {
             curpro.adherent = true;
           }
-          if(pp.prof == true){
+          if (pp.prof == true) {
             curpro.prof = true;
           }
-          if(pp.admin == true){
+          if (pp.admin == true) {
             curpro.admin = true;
           }
-          if(pp.password == true){
-            curpro.password = true;
-          }
-          if(pp.actif == true){
+
+          if (pp.actif == true) {
             curpro.actif = true;
           }
         } else {
@@ -105,7 +107,7 @@ export class LoginComponent implements OnInit {
       this.loading = false;
     });
   }
-  LogOut(){
+  LogOut() {
 
   }
 
@@ -118,30 +120,18 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
-    console.log(this.projets_select);
-    this.project_serv.ConnectToProject(this.projets_select, this.Source.Login, this.psw_projet).then((result) => {
-      if (result) {
-        if (this.projets_select.actif) {
-          GlobalService.instance.updateMenuType(charg);         
-          GlobalService.instance.updateSelectedMenuStatus("MENU");
-          GlobalService.instance.updateProjet(new projet(this.projets_select))
-          this.router.navigate(['/menu']);
-          this.loading = false;
-        } else {
-          let o = errorService.CreateError(this.action, $localize`Projet inactif`);
-          errorService.emitChange(o);
-          this.loading = false;
-        }
-      } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-        errorService.emitChange(o);
-        this.loading = false;
-      }
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
+
+    if (this.projets_select.actif) {
+      GlobalService.instance.updateMenuType(charg);
+      GlobalService.instance.updateSelectedMenuStatus("MENU");
+      GlobalService.instance.updateProjet(new projet(this.projets_select))
+      this.router.navigate(['/menu']);
+      this.loading = false;
+    } else {
+      let o = errorService.CreateError(this.action, $localize`Projet inactif`);
       errorService.emitChange(o);
       this.loading = false;
-    });
+    }
 
   }
 

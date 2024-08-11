@@ -70,28 +70,6 @@ export class ProjetService {
       });
   }
 
-  public ConnectToProject(projet: liste_projet, login: string, psw_projet: string): Promise<boolean> {
-    if(projet.password == false ){ 
-      return Promise.resolve(true);
-    }
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "check_mdp_admin",
-      projet: projet.id,
-      login: login,
-      psw_projet: psw_projet
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
 
   public Create(projet: projet, compte: number): Promise<number> {
     this.url = environment.maseance + 'maseance/projet_manage.php';

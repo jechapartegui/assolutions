@@ -1,1 +1,214 @@
-<p>compte works!</p>
+<div class="container">
+    <ng-container *ngIf="context == 'LISTE'">
+        <div class="columns" style="margin-top: 0.5rem;">
+            <div class="column menuligne">
+
+                <hover-button
+                    [nomclass]="afficher_filtre ? 'button is-info is-rounded' : 'button is-info is-rounded  is-outlined' "
+                    [nomicon]="'fa-solid fa-filter'" [libelle]="'Afficher le filtre'"
+                    (click)="afficher_filtre ? afficher_filtre = false : afficher_filtre = true;">
+                </hover-button>
+                <button *ngIf="afficher_filtre" (click)="ReinitFiltre()"
+                    class="button is-danger is-rounded is-outlined">
+                    <span class="icon is-large">
+                        <span class="fa-stack fa-lg">
+                            <i class="fas fa-filter fa-stack-1x"></i>
+                            <i class="fas fa-slash fa-stack-1x has-text-danger"></i>
+                        </span>
+                    </span>
+                </button>
+                <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' " [nomicon]="'fas fa-file-excel'"
+                    [libelle]="'Exporter vers Excel'" (click)="ExporterExcel()">
+                </hover-button>
+
+
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title" i18n>Liste des comptes</p>
+                        <button type="button" (click)="Creer()" class="button is-primary is-rounded is-outlined"
+                            style="align-self: center; ;fill:hsl(171, 100%, 41%)">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </header>
+                    <span class="fullscreen">
+                        <div class="card-content">
+                            <table class="table" style="width: 100%;font-size:smaller"
+                                *ngIf="ListeCompte && ListeCompte.length> 0">
+                                <thead>
+                                    <tr>
+                                        <th><span class="th_filtre">
+                                                <span class="ligne">
+                                                    <span style="font-size: smaller;" i18n>Login</span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_login === 'NO'" (click)="Sort('ASC', 'login')"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_login === 'ASC'" (click)="Sort('DESC', 'login')"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_login === 'DESC'" (click)="Sort('ASC', 'login')"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span>
+                                                </span>
+                                                <input *ngIf="afficher_filtre"
+                                                    style="width: fit-content;font-size:smaller;" class="input is-small"
+                                                    i18n-placeholder placeholder="Nom du cours" type="text"
+                                                    [(ngModel)]="filter_login">
+                                            </span>
+                                        </th>
+                                        <th><span class="th_filtre">
+                                                <span class="ligne">
+                                                    <span style="font-size: smaller;" i18n>Actif</span>
+                                                    <span style="cursor: pointer;">
+                                                        <i *ngIf="sort_actif === 'NO'" (click)="Sort('ASC', 'actif')"
+                                                            class="fa-solid fa-sort"></i>
+                                                        <i *ngIf="sort_actif === 'ASC'" (click)="Sort('DESC', 'actif')"
+                                                            class="fa-solid fa-sort-up"></i>
+                                                        <i *ngIf="sort_actif === 'DESC'" (click)="Sort('ASC', 'actif')"
+                                                            class="fa-solid fa-sort-down"></i>
+                                                    </span></span>
+                                                <span *ngIf="afficher_filtre" class="ligne">
+                                                    <div class="select">
+                                                        <select style="font-size:smaller;" [(ngModel)]="filter_actif">
+                                                            <option [ngValue]="null" i18n>Tous</option>
+                                                            <option [ngValue]="0" i18n>Inactif</option>
+                                                            <option [ngValue]="1" i18n>Actif</option>
+                                                        </select>
+                                                    </div>
+                                                </span>
+                                            </span>
+                                        </th>
+                                        <th><span class="th_filtre">
+                                                <span class="ligne">
+                                                    <span style="font-size: smaller;" i18n>Droits</span>
+                                                </span>
+                                                <span *ngIf="afficher_filtre" class="ligne">
+                                                    <div class="select">
+                                                        <select style="font-size:smaller;" [(ngModel)]="filter_droit">
+                                                            <option [ngValue]="null" i18n>Tous</option>
+                                                            <option [ngValue]="0" i18n>Administrateur</option>
+                                                            <option [ngValue]="2" i18n>Professeur</option>
+                                                            <option [ngValue]="1" i18n>Adhérent</option>
+                                                        </select>
+                                                    </div>
+                                                </span>
+
+                                            </span>
+                                        </th>
+                                        <th><span class="th_filtre">
+                                                <span style="font-size: smaller;" i18n>Adhérents</span>
+
+
+                                            </span>
+                                        </th>
+                                        <th><span style="font-size: smaller;" i18n>Action</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        *ngFor="let cpt of ListeCompte | filterLogin : filter_login | filterActif : filter_actif  | filterDroit : filter_droit">
+                                        <td>
+                                            {{cpt.login}}
+                                        </td>
+                                        <td>
+                                            <i *ngIf="cpt.actif" class="fa-solid fa-mars has-text-info"></i>
+                                            <i *ngIf="!cpt.actif" class="fa-solid fa-venus has-text-danger"></i>
+                                        </td>
+                                        <td>
+                                            <div class="tags">
+                                                <ng-container *ngFor="let gr of cpt.projet_compte">
+                                                    <span class="tag is-success">
+                                                        <span *ngIf="gr.droit == 0" i18n>Administrateur</span>
+                                                        <span *ngIf="gr.droit == 1" i18n>Adhérent</span>
+                                                        <span *ngIf="gr.droit == 2" i18n>Professeur</span>
+                                                    </span>
+                                                </ng-container>
+                                            </div>
+
+                                        </td>
+
+                                        <td>
+                                            <div class="tags">
+                                                <ng-container *ngFor="let gr of cpt.riders">
+                                                    <span class="tag is-success">
+                                                        <span>{{gr.prenom}}&nbsp;{{gr.nom}}&nbsp;{{gr.surnom}}</span>
+                                                    </span>
+                                                </ng-container>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="tags">
+                                                <ng-container *ngFor="let gr of cpt.projet_compte">
+                                                    <span class="tag is-success">
+                                                        <span *ngIf="gr.droit == 0" i18n>Administrateur</span>
+                                                        <span *ngIf="gr.droit == 1" i18n>Adhérent</span>
+                                                        <span *ngIf="gr.droit == 2" i18n>Professeur</span>
+                                                    </span>
+                                                </ng-container>
+                                            </div>
+
+                                        </td>
+                                        <td>
+                                            <div class="buttons">
+                                                <button i18n-title title="Supprimer"
+                                                    class="button is-danger is-rounded is-outlined" type="button"
+                                                    (click)="Delete(cpt)">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                                <button i18n-title title="Editer"
+                                                    class="button is-info is-rounded is-outlined" type="button"
+                                                    (click)="Admin(cpt)">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p *ngIf="!ListeCompte || ListeCompte.length ==0">Pas de comptes
+                                disponible</p>
+                        </div>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="context == 'ECRITURE'">
+        <div class="columns is-justify-content-center">
+            <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+                <div *ngIf="thisCompte" class="box">
+
+                    <h2 *ngIf="thisCompte.id==0" class="title is-2" i18n>Créer un compte
+                    </h2>
+                    <h2 *ngIf="thisCompte.id>0" class="title is-2" i18n>Editer un compte</h2>
+                    <div class="field">
+                        <label class="label" i18n>Login</label>
+                        <div class="control ">
+                            <input [class]="IsEmail(thisCompte.login) ? 'input' : 'input is-danger'" type="text"
+                                id="nom_rider" name="nom_rider" i18n-placeholder placeholder="Login"
+                                [(ngModel)]="thisCompte.login">
+
+                        </div>
+                    </div>
+
+                    <p class="help is-danger" *ngIf="!IsEmail(thisCompte.login)" i18n>Le login doit être saisi
+                    </p>
+
+                    <div *ngIf="thisCompte" class="buttons">
+                        <button class="button is-primary is-rounded is-outlined" [disabled]="!IsEmail(thisCompte.login)"
+                            type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save()">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                        </button>
+                        <button (click)="Retour('LISTE')" class="button is-danger is-rounded is-outlined"
+                            style="fill:hsl(348, 100%, 61%)">
+                            <i class="fa-solid fa-backward-fast"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+   
+</div>

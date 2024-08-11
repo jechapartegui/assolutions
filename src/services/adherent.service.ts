@@ -3,7 +3,6 @@ import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
 import { adherent } from 'src/class/adherent';
 import { KeyValuePair } from 'src/class/keyvaluepair';
-import { Professeur } from 'src/class/professeur';
 
 @Injectable({
   providedIn: 'root'
@@ -146,21 +145,7 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
-  public GetProf(): Promise<Professeur[]> {
-    this.url = environment.maseance + "maseance/professeur_manage.php";
-    const body = {
-      command: "get_all",
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: Professeur[]) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
   public GetAllThisSeason(): Promise<adherent[]> {
     const body = {
       command: "get_all"

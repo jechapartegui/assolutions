@@ -8,6 +8,7 @@ import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
+import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
 import { ExcelService } from 'src/services/excel.service';
 import { GlobalService } from 'src/services/global.services';
@@ -46,11 +47,14 @@ export class AdherentComponent implements OnInit {
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
 
+  public login_adherent:string = "";
+  public existing_login:boolean;
+
 
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
-  constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute) { }
+  constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv:CompteService) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;

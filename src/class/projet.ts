@@ -349,6 +349,5 @@ export class liste_projet{
   public adherent:boolean;
   public admin:boolean;
   public prof:boolean;
-  public password:boolean;
   public actif:boolean;
 }

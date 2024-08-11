@@ -38,13 +38,14 @@ export class CompteService {
     });
 }
 
-public LoginToken(token:string, username: string): Promise<boolean> {
+public LoginToken(token:string, username: string, droit:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/compte_manage.php';
   //  this.url = this.url + "login.php";
   const body = {
     command:"login_token",
     username: username,
-    token: token
+    token: token,
+    droit:droit
   };
 
   return this.global.POST(this.url, body)

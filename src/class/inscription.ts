@@ -16,7 +16,8 @@ export class inscription_seance {
 export enum StatutPresence {
       Présent = "présent",
       Absent = "absent",
-      Convoqué = "convoqué"
+      Convoqué = "convoqué",
+      Essai = "essai"
 
 }
 
@@ -25,7 +26,7 @@ export class InscriptionSeance {
       public thisSeance: seance;
       public thisInscription: inscription_seance;
 
-      public constructor(seance: seance, inscription: inscription_seance, rider_id:number) {
+      public constructor(seance: seance, inscription: inscription_seance, rider_id: number) {
             this.thisSeance = seance;
 
             if (inscription) {

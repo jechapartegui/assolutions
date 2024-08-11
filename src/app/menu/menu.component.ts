@@ -13,6 +13,7 @@ import { GlobalService } from 'src/services/global.services';
 import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
 import { LieuService } from 'src/services/lieu.service';
 import { StaticClass } from '../global';
+import { ProfesseurService } from 'src/services/professeur.service';
 
 @Component({
   selector: 'app-menu',
@@ -30,7 +31,7 @@ export class MenuComponent implements OnInit {
   listeCours: cours[] = [];
  
   public g: StaticClass;
-  constructor(private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
+  constructor(private prof_serv:ProfesseurService, private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -66,7 +67,7 @@ export class MenuComponent implements OnInit {
 
               return comparaison; // Inverse pour le tri descendant
             });
-            this.adherent_serv.GetProf().then((profs) => {
+            this.prof_serv.GetProf().then((profs) => {
               if (profs.length == 0) {
                 let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
                 errorService.emitChange(o);

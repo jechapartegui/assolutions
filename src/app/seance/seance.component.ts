@@ -14,6 +14,7 @@ import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
 import { GroupeService } from 'src/services/groupe.service';
 import { LieuService } from 'src/services/lieu.service';
+import { ProfesseurService } from 'src/services/professeur.service';
 import { SaisonService } from 'src/services/saison.service';
 import { SeancesService } from 'src/services/seance.service';
 import { SeanceprofService } from 'src/services/seanceprof.service';
@@ -73,6 +74,7 @@ export class SeanceComponent implements OnInit {
 
   constructor(
     public GlobalService:GlobalService,
+    private prof_serv:ProfesseurService,
     private seancesservice: SeancesService, private spservice:SeanceprofService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
 
@@ -94,7 +96,7 @@ export class SeanceComponent implements OnInit {
           return;
         }
         this.liste_groupe = groupes;
-        this.ridersService.GetProf().then((profs) => {
+        this.prof_serv.GetProf().then((profs) => {
           if (profs.length == 0) {
             let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
             errorService.emitChange(o);

@@ -1,4 +1,5 @@
 import { Subject } from "rxjs";
+import { adherent, Adherent } from "./adherent";
 
 export class compte {
     public id: number;
@@ -12,6 +13,9 @@ export class compte {
     public echec_connexion: number;
     public mail_ko: boolean;
     public activation_token: string;
+    public riders:adherent[];
+    public projet_compte:projet_compte[];
+
 
 }
 
@@ -114,4 +118,10 @@ export class Validation_Compte {
             this.control = false;
         }
     }
+}
+
+export class projet_compte{
+    public id:number;
+    public droit:number;
+    public date_connexion_toker:Date;
 }
