@@ -57,6 +57,7 @@ export class AdherentComponent implements OnInit {
   constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv:CompteService) { }
 
   ngOnInit(): void {
+    
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
     if (GlobalService.is_logged_in) {

@@ -118,13 +118,9 @@
                                         </td>
                                         <td>
                                             <div class="tags">
-                                                <ng-container *ngFor="let gr of cpt.projet_compte">
-                                                    <span class="tag is-success">
-                                                        <span *ngIf="gr.droit == 0" i18n>Administrateur</span>
-                                                        <span *ngIf="gr.droit == 1" i18n>Adhérent</span>
-                                                        <span *ngIf="gr.droit == 2" i18n>Professeur</span>
-                                                    </span>
-                                                </ng-container>
+                                                <span *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
+                                                <span *ngIf="IsAdminProf(cpt.projet_compte,0)" class="tag is-info">Administrateur</span>
+                                                <span *ngIf="IsAdminProf(cpt.projet_compte,2)"class="tag is-info">Professeur</span>                                                
                                             </div>
 
                                         </td>
@@ -138,18 +134,7 @@
                                                 </ng-container>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div class="tags">
-                                                <ng-container *ngFor="let gr of cpt.projet_compte">
-                                                    <span class="tag is-success">
-                                                        <span *ngIf="gr.droit == 0" i18n>Administrateur</span>
-                                                        <span *ngIf="gr.droit == 1" i18n>Adhérent</span>
-                                                        <span *ngIf="gr.droit == 2" i18n>Professeur</span>
-                                                    </span>
-                                                </ng-container>
-                                            </div>
-
-                                        </td>
+                                        
                                         <td>
                                             <div class="buttons">
                                                 <button i18n-title title="Supprimer"

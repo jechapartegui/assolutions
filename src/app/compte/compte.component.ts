@@ -1,8 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { compte } from 'src/class/compte';
+import { Router } from '@angular/router';
+import { compte, projet_compte } from 'src/class/compte';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
+import { GlobalService } from 'src/services/global.services';
 
 @Component({
   selector: 'app-compte',
@@ -12,55 +14,77 @@ import { ErrorService } from 'src/services/error.service';
 export class CompteComponent implements OnInit {
 
 
-sort_login: string;
-filter_login: string;
-sort_actif: string;
-filter_actif: number;
-filter_droit: number;
-thisCompte:compte;
+  sort_login: string;
+  filter_login: string;
+  sort_actif: string;
+  filter_actif: number;
+  filter_droit: number;
+  thisCompte: compte;
 
   ListeCompte: compte[];
   action: string;
-  context :"LISTE" | "ECRITURE";
-afficher_filtre: any;
+  context: "LISTE" | "ECRITURE" = "LISTE";
+  afficher_filtre: any;
 
-  constructor(private cpteserv:CompteService){}
+  constructor(private cpteserv: CompteService, private router: Router) { }
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les comptes`;
-      this.cpteserv.GetAll().then((cpt) =>{
+
+    if (GlobalService.is_logged_in) {
+
+      if ((GlobalService.menu === "ADHERENT") || (GlobalService.menu === "PROF")) {
+        this.router.navigate(['/menu']);
+        return;
+      }
+
+      this.cpteserv.GetAll().then((cpt) => {
         this.ListeCompte = cpt;
-      }).catch((error:HttpErrorResponse) => {
+      }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError("Chargement", error);
         errorService.emitChange(n);
       });
+    } else {
+
+      this.router.navigate(['/login']);
+      return;
+    }
   }
 
-  Sort(arg0: string,arg1: string) {
-    throw new Error('Method not implemented.');
-    }
-    Creer() {
-    throw new Error('Method not implemented.');
-    }
-    ExporterExcel() {
-    throw new Error('Method not implemented.');
-    }
-    ReinitFiltre() {
-    throw new Error('Method not implemented.');
-    }
-    IsEmail(st:string):boolean{
+  IsAdminProf(pro_cp:projet_compte[], droit) : boolean{
+    if(pro_cp.find(x => x.droit == droit)){
       return true;
+    } else {
+      return false;
     }
-    Admin(_t115: any) {
+  }
+
+  Sort(arg0: string, arg1: string) {
     throw new Error('Method not implemented.');
-    }
-    Delete(_t115: any) {
+  }
+  Creer() {
     throw new Error('Method not implemented.');
-    }
-    Save() {
-      throw new Error('Method not implemented.');
-      }
-      Retour(arg0: string) {
-      throw new Error('Method not implemented.');
-      }
+  }
+  ExporterExcel() {
+    throw new Error('Method not implemented.');
+  }
+  ReinitFiltre() {
+    throw new Error('Method not implemented.');
+  }
+  IsEmail(text): boolean {
+    var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+    return re.test(text);
+  }
+  Admin(_t115: any) {
+    throw new Error('Method not implemented.');
+  }
+  Delete(_t115: any) {
+    throw new Error('Method not implemented.');
+  }
+  Save() {
+    throw new Error('Method not implemented.');
+  }
+  Retour(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
 }

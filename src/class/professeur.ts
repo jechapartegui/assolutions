@@ -8,6 +8,11 @@ export class Professeur{
     public num_siren:string;
     public iban:string;
     public info:string;
+    public saisons:prof_saison[];
+  
     
-    
+}
+export class prof_saison{
+    saison_id:number;
+    taux_horaire:number;
 }
