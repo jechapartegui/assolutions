@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs';
 import { Adresse } from 'src/class/address';
-import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
+import { adherent, Adherent, Adherent_VM, AdherentExport } from 'src/class/adherent';
 import { Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
@@ -34,6 +35,7 @@ export class AdherentComponent implements OnInit {
   public active_saison: Saison;
   public valid_address: boolean;
   public liste_adherents_VM: Adherent[] = [];
+  public liste_adherents_export: Adherent[] = [];
   public sort_nom = "NO";
   public sort_date = "NO";
   public sort_sexe = "NO";
@@ -50,10 +52,12 @@ export class AdherentComponent implements OnInit {
   public login_adherent:string = "";
   public existing_login:boolean;
 
-
+  public modal:boolean = false;
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
+
+  file: File | null = null;
   constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv:CompteService) { }
 
   ngOnInit(): void {
@@ -434,17 +438,21 @@ export class AdherentComponent implements OnInit {
     this.filter_groupe = null;
     this.filter_nom = null;
   }
-  ImporterExcel() {
 
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.file = input.files[0];
+      this.ImporterExcel();
+    }
   }
-  ExporterExcel() {
+  ImporterExcel() {
     const headers = {
       ID: 'ID',
       Nom: 'Nom',
       Prenom: 'Prénom',
       DDN: 'Date de naissance',
       Sexe: 'Sexe',
-      Contacts: 'Contact',
       Street: 'Numéro et voie',
       PostCode: 'Code postal',
       City: 'Ville',
@@ -459,12 +467,100 @@ export class AdherentComponent implements OnInit {
       NomMailUrgence: 'Contact mail si urgence',
       PhoneUrgence: 'Téléphone si urgence',
       NomPhoneUrgence: 'Contact téléphone si urgence',
-      Adhesion: 'Inscrit'
+      Inscrit: 'Inscrit'
+    };
+  
+    this.excelService.importFromExcelFile(this.file, headers)
+      .subscribe(data => {
+        this.liste_adherents_export = this.mapToAdherentExport(data);
+       this.modal = true;
+       console.log(this.liste_adherents_export);
+      });
+  }
+  openModal() {
+    this.modal = true;
+  }
+
+  closeModal() {
+    this.modal = false;
+  }
+
+  private mapToAdherentExport(data: any[]): Adherent[] {
+    console.log(this.active_saison.id);
+    return data.map(item => {
+      let liste_insc:Adhesion[] = [];
+      if(item.Inscrit){
+        let insc:Adhesion = new Adhesion();
+        insc.saison_id = this.active_saison.id;
+        liste_insc.push(insc);
+      }
+      const adherent = new Adherent(
+        {
+          id: item.ID,
+          nom: item.Nom,
+          prenom: item.Prenom,
+          date_naissance: item.DDN,
+          sexe: item.Sexe ,
+          adresse: JSON.stringify({
+            Street: item.Street,
+            PostCode: item.PostCode,
+            City: item.City,
+            Country: item.Country
+          }),
+          contacts: JSON.stringify( [
+            { Type: 'EMAIL', Value: item.Mail, Pref: item.MailPref, Notes:"" },
+            { Type: 'PHONE', Value: item.Phone, Pref: item.PhonePref, Notes:""  }
+          ]),
+          surnom:item.Surnom,
+          date_creation:new Date(),
+          photo : "",
+          nationalite : "",
+          seances : [],
+          groupes : [],
+          mot_de_passe : "",
+          compte_id : 0,
+          login:item.Login,
+          inscriptions :[],
+          seances_prof:[],
+          adhesions:liste_insc,
+          contacts_prevenir: JSON.stringify( [
+            { Type: 'EMAIL', Value: item.MailUrgence, Notes: item.NomMailUrgence, Pref:false },
+            { Type: 'PHONE', Value: item.PhoneUrgence, Notes: item.NomPhoneUrgence, Pref:false }
+          ]),
+          // Ajoute d'autres champs si nécessaire
+        },
+        //item.Inscrit  // On peut passer un ID de saison ici si nécessaire
+      );
+      return adherent;
+    });
+  }
+  ExporterExcel() {
+    const headers = {
+      ID: 'ID',
+      Nom: 'Nom',
+      Prenom: 'Prénom',
+      DDN: 'Date de naissance',
+      Sexe: 'Sexe',
+      Street: 'Numéro et voie',
+      PostCode: 'Code postal',
+      City: 'Ville',
+      Country: 'Pays',
+      Surnom: 'Surnom',
+      Login: 'Login',
+      Mail: 'Email',
+      MailPref: 'Contact préféré email ?',
+      Phone: 'Téléphone',
+      PhonePref: 'Contact préféré téléphone ?',
+      MailUrgence: 'Mail si urgence',
+      NomMailUrgence: 'Contact mail si urgence',
+      PhoneUrgence: 'Téléphone si urgence',
+      NomPhoneUrgence: 'Contact téléphone si urgence',
+      Inscrit:'Inscrit'
 
       // Ajoutez d'autres mappages si nécessaire
     };
 
-    this.excelService.exportAsExcelFile(this.liste_adherents_VM.map(x => new AdherentExport(x, this.active_saison.id)), 'liste_adherent', headers);
+    this.excelService.exportAsExcelFile(this.liste_adherents_VM.map(x => new AdherentExport(x)), 'liste_adherent', headers);
   }
   onValidMailChange(isValid: boolean) {
     this.valid_mail = isValid;
@@ -493,6 +589,14 @@ export class AdherentComponent implements OnInit {
   isRegistredSaison(saison_id: number) {
     let u = this.thisAdherent.Adhesions.find(x => x.saison_id == saison_id);
     if (u) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  StatutMAJ(ad:Adherent){
+    let u = this.liste_adherents_VM.find(x => (x.Nom == ad.Nom) && (x.Prenom == ad.Prenom) && (x.DDN == ad.DDN));
+    if(u){
       return true;
     } else {
       return false;

@@ -26,11 +26,19 @@
                     [nomclass]="'button  is-rounded is-primary is-outlined' " [nomicon]="'fas fa-file-excel'"
                     [libelle]="'Exporter vers Excel'" (click)="ExporterExcel()">
                 </hover-button>
+                <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="file is-primary has-name">
+                    <label class="file-label">
+                        <input class="file-input" type="file" name="resume" (change)="onFileSelected($event)" />
+                        <span class="file-cta">
+                            <span class="file-icon">
+                                <i class="fas fa-file-excel"></i>
+                            </span>
+                            <span class="file-label" i18n> Importer un fichier excel </span>
+                        </span>
+                        <span *ngIf="file" class="file-name"> {{ file.name }} </span>
+                    </label>
+                </div>
 
-                <hover-button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
-                    [nomclass]="'button  is-rounded is-primary is-outlined' " [nomicon]="'far fa-file-excel'"
-                    [libelle]="'Importer un fichier Excel'" (click)="ImporterExcel()">
-                </hover-button>
                 <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field has-addons">
                     <div class="control">
                         <div class="select">
@@ -50,7 +58,8 @@
                 <div class="card">
                     <header class="card-header">
                         <p class="card-header-title" i18n>Liste des adhérents</p>
-                        <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" type="button" (click)="Creer()" class="button is-primary is-rounded is-outlined"
+                        <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" type="button" (click)="Creer()"
+                            class="button is-primary is-rounded is-outlined"
                             style="align-self: center; ;fill:hsl(171, 100%, 41%)">
                             <i class="fa-solid fa-plus"></i>
                         </button>
@@ -252,6 +261,125 @@
             </div>
         </div>
     </ng-container>
+    <div class="modal" [ngClass]="{'is-active': modal}">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+            <div class="card">
+                <header class="card-header">
+                    <p class="card-header-title" i18n>Adhérents à importer / mettre à jour</p>
+                </header>
+                <span class="fullscreen">
+                    <div class="card-content">
+                        <table class="table" style="width: 100%;font-size:smaller"
+                            *ngIf="liste_adherents_export && liste_adherents_export.length> 0">
+                            <thead>
+                                <tr>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>MAJ ?</span>
+                                            </span>
+                                        </span>
+                                    </th>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>Nom</span>
+                                            </span>
+                                        </span>
+                                    </th>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>Date de naissance</span>
+                                            </span>
+
+                                        </span>
+                                    </th>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>Sexe</span>
+                                            </span>
+                                        </span>
+                                    </th>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>Contact
+
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </th>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>Statut
+
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </th>
+                                    <th><span class="th_filtre">
+                                            <span class="ligne">
+                                                <span style="font-size: smaller;" i18n>Inscrit
+
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let adherent of liste_adherents_export">
+                                    <td>
+                                        <label class="checkbox">
+                                            <input type="checkbox" [(ngModel)]="adherent.maj" />
+
+                                        </label>
+
+                                    </td>
+                                    <td>
+                                        {{adherent.Libelle}}
+                                    </td>
+                                    <td>
+                                        {{ adherent.DDN | date: 'dd/MM/yyyy' }}
+                                        ({{calculateAge(adherent.DDN)}}&nbsp;<span i18n>ans</span>)
+                                    </td>
+                                    <td>
+                                        <i *ngIf="adherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
+                                        <i *ngIf="!adherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+
+                                    </td>
+                                    <td>
+                                        <span *ngIf="adherent.ContactPrefereType=='EMAIL'"><i
+                                                class="fas fa-at"></i></span>
+                                        <span *ngIf="adherent.ContactPrefereType=='PHONE'"><i
+                                                class="fas fa-phone"></i></span>
+                                        <span *ngIf="adherent.ContactPrefereType=='INSTA'"><i
+                                                class="fab fa-instagram-square"></i></span>
+                                        <span *ngIf="adherent.ContactPrefereType=='FACEBOOK'"><i
+                                                class="fab fa-facebook-square"></i></span>
+                                        <span *ngIf="adherent.ContactPrefereType=='TWITTER'"><i
+                                                class="fab fa-twitter-square"></i></span>
+                                        <span>&nbsp;{{adherent.ContactPrefere}}</span>
+                                    </td>
+                                    <td>
+                                        <span *ngIf="StatutMAJ(adherent)" i18n>Mise à jour</span>
+                                        <span *ngIf="!StatutMAJ(adherent)" i18n>Ajout</span>
+                                    </td>
+                                    <td>
+                                        <i *ngIf="!isRegistred(adherent)" class="fas fa-times "></i>
+                                        <i *ngIf="isRegistred(adherent)" class="fas fa-check has-text-success"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p *ngIf="!liste_adherents_export || liste_adherents_export.length ==0">Pas de séances
+                            disponible</p>
+                    </div>
+                </span>
+            </div>
+        </div>
+        <button class="modal-close is-large" aria-label="close" (click)="modal = false"></button>
+    </div>
+
     <ng-container *ngIf="context == 'ECRITURE'">
         <div class="columns is-justify-content-center">
             <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
@@ -348,8 +476,8 @@
                         style="fill:#FFB70F">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </button>
-                    <button *ngIf="thisAdherent.ID>0"
-                        (click)="Retour('LECTURE')" class="button is-info is-rounded is-outlined">
+                    <button *ngIf="thisAdherent.ID>0" (click)="Retour('LECTURE')"
+                        class="button is-info is-rounded is-outlined">
                         <i class="fa-solid fa-binoculars"></i>
                     </button>
                     <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF'"
@@ -413,7 +541,8 @@
                             <br>
                         </ng-container>
                     </div>
-                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF'" class="field">
+                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF'"
+                        class="field">
                         <label class="label" i18n>Inscriptions</label>
                         <table *ngIf="thisAdherent.Adhesions">
                             <thead>

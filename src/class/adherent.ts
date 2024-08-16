@@ -34,7 +34,8 @@ export class adherent {
 export class Adherent {
   datasource: adherent;
   public valid: Validation_Adherent;
-
+  public maj:boolean = true;
+  public Inscrit:boolean;
 
   sLibelle = new Subject<string>();
   dateNaissanceSubject = new Subject<string>();
@@ -201,8 +202,9 @@ export class AdherentExport{
   Adhesion: boolean;
   NomMailUrgence: string;
   NomPhoneUrgence: string;
+  Inscrit:boolean;
 
-  constructor(a: Adherent, saison_id) {
+  constructor(a: Adherent) {
     this.safeAssign(() => this.ID = a.ID);
     this.safeAssign(() => this.Nom = a.Nom);
     this.safeAssign(() => this.Prenom = a.Prenom);
@@ -219,15 +221,19 @@ export class AdherentExport{
     this.safeAssign(() => this.Phone = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Value);
     this.safeAssign(() => this.PhonePref = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Pref);
     this.safeAssign(() => this.MailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Value);
-    this.safeAssign(() => this.PhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Value);
     this.safeAssign(() => this.NomMailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Notes);
-    this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes);
-    let u = a.Adhesions.find(x => x.saison_id == saison_id);
-    if(u){
+    this.safeAssign(() => this.PhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Value);
+    this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes); 
+    
+    console.log(a.Inscrit);
+   try{
+    console.log(a.Inscrit);
+    if(a.Inscrit){
       this.Adhesion = true;
-    } else {
-      this.Adhesion = false;
     }
+   } catch(e){
+
+   }
   }
 
   private safeAssign(assignFn: () => void) {

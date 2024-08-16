@@ -23,8 +23,8 @@ export class ExcelService {
 
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(mappedJson);
     const workbook: XLSX.WorkBook = {
-      Sheets: { 'data': worksheet },
-      SheetNames: ['data']
+      Sheets: { 'adherent': worksheet },
+      SheetNames: ['adherent']
     };
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     this.saveAsExcelFile(excelBuffer, excelFileName);
@@ -41,21 +41,21 @@ export class ExcelService {
       reader.onload = (e: any) => {
         const arrayBuffer: ArrayBuffer = e.target.result;
         const workbook: XLSX.WorkBook = XLSX.read(arrayBuffer, { type: 'array' });
-
+  
         const worksheet: XLSX.WorkSheet = workbook.Sheets[workbook.SheetNames[0]];
         const json: any[] = XLSX.utils.sheet_to_json(worksheet);
-
+  
         const mappedJson = json.map(item => {
-          const mappedItem = {};
+          const mappedItem: any = {};
           for (const key in headers) {
             if (headers.hasOwnProperty(key)) {
-              const reverseMap = Object.keys(headers).find(k => headers[k] === key);
-              mappedItem[reverseMap] = item[headers[key]];
+              const excelColumn = headers[key];
+              mappedItem[key] = item[excelColumn];
             }
           }
           return mappedItem;
         });
-
+  
         observer.next(mappedJson);
         observer.complete();
       };
