@@ -268,113 +268,114 @@
                 <header class="card-header">
                     <p class="card-header-title" i18n>Adhérents à importer / mettre à jour</p>
                 </header>
-                <span class="fullscreen">
-                    <div class="card-content">
-                        <table class="table" style="width: 100%;font-size:smaller"
-                            *ngIf="liste_adherents_export && liste_adherents_export.length> 0">
-                            <thead>
-                                <tr>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>MAJ ?</span>
+                <div class="card-content">
+                    <table class="table" style="width: 100%;font-size:smaller"
+                        *ngIf="liste_adherents_export && liste_adherents_export.length> 0">
+                        <thead>
+                            <tr>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>MAJ ?</span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>Nom</span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>Date de naissance</span>
+                                        </span>
+
+                                    </span>
+                                </th>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>Sexe</span>
+                                        </span>
+                                    </span>
+                                </th>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>Contact
+
                                             </span>
                                         </span>
-                                    </th>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>Nom</span>
+                                    </span>
+                                </th>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>Statut
+
                                             </span>
                                         </span>
-                                    </th>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>Date de naissance</span>
-                                            </span>
+                                    </span>
+                                </th>
+                                <th><span class="th_filtre">
+                                        <span class="ligne">
+                                            <span style="font-size: smaller;" i18n>Inscrit
 
-                                        </span>
-                                    </th>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>Sexe</span>
                                             </span>
                                         </span>
-                                    </th>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>Contact
+                                    </span>
+                                </th>
 
-                                                </span>
-                                            </span>
-                                        </span>
-                                    </th>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>Statut
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let adherent of liste_adherents_export">
+                                <td>
+                                    <label class="checkbox">
+                                        <input type="checkbox" [(ngModel)]="adherent.maj" />
 
-                                                </span>
-                                            </span>
-                                        </span>
-                                    </th>
-                                    <th><span class="th_filtre">
-                                            <span class="ligne">
-                                                <span style="font-size: smaller;" i18n>Inscrit
+                                    </label>
 
-                                                </span>
-                                            </span>
-                                        </span>
-                                    </th>
+                                </td>
+                                <td>
+                                    {{adherent.Libelle}}
+                                </td>
+                                <td>
+                                    {{ adherent.DDN | date: 'dd/MM/yyyy' }}
+                                    ({{calculateAge(adherent.DDN)}}&nbsp;<span i18n>ans</span>)
+                                </td>
+                                <td>
+                                    <i *ngIf="adherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
+                                    <i *ngIf="!adherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let adherent of liste_adherents_export">
-                                    <td>
-                                        <label class="checkbox">
-                                            <input type="checkbox" [(ngModel)]="adherent.maj" />
-
-                                        </label>
-
-                                    </td>
-                                    <td>
-                                        {{adherent.Libelle}}
-                                    </td>
-                                    <td>
-                                        {{ adherent.DDN | date: 'dd/MM/yyyy' }}
-                                        ({{calculateAge(adherent.DDN)}}&nbsp;<span i18n>ans</span>)
-                                    </td>
-                                    <td>
-                                        <i *ngIf="adherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
-                                        <i *ngIf="!adherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
-
-                                    </td>
-                                    <td>
-                                        <span *ngIf="adherent.ContactPrefereType=='EMAIL'"><i
-                                                class="fas fa-at"></i></span>
-                                        <span *ngIf="adherent.ContactPrefereType=='PHONE'"><i
-                                                class="fas fa-phone"></i></span>
-                                        <span *ngIf="adherent.ContactPrefereType=='INSTA'"><i
-                                                class="fab fa-instagram-square"></i></span>
-                                        <span *ngIf="adherent.ContactPrefereType=='FACEBOOK'"><i
-                                                class="fab fa-facebook-square"></i></span>
-                                        <span *ngIf="adherent.ContactPrefereType=='TWITTER'"><i
-                                                class="fab fa-twitter-square"></i></span>
-                                        <span>&nbsp;{{adherent.ContactPrefere}}</span>
-                                    </td>
-                                    <td>
-                                        <span *ngIf="StatutMAJ(adherent)" i18n>Mise à jour</span>
-                                        <span *ngIf="!StatutMAJ(adherent)" i18n>Ajout</span>
-                                    </td>
-                                    <td>
-                                        <i *ngIf="!isRegistred(adherent)" class="fas fa-times "></i>
-                                        <i *ngIf="isRegistred(adherent)" class="fas fa-check has-text-success"></i>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p *ngIf="!liste_adherents_export || liste_adherents_export.length ==0">Pas de séances
-                            disponible</p>
-                    </div>
-                </span>
+                                </td>
+                                <td>
+                                    <span *ngIf="adherent.ContactPrefereType=='EMAIL'"><i class="fas fa-at"></i></span>
+                                    <span *ngIf="adherent.ContactPrefereType=='PHONE'"><i
+                                            class="fas fa-phone"></i></span>
+                                    <span *ngIf="adherent.ContactPrefereType=='INSTA'"><i
+                                            class="fab fa-instagram-square"></i></span>
+                                    <span *ngIf="adherent.ContactPrefereType=='FACEBOOK'"><i
+                                            class="fab fa-facebook-square"></i></span>
+                                    <span *ngIf="adherent.ContactPrefereType=='TWITTER'"><i
+                                            class="fab fa-twitter-square"></i></span>
+                                    <span>&nbsp;{{adherent.ContactPrefere}}</span>
+                                </td>
+                                <td>
+                                    <span *ngIf="StatutMAJ(adherent)" i18n>Mise à jour</span>
+                                    <span *ngIf="!StatutMAJ(adherent)" i18n>Ajout</span>
+                                </td>
+                                <td>
+                                    <i *ngIf="!isRegistred(adherent)" class="fas fa-times "></i>
+                                    <i *ngIf="isRegistred(adherent)" class="fas fa-check has-text-success"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p *ngIf="!liste_adherents_export || liste_adherents_export.length ==0">Pas de séances
+                        disponible</p>
+                </div>
+                <footer class="card-footer">
+                    <button type="button" class="is-outlined is-primary button is-rounded" i18n (click)="LancerImport()">Importer</button>
+                    <button type="button" class="is-outlined is-dangerbutton is-rounded" (click)="modal = false" i18n>Annuler</button>
+                  </footer>
             </div>
         </div>
         <button class="modal-close is-large" aria-label="close" (click)="modal = false"></button>

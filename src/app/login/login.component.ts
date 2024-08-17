@@ -134,5 +134,8 @@ export class LoginComponent implements OnInit {
     }
 
   }
+  text(){
+    window.confirm("aimes tu clémentine ?");
+  }
 
 }

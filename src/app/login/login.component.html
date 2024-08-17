@@ -80,6 +80,12 @@
             <div class="column">
               <div class="field" *ngIf="!projets">
                 <p class="control">
+                  <!-- <hover-button 
+                  [nomclass]="'button  is-rounded is-danger is-outlined' "
+                  [nomicon]="'fas fa-heart'" [libelle]="'Clémentine'"
+                  (click)="text()">
+              </hover-button>                 -->
+                  
                   <button [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded"
                     (click)="Login()">
                     Se connecter

@@ -49,19 +49,19 @@ export class AdherentComponent implements OnInit {
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
 
-  public login_adherent:string = "";
-  public existing_login:boolean;
+  public login_adherent: string = "";
+  public existing_login: boolean;
 
-  public modal:boolean = false;
+  public modal: boolean = false;
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
 
   file: File | null = null;
-  constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv:CompteService) { }
+  constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv: CompteService) { }
 
   ngOnInit(): void {
-    
+
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
     if (GlobalService.is_logged_in) {
@@ -239,7 +239,7 @@ export class AdherentComponent implements OnInit {
         })
       }
     } else {
-      
+
       let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
       errorService.emitChange(o);
     }
@@ -298,13 +298,13 @@ export class AdherentComponent implements OnInit {
 
   Delete(adh: Adherent) {
     const errorService = ErrorService.instance;
-    this.action = $localize`Supprimer l'adhérent`;    
+    this.action = $localize`Supprimer l'adhérent`;
     let confirm = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
     if (confirm) {
-      adh.Adhesions.forEach((adhesion) =>{
+      adh.Adhesions.forEach((adhesion) => {
         this.inscription_saison_serv.Delete(adhesion.id);
       })
-      adh.Groupes.forEach((gr) =>{
+      adh.Groupes.forEach((gr) => {
         this.grServ.DeleteLien(gr.lien_groupe_id);
       })
       this.ridersService.Delete(adh.ID).then((retour) => {
@@ -469,12 +469,11 @@ export class AdherentComponent implements OnInit {
       NomPhoneUrgence: 'Contact téléphone si urgence',
       Inscrit: 'Inscrit'
     };
-  
+
     this.excelService.importFromExcelFile(this.file, headers)
       .subscribe(data => {
         this.liste_adherents_export = this.mapToAdherentExport(data);
-       this.modal = true;
-       console.log(this.liste_adherents_export);
+        this.modal = true;
       });
   }
   openModal() {
@@ -488,9 +487,9 @@ export class AdherentComponent implements OnInit {
   private mapToAdherentExport(data: any[]): Adherent[] {
     console.log(this.active_saison.id);
     return data.map(item => {
-      let liste_insc:Adhesion[] = [];
-      if(item.Inscrit){
-        let insc:Adhesion = new Adhesion();
+      let liste_insc: Adhesion[] = [];
+      if (item.Inscrit) {
+        let insc: Adhesion = new Adhesion();
         insc.saison_id = this.active_saison.id;
         liste_insc.push(insc);
       }
@@ -500,32 +499,32 @@ export class AdherentComponent implements OnInit {
           nom: item.Nom,
           prenom: item.Prenom,
           date_naissance: item.DDN,
-          sexe: item.Sexe ,
+          sexe: item.Sexe,
           adresse: JSON.stringify({
             Street: item.Street,
             PostCode: item.PostCode,
             City: item.City,
             Country: item.Country
           }),
-          contacts: JSON.stringify( [
-            { Type: 'EMAIL', Value: item.Mail, Pref: item.MailPref, Notes:"" },
-            { Type: 'PHONE', Value: item.Phone, Pref: item.PhonePref, Notes:""  }
+          contacts: JSON.stringify([
+            { Type: 'EMAIL', Value: item.Mail, Pref: item.MailPref, Notes: "" },
+            { Type: 'PHONE', Value: item.Phone, Pref: item.PhonePref, Notes: "" }
           ]),
-          surnom:item.Surnom,
-          date_creation:new Date(),
-          photo : "",
-          nationalite : "",
-          seances : [],
-          groupes : [],
-          mot_de_passe : "",
-          compte_id : 0,
-          login:item.Login,
-          inscriptions :[],
-          seances_prof:[],
-          adhesions:liste_insc,
-          contacts_prevenir: JSON.stringify( [
-            { Type: 'EMAIL', Value: item.MailUrgence, Notes: item.NomMailUrgence, Pref:false },
-            { Type: 'PHONE', Value: item.PhoneUrgence, Notes: item.NomPhoneUrgence, Pref:false }
+          surnom: item.Surnom,
+          date_creation: new Date(),
+          photo: "",
+          nationalite: "",
+          seances: [],
+          groupes: [],
+          mot_de_passe: "",
+          compte_id: 0,
+          login: item.Login,
+          inscriptions: [],
+          seances_prof: [],
+          adhesions: liste_insc,
+          contacts_prevenir: JSON.stringify([
+            { Type: 'EMAIL', Value: item.MailUrgence, Notes: item.NomMailUrgence, Pref: false },
+            { Type: 'PHONE', Value: item.PhoneUrgence, Notes: item.NomPhoneUrgence, Pref: false }
           ]),
           // Ajoute d'autres champs si nécessaire
         },
@@ -555,7 +554,7 @@ export class AdherentComponent implements OnInit {
       NomMailUrgence: 'Contact mail si urgence',
       PhoneUrgence: 'Téléphone si urgence',
       NomPhoneUrgence: 'Contact téléphone si urgence',
-      Inscrit:'Inscrit'
+      Inscrit: 'Inscrit'
 
       // Ajoutez d'autres mappages si nécessaire
     };
@@ -594,13 +593,47 @@ export class AdherentComponent implements OnInit {
       return false;
     }
   }
-  StatutMAJ(ad:Adherent){
+  StatutMAJ(ad: Adherent) {
+    let n = this.liste_adherents_VM.find(x => x.ID == ad.ID);
+    if (n) {
+      return true;
+    }
     let u = this.liste_adherents_VM.find(x => (x.Nom == ad.Nom) && (x.Prenom == ad.Prenom) && (x.DDN == ad.DDN));
-    if(u){
+    if (u) {
       return true;
     } else {
       return false;
     }
+  }
+  LancerImport() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Sauvegarder l'adhérent`;
+    let nb_import: number = 0;
+    let retour: string;
+    this.liste_adherents_export.forEach((adherent) => {
+      retour += adherent.Libelle + " :  ";
+      if (this.StatutMAJ(adherent)) {
+        let n = this.liste_adherents_VM.find(x => x.ID == adherent.ID);
+        if (!n) {
+          let u = this.liste_adherents_VM.find(x => (x.Nom == adherent.Nom) && (x.Prenom == adherent.Prenom) && (x.DDN == adherent.DDN));
+          adherent.ID = u.ID;
+        }
+
+        this.ridersService.Update(adherent.datasource).then((upd) => {
+          if (upd) {
+            retour += $localize`Mise à jour adhérent OK`;
+
+          } else {
+            retour += $localize`Mise à jour adhérent OK`;
+
+          }
+
+        }).catch((err: HttpErrorResponse) => {
+          
+        })
+      }
+    }
+    );
   }
   VoirPaiement() {
 
