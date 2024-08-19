@@ -152,6 +152,22 @@ public UpdateMail(compte:number, mail:string, password:string): Promise<boolean>
       return Promise.reject(error);
     });
 }
+public AddOrMAJLogin(login:string, id:number):Promise<number>{
+  this.url = environment.maseance + "maseance/compte_manage.php";
+  const body = {
+    command: "add_or_maj_login",
+    login:login,
+    id:id
+  };
+
+  return this.global.POST(this.url, body)
+    .then((response: number) => {
+      return response;
+    })
+    .catch(error => {
+      return Promise.reject(error);
+    });
+}
 
 ActiverCompte(id:number): Promise<boolean>{
   this.url = environment.maseance + 'maseance/compte_manage.php';

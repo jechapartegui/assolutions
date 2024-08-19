@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { KeyValuePair } from 'src/class/keyvaluepair';
-import { Professeur } from 'src/class/professeur';
-import { seance, Seance } from 'src/class/seance';
+import { professeur } from 'src/class/professeur';
+import { Seance } from 'src/class/seance';
 import { SeanceProf } from 'src/class/seanceprof';
 import { GlobalService } from 'src/services/global.services';
 
@@ -11,13 +11,13 @@ import { GlobalService } from 'src/services/global.services';
   styleUrls: ['./prof.component.css']
 })
 export class ProfComponent implements OnInit { 
-  @Input() liste_prof:Professeur[]=[];
+  @Input() liste_prof:professeur[]=[];
   @Input() manage = false;
   @Input() thisSeance:Seance;
   @Input() Profs:SeanceProf[] = [];
   current_prof_key:number;
   LVSeanceProf :KeyValuePair[];
-  @Input() prof_dispo:Professeur[]=[];
+  @Input() prof_dispo:professeur[]=[];
 
   constructor(public globserv:GlobalService){}
   ngOnInit(): void {

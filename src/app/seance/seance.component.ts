@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { cours } from 'src/class/cours';
 import { Groupe } from 'src/class/groupe';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
-import { Professeur } from 'src/class/professeur';
+import { professeur, Professeur } from 'src/class/professeur';
 import { Saison } from 'src/class/saison';
 import { Seance, StatutSeance, seance } from 'src/class/seance';
 import { SeanceProf } from 'src/class/seanceprof';
@@ -25,7 +25,7 @@ import { SeanceprofService } from 'src/services/seanceprof.service';
   styleUrls: ['./seance.component.css']
 })
 export class SeanceComponent implements OnInit {
-  listeprof: Professeur[];
+  listeprof: professeur[];
   listelieu: KeyValuePair[];
   prof_dispo: Professeur[];
   est_prof: boolean = false;

@@ -10,6 +10,7 @@ import { CoursComponent } from './cours/cours.component';
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { ProfesseurComponent } from './professeur/professeur.component';
 import { CompteComponent } from './compte/compte.component';
+import { SeancesEssaisComponent } from './seances-essais/seances-essais.component';
 
 
 
@@ -25,6 +26,7 @@ const routes: Routes = [
    { path: 'ma-seance', component: MaSeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
    { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
    { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+   { path: 'seances-essais', component: SeancesEssaisComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   
  ];
  

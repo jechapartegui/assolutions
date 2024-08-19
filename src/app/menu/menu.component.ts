@@ -3,9 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Adherent_VM } from 'src/class/adherent';
 import { cours } from 'src/class/cours';
-import { inscription_seance, InscriptionSeance, StatutPresence } from 'src/class/inscription';
+import { inscription_seance, StatutPresence } from 'src/class/inscription';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
-import { Professeur } from 'src/class/professeur';
+import { professeur } from 'src/class/professeur';
 import { AdherentService } from 'src/services/adherent.service';
 import { CoursService } from 'src/services/cours.service';
 import { ErrorService } from 'src/services/error.service';
@@ -23,7 +23,7 @@ import { ProfesseurService } from 'src/services/professeur.service';
 export class MenuComponent implements OnInit {
   action: string
   Riders: Adherent_VM[];
-  listeprof: Professeur[];
+  listeprof: professeur[];
   listelieu: KeyValuePair[];
 
   public liste_prof_filter: KeyValuePairAny[];

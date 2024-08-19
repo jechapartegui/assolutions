@@ -1,0 +1,55 @@
+<div class="container">
+    <h3 class="h3">Liste des séances cette semaine</h3>
+
+    <ng-container *ngFor="let day of days; let i = index">
+        <h3>{{ day }}</h3>
+
+        <ng-container *ngFor="let seance of getSeancesForDay(i + 1)">
+            <div class="box">
+                <article class="media">
+                    <div class="media-content">
+                        <span class="title"><strong>{{seance.libelle}}&nbsp;{{ seance.date_seance |
+                                date: 'dd/MM/yyyy' }}</strong></span>
+                        <div>
+                            <ng-container *ngIf="seance.TypeSeance==='ENTRAINEMENT'">
+
+                                <span i18n>Cours</span>
+                            </ng-container>
+                            <ng-container *ngIf="seance.TypeSeance==='MATCH'">
+                                <span i18n>Match</span>
+                            </ng-container>
+                            <ng-container *ngIf="seance.TypeSeance==='EVENEMENT'">
+                                <span i18n>Evénement</span>
+                            </ng-container>
+                            <ng-container *ngIf="seance.TypeSeance==='SORTIE'">
+                                <span i18n>Sortie</span>
+                            </ng-container>
+                            - {{seance.heure_debut}} ({{seance.duree_seance}} <span i18n>&nbsp;min</span>)
+                            {{seance.Lieu}}
+                            <ng-container *ngIf="seance.Statut == 'prévue'">
+                                <svg width="20" style="fill:blue" height="20">
+                                    <use xlink:href=".\assets\liste.svg#prevu"></use>
+                                </svg>
+                            </ng-container>
+                            <ng-container *ngIf="seance.Statut == 'réalisée'">
+                                <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
+                                    <use xlink:href=".\assets\liste.svg#termine"></use>
+                                </svg>
+                            </ng-container>
+                            <ng-container *ngIf="seance.Statut == 'annulée'">
+                                <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
+                                    <use xlink:href=".\assets\liste.svg#annuler"></use>
+                                </svg>
+                            </ng-container>
+                        </div>
+
+                    </div>
+                </article>
+            </div>
+        </ng-container>
+
+        <p *ngIf="getSeancesForDay(i + 1).length === 0">Aucune séance</p>
+    </ng-container>
+
+
+</div>

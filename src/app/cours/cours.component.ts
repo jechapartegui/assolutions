@@ -12,7 +12,7 @@ import { LieuService } from 'src/services/lieu.service';
 import { SaisonService } from 'src/services/saison.service';
 import { CoursService } from 'src/services/cours.service';
 import { GroupeService } from 'src/services/groupe.service';
-import { Professeur } from 'src/class/professeur';
+import { professeur, Professeur } from 'src/class/professeur';
 import { ProfesseurService } from 'src/services/professeur.service';
 
 @Component({
@@ -24,7 +24,7 @@ export class CoursComponent implements OnInit {
   // cours.component.ts
   constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
-  listeprof: Professeur[];
+  listeprof: professeur[];
   listelieu: KeyValuePair[];
 
   seasons: KeyValuePair[];

@@ -611,6 +611,7 @@ export class AdherentComponent implements OnInit {
     let nb_import: number = 0;
     let retour: string;
     this.liste_adherents_export.forEach((adherent) => {
+      if(adherent.maj){
       retour += adherent.Libelle + " :  ";
       if (this.StatutMAJ(adherent)) {
         let n = this.liste_adherents_VM.find(x => x.ID == adherent.ID);
@@ -621,17 +622,74 @@ export class AdherentComponent implements OnInit {
 
         this.ridersService.Update(adherent.datasource).then((upd) => {
           if (upd) {
-            retour += $localize`Mise à jour adhérent OK`;
+            retour += $localize`Mise à jour adhérent OK` + "; ";
+            this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
+              if (cmpt > 0) {
+                retour += $localize`Mise à jour du compte OK` + "; ";
+                if (this.isRegistred(adherent)) {
+                  this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
+                    if (id > 0) {
+                      retour += $localize`Mise à jour de l'inscription à la saison OK` + "; ";
+                    } else {
+                      retour += $localize`Mise à jour de l'inscription à la saison KO` + "; ";
+                    }
+                  }).catch((err: HttpErrorResponse) => {
 
+                    retour += $localize`Mise à jour de l'inscription à la saison KO` + err.message + "; ";
+                  })
+                }
+              } else {
+                retour += $localize`Mise à jour du compte KO` + "; ";
+              }
+            }).catch((err: HttpErrorResponse) => {
+              retour += $localize`Mise à jour du compte KO` + err.message + "; ";
+            })
           } else {
-            retour += $localize`Mise à jour adhérent OK`;
+            retour += $localize`Mise à jour adhérent KO` + "; ";
 
           }
 
         }).catch((err: HttpErrorResponse) => {
-          
+          retour += $localize`Mise à jour adhérent KO` + err.message + "; ";
         })
+        retour += "\n";
+      } else {
+        this.ridersService.Add(adherent.datasource).then((upd) => {
+          if (upd > 0) {
+            adherent.ID = upd;
+            retour += $localize`Ajout adhérent OK` + "; ";
+            this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
+              if (cmpt > 0) {
+                retour += $localize`Ajout du compte OK` + "; ";
+                if (this.isRegistred(adherent)) {
+                  this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
+                    if (id > 0) {
+                      retour += $localize`Ajout de l'inscription à la saison OK` + "; ";
+                    } else {
+                      retour += $localize`Ajout de l'inscription à la saison KO` + "; ";
+                    }
+                  }).catch((err: HttpErrorResponse) => {
+
+                    retour += $localize`Ajout de l'inscription à la saison KO` + err.message + "; ";
+                  })
+                }
+              } else {
+                retour += $localize`Ajout du compte KO` + "; ";
+              }
+            }).catch((err: HttpErrorResponse) => {
+              retour += $localize`Ajout du compte KO` + err.message + "; ";
+            })
+          } else {
+            retour += $localize`Ajout adhérent KO` + "; ";
+
+          }
+
+        }).catch((err: HttpErrorResponse) => {
+          retour += $localize`Ajout adhérent KO` + err.message + "; ";
+        })
+        retour += "\n";
       }
+    }
     }
     );
   }

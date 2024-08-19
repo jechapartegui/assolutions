@@ -51,6 +51,8 @@ import { ProfesseurComponent } from './professeur/professeur.component';
 import { FilterDroitPipe } from 'src/filters/filter-droit';
 import { FilterLoginPipe } from 'src/filters/filter-login';
 import { FilterActifPipe } from 'src/filters/filter-actif';
+import { filterInscriptionSaisonProf } from 'src/filters/filter-inscriptionsaison.prof';
+import { SeancesEssaisComponent } from './seances-essais/seances-essais.component';
 
 @NgModule({
   declarations: [
@@ -64,8 +66,8 @@ import { FilterActifPipe } from 'src/filters/filter-actif';
     ComptabiliteComponent,
     ProfComponent,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe,
-    ContactItemComponent, filterInscriptionSaison, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
-  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent],
+    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
