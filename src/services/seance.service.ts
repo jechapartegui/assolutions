@@ -132,13 +132,12 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public GetPlageDate(date_debut:string, date_fin:string, project_id:number): Promise<seance[]> {
+  public GetPlageDate(date_debut:string, project_id:number): Promise<seance[]> {
     this.url = environment.maseance + 'maseance/public_seance.php';
     //  this.url = this.url + "login.php";
     const body = {
       command: "get_seance_plagedate",
       date_debut:date_debut,
-      date_fin:date_fin,
       project_id:project_id
 
     };
@@ -152,6 +151,7 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
+ 
 
   public Get(id: number): Promise<seance> {
     this.url = environment.maseance + 'maseance/seance_manage.php';

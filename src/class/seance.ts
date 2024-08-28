@@ -127,6 +127,12 @@ export class Seance {
     this.dureeSubject.next(value);
   }
 
+  get Lieu(): string {
+    return this.datasource.lieu;
+  }
+  set Lieu(value: string) {
+    this.datasource.lieu = value;
+  }
   get LieuId(): number {
     return this.datasource.lieu_id;
   }

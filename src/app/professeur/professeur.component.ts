@@ -155,6 +155,7 @@ export class ProfesseurComponent implements OnInit {
     if (this.thisAdherent) {
       let prof = new professeur();
       this.thisProf = new Professeur(prof);
+      this.thisProf.ID = this.thisAdherent.ID;
       this.thisProf.Prenom = this.thisAdherent.Prenom;
       this.thisProf.Nom = this.thisAdherent.Nom;
       this.thisProf.Surnom = this.thisAdherent.Surnom;

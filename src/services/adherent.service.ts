@@ -201,4 +201,23 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+  public Essayer(essai:adherent, seance_id:number, project_id:number): Promise<number> {
+    this.url = environment.maseance + 'maseance/public_seance.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "try",
+      seance_id:seance_id,
+      essai:essai,
+      project_id:project_id
+
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
 }

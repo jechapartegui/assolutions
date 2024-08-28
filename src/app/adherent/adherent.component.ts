@@ -36,6 +36,7 @@ export class AdherentComponent implements OnInit {
   public valid_address: boolean;
   public liste_adherents_VM: Adherent[] = [];
   public liste_adherents_export: Adherent[] = [];
+  public compte_to_force: boolean = false;
   public sort_nom = "NO";
   public sort_date = "NO";
   public sort_sexe = "NO";
@@ -51,8 +52,9 @@ export class AdherentComponent implements OnInit {
 
   public login_adherent: string = "";
   public existing_login: boolean;
-
+  public retourLog : string="";
   public modal: boolean = false;
+  public modalLog: boolean = false;
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
@@ -274,6 +276,7 @@ export class AdherentComponent implements OnInit {
     if (GlobalService.menu == "PROF") {
       this.ridersService.Get_Adherent_Prof(this.id).then((adh) => {
         this.thisAdherent = new Adherent(adh);
+        console.log(this.thisAdherent);
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
@@ -330,6 +333,7 @@ export class AdherentComponent implements OnInit {
     if (this.thisAdherent.ID == 0) {
       this.ridersService.Add(this.thisAdherent.datasource).then((id) => {
         this.thisAdherent.ID = id;
+        this.id = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       }).catch((err: HttpErrorResponse) => {
@@ -474,6 +478,31 @@ export class AdherentComponent implements OnInit {
       .subscribe(data => {
         this.liste_adherents_export = this.mapToAdherentExport(data);
         this.modal = true;
+        this.liste_adherents_export.forEach((exp) => {
+          if (this.StatutMAJ(exp)) {
+            let n = this.liste_adherents_VM.find(x => x.ID == exp.ID);
+            if (!n) {
+              let u = this.liste_adherents_VM.find(x => (x.Nom == exp.Nom) && (x.Prenom == exp.Prenom) && (x.DDN == exp.DDN));
+              exp.ID = u.ID;
+              n = this.liste_adherents_VM.find(x => x.ID == exp.ID);
+            }
+            exp = this.Compare(exp, n);
+          }
+        })
+        let liste_compte = this.liste_adherents_export.map(x => x.Login);
+        this.compte_to_force = false;
+        this.compte_serv.ExistListe(liste_compte).then((list) => {
+          list.forEach((item) => {
+            this.liste_adherents_export
+              .filter(x => x.Login === item)
+              .forEach(matchingAdherent => {
+                matchingAdherent.maj = false;
+              });
+          });
+          if (list && list.length > 0) {
+            this.compte_to_force = true;
+          }
+        })
       });
   }
   openModal() {
@@ -483,18 +512,72 @@ export class AdherentComponent implements OnInit {
   closeModal() {
     this.modal = false;
   }
+  Compare(source: Adherent, cible: Adherent): Adherent {
+    if (!source.Prenom) {
+      source.Prenom = cible.Prenom;
+    }
+    if (!source.Nom) {
+      source.Nom = cible.Nom;
+    }
+    if (!source.Surnom) {
+      source.Surnom = cible.Surnom;
+    }
+    if (source.DDN == "0000-00-00") {
+      source.DDN = cible.DDN;
+    }
 
+    if (!source.Adresse.Street) {
+      source.Adresse.Street = cible.Adresse.Street;
+    }
+    if (!source.Adresse.City) {
+      source.Adresse.City = cible.Adresse.City;
+    }
+    if (!source.Adresse.PostCode) {
+      source.Adresse.PostCode = cible.Adresse.PostCode;
+    }
+    
+     if (source.Contacts.length == 0) {
+      source.Contacts = cible.Contacts;
+      try {
+        source.ContactPrefereType = source.Contacts.find(x=> x.Pref).Type;
+        source.ContactPrefere = source.Contacts.find(x => x.Pref).Value;
+      } catch (error) {
+        
+      }
+    }
+    if (source.ContactsUrgence.length == 0) {
+      source.ContactsUrgence = cible.ContactsUrgence;
+    }
+    if (!source.Login) {
+      source.Login = cible.Login;
+    }
+    return source;
+  }
   private mapToAdherentExport(data: any[]): Adherent[] {
-    console.log(this.active_saison.id);
     return data.map(item => {
       let liste_insc: Adhesion[] = [];
       if (item.Inscrit) {
         let insc: Adhesion = new Adhesion();
         insc.saison_id = this.active_saison.id;
         liste_insc.push(insc);
+      };
+      let list_item_contact:ItemContact[] = [];
+      if(item.Mail && item.Mail.length>0){
+        list_item_contact.push({ Type: 'EMAIL', Value: item.Mail, Pref: item.MailPref, Notes: "" })
+      }
+      if(item.Phone && item.Phone.length>0){
+        list_item_contact.push({ Type: 'PHONE', Value: item.Phone, Pref: item.PhonePref, Notes: "" })
+      }
+      let list_item_contact_urg:ItemContact[] = [];
+      if(item.MailUrgence && item.MailUrgence.length>0){
+        list_item_contact_urg.push({ Type: 'EMAIL', Value: item.MailUrgence, Notes: item.NomMailUrgence, Pref: false })
+      }
+      if(item.PhoneUrgence && item.PhoneUrgence.length>0){
+        list_item_contact_urg.push({ Type: 'PHONE', Value: item.PhoneUrgence, Notes: item.NomPhoneUrgence, Pref: false })
       }
       const adherent = new Adherent(
         {
+
           id: item.ID,
           nom: item.Nom,
           prenom: item.Prenom,
@@ -506,10 +589,7 @@ export class AdherentComponent implements OnInit {
             City: item.City,
             Country: item.Country
           }),
-          contacts: JSON.stringify([
-            { Type: 'EMAIL', Value: item.Mail, Pref: item.MailPref, Notes: "" },
-            { Type: 'PHONE', Value: item.Phone, Pref: item.PhonePref, Notes: "" }
-          ]),
+          contacts: JSON.stringify(list_item_contact),
           surnom: item.Surnom,
           date_creation: new Date(),
           photo: "",
@@ -517,15 +597,12 @@ export class AdherentComponent implements OnInit {
           seances: [],
           groupes: [],
           mot_de_passe: "",
-          compte_id: 0,
+          compte: 0,
           login: item.Login,
           inscriptions: [],
           seances_prof: [],
           adhesions: liste_insc,
-          contacts_prevenir: JSON.stringify([
-            { Type: 'EMAIL', Value: item.MailUrgence, Notes: item.NomMailUrgence, Pref: false },
-            { Type: 'PHONE', Value: item.PhoneUrgence, Notes: item.NomPhoneUrgence, Pref: false }
-          ]),
+          contacts_prevenir: JSON.stringify(list_item_contact_urg),
           // Ajoute d'autres champs si nécessaire
         },
         //item.Inscrit  // On peut passer un ID de saison ici si nécessaire
@@ -609,90 +686,128 @@ export class AdherentComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder l'adhérent`;
     let nb_import: number = 0;
-    let retour: string;
     this.liste_adherents_export.forEach((adherent) => {
-      if(adherent.maj){
-      retour += adherent.Libelle + " :  ";
-      if (this.StatutMAJ(adherent)) {
-        let n = this.liste_adherents_VM.find(x => x.ID == adherent.ID);
-        if (!n) {
-          let u = this.liste_adherents_VM.find(x => (x.Nom == adherent.Nom) && (x.Prenom == adherent.Prenom) && (x.DDN == adherent.DDN));
-          adherent.ID = u.ID;
+      if (adherent.maj) {
+        if (this.StatutMAJ(adherent)) {
+         
+
+          this.ridersService.Update(adherent.datasource).then((upd) => {
+            if (upd) {
+              nb_import++;
+              this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
+                if (cmpt > 0) {
+                  if (this.isRegistred(adherent)) {
+                    this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
+                      if (id > 0) {
+                        this.retourLog += adherent.Libelle + " :  ";
+                        this.retourLog += $localize`Mise à jour du compte OK` + "; ";
+                        this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
+                        this.retourLog += $localize`Mise à jour de l'inscription à la saison OK` + "; ";
+                        this.retourLog += "\n";
+                      } else { this.retourLog += adherent.Libelle + " :  ";
+                        this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
+                        this.retourLog += $localize`Mise à jour du compte OK` + "; ";
+                        this.retourLog += $localize`Mise à jour de l'inscription à la saison KO` + "; ";
+                        this.retourLog += "\n";
+                      }
+                    }).catch((err: HttpErrorResponse) => {
+                      this.retourLog += adherent.Libelle + " :  ";
+                      this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
+                      this.retourLog += $localize`Mise à jour du compte OK` + "; ";
+                      this.retourLog += $localize`Mise à jour de l'inscription à la saison KO` + err.message + "; ";
+                      this.retourLog += "\n";
+                    })
+                  }
+                } else {
+                  this.retourLog += adherent.Libelle + " :  ";
+                  this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
+                  this.retourLog += $localize`Mise à jour du compte KO` + "; ";
+                  this.retourLog += "\n";
+                }
+              }).catch((err: HttpErrorResponse) => {
+                this.retourLog += adherent.Libelle + " :  ";
+                this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
+                this.retourLog += $localize`Mise à jour du compte KO` + err.message + "; ";
+                this.retourLog += "\n";
+              })
+            } else {
+              this.retourLog += adherent.Libelle + " :  ";
+              this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
+              this.retourLog += $localize`Mise à jour adhérent KO` + "; ";
+              this.retourLog += "\n";
+
+            }
+
+          }).catch((err: HttpErrorResponse) => {
+            this.retourLog += adherent.Libelle + " :  ";
+            this.retourLog += $localize`Mise à jour adhérent KO` + err.message + "; ";
+            this.retourLog += "\n";
+          })
+          this.retourLog += "\n";
+        } else {
+          this.ridersService.Add(adherent.datasource).then((upd) => {
+            if (upd > 0) {
+              adherent.ID = upd;
+              nb_import++;
+              this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
+                if (cmpt > 0) {
+                  if (this.isRegistred(adherent)) {
+                    this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
+                      if (id > 0) {this.retourLog += adherent.Libelle + " :  ";
+                        this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
+                        this.retourLog += $localize`Ajout du compte OK` + "; ";
+                        this.retourLog += $localize`Ajout de l'inscription à la saison OK` + "; ";
+                        this.retourLog += "\n";
+                      } else {this.retourLog += adherent.Libelle + " :  ";
+                        this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
+                        this.retourLog += $localize`Ajout du compte OK` + "; ";
+                        this.retourLog += $localize`Ajout de l'inscription à la saison KO` + "; ";
+                        this.retourLog += "\n";
+                      }
+                    }).catch((err: HttpErrorResponse) => {
+                      this.retourLog += adherent.Libelle + " :  ";
+                      this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
+                      this.retourLog += $localize`Ajout du compte OK` + "; ";
+                      this.retourLog += $localize`Ajout de l'inscription à la saison KO` + err.message + "; ";
+                      this.retourLog += "\n";
+                    })
+                  }
+                } else {this.retourLog += adherent.Libelle + " :  ";
+                  this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
+                  this.retourLog += $localize`Ajout du compte KO` + "; ";
+                  this.retourLog += "\n";
+                }
+              }).catch((err: HttpErrorResponse) => {this.retourLog += adherent.Libelle + " :  ";
+                this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
+                this.retourLog += $localize`Ajout du compte KO` + err.message + "; ";
+                this.retourLog += "\n";
+              })
+            } else {this.retourLog += adherent.Libelle + " :  ";
+              this.retourLog += $localize`Ajout adhérent KO` + "; ";
+              this.retourLog += "\n";
+
+            }
+
+          }).catch((err: HttpErrorResponse) => {
+            this.retourLog += adherent.Libelle + " :  ";
+            this.retourLog += $localize`Ajout adhérent KO` + err.message + "; ";
+            this.retourLog += "\n";
+          })
         }
-
-        this.ridersService.Update(adherent.datasource).then((upd) => {
-          if (upd) {
-            retour += $localize`Mise à jour adhérent OK` + "; ";
-            this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
-              if (cmpt > 0) {
-                retour += $localize`Mise à jour du compte OK` + "; ";
-                if (this.isRegistred(adherent)) {
-                  this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
-                    if (id > 0) {
-                      retour += $localize`Mise à jour de l'inscription à la saison OK` + "; ";
-                    } else {
-                      retour += $localize`Mise à jour de l'inscription à la saison KO` + "; ";
-                    }
-                  }).catch((err: HttpErrorResponse) => {
-
-                    retour += $localize`Mise à jour de l'inscription à la saison KO` + err.message + "; ";
-                  })
-                }
-              } else {
-                retour += $localize`Mise à jour du compte KO` + "; ";
-              }
-            }).catch((err: HttpErrorResponse) => {
-              retour += $localize`Mise à jour du compte KO` + err.message + "; ";
-            })
-          } else {
-            retour += $localize`Mise à jour adhérent KO` + "; ";
-
-          }
-
-        }).catch((err: HttpErrorResponse) => {
-          retour += $localize`Mise à jour adhérent KO` + err.message + "; ";
-        })
-        retour += "\n";
-      } else {
-        this.ridersService.Add(adherent.datasource).then((upd) => {
-          if (upd > 0) {
-            adherent.ID = upd;
-            retour += $localize`Ajout adhérent OK` + "; ";
-            this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
-              if (cmpt > 0) {
-                retour += $localize`Ajout du compte OK` + "; ";
-                if (this.isRegistred(adherent)) {
-                  this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
-                    if (id > 0) {
-                      retour += $localize`Ajout de l'inscription à la saison OK` + "; ";
-                    } else {
-                      retour += $localize`Ajout de l'inscription à la saison KO` + "; ";
-                    }
-                  }).catch((err: HttpErrorResponse) => {
-
-                    retour += $localize`Ajout de l'inscription à la saison KO` + err.message + "; ";
-                  })
-                }
-              } else {
-                retour += $localize`Ajout du compte KO` + "; ";
-              }
-            }).catch((err: HttpErrorResponse) => {
-              retour += $localize`Ajout du compte KO` + err.message + "; ";
-            })
-          } else {
-            retour += $localize`Ajout adhérent KO` + "; ";
-
-          }
-
-        }).catch((err: HttpErrorResponse) => {
-          retour += $localize`Ajout adhérent KO` + err.message + "; ";
-        })
-        retour += "\n";
       }
     }
-    }
     );
+    this.retourLog += "\n";
+    this.modal = false;
+    this.modalLog = true;
+
   }
+  closePopup() {
+    this.modalLog = false;
+    this.UpdateListeAdherents();
+    this.file = null;
+  }
+
   VoirPaiement() {
 
   }

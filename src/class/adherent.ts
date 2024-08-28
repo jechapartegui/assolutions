@@ -2,7 +2,7 @@ import { Subject } from "rxjs";
 import { seance } from "./seance";
 import { Groupe, Lien_Groupe } from "./groupe";
 import { inscription_seance, InscriptionSeance } from "./inscription";
-import {  ItemContact } from "./contact";
+import { ItemContact } from "./contact";
 import { Adresse } from "./address";
 import { Adhesion } from "./adhesion";
 
@@ -22,7 +22,7 @@ export class adherent {
   public seances: seance[];
   public groupes: Groupe[] = [];
   public mot_de_passe: string = "";
-  public compte_id: number = 0;
+  public compte: number = 0;
   public login: string = "";
   public inscriptions: inscription_seance[] = [];
   public adhesions: Adhesion[] = [];
@@ -34,8 +34,8 @@ export class adherent {
 export class Adherent {
   datasource: adherent;
   public valid: Validation_Adherent;
-  public maj:boolean = true;
-  public Inscrit:boolean;
+  public maj: boolean = true;
+  public Inscrit: boolean;
 
   sLibelle = new Subject<string>();
   dateNaissanceSubject = new Subject<string>();
@@ -48,7 +48,7 @@ export class Adherent {
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
     this.Adresse = JSON.parse(this.datasource.adresse);
-    
+
     this.Adhesions = L.adhesions;
     this.Groupes = L.groupes;
     this.inscriptions = L.inscriptions;
@@ -65,10 +65,10 @@ export class Adherent {
   }
   public Adhesions: Adhesion[];
   public get CompteID(): number {
-    return this.datasource.compte_id;
+    return this.datasource.compte;
   }
   public set CompteID(v: number) {
-    this.datasource.compte_id = v;
+    this.datasource.compte = v;
   }
   public get Login(): string {
     return this.datasource.login;
@@ -83,9 +83,9 @@ export class Adherent {
     this.datasource.sexe = v;
   }
 
-  
-public Adresse :Adresse;
-  
+
+  public Adresse: Adresse;
+
 
 
   public get Nom(): string {
@@ -105,7 +105,12 @@ public Adresse :Adresse;
   }
   // Propriété date_naissance avec get et set
   get DDN(): string {
-    return this.datasource.date_naissance.toString();
+    try {
+      return this.datasource.date_naissance.toString();
+    } catch (error) {
+      return "0000-00-00";
+
+    }
   }
   set DDN(value: string) {
     this.datasource.date_naissance = value;
@@ -121,30 +126,30 @@ public Adresse :Adresse;
     this.SetLibelle(this);
   }
 
-  
-  private _ContactPrefere : string;
-  public get ContactPrefere() : string {
+
+  private _ContactPrefere: string;
+  public get ContactPrefere(): string {
     return this._ContactPrefere;
   }
-  public set ContactPrefere(v : string) {
+  public set ContactPrefere(v: string) {
     this._ContactPrefere = v;
   }
-  
-  private _ContactPrefereType : string;
-  public get ContactPrefereType() : string {
+
+  private _ContactPrefereType: string;
+  public get ContactPrefereType(): string {
     return this._ContactPrefereType;
   }
-  public set ContactPrefereType(v : string) {
+  public set ContactPrefereType(v: string) {
     this._ContactPrefereType = v;
   }
 
-  
 
-  public Contacts : ItemContact[];
-  public ContactsUrgence : ItemContact[];
-  
-  
-  
+
+  public Contacts: ItemContact[];
+  public ContactsUrgence: ItemContact[];
+
+
+
 
 
   public Libelle: string;
@@ -173,7 +178,7 @@ public Adresse :Adresse;
     this.sLibelle.next(this.Libelle);
   }
 
- 
+
 
   public Groupes: Groupe[] = [];
   public inscriptions: inscription_seance[] = [];
@@ -181,7 +186,7 @@ public Adresse :Adresse;
   public seances_prof: seance[] = [];
 }
 
-export class AdherentExport{
+export class AdherentExport {
   ID: number;
   Nom: string;
   Prenom: string;
@@ -202,7 +207,7 @@ export class AdherentExport{
   Adhesion: boolean;
   NomMailUrgence: string;
   NomPhoneUrgence: string;
-  Inscrit:boolean;
+  Inscrit: boolean;
 
   constructor(a: Adherent) {
     this.safeAssign(() => this.ID = a.ID);
@@ -223,17 +228,17 @@ export class AdherentExport{
     this.safeAssign(() => this.MailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Value);
     this.safeAssign(() => this.NomMailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Notes);
     this.safeAssign(() => this.PhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Value);
-    this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes); 
-    
-    console.log(a.Inscrit);
-   try{
-    console.log(a.Inscrit);
-    if(a.Inscrit){
-      this.Adhesion = true;
-    }
-   } catch(e){
+    this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes);
 
-   }
+    console.log(a.Inscrit);
+    try {
+      console.log(a.Inscrit);
+      if (a.Inscrit) {
+        this.Adhesion = true;
+      }
+    } catch (e) {
+
+    }
   }
 
   private safeAssign(assignFn: () => void) {
@@ -323,7 +328,7 @@ export class Adherent_VM {
   public filter_prof: number;
   constructor(_adh: adherent) {
     this.datasource = _adh;
-    
+
     this.afficher_filtre = false;
     this.InscriptionSeances = [];
     if (this.datasource.seances) {

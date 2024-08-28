@@ -20,7 +20,7 @@ export class AddressComponent implements OnInit {
     this.valid_address = false;
     this.validateAdresse(false); 
     if(this.Adresse.Street && this.Adresse.City && this.Adresse.PostCode){
-      if(this.Adresse.Street.length>1 && this.Adresse.PostCode.length>4 && this.Adresse.City.length > 1){
+      if(this.Adresse.Street.length>1 && this.Adresse.PostCode.toString().length>4 && this.Adresse.City.length > 1){
         this.validateAdresse(true); 
       }
 

@@ -278,6 +278,23 @@ public Exist(login:string): Promise<boolean> {
       return Promise.reject(error);
     });
 }
+public ExistListe(list_login:string[]): Promise<string[]> {
+  this.url = environment.maseance + 'maseance/compte_manage.php';
+  //  this.url = this.url + "login.php";
+  const body = {
+    command:"exist",
+    list_login:list_login,
+  };
+
+  return this.global.POST(this.url, body)
+    .then((response: string[]) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
 
 public Attacher(compte_id:number, rider_id:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/compte_manage.php';

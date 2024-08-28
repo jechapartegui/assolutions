@@ -9,7 +9,7 @@
     "build": "nx exec -- nx build --verbose",
     "build-dev": "nx exec -- nx build --configuration=development",
     "watch": "nx exec -- nx build --watch --configuration development",
-    "aot": "nx exec -- nx build --configuration=production --aot",
+    "aot": "nx exec -- nx build --configuration=production --aot --verbose",
     "aot-en": "nx exec -- nx build --configuration=production-en --aot",
     "aot-preprod": "nx exec -- nx build --configuration=preprod --aot",
     "extract-i18n": "nx run assolutions:extract-i18n",

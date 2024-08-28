@@ -1,0 +1,15 @@
+<ng-container *ngIf="context == 'VIEW'">
+    <p>{{login}}</p>
+</ng-container>
+<ng-container *ngIf="context == 'VIEWSTATE'">
+    <p>{{login}}</p>
+    <label i18n>Actif</label>&nbsp;:&nbsp;{{thisCompte.actif}}
+    <label i18n>Mail actif</label>&nbsp;:&nbsp;{{thisCompte.mail_actif}}
+</ng-container>
+<ng-container *ngIf="context == 'ADD'">
+    <label i18n>Login</label>&nbsp;:&nbsp;<input class="input" type="email" [(ngModel)]="thisCompte.login"> <hover-button 
+    [nomclass]="'button  is-rounded is-primary is-outlined' " *ngIf="IsEmail(thisCompte.login)"
+    [nomicon]="'fas fa-check'" [libelle]="'Valider le login'" 
+    (click)="Valid()"
+    ></hover-button>
+</ng-container>

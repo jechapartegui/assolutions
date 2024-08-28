@@ -22,3 +22,6 @@
     font-size: smaller;
     flex-wrap: nowrap;
 }
+:root {
+    --bulma-modal-content-width: 60rem; /* Ajustez la valeur selon vos besoins */
+  }
