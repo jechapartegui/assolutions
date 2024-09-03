@@ -12,78 +12,6 @@ export class CompteService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
  }
- public Login(username: string, password: string, stayLoggedIn: boolean): Promise<any[]> {
-  this.url = environment.maseance + 'maseance/login.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    username: username,
-    password: password,
-    stayLoggedIn: stayLoggedIn
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: retour_login) => {
-      GlobalService.is_logged_in = true;
-      let ct = new compte();
-      ct.login = username;
-      ct.id = response.user_id;
-      ct.actif = response.actif;
-      GlobalService.instance.updateCompte(ct);
-      return response.project;
-    })
-    .catch(error => {
-      GlobalService.instance.updateLoggedin(false);
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-
-public LoginToken(token:string, username: string, droit:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/compte_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"login_token",
-    username: username,
-    token: token,
-    droit:droit
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: retour_login) => {
-      
-      GlobalService.is_logged_in = true;
-      let ct = new compte();
-      ct.login = username;
-      ct.id = response.user_id;
-      ct.actif = response.actif;
-      GlobalService.instance.updateCompte(ct);
-
-      let pr: any = response.project;
-     
-        if(pr.adherent){
-          GlobalService.instance.updateMenuType("ADHERENT");   
-          GlobalService.instance.updateSelectedMenuStatus("MENU"); 
-          GlobalService.instance.updateProjet(new projet(pr));  
-        }
-        if(pr.prof){
-          GlobalService.instance.updateMenuType("PROF");  
-          GlobalService.instance.updateSelectedMenuStatus("MENU");  
-          GlobalService.instance.updateProjet(new projet(pr));  
-        }
-        if(pr.admin){
-          GlobalService.instance.updateMenuType("ADMIN");  
-          GlobalService.instance.updateSelectedMenuStatus("MENU");  
-          GlobalService.instance.updateProjet(new projet(pr));  
-        }
-     
-      return true;
-    })
-    .catch(error => {
-      GlobalService.instance.updateLoggedin(false);
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
 
  public GetAll(): Promise<compte[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
@@ -187,40 +115,7 @@ ActiverCompte(id:number): Promise<boolean>{
     });
  }
 
- public CheckReinitMDP(login:string, token:string): Promise<boolean>{
-  this.url = environment.maseance + "maseance/compte_manage.php";
-  const body = {
-    command: "check_reinit",
-    login:login,
-    token:token
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      return Promise.reject(error);
-    });
- }
-
- public ValidReinitMDP(login:string, password:string, token:string): Promise<boolean>{
-  this.url = environment.maseance + "maseance/compte_manage.php";
-  const body = {
-    command: "valid_reinit_mdp",
-    login:login,
-    token:token,
-    password:password
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      return Promise.reject(error);
-    });
- }
 
 
 
@@ -334,10 +229,4 @@ public UpdateMailRelance(compte_id:number): Promise<boolean> {
       return Promise.reject(error);
     });
 }
-}
-export class retour_login {
-  public login: string;
-  public user_id: number;
-  public actif: boolean;
-  public project: any[] = [];
 }

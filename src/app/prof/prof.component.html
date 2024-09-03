@@ -39,7 +39,6 @@
         <thead>
             <th i18n>Nom</th>
             <th i18n>Durée</th>
-            <th i18n>Statut</th>
             <th i18n>€/H</th>
             <th></th>
         </thead>
@@ -47,15 +46,9 @@
             <ng-container *ngFor="let niv of Profs">
                 <tr>
                     <td><span class="limited-width">{{niv.prenom}}&nbsp;{{niv.nom}}</span></td>
-                    <td><input class="limit50" [(ngModel)]="niv.minutes"></td>
-                    <td><select [(ngModel)]="niv.statut">
-                            <ng-container *ngFor="let n of LVSeanceProf">
-                                <option [ngValue]="n.key">{{n.value}}</option>
-                            </ng-container>
-                        </select>
-                    </td>
+                    <td><input class="limit50" [(ngModel)]="niv.minutes"></td>                    
                     <td><input class="limit50" [(ngModel)]="niv.taux_horaire"></td>
-                    <td><button>MAJ</button></td>
+                    <td><button (click)="Update(niv)"><i class="fas fa-save"></i></button></td>
                 </tr>
             </ng-container>
         </tbody>

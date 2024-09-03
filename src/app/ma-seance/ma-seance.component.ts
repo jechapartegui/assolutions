@@ -18,11 +18,11 @@ export class MaSeanceComponent implements OnInit {
   @Input() id: number = 0;
   thisSeance: seance;
   liste_adherent: Adherent[];
-  AdherentsHorsGroupe:Adherent[] = [];  
+  AdherentsHorsGroupe: Adherent[] = [];
   adherent_to: Adherent;
   action: string;
   liste_inscription: inscription_seance[];
-  constructor(private adhserv: AdherentService, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv:InscriptionSeanceService) {
+  constructor(private adhserv: AdherentService, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
   ngOnInit(): void {
@@ -37,13 +37,13 @@ export class MaSeanceComponent implements OnInit {
     }
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
-    this.adhserv.GetAllThisSeason().then((riders) => {
-      this.liste_adherent = riders.map(x => new Adherent(x));
-      this.seanceserv.Get(this.id).then((ss) => {
-        this.thisSeance = ss;
-        this.inscriptionserv.GetAllSeance(this.id).then((insc) =>{
+    this.seanceserv.Get(this.id).then((ss) => {
+      this.thisSeance = ss;
+      this.adhserv.GetAllSeason(ss.saison_id).then((riders) => {
+        this.liste_adherent = riders.map(x => new Adherent(x));
+        this.inscriptionserv.GetAllSeance(this.id).then((insc) => {
           this.liste_inscription = insc;
-          if(!this.liste_inscription){
+          if (!this.liste_inscription) {
             this.liste_inscription = [];
           }
           this.UpdateListe();
@@ -61,36 +61,36 @@ export class MaSeanceComponent implements OnInit {
     });
   }
 
-  UpdateListe(){
+  UpdateListe() {
     this.AdherentsHorsGroupe = [];
-    this.liste_adherent.forEach((adh) =>{
+    this.liste_adherent.forEach((adh) => {
       let cpt = this.liste_inscription.filter(x => x.rider_id == adh.ID).length;
-      if(cpt==0){
+      if (cpt == 0) {
         // non inscrit mais potentiel ?
-        if(this.thisSeance.convocation_nominative){
+        if (this.thisSeance.convocation_nominative) {
           this.AdherentsHorsGroupe.push(adh);
         } else {
           let cptgr = 0;
-           adh.Groupes.forEach((gr) =>{
-            if(this.thisSeance.groupes.filter(x => gr.id == x.id).length>0){
-              let okadhrent:boolean = true;
-              if(this.thisSeance.est_limite_age_maximum){
-                if(this.thisSeance.age_maximum <= this.calculateAge(new Date(adh.DDN))){
-                  okadhrent = false;
-                }
-              } 
-              if(this.thisSeance.est_limite_age_minimum && okadhrent){
-                if(this.thisSeance.age_minimum >= this.calculateAge(new Date(adh.DDN))){
+          adh.Groupes.forEach((gr) => {
+            if (this.thisSeance.groupes.filter(x => gr.id == x.id).length > 0) {
+              let okadhrent: boolean = true;
+              if (this.thisSeance.est_limite_age_maximum) {
+                if (this.thisSeance.age_maximum <= this.calculateAge(new Date(adh.DDN))) {
                   okadhrent = false;
                 }
               }
-              if(okadhrent){
-                cptgr = cptgr+1;
+              if (this.thisSeance.est_limite_age_minimum && okadhrent) {
+                if (this.thisSeance.age_minimum >= this.calculateAge(new Date(adh.DDN))) {
+                  okadhrent = false;
+                }
+              }
+              if (okadhrent) {
+                cptgr = cptgr + 1;
               }
             }
-           }) 
-          
-          if(cptgr>0){
+          })
+
+          if (cptgr > 0) {
             let inscr_new: inscription_seance = new inscription_seance();
             inscr_new.id = 0;
             inscr_new.rider_id = adh.ID;
@@ -107,8 +107,20 @@ export class MaSeanceComponent implements OnInit {
     })
   }
 
-  trouverRider(id:Number){
-    return  this.liste_adherent.find(x => x.ID == id).Libelle;
+  trouverRider(id: Number) {
+    return this.liste_adherent.find(x => x.ID == id).Libelle;
+  }
+  trouverContactUrgence(id: Number) {
+    if(this.liste_adherent.find(x => x.ID == id).ContactsUrgence.length == 0){
+      return  this.liste_adherent.find(x => x.ID == id).Contacts.find(x => x.Type = "PHONE").Value;
+    }
+    try{
+      return   this.liste_adherent.find(x => x.ID == id).ContactsUrgence.find(x => x.Type = 'PHONE').Value
+    } catch{
+
+    return  this.liste_adherent.find(x => x.ID == id).ContactsUrgence[0].Value;
+    }
+    
   }
   calculateAge(dateNaissance: Date): number {
     const today = new Date();
@@ -169,9 +181,9 @@ export class MaSeanceComponent implements OnInit {
       })
     }
   }
-  AjouterAdherentsHorsGroupe(){
+  AjouterAdherentsHorsGroupe() {
     const errorService = ErrorService.instance;
-    if(this.adherent_to){
+    if (this.adherent_to) {
       console.log(this.adherent_to);
       this.action = $localize`Convoquer ` + this.adherent_to.Libelle;
       let inscr_new: inscription_seance = new inscription_seance();
@@ -184,27 +196,27 @@ export class MaSeanceComponent implements OnInit {
         inscr_new.id = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-      
+
         this.liste_inscription.push(inscr_new);
-  
+
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
       })
     }
-   
+
   }
 
-  GetNbPersonne(): boolean{
-    if(this.thisSeance.est_place_maximum){
+  GetNbPersonne(): boolean {
+    if (this.thisSeance.est_place_maximum) {
       let ct = this.liste_inscription.filter(x => x.statut_seance == StatutPresence.Présent).length;
-      if(ct>=this.thisSeance.place_maximum){
+      if (ct >= this.thisSeance.place_maximum) {
         return false;
       } else {
         return true;
       }
-    } else {  
+    } else {
       return true;
     }
   }

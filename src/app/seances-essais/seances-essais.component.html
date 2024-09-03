@@ -55,7 +55,10 @@
                                             </svg>
                                             </span>
                                         </ng-container>
-                                        <button type="button" *ngIf="seance.EssaiPossible"
+                                        
+                                    </div>
+                                    <div *ngIf="seance.EssaiPossible" class="ligneinfo">
+                                        <button type="button" 
                                             class="button is-rounded is-primary is-outlined" (click)="Essayer(seance)"
                                             i18n>
                                             Essayer
@@ -148,16 +151,8 @@
                                 [(ngModel)]="thisEssai.Prenom">
                         </div>
                     </div>
-                    <div class="field">
-                        <label class="label" i18n>Surnom</label>
-                        <div class="control ">
-                            <input [class]="thisEssai.valid.libelle? 'input' : 'input is-danger'" type="text"
-                                id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
-                                [(ngModel)]="thisEssai.Surnom">
-                        </div>
-                    </div>
-                    <p class="help is-danger" *ngIf="!thisEssai.valid.libelle" i18n>L'ensemble Prénom / Nom /
-                        Surnom doit contenir au moins 2 caractères
+                   
+                    <p class="help is-danger" *ngIf="!thisEssai.valid.libelle" i18n>L'ensemble Prénom / Nom doit contenir au moins 2 caractères
                     </p>
                     <div class="field">
                         <label class="label" i18n>Date de naissance</label>
@@ -208,8 +203,8 @@
                     [disabled]="!thisEssai.valid.control || !this.valid_address || !this.valid_mail || !this.valid_tel"
                     [nomicon]="'fas fa-check'" [libelle]="'Confirmer'" (click)="Confirmer()">
                 </hover-button>
-                <hover-button [nomclass]="'button  is-rounded is-danger is-outlined' " [nomicon]="'fas fa-receipt'"
-                    [libelle]="'Anuller'" (click)="Retour()">
+                <hover-button [nomclass]="'button  is-rounded is-danger is-outlined' " [nomicon]="'fa-solid fa-backward-fast'"
+                    [libelle]="'Retour'" (click)="Retour()">
                 </hover-button>
             </ng-container>
         </div>

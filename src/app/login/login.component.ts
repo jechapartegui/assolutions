@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Compte, compte } from 'src/class/compte';
 import { liste_projet, projet } from 'src/class/projet';
+import { environment } from 'src/environments/environment.prod';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
+import { MailService } from 'src/services/mail.service';
 import { ProjetService } from 'src/services/projet.service';
 
 @Component({
@@ -20,17 +22,25 @@ export class LoginComponent implements OnInit {
   loading: boolean;
   profil: "ADHERENT" | "PROF" | "ADMIN" = null;
   psw_projet: string = null;
-  constructor(private compte_serv: CompteService, private project_serv: ProjetService, private router: Router, private route: ActivatedRoute) {
-    this.Source.Login = "jechapartegui@gmail.com";
-    this.Source.Password = "Gulfed2606";
+  constructor(private compte_serv: CompteService, private mail_serv: MailService, private router: Router, private route: ActivatedRoute) {
+    this.Source.Login = environment.defaultlogin;
+    this.Source.Password = environment.defaultpassword;
   }
 
   ngOnInit(): void {
     let token: string;
     let user: string;
     let droit: number;
+    const errorService = ErrorService.instance;
     this.route.queryParams.subscribe(params => {
-      const errorService = ErrorService.instance;
+      if ('test_mail' in params) {
+        this.action = $localize`test envoi mail`;
+        this.mail_serv.Test().then((ret=>{
+          let o = errorService.OKMessage  (this.action);
+          errorService.emitChange(o);
+        }))
+      }
+
       this.action = $localize`Connexion par token`;
       if ('token_connexion' in params) {
         token = params['token_connexion'];
@@ -108,7 +118,26 @@ export class LoginComponent implements OnInit {
     });
   }
   LogOut() {
+    this.action = $localize`Se déconnecter`;
+    const errorService = ErrorService.instance;
+    this.compte_serv.Logout().then(ok=>{
+      if(ok){
 
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        this.projets = null;
+        this.router.navigate(['/login']);
+      } else {
+        
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+      this.loading = false;
+    });
   }
 
   SelectProject(event) {

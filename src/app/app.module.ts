@@ -54,6 +54,7 @@ import { FilterActifPipe } from 'src/filters/filter-actif';
 import { filterInscriptionSaisonProf } from 'src/filters/filter-inscriptionsaison.prof';
 import { SeancesEssaisComponent } from './seances-essais/seances-essais.component';
 import { CompteDetailComponent } from './compte-detail/compte-detail.component';
+import { FilterStatutPipe } from 'src/filters/filter-statutseance';
 @NgModule({
   declarations: [
     AppComponent,
@@ -66,7 +67,7 @@ import { CompteDetailComponent } from './compte-detail/compte-detail.component';
     ComptabiliteComponent,
     ProfComponent,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe,
-    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
+    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
   , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent],
   imports: [
     BrowserModule,

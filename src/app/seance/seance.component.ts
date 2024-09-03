@@ -290,10 +290,18 @@ export class SeanceComponent implements OnInit {
     this.editMode = true;
   }
 
-  VoirMaSeance() {
+  VoirMaSeance(seance:Seance = null) {
+    let id:number;
+    if(seance){
+      id=seance.ID;
+    } else if(this.editSeance){
+      id=this.editSeance.ID
+    } else {
+      return;
+    }
     let confirmation = window.confirm("Voulez-vous aller vers la vue du professeur ? les modifications non sauvegardées seront perdues");
     if (confirmation) {
-      this.router.navigate(['/ma-seance'], { queryParams: { id: this.editSeance.ID } });
+      this.router.navigate(['/ma-seance'], { queryParams: { id: id } });
     }
   }
   TerminerSeances(){
@@ -381,6 +389,19 @@ export class SeanceComponent implements OnInit {
       this.seancesservice.GetSeances(true).then((seances) => {
         this.list_seance = seances;
         this.list_seance_VM = this.list_seance.map(x => new Seance(x));
+        this.list_seance_VM.sort((a, b) => {
+          let dateA = a.date_seance;
+          let dateB = b.date_seance;
+
+          let comparaison = 0;
+          if (dateA > dateB) {
+            comparaison = -1;
+          } else if (dateA < dateB) {
+            comparaison = 1;
+          }
+
+          return -comparaison; // Inverse pour le tri descendant
+        });
         this.UpdateListeFiltre();
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
@@ -525,12 +546,23 @@ export class SeanceComponent implements OnInit {
       }
       else {
         this.action = $localize`Mettre à jour une séance`;
-        this.seancesservice.Update(seance.datasource).then((ok) => {
+        this.seancesservice.Update(seance.datasource).then((ok) => {          
           if (ok) {
+            this.spservice.UpdateSeance(seance.professeurs, seance.ID).then((ok) =>{
+              if(ok){
+                let o = errorService.OKMessage(this.action);
+                errorService.emitChange(o);
+              } else {
+                this.action = $localize`Mettre à jour une séance OK - Mise à jour liste professeur KO`;
+                let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+                errorService.emitChange(o);
+              }
 
-
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
+            }).catch((err) => {
+              this.action = $localize`Mettre à jour une séance OK - Mise à jour liste professeur KO`;
+              let o = errorService.CreateError(this.action, err.message);
+              errorService.emitChange(o);
+            });
             this.UpdateListeSeance();
           } else {
             let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);

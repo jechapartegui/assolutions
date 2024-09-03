@@ -1,9 +1,12 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { KeyValuePair } from 'src/class/keyvaluepair';
 import { professeur } from 'src/class/professeur';
 import { Seance } from 'src/class/seance';
 import { SeanceProf } from 'src/class/seanceprof';
+import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
+import { SeanceprofService } from 'src/services/seanceprof.service';
 
 @Component({
   selector: 'app-prof',
@@ -16,10 +19,11 @@ export class ProfComponent implements OnInit {
   @Input() thisSeance:Seance;
   @Input() Profs:SeanceProf[] = [];
   current_prof_key:number;
+  action:string = "";
   LVSeanceProf :KeyValuePair[];
   @Input() prof_dispo:professeur[]=[];
 
-  constructor(public globserv:GlobalService){}
+  constructor(public globserv:GlobalService, private sean_prof:SeanceprofService){}
   ngOnInit(): void {
     this.MAJListeProf();
     this.LVSeanceProf = this.globserv.ListeSeanceProf;
@@ -53,6 +57,23 @@ export class ProfComponent implements OnInit {
         this.prof_dispo = this.prof_dispo.filter(e => e.id !== element_to_remove.id);
       }
     });
+  }
+  Update(niv:SeanceProf){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Mise à jour des informations du professeurs pour la séance`;
+    this.sean_prof.Update(niv).then(ok=>{
+      if(ok){
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+        let o = errorService.CreateError(this.action,$localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+      return;
+    })
   }
 }
 

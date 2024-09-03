@@ -12,12 +12,13 @@ export class AdherentService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id: number): Promise<adherent[]> {
+  public Get(id: number, menu:string): Promise<adherent[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/adherents_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
       command: "get",
+      menu:menu,
       id: id
     };
 
@@ -146,16 +147,23 @@ export class AdherentService {
       });
   }
 
-  public GetAllThisSeason(): Promise<adherent[]> {
+  public GetAllEver(): Promise<adherent[]> {
     const body = {
       command: "get_all"
     }
     return this.GetAll(body);
   }
-  public GetAllSeason(season_id: number): Promise<adherent[]> {
+  public GetAllActiveSaison(): Promise<adherent[]> {
     const body = {
       command: "get_all",
-      season_id: season_id
+      active: true
+    }
+    return this.GetAll(body);
+  }
+  public GetAllSeason(saison_id: number): Promise<adherent[]> {
+    const body = {
+      command: "get_all",
+      saison_id: saison_id
     }
     return this.GetAll(body);
   }
@@ -170,6 +178,26 @@ export class AdherentService {
       .catch(error => {
         return Promise.reject(error);
       });
+  }
+  public GetAllLightEver(): Promise<KeyValuePair[]> {
+    const body = {
+      command: "get_all_light"
+    }
+    return this.GetAllLight(body);
+  }
+  public GetAllLightSeason(saison_id: number): Promise<KeyValuePair[]> {
+    const body = {
+      command: "get_all_light",
+      saison_id: saison_id
+    }
+    return this.GetAllLight(body);
+  }
+  public GetAllLightActiveSaison(): Promise<KeyValuePair[]> {
+    const body = {
+      command: "get_all_light",
+      active: true
+    }
+    return this.GetAllLight(body);
   }
   public GetAllLight(body): Promise<KeyValuePair[]> {
     this.url = environment.maseance + 'maseance/adherents_manage.php';

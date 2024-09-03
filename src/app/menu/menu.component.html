@@ -1,13 +1,13 @@
 <div class="container" *ngIf="Riders">
     <ng-container *ngFor="let rider of Riders">
         <div class="box">
-            <article class="panel is-primary">
+            <article [class]="(GlobalService.Menu$| async) === 'ADHERENT' ? 'panel is-primary' : 'panel is-info'">
                 <p class="panel-heading">{{rider.Libelle}} <button i18n-title title="Editer"
                         class="button is-black is-rounded is-outlined" type="button"
                         (click)="Voir(rider.datasource.id)">
                         <i class="fas fa-info-circle"></i>
                     </button></p>
-                <div class="panel-block">
+                <div class="panel-block flls">
                     <hover-button
                         [nomclass]="rider.filter_date_apres  == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded'"
                         [nomicon]="'fa-solid fa-calendar-check'"
@@ -20,17 +20,15 @@
                         [libelle]="rider.afficher_filtre  ? 'Masquer les filtres' : 'Afficher les filtres'"
                         (click)="rider.afficher_filtre ? rider.afficher_filtre = false : rider.afficher_filtre = true;">
                     </hover-button>
-                    <hover-button *ngIf="rider.afficher_filtre"
-                        [nomclass]="'button is-danger is-rounded  is-outlined'"
-                        [nomicon]="'fa-solid fa-filter'"
-                        [remove]="true"
-                        [libelle]="'Réinitialisaer les filtres'"
+                    <hover-button *ngIf="rider.afficher_filtre" [nomclass]="'button is-danger is-rounded  is-outlined'"
+                        [nomicon]="'fa-solid fa-filter'" [remove]="true" [libelle]="'Réinitialisaer les filtres'"
                         (click)="ReinitFiltre(rider)">
                     </hover-button>
                 </div>
                 <div class="panel-block">
-                    <span class="fullscreen">
-                        <ng-container *ngIf="rider.InscriptionSeances && rider.InscriptionSeances.length>0">
+                    <ng-container *ngIf="rider.InscriptionSeances && rider.InscriptionSeances.length>0">
+                        <span class="fullscreen">
+
                             <table class="table" style="width: 100%;font-size: small;">
                                 <thead>
                                     <tr>
@@ -181,14 +179,15 @@
                                         <td>{{seance.thisSeance.heure_debut}} ({{seance.thisSeance.duree_seance}} <span
                                                 i18n>&nbsp;min</span>)
                                         </td>
-                                        <td class="no_mobile">
-                                            <div class="tags is-small">
+                                        <td>
+                                            <div class="tags is-small" style="max-width: 300px;">
                                                 <ng-container *ngFor="let gr of seance.thisSeance.professeurs">
                                                     <span class="tag is-success">
                                                         {{gr.value}}
                                                     </span>
                                                 </ng-container>
                                             </div>
+
                                         </td>
                                         <td> <span
                                                 *ngIf="seance.thisSeance">{{trouverLieu(seance.thisSeance.lieu_id)}}</span>
@@ -196,72 +195,197 @@
 
                                         <td>
                                             <ng-container *ngIf="seance.thisSeance.statut == 'prévue'">
-                                                <div class="icon-text">
+                                                <span class="tag is-info is-rounded is-light">
                                                     <span class="icon has-text-info">
                                                         <i class="fa-solid fa-calendar-check"></i>
                                                     </span>
-                                                </div>
+                                                </span>
                                             </ng-container>
                                             <ng-container *ngIf="seance.thisSeance.statut == 'réalisée'">
-                                                <div class="icon-text">
+                                                <span class="tag is-primary is-rounded is-light">
                                                     <span class="icon has-text-success">
                                                         <i class="fa-solid fa-flag-checkered"></i>
                                                     </span>
-                                                </div>
+                                                </span>
                                             </ng-container>
                                             <ng-container *ngIf="seance.thisSeance.statut == 'annulée'">
-                                                <div class="icon-text">
+                                                <span class="tag is-danger is-rounded is-light">
                                                     <span class="icon has-text-danger">
                                                         <i class="fa-solid fa-ban"></i>
                                                     </span>
-                                                </div>
+                                                </span>
                                             </ng-container>
                                         </td>
                                         <td>
-                                            <ng-container *ngIf="seance.thisSeance.statut == 'réalisée'">
 
+                                            <ng-container *ngIf="seance.thisSeance.statut == 'réalisée'">
+                                                <ng-container *ngIf="(GlobalService.Menu$| async) === 'PROF'">
+                                                    <button i18n-title title="Voir" type="button"
+                                                        (click)="VoirMaSeance(seance.thisSeance)"
+                                                        class="button is-info is-rounded is-outlined">
+                                                        <i class="fa-solid fa-binoculars"></i>
+                                                    </button>
+                                                </ng-container>
                                             </ng-container>
                                             <ng-container *ngIf="seance.thisSeance.statut == 'prévue'">
-                                                <span *ngIf="seance.thisInscription.statut_inscription == 'présent'"
-                                                    class="icon is-large">
-                                                    <span class="fa-stack fa-lg">
-                                                        <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                <ng-container *ngIf="(GlobalService.Menu$| async) === 'PROF'">
+                                                    <button i18n-title title="Voir" type="button"
+                                                        (click)="VoirMaSeance(seance.thisSeance)"
+                                                        class="button is-info is-rounded is-outlined">
+                                                        <i class="fa-solid fa-binoculars"></i>
+                                                    </button>
+                                                </ng-container>
+                                                <ng-container *ngIf="(GlobalService.Menu$| async) === 'ADHERENT'">
+                                                    <span *ngIf="seance.thisInscription.statut_inscription == 'présent'"
+                                                        class="icon is-large">
+                                                        <span class="fa-stack fa-lg">
+                                                            <i
+                                                                class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                        </span>
                                                     </span>
-                                                </span>
-                                                <span (click)="MAJInscription(seance.thisInscription,true)"
-                                                    *ngIf="seance.thisInscription.statut_inscription == 'absent'|| seance.thisInscription.statut_inscription == 'convoqué' || seance.thisInscription.statut_inscription == null"
-                                                    style="cursor: pointer;" class="icon is-large">
-                                                    <span class="fa-stack fa-lg">
-                                                        <i class="far fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                    <span (click)="MAJInscription(seance.thisInscription,true)"
+                                                        *ngIf="seance.thisInscription.statut_inscription == 'absent'|| seance.thisInscription.statut_inscription == 'convoqué' || seance.thisInscription.statut_inscription == null"
+                                                        style="cursor: pointer;" class="icon is-large">
+                                                        <span class="fa-stack fa-lg">
+                                                            <i
+                                                                class="far fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                        </span>
                                                     </span>
-                                                </span>
-                                                <span *ngIf="seance.thisInscription.statut_inscription == 'absent'"
-                                                    class="icon is-large">
-                                                    <span class="fa-stack fa-lg">
-                                                        <i class="fas fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                    <span *ngIf="seance.thisInscription.statut_inscription == 'absent'"
+                                                        class="icon is-large">
+                                                        <span class="fa-stack fa-lg">
+                                                            <i
+                                                                class="fas fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                        </span>
                                                     </span>
-                                                </span>
-                                                <span (click)="MAJInscription(seance.thisInscription,false)"
-                                                    *ngIf="seance.thisInscription.statut_inscription == 'présent' || seance.thisInscription.statut_inscription == 'convoqué'|| seance.thisInscription.statut_inscription == null"
-                                                    style="cursor: pointer;" class="icon is-large">
-                                                    <span class="fa-stack fa-lg">
-                                                        <i class="far fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                    <span (click)="MAJInscription(seance.thisInscription,false)"
+                                                        *ngIf="seance.thisInscription.statut_inscription == 'présent' || seance.thisInscription.statut_inscription == 'convoqué'|| seance.thisInscription.statut_inscription == null"
+                                                        style="cursor: pointer;" class="icon is-large">
+                                                        <span class="fa-stack fa-lg">
+                                                            <i
+                                                                class="far fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                        </span>
                                                     </span>
-                                                </span>
+                                                </ng-container>
                                             </ng-container>
                                         </td>
 
                                     </tr>
                                 </tbody>
                             </table>
-                        </ng-container>
-                        <ng-container *ngIf="!rider.InscriptionSeances || rider.InscriptionSeances.length == 0">
-                            <p i18n>Pas de séance disponible</p>
-                        </ng-container>
-                    </span>
-                    <span class="mobile">
+                        </span>
+                        <span class="mobile">
+                            <span style="display: flex; flex-direction: column;">
+                                <ng-container
+                                    *ngFor="let seance of rider.InscriptionSeances | filterDateAvantMenu : rider.filter_date_avant|  filterDateApresMenu : rider.filter_date_apres">
+                                    <div class="box">
+                                        <article class="media">
+                                            <div class="media-content">
+                                                <span class="title"><strong>{{seance.thisSeance.libelle}}&nbsp;{{
+                                                        seance.thisSeance.date_seance |
+                                                        date: 'dd/MM/yyyy' }}</strong></span>
+                                                <div>
+                                                    <ng-container
+                                                        *ngIf="seance.thisSeance.type_seance==='ENTRAINEMENT'">
 
-                    </span>
+                                                        <span i18n>Cours</span>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="seance.thisSeance.type_seance==='MATCH'">
+                                                        <span i18n>Match</span>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="seance.thisSeance.type_seance==='EVENEMENT'">
+                                                        <span i18n>Evénement</span>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="seance.thisSeance.type_seance==='SORTIE'">
+                                                        <span i18n>Sortie</span>
+                                                    </ng-container>
+                                                    - {{seance.thisSeance.heure_debut}}
+                                                    ({{seance.thisSeance.duree_seance}}
+                                                    <span i18n>&nbsp;min</span>)
+                                                    {{trouverLieu(seance.thisSeance.lieu_id)}}
+                                                    <ng-container *ngIf="seance.thisSeance.statut == 'prévue'">
+                                                        <span class="tag is-info is-rounded is-light">
+                                                            <span class="icon has-text-info">
+                                                                <i class="fa-solid fa-calendar-check"></i>
+                                                            </span>
+                                                        </span>
+                                                        <ng-container
+                                                            *ngIf="(GlobalService.Menu$| async) === 'ADHERENT'">
+                                                            <span
+                                                                *ngIf="seance.thisInscription.statut_inscription == 'présent'"
+                                                                class="icon is-large">
+                                                                <span class="fa-stack fa-lg">
+                                                                    <i
+                                                                        class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                                </span>
+                                                            </span>
+                                                            <span (click)="MAJInscription(seance.thisInscription,true)"
+                                                                *ngIf="seance.thisInscription.statut_inscription == 'absent'|| seance.thisInscription.statut_inscription == 'convoqué' || seance.thisInscription.statut_inscription == null"
+                                                                style="cursor: pointer;" class="icon is-large">
+                                                                <span class="fa-stack fa-lg">
+                                                                    <i
+                                                                        class="far fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                                                </span>
+                                                            </span>
+                                                            <span
+                                                                *ngIf="seance.thisInscription.statut_inscription == 'absent'"
+                                                                class="icon is-large">
+                                                                <span class="fa-stack fa-lg">
+                                                                    <i
+                                                                        class="fas fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                                </span>
+                                                            </span>
+                                                            <span (click)="MAJInscription(seance.thisInscription,false)"
+                                                                *ngIf="seance.thisInscription.statut_inscription == 'présent' || seance.thisInscription.statut_inscription == 'convoqué'|| seance.thisInscription.statut_inscription == null"
+                                                                style="cursor: pointer;" class="icon is-large">
+                                                                <span class="fa-stack fa-lg">
+                                                                    <i
+                                                                        class="far fa-stack-2x fa-thumbs-down has-text-danger"></i>
+                                                                </span>
+                                                            </span>
+                                                        </ng-container>
+                                                        <ng-container *ngIf="(GlobalService.Menu$| async) === 'PROF'">
+                                                            <button i18n-title title="Voir" type="button"
+                                                                (click)="VoirMaSeance(seance.thisSeance)"
+                                                                class="button is-info is-rounded is-outlined">
+                                                                <i class="fa-solid fa-binoculars"></i>
+                                                            </button>
+                                                        </ng-container>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="seance.thisSeance.statut == 'réalisée'">
+                                                        <span class="tag is-primary is-rounded is-light">
+                                                            <span class="icon has-text-success">
+                                                                <i class="fa-solid fa-flag-checkered"></i>
+                                                            </span>
+                                                        </span>
+                                                        <ng-container *ngIf="(GlobalService.Menu$| async) === 'PROF'">
+                                                            <button i18n-title title="Voir" type="button"
+                                                                (click)="VoirMaSeance(seance.thisSeance)"
+                                                                class="button is-info is-rounded is-outlined">
+                                                                <i class="fa-solid fa-binoculars"></i>
+                                                            </button>
+                                                        </ng-container>
+                                                    </ng-container>
+                                                    <ng-container *ngIf="seance.thisSeance.statut == 'annulée'">
+                                                        <span class="tag is-danger is-rounded is-light">
+                                                            <span class="icon has-text-danger">
+                                                                <i class="fa-solid fa-ban"></i>
+                                                            </span>
+                                                        </span>
+                                                    </ng-container>
+                                                </div>
+
+                                            </div>
+                                        </article>
+                                    </div>
+                                </ng-container>
+                            </span>
+                        </span>
+                    </ng-container>
+                    <ng-container *ngIf="!rider.InscriptionSeances || rider.InscriptionSeances.length == 0">
+                        <p i18n>Pas de séance disponible</p>
+                    </ng-container>
+
                 </div>
             </article>
         </div>

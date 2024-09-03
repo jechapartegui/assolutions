@@ -128,7 +128,7 @@ export class ProfesseurComponent implements OnInit {
       this.ListeProf = cpt.map(x => new Professeur(x));
      
       this.action = $localize`Récupérer les adhérents`;
-      this.ridersService.GetAllThisSeason().then((adhs) => {
+      this.ridersService.GetAllActiveSaison().then((adhs) => {
         this.liste_adherents_VM = adhs.map(x => new Adherent(x));
       }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError(this.action, error);

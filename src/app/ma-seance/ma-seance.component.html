@@ -9,7 +9,7 @@
                         <span i18n>Convoquer un adhérent à la séance</span>
                     </div>
                     <div class="panel-block">
-                        <div class="select">
+                        <div class="select is-small">
                             <select id="seasons" [(ngModel)]="adherent_to" i18n-placeholder
                                 placeholder="Sélectionner l'adhérent">
                                 <!-- Options pour les professeurs -->
@@ -30,20 +30,18 @@
                         <ng-container *ngIf="potentiel.statut_inscription === 'présent'">
                             <div class="ligne">
                                 <span>{{trouverRider(potentiel.rider_id)}}</span>
-                                <span>contact d'urgence</span>
+                                <span>{{trouverContactUrgence(potentiel.rider_id)}}</span>
                                 <span  class="icon is-medium">
                                     <span class="fa-stack fa-sm">
                                         <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
                                     </span>
                                 </span>
-                                <hover-button [nomclass]="'button is-outlined is-rounded is-primary'"
-                                    [disabled]="!GetNbPersonne()" [nomicon]="'fas fa-check'" [libelle]="'Présent'"
-                                    (click)="MAJInscription(potentiel, true)">
-                                </hover-button>
-                                <hover-button [nomclass]="'button is-outlined is-rounded is-danger'"
-                                    [nomicon]="'fas fa-times'" [libelle]="'Absent'"
-                                    (click)="MAJInscription(potentiel, false)">
-                                </hover-button>
+                                <button type="button" class="button is-outlined is-rounded is-primary" (click)="MAJInscription(potentiel, true)"  [disabled]="!GetNbPersonne()">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="button is-outlined is-rounded is-danger" (click)="MAJInscription(potentiel, false)" >
+                                    <i class="fas fa-times"></i>
+                                </button>                               
                             </div>
                         </ng-container>
                     </ng-container>
@@ -53,7 +51,7 @@
                         <ng-container *ngIf="potentiel.statut_inscription === 'convoqué'">
                             <div class="ligne">
                                 <span>{{trouverRider(potentiel.rider_id)}}</span>
-                                <span>contact d'urgence</span>
+                                <span>{{trouverContactUrgence(potentiel.rider_id)}}</span>
                                 <span  class="icon is-medium">
                                     <span class="fa-stack fa-sm">
                                         <i class="fas fa-stack-2x fa-hand-point-up has-text-info"></i>
@@ -76,7 +74,7 @@
                         <ng-container *ngIf="potentiel.statut_inscription === 'absent'">
                             <div class="ligne">
                                 <span>{{trouverRider(potentiel.rider_id)}}</span>
-                                <span>contact d'urgence</span>
+                                <span>{{trouverContactUrgence(potentiel.rider_id)}}</span>
                                 <span  class="icon is-medium">
                                     <span class="fa-stack fa-sm">
                                         <i class="fas fa-stack-2x fa-thumbs-down has-text-success"></i>
@@ -99,7 +97,7 @@
                         <ng-container *ngIf="potentiel.statut_inscription === null">
                             <div class="ligne">
                                 <span>{{trouverRider(potentiel.rider_id)}}</span>
-                                <span>contact d'urgence</span>
+                                <span>{{trouverContactUrgence(potentiel.rider_id)}}</span>
                                 <span  class="icon is-medium">
                                     <span class="fa-stack fa-sm">
                                         <i class="fas fa-stack-2x fa-question"></i>

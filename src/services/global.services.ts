@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment.prod';
 import { compte } from 'src/class/compte';
 import { projet } from 'src/class/projet';
 import { KeyValuePair } from 'src/class/keyvaluepair';
+import { project_login } from './login.service';
 
 @Injectable({
   providedIn: 'root'
@@ -32,9 +33,13 @@ export class GlobalService {
   static is_logged_in: boolean = false;
   isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
 
-  private isProjet = new BehaviorSubject<projet>(null);
-  static projet: projet = null;
-  Projet$: Observable<projet> = this.isProjet.asObservable();
+  private isProjet = new BehaviorSubject<project_login>(null);
+  static projet: project_login = null;
+  Projet$: Observable<project_login> = this.isProjet.asObservable();
+
+  private isOtherProject = new BehaviorSubject<project_login[]>(null);
+  static other_project: project_login[] = null;
+  OtherProject$: Observable<project_login[]> = this.isOtherProject.asObservable();
 
   thisLanguage: "FR" | "EN";
   constructor(private http: HttpClient, private datepipe: DatePipe) {
@@ -58,9 +63,13 @@ export class GlobalService {
     this.isLoggedIn.next(b);
     GlobalService.is_logged_in = b;
   }
-  updateProjet(_p: projet): void {
+  updateProjet(_p: project_login): void {
     this.isProjet.next(_p);
     GlobalService.projet = _p;
+  }
+  updateOtherProject(_p: project_login[]): void {
+    this.isOtherProject.next(_p);
+    GlobalService.other_project = _p;
   }
 
   public ListeSeanceProf: KeyValuePair[] = [

@@ -4,6 +4,7 @@ import { NotifJechaComponent } from './custom-notification/custom-notification.c
 import { environment } from 'src/environments/environment.prod';
 import { ErrorService } from 'src/services/error.service';
 import { Router } from '@angular/router';
+import { CompteService } from 'src/services/compte.service';
 import { GlobalService } from 'src/services/global.services';
 
 @Component({
@@ -21,7 +22,8 @@ export class AppComponent {
   @ViewChild(NotifJechaComponent, { static: true }) child: NotifJechaComponent;
   constructor(public GlobalService:GlobalService,
     private erroservice: ErrorService,
-    private _router: Router,
+    private router: Router,
+    public compte_serv:CompteService,
     public globals: StaticClass
   ) {
     this.g = globals;
@@ -41,10 +43,26 @@ export class AppComponent {
     }
   }
 
-  LogOut(){
-    
-  }
+  LogOut() {
+    this.action = $localize`Se déconnecter`;
+    const errorService = ErrorService.instance;
+    this.compte_serv.Logout().then(ok=>{
+      if(ok){
 
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        this.router.navigate(['/login']);
+      } else {
+        
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+    });
+  }
 
   DisplayError(val) {
     this.child.display_notification(val);

@@ -41,7 +41,7 @@ export class GroupeComponent implements OnInit {
 
       this.groupeserv.GetAll().then((result) => {
         this.liste_groupe = result;
-        this.adhserv.GetAllThisSeason().then((riders) => {
+        this.adhserv.GetAllActiveSaison().then((riders) => {
           this.liste_adherent = riders.map(x => new Adherent(x));
         }).catch((error) => {
           let n = errorService.CreateError("Chargement", error);

@@ -8,7 +8,9 @@ import { professeur } from 'src/class/professeur';
 import { Seance } from 'src/class/seance';
 import { AdherentService } from 'src/services/adherent.service';
 import { ErrorService } from 'src/services/error.service';
+import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
 import { LieuService } from 'src/services/lieu.service';
+import { MailService } from 'src/services/mail.service';
 import { ProfesseurService } from 'src/services/professeur.service';
 import { SeancesService } from 'src/services/seance.service';
 
@@ -19,8 +21,8 @@ import { SeancesService } from 'src/services/seance.service';
 })
 export class SeancesEssaisComponent implements OnInit {
   public date_debut: string;
-  public DateDeb:Date;
-  public DateFin:Date;
+  public DateDeb: Date;
+  public DateFin: Date;
   public thisEssai: Adherent = null;
   public ListeSeance: Seance[] = []
   public days: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -33,19 +35,39 @@ export class SeancesEssaisComponent implements OnInit {
   public valid_address: boolean = false;
   public essai: boolean = false;
   public action: string = "";
-  public seanceText:string= "";
-  constructor(public route: ActivatedRoute, public sean_serv: SeancesService, public rider_serv: AdherentService, public prof_serv: ProfesseurService, public lieuserv: LieuService) {
+  public seanceText: string = "";
+  constructor(public insc_sean_serv:InscriptionSeanceService, public mail_serv:MailService, public route: ActivatedRoute, public sean_serv: SeancesService, public rider_serv: AdherentService, public prof_serv: ProfesseurService, public lieuserv: LieuService) {
 
   }
   ngOnInit(): void {
-    console.log(';');
+    const errorService = ErrorService.instance;
     this.route.queryParams.subscribe(params => {
+      if ('annulation' in params) {
+        let cancel = params['annulation'];
+        this.action = $localize`Annuler son essai`;
+        this.insc_sean_serv.Delete(cancel).then((retour) =>{
+          if (retour) {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+
+          } else {
+            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            errorService.emitChange(o);
+
+          }
+        }).catch((err) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
+        return;
+      } 
       if ('id' in params) {
         this.project_id = params['id'];
       } else {
         return;
-      } if ('date-debut' in params) {
-        this.date_debut = params['date-debut'];
+      } 
+      if ('date_debut' in params) {
+        this.date_debut = params['date_debut'];
       } else {
         this.date_debut = new Date(new Date().setDate(new Date().getDate())).toISOString().split('T')[0];
       }
@@ -53,10 +75,10 @@ export class SeancesEssaisComponent implements OnInit {
       this.generateSeanceText();
     }
     );
-    this.GetPlageDate();   
+    this.GetPlageDate();
   }
-  public GetPlageDate(){
-    this.sean_serv.GetPlageDate(this.date_debut,  this.project_id).then((seances) => {
+  public GetPlageDate() {
+    this.sean_serv.GetPlageDate(this.date_debut, this.project_id).then((seances) => {
       this.ListeSeance = seances.map(x => new Seance(x));
       this.ListeSeance.sort((a, b) => {
         const nomA = a.heure_debut // Ignore la casse lors du tri
@@ -87,7 +109,7 @@ export class SeancesEssaisComponent implements OnInit {
   }
 
   private generateSeanceText(): void {
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year:'2-digit' };
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: '2-digit' };
     const dateDebStr = this.DateDeb.toLocaleDateString('fr-FR', options);
     const dateFinStr = this.DateFin.toLocaleDateString('fr-FR', options);
     this.seanceText = `Liste des séances du ${dateDebStr} au ${dateFinStr}`;
@@ -95,11 +117,15 @@ export class SeancesEssaisComponent implements OnInit {
   getSeancesForDay(dayIndex: number): any[] {
     return this.ListeSeance.filter(seance => {
       const date = new Date(seance.date_seance); // Convertir en objet Date
-      return date.getDay() === dayIndex;
+      let jsDayIndex = date.getDay(); // Obtenir le jour de la semaine (0 à 6)
+      
+      // Ajuster pour que 1 = lundi, 7 = dimanche
+      jsDayIndex = jsDayIndex === 0 ? 7 : jsDayIndex; // Si dimanche (0), passer à 7
+
+      return jsDayIndex === dayIndex;
     });
   }
-
-  ChangeSemaine(boo:boolean){
+  ChangeSemaine(boo: boolean) {
     const currentDate = new Date(this.date_debut);
 
     // Ajuster la date_debut de 7 jours en avant ou en arrière
@@ -115,7 +141,7 @@ export class SeancesEssaisComponent implements OnInit {
     // Recalculer les dates de début et de fin de semaine
     this.calculateWeekDates(this.date_debut);
 
-    this.GetPlageDate();   
+    this.GetPlageDate();
     // Mettre à jour le texte affiché
     this.generateSeanceText();
   }
@@ -171,9 +197,25 @@ export class SeancesEssaisComponent implements OnInit {
     this.action = $localize`Essayer une séance`;
     this.rider_serv.Essayer(this.thisEssai.datasource, this.thisSeance.ID, this.project_id).then((ID) => {
       if (ID > 0) {
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
+        let mail = this.thisEssai.Contacts.filter(x => x.Type=="EMAIL")[0].Value;
+        this.mail_serv.EnvoiMailEssai(this.thisEssai.datasource, this.thisSeance.datasource, mail,ID, this.project_id).then((retour) => {
+          if (retour) {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
 
+          } else {
+            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            errorService.emitChange(o);
+
+          }
+        }).catch((err) => {
+          this.action = $localize`Essayer une séance OK mais envoi mail confirmation KO`;
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
+        this.thisSeance = null;
+        this.thisEssai = null;
+        this.essai = false;
       } else {
         let o = errorService.CreateError(this.action, $localize`Aucune séance créée`);
         errorService.emitChange(o);

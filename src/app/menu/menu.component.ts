@@ -14,6 +14,7 @@ import { InscriptionSeanceService } from 'src/services/inscription-seance.servic
 import { LieuService } from 'src/services/lieu.service';
 import { StaticClass } from '../global';
 import { ProfesseurService } from 'src/services/professeur.service';
+import { Seance } from 'src/class/seance';
 
 @Component({
   selector: 'app-menu',
@@ -29,9 +30,9 @@ export class MenuComponent implements OnInit {
   public liste_prof_filter: KeyValuePairAny[];
   public liste_lieu_filter: KeyValuePairAny[];
   listeCours: cours[] = [];
- 
+
   public g: StaticClass;
-  constructor(private prof_serv:ProfesseurService, private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
+  constructor(public GlobalService:GlobalService, private prof_serv: ProfesseurService, private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -39,8 +40,8 @@ export class MenuComponent implements OnInit {
     if (GlobalService.is_logged_in) {
       switch (GlobalService.menu) {
         default:
-        case "ADHERENT":
         case "PROF":
+        case "ADHERENT":
           const auj = new Date();
           let date_apres = this.formatDate(auj);
 
@@ -48,14 +49,14 @@ export class MenuComponent implements OnInit {
           const nextMonth = new Date(auj);
           nextMonth.setMonth(nextMonth.getMonth() + 1);
           let date_avant = this.formatDate(nextMonth);
-          this.adherent_serv.Get(GlobalService.compte.id).then((riders) => {
+          this.adherent_serv.Get(GlobalService.compte.id, GlobalService.menu).then((riders) => {
             this.Riders = riders.map(x => {
               const rider = new Adherent_VM(x);
               rider.filter_date_apres = date_apres;
               rider.filter_date_avant = date_avant;
               return rider;
             });
-            
+
             this.Riders.sort((a, b) => {
 
               let comparaison = 0;
@@ -75,7 +76,7 @@ export class MenuComponent implements OnInit {
                 return;
               }
               this.listeprof = profs;
-              this.liste_prof_filter = profs.map(x=> new KeyValuePairAny(x.id, x.prenom + ' ' + x.nom));
+              this.liste_prof_filter = profs.map(x => new KeyValuePairAny(x.id, x.prenom + ' ' + x.nom));
               this.lieuserv.GetAllLight().then((lieux) => {
                 if (lieux.length == 0) {
                   let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
@@ -157,7 +158,7 @@ export class MenuComponent implements OnInit {
     }
 
   }
-  Sort(sens: "NO" | "ASC" | "DESC", champ: string, id: number, rider:Adherent_VM) {
+  Sort(sens: "NO" | "ASC" | "DESC", champ: string, id: number, rider: Adherent_VM) {
     let liste_seance_VM = this.Riders.find(x => x.datasource.id == id).InscriptionSeances;
     switch (champ) {
       case "nom":
@@ -279,14 +280,18 @@ export class MenuComponent implements OnInit {
     this.router.navigate(['/adherent'], { queryParams: { id: id } });
   }
 
-  ReinitFiltre(adh:Adherent_VM){
-    adh.filter_date_avant= null;
-    adh.filter_date_apres= null;
-    adh.filter_nom= null;
-    adh.filter_cours= null;
-    adh.filter_groupe= null;
-    adh.filter_lieu= null;
-    adh.filter_prof= null;
+  ReinitFiltre(adh: Adherent_VM) {
+    adh.filter_date_avant = null;
+    adh.filter_date_apres = null;
+    adh.filter_nom = null;
+    adh.filter_cours = null;
+    adh.filter_groupe = null;
+    adh.filter_lieu = null;
+    adh.filter_prof = null;
+  }
+
+  VoirMaSeance(seance: any) {
+    this.router.navigate(['/ma-seance'], { queryParams: { id: seance.seance_id } });
   }
 
 }

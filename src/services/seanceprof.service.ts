@@ -101,6 +101,24 @@ public Update(seance_professeur:SeanceProf): Promise<boolean> {
       return Promise.reject(error);
     });
 }
+public UpdateSeance(profs:SeanceProf[], id:number): Promise<boolean> {
+  this.url = environment.maseance + 'maseance/seanceprofesseur_manage.php';
+  //  this.url = this.url + "login.php";
+  const body = {
+    command:"update_list",
+    profs:profs,
+    id:id
+  };
+
+  return this.global.POST(this.url, body)
+    .then((response: boolean) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
 public Delete(id:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/seanceprofesseur_manage.php';
   //  this.url = this.url + "login.php";
