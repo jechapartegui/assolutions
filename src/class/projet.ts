@@ -4,6 +4,7 @@ import { compte } from './compte';
 import { Groupe } from './groupe';
 import { Saison } from './saison';
 import { Lieu } from './lieu';
+import { project_login } from 'src/services/login.service';
 
 export class projet {
   public id: number = 0;
@@ -27,13 +28,15 @@ export class projet {
   public pays:string = "FR";
   public groupe:Groupe[] = [];
   public place_maximum:boolean = true;
+  public saison_active:number=0;
   public essai_possible:boolean=false;
   public convocation_nominative:boolean=false;
   public mail_relance_actif:boolean=false;
-  constructor(private pr: liste_projet) {
+  constructor(public pr: project_login) {
     this.id = pr.id;
     this.actif = pr.actif;
     this.nom = pr.nom;
+    this.saison_active = pr.active_saison;
     // Initialize any other properties if needed
   }
 }
@@ -342,12 +345,3 @@ export class ValidationProjet {
   }
 }
 
-
-export class liste_projet{
-  public id:number;
-  public nom:string;
-  public adherent:boolean;
-  public admin:boolean;
-  public prof:boolean;
-  public actif:boolean;
-}

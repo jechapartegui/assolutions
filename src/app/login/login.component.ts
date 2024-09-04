@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Compte, compte } from 'src/class/compte';
-import { liste_projet, projet } from 'src/class/projet';
 import { environment } from 'src/environments/environment.prod';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
+import { LoginService, project_login } from 'src/services/login.service';
 import { MailService } from 'src/services/mail.service';
-import { ProjetService } from 'src/services/projet.service';
 
 @Component({
   selector: 'app-login',
@@ -17,12 +16,12 @@ import { ProjetService } from 'src/services/projet.service';
 export class LoginComponent implements OnInit {
   Source: Compte = new Compte(new compte());
   action: string;
-  projets: liste_projet[];
-  projets_select: liste_projet = null;
+  projets: project_login[];
+  projets_select: project_login = null;
   loading: boolean;
   profil: "ADHERENT" | "PROF" | "ADMIN" = null;
   psw_projet: string = null;
-  constructor(private compte_serv: CompteService, private mail_serv: MailService, private router: Router, private route: ActivatedRoute) {
+  constructor(private login_serv: LoginService, private compte_serv: CompteService, private mail_serv: MailService, private router: Router, private route: ActivatedRoute) {
     this.Source.Login = environment.defaultlogin;
     this.Source.Password = environment.defaultpassword;
   }
@@ -35,8 +34,8 @@ export class LoginComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if ('test_mail' in params) {
         this.action = $localize`test envoi mail`;
-        this.mail_serv.Test().then((ret=>{
-          let o = errorService.OKMessage  (this.action);
+        this.mail_serv.Test().then((ret => {
+          let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
         }))
       }
@@ -49,7 +48,7 @@ export class LoginComponent implements OnInit {
           if ('droit' in params) {
             this.loading = true;
             droit = params['droit'];
-            this.compte_serv.LoginToken(token, user, droit).then((retour) => {
+            this.login_serv.LoginToken(token, user, droit).then((retour) => {
               if (retour) {
                 this.loading = false;
                 this.router.navigate(['/menu']);
@@ -71,47 +70,40 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
-    this.compte_serv.Login(this.Source.Login, this.Source.Password, true).then((pr) => {
+    this.login_serv.Login(this.Source.Login, this.Source.Password).then((pr) => {
       this.projets = [];
-      pr.forEach((pp) => {
-        let curpro = this.projets.find(x => x.id == pp.id);
-        if (curpro) {
-          if (pp.adherent == true) {
-            curpro.adherent = true;
+      if (pr) {
+        if (!GlobalService.projet) {
+          if (GlobalService.other_project.length == 0) {
+            let o = errorService.CreateError(this.action, $localize`Aucun projet lié`);
+            errorService.emitChange(o);
+            this.loading = false;
           }
-          if (pp.prof == true) {
-            curpro.prof = true;
-          }
-          if (pp.admin == true) {
-            curpro.admin = true;
-          }
-
-          if (pp.actif == true) {
-            curpro.actif = true;
-          }
-        } else {
-          this.projets.push(pp);
-        }
-      })
-      if (pr.length == 0) {
-        let o = errorService.CreateError(this.action, $localize`Aucun projet lié`);
-        errorService.emitChange(o);
-        this.loading = false;
-      } else if (pr.length == 1) {
-        let _pr: liste_projet = pr[0];
-        this.projets_select = _pr;
-        if (_pr.adherent && !_pr.prof && !_pr.admin) {
-          this.ConnectToProject("ADHERENT");
-        } else if (!_pr.adherent && _pr.prof && !_pr.admin) {
-          this.ConnectToProject("PROF");
-        } else if (!_pr.adherent && !_pr.prof && _pr.admin) {
-          this.ConnectToProject("ADMIN");
-        } else {
+          GlobalService.other_project.forEach((pp) => {
+            let curpro = this.projets.find(x => x.id == pp.id);
+            if (curpro) {
+              if (pp.adherent == true) {
+                curpro.adherent = true;
+              }
+              if (pp.prof == true) {
+                curpro.prof = true;
+              }
+              if (pp.admin == true) {
+                curpro.admin = true;
+              }
+            } else {
+              this.projets.push(pp);
+            }
+          })
           this.loading = false;
         }
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+        this.loading = false;
       }
-      this.loading = false;
-    }).catch((error: Error) => {
+    }
+    ).catch((error: Error) => {
       let o = errorService.CreateError(this.action, error.message);
       errorService.emitChange(o);
       this.loading = false;
@@ -120,15 +112,56 @@ export class LoginComponent implements OnInit {
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    this.compte_serv.Logout().then(ok=>{
-      if(ok){
+    this.login_serv.Logout().then(ok => {
+      if (ok) {
 
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
         this.projets = null;
         this.router.navigate(['/login']);
       } else {
-        
+
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+      this.loading = false;
+    });
+  }
+
+  RenvoiToken() {
+    this.action = $localize`Renvoi des liens de connexion directe`;
+    const errorService = ErrorService.instance;
+    this.login_serv.RenvoiToken(this.Source.Login).then(ok => {
+      if (ok) {
+
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+      this.loading = false;
+    });
+  }
+  ReinitMDP() {
+    this.action = $localize`Réinitialiser le mot de passe`;
+    const errorService = ErrorService.instance;
+    this.login_serv.ReinitMDP(this.Source.Login).then(ok => {
+      if (ok) {
+
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+
         let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
         errorService.emitChange(o);
       }
@@ -153,7 +186,7 @@ export class LoginComponent implements OnInit {
     if (this.projets_select.actif) {
       GlobalService.instance.updateMenuType(charg);
       GlobalService.instance.updateSelectedMenuStatus("MENU");
-      GlobalService.instance.updateProjet(new projet(this.projets_select))
+      GlobalService.instance.updateProjet(this.projets_select);
       this.router.navigate(['/menu']);
       this.loading = false;
     } else {
@@ -163,7 +196,7 @@ export class LoginComponent implements OnInit {
     }
 
   }
-  text(){
+  text() {
     window.confirm("aimes tu clémentine ?");
   }
 

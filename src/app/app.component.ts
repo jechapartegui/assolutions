@@ -6,6 +6,7 @@ import { ErrorService } from 'src/services/error.service';
 import { Router } from '@angular/router';
 import { CompteService } from 'src/services/compte.service';
 import { GlobalService } from 'src/services/global.services';
+import { LoginService } from 'src/services/login.service';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,7 @@ export class AppComponent {
     private erroservice: ErrorService,
     private router: Router,
     public compte_serv:CompteService,
+    public login_serv:LoginService,
     public globals: StaticClass
   ) {
     this.g = globals;
@@ -46,7 +48,7 @@ export class AppComponent {
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    this.compte_serv.Logout().then(ok=>{
+    this.login_serv.Logout().then(ok=>{
       if(ok){
 
         let o = errorService.OKMessage(this.action);

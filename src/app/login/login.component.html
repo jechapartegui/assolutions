@@ -79,7 +79,7 @@
           <div class="columns">
             <div class="column">
               <div class="field" *ngIf="!projets">
-                <p class="control">
+                <p class="control" style="display: flex; flex-direction: column; gap: 2px;">
                   <!-- <hover-button 
                   [nomclass]="'button  is-rounded is-danger is-outlined' "
                   [nomicon]="'fas fa-heart'" [libelle]="'Clémentine'"
@@ -87,9 +87,13 @@
               </hover-button>                 -->
                   
                   <button [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded"
-                    (click)="Login()">
+                    (click)="Login()" i18n>
                     Se connecter
                   </button>
+                  <a *ngIf="Source.valid.login"  (click)="RenvoiToken()" i18n
+                  >Renvoyer les liens de connexion directe</a>
+                  <a *ngIf="Source.valid.login"  (click)="ReinitMDP()" i18n
+                  >Reinitialiser le mot de passe</a>
                 </p>
               </div>
               <div class="field" *ngIf="projets">
