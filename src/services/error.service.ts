@@ -79,8 +79,10 @@ export class ErrorService {
       case "LOGIN_ALREADY_EXISTS":
       case "Unauthorized LOGIN_ALREADY_EXISTS":
         return "Le login existe déjà merci d'en choisir un autre"
+      case "NO_OBJECT_FOUND":
       case "Unauthorized NO_OBJECT_FOUND":
         return "Pas d'objet trouvé";
+      case "NO_ID_FOUND":
       case "Unauthorized NO_ID_FOUND":
         return "Pas d'ID trouvé";
       case "Unauthorized NO_COMMAND_FOUND":
@@ -92,6 +94,9 @@ export class ErrorService {
       case "INCORRECT_LOGIN":
       case "Unauthorized INCORRECT_LOGIN":
         return "Login incorrect";
+      case "INCORRECT_TOKEN":
+      case "Unauthorized INCORRECT_TOKEN":
+        return "Token incorrect";
       case "INCORRECT_PASSWORD":
       case "Unauthorized INCORRECT_PASSWORD":
         return "Mot de passe incorrect";

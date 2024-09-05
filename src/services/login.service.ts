@@ -11,7 +11,7 @@ export class LoginService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
   }
-  public Login(username: string, password: string): Promise<boolean> {
+  public Login(username: string, password: string){
     this.url = environment.maseance + 'maseance/login.php';
     //  this.url = this.url + "login.php";
     const body = {
@@ -37,10 +37,7 @@ export class LoginService {
           if (response.selected_projet.admin) {
             GlobalService.instance.updateMenuType("ADMIN");
             GlobalService.instance.updateSelectedMenuStatus("MENU");
-          }
-          return true;
-        } else {
-          return false;
+          }        
         }
       })
       .catch(error => {

@@ -2,8 +2,8 @@ import { Subject } from "rxjs";
 import { adherent, Adherent } from "./adherent";
 
 export class compte {
-    public id: number;
-    public login: string;
+    public id: number = 0;
+    public login: string = "";
     public password: string;
     public libelle: string;
     public date_creation: string;
@@ -13,6 +13,7 @@ export class compte {
     public echec_connexion: number;
     public mail_ko: boolean;
     public activation_token: string;
+    public est_password: boolean;
     public riders:adherent[];
     public projet_compte:projet_compte[];
 
@@ -82,8 +83,9 @@ export class Validation_Compte {
     }
     checkFormatPsw(password: string): boolean {
 
-        const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-        return passwordRegEx.test(password);
+        const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z0-9!@#$%^&*(),.?":{}|<>]{8,}$/;
+
+        return passwordRegex.test(password);
     }
     private validateLogin(value: string) {
         // Code de validation du nom

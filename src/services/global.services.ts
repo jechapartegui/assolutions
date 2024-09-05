@@ -101,7 +101,7 @@ export class GlobalService {
       let _varid: string = "0";
       let project_id: string = "-1";
       const timeoutMilliseconds = 50000;
-      if (GlobalService.is_logged_in) {
+      if (GlobalService.compte) {
         _varid = GlobalService.compte.id.toString();
       }
       if (GlobalService.projet) {
@@ -133,7 +133,6 @@ export class GlobalService {
       );
       return response;
     } catch (error) {
-      console.log(error);
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
       } else {
@@ -142,6 +141,7 @@ export class GlobalService {
     }
   }
   private handleError(error: HttpErrorResponse): void {
+    console.log(error);
     let message: string;
     if (error.error instanceof ErrorEvent) {
 

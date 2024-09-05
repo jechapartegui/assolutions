@@ -55,6 +55,7 @@ import { filterInscriptionSaisonProf } from 'src/filters/filter-inscriptionsaiso
 import { SeancesEssaisComponent } from './seances-essais/seances-essais.component';
 import { CompteDetailComponent } from './compte-detail/compte-detail.component';
 import { FilterStatutPipe } from 'src/filters/filter-statutseance';
+import { ReinitMdpComponent } from './reinit-mdp/reinit-mdp.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -68,7 +69,7 @@ import { FilterStatutPipe } from 'src/filters/filter-statutseance';
     ProfComponent,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe,
     ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
-  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent],
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

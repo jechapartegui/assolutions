@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Adresse } from 'src/class/address';
 import { adherent, Adherent, Adherent_VM, AdherentExport } from 'src/class/adherent';
 import { Adhesion } from 'src/class/adhesion';
+import { compte } from 'src/class/compte';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
@@ -46,13 +47,12 @@ export class AdherentComponent implements OnInit {
   public filter_sexe: boolean;
   public filter_groupe: number;
   public liste_groupe_filter: Groupe[];
-
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
 
   public login_adherent: string = "";
   public existing_login: boolean;
-  public retourLog : string="";
+  public retourLog: string = "";
   public modal: boolean = false;
   public modalLog: boolean = false;
   public libelle_inscription = $localize`Inscrire`;
@@ -265,6 +265,7 @@ export class AdherentComponent implements OnInit {
     if (GlobalService.menu == "ADHERENT") {
       this.ridersService.Get_Adherent_My(this.id).then((adh) => {
         this.thisAdherent = new Adherent(adh);
+       
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
@@ -276,7 +277,6 @@ export class AdherentComponent implements OnInit {
     if (GlobalService.menu == "PROF") {
       this.ridersService.Get_Adherent_Prof(this.id).then((adh) => {
         this.thisAdherent = new Adherent(adh);
-        console.log(this.thisAdherent);
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
@@ -535,14 +535,14 @@ export class AdherentComponent implements OnInit {
     if (!source.Adresse.PostCode) {
       source.Adresse.PostCode = cible.Adresse.PostCode;
     }
-    
-     if (source.Contacts.length == 0) {
+
+    if (source.Contacts.length == 0) {
       source.Contacts = cible.Contacts;
       try {
-        source.ContactPrefereType = source.Contacts.find(x=> x.Pref).Type;
+        source.ContactPrefereType = source.Contacts.find(x => x.Pref).Type;
         source.ContactPrefere = source.Contacts.find(x => x.Pref).Value;
       } catch (error) {
-        
+
       }
     }
     if (source.ContactsUrgence.length == 0) {
@@ -561,18 +561,18 @@ export class AdherentComponent implements OnInit {
         insc.saison_id = this.active_saison.id;
         liste_insc.push(insc);
       };
-      let list_item_contact:ItemContact[] = [];
-      if(item.Mail && item.Mail.length>0){
+      let list_item_contact: ItemContact[] = [];
+      if (item.Mail && item.Mail.length > 0) {
         list_item_contact.push({ Type: 'EMAIL', Value: item.Mail, Pref: item.MailPref, Notes: "" })
       }
-      if(item.Phone && item.Phone.length>0){
+      if (item.Phone && item.Phone.length > 0) {
         list_item_contact.push({ Type: 'PHONE', Value: item.Phone, Pref: item.PhonePref, Notes: "" })
       }
-      let list_item_contact_urg:ItemContact[] = [];
-      if(item.MailUrgence && item.MailUrgence.length>0){
+      let list_item_contact_urg: ItemContact[] = [];
+      if (item.MailUrgence && item.MailUrgence.length > 0) {
         list_item_contact_urg.push({ Type: 'EMAIL', Value: item.MailUrgence, Notes: item.NomMailUrgence, Pref: false })
       }
-      if(item.PhoneUrgence && item.PhoneUrgence.length>0){
+      if (item.PhoneUrgence && item.PhoneUrgence.length > 0) {
         list_item_contact_urg.push({ Type: 'PHONE', Value: item.PhoneUrgence, Notes: item.NomPhoneUrgence, Pref: false })
       }
       const adherent = new Adherent(
@@ -689,7 +689,7 @@ export class AdherentComponent implements OnInit {
     this.liste_adherents_export.forEach((adherent) => {
       if (adherent.maj) {
         if (this.StatutMAJ(adherent)) {
-         
+
 
           this.ridersService.Update(adherent.datasource).then((upd) => {
             if (upd) {
@@ -704,7 +704,8 @@ export class AdherentComponent implements OnInit {
                         this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
                         this.retourLog += $localize`Mise à jour de l'inscription à la saison OK` + "; ";
                         this.retourLog += "\n";
-                      } else { this.retourLog += adherent.Libelle + " :  ";
+                      } else {
+                        this.retourLog += adherent.Libelle + " :  ";
                         this.retourLog += $localize`Mise à jour adhérent OK` + "; ";
                         this.retourLog += $localize`Mise à jour du compte OK` + "; ";
                         this.retourLog += $localize`Mise à jour de l'inscription à la saison KO` + "; ";
@@ -753,12 +754,14 @@ export class AdherentComponent implements OnInit {
                 if (cmpt > 0) {
                   if (this.isRegistred(adherent)) {
                     this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
-                      if (id > 0) {this.retourLog += adherent.Libelle + " :  ";
+                      if (id > 0) {
+                        this.retourLog += adherent.Libelle + " :  ";
                         this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
                         this.retourLog += $localize`Ajout du compte OK` + "; ";
                         this.retourLog += $localize`Ajout de l'inscription à la saison OK` + "; ";
                         this.retourLog += "\n";
-                      } else {this.retourLog += adherent.Libelle + " :  ";
+                      } else {
+                        this.retourLog += adherent.Libelle + " :  ";
                         this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
                         this.retourLog += $localize`Ajout du compte OK` + "; ";
                         this.retourLog += $localize`Ajout de l'inscription à la saison KO` + "; ";
@@ -772,17 +775,20 @@ export class AdherentComponent implements OnInit {
                       this.retourLog += "\n";
                     })
                   }
-                } else {this.retourLog += adherent.Libelle + " :  ";
+                } else {
+                  this.retourLog += adherent.Libelle + " :  ";
                   this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
                   this.retourLog += $localize`Ajout du compte KO` + "; ";
                   this.retourLog += "\n";
                 }
-              }).catch((err: HttpErrorResponse) => {this.retourLog += adherent.Libelle + " :  ";
+              }).catch((err: HttpErrorResponse) => {
+                this.retourLog += adherent.Libelle + " :  ";
                 this.retourLog += $localize`Ajout de l'adhérent OK` + "; ";
                 this.retourLog += $localize`Ajout du compte KO` + err.message + "; ";
                 this.retourLog += "\n";
               })
-            } else {this.retourLog += adherent.Libelle + " :  ";
+            } else {
+              this.retourLog += adherent.Libelle + " :  ";
               this.retourLog += $localize`Ajout adhérent KO` + "; ";
               this.retourLog += "\n";
 

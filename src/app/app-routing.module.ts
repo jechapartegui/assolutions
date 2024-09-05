@@ -11,27 +11,29 @@ import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { ProfesseurComponent } from './professeur/professeur.component';
 import { CompteComponent } from './compte/compte.component';
 import { SeancesEssaisComponent } from './seances-essais/seances-essais.component';
+import { ReinitMdpComponent } from './reinit-mdp/reinit-mdp.component';
 
 
 
 const routes: Routes = [
   // { path: '', redirectTo: 'defaut', pathMatch: 'full' }, // Redirection vers 'defaut' pour le path vide
-   { path: '', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: '', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'login', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'menu', component: MenuComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'cours', component: CoursComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'seance', component: SeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'adherent', component: AdherentComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'groupe', component: GroupeComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'ma-seance', component: MaSeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-   { path: 'seances-essais', component: SeancesEssaisComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  
- ];
- 
- @NgModule({
-   imports: [RouterModule.forRoot(routes)],
-   exports: [RouterModule]
- })
- export class AppRoutingModule { }
+  { path: 'menu', component: MenuComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'cours', component: CoursComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'seance', component: SeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'adherent', component: AdherentComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'groupe', component: GroupeComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'ma-seance', component: MaSeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'seances-essais', component: SeancesEssaisComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'reinit-mdp', component: ReinitMdpComponent }
+
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }

@@ -490,13 +490,7 @@
                     <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' "
                     class="field">
                     <label class="label" i18n for="place_maximum">Compte : </label>
-                    <ng-container *ngIf="thisAdherent.ID >0">
-                        <app-compte-detail *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' " [login]="thisAdherent.Login" [context]="'VIEWSTATE'" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
-                    </ng-container>
-                    <ng-container *ngIf="thisAdherent.ID==0">
-                        <app-compte-detail *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' " [login]="thisAdherent.Login" [context]="'ADD'" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
-                    </ng-container>
-                    <app-compte-detail *ngIf="(GlobalService.Menu$| async) === 'ADHERENT'" [login]="thisAdherent.Login" [context]="'VIEW'" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
+                    <app-compte-detail  [login]="thisAdherent.Login" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
                 </div>
                 </div>
                 <div *ngIf="thisAdherent" class="buttons">
@@ -622,7 +616,7 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n>Compte</label>
-
+                        <app-compte-detail  [login]="thisAdherent.Login" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
                     </div>
                 </div>
                 <div *ngIf="thisAdherent" class="buttons">

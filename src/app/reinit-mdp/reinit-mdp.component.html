@@ -1,0 +1,50 @@
+<div class="container">
+    <div class="columns is-justify-content-center">
+        <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+            <div class="box">
+                <h3 class="title is-3" i18n>Réinitialisation du mot de passe</h3>
+                <div class="field">
+                    <label i18n>Login</label>
+                    <p class="control has-icons-left has-icons-right">
+                        <input class="input" [(ngModel)]="Login" type="email" disabled="true" placeholder="Email">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <label i18n>Mot de passe</label>
+                    <p class="control has-icons-left has-icons-right">
+                        <input [class]="Valid(Password) ? 'input' : 'input is-danger'" [(ngModel)]="Password"
+                            type="password" placeholder="Password">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <span *ngIf="Valid(Password)" class="icon is-small is-right">
+                            <i class="fas fa-check"></i>
+                        </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <label i18n>Confirmer le mot de passe</label>
+                    <p class="control has-icons-left has-icons-right">
+                        <input [class]="Confirm(ConfirmPassword) ? 'input' : 'input is-danger'"
+                            [(ngModel)]="ConfirmPassword" type="password" placeholder="Password">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <span *ngIf="Confirm(ConfirmPassword)" class="icon is-small is-right">
+                            <i class="fas fa-check"></i>
+                        </span>
+                    </p>
+                </div>
+
+                <button [disabled]="!Valid(Password) || !Confirm(ConfirmPassword)"
+                    class="button is-success is-outlined is-rounded" (click)="ValiderModificationMDP()" i18n>
+                    Modifier
+                </button><br/>
+                <a (click)="RenvoiToken()" i18n>Renvoyer les liens de connexion sans mot de passe</a>
+            </div>
+        </div>
+    </div>
+</div>
