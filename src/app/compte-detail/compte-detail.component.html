@@ -12,19 +12,26 @@
         <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' " *ngIf="IsEmail(thisCompte.login)"
             [nomicon]="'fas fa-check'" [libelle]="'Valider le login'" (click)="Valid()"></hover-button>
         <p *ngIf="login_valide">Login validé : {{login_valide}}</p>
-        <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' " *ngIf="login_valide && rattache"
-            [nomicon]="'fas fa-plus'" [libelle]="'Rattacher au compte'" (click)="RattacherLogin()"></hover-button>
-        <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' " *ngIf="login_valide && !rattache"
-            [nomicon]="'fas fa-plus'" [libelle]="'Creer un login'" (click)="CreerLogin()"></hover-button>
 
     </ng-container>
     <ng-container *ngIf="thisCompte.id>0">
-        {{login}}
+        <div class="block">
+            {{login}}
+        </div>
+        <div class="block">
+            <label i18n>Type Compte : </label>&nbsp;:&nbsp;<span *ngIf="thisCompte.est_password" i18n>Avec mot de
+                passe</span><span *ngIf="!thisCompte.est_password" i18n>Avec clé token</span>
+        </div>
+        <div class="block" *ngIf="(GlobalService.Menu$| async) != 'ADHERENT'">
+            <label i18n>Actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.actif" i18n>Oui</span><span
+                *ngIf="!thisCompte.actif" i18n>Non</span>
+        </div>
+        <div class="block" *ngIf="(GlobalService.Menu$| async) != 'ADHERENT'">
+            <label i18n>Mail actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.mail_actif" i18n>Oui</span><span
+                *ngIf="!thisCompte.mail_actif" i18n>Non</span>
+
+        </div>
+        <a *ngIf="!thisCompte.est_password" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
+        <a *ngIf="thisCompte.est_password" (click)="ModifierMDP()">Modifier le mot de passe</a>
     </ng-container>
-    <div class="block" *ngIf="(GlobalService.Menu$| async) != 'ADHERENT' && thisCompte.id>0">
-        <label i18n>Actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.actif" i18n>Oui</span><span *ngIf="!thisCompte.actif"
-            i18n>Non</span>
-        <label i18n>Mail actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.mail_actif" i18n>Oui</span><span
-            *ngIf="!thisCompte.mail_actif" i18n>Non</span>
-    </div>
 </div>

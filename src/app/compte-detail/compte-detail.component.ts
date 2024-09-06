@@ -5,6 +5,7 @@ import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
 import { code_alert } from '../global';
+import { LoginService } from 'src/services/login.service';
 
 @Component({
   selector: 'app-compte-detail',
@@ -26,7 +27,7 @@ export class CompteDetailComponent implements OnInit {
   //editing : changement de mdp
   //editing complet : changer mdp, renvoyer mail, débloquer compte
 
-  constructor(public compte_serv: CompteService, public GlobalService: GlobalService) { }
+  constructor(public compte_serv: CompteService, public login_serv: LoginService, public GlobalService: GlobalService) { }
 
   ngOnInit(): void {
     this.Load();
@@ -51,33 +52,51 @@ export class CompteDetailComponent implements OnInit {
 
     }
   }
-Valid(){
-  const errorService = ErrorService.instance;
-  this.action = $localize`Validation du Login`;
-  this.compte_serv.Exist(this.thisCompte.login).then((boo) => {
-    this.valid_login = boo;
-    if (boo) {
-      let o = errorService.OKMessage(this.action +  $localize` : Login déjà utilisé`);
+  Valid() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Validation du Login`;
+    this.compte_serv.Exist(this.thisCompte.login).then((boo) => {
+      this.valid_login = boo;
+      if (boo) {
+        let o = errorService.OKMessage(this.action + $localize` : Login déjà utilisé`);
+        errorService.emitChange(o);
+        this.login_valide = this.thisCompte.login;
+        this.rattache = true;
+      } else {
+        this.rattache = false;
+        this.login_valide = this.thisCompte.login;
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      }
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
-      this.login_valide = this.thisCompte.login;
-      this.rattache = true;
-    } else {
-      this.rattache = false;
-      this.login_valide = this.thisCompte.login;
-      let o = errorService.OKMessage(this.action);
-      errorService.emitChange(o);
-    }
-  }).catch((err: HttpErrorResponse) => {
-    let o = errorService.CreateError(this.action, err.message);
-    errorService.emitChange(o);
-  })
-}
-IsEmail(text): boolean {
-  var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
-  return re.test(text);
-}
-CreerLogin(){
+    })
+  }
+  IsEmail(text): boolean {
+    var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+    return re.test(text);
+  }
+  RenvoiToken() {
+    this.action = $localize`Renvoi des liens de connexion directe`;
+    const errorService = ErrorService.instance;
+    this.login_serv.RenvoiToken(this.thisCompte.login).then(ok => {
+      if (ok) {
 
-}
-RattacherLogin(){ }
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+    });
+  }
+  ModifierMDP() {
+
+  }
 }
