@@ -22,6 +22,7 @@ export class MaSeanceComponent implements OnInit {
   adherent_to: Adherent;
   action: string;
   liste_inscription: inscription_seance[];
+  liste_essai: Adherent[] = [];
   constructor(private adhserv: AdherentService, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
@@ -62,6 +63,8 @@ export class MaSeanceComponent implements OnInit {
   }
 
   UpdateListe() {
+    this.action = $localize`Charger la séance`;
+    const errorService = ErrorService.instance;
     this.AdherentsHorsGroupe = [];
     this.liste_adherent.forEach((adh) => {
       let cpt = this.liste_inscription.filter(x => x.rider_id == adh.ID).length;
@@ -105,22 +108,48 @@ export class MaSeanceComponent implements OnInit {
         }
       }
     })
+    this.liste_inscription.filter(x => x.statut_inscription == StatutPresence.Essai).forEach((ess) => {
+      this.adhserv.Get_Essai(ess.rider_id).then((adh) => {
+        this.liste_essai.push(new Adherent(adh));
+      }).catch((error) => {
+        let n = errorService.CreateError(this.action, error);
+        errorService.emitChange(n);
+      });
+    })
   }
 
   trouverRider(id: Number) {
-    return this.liste_adherent.find(x => x.ID == id).Libelle;
+    let i = this.liste_adherent.find(x => x.ID == id);
+    if (i) {
+      return i.Libelle;
+    } else {
+      return this.liste_essai.find(x => x.ID == id).Libelle;
+    }
   }
   trouverContactUrgence(id: Number) {
-    if(this.liste_adherent.find(x => x.ID == id).ContactsUrgence.length == 0){
-      return  this.liste_adherent.find(x => x.ID == id).Contacts.find(x => x.Type = "PHONE").Value;
-    }
-    try{
-      return   this.liste_adherent.find(x => x.ID == id).ContactsUrgence.find(x => x.Type = 'PHONE').Value
-    } catch{
+    let i = this.liste_adherent.find(x => x.ID == id);
+    if (i) {
+      if (this.liste_adherent.find(x => x.ID == id).ContactsUrgence.length == 0) {
+        return this.liste_adherent.find(x => x.ID == id).Contacts.find(x => x.Type = "PHONE").Value;
+      }
+      try {
+        return this.liste_adherent.find(x => x.ID == id).ContactsUrgence.find(x => x.Type = 'PHONE').Value
+      } catch {
 
-    return  this.liste_adherent.find(x => x.ID == id).ContactsUrgence[0].Value;
+        return this.liste_adherent.find(x => x.ID == id).ContactsUrgence[0].Value;
+      }
+    } else {
+      if (this.liste_essai.find(x => x.ID == id).ContactsUrgence.length == 0) {
+        return this.liste_essai.find(x => x.ID == id).Contacts.find(x => x.Type = "PHONE").Value;
+      }
+      try {
+        return this.liste_essai.find(x => x.ID == id).ContactsUrgence.find(x => x.Type = 'PHONE').Value
+      } catch {
+
+        return this.liste_essai.find(x => x.ID == id).ContactsUrgence[0].Value;
+      }
     }
-    
+
   }
   calculateAge(dateNaissance: Date): number {
     const today = new Date();

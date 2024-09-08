@@ -48,6 +48,27 @@
                 </ng-container>
                 <ng-container *ngFor="let potentiel of liste_inscription">
                     <ng-container *ngIf="!potentiel.statut_seance">
+                        <ng-container *ngIf="potentiel.statut_inscription === 'essai'">
+                            <div class="ligne">
+                                <span>{{trouverRider(potentiel.rider_id)}}</span>
+                                <span>{{trouverContactUrgence(potentiel.rider_id)}}</span>
+                                <span  class="icon is-medium">
+                                    <span class="fa-stack fa-sm">
+                                        <i class="fas fa-stack-2x fa-thumbs-up has-text-success"></i>
+                                    </span>
+                                </span>
+                                <button type="button" class="button is-outlined is-rounded is-primary" (click)="MAJInscription(potentiel, true)"  [disabled]="!GetNbPersonne()">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="button is-outlined is-rounded is-danger" (click)="MAJInscription(potentiel, false)" >
+                                    <i class="fas fa-times"></i>
+                                </button>                               
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngFor="let potentiel of liste_inscription">
+                    <ng-container *ngIf="!potentiel.statut_seance">
                         <ng-container *ngIf="potentiel.statut_inscription === 'convoqué'">
                             <div class="ligne">
                                 <span>{{trouverRider(potentiel.rider_id)}}</span>
