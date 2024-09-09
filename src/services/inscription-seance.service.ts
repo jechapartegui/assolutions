@@ -84,7 +84,7 @@ public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<inscription
       return Promise.reject(error);
     });
 }
-public GetAllSeance(seance_id:number): Promise<inscription_seance[]> {
+public GetAllSeance(seance_id:number): Promise<any> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
   this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
   //  this.url = this.url + "login.php";
@@ -94,7 +94,7 @@ public GetAllSeance(seance_id:number): Promise<inscription_seance[]> {
   };
 
   return this.global.POST(this.url, body)
-    .then((response: inscription_seance[]) => {
+    .then((response: any) => {
       return response;
     })
     .catch(error => {

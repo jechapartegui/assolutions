@@ -13,24 +13,34 @@
         </thead>
         <tbody>
             <td>
-        <div class="control">
-            <div class="select  is-small">
-                <select [(ngModel)]="thisContact.Type">
+              <div class="control">
+                <div class="select is-small">
+                  <select [(ngModel)]="thisContact.Type" (blur)="autoSave()">
                     <option value="EMAIL" i18n>Email</option>
                     <option value="PHONE" i18n>Téléphone</option>
                     <option value="INSTGRAM" i18n>Instagram</option>
                     <option value="FACEBOOK" i18n>Facebook</option>
                     <option value="TWITTER" i18n>Twitter</option>
-                </select>
-            </div>
-        </div></td>
-        <td><input class="input is-small" style="width:150px" [(ngModel)]="thisContact.Value"></td>
-        <td><input maxlength="20" class="input is-small" style="width:100px" [(ngModel)]="thisContact.Notes"></td>
-        <td><button [disabled]="!IsValid(thisContact)" class="button is-small is-rounded is-primary is-outlined"
-            (click)="Save()">  <i class="fa-solid fa-floppy-disk"></i></button>
-            <button class="button is-small is-rounded is-danger is-outlined"
-            (click)="DontSave()">  <i class="fas fa-ban"></i></button></td>
-        </tbody>
+                  </select>
+                </div>
+              </div>
+            </td>
+            <td>
+              <input class="input is-small" style="width:150px" [(ngModel)]="thisContact.Value" (blur)="autoSave()">
+            </td>
+            <td>
+              <input maxlength="20" class="input is-small" style="width:100px" [(ngModel)]="thisContact.Notes" (blur)="autoSave()">
+            </td>
+            <td>
+              <button [disabled]="!IsValid(thisContact)" class="button is-small is-rounded is-primary is-outlined"
+                (click)="Save()">
+                <i class="fa-solid fa-floppy-disk"></i>
+              </button>
+              <button class="button is-small is-rounded is-danger is-outlined" (click)="DontSave()">
+                <i class="fas fa-ban"></i>
+              </button>
+            </td>
+          </tbody>
     </div>
     <ng-container *ngFor="let cont of Contacts; let i = index; trackBy: trackByIndex">
         <div class="box listofbox" style="font-size: small;">

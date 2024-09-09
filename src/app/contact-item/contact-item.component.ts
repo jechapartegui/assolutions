@@ -31,6 +31,12 @@ export class ContactItemComponent implements OnInit {
     this.valid_mail = isValid;
     this.validMailChange.emit(this.valid_mail);
   }
+  autoSave() {
+    if (this.IsValid(this.thisContact)) {
+      this.Save();
+    }
+  }
+  
 
   // Exemple de méthode qui change la validité du téléphone
   validateTel(isValid: boolean) {

@@ -331,16 +331,19 @@ export class SeanceComponent implements OnInit {
 
   ChangerStatut(statut: string) {
     const errorService = ErrorService.instance;
+    const old_statut = this.editSeance.Statut;
     switch (statut) {
       case 'réalisée':
         this.action = $localize`Terminer la séance`;
-      
+        this.editSeance.Statut = StatutSeance.réalisée;
         break;    
         case 'prévue':
           this.action = $localize`Planifier la séance`;
+          this.editSeance.Statut = StatutSeance.prévue;
         break; 
         case 'annulée':
           this.action = $localize`Annuler la séance`;
+          this.editSeance.Statut = StatutSeance.annulée;
         break; 
     }
     this.seancesservice.MAJStatutSeance(this.editSeance.ID, statut).then((retour) =>{
@@ -348,11 +351,13 @@ export class SeanceComponent implements OnInit {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       } else {
+        this.editSeance.Statut = old_statut;
         let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
         errorService.emitChange(o);
       }
       this.UpdateListSeance();
     }).catch((err: HttpErrorResponse) => {
+      this.editSeance.Statut = old_statut;
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
     })

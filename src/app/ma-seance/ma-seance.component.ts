@@ -2,8 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adherent, adherent } from 'src/class/adherent';
-import { inscription_seance, StatutPresence } from 'src/class/inscription';
-import { seance } from 'src/class/seance';
+import { inscription_seance, InscriptionMaSeance, StatutPresence } from 'src/class/inscription';
+import { seance, StatutSeance } from 'src/class/seance';
 import { AdherentService } from 'src/services/adherent.service';
 import { ErrorService } from 'src/services/error.service';
 import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
@@ -17,12 +17,15 @@ import { SeancesService } from 'src/services/seance.service';
 export class MaSeanceComponent implements OnInit {
   @Input() id: number = 0;
   thisSeance: seance;
-  liste_adherent: Adherent[];
-  AdherentsHorsGroupe: Adherent[] = [];
-  adherent_to: Adherent;
+  afficher_admin: boolean = false;
+  Autres: InscriptionMaSeance[] = [];
+  Inscrits: InscriptionMaSeance[] = [];
+  Potentiels: InscriptionMaSeance[] = [];
+  All: InscriptionMaSeance[] = [];
+  Absents: InscriptionMaSeance[] = [];
+  Presents: InscriptionMaSeance[] = [];
+  adherent_to: InscriptionMaSeance;
   action: string;
-  liste_inscription: inscription_seance[];
-  liste_essai: Adherent[] = [];
   constructor(private adhserv: AdherentService, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
@@ -40,18 +43,13 @@ export class MaSeanceComponent implements OnInit {
     this.action = $localize`Charger la séance`;
     this.seanceserv.Get(this.id).then((ss) => {
       this.thisSeance = ss;
-      this.adhserv.GetAllSeason(ss.saison_id).then((riders) => {
-        this.liste_adherent = riders.map(x => new Adherent(x));
-        this.inscriptionserv.GetAllSeance(this.id).then((insc) => {
-          this.liste_inscription = insc;
-          if (!this.liste_inscription) {
-            this.liste_inscription = [];
-          }
-          this.UpdateListe();
-        }).catch((error) => {
-          let n = errorService.CreateError(this.action, error);
-          errorService.emitChange(n);
-        });
+      this.inscriptionserv.GetAllSeance(this.id).then((res) => {
+        this.Autres = res.autres.map(x => new InscriptionMaSeance(x));
+        this.Inscrits = res.inscrits.map(x => new InscriptionMaSeance(x));
+        this.Potentiels = res.potentiels.map(x => new InscriptionMaSeance(x));
+        this.All = this.Inscrits.concat(this.Potentiels);
+        this.Absents = res.absents.map(x => new InscriptionMaSeance(x));
+        this.Presents = res.presents.map(x => new InscriptionMaSeance(x));
       }).catch((error) => {
         let n = errorService.CreateError(this.action, error);
         errorService.emitChange(n);
@@ -60,142 +58,56 @@ export class MaSeanceComponent implements OnInit {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
     });
+
   }
 
-  UpdateListe() {
-    this.action = $localize`Charger la séance`;
+
+  MAJInscription(inscription: InscriptionMaSeance, statut: boolean) {
     const errorService = ErrorService.instance;
-    this.AdherentsHorsGroupe = [];
-    this.liste_adherent.forEach((adh) => {
-      let cpt = this.liste_inscription.filter(x => x.rider_id == adh.ID).length;
-      if (cpt == 0) {
-        // non inscrit mais potentiel ?
-        if (this.thisSeance.convocation_nominative) {
-          this.AdherentsHorsGroupe.push(adh);
-        } else {
-          let cptgr = 0;
-          adh.Groupes.forEach((gr) => {
-            if (this.thisSeance.groupes.filter(x => gr.id == x.id).length > 0) {
-              let okadhrent: boolean = true;
-              if (this.thisSeance.est_limite_age_maximum) {
-                if (this.thisSeance.age_maximum <= this.calculateAge(new Date(adh.DDN))) {
-                  okadhrent = false;
-                }
-              }
-              if (this.thisSeance.est_limite_age_minimum && okadhrent) {
-                if (this.thisSeance.age_minimum >= this.calculateAge(new Date(adh.DDN))) {
-                  okadhrent = false;
-                }
-              }
-              if (okadhrent) {
-                cptgr = cptgr + 1;
-              }
-            }
-          })
-
-          if (cptgr > 0) {
-            let inscr_new: inscription_seance = new inscription_seance();
-            inscr_new.id = 0;
-            inscr_new.rider_id = adh.ID;
-            inscr_new.seance_id = this.thisSeance.seance_id;
-            inscr_new.statut_inscription = null;
-            inscr_new.statut_seance = null;
-
-            this.liste_inscription.push(inscr_new);
-          } else {
-            this.AdherentsHorsGroupe.push(adh);
-          }
-        }
-      }
-    })
-    this.liste_inscription.filter(x => x.statut_inscription == StatutPresence.Essai).forEach((ess) => {
-      this.adhserv.Get_Essai(ess.rider_id).then((adh) => {
-        this.liste_essai.push(new Adherent(adh));
-      }).catch((error) => {
-        let n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
-      });
-    })
-  }
-
-  trouverRider(id: Number) {
-    let i = this.liste_adherent.find(x => x.ID == id);
-    if (i) {
-      return i.Libelle;
-    } else {
-      return this.liste_essai.find(x => x.ID == id).Libelle;
-    }
-  }
-  trouverContactUrgence(id: Number) {
-    let i = this.liste_adherent.find(x => x.ID == id);
-    if (i) {
-      if (this.liste_adherent.find(x => x.ID == id).ContactsUrgence.length == 0) {
-        return this.liste_adherent.find(x => x.ID == id).Contacts.find(x => x.Type = "PHONE").Value;
-      }
-      try {
-        return this.liste_adherent.find(x => x.ID == id).ContactsUrgence.find(x => x.Type = 'PHONE').Value
-      } catch {
-
-        return this.liste_adherent.find(x => x.ID == id).ContactsUrgence[0].Value;
-      }
-    } else {
-      if (this.liste_essai.find(x => x.ID == id).ContactsUrgence.length == 0) {
-        return this.liste_essai.find(x => x.ID == id).Contacts.find(x => x.Type = "PHONE").Value;
-      }
-      try {
-        return this.liste_essai.find(x => x.ID == id).ContactsUrgence.find(x => x.Type = 'PHONE').Value
-      } catch {
-
-        return this.liste_essai.find(x => x.ID == id).ContactsUrgence[0].Value;
-      }
-    }
-
-  }
-  calculateAge(dateNaissance: Date): number {
-    const today = new Date();
-    const birthDate = new Date(dateNaissance);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  }
-  MAJInscription(inscription: inscription_seance, statut: boolean) {
-    const errorService = ErrorService.instance;
-    let oldstatut = inscription.statut_inscription;
-    let libellenom = this.liste_adherent.find(x => x.ID == inscription.rider_id).Libelle;
+    let oldstatut = inscription.StatutSeance;
     let libelleseab = this.thisSeance.libelle;
     if (statut) {
-      inscription.statut_seance = StatutPresence.Présent;
-      this.action = libellenom + $localize` est présent à la séance ` + libelleseab;
+      inscription.StatutSeance = StatutPresence.Présent;
+      this.action = inscription.Libelle + $localize` est présent à la séance ` + libelleseab;
     } else {
-      inscription.statut_seance = StatutPresence.Absent;
-      this.action = libellenom + $localize` est absent à la séance ` + libelleseab;
+      inscription.StatutSeance = StatutPresence.Absent;
+      this.action = inscription.Libelle + $localize` est absent à la séance ` + libelleseab;
     }
-    if (inscription.id == 0) {
+    if (inscription.ID == 0) {
 
-      this.inscriptionserv.Add(inscription).then((id) => {
-        inscription.id = id;
+      this.inscriptionserv.Add(inscription.datasource).then((id) => {
+        inscription.ID = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
         this.inscriptionserv.Get(id).then((ins) => {
-          inscription = ins;
+          this.All = this.All.filter(x => x.RiderID !== inscription.RiderID);
+          inscription = new InscriptionMaSeance(ins);
+          if (statut) {
+            this.Presents.push(inscription);
+          } else {
+            this.Absents.push(inscription);
+          }
         })
 
       }).catch((err: HttpErrorResponse) => {
-        inscription.statut_inscription = oldstatut
+        inscription.StatutSeance = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
       })
     } else {
-      this.inscriptionserv.Update(inscription).then((retour) => {
+      this.inscriptionserv.Update(inscription.datasource).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-          this.inscriptionserv.Get(inscription.id).then((ins) => {
-            inscription = ins;
+          this.inscriptionserv.Get(inscription.ID).then((ins) => {
+            this.All = this.All.filter(x => x.RiderID !== inscription.RiderID);
+            inscription = new InscriptionMaSeance(ins);
+            if (statut) {
+              this.Presents.push(inscription);
+            } else {
+              this.Absents.push(inscription);
+            }
           })
         } else {
           let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
@@ -203,30 +115,54 @@ export class MaSeanceComponent implements OnInit {
         }
 
       }).catch((err: HttpErrorResponse) => {
-        inscription.statut_inscription = oldstatut
+        inscription.StatutSeance = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
       })
     }
   }
+  contact_urgence(ins: InscriptionMaSeance): string {
+    if (ins.ContactsUrgence.length == 0) {
+      return ins.Contacts.find(x => x.Type == "PHONE").Value;
+    }
+    try {
+      return ins.ContactsUrgence.find(x => x.Type == "PHONE").Value;
+    } catch {
+
+      return ins.Contacts.find(x => x.Type == "PHONE").Value;
+    }
+  }
+  contact_urgence_nom(ins: InscriptionMaSeance): string {
+    let retour = "";
+    if (ins.ContactsUrgence.length == 0) {
+      retour = ins.Contacts.find(x => x.Type == "PHONE").Notes;
+    }
+    try {
+      retour = ins.ContactsUrgence.find(x => x.Type == "PHONE").Notes;
+    } catch {
+
+
+    }
+    return retour;
+  }
   AjouterAdherentsHorsGroupe() {
     const errorService = ErrorService.instance;
     if (this.adherent_to) {
-      console.log(this.adherent_to);
       this.action = $localize`Convoquer ` + this.adherent_to.Libelle;
-      let inscr_new: inscription_seance = new inscription_seance();
-      inscr_new.id = 0;
-      inscr_new.rider_id = this.adherent_to.ID;
-      inscr_new.seance_id = this.thisSeance.seance_id;
-      inscr_new.statut_inscription = StatutPresence.Convoqué;
-      inscr_new.statut_seance = null;
-      this.inscriptionserv.Add(inscr_new).then((id) => {
-        inscr_new.id = id;
+      this.adherent_to.SeanceID = this.thisSeance.seance_id;
+      this.adherent_to.StatutInscription = StatutPresence.Convoqué;
+      this.adherent_to.StatutSeance = null;
+      this.inscriptionserv.Add(this.adherent_to.datasource).then((id) => {
+        this.adherent_to.ID = id;
+        this.inscriptionserv.Get(id).then((ins) => {
+          let inscription = new InscriptionMaSeance(ins);
+          this.All.push(inscription);
+          this.Autres = this.Autres.filter(x => x.RiderID !== inscription.RiderID);
+          this.adherent_to = null;
+        });
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-
-        this.liste_inscription.push(inscr_new);
 
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
@@ -237,9 +173,9 @@ export class MaSeanceComponent implements OnInit {
 
   }
 
-  GetNbPersonne(): boolean {
+  GetNbPersonne(liste: InscriptionMaSeance[]): boolean {
     if (this.thisSeance.est_place_maximum) {
-      let ct = this.liste_inscription.filter(x => x.statut_seance == StatutPresence.Présent).length;
+      let ct = liste.filter(x => x.StatutSeance == StatutPresence.Présent).length;
       if (ct >= this.thisSeance.place_maximum) {
         return false;
       } else {
@@ -248,5 +184,57 @@ export class MaSeanceComponent implements OnInit {
     } else {
       return true;
     }
+  }
+  ChangerStatut(statut: string) {
+    const errorService = ErrorService.instance;
+    switch (statut) {
+      case 'réalisée':
+        this.action = $localize`Terminer la séance`;
+
+        break;
+      case 'prévue':
+        this.action = $localize`Planifier la séance`;
+        break;
+      case 'annulée':
+        this.action = $localize`Annuler la séance`;
+        break;
+    }
+    this.seanceserv.MAJStatutSeance(this.thisSeance.seance_id, statut).then((retour) => {
+      if (retour) {
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        if(statut == "annulée"){
+          this.thisSeance.statut = StatutSeance.annulée;
+          let confirm_mess = window.confirm($localize`Voulez-vous envoyer un email à l'ensemble des participants potentiels de cette séance pour les prévenir de l'annulation ?`);
+          if(confirm_mess){
+            window.alert("Fontion non diposnible");
+          }
+        } else {
+          this.thisSeance.statut = StatutSeance.réalisée;
+        }
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
+  }
+  Save() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Sauvegarder la séance`;
+    this.seanceserv.Update(this.thisSeance).then((retour: boolean) => {
+      if (retour) {
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
   }
 }
