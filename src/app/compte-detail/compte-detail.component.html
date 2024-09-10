@@ -32,6 +32,10 @@
 
         </div>
         <a *ngIf="!thisCompte.est_password" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
+        <a *ngIf="!thisCompte.est_password" (click)="DefMDP = true">Définir un mot de passe</a>
         <a *ngIf="thisCompte.est_password" (click)="ModifierMDP()">Modifier le mot de passe</a>
     </ng-container>
 </div>
+<app-reinit-mdp *ngIf="DefMDP" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
+
+</app-reinit-mdp>

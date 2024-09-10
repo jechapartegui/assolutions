@@ -20,6 +20,7 @@ export class CompteDetailComponent implements OnInit {
   thisCompte: compte;
   valid_login = false;
   rattache: boolean;
+  DefMDP:boolean = false;
   //view : juste le libellé
   //viewstate : libellé + type de MDP et situation du compte
   // viewstate + possibilité d'éditer
@@ -95,6 +96,9 @@ export class CompteDetailComponent implements OnInit {
       let o = errorService.CreateError(this.action, error.message);
       errorService.emitChange(o);
     });
+  }
+  DefinirMDP(){
+
   }
   ModifierMDP() {
 

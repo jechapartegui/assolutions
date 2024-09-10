@@ -26,22 +26,51 @@ export class MenuComponent implements OnInit {
   Riders: Adherent_VM[];
   listeprof: professeur[];
   listelieu: KeyValuePair[];
+  btn_adherent: boolean = false;
+  btn_admin: boolean = false;
+  btn_prof: boolean = false;
 
   public liste_prof_filter: KeyValuePairAny[];
   public liste_lieu_filter: KeyValuePairAny[];
   listeCours: cours[] = [];
 
   public g: StaticClass;
-  constructor(public GlobalService:GlobalService, private prof_serv: ProfesseurService, private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
+  constructor(public GlobalService: GlobalService, private prof_serv: ProfesseurService, private router: Router, private adherent_serv: AdherentService, private lieuserv: LieuService, private coursservice: CoursService, public inscriptionserv: InscriptionSeanceService) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
+    const projet = GlobalService.other_project.find(x => x.id == GlobalService.projet.id);
     this.action = $localize`Charger le menu`;
     if (GlobalService.is_logged_in) {
       switch (GlobalService.menu) {
         default:
         case "PROF":
         case "ADHERENT":
+          if (GlobalService.menu == "PROF") {
+            this.btn_prof = false;
+            if (projet.adherent) {
+              this.btn_adherent = true;
+            } else {
+              this.btn_adherent = false;
+            }
+            if (projet.admin) {
+              this.btn_admin = true;
+            } else {
+              this.btn_admin = false;
+            }
+          } else {
+            this.btn_adherent = false;
+            if (projet.prof) {
+              this.btn_prof = true;
+            } else {
+              this.btn_prof = false;
+            }
+            if (projet.admin) {
+              this.btn_admin = true;
+            } else {
+              this.btn_admin = false;
+            }
+          }
           const auj = new Date();
           let date_apres = this.formatDate(auj);
 
@@ -112,7 +141,17 @@ export class MenuComponent implements OnInit {
           });
           break;
         case "ADMIN":
-
+          this.btn_admin = false;
+          if (projet.prof) {
+            this.btn_prof = true;
+          } else {
+            this.btn_prof = false;
+          }
+          if (projet.adherent) {
+            this.btn_adherent = true;
+          } else {
+            this.btn_adherent = false;
+          }
           break;
       }
 
@@ -292,6 +331,43 @@ export class MenuComponent implements OnInit {
 
   VoirMaSeance(seance: any) {
     this.router.navigate(['/ma-seance'], { queryParams: { id: seance.seance_id } });
+  }
+
+  ChangerMenu(type: "PROF" | "ADMIN" | "ADHERENT") {
+    let proj = GlobalService.projet;
+    let proj_compl = GlobalService.other_project.find(x => x.id == proj.id);
+    switch (type) {
+      case "ADHERENT":
+        if (proj_compl.adherent) {
+          proj.adherent = true;
+          proj.admin = false;
+          proj.prof = false;
+          GlobalService.instance.updateProjet(proj);
+          GlobalService.instance.updateMenuType(type);
+          this.ngOnInit();
+        }
+        break;
+      case "ADMIN":
+        if (proj_compl.admin) {
+          proj.adherent = false;
+          proj.admin = true;
+          proj.prof = false;
+          GlobalService.instance.updateProjet(proj);
+          GlobalService.instance.updateMenuType(type);
+          this.ngOnInit();
+        }
+        break;
+      case "PROF":
+        if (proj_compl.prof) {
+          proj.adherent = false;
+          proj.admin = false;
+          proj.prof = true;
+          GlobalService.instance.updateProjet(proj);
+          GlobalService.instance.updateMenuType(type);
+          this.ngOnInit();
+        }
+        break;
+    }
   }
 
 }

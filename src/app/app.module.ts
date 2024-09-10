@@ -56,6 +56,15 @@ import { SeancesEssaisComponent } from './seances-essais/seances-essais.componen
 import { CompteDetailComponent } from './compte-detail/compte-detail.component';
 import { FilterStatutPipe } from 'src/filters/filter-statutseance';
 import { ReinitMdpComponent } from './reinit-mdp/reinit-mdp.component';
+import { StockComponent } from './stock/stock.component';
+import { SuiviMailComponent } from './suivi-mail/suivi-mail.component';
+import { ProjetMailComponent } from './projet-mail/projet-mail.component';
+import { FacturesComponent } from './factures/factures.component';
+import { ProjetInfoComponent } from './projet-info/projet-info.component';
+import { CompteBancaireComponent } from './compte-bancaire/compte-bancaire.component';
+import { LieuComponent } from './lieu/lieu.component';
+import { SaisonComponent } from './saison/saison.component';
+import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -69,7 +78,7 @@ import { ReinitMdpComponent } from './reinit-mdp/reinit-mdp.component';
     ProfComponent,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe,
     ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
-  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent],
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

@@ -42,23 +42,79 @@
             (click)="GlobalService.updateSelectedMenuStatus('GROUPE')" [routerLink]="['/groupe']" i18n>
             Groupes
           </a>
-          <ng-container *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">          
-            <a [class]="(GlobalService.SelectedMenu$ | async) === 'LIEU' ? 'navbar-item is-selected' : 'navbar-item'"
-              (click)="GlobalService.updateSelectedMenuStatus('LIEU')" [routerLink]="['/lieu']" i18n>
-              Lieux
+          <ng-container *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                Paramétrage
+              </a>
+
+              <div class="navbar-dropdown">
+                <!-- Other navbar items -->
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'LIEU' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('LIEU')" [routerLink]="['/lieu']" i18n>
+                  Lieux
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'SAISON' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('SAISON')" [routerLink]="['/saison']" i18n>
+                  Saisons
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'PROF' ? 'navbar-item is-selected' : 'navbar-item'"
+                (click)="GlobalService.updateSelectedMenuStatus('PROF')" [routerLink]="['/professeur']" i18n>
+                Professeurs
+              </a>
+              <a [class]="(GlobalService.SelectedMenu$ | async) === 'CB' ? 'navbar-item is-selected' : 'navbar-item'"
+              (click)="GlobalService.updateSelectedMenuStatus('CB')" [routerLink]="['/compte-bancaire']" i18n>
+              Compte bancaire
             </a>
-            <a [class]="(GlobalService.SelectedMenu$ | async) === 'SAISON' ? 'navbar-item is-selected' : 'navbar-item'"
-              (click)="GlobalService.updateSelectedMenuStatus('SAISON')" [routerLink]="['/saison']" i18n>
-              Saisons
-            </a>
-            <a [class]="(GlobalService.SelectedMenu$ | async) === 'COMPTE' ? 'navbar-item is-selected' : 'navbar-item'"
-              (click)="GlobalService.updateSelectedMenuStatus('COMPTE')" [routerLink]="['/compte']" i18n>
-              Comptes
-            </a>
-            <a [class]="(GlobalService.SelectedMenu$ | async) === 'PROF' ? 'navbar-item is-selected' : 'navbar-item'"
-              (click)="GlobalService.updateSelectedMenuStatus('PROF')" [routerLink]="['/professeur']" i18n>
-              Professeurs
-            </a>
+              </div>
+            </div>
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                Projet
+              </a>
+              <div class="navbar-dropdown">
+                <!-- Other navbar items -->
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'PROJETINFO' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('PROJETINFO')" [routerLink]="['/projet-info']" i18n>
+                  Informations du projet
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'PROJETMAIL' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('PROJETMAIL')" [routerLink]="['/projet-mail']" i18n>
+                  Configuration des mails
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'SUIVIMAIL' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('SUIVIMAIL')" [routerLink]="['/projet-mail']" i18n>
+                  Suivi des mails
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'COMPTE' ? 'navbar-item is-selected' : 'navbar-item'"
+                (click)="GlobalService.updateSelectedMenuStatus('COMPTE')" [routerLink]="['/compte']" i18n>
+                Comptes
+              </a>
+              </div>
+            </div>
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                Gestion
+              </a>
+              <div class="navbar-dropdown">
+                <!-- Other navbar items -->
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'COMPTA' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('COMPTA')" [routerLink]="['/compta']" i18n>
+                  Recettes / Dépenses
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'FACTURE' ? 'navbar-item is-selected' : 'navbar-item'"
+                  (click)="GlobalService.updateSelectedMenuStatus('FACTURE')" [routerLink]="['/projet-mail']" i18n>
+                  Factures
+                </a>
+                <a [class]="(GlobalService.SelectedMenu$ | async) === 'STOCK' ? 'navbar-item is-selected' : 'navbar-item'"
+                (click)="GlobalService.updateSelectedMenuStatus('STOCK')" [routerLink]="['/professeur']" i18n>
+                Stocks
+              </a>
+              </div>
+            </div>
+
+          
+            
 
           </ng-container>
         </ng-container>
