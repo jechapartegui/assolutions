@@ -31,9 +31,11 @@
                 *ngIf="!thisCompte.mail_actif" i18n>Non</span>
 
         </div>
-        <a *ngIf="!thisCompte.est_password" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
-        <a *ngIf="!thisCompte.est_password" (click)="DefMDP = true">Définir un mot de passe</a>
-        <a *ngIf="thisCompte.est_password" (click)="ModifierMDP()">Modifier le mot de passe</a>
+        <div style="display: flex;flex-direction: column;">
+            <a *ngIf="!thisCompte.est_password" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
+            <a *ngIf="!thisCompte.est_password" (click)="DefMDP = true">Définir un mot de passe</a>
+            <a *ngIf="thisCompte.est_password" (click)="ModifierMDP()">Modifier le mot de passe</a>
+        </div>
     </ng-container>
 </div>
 <app-reinit-mdp *ngIf="DefMDP" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
