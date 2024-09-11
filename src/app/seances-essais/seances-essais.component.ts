@@ -109,7 +109,7 @@ export class SeancesEssaisComponent implements OnInit {
   }
 
   private generateSeanceText(): void {
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: '2-digit' };
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
     const dateDebStr = this.DateDeb.toLocaleDateString('fr-FR', options);
     const dateFinStr = this.DateFin.toLocaleDateString('fr-FR', options);
     this.seanceText = `Liste des séances du ${dateDebStr} au ${dateFinStr}`;

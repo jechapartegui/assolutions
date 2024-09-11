@@ -77,7 +77,7 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public AddRange(seance: seance, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<seance[]> {
+  public AddRange(seance: seance, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
     this.url = environment.maseance + 'maseance/seance_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
@@ -89,7 +89,7 @@ export class SeancesService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: seance[]) => {
+      .then((response: number[]) => {
         return response;
       })
       .catch(error => {

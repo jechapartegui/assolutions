@@ -242,22 +242,18 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="buttons">
-                                            <button i18n-title title="Supprimer"
-                                                class="button is-danger is-rounded is-outlined" type="button"
-                                                (click)="Delete(cours)" style="fill:hsl(348, 100%, 61%)">
-                                                <svg width="20" height="20">
-                                                    <use xlink:href=".\assets\liste.svg#delete"></use>
-                                                </svg>
+                                        <div class="buttons" style="display: flex; flex-direction: row; flex-wrap: nowrap;">
+                                          
+                                            <button i18n-title title="Supprimer" class="button is-danger is-rounded is-outlined" type="button"
+                                              (click)="Delete(cours)">
+                                              <i class="fa-solid fa-trash-can"></i>
                                             </button>
-                                            <button i18n-title title="Editer"
-                                                class="button is-info is-rounded is-outlined" type="button"
-                                                style="fill: hsl(204, 86%, 53%)	;" (click)="Edit(cours)">
-                                                <svg width="20" height="20">
-                                                    <use xlink:href=".\assets\liste.svg#edit"></use>
-                                                </svg>
+                        
+                                            <button i18n-title title="Editer" class="button is-info is-rounded is-outlined" type="button"
+                                              (click)="Edit(cours)">
+                                              <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                        </div>
+                                          </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -453,25 +449,17 @@
                             [Groupes]="editCours.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
                     </div>
                     <div class="buttons">
-                        <button class="button is-primary is-rounded is-outlined" [disabled]="!editCours.valid.control"
-                            type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save(editCours)">
-                            <svg width="20" height="20">
-                                <use xlink:href=".\assets\liste.svg#save"></use>
-                            </svg>
+                        <button class="button is-primary is-rounded is-outlined" [disabled]="!editCours.valid.control" type="button"
+                          style="fill:hsl(171, 100%, 41%)" (click)="Save(editCours)">
+                          <i class="fa-solid fa-floppy-disk"></i>
                         </button>
-                        <button (click)="Refresh()" class="button is-warning is-rounded is-outlined"
-                            style="fill:#FFB70F">
-                            <svg width="20" height="20">
-                                <use xlink:href=".\assets\liste.svg#refresh"></use>
-                            </svg>
+                        <button (click)="Refresh()" class="button is-warning is-rounded is-outlined" style="fill:#FFB70F">
+                          <i class="fa-solid fa-arrows-rotate"></i>
                         </button>
-                        <button (click)="Retour()" class="button is-danger is-rounded is-outlined"
-                            style="fill:hsl(348, 100%, 61%)">
-                            <svg width="20" height="20">
-                                <use xlink:href=".\assets\liste.svg#delete"></use>
-                            </svg>
+                        <button (click)="Retour()" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
+                          <i class="fa-solid fa-backward-fast"></i>
                         </button>
-                    </div>
+                      </div>
                 </div>
 
 

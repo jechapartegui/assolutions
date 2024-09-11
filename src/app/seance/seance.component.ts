@@ -30,7 +30,7 @@ export class SeanceComponent implements OnInit {
   prof_dispo: Professeur[];
   est_prof: boolean = false;
   est_admin: boolean = false;
-  manage_prof:boolean = false;
+  manage_prof: boolean = false;
   titre_groupe: string = $localize`Liste des groupes de la séance`;
   listeCours: cours[] = [];
   list_seance: seance[] = []; // Initialisez la liste des séances (vous pouvez la charger à partir d'une API, par exemple)
@@ -42,7 +42,7 @@ export class SeanceComponent implements OnInit {
   jour_semaine: string = "";
   date_fin_serie: Date;
   current_prof: number;
-  filter_statut:string='prévue';
+  filter_statut: string = 'prévue';
   coursselectionne: boolean = false;
 
   current_groupe_id: number;
@@ -50,32 +50,32 @@ export class SeanceComponent implements OnInit {
   liste_groupe: Groupe[] = []
 
 
-  public  sort_nom = "NO";
-  public  sort_cours = "NO";
-  public  sort_date = "NO";
-  public  sort_lieu = "NO";
-  public  afficher_filtre:boolean = false;
-  public  season_id: number;
-  public   filter_date_avant: Date;
-  public   filter_date_apres: Date;
-  public  filter_nom: string;
-  public  filter_cours: number;
-  public  filter_groupe: number;
-  public  filter_lieu: number;
-  public  filter_prof: number;
-  public  liste_groupe_filter: Groupe[];
-  public  liste_prof_filter: KeyValuePairAny[];
-  public  liste_lieu_filter: KeyValuePairAny[];  
+  public sort_nom = "NO";
+  public sort_cours = "NO";
+  public sort_date = "NO";
+  public sort_lieu = "NO";
+  public afficher_filtre: boolean = false;
+  public season_id: number;
+  public filter_date_avant: Date;
+  public filter_date_apres: Date;
+  public filter_nom: string;
+  public filter_cours: number;
+  public filter_groupe: number;
+  public filter_lieu: number;
+  public filter_prof: number;
+  public liste_groupe_filter: Groupe[];
+  public liste_prof_filter: KeyValuePairAny[];
+  public liste_lieu_filter: KeyValuePairAny[];
   public liste_saison: Saison[] = [];
-  public active_saison:Saison;
-  public showText:boolean = false;
+  public active_saison: Saison;
+  public showText: boolean = false;
   public action: string = "";
   public listeStatuts: StatutSeance[];
 
   constructor(
-    public GlobalService:GlobalService,
-    private prof_serv:ProfesseurService,
-    private seancesservice: SeancesService, private spservice:SeanceprofService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
+    public GlobalService: GlobalService,
+    private prof_serv: ProfesseurService,
+    private seancesservice: SeancesService, private spservice: SeanceprofService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService) { }
 
   ngOnInit(): void {
@@ -129,15 +129,15 @@ export class SeanceComponent implements OnInit {
               this.active_saison = this.liste_saison.filter(x => x.active == true)[0];
               this.coursservice.GetCours().then((c) => {
                 this.listeCours = c;
+                this.UpdateListeSeance();
+                let o = errorService.OKMessage(this.action);
+                errorService.emitChange(o);
               }).catch((err: HttpErrorResponse) => {
                 let o = errorService.CreateError($localize`récupérer les cours`, err.message);
                 errorService.emitChange(o);
                 this.router.navigate(['/menu']);
                 return;
               })
-              this.UpdateListeSeance();
-              let o = errorService.OKMessage(this.action);
-              errorService.emitChange(o);
             }).catch((err: HttpErrorResponse) => {
               let o = errorService.CreateError($localize`récupérer les saisons`, err.message);
               errorService.emitChange(o);
@@ -169,34 +169,6 @@ export class SeanceComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
-  UpdateListSeance() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger les séances`;
-    if (this.season_id && this.season_id > 0) {
-      this.seancesservice.GetSeancesSeason(this.season_id).then((seance) => {
-        this.list_seance = seance;
-        this.list_seance_VM = this.list_seance.map(x => new Seance(x));
-        this.UpdateListeFiltre();
-      }).catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        this.router.navigate(['/menu']);
-        return;
-      })
-    } else {
-      this.seancesservice.GetSeances().then((seance) => {
-        this.list_seance = seance;
-        this.list_seance_VM = this.list_seance.map(x => new Seance(x));
-        this.UpdateListeFiltre();
-      }).catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        this.router.navigate(['/menu']);
-        return;
-      })
-    }
-  }
-
   GetCours(cours) {
     return this.listeCours.find(x => x.id == cours).nom;
   }
@@ -220,21 +192,21 @@ export class SeanceComponent implements OnInit {
   Edit(seance: Seance): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
-    this.seancesservice.Get(seance.ID).then((ss) =>{
+    this.seancesservice.Get(seance.ID).then((ss) => {
       this.editSeance = new Seance(ss);
       if (this.editSeance.Cours) {
         this.coursselectionne = true;
-  
+
       } else {
         this.coursselectionne = false;
-  
+
       }
       this.editMode = true;
-   }).catch((err: HttpErrorResponse) => {
+    }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
     })
-   
+
   }
   onCoursSelectionChange(cours_id: any): void {
     //  console.log('Nouvelle valeur sélectionnée :', newValue);
@@ -263,7 +235,7 @@ export class SeanceComponent implements OnInit {
       let pr = new SeanceProf();
       pr.professeur_id = newValue.prof_principal_id;
       pr.prenom = this.listeprof.filter(x => x.id == pr.professeur_id)[0].prenom;
-      pr.prenom = this.listeprof.filter(x => x.id == pr.professeur_id)[0].nom;
+      pr.nom = this.listeprof.filter(x => x.id == pr.professeur_id)[0].nom;
       pr.taux_horaire = this.listeprof.filter(x => x.id == pr.professeur_id)[0].taux;
       pr.minutes = newValue.duree;
       pr.statut = 0;
@@ -284,18 +256,20 @@ export class SeanceComponent implements OnInit {
     this.coursselectionne = false;
     if (serie) {
       this.editMode_serie = true;
-      this.editSeance.date_seance = new Date();
-      this.date_fin_serie = new Date();
+    } else {
+      this.editMode_serie = false;
     }
+    this.editSeance.date_seance = new Date();
+    this.date_fin_serie = new Date();
     this.editMode = true;
   }
 
-  VoirMaSeance(seance:Seance = null) {
-    let id:number;
-    if(seance){
-      id=seance.ID;
-    } else if(this.editSeance){
-      id=this.editSeance.ID
+  VoirMaSeance(seance: Seance = null) {
+    let id: number;
+    if (seance) {
+      id = seance.ID;
+    } else if (this.editSeance) {
+      id = this.editSeance.ID
     } else {
       return;
     }
@@ -304,24 +278,26 @@ export class SeanceComponent implements OnInit {
       this.router.navigate(['/ma-seance'], { queryParams: { id: id } });
     }
   }
-  TerminerSeances(){
+  TerminerSeances() {
     const errorService = ErrorService.instance;
     this.action = $localize`Terminer les séances passées`;
-    let list_s : number[] = [];
-    this.list_seance_VM.forEach((SVM) =>{
-      if(SVM.date_seance < new Date()) {
+    let list_s: number[] = [];
+    const today =  new Date();
+    const tomorrow =  new Date(today.setDate(today.getDate() - 1));
+    this.list_seance_VM.filter(x => x.Statut = StatutSeance.prévue).forEach((SVM) => {
+      if (new Date(SVM.date_seance) < tomorrow ) {
         list_s.push(SVM.ID);
       }
     })
-    this.seancesservice.TerminerSeances(list_s).then((retour) =>{
-      if(retour == list_s.length){
+    this.seancesservice.TerminerSeances(list_s).then((retour) => {
+      if (retour == list_s.length) {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
+        this.UpdateListeSeance();
       } else {
         let o = errorService.CreateError(this.action, $localize`Nombre de séances mise à jour : ` + retour.toString() + "/" + list_s.length.toString());
         errorService.emitChange(o);
       }
-      this.UpdateListSeance();
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
@@ -336,18 +312,18 @@ export class SeanceComponent implements OnInit {
       case 'réalisée':
         this.action = $localize`Terminer la séance`;
         this.editSeance.Statut = StatutSeance.réalisée;
-        break;    
-        case 'prévue':
-          this.action = $localize`Planifier la séance`;
-          this.editSeance.Statut = StatutSeance.prévue;
-        break; 
-        case 'annulée':
-          this.action = $localize`Annuler la séance`;
-          this.editSeance.Statut = StatutSeance.annulée;
-        break; 
+        break;
+      case 'prévue':
+        this.action = $localize`Planifier la séance`;
+        this.editSeance.Statut = StatutSeance.prévue;
+        break;
+      case 'annulée':
+        this.action = $localize`Annuler la séance`;
+        this.editSeance.Statut = StatutSeance.annulée;
+        break;
     }
-    this.seancesservice.MAJStatutSeance(this.editSeance.ID, statut).then((retour) =>{
-      if(retour){
+    this.seancesservice.MAJStatutSeance(this.editSeance.ID, statut).then((retour) => {
+      if (retour) {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       } else {
@@ -355,7 +331,7 @@ export class SeanceComponent implements OnInit {
         let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
         errorService.emitChange(o);
       }
-      this.UpdateListSeance();
+      this.UpdateListeSeance();
     }).catch((err: HttpErrorResponse) => {
       this.editSeance.Statut = old_statut;
       let o = errorService.CreateError(this.action, err.message);
@@ -431,7 +407,7 @@ export class SeanceComponent implements OnInit {
             id: groupe.id,
             nom: groupe.nom, // Assurez-vous que votre classe Groupe a un attribut nom
             saison_id: groupe.saison_id, // Assurez-vous que votre classe Groupe a un attribut saison_id
-            temp_id: groupe.id, display:false, lien_groupe_id:0 // Utilisez l'ID du groupe comme temp_id, si nécessaire
+            temp_id: groupe.id, display: false, lien_groupe_id: 0 // Utilisez l'ID du groupe comme temp_id, si nécessaire
           });
         }
       });
@@ -487,7 +463,7 @@ export class SeanceComponent implements OnInit {
       if (seance) {
         this.seancesservice.Delete(seance.ID).then((result) => {
           if (result) {
-            seance.professeurs.forEach((sp) =>{
+            seance.professeurs.forEach((sp) => {
               this.spservice.Delete(sp);
             })
             this.UpdateListeSeance();
@@ -514,6 +490,11 @@ export class SeanceComponent implements OnInit {
           this.action = $localize`Ajouter une série de séances`;
           this.seancesservice.AddRange(seance.datasource, seance.datasource.date_seance, this.date_fin_serie, this.jour_semaine).then((seances) => {
             if (seances.length > 0) {
+              seances.forEach((id_s) => {
+                this.editSeance.professeurs.forEach((prof: SeanceProf) => {
+                  prof.seance_id = id_s; this.spservice.Add(prof);
+                })
+              })
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
               this.editMode = false;
@@ -528,33 +509,34 @@ export class SeanceComponent implements OnInit {
             errorService.emitChange(o);
           });
 
-        }
-        this.seancesservice.Add(seance.datasource).then((id) => {
-          if (id > 0) {
-            this.editSeance.ID = id;
-            this.editSeance.professeurs.forEach((ss) =>{
-              ss.seance_id = id;
-              this.spservice.Add(ss);
-            })
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            this.UpdateListeSeance();
-          } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-            errorService.emitChange(o);
-          }
+        } else {
+          this.seancesservice.Add(seance.datasource).then((id) => {
+            if (id > 0) {
+              this.editSeance.ID = id;
+              this.editSeance.professeurs.forEach((ss) => {
+                ss.seance_id = id;
+                this.spservice.Add(ss);
+              })
+              let o = errorService.OKMessage(this.action);
+              errorService.emitChange(o);
+              this.UpdateListeSeance();
+            } else {
+              let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+              errorService.emitChange(o);
+            }
 
-        }).catch((err) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
+          }).catch((err) => {
+            let o = errorService.CreateError(this.action, err.message);
+            errorService.emitChange(o);
+          });
+        }
       }
       else {
         this.action = $localize`Mettre à jour une séance`;
-        this.seancesservice.Update(seance.datasource).then((ok) => {          
+        this.seancesservice.Update(seance.datasource).then((ok) => {
           if (ok) {
-            this.spservice.UpdateSeance(seance.professeurs, seance.ID).then((ok) =>{
-              if(ok){
+            this.spservice.UpdateSeance(seance.professeurs, seance.ID).then((ok) => {
+              if (ok) {
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
               } else {

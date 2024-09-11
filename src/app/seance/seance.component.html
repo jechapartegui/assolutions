@@ -266,19 +266,26 @@
                   - {{seance.heure_debut}} ({{seance.duree_seance}} <span i18n>&nbsp;min</span>)
                   {{trouverLieu(seance.LieuId)}}
                   <ng-container *ngIf="seance.Statut == 'prévue'">
-                    <svg width="20" style="fill:blue" height="20">
-                      <use xlink:href=".\assets\liste.svg#prevu"></use>
-                    </svg>
+                    <span class="tag is-info is-rounded is-light">
+                      <span class="icon has-text-info">
+                        <i class="fa-solid fa-calendar-check"></i>
+                      </span>
+                    </span>
                   </ng-container>
                   <ng-container *ngIf="seance.Statut == 'réalisée'">
-                    <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
-                      <use xlink:href=".\assets\liste.svg#termine"></use>
-                    </svg>
+                    <span class="tag is-primary is-rounded is-light">
+                      <span class="icon has-text-success">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                      </span>
+                    </span>
                   </ng-container>
                   <ng-container *ngIf="seance.Statut == 'annulée'">
-                    <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
-                      <use xlink:href=".\assets\liste.svg#annuler"></use>
-                    </svg>
+
+                    <span class="tag is-danger is-rounded is-light">
+                      <span class="icon has-text-danger">
+                        <i class="fa-solid fa-ban"></i>
+                      </span>
+                    </span>
                   </ng-container>
                 </div>
 
