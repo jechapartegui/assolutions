@@ -1,8 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Adherent, adherent } from 'src/class/adherent';
-import { inscription_seance, InscriptionMaSeance, StatutPresence } from 'src/class/inscription';
+import { InscriptionMaSeance, StatutPresence } from 'src/class/inscription';
 import { seance, StatutSeance } from 'src/class/seance';
 import { AdherentService } from 'src/services/adherent.service';
 import { ErrorService } from 'src/services/error.service';
@@ -26,6 +25,7 @@ export class MaSeanceComponent implements OnInit {
   Presents: InscriptionMaSeance[] = [];
   adherent_to: InscriptionMaSeance;
   action: string;
+  seanceText: string;
   constructor(private adhserv: AdherentService, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
@@ -43,35 +43,113 @@ export class MaSeanceComponent implements OnInit {
     this.action = $localize`Charger la séance`;
     this.seanceserv.Get(this.id).then((ss) => {
       this.thisSeance = ss;
-      this.inscriptionserv.GetAllSeance(this.id).then((res) => {
-        this.Autres = res.autres.map(x => new InscriptionMaSeance(x));
-        this.Inscrits = res.inscrits.map(x => new InscriptionMaSeance(x));
-        this.Potentiels = res.potentiels.map(x => new InscriptionMaSeance(x));
-        this.All = this.Inscrits.concat(this.Potentiels);
-        this.Absents = res.absents.map(x => new InscriptionMaSeance(x));
-        this.Presents = res.presents.map(x => new InscriptionMaSeance(x));
-      }).catch((error) => {
-        let n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
-      });
+      this.generateSeanceText();
+      this.Load();
     }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
     });
 
   }
+  setStatus(statut, inscription) {
+    inscription.isVisible = false;
+    const errorService = ErrorService.instance;
+    let oldstatut = inscription.StatutInscription;
+    let libelleseab = this.thisSeance.libelle;
+    switch (statut) {
+      default:
+        this.action = inscription.Libelle + $localize` a un statut inconnu pour la séance ` + libelleseab;
+        inscription.StatutInscription = null;
+        break;
+      case 'présent':
+        this.action = inscription.Libelle + $localize` devrait être présent à la séance ` + libelleseab;
+        inscription.StatutInscription = StatutPresence.Présent;
+        break;
+      case 'essai':
+        this.action = inscription.Libelle + $localize` est à l'essai pour la séance ` + libelleseab;
+        inscription.StatutInscription = StatutPresence.Essai;
+        break;
+      case 'absent':
+        this.action = inscription.Libelle + $localize` devrait être absent à la séance ` + libelleseab;
+        inscription.StatutInscription = StatutPresence.Absent;
+        break;
+      case 'convoqué':
+        this.action = inscription.Libelle + $localize` devrait être présent à la séance ` + libelleseab;
+        inscription.StatutInscription = StatutPresence.Convoqué;
+        break;
 
+    }
+
+    if (inscription.ID == 0) {
+
+      this.inscriptionserv.Add(inscription.datasource).then((id) => {
+        inscription.ID = id;
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        this.Load();
+
+      }).catch((err: HttpErrorResponse) => {
+        inscription.StatutInscription = oldstatut
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        return;
+      })
+    } else {
+      this.inscriptionserv.Update(inscription.datasource).then((retour) => {
+        if (retour) {
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+          this.Load();
+        } else {
+          inscription.StatutInscription = oldstatut
+          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          errorService.emitChange(o);
+        }
+
+      }).catch((err: HttpErrorResponse) => {
+        inscription.StatutInscription = oldstatut
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        return;
+      })
+    }
+  }
+
+  Load() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Charger la séance`;
+    this.inscriptionserv.GetAllSeance(this.id).then((res) => {
+      this.Autres = res.autres.map(x => new InscriptionMaSeance(x));
+      this.Inscrits = res.inscrits.map(x => new InscriptionMaSeance(x));
+      this.Potentiels = res.potentiels.map(x => new InscriptionMaSeance(x));
+      this.All = this.Inscrits.concat(this.Potentiels);
+      this.Absents = res.absents.map(x => new InscriptionMaSeance(x));
+      this.Presents = res.presents.map(x => new InscriptionMaSeance(x));
+    }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    });
+  }
+  private generateSeanceText() {
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+    const ddb = new Date(this.thisSeance.date_seance);
+    const dateDebStr = ddb.toLocaleDateString('fr-FR', options);
+    this.seanceText = ` ${dateDebStr}`;
+  }
 
   MAJInscription(inscription: InscriptionMaSeance, statut: boolean) {
+
     const errorService = ErrorService.instance;
     let oldstatut = inscription.StatutSeance;
     let libelleseab = this.thisSeance.libelle;
-    if (statut) {
+    if (statut == true) {
       inscription.StatutSeance = StatutPresence.Présent;
       this.action = inscription.Libelle + $localize` est présent à la séance ` + libelleseab;
-    } else {
+    } else if (statut == false) {
       inscription.StatutSeance = StatutPresence.Absent;
       this.action = inscription.Libelle + $localize` est absent à la séance ` + libelleseab;
+    } else if (statut == null) {
+      inscription.StatutSeance = null;
     }
     if (inscription.ID == 0) {
 
@@ -79,15 +157,7 @@ export class MaSeanceComponent implements OnInit {
         inscription.ID = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-        this.inscriptionserv.Get(id).then((ins) => {
-          this.All = this.All.filter(x => x.RiderID !== inscription.RiderID);
-          inscription = new InscriptionMaSeance(ins);
-          if (statut) {
-            this.Presents.push(inscription);
-          } else {
-            this.Absents.push(inscription);
-          }
-        })
+        this.Load();
 
       }).catch((err: HttpErrorResponse) => {
         inscription.StatutSeance = oldstatut
@@ -100,16 +170,9 @@ export class MaSeanceComponent implements OnInit {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-          this.inscriptionserv.Get(inscription.ID).then((ins) => {
-            this.All = this.All.filter(x => x.RiderID !== inscription.RiderID);
-            inscription = new InscriptionMaSeance(ins);
-            if (statut) {
-              this.Presents.push(inscription);
-            } else {
-              this.Absents.push(inscription);
-            }
-          })
+          this.Load();
         } else {
+          inscription.StatutSeance = oldstatut
           let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
           errorService.emitChange(o);
         }
@@ -203,10 +266,10 @@ export class MaSeanceComponent implements OnInit {
       if (retour) {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-        if(statut == "annulée"){
+        if (statut == "annulée") {
           this.thisSeance.statut = StatutSeance.annulée;
           let confirm_mess = window.confirm($localize`Voulez-vous envoyer un email à l'ensemble des participants potentiels de cette séance pour les prévenir de l'annulation ?`);
-          if(confirm_mess){
+          if (confirm_mess) {
             window.alert("Fontion non diposnible");
           }
         } else {

@@ -37,6 +37,7 @@ export class InscriptionMaSeance {
             this.ContactPrefereType = foundContact ? foundContact.Type : null;
 
       }
+      public isVisible:boolean = false;
       public get StatutInscription(): StatutPresence {
             return this.datasource.statut_inscription;
       }

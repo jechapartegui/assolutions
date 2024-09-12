@@ -471,6 +471,7 @@ export class SeanceComponent implements OnInit {
             errorService.emitChange(o);
           } else {
             let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            errorService.emitChange(o);
           }
         }).catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);

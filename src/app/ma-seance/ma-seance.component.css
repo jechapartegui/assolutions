@@ -33,3 +33,30 @@
     padding-left: calc(var(--bulma-button-padding-horizontal));
     padding-right: calc(var(--bulma-button-padding-horizontal));
 }
+.menu-icons {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    list-style: none;
+    padding: 10px;
+    z-index: 100;
+  }
+  
+  .menu-icons li {
+    cursor: pointer;
+    padding: 5px 10px;
+  }
+  
+  .menu-icons.is-visible {
+    display: block;
+  }
+  
+  .menu-icons li:hover {
+    background-color: #f0f0f0;
+  }
+  .not{
+    display: none;
+  }
+  
