@@ -286,4 +286,23 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
+
+  public UpdateMDP(login:string, password: string): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "update_mdp",
+      login: login,
+      password:password
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
 }

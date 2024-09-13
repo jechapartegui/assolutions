@@ -97,10 +97,5 @@ export class CompteDetailComponent implements OnInit {
       errorService.emitChange(o);
     });
   }
-  DefinirMDP(){
 
-  }
-  ModifierMDP() {
-
-  }
 }

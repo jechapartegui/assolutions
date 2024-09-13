@@ -12,6 +12,7 @@ import { LoginService } from 'src/services/login.service';
 export class ReinitMdpComponent implements OnInit {
   @Input() Login: string;
   @Input() Token: string;
+  @Input() define:boolean=false;
   Password: string = "";
   action = "";
   ConfirmPassword: string = "";
@@ -91,6 +92,24 @@ export class ReinitMdpComponent implements OnInit {
           let o = errorService.CreateError(this.action, error.message);
           errorService.emitChange(o);
         });
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+    });
+  }
+
+  DefinirMDP(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Définition du mot de passe`;
+    this.compte_serv.UpdateMDP(this.Login, this.Password).then((retour) => {
+      if (retour) {
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        this.router.navigate(['/menu']);
       } else {
         let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
         errorService.emitChange(o);
