@@ -24,6 +24,7 @@ export class adherent {
   public mot_de_passe: string = "";
   public compte: number = 0;
   public login: string = "";
+  public inscrit:boolean = false;
   public inscriptions: inscription_seance[] = [];
   public adhesions: Adhesion[] = [];
   public seances_prof: seance[] = [];
@@ -35,7 +36,15 @@ export class Adherent {
   datasource: adherent;
   public valid: Validation_Adherent;
   public maj: boolean = true;
-  public Inscrit: boolean;
+  
+  
+  public get Inscrit() : boolean {
+    return this.datasource.inscrit;
+  }
+  public set Inscrit(v : boolean) {
+    this.datasource.inscrit = v;
+  }
+  
 
   sLibelle = new Subject<string>();
   dateNaissanceSubject = new Subject<string>();
@@ -48,7 +57,7 @@ export class Adherent {
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
     this.Adresse = JSON.parse(this.datasource.adresse);
-
+    this.Inscrit = L.inscrit;
     this.Adhesions = L.adhesions;
     this.Groupes = L.groupes;
     this.inscriptions = L.inscriptions;

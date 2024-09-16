@@ -5,11 +5,16 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class filterInscriptionSaison implements PipeTransform {
 
-  transform(items: any[], filter: number): any {
-    if (!items || !filter || filter == 0) {
+  transform(items: any[], filter: boolean): any {
+    if (!items || filter == null) {
       return items;
     }
-    return items.filter(item => item.Adhesions.some(adhesion => adhesion.saison_id === filter));
+
+    function check(item) {
+      return item.Inscrit == filter;
+    }
+
+    return items.filter(check);
   }
 
 }

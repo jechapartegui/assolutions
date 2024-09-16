@@ -3,9 +3,9 @@
         <div class="columns" style="margin-top: 0.5rem;">
             <div class="column menuligne">
                 <hover-button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
-                    [nomclass]="inscrits == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' "
+                    [nomclass]="inscrits == false ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded' "
                     [nomicon]="'fas fa-signature'" [libelle]="'Inscrits'"
-                    (click)="inscrits == null ? inscrits = active_saison.id : inscrits = null;">
+                    (click)="inscrits ? inscrits = false : inscrits = true;">
                 </hover-button>
 
                 <hover-button
@@ -22,35 +22,40 @@
                         </span>
                     </span>
                 </button>
-                <hover-button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'"
+                <hover-button 
                     [nomclass]="'button  is-rounded is-primary is-outlined' " [nomicon]="'fas fa-file-excel'"
                     [libelle]="'Exporter vers Excel'" (click)="ExporterExcel()">
                 </hover-button>
-                <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="file is-primary has-name">
-                    <label class="file-label">
-                        <input class="file-input" type="file" name="resume" (change)="onFileSelected($event)" />
-                        <span class="file-cta">
-                            <span class="file-icon">
-                                <i class="fas fa-file-excel"></i>
+                <ng-container *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
+                    <div  class="file is-primary has-name">
+                        <label class="file-label">
+                            <input class="file-input" type="file" name="resume" (change)="onFileSelected($event)" />
+                            <span class="file-cta">
+                                <span class="file-icon">
+                                    <i class="fas fa-file-excel"></i>
+                                </span>
+                                <span class="file-label" i18n> Importer un fichier excel </span>
                             </span>
-                            <span class="file-label" i18n> Importer un fichier excel </span>
-                        </span>
-                        <span *ngIf="file" class="file-name"> {{ file.name }} </span>
-                    </label>
-                </div>
-
-                <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field has-addons">
-                    <div class="control">
-                        <div class="select">
-                            <select [(ngModel)]="active_saison">
-                                <ng-container *ngFor="let saison of liste_saison">
-                                    <option [ngValue]="saison">{{saison.nom}}</option>
-                                </ng-container>
-                            </select>
+                            <span *ngIf="file" class="file-name"> {{ file.name }} </span>
+                        </label>
+                    </div>
+                    &#124;
+                    <span>Saison affichée : </span>
+                    <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field has-addons">
+                        <div class="control">
+                            <div class="select">
+                                <select [(ngModel)]="active_saison">
+                                    <ng-container *ngFor="let saison of liste_saison">
+                                        <option [ngValue]="saison">{{saison.nom}}</option>
+                                    </ng-container>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
-
+                    <button type="button" (click)="UpdateListeAdherents()" class="is-rounded is-outlined is-primary button">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </ng-container>   
             </div>
         </div>
         <div class="columns">
@@ -166,7 +171,7 @@
                                 </thead>
                                 <tbody>
                                     <tr
-                                        *ngFor="let adherent of liste_adherents_VM | filterLibelleNom : filter_nom | filterInscriptionSaison : inscrits  | filterDDNAvant : filter_date_avant | filterDDNApres : filter_date_apres | filterSexe : filter_sexe">
+                                        *ngFor="let adherent of liste_adherents_VM | filterLibelleNom : filter_nom |  filterDDNAvant : filter_date_avant | filterDDNApres : filter_date_apres | filterSexe : filter_sexe">
                                         <td>
                                             {{adherent.Libelle}}
                                         </td>
@@ -203,8 +208,8 @@
                                             <span>&nbsp;{{adherent.ContactPrefere}}</span>
                                         </td>
                                         <td>
-                                            <i *ngIf="!isRegistred(adherent)" class="fas fa-times "></i>
-                                            <i *ngIf="isRegistred(adherent)" class="fas fa-check has-text-success"></i>
+                                            <i *ngIf="!adherent.Inscrit" class="fas fa-times "></i>
+                                            <i *ngIf="adherent.Inscrit" class="fas fa-check has-text-success"></i>
                                         </td>
                                         <td>
                                             <div class="buttons">
@@ -214,7 +219,7 @@
                                                     (click)="Delete(adherent)">
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
-                                                <button *ngIf="!isRegistred(adherent)" i18n-title title="Inscrire"
+                                                <button *ngIf="!adherent.Inscrit" i18n-title title="Inscrire"
                                                     class="button is-info is-rounded is-outlined" type="button"
                                                     (click)="Register(adherent, active_saison.id, true)">
                                                     <i class="fas fa-signature"></i>
@@ -365,8 +370,8 @@
                                     <span *ngIf="!StatutMAJ(adherent)" i18n>Ajout</span>
                                 </td>
                                 <td>
-                                    <i *ngIf="!isRegistred(adherent)" class="fas fa-times "></i>
-                                    <i *ngIf="isRegistred(adherent)" class="fas fa-check has-text-success"></i>
+                                    <i *ngIf="!adherent.Inscrit" class="fas fa-times "></i>
+                                    <i *ngIf="adherent.Inscrit" class="fas fa-check has-text-success"></i>
                                 </td>
                             </tr>
                         </tbody>

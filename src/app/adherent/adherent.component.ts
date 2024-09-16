@@ -27,7 +27,7 @@ export class AdherentComponent implements OnInit {
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   public thisAdherent: Adherent = null;
   public action: string = "";
-  public inscrits: number = null;
+  public inscrits: boolean = false;
   public afficher_filtre: boolean = false;
   @Input() public id: number;
   public liste_groupe: Groupe[] = [];
@@ -116,7 +116,6 @@ export class AdherentComponent implements OnInit {
 
           }
           if (this.context == "LISTE") {
-            this.inscrits = this.active_saison.id;
             this.afficher_filtre = false;
             this.UpdateListeAdherents();
 
@@ -151,8 +150,9 @@ export class AdherentComponent implements OnInit {
   UpdateListeAdherents() {
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les adhérents`;
-    this.ridersService.GetAdherentAdhesion().then((adh) => {
+    this.ridersService.GetAdherentAdhesion(this.active_saison.id).then((adh) => {
       this.liste_adherents_VM = adh.map(x => new Adherent(x));
+      console.log( this.liste_adherents_VM);
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
@@ -244,13 +244,6 @@ export class AdherentComponent implements OnInit {
 
       let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
       errorService.emitChange(o);
-    }
-  }
-  isRegistred(adh: Adherent): boolean {
-    if (adh.Adhesions.filter(x => x.saison_id == this.active_saison.id).length > 0) {
-      return true;
-    } else {
-      return false;
     }
   }
 
@@ -600,6 +593,7 @@ export class AdherentComponent implements OnInit {
           compte: 0,
           login: item.Login,
           inscriptions: [],
+          inscrit:false,
           seances_prof: [],
           adhesions: liste_insc,
           contacts_prevenir: JSON.stringify(list_item_contact_urg),
@@ -662,14 +656,6 @@ export class AdherentComponent implements OnInit {
     this.thisAdherent.datasource.adresse = JSON.stringify(data);
   }
 
-  isRegistredSaison(saison_id: number) {
-    let u = this.thisAdherent.Adhesions.find(x => x.saison_id == saison_id);
-    if (u) {
-      return true;
-    } else {
-      return false;
-    }
-  }
   StatutMAJ(ad: Adherent) {
     let n = this.liste_adherents_VM.find(x => x.ID == ad.ID);
     if (n) {
@@ -696,7 +682,7 @@ export class AdherentComponent implements OnInit {
               nb_import++;
               this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
                 if (cmpt > 0) {
-                  if (this.isRegistred(adherent)) {
+                  if (adherent.Inscrit) {
                     this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
                       if (id > 0) {
                         this.retourLog += adherent.Libelle + " :  ";
@@ -752,7 +738,7 @@ export class AdherentComponent implements OnInit {
               nb_import++;
               this.compte_serv.AddOrMAJLogin(adherent.Login, adherent.ID).then((cmpt) => {
                 if (cmpt > 0) {
-                  if (this.isRegistred(adherent)) {
+                  if (adherent.Inscrit) {
                     this.inscription_saison_serv.Add(adherent.Adhesions[0].saison_id, adherent.ID).then((id) => {
                       if (id > 0) {
                         this.retourLog += adherent.Libelle + " :  ";
@@ -812,6 +798,14 @@ export class AdherentComponent implements OnInit {
     this.modalLog = false;
     this.UpdateListeAdherents();
     this.file = null;
+  }
+  isRegistredSaison(saison_id: number) {
+    let u = this.thisAdherent.Adhesions.find(x => x.saison_id == saison_id);
+    if (u) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   VoirPaiement() {

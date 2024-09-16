@@ -230,12 +230,13 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
-  public GetAdherentAdhesion(): Promise<adherent[]> {
+  public GetAdherentAdhesion(saison_id:number): Promise<adherent[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/adherents_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
-      command: "adherents_adhesions"
+      command: "adherents_adhesions",
+      saison_id:saison_id
     };
 
     return this.global.POST(this.url, body)
