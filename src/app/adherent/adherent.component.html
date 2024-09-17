@@ -219,9 +219,9 @@
                                                     (click)="Delete(adherent)">
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
-                                                <button *ngIf="!adherent.Inscrit" i18n-title title="Inscrire"
+                                                <button *ngIf="!adherent.Inscrit && adherent.CompteID>0 && adherent.valid.control" i18n-title title="Inscrire"
                                                     class="button is-info is-rounded is-outlined" type="button"
-                                                    (click)="Register(adherent, active_saison.id, true)">
+                                                    (click)="Register(adherent, active_saison.id, false)">
                                                     <i class="fas fa-signature"></i>
                                                 </button>
                                                 <button i18n-title title="Editer"

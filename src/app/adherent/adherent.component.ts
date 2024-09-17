@@ -152,7 +152,6 @@ export class AdherentComponent implements OnInit {
     this.action = $localize`Récupérer les adhérents`;
     this.ridersService.GetAdherentAdhesion(this.active_saison.id).then((adh) => {
       this.liste_adherents_VM = adh.map(x => new Adherent(x));
-      console.log( this.liste_adherents_VM);
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
@@ -190,6 +189,7 @@ export class AdherentComponent implements OnInit {
   Register(adh: Adherent, saison_id: number, paiement: boolean) {
     const errorService = ErrorService.instance;
     this.action = $localize`Effectuer une inscription`;
+   
     if (paiement) {
       let confirm = window.confirm($localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`);
       if (confirm) {
