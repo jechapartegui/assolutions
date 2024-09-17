@@ -495,7 +495,7 @@
                     <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' "
                     class="field">
                     <label class="label" i18n for="place_maximum">Compte : </label>
-                    <app-compte-detail  [login]="thisAdherent.Login" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
+                    <app-compte-detail (changeRattacher)="Rattacher($event)" (demRattachement)="DemanderRattachement($event)"  [login]="thisAdherent.Login" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
                 </div>
                 </div>
                 <div *ngIf="thisAdherent" class="buttons">
@@ -590,12 +590,12 @@
                                         <i *ngIf="isRegistredSaison(ss.id)" class="fas fa-check has-text-success"></i>
                                     </td>
                                     <td *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
-                                        <hover-button *ngIf="!isRegistredSaison(ss.id)"
+                                        <hover-button *ngIf="!isRegistredSaison(ss.id) && thisAdherent.valid.control && thisAdherent.CompteID>0"
                                             [nomclass]="'button  is-rounded is-primary is-outlined' "
                                             [nomicon]="'fas fa-signature'" [libelle]="libelle_inscription"
                                             (click)="Register(thisAdherent, ss.id, false)">
                                         </hover-button>
-                                        <hover-button *ngIf="!isRegistredSaison(ss.id)"
+                                        <hover-button *ngIf="!isRegistredSaison(ss.id) && thisAdherent.valid.control && thisAdherent.CompteID>0"
                                             [nomclass]="'button  is-rounded is-primary is-outlined' "
                                             [nomicon]="'fas fa-receipt'" [libelle]="libelle_inscription_avec_paiement"
                                             (click)="Register(thisAdherent, ss.id, true)">
@@ -621,7 +621,7 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n>Compte</label>
-                        <app-compte-detail  [login]="thisAdherent.Login" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
+                        <app-compte-detail (changeRattacher)="Rattacher($event)" (demRattachement)="DemanderRattachement($event)" [login]="thisAdherent.Login" [compte_id]="thisAdherent.CompteID"></app-compte-detail>
                     </div>
                 </div>
                 <div *ngIf="thisAdherent" class="buttons">

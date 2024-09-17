@@ -53,7 +53,10 @@ export class Adherent {
     this.SetLibelle(this);
     this.Contacts = JSON.parse(this.datasource.contacts);
     this.ContactsUrgence = JSON.parse(this.datasource.contacts_prevenir);
-    const foundContact = this.Contacts.find(x => x.Pref === true);
+    let foundContact = this.Contacts.find(x => x.Pref === true);
+    if(!foundContact){
+      foundContact = this.Contacts[0];
+    }
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
     this.Adresse = JSON.parse(this.datasource.adresse);

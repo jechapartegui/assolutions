@@ -535,7 +535,10 @@ export class AdherentComponent implements OnInit {
         source.ContactPrefereType = source.Contacts.find(x => x.Pref).Type;
         source.ContactPrefere = source.Contacts.find(x => x.Pref).Value;
       } catch (error) {
-
+        if(cible.Contacts.length>0){
+          source.ContactPrefereType = source.Contacts[0].Type;
+          source.ContactPrefere = source.Contacts[0].Value;
+        }
       }
     }
     if (source.ContactsUrgence.length == 0) {
@@ -810,5 +813,29 @@ export class AdherentComponent implements OnInit {
 
   VoirPaiement() {
 
+  }
+  Rattacher(val:string){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Rattacher le compte`;
+        this.compte_serv.AddOrMAJLogin(val, this.thisAdherent.ID).then((id) =>{
+          this.thisAdherent.CompteID = id;
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+        }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        })
+  }
+  DemanderRattachement(val:string){
+    const errorService = ErrorService.instance;
+    this.action = $localize`demander le rattachement du compte`;
+        this.compte_serv.DemanderRattachement(val, this.thisAdherent.ID).then((id) =>{
+          this.thisAdherent.CompteID = id;
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+        }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        })
   }
 }

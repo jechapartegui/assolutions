@@ -1,4 +1,4 @@
-<div class="block" *ngIf="thisCompte && DefMDP==false">
+<div class="block" *ngIf="thisCompte && context != 'DEFINIR_MDP'">
     <ng-container *ngIf="thisCompte.id==0">
         <div class="field">
             <label class="label">Login</label>
@@ -32,16 +32,24 @@
 
         </div>
         <div style="display: flex;flex-direction: column;">
-            <a *ngIf="!thisCompte.est_password" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
-            <a *ngIf="!thisCompte.est_password" (click)="DefMDP = true">Définir un mot de passe</a>
-            <a *ngIf="thisCompte.est_password" (click)="DefMDP = true">Modifier le mot de passe</a>
+            <a *ngIf="!thisCompte.est_password && context == 'VUE'" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
+            <a *ngIf="!thisCompte.est_password && context == 'VUE'" (click)="context = 'DEFINIR_MDP'">Définir un mot de passe</a>
+            <a *ngIf="thisCompte.est_password && context == 'VUE'" (click)="context = 'DEFINIR_MDP'">Modifier le mot de passe</a>
+            <a *ngIf="context == 'RATTACHER_TOKEN'" (click)="Rattacher()">Rattacher l'adhérent au compte</a>
         </div>
     </ng-container>
 </div>
-<app-reinit-mdp class="imbrique" [define]="true" *ngIf="DefMDP" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
+{{context}}
+<app-reinit-mdp class="imbrique" [context]="'DEFINE'" *ngIf="context == 'DEFINIR_MDP'" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
 
 </app-reinit-mdp>  
- <button *ngIf="DefMDP" (click)="DefMDP = false" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
+<app-reinit-mdp class="imbrique" [context]="'CONFIRM'" (rattacher)="Rattacher()" (demanderRattachement)="DemanderRattachement()" *ngIf="context == 'RATTACHER_MDP'" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
+
+</app-reinit-mdp> 
+<button *ngIf="context == 'DEFINIR_MDP'" (click)="Rattacher()" class="button is-primary is-rounded is-outlined">
+   Créer un compte avec Token
+ </button>
+ <button *ngIf="context == 'DEFINIR_MDP'" (click)="context = 'VUE'" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
     <i class="fa-solid fa-backward-fast"></i>
   </button>
 

@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { compte, Compte } from 'src/class/compte';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
@@ -15,18 +15,15 @@ import { LoginService } from 'src/services/login.service';
 export class CompteDetailComponent implements OnInit {
   @Input() login: string;
   @Input() compte_id: number;
+  @Output() changeRattacher = new EventEmitter<string>();
+  @Output() demRattachement = new EventEmitter<string>();
+  
   login_valide: string;
   action: string = "";
   thisCompte: compte;
   valid_login = false;
-  rattache: boolean;
-  DefMDP:boolean = false;
-  //view : juste le libellé
-  //viewstate : libellé + type de MDP et situation du compte
-  // viewstate + possibilité d'éditer
-  //admin : possible de tout faire
-  //editing : changement de mdp
-  //editing complet : changer mdp, renvoyer mail, débloquer compte
+
+  context : "RATTACHER_MDP" | "RATTACHER_TOKEN" | "RATTACHER" | "VUE" | "CHANGER_MDP" | "DEFINIR_MDP";
 
   constructor(public compte_serv: CompteService, public login_serv: LoginService, public GlobalService: GlobalService) { }
 
@@ -36,19 +33,20 @@ export class CompteDetailComponent implements OnInit {
   Load() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le profil`;
-    console.log(this.compte_id);
     if (this.compte_id && this.compte_id > 0) {
       this.compte_serv.getAccount(this.compte_id).then((compte: compte) => {
         this.thisCompte = compte;
+        this.context = "VUE";
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.login = $localize`Erreur`;
+        this.context = "RATTACHER";
       })
 
 
     } else {
-
+      this.context = "RATTACHER";
       this.thisCompte = new compte();
 
     }
@@ -62,10 +60,21 @@ export class CompteDetailComponent implements OnInit {
         let o = errorService.OKMessage(this.action + $localize` : Login déjà utilisé`);
         errorService.emitChange(o);
         this.login_valide = this.thisCompte.login;
-        this.rattache = true;
+        this.compte_serv.getAccountLogin(this.login_valide).then((compte: compte) => {
+          this.login = compte.login;
+          this.thisCompte = compte;
+          if(this.thisCompte.est_password){
+            this.context = "RATTACHER_MDP";
+          } else {
+            this.context = "RATTACHER_TOKEN";
+          }
+        }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        })
       } else {
-        this.rattache = false;
         this.login_valide = this.thisCompte.login;
+        this.context = "DEFINIR_MDP";
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       }
@@ -96,6 +105,13 @@ export class CompteDetailComponent implements OnInit {
       let o = errorService.CreateError(this.action, error.message);
       errorService.emitChange(o);
     });
+  }
+
+  Rattacher(){
+    this.changeRattacher.emit(this.login);
+  }
+  DemanderRattachement(){
+    this.demRattachement.emit(this.login);
   }
 
 }

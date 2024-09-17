@@ -46,6 +46,21 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
+  public getAccountLogin(login: string): Promise<compte> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_account",
+      login: login
+    };
+    return this.global.POST(this.url, body)
+      .then((response) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
 
   public UpdateMail_Active(id: number, mail_active: number): Promise<any> {
     this.url = environment.maseance + 'maseance/compte_manage.php';
@@ -219,6 +234,25 @@ export class CompteService {
     const body = {
       command: "exist",
       login: login,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
+  public DemandeRattachement(login: string): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "attacher",
+      compte_id: compte_id,
+      rider_id: rider_id,
     };
 
     return this.global.POST(this.url, body)

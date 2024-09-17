@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
@@ -12,7 +12,9 @@ import { LoginService } from 'src/services/login.service';
 export class ReinitMdpComponent implements OnInit {
   @Input() Login: string;
   @Input() Token: string;
-  @Input() define:boolean=false;
+  @Input() context :"REINIT" | "DEFINE" | "CONFIRM" = "REINIT";
+  @Output() demanderRattachement = new EventEmitter();
+  @Output() rattacher = new EventEmitter();
   Password: string = "";
   action = "";
   ConfirmPassword: string = "";
@@ -118,5 +120,20 @@ export class ReinitMdpComponent implements OnInit {
       let o = errorService.CreateError(this.action, error.message);
       errorService.emitChange(o);
     });
+  }
+  ConfirmMDP(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Rattachement par mot de passe`;
+    this.compte_serv.CheckLogin(this.Login, this.Password).then((cpt) =>{
+      if(cpt){
+        this.rattacher.emit();
+      }
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+    });
+  }
+  DemanderRattachement(){
+    this.demanderRattachement.emit();
   }
 }
