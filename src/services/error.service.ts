@@ -116,6 +116,12 @@ export class ErrorService {
       case "Unauthorized NO_PROJECT_LINKED":
       case "NO_PROJECT_LINKED":
         return $localize`Aucun projet rattaché au compte`;
+      case "Unauthorized NO_TOKEN_ACCOUNT":
+      case "NO_TOKEN_ACCOUNT":
+        return $localize`Ce compte possède un mot de passe, renvoi de Token impossible.`;
+      case "Unauthorized NO_PASSWORD_ACCOUNT":
+      case "NO_PASSWORD_ACCOUNT":
+        return $localize`Ce compte ne possède pas de mot de passe, connexion avec Token uniquement.`;
     }
   }
 

@@ -121,6 +121,7 @@ export class LoginService {
 
     return this.global.POST(this.url, body)
       .then((response: boolean) => {
+        console.log(response);
         return response;
       })
       .catch(error => {

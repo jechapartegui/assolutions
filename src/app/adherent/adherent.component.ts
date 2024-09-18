@@ -551,12 +551,14 @@ export class AdherentComponent implements OnInit {
     return source;
   }
   private mapToAdherentExport(data: any[]): Adherent[] {
-    return data.map(item => {
+    return data.map(item => {     
+      
       let liste_insc: Adhesion[] = [];
       if (item.Inscrit) {
         let insc: Adhesion = new Adhesion();
         insc.saison_id = this.active_saison.id;
         liste_insc.push(insc);
+
       };
       let list_item_contact: ItemContact[] = [];
       if (item.Mail && item.Mail.length > 0) {
@@ -597,7 +599,7 @@ export class AdherentComponent implements OnInit {
           compte: 0,
           login: item.Login,
           inscriptions: [],
-          inscrit: false,
+          inscrit: liste_insc.length > 0 ? true : false,
           seances_prof: [],
           adhesions: liste_insc,
           contacts_prevenir: JSON.stringify(list_item_contact_urg),
@@ -816,6 +818,7 @@ export class AdherentComponent implements OnInit {
 
   }
   Rattacher(val: string) {
+    console.log(val);
     const errorService = ErrorService.instance;
     this.action = $localize`Rattacher le compte`;
     this.compte_serv.AddOrMAJLogin(val, this.thisAdherent.ID).then((id) => {

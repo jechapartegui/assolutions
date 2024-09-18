@@ -246,24 +246,7 @@ export class CompteService {
       });
   }
 
-  public DemandeRattachement(login: string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "attacher",
-      compte_id: compte_id,
-      rider_id: rider_id,
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
   public ExistListe(list_login: string[]): Promise<string[]> {
     this.url = environment.maseance + 'maseance/compte_manage.php';
     //  this.url = this.url + "login.php";

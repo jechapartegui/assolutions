@@ -94,7 +94,7 @@ export class LoginComponent implements OnInit {
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
     this.login_serv.Login(this.Source.Login, this.Source.Password).then(() => {
-      this.projets = [];
+      this.projets = [];     
       if (!GlobalService.projet) {
         if (GlobalService.other_project.length == 0) {
           let o = errorService.CreateError(this.action, $localize`Aucun projet lié`);
@@ -125,8 +125,7 @@ export class LoginComponent implements OnInit {
         }
         this.loading = false;
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
-        errorService.emitChange(o);
+        this.router.navigate(['/menu']);
         this.loading = false;
       }
     }

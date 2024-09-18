@@ -39,9 +39,9 @@ export class MenuComponent implements OnInit {
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
-    const projet = GlobalService.other_project.find(x => x.id == GlobalService.projet.id);
     this.action = $localize`Charger le menu`;
     if (GlobalService.is_logged_in) {
+      const projet = GlobalService.other_project.find(x => x.id == GlobalService.projet.id);
       switch (GlobalService.menu) {
         default:
         case "PROF":
