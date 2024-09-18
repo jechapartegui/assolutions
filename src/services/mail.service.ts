@@ -49,4 +49,22 @@ public EnvoiMailEssai(essai:adherent, seance:seance, mail:string, id:number, pro
       return Promise.reject(error);
     });
 }
+public DemandeRattachement(login:string, rider_id:number): Promise<boolean> {
+  this.url = environment.maseance + 'maseance/mail_manage.php';
+  //  this.url = this.url + "login.php";
+  const body = {
+    command:"demander_rattachement",
+    login:login,
+    rider_id:rider_id
+  };
+
+  return this.global.POST(this.url, body)
+    .then((response: boolean) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
 }

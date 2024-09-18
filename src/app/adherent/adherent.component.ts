@@ -16,6 +16,7 @@ import { ExcelService } from 'src/services/excel.service';
 import { GlobalService } from 'src/services/global.services';
 import { GroupeService } from 'src/services/groupe.service';
 import { InscriptionSaisonService } from 'src/services/inscription-saison.service';
+import { MailService } from 'src/services/mail.service';
 import { SaisonService } from 'src/services/saison.service';
 
 @Component({
@@ -60,7 +61,7 @@ export class AdherentComponent implements OnInit {
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
 
   file: File | null = null;
-  constructor(public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv: CompteService) { }
+  constructor(public mail_serv: MailService, public inscription_saison_serv: InscriptionSaisonService, public excelService: ExcelService, public GlobalService: GlobalService, private router: Router, private saisonserv: SaisonService, private ridersService: AdherentService, private grServ: GroupeService, private route: ActivatedRoute, private compte_serv: CompteService) { }
 
   ngOnInit(): void {
 
@@ -189,7 +190,7 @@ export class AdherentComponent implements OnInit {
   Register(adh: Adherent, saison_id: number, paiement: boolean) {
     const errorService = ErrorService.instance;
     this.action = $localize`Effectuer une inscription`;
-   
+
     if (paiement) {
       let confirm = window.confirm($localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`);
       if (confirm) {
@@ -258,7 +259,7 @@ export class AdherentComponent implements OnInit {
     if (GlobalService.menu == "ADHERENT") {
       this.ridersService.Get_Adherent_My(this.id).then((adh) => {
         this.thisAdherent = new Adherent(adh);
-       
+
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
@@ -535,7 +536,7 @@ export class AdherentComponent implements OnInit {
         source.ContactPrefereType = source.Contacts.find(x => x.Pref).Type;
         source.ContactPrefere = source.Contacts.find(x => x.Pref).Value;
       } catch (error) {
-        if(cible.Contacts.length>0){
+        if (cible.Contacts.length > 0) {
           source.ContactPrefereType = source.Contacts[0].Type;
           source.ContactPrefere = source.Contacts[0].Value;
         }
@@ -596,7 +597,7 @@ export class AdherentComponent implements OnInit {
           compte: 0,
           login: item.Login,
           inscriptions: [],
-          inscrit:false,
+          inscrit: false,
           seances_prof: [],
           adhesions: liste_insc,
           contacts_prevenir: JSON.stringify(list_item_contact_urg),
@@ -814,28 +815,33 @@ export class AdherentComponent implements OnInit {
   VoirPaiement() {
 
   }
-  Rattacher(val:string){
+  Rattacher(val: string) {
     const errorService = ErrorService.instance;
     this.action = $localize`Rattacher le compte`;
-        this.compte_serv.AddOrMAJLogin(val, this.thisAdherent.ID).then((id) =>{
-          this.thisAdherent.CompteID = id;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        }).catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        })
+    this.compte_serv.AddOrMAJLogin(val, this.thisAdherent.ID).then((id) => {
+      this.thisAdherent.CompteID = id;
+      let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
   }
-  DemanderRattachement(val:string){
+  DemanderRattachement(val: string) {
     const errorService = ErrorService.instance;
     this.action = $localize`demander le rattachement du compte`;
-        this.compte_serv.DemanderRattachement(val, this.thisAdherent.ID).then((id) =>{
-          this.thisAdherent.CompteID = id;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        }).catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        })
+    this.mail_serv.DemandeRattachement(val, this.thisAdherent.ID).then((retour) => {
+      if (retour) {
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        errorService.emitChange(o);
+
+      }
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
   }
 }
