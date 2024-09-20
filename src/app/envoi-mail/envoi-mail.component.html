@@ -1,1 +1,61 @@
-<p>envoi-mail works!</p>
+<div class="container">
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title" i18n>Sélection du type de mail</p>
+            <button class="card-header-icon"
+                (click)="ouvert_type_mail ? ouvert_type_mail = false : ouvert_type_mail = true"
+                aria-label="more options">
+                <span class="icon">
+                    <i *ngIf="!ouvert_type_mail" class="fas fa-angle-down" aria-hidden="true"></i>
+                    <i *ngIf="ouvert_type_mail" class="fas fa-angle-up" aria-hidden="true"></i>
+                </span>
+            </button>
+        </header>
+        <div *ngIf="ouvert_type_mail" class="card-content">
+            <div class="buttons">
+                <button type="button" (click)="MailSeanceDispo()" class="button is-primary is-rounded is-outlined">
+                    Séances disponibles
+                </button>
+                <button type="button" class="button is-primary is-rounded is-outlined">
+                    Communication sur une séance
+                </button>
+                <button type="button" class="button is-primary is-rounded is-outlined">
+                    Communication sur un groupe
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title" i18n>Paramétrage du mail</p>
+            <button class="card-header-icon" (click)="ouvert_param ? ouvert_param = false : ouvert_param = true"
+                aria-label="more options">
+                <span class="icon">
+                    <i *ngIf="!ouvert_param" class="fas fa-angle-down" aria-hidden="true"></i>
+                    <i *ngIf="ouvert_param" class="fas fa-angle-up" aria-hidden="true"></i>
+                </span>
+            </button>
+        </header>
+        <div *ngIf="ouvert_param" class="card-content">
+            <ng-container [ngSwitch]="typemail">
+                <ng-container *ngSwitchCase="'SEANCE_DISPO'">
+                    <div class="block">
+                        <div class="field">
+                            <label class="label" i18n>Date de fin de plage</label>
+                            <input class="input" id="date_seance" type="date" [(ngModel)]="date_fin">
+                            <p class="help is-danger" *ngIf="!date_fin" i18n>La date de fin de plage doit être saisie.
+                            </p>
+                        </div>
+
+                    </div>
+                    <div class="block">
+                        <button type="button" (click)="ValiderPlage()" class="button is-primary is-rounded is-outlined">
+                            Valider la plage
+                        </button>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </div>
+    </div>
+
+</div>

@@ -110,6 +110,10 @@
                 (click)="GlobalService.updateSelectedMenuStatus('STOCK')" [routerLink]="['/professeur']" i18n>
                 Stocks
               </a>
+              <a [class]="(GlobalService.SelectedMenu$ | async) === 'ENVOIMAIL' ? 'navbar-item is-selected' : 'navbar-item'"
+              (click)="GlobalService.updateSelectedMenuStatus('ENVOIMAIL')" [routerLink]="['/envoi-mail']" i18n>
+              Envoyer des mails
+            </a>
               </div>
             </div>
 
