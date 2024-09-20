@@ -57,5 +57,122 @@
             </ng-container>
         </div>
     </div>
-
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title" i18n>Paramétrage des destinataires</p>
+            <button class="card-header-icon"
+                (click)="ouvert_audience ? ouvert_audience = false : ouvert_audience = true" aria-label="more options">
+                <span class="icon">
+                    <i *ngIf="!ouvert_audience" class="fas fa-angle-down" aria-hidden="true"></i>
+                    <i *ngIf="ouvert_audience" class="fas fa-angle-up" aria-hidden="true"></i>
+                </span>
+            </button>
+        </header>
+        <div *ngIf="ouvert_audience" class="card-content">
+            <div class="tabs is-toggle">
+                <ul>
+                    <li [class]="type_audience == 'ALL' ? 'is-active' : ''">
+                        <a>
+                            <span i18n>Tous les adhérents</span>
+                        </a>
+                    </li>
+                    <li [class]="type_audience == 'GROUPE' ? 'is-active' : ''">
+                        <a>
+                            <span i18n>Groupes</span>
+                        </a>
+                    </li>
+                    <li [class]="type_audience == 'SEANCE' ? 'is-active' : ''">
+                        <a>
+                            <span>Participants à une séance</span>
+                        </a>
+                    </li>
+                    <li [class]="type_audience == 'PERSONNE' ? 'is-active' : ''">
+                        <a>
+                            <span>Par adhérent</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div *ngIf="type_audience == 'ALL'" class="block">
+                <button (click)="AddUsers()" type="button" class="button is-rounded is-outlined is-success">
+                    <span i18n>Ajouter tous les adhérents</span>
+                </button>
+            </div>
+            <div *ngIf="type_audience == 'GROUPE'" class="block">
+                <div class="field">
+                    <label for="prof" class="label">Professeur</label>
+                    <div class="select">
+                        <select style="font-size:smaller;" [(ngModel)]="groupe_selectionne">
+                            <ng-container *ngFor="let pr of liste_groupe">
+                                <option [value]="pr.id" >{{pr.nom}}</option>
+                            </ng-container>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <button [disabled]="!groupe_selectionne" (click)="AddGroupe()" type="button" class="button is-rounded is-outlined is-success">
+                        <span i18n>Ajouter les personnes du groupe</span>
+                    </button>
+                </div>
+            </div>
+            <div *ngIf="type_audience == 'SEANCE'" class="block">
+                <div class="field">
+                    <label for="prof" class="label">Séance</label>
+                    <div class="select">
+                        <select style="font-size:smaller;" [(ngModel)]="seance_selectionnee">
+                            <ng-container *ngFor="let pr of seance_periode">
+                                <option [value]="pr.seance_id" >{{pr.libelle}}&nbsp;{{pr.date_seance}}</option>
+                            </ng-container>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <button [disabled]="!seance_selectionnee" (click)="AddSeanceTous()" type="button" class="button is-rounded is-outlined is-success">
+                        <span i18n>Ajouter toutes les personnes de la séance</span>
+                    </button>
+                    <button [disabled]="!seance_selectionnee" (click)="AddSeancePresent()" type="button" class="button is-rounded is-outlined is-success">
+                        <span i18n>Seulement ceux déclarés présents</span>
+                    </button>
+                    <button [disabled]="!seance_selectionnee" (click)="AddSeanceConvoque()" type="button" class="button is-rounded is-outlined is-success">
+                        <span i18n>Seulement les convoqués</span>
+                    </button>
+                </div>
+            </div>
+            <div class="block">
+                <div class="tags are-large">
+                    <ng-container *ngFor="let user of ListeUserSelectionne">
+                        <span class="tag is-warning is-medium">
+                            {{user.Libelle}}
+                            <button (click)="RemoveUser(user)" class="delete is-small"></button>
+                        </span>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+        <footer class="card-footer" *ngIf="ouvert_audience">
+            <button type="button" [disabled]="ListeUserSelectionne.length == 0" (click)="ValiderDestinataire()"
+                class="button is-primary is-rounded is-outlined">
+                Valider la liste de destinataire
+            </button>
+            <button (click)="RemoveUsers()" type="button" class="button is-rounded is-outlined is-danger">
+                <span i18n>Vider la liste</span>
+            </button>
+        </footer>
+    </div>
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title" i18n>Revue du brouillon du mail</p>
+            <button class="card-header-icon"
+                (click)="ouvert_brouillon ? ouvert_brouillon = false : ouvert_brouillon = true"
+                aria-label="more options">
+                <span class="icon">
+                    <i *ngIf="!ouvert_brouillon" class="fas fa-angle-down" aria-hidden="true"></i>
+                    <i *ngIf="ouvert_brouillon" class="fas fa-angle-up" aria-hidden="true"></i>
+                </span>
+            </button>
+        </header>
+        <div *ngIf="ouvert_brouillon" class="card-content">
+         
+        </div>
+    </div>
 </div>
