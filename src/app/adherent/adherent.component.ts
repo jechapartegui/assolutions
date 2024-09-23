@@ -152,6 +152,7 @@ export class AdherentComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les adhérents`;
     this.ridersService.GetAdherentAdhesion(this.active_saison.id).then((adh) => {
+   
       this.liste_adherents_VM = adh.map(x => new Adherent(x));
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
