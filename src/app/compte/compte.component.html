@@ -118,9 +118,9 @@
                                         </td>
                                         <td>
                                             <div class="tags">
-                                                <span *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
-                                                <span *ngIf="IsAdminProf(cpt.projet_compte,0)" class="tag is-info">Administrateur</span>
-                                                <span *ngIf="IsAdminProf(cpt.projet_compte,2)"class="tag is-info">Professeur</span>                                                
+                                                <span (click)="getToken(cpt.projet_compte,1)" *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
+                                                <span (click)="getToken(cpt.projet_compte,0)" *ngIf="IsAdminProf(cpt.projet_compte,0)" class="tag is-info">Administrateur</span>
+                                                <span  (click)="getToken(cpt.projet_compte,2)" *ngIf="IsAdminProf(cpt.projet_compte,2)"class="tag is-info">Professeur</span>                                                
                                             </div>
 
                                         </td>

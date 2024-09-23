@@ -171,7 +171,7 @@
                                 </thead>
                                 <tbody>
                                     <tr
-                                        *ngFor="let adherent of liste_adherents_VM | filterLibelleNom : filter_nom |  filterDDNAvant : filter_date_avant | filterDDNApres : filter_date_apres | filterSexe : filter_sexe">
+                                        *ngFor="let adherent of liste_adherents_VM | filterLibelleNom : filter_nom |  filterDDNAvant : filter_date_avant | filterDDNApres : filter_date_apres | filterSexe : filter_sexe | filterInscriptionSaison : inscrits">
                                         <td>
                                             {{adherent.Libelle}}
                                         </td>

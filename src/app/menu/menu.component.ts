@@ -72,7 +72,9 @@ export class MenuComponent implements OnInit {
             }
           }
           const auj = new Date();
-          let date_apres = this.formatDate(auj);
+          const yesterday = new Date(auj);
+          yesterday.setDate(yesterday.getDate() - 1); 
+          let date_apres = this.formatDate(yesterday);
 
           // Date dans un mois
           const nextMonth = new Date(auj);
@@ -172,7 +174,9 @@ export class MenuComponent implements OnInit {
       rider.filter_date_apres = null;
     } else {
       const auj = new Date();
-      rider.filter_date_apres = this.formatDate(auj);
+      const yesterday = new Date(auj);
+      yesterday.setDate(yesterday.getDate() - 1); 
+      rider.filter_date_apres = this.formatDate(yesterday);
       const nextMonth = new Date(auj);
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       rider.filter_date_avant = this.formatDate(nextMonth);

@@ -11,7 +11,12 @@ export class filterInscriptionSaison implements PipeTransform {
     }
 
     function check(item) {
-      return item.Inscrit == filter;
+      if (filter == false) {
+        return true;
+      } else {
+        return item.Inscrit == true;
+
+      }
     }
 
     return items.filter(check);

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
-import { compte } from 'src/class/compte';
+import { compte, projet_compte } from 'src/class/compte';
 import { projet } from 'src/class/projet';
 
 @Injectable({
@@ -203,6 +203,24 @@ export class CompteService {
 
     return this.global.POST(this.url, body)
       .then((response: compte) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public getToken(compte: projet_compte): Promise<string> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "getToken",
+      compte: compte
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: string) => {
         return response;
       })
       .catch(error => {

@@ -51,12 +51,31 @@ export class CompteComponent implements OnInit {
     }
   }
 
-  IsAdminProf(pro_cp:projet_compte[], droit) : boolean{
-    if(pro_cp.find(x => x.droit == droit)){
+  IsAdminProf(pro_cp: projet_compte[], droit): boolean {
+    if (pro_cp.find(x => x.droit == droit)) {
       return true;
     } else {
       return false;
     }
+  }
+
+  getToken(pro_cp: projet_compte[], droit) {
+    const errorService = ErrorService.instance;
+    if (pro_cp.find(x => x.droit == droit)) {
+      this.cpteserv.getToken(pro_cp.find(x => x.droit == droit)).then((token) => {
+        navigator.clipboard.writeText(token).then(() => {
+          alert($localize`Texte copié dans le presse-papier !`);
+        }).catch(err => {
+          alert($localize`Échec de la copie du texte : ` + err);
+        });
+      }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError($localize`Récupérer le Token`, err.message);
+          errorService.emitChange(o);
+          return;
+      });
+    }
+    return $localize`Pas de token pour ce compte`;
+
   }
 
   Sort(arg0: string, arg1: string) {

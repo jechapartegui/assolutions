@@ -28,7 +28,7 @@ export class AdherentComponent implements OnInit {
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   public thisAdherent: Adherent = null;
   public action: string = "";
-  public inscrits: boolean = false;
+  public inscrits: boolean = true;
   public afficher_filtre: boolean = false;
   @Input() public id: number;
   public liste_groupe: Groupe[] = [];
