@@ -233,7 +233,7 @@ export class AdherentComponent implements OnInit {
             errorService.emitChange(o);
             this.thisAdherent.Adhesions = this.thisAdherent.Adhesions.filter(x => x.saison_id !== saison_id);
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
 
@@ -244,7 +244,7 @@ export class AdherentComponent implements OnInit {
       }
     } else {
 
-      let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+      let o = errorService.UnknownError(this.action);
       errorService.emitChange(o);
     }
   }
@@ -311,7 +311,7 @@ export class AdherentComponent implements OnInit {
           errorService.emitChange(o);
           this.ChargerAdherent();
         } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 
@@ -342,7 +342,7 @@ export class AdherentComponent implements OnInit {
           errorService.emitChange(o);
 
         } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
       }).catch((err: HttpErrorResponse) => {
@@ -826,6 +826,7 @@ export class AdherentComponent implements OnInit {
       this.thisAdherent.CompteID = id;
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
+      this.ChargerAdherent();
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
@@ -838,8 +839,9 @@ export class AdherentComponent implements OnInit {
       if (retour) {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
+        this.ChargerAdherent();
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
 
       }

@@ -126,4 +126,5 @@ export class projet_compte{
     public id:number;
     public droit:number;
     public date_connexion_toker:Date;
+    public connexion_token:string;
 }

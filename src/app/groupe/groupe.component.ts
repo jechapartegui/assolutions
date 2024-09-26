@@ -84,7 +84,7 @@ export class GroupeComponent implements OnInit {
             errorService.emitChange(o);
             Ad.Groupes.push(g);
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
         }).catch((error) => {
@@ -95,7 +95,7 @@ export class GroupeComponent implements OnInit {
 
 
     } catch (error) {
-      let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+      let o = errorService.UnknownError(this.action);
       errorService.emitChange(o);
     }
   }
@@ -159,7 +159,7 @@ export class GroupeComponent implements OnInit {
             this.liste_groupe = this.liste_groupe.filter(e => e.id !== this.groupe_to_delete.id);
             
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
         }).catch((error) => {
@@ -174,7 +174,7 @@ export class GroupeComponent implements OnInit {
           errorService.emitChange(o);
           this.liste_groupe = this.liste_groupe.filter(e => e.id !== this.groupe_to_delete.id);
         } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
       }).catch((error) => {
@@ -215,7 +215,7 @@ export class GroupeComponent implements OnInit {
         errorService.emitChange(o);
       }
       else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);      
       }
     }).catch((error) => {

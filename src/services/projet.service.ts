@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { KeyValuePair } from 'src/class/keyvaluepair';
-import { liste_projet, projet } from 'src/class/projet';
+import {  projet } from 'src/class/projet';
 import { environment } from 'src/environments/environment.prod';
 import { GlobalService } from './global.services';
 import { saison } from 'src/class/saison';
@@ -62,6 +62,26 @@ export class ProjetService {
 
     return this.global.POST(this.url, body)
       .then((response: KeyValuePair[]) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
+  public SauvegarderTemplate(template: string, subject:string, type_mail:string): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/projet_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "save_template",
+      template: template,
+      subject:subject,
+      type_mail: type_mail
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
         return response;
       })
       .catch(error => {

@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { compte, projet_compte } from 'src/class/compte';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
@@ -13,6 +14,7 @@ import { GlobalService } from 'src/services/global.services';
 })
 export class CompteComponent implements OnInit {
 
+  baseUrl:string;
 
   sort_login: string;
   filter_login: string;
@@ -26,7 +28,11 @@ export class CompteComponent implements OnInit {
   context: "LISTE" | "ECRITURE" = "LISTE";
   afficher_filtre: any;
 
-  constructor(private cpteserv: CompteService, private router: Router) { }
+    // Récupère l'URL actuelle sans les chemins et paramètres supplémentaires
+  constructor(private location: Location, private cpteserv: CompteService, private router: Router) {
+    
+    this.baseUrl = `${window.location.protocol}//${window.location.hostname}`;
+   }
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les comptes`;
@@ -59,24 +65,21 @@ export class CompteComponent implements OnInit {
     }
   }
 
-  getToken(pro_cp: projet_compte[], droit) {
-    const errorService = ErrorService.instance;
-    if (pro_cp.find(x => x.droit == droit)) {
-      this.cpteserv.getToken(pro_cp.find(x => x.droit == droit)).then((token) => {
-        navigator.clipboard.writeText(token).then(() => {
-          alert($localize`Texte copié dans le presse-papier !`);
-        }).catch(err => {
-          alert($localize`Échec de la copie du texte : ` + err);
-        });
-      }).catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError($localize`Récupérer le Token`, err.message);
-          errorService.emitChange(o);
-          return;
+  getToken(pro_cp: compte, droit: number) {
+    if (pro_cp.projet_compte.find(x => x.droit == droit)) {
+      let token = pro_cp.projet_compte.find(x => x.droit == droit).connexion_token;
+      let url = this.baseUrl + "/login?username=" + pro_cp.login + "&token_connexion=" + token + "&droit=" + droit.toString();
+      navigator.clipboard.writeText(url).then(() => {
+        alert($localize`Texte copié dans le presse-papier !`);
+      }).catch(err => {
+        alert($localize`Échec de la copie du texte : ` + err);
       });
     }
-    return $localize`Pas de token pour ce compte`;
+    return;
 
   }
+
+
 
   Sort(arg0: string, arg1: string) {
     throw new Error('Method not implemented.');

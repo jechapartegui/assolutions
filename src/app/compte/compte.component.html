@@ -28,7 +28,7 @@
             <div class="column">
                 <div class="card">
                     <header class="card-header">
-                        <p class="card-header-title" i18n>Liste des comptes</p>
+                        <p class="card-header-title" i18n>Liste des comptes ({{ListeCompte.length}})</p>
                         <button type="button" (click)="Creer()" class="button is-primary is-rounded is-outlined"
                             style="align-self: center; ;fill:hsl(171, 100%, 41%)">
                             <i class="fa-solid fa-plus"></i>
@@ -60,28 +60,6 @@
                                         </th>
                                         <th><span class="th_filtre">
                                                 <span class="ligne">
-                                                    <span style="font-size: smaller;" i18n>Actif</span>
-                                                    <span style="cursor: pointer;">
-                                                        <i *ngIf="sort_actif === 'NO'" (click)="Sort('ASC', 'actif')"
-                                                            class="fa-solid fa-sort"></i>
-                                                        <i *ngIf="sort_actif === 'ASC'" (click)="Sort('DESC', 'actif')"
-                                                            class="fa-solid fa-sort-up"></i>
-                                                        <i *ngIf="sort_actif === 'DESC'" (click)="Sort('ASC', 'actif')"
-                                                            class="fa-solid fa-sort-down"></i>
-                                                    </span></span>
-                                                <span *ngIf="afficher_filtre" class="ligne">
-                                                    <div class="select">
-                                                        <select style="font-size:smaller;" [(ngModel)]="filter_actif">
-                                                            <option [ngValue]="null" i18n>Tous</option>
-                                                            <option [ngValue]="0" i18n>Inactif</option>
-                                                            <option [ngValue]="1" i18n>Actif</option>
-                                                        </select>
-                                                    </div>
-                                                </span>
-                                            </span>
-                                        </th>
-                                        <th><span class="th_filtre">
-                                                <span class="ligne">
                                                     <span style="font-size: smaller;" i18n>Droits</span>
                                                 </span>
                                                 <span *ngIf="afficher_filtre" class="ligne">
@@ -99,7 +77,10 @@
                                         </th>
                                         <th><span class="th_filtre">
                                                 <span style="font-size: smaller;" i18n>Adhérents</span>
-
+                                                <input *ngIf="afficher_filtre"
+                                                style="width: fit-content;font-size:smaller;" class="input is-small"
+                                                i18n-placeholder placeholder="Nom du cours" type="text"
+                                                [(ngModel)]="filter_login">
 
                                             </span>
                                         </th>
@@ -113,14 +94,10 @@
                                             {{cpt.login}}
                                         </td>
                                         <td>
-                                            <i *ngIf="cpt.actif" class="fa-solid fa-mars has-text-info"></i>
-                                            <i *ngIf="!cpt.actif" class="fa-solid fa-venus has-text-danger"></i>
-                                        </td>
-                                        <td>
                                             <div class="tags">
-                                                <span (click)="getToken(cpt.projet_compte,1)" *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
-                                                <span (click)="getToken(cpt.projet_compte,0)" *ngIf="IsAdminProf(cpt.projet_compte,0)" class="tag is-info">Administrateur</span>
-                                                <span  (click)="getToken(cpt.projet_compte,2)" *ngIf="IsAdminProf(cpt.projet_compte,2)"class="tag is-info">Professeur</span>                                                
+                                                <span style="cursor: pointer;" (click)="getToken(cpt,1)" *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
+                                                <span   *ngIf="IsAdminProf(cpt.projet_compte,0)" class="tag is-info">Administrateur</span>
+                                                <span style="cursor: pointer;"   (click)="getToken(cpt,2)" *ngIf="IsAdminProf(cpt.projet_compte,2)"class="tag is-info">Professeur</span>                                                
                                             </div>
 
                                         </td>

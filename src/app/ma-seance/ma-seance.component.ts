@@ -102,7 +102,7 @@ export class MaSeanceComponent implements OnInit {
           this.Load();
         } else {
           inscription.StatutInscription = oldstatut
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 
@@ -173,7 +173,7 @@ export class MaSeanceComponent implements OnInit {
           this.Load();
         } else {
           inscription.StatutSeance = oldstatut
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 
@@ -296,7 +296,7 @@ ChangerStatut(statut: string) {
         this.thisSeance.statut = StatutSeance.réalisée;
       }
     } else {
-      let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+      let o = errorService.UnknownError(this.action);
       errorService.emitChange(o);
     }
   }).catch((err: HttpErrorResponse) => {
@@ -312,7 +312,7 @@ Save() {
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
     } else {
-      let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+      let o = errorService.UnknownError(this.action);
       errorService.emitChange(o);
     }
   }).catch((err: HttpErrorResponse) => {

@@ -196,7 +196,7 @@ export class ProfesseurComponent implements OnInit {
         errorService.emitChange(o);
 
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
     }).catch((err: HttpErrorResponse) => {
@@ -220,7 +220,7 @@ export class ProfesseurComponent implements OnInit {
         errorService.emitChange(o);
         this.thisAdherent.Adhesions = this.thisAdherent.Adhesions.filter(x => x.saison_id !== saison_id);
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
 
@@ -274,7 +274,7 @@ export class ProfesseurComponent implements OnInit {
           errorService.emitChange(o);
           this.UpdateListeProf();
         } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 
@@ -293,7 +293,7 @@ export class ProfesseurComponent implements OnInit {
         if(retour){
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-        } else {let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        } else {let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
       }).catch((err: HttpErrorResponse) => {
@@ -307,7 +307,7 @@ export class ProfesseurComponent implements OnInit {
           errorService.emitChange(o);
 
         } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
       }).catch((err: HttpErrorResponse) => {

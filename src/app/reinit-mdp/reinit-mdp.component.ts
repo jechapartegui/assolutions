@@ -40,7 +40,7 @@ export class ReinitMdpComponent implements OnInit {
           let o = errorService.CreateError(this.action, $localize`Absence de login`);
           errorService.emitChange(o);
         } else if (this.Token != "Gulfed2606") {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
       }
@@ -69,7 +69,7 @@ export class ReinitMdpComponent implements OnInit {
         errorService.emitChange(o);
         this.router.navigate(['/login']);
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
     }).catch((error: Error) => {
@@ -87,7 +87,7 @@ export class ReinitMdpComponent implements OnInit {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
         }).catch((error: Error) => {
@@ -95,7 +95,7 @@ export class ReinitMdpComponent implements OnInit {
           errorService.emitChange(o);
         });
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
     }).catch((error: Error) => {
@@ -113,7 +113,7 @@ export class ReinitMdpComponent implements OnInit {
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
       } else {
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
     }).catch((error: Error) => {

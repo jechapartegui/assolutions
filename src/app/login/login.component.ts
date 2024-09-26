@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/reinit-mdp'], { queryParams: { login: user, token :token } });
 
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
             this.loading = false;
           }
@@ -148,7 +148,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/login']);
       } else {
 
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
 
@@ -169,7 +169,7 @@ export class LoginComponent implements OnInit {
         errorService.emitChange(o);
       } else {
 
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
 
@@ -189,7 +189,7 @@ export class LoginComponent implements OnInit {
         errorService.emitChange(o);
       } else {
 
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
 

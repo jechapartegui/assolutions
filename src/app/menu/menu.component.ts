@@ -306,7 +306,7 @@ export class MenuComponent implements OnInit {
             inscription = ins;
           })
         } else {
-          let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 

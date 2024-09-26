@@ -86,7 +86,7 @@ export class LieuComponent implements OnInit {
             errorService.emitChange(o);
             this.UpdateListeLieu();
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
 
@@ -106,7 +106,7 @@ export class LieuComponent implements OnInit {
             errorService.emitChange(o);
             this.UpdateListeLieu();
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
 
@@ -174,7 +174,7 @@ export class LieuComponent implements OnInit {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
         }).catch((err: HttpErrorResponse) => {

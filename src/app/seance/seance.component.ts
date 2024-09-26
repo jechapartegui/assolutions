@@ -328,7 +328,7 @@ export class SeanceComponent implements OnInit {
         errorService.emitChange(o);
       } else {
         this.editSeance.Statut = old_statut;
-        let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
       this.UpdateListeSeance();
@@ -470,7 +470,7 @@ export class SeanceComponent implements OnInit {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
         }).catch((err: HttpErrorResponse) => {
@@ -522,7 +522,7 @@ export class SeanceComponent implements OnInit {
               errorService.emitChange(o);
               this.UpdateListeSeance();
             } else {
-              let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+              let o = errorService.UnknownError(this.action);
               errorService.emitChange(o);
             }
 
@@ -542,7 +542,7 @@ export class SeanceComponent implements OnInit {
                 errorService.emitChange(o);
               } else {
                 this.action = $localize`Mettre à jour une séance OK - Mise à jour liste professeur KO`;
-                let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+                let o = errorService.UnknownError(this.action);
                 errorService.emitChange(o);
               }
 
@@ -553,7 +553,7 @@ export class SeanceComponent implements OnInit {
             });
             this.UpdateListeSeance();
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
 

@@ -210,13 +210,14 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
-  public getToken(compte: projet_compte): Promise<string> {
+  public getToken(id: number, droit:number): Promise<string> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/compte_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
       command: "getToken",
-      compte: compte
+      id: id,
+      droit:droit
     };
 
     return this.global.POST(this.url, body)

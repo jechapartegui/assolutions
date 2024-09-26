@@ -22,6 +22,9 @@
                 <button type="button" class="button is-primary is-rounded is-outlined">
                     Communication sur un groupe
                 </button>
+                <button type="button" class="button is-primary is-rounded is-outlined">
+                    Message de bienvenue
+                </button>
             </div>
         </div>
     </div>
@@ -39,6 +42,16 @@
         <div *ngIf="ouvert_param" class="card-content">
             <ng-container [ngSwitch]="typemail">
                 <ng-container *ngSwitchCase="'SEANCE_DISPO'">
+                    <div class="block">
+                        <div class="field">
+                            <label class="label" i18n>Date de début de plage</label>
+                            <input class="input" id="date_seance" type="date" [(ngModel)]="date_debut">
+                            <p class="help is-danger" *ngIf="!date_debut" i18n>La date de début de plage doit être
+                                saisie.
+                            </p>
+                        </div>
+
+                    </div>
                     <div class="block">
                         <div class="field">
                             <label class="label" i18n>Date de fin de plage</label>
@@ -71,22 +84,22 @@
         <div *ngIf="ouvert_audience" class="card-content">
             <div class="tabs is-toggle">
                 <ul>
-                    <li [class]="type_audience == 'TOUS' ? 'is-active' : ''">
+                    <li (click)="type_audience = 'TOUS'" [class]="type_audience == 'TOUS' ? 'is-active' : ''">
                         <a>
                             <span i18n>Tous les adhérents</span>
                         </a>
                     </li>
-                    <li [class]="type_audience == 'GROUPE' ? 'is-active' : ''">
+                    <li (click)="type_audience = 'GROUPE'" [class]="type_audience == 'GROUPE' ? 'is-active' : ''">
                         <a>
                             <span i18n>Groupes</span>
                         </a>
                     </li>
-                    <li [class]="type_audience == 'SEANCE' ? 'is-active' : ''">
+                    <li (click)="type_audience = 'SEANCE'" [class]="type_audience == 'SEANCE' ? 'is-active' : ''">
                         <a>
                             <span>Participants à une séance</span>
                         </a>
                     </li>
-                    <li [class]="type_audience == 'ADHERENT' ? 'is-active' : ''">
+                    <li (click)="type_audience = 'ADHERENT'" [class]="type_audience == 'ADHERENT' ? 'is-active' : ''">
                         <a>
                             <span>Par adhérent</span>
                         </a>
@@ -148,7 +161,7 @@
                     <div class="select">
                         <select style="font-size:smaller;" [(ngModel)]="adherent_selectionne">
                             <ng-container *ngFor="let pr of liste_adherent">
-                                <option [value]="pr.ID">{{pr.Libelle}}&nbsp;{{calculateAge(pr.DDN)}}</option>
+                                <option [ngValue]="pr">{{pr.Libelle}}&nbsp;{{calculateAge(pr.DDN)}}</option>
                             </ng-container>
                         </select>
                     </div>
@@ -195,74 +208,69 @@
     </header>
     <div *ngIf="ouvert_brouillon" class="card-content">
         <div class="columns">
-            <div class="column">
-                <article class="panel is-success">
-                    <p class="panel-heading" i18n>Vue HTML <i (click)="GenererVue()"
-                            class="fa-solid fa-rotate-right"></i> </p>
-
+            <div class="column is-half">
+                <article class="panel is-success" *ngIf="mail_a_generer">
+                    <p class="panel-heading" i18n>Vue HTML</p>
                     <div class="panel-block">
-                        <textarea class="textarea" placeholder="10 lines of textarea"
-                            rows="10">{{mail_a_generer}}</textarea>
+                        <div class="field">
+                            <label class="label">Sujet : </label>
+                            <p class="control">
+                                <input type="text" class="input" style="width: 100%;"
+                                    [(ngModel)]="mail_a_generer.subject">
+                            </p>
+                        </div>
+                    </div>
+                    <div class="panel-block">
+                        <textarea style="font-size: smaller;" class="textarea"
+                            placeholder="Ici s'affichera le contenu du mail en HTML" i18n-placeholder
+                            rows="20">{{mail_a_generer.content}}</textarea>
                     </div>
                 </article>
+                <button (click)="GenererVue()" *ngIf="mail_a_generer" type="button"
+                    class="button is-rounded is-primary is-outlined">
+                    <span i18n>Regénérer la vue</span>
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button (click)="SauvegarderTemplate()" *ngIf="mail_a_generer" type="button"
+                    class="button is-rounded is-primary is-outlined">
+                    <span i18n>Sauvegarder le template</span>
+                    <i class="fa-solid fa-floppy-disk"></i>
+                </button>
             </div>
-            <div class="column">
-                <article class="panel is-success">
-                    <p class="panel-heading" i18n>Vue Généré </p>
-
+            <div class="column is-half">
+                <article class="panel is-success" *ngIf="selected_mail">
+                    <p class="panel-heading" i18n>Vue Générée</p>
                     <div class="panel-block">
-                        <div [innerHTML]="mail_genere"></div>
+                        <div class="field">
+                            <label class="label">Destinataire : </label>
+                            <div class="select">
+                                <select [(ngModel)]="selected_mail">
+                                    <ng-container *ngFor="let mail of liste_mail">
+                                        <option [ngValue]="mail">{{mail.to}}</option>
+                                    </ng-container>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-block">
+                        <p><span i18n>Sujet : </span>{{selected_mail.subject}}</p>
+                    </div>
+                    <div class="panel-block">
+                        <div style="font-size: smaller;" [innerHTML]="selected_mail.content"></div>
                     </div>
                 </article>
+                <button type="button" *ngIf="selected_mail" (click)="EnvoiMail()"
+                    class="button is-rounded is-primary is-outlined">
+                    <span i18n>Envoyer cet email</span>
+                    <i class="far fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
-    <footer class="card-footer" *ngIf="ouvert_audience"><button type="button" (click)="ValiderFormatEmail()"
+    <footer class="card-footer" *ngIf="ouvert_audience"><button type="button" (click)="EnvoyerTousLesMails()"
             class="button is-primary is-rounded is-outlined">
-            Valider l'email et générer l'ensemble
-        </button>
-    </footer>
-</div>
-<div class="card" *ngIf="vue('ENVOI')">
-    <header class="card-header">
-        <p class="card-header-title" i18n>Envoi du mail</p>
-        <button class="card-header-icon" (click)="ouvert_mail ? ouvert_mail = false : ouvert_mail = true"
-            aria-label="more options">
-            <span class="icon">
-                <i *ngIf="!ouvert_mail" class="fas fa-angle-down" aria-hidden="true"></i>
-                <i *ngIf="ouvert_mail" class="fas fa-angle-up" aria-hidden="true"></i>
-            </span>
-        </button>
-    </header>
-    <div *ngIf="ouvert_mail" class="card-content">
-        <div class="field">
-            <label for="prof" class="label">Liste des emails générés</label>
-            <div class="select">
-                <select style="font-size:smaller;" [(ngModel)]="mail_selectionne">
-                    <ng-container *ngFor="let pr of liste_mail">
-                        <option [value]="pr.id">{{pr.to}}</option>
-                    </ng-container>
-                </select>
-            </div>
-        </div>
-        <div class="field">
-            <label for="prof" class="label">Sujet</label>
-            <input class="input" [(ngModel)]="mail_selectionne.subject" type="text">
-        </div>
-        <div class="field">
-            <label for="prof" class="label">Contenu</label>
-            <div [innerHTML]="mail_selectionne.content"></div>
-        </div>
-        <div class="field">
-            <button [disabled]="!mail_selectionne" (click)="EnvoiMail()" type="button"
-                class="button is-rounded is-outlined is-success">
-                <span i18n>Envoyer le mail sélectionné</span>
-            </button>
-        </div>
-    </div>
-    <footer class="card-footer" *ngIf="ouvert_mail"><button type="button" (click)="EnvoyerToutMail()"
-            class="button is-primary is-rounded is-outlined">
-            Envoyer tous les mails de la liste
+            Envoyer tous les mails
+            <i class="far fa-paper-plane"></i>
         </button>
     </footer>
 </div>

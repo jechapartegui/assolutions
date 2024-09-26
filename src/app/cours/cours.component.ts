@@ -251,7 +251,7 @@ export class CoursComponent implements OnInit {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
           }
         }).catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
@@ -280,7 +280,7 @@ export class CoursComponent implements OnInit {
             errorService.emitChange(o);
             this.UpdateListeCours();
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
 
@@ -300,7 +300,7 @@ export class CoursComponent implements OnInit {
             errorService.emitChange(o);
             this.UpdateListeCours();
           } else {
-            let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+            let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
 
