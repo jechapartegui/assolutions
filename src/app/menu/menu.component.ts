@@ -274,49 +274,69 @@ export class MenuComponent implements OnInit {
     let oldstatut = inscription.statut_inscription;
     let libellenom = this.Riders.find(x => x.datasource.id == inscription.rider_id).Libelle;
     let libelleseab = this.Riders.find(x => x.datasource.id == inscription.rider_id).InscriptionSeances.find(x => x.thisSeance.seance_id == inscription.seance_id).thisSeance.libelle;
-    if (statut) {
-      inscription.statut_inscription = StatutPresence.Présent;
-      this.action = libellenom + $localize` prévoit d'être présent à la séance ` + libelleseab;
-    } else {
-      inscription.statut_inscription = StatutPresence.Absent;
-      this.action = libellenom + $localize` prévoit d'être absent à la séance ` + libelleseab;
-    }
-    if (inscription.id == 0) {
-
-      this.inscriptionserv.Add(inscription).then((id) => {
-        inscription.id = id;
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-        this.inscriptionserv.Get(id).then((ins) => {
-          inscription = ins;
-        })
-
-      }).catch((err: HttpErrorResponse) => {
-        inscription.statut_inscription = oldstatut
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        return;
-      })
-    } else {
-      this.inscriptionserv.Update(inscription).then((retour) => {
-        if (retour) {
+    if(statut == null){
+      this.inscriptionserv.Delete(inscription.id).then((ok) => {
+        if(ok){
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-          this.inscriptionserv.Get(inscription.id).then((ins) => {
-            inscription = ins;
-          })
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
+          inscription.statut_inscription = null
+        } else {          
+        let o = errorService.UnknownError(this.action);
+        errorService.emitChange(o);
         }
-
       }).catch((err: HttpErrorResponse) => {
         inscription.statut_inscription = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
       })
+      return;
+    } else {
+      if (statut) {
+        inscription.statut_inscription = StatutPresence.Présent;
+        this.action = libellenom + $localize` prévoit d'être présent à la séance ` + libelleseab;
+      } else {
+        inscription.statut_inscription = StatutPresence.Absent;
+        this.action = libellenom + $localize` prévoit d'être absent à la séance ` + libelleseab;
+      }
+      if (inscription.id == 0) {
+  
+        this.inscriptionserv.Add(inscription).then((id) => {
+          inscription.id = id;
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+          this.inscriptionserv.Get(id).then((ins) => {
+            inscription = ins;
+          })
+  
+        }).catch((err: HttpErrorResponse) => {
+          inscription.statut_inscription = oldstatut
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+          return;
+        })
+      } else {
+        this.inscriptionserv.Update(inscription).then((retour) => {
+          if (retour) {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+            this.inscriptionserv.Get(inscription.id).then((ins) => {
+              inscription = ins;
+            })
+          } else {
+            let o = errorService.UnknownError(this.action);
+            errorService.emitChange(o);
+          }
+  
+        }).catch((err: HttpErrorResponse) => {
+          inscription.statut_inscription = oldstatut
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+          return;
+        })
+      }
     }
+
   }
 
   Voir(id: number) {
