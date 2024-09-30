@@ -62,7 +62,7 @@
             <div class="column">
                 <div class="card">
                     <header class="card-header">
-                        <p class="card-header-title" i18n>Liste des adhérents ({{liste_adherents_VM.length}})</p>
+                        <p class="card-header-title" i18n>Liste des adhérents ({{ getFilteredAdherentsCount() }})</p>
                         <button *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" type="button" (click)="Creer()"
                             class="button is-primary is-rounded is-outlined"
                             style="align-self: center; ;fill:hsl(171, 100%, 41%)">

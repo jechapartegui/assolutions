@@ -636,8 +636,8 @@ export class AdherentComponent implements OnInit {
 
       // Ajoutez d'autres mappages si nécessaire
     };
-
-    this.excelService.exportAsExcelFile(this.liste_adherents_VM.map(x => new AdherentExport(x)), 'liste_adherent', headers);
+    let list:Adherent[] = this.getFilteredAdherents();
+    this.excelService.exportAsExcelFile(list.map(x => new AdherentExport(x)), 'liste_adherent', headers);
   }
   onValidMailChange(isValid: boolean) {
     this.valid_mail = isValid;
@@ -849,5 +849,39 @@ export class AdherentComponent implements OnInit {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
     })
+  }
+
+  getFilteredAdherents(): Adherent[] {
+    return this.liste_adherents_VM
+      .filter(adherent => this.filterLibelleNom(adherent))
+      .filter(adherent => this.filterDDNAvant(adherent))
+      .filter(adherent => this.filterDDNApres(adherent))
+      .filter(adherent => this.filterSexe(adherent))
+      .filter(adherent => this.filterInscriptionSaison(adherent));
+  }
+  
+  getFilteredAdherentsCount(): number {
+    return this.getFilteredAdherents().length;
+  }
+  
+  
+  filterLibelleNom(adherent:Adherent): boolean {
+    return !this.filter_nom || adherent.Libelle.includes(this.filter_nom);
+  }
+  
+  filterDDNAvant(adherent:Adherent): boolean {
+    return !this.filter_date_avant || new Date(adherent.DDN) <= new Date(this.filter_date_avant);
+  }
+  
+  filterDDNApres(adherent:Adherent): boolean {
+    return !this.filter_date_apres || new Date(adherent.DDN) >= new Date(this.filter_date_apres);
+  }
+  
+  filterSexe(adherent:Adherent): boolean {
+    return !this.filter_sexe || adherent.Sexe === this.filter_sexe;
+  }
+  
+  filterInscriptionSaison(adherent:Adherent): boolean {
+    return !this.inscrits || adherent.Inscrit === true;
   }
 }
