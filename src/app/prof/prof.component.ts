@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { KeyValuePair } from 'src/class/keyvaluepair';
 import { professeur } from 'src/class/professeur';
 import { Seance } from 'src/class/seance';
@@ -22,6 +22,7 @@ export class ProfComponent implements OnInit {
   action:string = "";
   LVSeanceProf :KeyValuePair[];
   @Input() prof_dispo:professeur[]=[];
+  @Output() profUpdated = new EventEmitter<SeanceProf[]>();  // Ajout du @Output()
 
   constructor(public globserv:GlobalService, private sean_prof:SeanceprofService){}
   ngOnInit(): void {
@@ -30,6 +31,8 @@ export class ProfComponent implements OnInit {
   }
 
   AjouterProf() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Ajouter un professeur à la séance`;
     const indexToUpdate = this.liste_prof.findIndex(cc => cc.id === this.current_prof_key);
     const newValue = this.liste_prof[indexToUpdate];
     let S = new SeanceProf();
@@ -40,14 +43,48 @@ export class ProfComponent implements OnInit {
     S.seance_id = this.thisSeance.ID;
     S.statut = 0;
     S.taux_horaire = newValue.taux;
-    this.Profs.push(S);
-    this.current_prof_key = null;
-    this.MAJListeProf();
-
+    if(this.thisSeance.ID == 0){      
+      this.Profs.push(S);
+      this.current_prof_key = null;
+      this.MAJListeProf();
+      this.profUpdated.emit(this.Profs);  // Emettre l'event après l'ajout
+    } else {
+      this.sean_prof.Add(S).then((_id) =>{
+        S.id = _id;
+        this.Profs.push(S);
+        this.current_prof_key = null;
+        this.MAJListeProf();
+        this.profUpdated.emit(this.Profs); 
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        return;
+      })
+    }     
   }
+  
   RemoveProf(item) {
-    this.Profs = this.Profs.filter(e => e.professeur_id !== item.professeur_id);
-    this.MAJListeProf();
+    const errorService = ErrorService.instance;
+    this.action = $localize`Supprimer un professeur de la liste`;
+    if(this.thisSeance.ID == 0){
+      this.Profs = this.Profs.filter(e => e.professeur_id !== item.professeur_id);
+      this.MAJListeProf();
+      this.profUpdated.emit(this.Profs); 
+    } else {
+    this.sean_prof.Delete(item.id).then(ok=>{
+      if(ok){
+        this.Profs = this.Profs.filter(e => e.professeur_id !== item.professeur_id);
+        this.MAJListeProf();
+        this.profUpdated.emit(this.Profs); 
+      } else {
+        let o = errorService.CreateError(this.action,$localize`Erreur inconnue`);
+        errorService.emitChange(o);
+      }
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+      return;
+    })}
   }
   MAJListeProf() {
     this.prof_dispo = this.liste_prof;

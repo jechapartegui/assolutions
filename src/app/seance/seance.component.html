@@ -1,6 +1,6 @@
 <div class="container">
   <div class="columns" *ngIf="!editMode" style="margin-top: 0.5rem;">
-    <div class="column">
+    <div class="column menuligne">
       <hover-button
         [nomclass]="filter_statut == null ? 'button is-info is-rounded is-outlined' : 'button is-info is-rounded'"
         [nomicon]="'fa-solid fa-calendar-check'"
@@ -19,29 +19,29 @@
         <hover-button [nomclass]="'button is-outlined is-rounded is-primary'" [nomicon]="'fas fa-check-double'"
           [libelle]="'Créer une série'" (click)="Creer(true)">
         </hover-button>
+      </ng-container>
+      <ng-container *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
+        
         <hover-button [nomclass]="'button is-outlined is-rounded is-primary'" [nomicon]="'fa-solid fa-flag-checkered'"
           [libelle]="'Terminer les séances'" (click)="TerminerSeances()">
         </hover-button>
-      </ng-container>
-      <ng-container *ngIf="(GlobalService.Menu$ | async) == 'ADMIN'">
-        <div class="field has-addons">
-          <p class="control">
-            <span class="select">
-              <select id="seasons" [(ngModel)]="active_saison" i18n-placeholder placeholder="Choisir la saison">
-                <!-- Options pour les professeurs -->
-                <ng-container *ngFor="let season of liste_saison">
-                  <option [value]="season.id">{{season.nom}}</option>
-                </ng-container>
-              </select>
-            </span>
-          </p>
-          <p class="control">
-            <button type="button" class="button is-primary is-outlined">
-              <i class="fas fa-check"></i>
-            </button>
-          </p>
+        &#124;
+        <span>Saison affichée : </span>
+        <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN'" class="field has-addons">
+            <div class="control">
+                <div class="select">
+                    <select [(ngModel)]="active_saison">
+                        <ng-container *ngFor="let saison of liste_saison">
+                            <option [ngValue]="saison">{{saison.nom}}</option>
+                        </ng-container>
+                    </select>
+                </div>
+            </div>
         </div>
-      </ng-container>
+        <button type="button" (click)="UpdateListeSeance()" class="is-rounded is-outlined is-primary button">
+            <i class="fas fa-check"></i>
+        </button>
+    </ng-container>   
     </div>
   </div>
 
@@ -473,7 +473,7 @@
               <button                *ngIf="editSeance.professeurs.length>0"
                 (click)="manage_prof ? manage_prof = false : manage_prof = true"><i class="fas fa-cog"></i></button></label>
 
-            <app-prof [liste_prof]="listeprof" [thisSeance]="editSeance" [manage]="manage_prof"
+            <app-prof (profUpdated)="onProfUpdated($event)" [liste_prof]="listeprof" [thisSeance]="editSeance" [manage]="manage_prof"
               [Profs]="editSeance.professeurs"></app-prof>
           </div>
           <div class="field">
@@ -558,7 +558,7 @@
           </div>
           <div class="field">
             <label class="label" i18n for="place_maximum">Groupes :</label>
-            <app-groupe-detail *ngIf="editSeance.ConvocationNominative == false" [title]="titre_groupe"
+            <app-groupe-detail (groupesUpdated)="onGroupesUpdated($event)" [id_source]="editSeance.ID" [objet_source]="'séance'" *ngIf="editSeance.ConvocationNominative == false" [title]="titre_groupe"
               [Groupes]="editSeance.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
           </div>
           <div class="field">
@@ -569,7 +569,7 @@
 
         <div class="buttons">
           <button class="button is-primary is-rounded is-outlined" [disabled]="!editSeance.valid.control" type="button"
-            style="fill:hsl(171, 100%, 41%)" (click)="Save(editSeance)">
+            style="fill:hsl(171, 100%, 41%)" (click)="Save()">
             <i class="fa-solid fa-floppy-disk"></i>
           </button>
           <button (click)="VoirMaSeance()" class="button is-info is-rounded is-outlined">

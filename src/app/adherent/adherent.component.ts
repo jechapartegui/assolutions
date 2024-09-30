@@ -147,12 +147,16 @@ export class AdherentComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
+  onGroupesUpdated(updatedGroupes: Groupe[]) {
+    this.thisAdherent.Groupes = updatedGroupes;
+    // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
+  }
 
   UpdateListeAdherents() {
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les adhérents`;
     this.ridersService.GetAdherentAdhesion(this.active_saison.id).then((adh) => {
-   
+
       this.liste_adherents_VM = adh.map(x => new Adherent(x));
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
@@ -299,17 +303,22 @@ export class AdherentComponent implements OnInit {
     this.action = $localize`Supprimer l'adhérent`;
     let confirm = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
     if (confirm) {
-      adh.Adhesions.forEach((adhesion) => {
-        this.inscription_saison_serv.Delete(adhesion.id);
-      })
-      adh.Groupes.forEach((gr) => {
-        this.grServ.DeleteLien(gr.lien_groupe_id);
-      })
+      if (adh.Adhesions) {
+        adh.Adhesions.forEach((adhesion) => {
+          this.inscription_saison_serv.Delete(adhesion.id);
+        })
+
+      }
+      if (adh.Groupes) {
+        adh.Groupes.forEach((gr) => {
+          this.grServ.DeleteLien(gr.lien_groupe_id);
+        })
+      }
       this.ridersService.Delete(adh.ID).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-          this.ChargerAdherent();
+          this.UpdateListeAdherents();
         } else {
           let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
@@ -552,8 +561,8 @@ export class AdherentComponent implements OnInit {
     return source;
   }
   private mapToAdherentExport(data: any[]): Adherent[] {
-    return data.map(item => {     
-      
+    return data.map(item => {
+
       let liste_insc: Adhesion[] = [];
       if (item.Inscrit) {
         let insc: Adhesion = new Adhesion();
@@ -636,7 +645,7 @@ export class AdherentComponent implements OnInit {
 
       // Ajoutez d'autres mappages si nécessaire
     };
-    let list:Adherent[] = this.getFilteredAdherents();
+    let list: Adherent[] = this.getFilteredAdherents();
     this.excelService.exportAsExcelFile(list.map(x => new AdherentExport(x)), 'liste_adherent', headers);
   }
   onValidMailChange(isValid: boolean) {
@@ -859,29 +868,29 @@ export class AdherentComponent implements OnInit {
       .filter(adherent => this.filterSexe(adherent))
       .filter(adherent => this.filterInscriptionSaison(adherent));
   }
-  
+
   getFilteredAdherentsCount(): number {
     return this.getFilteredAdherents().length;
   }
-  
-  
-  filterLibelleNom(adherent:Adherent): boolean {
+
+
+  filterLibelleNom(adherent: Adherent): boolean {
     return !this.filter_nom || adherent.Libelle.includes(this.filter_nom);
   }
-  
-  filterDDNAvant(adherent:Adherent): boolean {
+
+  filterDDNAvant(adherent: Adherent): boolean {
     return !this.filter_date_avant || new Date(adherent.DDN) <= new Date(this.filter_date_avant);
   }
-  
-  filterDDNApres(adherent:Adherent): boolean {
+
+  filterDDNApres(adherent: Adherent): boolean {
     return !this.filter_date_apres || new Date(adherent.DDN) >= new Date(this.filter_date_apres);
   }
-  
-  filterSexe(adherent:Adherent): boolean {
+
+  filterSexe(adherent: Adherent): boolean {
     return !this.filter_sexe || adherent.Sexe === this.filter_sexe;
   }
-  
-  filterInscriptionSaison(adherent:Adherent): boolean {
+
+  filterInscriptionSaison(adherent: Adherent): boolean {
     return !this.inscrits || adherent.Inscrit === true;
   }
 }

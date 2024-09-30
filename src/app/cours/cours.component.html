@@ -445,7 +445,7 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n for="groupes">Groupes :</label>
-                        <app-groupe-detail *ngIf="editCours.ConvocationNominative == false"
+                        <app-groupe-detail (groupesUpdated)="onGroupesUpdated($event)" [id_source]="editCours.ID" [objet_source]="'cours'" *ngIf="editCours.ConvocationNominative == false"
                             [Groupes]="editCours.Groupes" [liste_groupe]="liste_groupe"></app-groupe-detail>
                     </div>
                     <div class="buttons">

@@ -134,6 +134,10 @@ export class CoursComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
+  onGroupesUpdated(updatedGroupes: Groupe[]) {
+    this.editCours.Groupes = updatedGroupes;
+    // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
+  }
 
   UpdateListeCours() {
     const errorService = ErrorService.instance;

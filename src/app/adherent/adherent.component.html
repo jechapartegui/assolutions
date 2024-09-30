@@ -489,7 +489,7 @@
                     <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' "
                         class="field">
                         <label class="label" i18n for="place_maximum">Groupes :</label>
-                        <app-groupe-detail [title]="titre_groupe" [Groupes]="thisAdherent.Groupes"
+                        <app-groupe-detail (groupesUpdated)="onGroupesUpdated($event)" [id_source]="thisAdherent.ID" [objet_source]="'rider'" [title]="titre_groupe" [Groupes]="thisAdherent.Groupes"
                             [liste_groupe]="liste_groupe"></app-groupe-detail>
                     </div>
                     <div *ngIf="(GlobalService.Menu$| async) === 'ADMIN' || (GlobalService.Menu$| async) === 'PROF' "

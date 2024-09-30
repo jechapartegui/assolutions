@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { cours } from 'src/class/cours';
-import { Groupe } from 'src/class/groupe';
+import { Groupe, Lien_Groupe } from 'src/class/groupe';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
 import { professeur, Professeur } from 'src/class/professeur';
 import { Saison } from 'src/class/saison';
@@ -282,20 +282,20 @@ export class SeanceComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Terminer les séances passées`;
     let list_s: number[] = [];
-    const today =  new Date();
-    const tomorrow =  new Date(today.setDate(today.getDate() - 1));
+    const today = new Date();
+    const tomorrow = new Date(today.setDate(today.getDate() - 1));
     this.list_seance_VM.filter(x => x.Statut = StatutSeance.prévue).forEach((SVM) => {
-      if (new Date(SVM.date_seance) < tomorrow ) {
+      if (new Date(SVM.date_seance) < tomorrow) {
         list_s.push(SVM.ID);
       }
     })
-    this.seancesservice.TerminerSeances(list_s).then((retour) => {
-      if (retour == list_s.length) {
+    this.seancesservice.TerminerSeances(list_s).then((total) => {
+      if (total = list_s.length) {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
         this.UpdateListeSeance();
       } else {
-        let o = errorService.CreateError(this.action, $localize`Nombre de séances mise à jour : ` + retour.toString() + "/" + list_s.length.toString());
+        let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
       }
     }).catch((err: HttpErrorResponse) => {
@@ -343,7 +343,7 @@ export class SeanceComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les séances`;
     if (this.season_id && this.season_id > 0) {
-      this.seancesservice.GetSeancesSeason(this.season_id, true).then((seances) => {
+      this.seancesservice.GetSeancesSeason(this.active_saison.id, true).then((seances) => {
         this.list_seance = seances;
         this.list_seance_VM = this.list_seance.map(x => new Seance(x));
         this.list_seance_VM.sort((a, b) => {
@@ -480,21 +480,35 @@ export class SeanceComponent implements OnInit {
       }
     }
   }
+  onProfUpdated(updatedProfs: SeanceProf[]) {
+    this.editSeance.professeurs = updatedProfs;
+    // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
+  }
+  onGroupesUpdated(updatedGroupes: Groupe[]) {
+    this.editSeance.Groupes = updatedGroupes;
+    // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
+  }
 
 
-  Save(seance: Seance) {
+  Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter une séance`;
-    if (seance) {
-      if (seance.ID == 0) {
+    if (this.editSeance) {
+      if (this.editSeance.ID == 0) {
         if (this.editMode_serie) {
           this.action = $localize`Ajouter une série de séances`;
-          this.seancesservice.AddRange(seance.datasource, seance.datasource.date_seance, this.date_fin_serie, this.jour_semaine).then((seances) => {
+          this.seancesservice.AddRange(this.editSeance.datasource, this.editSeance.datasource.date_seance, this.date_fin_serie, this.jour_semaine).then((seances) => {
             if (seances.length > 0) {
               seances.forEach((id_s) => {
                 this.editSeance.professeurs.forEach((prof: SeanceProf) => {
-                  prof.seance_id = id_s; this.spservice.Add(prof);
+                  prof.seance_id = id_s;
+                  this.spservice.Add(prof);
                 })
+                this.editSeance.Groupes.forEach((gr: Groupe) => {
+                  this.grServ.AddLien(gr.id, "séance", id_s);
+                })
+
+
               })
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
@@ -511,12 +525,15 @@ export class SeanceComponent implements OnInit {
           });
 
         } else {
-          this.seancesservice.Add(seance.datasource).then((id) => {
+          this.seancesservice.Add(this.editSeance.datasource).then((id) => {
             if (id > 0) {
               this.editSeance.ID = id;
               this.editSeance.professeurs.forEach((ss) => {
                 ss.seance_id = id;
                 this.spservice.Add(ss);
+              })
+              this.editSeance.Groupes.forEach((gr: Groupe) => {
+                this.grServ.AddLien(gr.id, "séance", id);
               })
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
@@ -534,23 +551,10 @@ export class SeanceComponent implements OnInit {
       }
       else {
         this.action = $localize`Mettre à jour une séance`;
-        this.seancesservice.Update(seance.datasource).then((ok) => {
+        this.seancesservice.Update(this.editSeance.datasource).then((ok) => {
           if (ok) {
-            this.spservice.UpdateSeance(seance.professeurs, seance.ID).then((ok) => {
-              if (ok) {
-                let o = errorService.OKMessage(this.action);
-                errorService.emitChange(o);
-              } else {
-                this.action = $localize`Mettre à jour une séance OK - Mise à jour liste professeur KO`;
-                let o = errorService.UnknownError(this.action);
-                errorService.emitChange(o);
-              }
-
-            }).catch((err) => {
-              this.action = $localize`Mettre à jour une séance OK - Mise à jour liste professeur KO`;
-              let o = errorService.CreateError(this.action, err.message);
-              errorService.emitChange(o);
-            });
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
             this.UpdateListeSeance();
           } else {
             let o = errorService.UnknownError(this.action);
@@ -558,6 +562,7 @@ export class SeanceComponent implements OnInit {
           }
 
         }).catch((err) => {
+          this.action = $localize`Mettre à jour une séance OK`;
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);
         });

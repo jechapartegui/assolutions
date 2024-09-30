@@ -108,9 +108,11 @@ export class CompteDetailComponent implements OnInit {
   }
 
   Rattacher(){
+    this.context = "VUE";
     this.changeRattacher.emit(this.login_valide);
   }
   DemanderRattachement(){
+    this.context = "VUE";
     this.demRattachement.emit(this.login_valide);
   }
 
