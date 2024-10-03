@@ -267,7 +267,7 @@
             </div>
         </div>
     </div>
-    <footer class="card-footer" *ngIf="ouvert_audience"><button type="button" (click)="EnvoyerTousLesMails()"
+    <footer class="card-footer" *ngIf="ouvert_brouillon && liste_mail && liste_mail.length>0"><button type="button" (click)="EnvoyerTousLesMails()"
             class="button is-primary is-rounded is-outlined">
             Envoyer tous les mails
             <i class="far fa-paper-plane"></i>
