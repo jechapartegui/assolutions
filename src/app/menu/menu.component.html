@@ -330,7 +330,7 @@
                                                             </span>
                                                             <ng-container
                                                                 *ngIf="(GlobalService.Menu$| async) === 'ADHERENT'">
-                                                                <span
+                                                                <span (click)="MAJInscription(seance.thisInscription, null)"
                                                                     *ngIf="seance.thisInscription.statut_inscription == 'présent'"
                                                                     class="icon is-large">
                                                                     <span class="fa-stack fa-lg">
@@ -347,7 +347,7 @@
                                                                             class="far fa-stack-2x fa-thumbs-up has-text-success"></i>
                                                                     </span>
                                                                 </span>
-                                                                <span
+                                                                <span (click)="MAJInscription(seance.thisInscription, null)"
                                                                     *ngIf="seance.thisInscription.statut_inscription == 'absent'"
                                                                     class="icon is-large">
                                                                     <span class="fa-stack fa-lg">

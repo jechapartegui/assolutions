@@ -268,4 +268,23 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+  public Check(prenom:string, nom:string, login:string): Promise<number> {
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "check",
+      prenom:prenom,
+      nom:nom,
+      login:login
+
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
 }
