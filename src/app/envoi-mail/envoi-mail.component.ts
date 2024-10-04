@@ -18,7 +18,11 @@ import { SeancesService } from 'src/services/seance.service';
   styleUrls: ['./envoi-mail.component.css'],
 })
 export class EnvoiMailComponent implements OnInit {
-  typemail: 'SEANCE_DISPO';
+  typemail:
+    | 'SEANCE_DISPO'
+    | 'ANNULATION_SEANCE'
+    | 'CONVOCATION_SEANCE'
+    | 'LIBRE';
   ouvert_type_mail: boolean = true;
   ouvert_param: boolean = false;
   ouvert_audience: boolean = false;
@@ -41,7 +45,7 @@ export class EnvoiMailComponent implements OnInit {
   mail_a_generer: MailData;
   subject_mail_a_generer: string;
   type_audience: 'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT' = 'TOUS';
-  etape: 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON' | 'ENVOI' =
+  etape: 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON' =
     'SELECTION_MAIL';
   constructor(
     public adh_serv: AdherentService,
@@ -58,8 +62,8 @@ export class EnvoiMailComponent implements OnInit {
     const day = ('0' + date.getDate()).slice(-2);
     return `${year}-${month}-${day}`;
   }
-  MailSeanceDispo() {
-    // Date dans un mois
+
+  GoToParam(type){
     const auj = new Date();
 
     // Date dans un mois
@@ -67,11 +71,19 @@ export class EnvoiMailComponent implements OnInit {
     this.date_debut = this.formatDate(auj);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     this.date_fin = this.formatDate(nextMonth);
-    this.typemail = 'SEANCE_DISPO';
+    this.typemail = type;
     this.etape = 'PARAMETRE';
     this.ouvert_type_mail = false;
     this.ouvert_param = true;
   }
+ 
+  Libre(){    
+    this.typemail = 'LIBRE';
+    this.etape = 'AUDIENCE';
+    this.ValiderPlage();
+  }
+
+
 
   ValiderPlage() {
     const errorService = ErrorService.instance;
@@ -248,12 +260,6 @@ export class EnvoiMailComponent implements OnInit {
           return false;
         }
       case 'BROUILLON':
-        if (thisvue == 'ENVOI') {
-          return false;
-        } else {
-          return true;
-        }
-      case 'ENVOI':
         return true;
     }
   }
@@ -293,41 +299,41 @@ export class EnvoiMailComponent implements OnInit {
     let erreur = false;
     const errorService = ErrorService.instance;
     this.action = $localize`Envoyer tous les mails`;
-    
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms)); // fonction pour la temporisation
+
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms)); // fonction pour la temporisation
     const mailLimitPerMinute = 30; // 30 mails par minute
     const interval = 60000 / mailLimitPerMinute; // Calcul du délai entre chaque envoi
-    
+
     for (let i = 0; i < this.liste_mail.length; i++) {
-        const mail = this.liste_mail[i];
+      const mail = this.liste_mail[i];
 
-        try {
-            const ok = await this.mail_serv.Envoyer(mail); // Attendre l'envoi du mail
-            if (ok) {
-                nb_ok++;
-            } else {
-                erreur = true;
-                let o = errorService.UnknownError(this.action);
-                errorService.emitChange(o);
-            }
-        }      
-        catch(err: any)  {
+      try {
+        const ok = await this.mail_serv.Envoyer(mail); // Attendre l'envoi du mail
+        if (ok) {
+          nb_ok++;
+        } else {
           erreur = true;
-          let o = errorService.CreateError(this.action, err.message);
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
-        };
+        }
+      } catch (err: any) {
+        erreur = true;
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      }
 
-        // Temporiser l'envoi (attendre avant de passer au mail suivant)
-        await delay(interval);
+      // Temporiser l'envoi (attendre avant de passer au mail suivant)
+      await delay(interval);
     }
 
     if (!erreur) {
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
+      let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
     }
 
     console.log(`${nb_ok}/${nb_mail} mails envoyés.`);
-}
+  }
 
   EnvoiMail() {
     const errorService = ErrorService.instance;

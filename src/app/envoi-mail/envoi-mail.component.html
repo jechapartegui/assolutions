@@ -1,276 +1,450 @@
 <div class="container">
-    <div class="card" *ngIf="vue('SELECTION_MAIL')">
-        <header class="card-header">
-            <p class="card-header-title" i18n>Sélection du type de mail</p>
-            <button class="card-header-icon"
-                (click)="ouvert_type_mail ? ouvert_type_mail = false : ouvert_type_mail = true"
-                aria-label="more options">
-                <span class="icon">
-                    <i *ngIf="!ouvert_type_mail" class="fas fa-angle-down" aria-hidden="true"></i>
-                    <i *ngIf="ouvert_type_mail" class="fas fa-angle-up" aria-hidden="true"></i>
-                </span>
-            </button>
-        </header>
-        <div *ngIf="ouvert_type_mail" class="card-content">
-            <div class="buttons">
-                <button type="button" (click)="MailSeanceDispo()" class="button is-primary is-rounded is-outlined">
-                    Séances disponibles
-                </button>
-                <button type="button" class="button is-primary is-rounded is-outlined">
-                    Communication sur une séance
-                </button>
-                <button type="button" class="button is-primary is-rounded is-outlined">
-                    Communication sur un groupe
-                </button>
-                <button type="button" class="button is-primary is-rounded is-outlined">
-                    Message de bienvenue
-                </button>
-            </div>
-        </div>
-    </div>
-    <div class="card" *ngIf="vue('PARAMETRE')">
-        <header class="card-header">
-            <p class="card-header-title" i18n>Paramétrage du mail</p>
-            <button class="card-header-icon" (click)="ouvert_param ? ouvert_param = false : ouvert_param = true"
-                aria-label="more options">
-                <span class="icon">
-                    <i *ngIf="!ouvert_param" class="fas fa-angle-down" aria-hidden="true"></i>
-                    <i *ngIf="ouvert_param" class="fas fa-angle-up" aria-hidden="true"></i>
-                </span>
-            </button>
-        </header>
-        <div *ngIf="ouvert_param" class="card-content">
-            <ng-container [ngSwitch]="typemail">
-                <ng-container *ngSwitchCase="'SEANCE_DISPO'">
-                    <div class="block">
-                        <div class="field">
-                            <label class="label" i18n>Date de début de plage</label>
-                            <input class="input" id="date_seance" type="date" [(ngModel)]="date_debut">
-                            <p class="help is-danger" *ngIf="!date_debut" i18n>La date de début de plage doit être
-                                saisie.
-                            </p>
-                        </div>
-
-                    </div>
-                    <div class="block">
-                        <div class="field">
-                            <label class="label" i18n>Date de fin de plage</label>
-                            <input class="input" id="date_seance" type="date" [(ngModel)]="date_fin">
-                            <p class="help is-danger" *ngIf="!date_fin" i18n>La date de fin de plage doit être saisie.
-                            </p>
-                        </div>
-
-                    </div>
-                    <div class="block">
-                        <button type="button" (click)="ValiderPlage()" class="button is-primary is-rounded is-outlined">
-                            Valider la plage
-                        </button>
-                    </div>
-                </ng-container>
-            </ng-container>
-        </div>
-    </div>
-    <div class="card" *ngIf="vue('AUDIENCE')">
-        <header class="card-header">
-            <p class="card-header-title" i18n>Paramétrage des destinataires</p>
-            <button class="card-header-icon"
-                (click)="ouvert_audience ? ouvert_audience = false : ouvert_audience = true" aria-label="more options">
-                <span class="icon">
-                    <i *ngIf="!ouvert_audience" class="fas fa-angle-down" aria-hidden="true"></i>
-                    <i *ngIf="ouvert_audience" class="fas fa-angle-up" aria-hidden="true"></i>
-                </span>
-            </button>
-        </header>
-        <div *ngIf="ouvert_audience" class="card-content">
-            <div class="tabs is-toggle">
-                <ul>
-                    <li (click)="type_audience = 'TOUS'" [class]="type_audience == 'TOUS' ? 'is-active' : ''">
-                        <a>
-                            <span i18n>Tous les adhérents</span>
-                        </a>
-                    </li>
-                    <li (click)="type_audience = 'GROUPE'" [class]="type_audience == 'GROUPE' ? 'is-active' : ''">
-                        <a>
-                            <span i18n>Groupes</span>
-                        </a>
-                    </li>
-                    <li (click)="type_audience = 'SEANCE'" [class]="type_audience == 'SEANCE' ? 'is-active' : ''">
-                        <a>
-                            <span>Participants à une séance</span>
-                        </a>
-                    </li>
-                    <li (click)="type_audience = 'ADHERENT'" [class]="type_audience == 'ADHERENT' ? 'is-active' : ''">
-                        <a>
-                            <span>Par adhérent</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div *ngIf="type_audience == 'TOUS'" class="block">
-                <button (click)="AddUsers()" type="button" class="button is-rounded is-outlined is-success">
-                    <span i18n>Ajouter tous les adhérents</span>
-                </button>
-            </div>
-            <div *ngIf="type_audience == 'GROUPE'" class="block">
-                <div class="field">
-                    <label for="prof" class="label">Professeur</label>
-                    <div class="select">
-                        <select style="font-size:smaller;" [(ngModel)]="groupe_selectionne">
-                            <ng-container *ngFor="let pr of liste_groupe">
-                                <option [value]="pr.id">{{pr.nom}}</option>
-                            </ng-container>
-                        </select>
-                    </div>
-                </div>
-                <div class="field">
-                    <button [disabled]="!groupe_selectionne" (click)="AddGroupe()" type="button"
-                        class="button is-rounded is-outlined is-success">
-                        <span i18n>Ajouter les personnes du groupe</span>
-                    </button>
-                </div>
-            </div>
-            <div *ngIf="type_audience == 'SEANCE'" class="block">
-                <div class="field">
-                    <label for="prof" class="label">Séance</label>
-                    <div class="select">
-                        <select style="font-size:smaller;" [(ngModel)]="seance_selectionnee">
-                            <ng-container *ngFor="let pr of seance_periode">
-                                <option [value]="pr.seance_id">{{pr.libelle}}&nbsp;{{pr.date_seance}}</option>
-                            </ng-container>
-                        </select>
-                    </div>
-                </div>
-                <div class="field">
-                    <button [disabled]="!seance_selectionnee" (click)="AddSeanceTous()" type="button"
-                        class="button is-rounded is-outlined is-success">
-                        <span i18n>Ajouter toutes les personnes de la séance</span>
-                    </button>
-                    <button [disabled]="!seance_selectionnee" (click)="AddSeancePresent()" type="button"
-                        class="button is-rounded is-outlined is-success">
-                        <span i18n>Seulement ceux déclarés présents</span>
-                    </button>
-                    <button [disabled]="!seance_selectionnee" (click)="AddSeanceConvoque()" type="button"
-                        class="button is-rounded is-outlined is-success">
-                        <span i18n>Seulement les convoqués</span>
-                    </button>
-                </div>
-            </div>
-            <div *ngIf="type_audience == 'ADHERENT'" class="block">
-                <div class="field">
-                    <label for="prof" class="label">Adhérents</label>
-                    <div class="select">
-                        <select style="font-size:smaller;" [(ngModel)]="adherent_selectionne">
-                            <ng-container *ngFor="let pr of liste_adherent">
-                                <option [ngValue]="pr">{{pr.Libelle}}&nbsp;{{calculateAge(pr.DDN)}}</option>
-                            </ng-container>
-                        </select>
-                    </div>
-                </div>
-                <div class="field">
-                    <button [disabled]="!adherent_selectionne" (click)="Addherent()" type="button"
-                        class="button is-rounded is-outlined is-success">
-                        <span i18n>Ajouter</span>
-                    </button>
-                </div>
-            </div>
-            <div class="block">
-                <div class="tags are-large">
-                    <ng-container *ngFor="let user of ListeUserSelectionne">
-                        <span class="tag is-warning is-medium">
-                            {{user.Libelle}}
-                            <button (click)="RemoveUser(user)" class="delete is-small"></button>
-                        </span>
-                    </ng-container>
-                </div>
-            </div>
-        </div>
-    </div>
-    <footer class="card-footer" *ngIf="ouvert_audience">
-        <button type="button" [disabled]="ListeUserSelectionne.length == 0" (click)="ValiderDestinataire()"
-            class="button is-primary is-rounded is-outlined">
-            Valider la liste de destinataire
+  <div class="card" *ngIf="vue('SELECTION_MAIL')">
+    <header class="card-header">
+      <p class="card-header-title" i18n>Sélection du type de mail</p>
+      <button
+        class="card-header-icon"
+        (click)="
+          ouvert_type_mail
+            ? (ouvert_type_mail = false)
+            : (ouvert_type_mail = true)
+        "
+        aria-label="more options"
+      >
+        <span class="icon">
+          <i
+            *ngIf="!ouvert_type_mail"
+            class="fas fa-angle-down"
+            aria-hidden="true"
+          ></i>
+          <i
+            *ngIf="ouvert_type_mail"
+            class="fas fa-angle-up"
+            aria-hidden="true"
+          ></i>
+        </span>
+      </button>
+    </header>
+    <div *ngIf="ouvert_type_mail" class="card-content">
+      <div class="buttons">
+        <button
+          type="button"
+          (click)="GoToParam('SEANCE_DISPO')"
+          class="button is-primary is-rounded is-outlined"
+        >
+          Séances disponibles
         </button>
-        <button (click)="RemoveUsers()" type="button" class="button is-rounded is-outlined is-danger">
-            <span i18n>Vider la liste</span>
+        <button
+          type="button"
+          (click)="GoToParam('ANNULATION_SEANCE')"
+          class="button is-primary is-rounded is-outlined"
+        >
+          Annulation séance
         </button>
-    </footer>
+        <button
+          type="button"
+          (click)="GoToParam('CONVOCATION_SEANCE')"
+          class="button is-primary is-rounded is-outlined"
+        >
+          Convocation à un événement
+        </button>
+        <button
+          type="button"
+          (click)="Libre()"
+          class="button is-primary is-rounded is-outlined"
+        >
+          Message libre
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="card" *ngIf="vue('PARAMETRE')">
+    <header class="card-header">
+      <p class="card-header-title" i18n>Paramétrage du mail</p>
+      <button
+        class="card-header-icon"
+        (click)="ouvert_param ? (ouvert_param = false) : (ouvert_param = true)"
+        aria-label="more options"
+      >
+        <span class="icon">
+          <i
+            *ngIf="!ouvert_param"
+            class="fas fa-angle-down"
+            aria-hidden="true"
+          ></i>
+          <i
+            *ngIf="ouvert_param"
+            class="fas fa-angle-up"
+            aria-hidden="true"
+          ></i>
+        </span>
+      </button>
+    </header>
+    <div *ngIf="ouvert_param" class="card-content">
+      <ng-container *ngIf="typemail != 'LIBRE'">
+        <div class="block">
+          <div class="field">
+            <label class="label" i18n>Date minimum de la séance</label>
+            <input
+              class="input"
+              id="date_seance"
+              type="date"
+              [(ngModel)]="date_debut"
+            />
+            <p class="help is-danger" *ngIf="!date_debut" i18n>
+              La date de début de plage doit être saisie.
+            </p>
+          </div>
+        </div>
+        <div class="block">
+          <div class="field">
+            <label class="label" i18n>Date maximum de la séance</label>
+            <input
+              class="input"
+              id="date_seance"
+              type="date"
+              [(ngModel)]="date_fin"
+            />
+            <p class="help is-danger" *ngIf="!date_fin" i18n>
+              La date de fin de plage doit être saisie.
+            </p>
+          </div>
+        </div>
+
+        <div class="block">
+          <button
+            type="button"
+            (click)="ValiderPlage()"
+            class="button is-primary is-rounded is-outlined"
+          >
+            Valider la plage
+          </button>
+        </div>
+        <ng-container
+          *ngIf="typemail == 'CONVOCATION_SEANCE' || typemail == 'ANNULATION_SEANCE'"
+        >
+        </ng-container>
+
+      </ng-container>
+    </div>
+  </div>
+  <div class="card" *ngIf="vue('AUDIENCE')">
+    <header class="card-header">
+      <p class="card-header-title" i18n>Paramétrage des destinataires</p>
+      <button
+        class="card-header-icon"
+        (click)="
+          ouvert_audience ? (ouvert_audience = false) : (ouvert_audience = true)
+        "
+        aria-label="more options"
+      >
+        <span class="icon">
+          <i
+            *ngIf="!ouvert_audience"
+            class="fas fa-angle-down"
+            aria-hidden="true"
+          ></i>
+          <i
+            *ngIf="ouvert_audience"
+            class="fas fa-angle-up"
+            aria-hidden="true"
+          ></i>
+        </span>
+      </button>
+    </header>
+    <div *ngIf="ouvert_audience" class="card-content">
+      <div class="tabs is-toggle">
+        <ul>
+          <li
+            (click)="type_audience = 'TOUS'"
+            [class]="type_audience == 'TOUS' ? 'is-active' : ''"
+          >
+            <a>
+              <span i18n>Tous les adhérents</span>
+            </a>
+          </li>
+          <li
+            (click)="type_audience = 'GROUPE'"
+            [class]="type_audience == 'GROUPE' ? 'is-active' : ''"
+          >
+            <a>
+              <span i18n>Groupes</span>
+            </a>
+          </li>
+          <li
+            (click)="type_audience = 'SEANCE'"
+            [class]="type_audience == 'SEANCE' ? 'is-active' : ''"
+          >
+            <a>
+              <span>Participants à une séance</span>
+            </a>
+          </li>
+          <li
+            (click)="type_audience = 'ADHERENT'"
+            [class]="type_audience == 'ADHERENT' ? 'is-active' : ''"
+          >
+            <a>
+              <span>Par adhérent</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div *ngIf="type_audience == 'TOUS'" class="block">
+        <button
+          (click)="AddUsers()"
+          type="button"
+          class="button is-rounded is-outlined is-success"
+        >
+          <span i18n>Ajouter tous les adhérents</span>
+        </button>
+      </div>
+      <div *ngIf="type_audience == 'GROUPE'" class="block">
+        <div class="field">
+          <label for="prof" class="label">Professeur</label>
+          <div class="select">
+            <select style="font-size: smaller" [(ngModel)]="groupe_selectionne">
+              <ng-container *ngFor="let pr of liste_groupe">
+                <option [value]="pr.id">{{ pr.nom }}</option>
+              </ng-container>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <button
+            [disabled]="!groupe_selectionne"
+            (click)="AddGroupe()"
+            type="button"
+            class="button is-rounded is-outlined is-success"
+          >
+            <span i18n>Ajouter les personnes du groupe</span>
+          </button>
+        </div>
+      </div>
+      <div *ngIf="type_audience == 'SEANCE'" class="block">
+        <div class="field">
+          <label for="prof" class="label">Séance</label>
+          <div class="select">
+            <select
+              style="font-size: smaller"
+              [(ngModel)]="seance_selectionnee"
+            >
+              <ng-container *ngFor="let pr of seance_periode">
+                <option [value]="pr.seance_id">
+                  {{ pr.libelle }}&nbsp;{{ pr.date_seance }}
+                </option>
+              </ng-container>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <button
+            [disabled]="!seance_selectionnee"
+            (click)="AddSeanceTous()"
+            type="button"
+            class="button is-rounded is-outlined is-success"
+          >
+            <span i18n>Ajouter toutes les personnes de la séance</span>
+          </button>
+          <button
+            [disabled]="!seance_selectionnee"
+            (click)="AddSeancePresent()"
+            type="button"
+            class="button is-rounded is-outlined is-success"
+          >
+            <span i18n>Seulement ceux déclarés présents</span>
+          </button>
+          <button
+            [disabled]="!seance_selectionnee"
+            (click)="AddSeanceConvoque()"
+            type="button"
+            class="button is-rounded is-outlined is-success"
+          >
+            <span i18n>Seulement les convoqués</span>
+          </button>
+        </div>
+      </div>
+      <div *ngIf="type_audience == 'ADHERENT'" class="block">
+        <div class="field">
+          <label for="prof" class="label">Adhérents</label>
+          <div class="select">
+            <select
+              style="font-size: smaller"
+              [(ngModel)]="adherent_selectionne"
+            >
+              <ng-container *ngFor="let pr of liste_adherent">
+                <option [ngValue]="pr">
+                  {{ pr.Libelle }}&nbsp;{{ calculateAge(pr.DDN) }}
+                </option>
+              </ng-container>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <button
+            [disabled]="!adherent_selectionne"
+            (click)="Addherent()"
+            type="button"
+            class="button is-rounded is-outlined is-success"
+          >
+            <span i18n>Ajouter</span>
+          </button>
+        </div>
+      </div>
+      <div class="block">
+        <div class="tags are-large">
+          <ng-container *ngFor="let user of ListeUserSelectionne">
+            <span class="tag is-warning is-medium">
+              {{ user.Libelle }}
+              <button
+                (click)="RemoveUser(user)"
+                class="delete is-small"
+              ></button>
+            </span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="card-footer" *ngIf="ouvert_audience">
+    <button
+      type="button"
+      [disabled]="ListeUserSelectionne.length == 0"
+      (click)="ValiderDestinataire()"
+      class="button is-primary is-rounded is-outlined"
+    >
+      Valider la liste de destinataire
+    </button>
+    <button
+      (click)="RemoveUsers()"
+      type="button"
+      class="button is-rounded is-outlined is-danger"
+    >
+      <span i18n>Vider la liste</span>
+    </button>
+  </footer>
 </div>
 <div class="card" *ngIf="vue('BROUILLON')">
-    <header class="card-header">
-        <p class="card-header-title" i18n>Revue du brouillon du mail</p>
-        <button class="card-header-icon" (click)="ouvert_brouillon ? ouvert_brouillon = false : ouvert_brouillon = true"
-            aria-label="more options">
-            <span class="icon">
-                <i *ngIf="!ouvert_brouillon" class="fas fa-angle-down" aria-hidden="true"></i>
-                <i *ngIf="ouvert_brouillon" class="fas fa-angle-up" aria-hidden="true"></i>
-            </span>
+  <header class="card-header">
+    <p class="card-header-title" i18n>Revue du brouillon du mail</p>
+    <button
+      class="card-header-icon"
+      (click)="
+        ouvert_brouillon
+          ? (ouvert_brouillon = false)
+          : (ouvert_brouillon = true)
+      "
+      aria-label="more options"
+    >
+      <span class="icon">
+        <i
+          *ngIf="!ouvert_brouillon"
+          class="fas fa-angle-down"
+          aria-hidden="true"
+        ></i>
+        <i
+          *ngIf="ouvert_brouillon"
+          class="fas fa-angle-up"
+          aria-hidden="true"
+        ></i>
+      </span>
+    </button>
+  </header>
+  <div *ngIf="ouvert_brouillon" class="card-content">
+    <div class="columns">
+      <div class="column is-half">
+        <article class="panel is-success" *ngIf="mail_a_generer">
+          <p class="panel-heading" i18n>Vue HTML</p>
+          <div class="panel-block">
+            <div class="field">
+              <label class="label">Sujet : </label>
+              <p class="control">
+                <input
+                  type="text"
+                  class="input"
+                  style="width: 100%"
+                  [(ngModel)]="mail_a_generer.subject"
+                />
+              </p>
+            </div>
+          </div>
+          <div class="panel-block">
+            <textarea
+              style="font-size: smaller"
+              class="textarea"
+              placeholder="Ici s'affichera le contenu du mail en HTML"
+              i18n-placeholder
+              rows="20"
+              >{{ mail_a_generer.content }}</textarea
+            >
+          </div>
+        </article>
+        <button
+          (click)="GenererVue()"
+          *ngIf="mail_a_generer"
+          type="button"
+          class="button is-rounded is-primary is-outlined"
+        >
+          <span i18n>Regénérer la vue</span>
+          <i class="fa-solid fa-rotate-right"></i>
         </button>
-    </header>
-    <div *ngIf="ouvert_brouillon" class="card-content">
-        <div class="columns">
-            <div class="column is-half">
-                <article class="panel is-success" *ngIf="mail_a_generer">
-                    <p class="panel-heading" i18n>Vue HTML</p>
-                    <div class="panel-block">
-                        <div class="field">
-                            <label class="label">Sujet : </label>
-                            <p class="control">
-                                <input type="text" class="input" style="width: 100%;"
-                                    [(ngModel)]="mail_a_generer.subject">
-                            </p>
-                        </div>
-                    </div>
-                    <div class="panel-block">
-                        <textarea style="font-size: smaller;" class="textarea"
-                            placeholder="Ici s'affichera le contenu du mail en HTML" i18n-placeholder
-                            rows="20">{{mail_a_generer.content}}</textarea>
-                    </div>
-                </article>
-                <button (click)="GenererVue()" *ngIf="mail_a_generer" type="button"
-                    class="button is-rounded is-primary is-outlined">
-                    <span i18n>Regénérer la vue</span>
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
-                <button (click)="SauvegarderTemplate()" *ngIf="mail_a_generer" type="button"
-                    class="button is-rounded is-primary is-outlined">
-                    <span i18n>Sauvegarder le template</span>
-                    <i class="fa-solid fa-floppy-disk"></i>
-                </button>
+        <button
+          (click)="SauvegarderTemplate()"
+          *ngIf="mail_a_generer"
+          type="button"
+          class="button is-rounded is-primary is-outlined"
+        >
+          <span i18n>Sauvegarder le template</span>
+          <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+      </div>
+      <div class="column is-half">
+        <article class="panel is-success" *ngIf="selected_mail">
+          <p class="panel-heading" i18n>Vue Générée</p>
+          <div class="panel-block">
+            <div class="field">
+              <label class="label">Destinataire : </label>
+              <div class="select">
+                <select [(ngModel)]="selected_mail">
+                  <ng-container *ngFor="let mail of liste_mail">
+                    <option [ngValue]="mail">{{ mail.to }}</option>
+                  </ng-container>
+                </select>
+              </div>
             </div>
-            <div class="column is-half">
-                <article class="panel is-success" *ngIf="selected_mail">
-                    <p class="panel-heading" i18n>Vue Générée</p>
-                    <div class="panel-block">
-                        <div class="field">
-                            <label class="label">Destinataire : </label>
-                            <div class="select">
-                                <select [(ngModel)]="selected_mail">
-                                    <ng-container *ngFor="let mail of liste_mail">
-                                        <option [ngValue]="mail">{{mail.to}}</option>
-                                    </ng-container>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel-block">
-                        <p><span i18n>Sujet : </span>{{selected_mail.subject}}</p>
-                    </div>
-                    <div class="panel-block">
-                        <div style="font-size: smaller;" [innerHTML]="selected_mail.content"></div>
-                    </div>
-                </article>
-                <button type="button" *ngIf="selected_mail" (click)="EnvoiMail()"
-                    class="button is-rounded is-primary is-outlined">
-                    <span i18n>Envoyer cet email</span>
-                    <i class="far fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
+          </div>
+          <div class="panel-block">
+            <p><span i18n>Sujet : </span>{{ selected_mail.subject }}</p>
+          </div>
+          <div class="panel-block">
+            <div
+              style="font-size: smaller"
+              [innerHTML]="selected_mail.content"
+            ></div>
+          </div>
+        </article>
+        <button
+          type="button"
+          *ngIf="selected_mail"
+          (click)="EnvoiMail()"
+          class="button is-rounded is-primary is-outlined"
+        >
+          <span i18n>Envoyer cet email</span>
+          <i class="far fa-paper-plane"></i>
+        </button>
+      </div>
     </div>
-    <footer class="card-footer" *ngIf="ouvert_brouillon && liste_mail && liste_mail.length>0"><button type="button" (click)="EnvoyerTousLesMails()"
-            class="button is-primary is-rounded is-outlined">
-            Envoyer tous les mails
-            <i class="far fa-paper-plane"></i>
-        </button>
-    </footer>
+  </div>
+  <footer
+    class="card-footer"
+    *ngIf="ouvert_brouillon && liste_mail && liste_mail.length > 0"
+  >
+    <button
+      type="button"
+      (click)="EnvoyerTousLesMails()"
+      class="button is-primary is-rounded is-outlined"
+    >
+      Envoyer tous les mails
+      <i class="far fa-paper-plane"></i>
+    </button>
+  </footer>
 </div>
