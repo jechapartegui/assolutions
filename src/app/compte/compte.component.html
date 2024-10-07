@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="ListeCompte">
     <ng-container *ngIf="context == 'LISTE'">
         <div class="columns" style="margin-top: 0.5rem;">
             <div class="column menuligne">
@@ -24,7 +24,7 @@
 
             </div>
         </div>
-        <div class="columns">
+        <div class="columns" >
             <div class="column">
                 <div class="card">
                     <header class="card-header">

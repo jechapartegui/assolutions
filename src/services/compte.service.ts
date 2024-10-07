@@ -341,4 +341,57 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
+
+  public AddAdmin(compte:number, password: string): Promise<number> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "add_admin",
+      id: compte,
+      password:password
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public DeleteAdmin(compte:number, password: string): Promise<boolean> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "delete_admin",
+      id: compte,
+      password:password
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public GetAllAdmin(): Promise<compte[]> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "get_all_admin"
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: compte[]) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
 }

@@ -21,6 +21,8 @@ import { ProjetInfoComponent } from './projet-info/projet-info.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { SuiviMailComponent } from './suivi-mail/suivi-mail.component';
 import { StockComponent } from './stock/stock.component';
+import { AdministrateursComponent } from './administrateurs/administrateurs.component';
+import { TableauDeBordComponent } from './tdb/tableau-de-bord.component';
 
 
 
@@ -40,13 +42,15 @@ const routes: Routes = [
   { path: 'reinit-mdp', component: ReinitMdpComponent },
   { path: 'saison', component: SaisonComponent },
   { path: 'lieu', component: LieuComponent },
-  { path: 'compta', component: ComptabiliteComponent },
+  { path: 'comptabilite', component: ComptabiliteComponent },
+  { path: 'tableau-de-bord', component: TableauDeBordComponent },
   { path: 'compte-bancaire', component: CompteBancaireComponent },
   { path: 'factures', component: FacturesComponent },
   { path: 'envoi-mail', component: EnvoiMailComponent },
   { path: 'projet-info', component: ProjetInfoComponent },
   { path: 'projet-mail', component: ProjetMailComponent },
   { path: 'suivi-mail', component: SuiviMailComponent },
+  { path: 'administrateurs', component: AdministrateursComponent },
   { path: 'stock', component: StockComponent }
 
 

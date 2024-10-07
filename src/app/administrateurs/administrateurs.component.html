@@ -1,0 +1,116 @@
+<div class="container" *ngIf="ListeCompte">
+  <div class="columns" style="margin-top: 0.5rem">
+    <div class="column menuligne">
+      <div class="field">
+        <label class="label"
+          >Saisir le mot de passe administrateur </label
+        >
+        <div class="control">
+          <input class="input" type="password" [(ngModel)]="psw" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Ajouter un compte</label>
+        <div class="control">
+            <div class="select">
+                <select [(ngModel)]="selected_compte">
+                    <ng-container *ngFor="let cpt of CompteDispo">
+                        <option [ngValue]="cpt.id">{{cpt.login}}</option>
+                    </ng-container>
+                </select>
+            </div>
+        </div>
+        <button
+          type="button"
+          (click)="Ajouter()"
+          class="button is-primary is-rounded is-outlined"
+          style="align-self: center; fill: hsl(171, 100%, 41%)"
+        >
+        <i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns">
+    <div class="column">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title" i18n>
+            Liste des comptes administrateurs ({{ ListeCompte.length }})
+          </p>
+          <button
+            type="button"
+            (click)="Ajouter()"
+            class="button is-primary is-rounded is-outlined"
+            style="align-self: center; fill: hsl(171, 100%, 41%)"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </header>
+        <span class="fullscreen">
+          <div class="card-content">
+            <table
+              class="table"
+              style="width: 100%; font-size: smaller"
+              *ngIf="ListeCompte && ListeCompte.length > 0"
+            >
+              <thead>
+                <tr>
+                  <th>
+                    <span class="th_filtre">
+                      <span class="ligne">
+                        <span style="font-size: smaller" i18n>Login</span>
+                        <span style="cursor: pointer">
+                          <i
+                            *ngIf="sort_login === 'NO'"
+                            (click)="Sort('ASC', 'login')"
+                            class="fa-solid fa-sort"
+                          ></i>
+                          <i
+                            *ngIf="sort_login === 'ASC'"
+                            (click)="Sort('DESC', 'login')"
+                            class="fa-solid fa-sort-up"
+                          ></i>
+                          <i
+                            *ngIf="sort_login === 'DESC'"
+                            (click)="Sort('ASC', 'login')"
+                            class="fa-solid fa-sort-down"
+                          ></i>
+                        </span>
+                      </span>
+                    </span>
+                  </th>
+
+                  <th><span style="font-size: smaller" i18n>Action</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cpt of ListeCompte">
+                  <td>
+                    {{ cpt.login }}
+                  </td>
+                  <td>
+                    <div class="buttons">
+                      <button
+                        i18n-title
+                        title="Supprimer"
+                        class="button is-danger is-rounded is-outlined"
+                        type="button"
+                        (click)="Delete(cpt)"
+                      >
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="!ListeCompte || ListeCompte.length == 0">
+              Pas de comptes disponible
+            </p>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

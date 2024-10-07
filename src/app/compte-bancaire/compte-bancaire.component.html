@@ -1,1 +1,169 @@
-<p>compte-bancaire works!</p>
+<div class="container" *ngIf="ListeCompte">
+  <div class="columns" *ngIf="context == 'LISTE'">
+    <div class="column">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title" i18n>
+            Liste des comptes bancaires ({{ ListeCompte.length }})
+          </p>
+          <button
+            type="button"
+            (click)="Creer()"
+            class="button is-primary is-rounded is-outlined"
+            style="align-self: center; fill: hsl(171, 100%, 41%)"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </header>
+        <span class="fullscreen">
+          <div class="card-content">
+            <table
+              class="table"
+              style="width: 100%; font-size: smaller"
+              *ngIf="ListeCompte && ListeCompte.length > 0"
+            >
+              <thead>
+                <tr>
+                  <th>
+                    <span class="th_filtre">
+                      <span class="ligne">
+                        <span style="font-size: smaller" i18n>Nom</span>
+                        <span style="cursor: pointer">
+                          <i
+                            *ngIf="sort_nom === 'NO'"
+                            (click)="Sort('ASC', 'nom')"
+                            class="fa-solid fa-sort"
+                          ></i>
+                          <i
+                            *ngIf="sort_nom === 'ASC'"
+                            (click)="Sort('DESC', 'nom')"
+                            class="fa-solid fa-sort-up"
+                          ></i>
+                          <i
+                            *ngIf="sort_nom === 'DESC'"
+                            (click)="Sort('ASC', 'nom')"
+                            class="fa-solid fa-sort-down"
+                          ></i>
+                        </span>
+                      </span>
+                    </span>
+                  </th>
+                  <th><span style="font-size: smaller" i18n>Type</span></th>
+                  <th><span style="font-size: smaller" i18n>Action</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cpt of ListeCompte">
+                  <td>
+                    {{ cpt.nom }}
+                  </td>
+                  <td>
+                    {{ cpt.type }}
+                  </td>
+                  <td>
+                    <div class="buttons">
+                      <button
+                        i18n-title
+                        title="Voir"
+                        type="button"
+                        (click)="Transactions(cpt)"
+                        class="button is-info is-rounded is-outlined"
+                      >
+                        <i class="fa-solid fa-binoculars"></i>
+                      </button>
+                      <button
+                        i18n-title
+                        title="Supprimer"
+                        class="button is-danger is-rounded is-outlined"
+                        type="button"
+                        (click)="Delete(cpt)"
+                      >
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+
+                      <button
+                        i18n-title
+                        title="Editer"
+                        class="button is-info is-rounded is-outlined"
+                        type="button"
+                        (click)="Edit(cpt)"
+                      >
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="!ListeCompte || ListeCompte.length == 0">
+              Pas de comptes disponible
+            </p>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns is-justify-content-center" *ngIf="context == 'EDIT'">
+    <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+      <div class="box">
+        <h2 *ngIf="editCB.id == 0" class="title is-2" i18n>
+          Créer un compte bancaire
+        </h2>
+        <h2 *ngIf="editCB.id > 0" class="title is-2" i18n>
+          Editer un compte bancaire
+        </h2>
+        <div class="field">
+          <label class="label" for="nom_compte" i18n>Nom du compte</label>
+          <input
+            [class]="editCB.nom.length > 2 ? 'input' : 'input is-danger'"
+            id="nom_compte"
+            type="text"
+            [(ngModel)]="editCB.nom"
+            i18n-placeholder
+            placeholder="Nom du compte"
+          />
+          <p class="help is-danger" *ngIf="editCB.nom.length < 3" i18n>
+            Le nom doit faire au moins 2 caractères
+          </p>
+        </div>
+        <div class="field">
+          <label class="label" for="type_compte" i18n>Type de compte :</label>
+          <div class="select">
+            <select [(ngModel)]="editCB.type">
+              <option value="Banque" i18n>Banque</option>
+              <option value="Plateforme" i18n>Plateforme</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="info_compte" i18n>Info du compte : </label>
+          <input
+            class="input"
+            id="info_compte"
+            type="text"
+            [(ngModel)]="editCB.info"
+          />
+        </div>
+      </div>
+      <div class="buttons">
+        <button class="button is-primary is-rounded is-outlined" [disabled]="editCB.nom.length < 3" type="button"
+          style="fill:hsl(171, 100%, 41%)" (click)="Save()">
+          <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button
+        i18n-title
+        title="Voir"
+        type="button"
+        (click)="Transactions(editCB)"
+        class="button is-info is-rounded is-outlined"
+      >
+        <i class="fa-solid fa-binoculars"></i>
+      </button>
+        <button (click)="Retour()" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
+          <i class="fa-solid fa-backward-fast"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
