@@ -66,7 +66,6 @@ import { LieuComponent } from './lieu/lieu.component';
 import { SaisonComponent } from './saison/saison.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { AdministrateursComponent } from './administrateurs/administrateurs.component';
-import { ComptaComponent } from './compta/Compta.component';
 import { TableauDeBordComponent } from './tdb/tableau-de-bord.component';
 @NgModule({
   declarations: [
@@ -81,7 +80,7 @@ import { TableauDeBordComponent } from './tdb/tableau-de-bord.component';
     ProfComponent,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe, AdministrateursComponent,
     ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
-  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, ComptaComponent, TableauDeBordComponent],
+  , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, TableauDeBordComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
