@@ -1,0 +1,28 @@
+.th{
+    display: flex;
+    flex-direction: column;
+    font-size: smaller;
+    flex-wrap: nowrap;
+}
+.ligne{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.menuligne{
+    display: flex;
+    flex-direction: row;
+    justify-content:flex-start;
+    align-items: flex-start;
+    gap : 3px;
+}
+.th_filtre{
+    display: flex;
+    flex-direction: column;
+    font-size: smaller;
+    flex-wrap: nowrap;
+}
+:root {
+    --bulma-modal-content-width: 60rem; /* Ajustez la valeur selon vos besoins */
+  }

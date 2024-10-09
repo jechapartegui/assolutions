@@ -5,8 +5,9 @@ export class transaction {
   public solde: number;
   public date_transaction: string;
   public mode: string; //liste valeur
-  public destinataire_objet: string;
-  public destinataire_objet_id: number;
+  public destinataire:string="";
+  public destinataire_id:number=0;
+  public destinataire_libelle:string="";
   public paiement_execute: number;
   public compte_bancaire_id: number;
   public flux_financier_id: number;
@@ -104,29 +105,23 @@ export class Transaction {
   }
 
   public get DestinataireID(): number {
-    return this.datasource.destinataire_objet_id;
+    return this.datasource.destinataire_id;
   }
   public set DestinataireID(v: number) {
-    this.datasource.destinataire_objet_id = v;
+    this.datasource.destinataire_id = v;
   }
 
   public get TypeDestinataire(): string {
-    return this.datasource.destinataire_objet;
+    return this.datasource.destinataire;
   }
   public set TypeDestinataire(v: string) {
-    this.datasource.destinataire_objet = v;
+    this.datasource.destinataire = v;
   }
   public get LibelleDestinataire(): string {
-    if (this.datasource.destinataire_objet_id > 0) {
+    if (this.datasource.destinataire_id > 0) {
       return '';
     } else {
-      return this.datasource.destinataire_objet;
-    }
-  }
-  public set LibelleDestinataire(v: string) {
-    if (v.length > 1) {
-      this.datasource.destinataire_objet = v;
-      this.datasource.destinataire_objet_id = 0;
+      return this.datasource.destinataire_libelle;
     }
   }
 

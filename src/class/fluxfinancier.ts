@@ -10,6 +10,10 @@ export class fluxfinancier {
   public info: string = "";
   public document: any;
   public recette: boolean = false;
+  public classe_comptable:number=0;
+  public destinataire:string="";
+  public destinataire_id:number=0;
+  public destinataire_libelle:string="";
   public stocks: stock[] = [];
   public transactions: transaction[] = [];
 }
@@ -20,16 +24,30 @@ export class FluxFinancier {
   liste_stock: stock[];
   constructor(ff: fluxfinancier) {
     this.datasource = ff;
-    this.liste_transaction = ff.transactions.map(
-      (x) => new Transaction(x, ff.libelle)
-    );
-    this.liste_stock = ff.stocks;
+    if(ff.transactions){
+      this.liste_transaction = ff.transactions.map(
+        (x) => new Transaction(x, ff.libelle)
+      );
+    } else {
+      this.liste_transaction = [];
+    }
+    if(ff.stocks){
+      this.liste_stock = ff.stocks;
+    } else {
+      this.liste_stock = [];
+    }
   }
   public get ID(): number {
     return this.datasource.id;
   }
   public set ID(v: number) {
     this.datasource.id = v;
+  }
+  public get ClasseComptable(): number {
+    return this.datasource.classe_comptable;
+  }
+  public set ClasseComptable(v: number) {
+    this.datasource.classe_comptable = v;
   }
 
   public get Libelle(): string {
@@ -122,5 +140,26 @@ export class FluxFinancier {
       this.datasource.document = new Blob([result], { type: file.type });
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  public get DestinataireID(): number {
+    return this.datasource.destinataire_id;
+  }
+  public set DestinataireID(v: number) {
+    this.datasource.destinataire_id = v;
+  }
+
+  public get TypeDestinataire(): string {
+    return this.datasource.destinataire;
+  }
+  public set TypeDestinataire(v: string) {
+    this.datasource.destinataire = v;
+  }
+  public get LibelleDestinataire(): string {
+    if (this.datasource.destinataire_id > 0) {
+      return '';
+    } else {
+      return this.datasource.destinataire_libelle;
+    }
   }
 }

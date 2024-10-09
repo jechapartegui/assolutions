@@ -11,14 +11,13 @@ export class ComptabiliteService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
  }
- public VoirSituation(mois_avant:number, mois_apres:number): Promise<fluxfinancier[]> {
+ public VoirSituation(saison_id:number): Promise<fluxfinancier[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
   this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
   //  this.url = this.url + "login.php";
   const body = {
     command:"situation_complete",
-    mois_avant:mois_avant,
-    mois_apres:mois_apres
+    saison_id:saison_id
   };
 
   return this.global.POST(this.url, body)
