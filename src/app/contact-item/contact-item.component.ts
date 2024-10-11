@@ -136,7 +136,9 @@ export class ContactItemComponent implements OnInit {
     return re.test(text);
   }
   checkIfTelInstring(value: string): boolean {
-    var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-    return re.test(value);
-  }
+      // Regular expression for international or national phone numbers with optional separators
+      var re = /^(\+?[0-9]{1,3}[-\s\.]?)?(\(?[0-9]{1,4}\)?[-\s\.]?)?([0-9]{1,4}[-\s\.]?[0-9]{1,9})$/;
+      return re.test(value);
+    }
+    
 }
