@@ -4,7 +4,7 @@ export class transaction {
   public id: number;
   public solde: number;
   public date_transaction: string;
-  public mode: string; //liste valeur
+  public mode: number; //liste valeur
   public destinataire:string="";
   public destinataire_id:number=0;
   public destinataire_libelle:string="";
@@ -18,11 +18,10 @@ export class Transaction {
   public datasource: transaction;
   constructor(t: transaction, libelleFF:string) {
     this.datasource = t;
-    this.ID = 0;
-    this.Solde = 0;
-    this.Date = new Date().toString();
     this.Libelle = libelleFF;
   }
+
+  public temp_id:number;
 
   public Libelle:string;
 
@@ -90,10 +89,10 @@ export class Transaction {
     this.datasource.info = v;
   }
 
-  public get ModePaiement(): string {
+  public get ModePaiement(): number {
     return this.datasource.mode;
   }
-  public set ModePaiement(v: string) {
+  public set ModePaiement(v: number) {
     this.datasource.mode = v;
   }
 
@@ -117,12 +116,11 @@ export class Transaction {
   public set TypeDestinataire(v: string) {
     this.datasource.destinataire = v;
   }
-  public get LibelleDestinataire(): string {
-    if (this.datasource.destinataire_id > 0) {
-      return '';
-    } else {
+  public set LibelleDestinataire(v: string) {
+    this.datasource.destinataire_libelle = v;
+  }
+  public get LibelleDestinataire(): string {   
       return this.datasource.destinataire_libelle;
-    }
   }
 
   

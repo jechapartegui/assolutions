@@ -114,10 +114,24 @@
                 "
                 (click)="GlobalService.updateSelectedMenuStatus('COMPTA')"
                 [routerLink]="['/comptabilite']"
+                [queryParams]="{ context: 'COMPTA' }"
                 i18n
               >
-                Recettes / Dépenses
+                Gestion Comptabilité
               </a>
+              <a
+              [class]="
+                (GlobalService.SelectedMenu$ | async) === 'TRANSACTION'
+                  ? 'navbar-item is-selected'
+                  : 'navbar-item'
+              "
+              (click)="GlobalService.updateSelectedMenuStatus('TRANSACTION')"
+              [routerLink]="['/comptabilite']"
+              [queryParams]="{ context: 'LISTE' }"
+              i18n
+            >
+              Gestion des comptes
+            </a>
               <a
                 [class]="
                   (GlobalService.SelectedMenu$ | async) === 'FACTURE'

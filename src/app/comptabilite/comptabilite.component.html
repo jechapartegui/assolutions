@@ -294,7 +294,16 @@
                     {{ cpt.Solde }}
                   </td>
                   <td>
-                    {{ cpt.IsRecette }}
+                    <i
+                      *ngIf="cpt.IsRecette"
+                      style="color: green"
+                      class="fas fa-plus-square"
+                    ></i>
+                    <i
+                      *ngIf="!cpt.IsRecette"
+                      style="color: red"
+                      class="fas fa-minus-square"
+                    ></i>
                   </td>
                   <td>
                     <a (click)="GotoFF(cpt.FluxFinancierID)">{{
@@ -320,11 +329,23 @@
                       >
                     </ng-container>
                     <ng-container *ngIf="cpt.DestinataireID == 0">
-                      {{ cpt.TypeDestinataire }}
+                      {{ cpt.LibelleDestinataire }}
                     </ng-container>
                   </td>
-                  <td>{{ cpt.ModePaiement }}</td>
-                  <td>{{ cpt.StatutPaiement }}</td>
+                  <td>
+                    <span *ngIf="cpt.ModePaiement == 0">Espèces</span>
+                    <span *ngIf="cpt.ModePaiement == 1">Carte bancaire</span>
+                    <span *ngIf="cpt.ModePaiement == 2">Virement</span>
+                    <span *ngIf="cpt.ModePaiement == 3">Chèque</span>
+                    <span *ngIf="cpt.ModePaiement == 4">Prélèvement</span>
+                  </td>
+                  <td>
+                    <span *ngIf="cpt.StatutPaiement == 0" i18n
+                      >Non exécuté</span
+                    >
+                    <span *ngIf="cpt.StatutPaiement == 1" i18n>Exécuté</span>
+                    <span *ngIf="cpt.StatutPaiement == -1" i18n>Annulé</span>
+                  </td>
                   <td>
                     <div class="buttons">
                       <button
@@ -384,7 +405,6 @@
       <div *ngIf="editTransactions" class="box">
         <h2 class="title is-2" i18n>Editer une transaction</h2>
         <div class="field">
-          <label class="label" i18n>Montant</label>
           <p class="control has-icons-right">
             <input
               class="input"
@@ -392,13 +412,65 @@
               placeholder="Montant"
               [(ngModel)]="editTransactions.Solde"
             />
-            <span class="icon is-small is-left">
-              <i class="fas fa-envelope"></i>
-            </span>
             <span class="icon is-small is-right">
               <i class="fas fa-euro-sign"></i>
             </span>
           </p>
+        </div>
+        <div class="field">
+          <div class="control">
+            <div class="buttons has-addons is-centered">
+              <button
+                type="button"
+                style="font-size: small"
+                [class]="
+                  editTransactions.IsRecette == true
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editTransactions.IsRecette == true
+                    ? (editTransactions.IsRecette = false)
+                    : (editTransactions.IsRecette = true)
+                "
+              >
+                <span i18n>Recette</span>
+              </button>
+              <button
+                type="button"
+                style="font-size: small"
+                [class]="
+                  editTransactions.IsRecette == false
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editTransactions.IsRecette == true
+                    ? (editTransactions.IsRecette = false)
+                    : (editTransactions.IsRecette = true)
+                "
+              >
+                <span i18n>Dépense</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" i18n>Date de transaction</label>
+          <div class="control">
+            <input
+              [class]="editTransactions.Date ? 'input' : 'input is-danger'"
+              type="date"
+              id="date_naissance"
+              name="date_naissance"
+              i18n-placeholder
+              placeholder="Date de naissance"
+              [(ngModel)]="editTransactions.Date"
+            />
+            <p class="help is-danger" *ngIf="!editTransactions.Date" i18n>
+              La date doit être saisie
+            </p>
+          </div>
         </div>
         <div class="field">
           <label class="label" i18n>Info</label>
@@ -406,22 +478,60 @@
             <input
               class="input"
               type="text"
-              placeholder="Montant"
+              placeholder="Info"
               [(ngModel)]="editTransactions.Info"
             />
           </p>
         </div>
         <div class="field">
           <label class="label" i18n>Compte bancaire</label>
-          <p class="control"></p>
+          <div class="control">
+            <div class="select">
+              <select [(ngModel)]="editTransactions.CompteBancaireID">
+                <option value="0">Tous</option>
+                <ng-container *ngFor="let cpt of Comptes">
+                  <option [ngValue]="cpt.id">{{ cpt.nom }}</option>
+                </ng-container>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" i18n>Destinataire</label>
+          <p class="control">
+            <input
+              class="input"
+              type="text"
+              placeholder="Destinataire"
+              [(ngModel)]="editTransactions.LibelleDestinataire"
+            />
+          </p>
         </div>
         <div class="field">
           <label class="label" i18n>Statut paiement</label>
-          <p class="control"></p>
+          <div class="control">
+            <div class="select">
+              <select [(ngModel)]="editTransactions.StatutPaiement">
+                <option value="0"><span i18n>Non exécuté</span></option>
+                <option value="1"><span i18n>Exécuté</span></option>
+                <option value="-1"><span i18n>Annulé</span></option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="field">
           <label class="label" i18n>Mode de paiement</label>
-          <p class="control"></p>
+          <div class="control">
+            <div class="select">
+              <select [(ngModel)]="editTransactions.ModePaiement">
+                <option value="0"><span i18n>Espèces</span></option>
+                <option value="1"><span i18n>Carte bancaire</span></option>
+                <option value="2"><span i18n>Virement</span></option>
+                <option value="3"><span i18n>Chèque</span></option>
+                <option value="4"><span i18n>Prélèvement</span></option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="field">
           <label class="label" i18n>Destinataire</label>
@@ -453,10 +563,360 @@
   </div>
 </div>
 <div class="container" *ngIf="FluxFinanciers && context == 'FLUXFIN'"></div>
-<div
-  class="container"
-  *ngIf="editFluxFlinancier && context == 'EDIT_FLUXFIN'"
-></div>
+<div class="container" *ngIf="editFluxFlinancier && context == 'EDIT_FLUXFIN'">
+  <div class="columns is-justify-content-center">
+    <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+      <div *ngIf="editFluxFlinancier" class="box">
+        <h2 *ngIf="editFluxFlinancier.ID == 0" class="title is-2" i18n>
+          Créer un flux
+        </h2>
+        <h2 *ngIf="editFluxFlinancier.ID > 0" class="title is-2" i18n>
+          Editer un flux
+        </h2>
+        <div class="field">
+          <p class="control has-icons-right">
+            <input
+              class="input"
+              type="number"
+              min="0"
+              placeholder="Montant"
+              [(ngModel)]="editFluxFlinancier.Montant"
+            />
+            <span class="icon is-small is-right">
+              <i class="fas fa-euro-sign"></i>
+            </span>
+          </p>
+        </div>
+        <button
+          type="button"
+          *ngIf="editFluxFlinancier.liste_transaction.length == 1"
+          class="button is-rounded is-primary is-outlined"
+          (click)="
+            editFluxFlinancier.liste_transaction[0].Solde =
+              editFluxFlinancier.Montant
+          "
+        >
+          <span i18n>Appliquer montant</span>
+        </button>
+        <div class="field">
+          <div class="control">
+            <div class="buttons has-addons is-centered">
+              <button
+                type="button"
+                style="font-size: small"
+                [class]="
+                  editFluxFlinancier.IsRecette == true
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editFluxFlinancier.IsRecette == true
+                    ? (editFluxFlinancier.IsRecette = false)
+                    : (editFluxFlinancier.IsRecette = true)
+                "
+              >
+                <span i18n>Recette</span>
+              </button>
+              <button
+                type="button"
+                style="font-size: small"
+                [class]="
+                  editFluxFlinancier.IsRecette == false
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editFluxFlinancier.IsRecette == true
+                    ? (editFluxFlinancier.IsRecette = false)
+                    : (editFluxFlinancier.IsRecette = true)
+                "
+              >
+                <span i18n>Dépense</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" i18n>Date</label>
+          <div class="control">
+            <input
+              [class]="editFluxFlinancier.Date ? 'input' : 'input is-danger'"
+              type="date"
+              id="date_naissance"
+              name="date_naissance"
+              i18n-placeholder
+              placeholder="Date comptanle"
+              [(ngModel)]="editFluxFlinancier.Date"
+            />
+            <p class="help is-danger" *ngIf="!editFluxFlinancier.Date" i18n>
+              La date doit être saisie
+            </p>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" i18n>Info</label>
+          <p class="control">
+            <input
+              class="input"
+              type="text"
+              placeholder="Info"
+              [(ngModel)]="editFluxFlinancier.Info"
+            />
+          </p>
+        </div>
+        <div class="field">
+          <label class="label" i18n>Destinataire</label>
+          <p class="control">
+            <input
+              class="input"
+              type="text"
+              placeholder="Destinataire"
+              [(ngModel)]="editFluxFlinancier.LibelleDestinataire"
+            />
+          </p>
+        </div>
+        <div class="field">
+          <label class="label" i18n>Statut paiement</label>
+          <div class="control">
+            <div class="select">
+              <select [(ngModel)]="editFluxFlinancier.Statut">
+                <option value="0"><span i18n>Non exécuté</span></option>
+                <option value="1"><span i18n>Exécuté</span></option>
+                <option value="-1"><span i18n>Annulé</span></option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title" i18n>Paiements</p>
+              <button
+                type="button"
+                (click)="AjouterPaiement_ff()"
+                class="button is-primary is-rounded is-outlined"
+                style="align-self: center; fill: hsl(171, 100%, 41%)"
+              >
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </header>
+            <span class="fullscreen">
+              <div class="card-content">
+                <table
+                  class="table"
+                  style="width: 100%; font-size: smaller"
+                  *ngIf="
+                    editFluxFlinancier.liste_transaction &&
+                    editFluxFlinancier.liste_transaction.length > 0
+                  "
+                >
+                  <thead>
+                    <tr>
+                      <th>
+                        <span style="font-size: smaller" i18n
+                          >Date de transaction</span
+                        >
+                      </th>
+                      <th>
+                        <span style="font-size: smaller" i18n>Montant</span>
+                      </th>
+                      <th>
+                        <span style="font-size: smaller" i18n>R / D</span>
+                      </th>
+                      <th>
+                        <span style="font-size: smaller" i18n
+                          >Compte bancaire</span
+                        >
+                      </th>
+                      <th>
+                        <span style="font-size: smaller" i18n
+                          >Destinataire</span
+                        >
+                      </th>
+                      <th><span style="font-size: smaller" i18n>Mode</span></th>
+                      <th>
+                        <span style="font-size: smaller" i18n>Statut</span>
+                      </th>
+                      <th>
+                        <span style="font-size: smaller" i18n>Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let cpt of editFluxFlinancier.liste_transaction"
+                    >
+                      <td>
+                        {{ cpt.Date | date : "dd/MM/yyyy" }}
+                      </td>
+                      <td>
+                        <input
+                          class="input"
+                          type="number"
+                          min="0"
+                          placeholder="Solde"
+                          [(ngModel)]="cpt.Solde"
+                        />
+                      </td>
+                      <td>
+                        <div class="field">
+                          <div class="control">
+                            <div class="buttons has-addons is-centered">
+                              <button
+                                type="button"
+                                style="font-size: small"
+                                [class]="
+                                  cpt.IsRecette == true
+                                    ? 'button is-link is-active'
+                                    : 'button is-active'
+                                "
+                                (click)="
+                                  cpt.IsRecette == true
+                                    ? (cpt.IsRecette = false)
+                                    : (cpt.IsRecette = true)
+                                "
+                              >
+                                <i
+                                  *ngIf="cpt.IsRecette"
+                                  style="color: green"
+                                  class="fas fa-plus-square"
+                                ></i>
+                              </button>
+                              <button
+                                type="button"
+                                style="font-size: small"
+                                [class]="
+                                  cpt.IsRecette == false
+                                    ? 'button is-link is-active'
+                                    : 'button is-active'
+                                "
+                                (click)="
+                                  cpt.IsRecette == true
+                                    ? (cpt.IsRecette = false)
+                                    : (cpt.IsRecette = true)
+                                "
+                              >
+                                <i
+                                  *ngIf="!cpt.IsRecette"
+                                  style="color: red"
+                                  class="fas fa-minus-square"
+                                ></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="control">
+                          <div class="select">
+                            <select [(ngModel)]="cpt.CompteBancaireID">
+                              <option value="0">Tous</option>
+                              <ng-container *ngFor="let cpt of Comptes">
+                                <option [ngValue]="cpt.id">
+                                  {{ cpt.nom }}
+                                </option>
+                              </ng-container>
+                            </select>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <input
+                          class="input"
+                          type="text"
+                          min="0"
+                          placeholder="Destinataire"
+                          [(ngModel)]="cpt.LibelleDestinataire"
+                        />
+                      </td>
+                      <td>
+                        <div class="field">
+                          <div class="control">
+                            <div class="select">
+                              <select [(ngModel)]="cpt.ModePaiement">
+                                <option value="0">
+                                  <span i18n>Espèces</span>
+                                </option>
+                                <option value="1">
+                                  <span i18n>Carte bancaire</span>
+                                </option>
+                                <option value="2">
+                                  <span i18n>Virement</span>
+                                </option>
+                                <option value="3">
+                                  <span i18n>Chèque</span>
+                                </option>
+                                <option value="4">
+                                  <span i18n>Prélèvement</span>
+                                </option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="field">
+                          <div class="control">
+                            <div class="select">
+                              <select [(ngModel)]="cpt.StatutPaiement">
+                                <option value="0">
+                                  <span i18n>Non exécuté</span>
+                                </option>
+                                <option value="1">
+                                  <span i18n>Exécuté</span>
+                                </option>
+                                <option value="-1">
+                                  <span i18n>Annulé</span>
+                                </option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="buttons">
+                          <button
+                            i18n-title
+                            title="Supprimer"
+                            class="button is-danger is-rounded is-outlined"
+                            type="button"
+                            (click)="Remove_liste(cpt)"
+                          >
+                            <i class="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p *ngIf="!Transactions || Transactions.length == 0" i18n>
+                  Pas de transactions disponible.
+                </p>
+              </div>
+            </span>
+          </div>
+        </div>
+        <div *ngIf="editFluxFlinancier" class="buttons">
+          <button
+            class="button is-primary is-rounded is-outlined"
+            type="button"
+            style="fill: hsl(171, 100%, 41%)"
+            (click)="Save_ff()"
+          >
+            <i class="fa-solid fa-floppy-disk"></i>
+          </button>
+          <button
+            (click)="BasculerVueCompta()"
+            class="button is-danger is-rounded is-outlined"
+            style="fill: hsl(348, 100%, 61%)"
+          >
+            <i class="fa-solid fa-backward-fast"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="container" *ngIf="FluxFinanciers && context == 'COMPTA'">
   <div class="columns" style="margin-top: 0.5rem">
     <div class="column menuligne">
@@ -653,6 +1113,42 @@
                   <th>
                     <span class="th_filtre">
                       <span class="ligne">
+                        <span style="font-size: smaller" i18n>R / D</span
+                        ><span style="cursor: pointer">
+                          <i
+                            *ngIf="sort_sens === 'NO'"
+                            (click)="Sort('ASC', 'sens')"
+                            class="fa-solid fa-sort"
+                          ></i>
+                          <i
+                            *ngIf="sort_sens === 'ASC'"
+                            (click)="Sort('DESC', 'sens')"
+                            class="fa-solid fa-sort-up"
+                          ></i>
+                          <i
+                            *ngIf="sort_sens === 'DESC'"
+                            (click)="Sort('ASC', 'sens')"
+                            class="fa-solid fa-sort-down"
+                          ></i>
+                        </span>
+                      </span>
+                      <span *ngIf="afficher_filtre" class="ligne">
+                        <div class="select">
+                          <select
+                            style="font-size: smaller"
+                            [(ngModel)]="filter_sens_transaction"
+                          >
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <option [ngValue]="0" i18n>Dépenses</option>
+                            <option [ngValue]="1" i18n>Recettes</option>
+                          </select>
+                        </div>
+                      </span>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th_filtre">
+                      <span class="ligne">
                         <span style="font-size: smaller" i18n
                           >Classe Comptable</span
                         ><span style="cursor: pointer">
@@ -680,7 +1176,9 @@
                             [(ngModel)]="filter_classe_ff"
                           >
                             <ng-container *ngFor="let cl of ClassesComptable">
-                              <option [ngValue]="cl.key">{{ cl.value }}</option>
+                              <option [ngValue]="cl.key">
+                                {{ cl.value }}
+                              </option>
                             </ng-container>
                           </select>
                         </div>
@@ -738,6 +1236,18 @@
                     {{ cpt.Montant }}
                   </td>
                   <td>
+                    <i
+                      *ngIf="cpt.IsRecette"
+                      style="color: green"
+                      class="fas fa-plus-square"
+                    ></i>
+                    <i
+                      *ngIf="!cpt.IsRecette"
+                      style="color: red"
+                      class="fas fa-minus-square"
+                    ></i>
+                  </td>
+                  <td>
                     {{ cpt.ClasseComptable }}
                   </td>
                   <td>
@@ -753,10 +1263,14 @@
                       >
                     </ng-container>
                     <ng-container *ngIf="cpt.DestinataireID == 0">
-                      {{ cpt.TypeDestinataire }}
+                      {{ cpt.LibelleDestinataire }}
                     </ng-container>
                   </td>
-                  <td>{{ cpt.Statut }}</td>
+                  <td>
+                    <span *ngIf="cpt.Statut == 0" i18n>Non exécuté</span>
+                    <span *ngIf="cpt.Statut == 1" i18n>Exécuté</span>
+                    <span *ngIf="cpt.Statut == -1" i18n>Annulé</span>
+                  </td>
                   <td>
                     <div class="buttons">
                       <button

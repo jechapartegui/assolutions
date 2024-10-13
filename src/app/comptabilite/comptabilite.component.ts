@@ -1,12 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CompteBancaire } from 'src/class/comptebancaire';
 import { fluxfinancier, FluxFinancier } from 'src/class/fluxfinancier';
 import { KeyValuePair } from 'src/class/keyvaluepair';
 import { saison } from 'src/class/saison';
 import { stock } from 'src/class/stock';
-import { Transaction } from 'src/class/transaction';
+import { transaction, Transaction } from 'src/class/transaction';
 import { AddInfoService } from 'src/services/addinfo.service';
 import { ComptabiliteService } from 'src/services/comptabilite.service';
 import { CompteBancaireService } from 'src/services/compte-bancaire.service';
@@ -61,9 +61,15 @@ export class ComptabiliteComponent implements OnInit {
     public saison_sev: SaisonService,
     public cb_serv:CompteBancaireService,
     public ai_serv:AddInfoService,
-    public router: Router
+    public router: Router,
+    public route:ActivatedRoute
   ) {}
   ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if ('context' in params) {
+        this.context = params['context'];
+      }
+    });
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les saisons`;
     this.saison_sev
@@ -263,6 +269,7 @@ export class ComptabiliteComponent implements OnInit {
         if(ok){
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
+          this.VoirSituation();
         } else {
           let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
@@ -272,10 +279,69 @@ export class ComptabiliteComponent implements OnInit {
         errorService.emitChange(o);
       });
   }
+  Save_ff(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Mettre à jour une flux`;
+    if(this.editFluxFlinancier.ID == 0 ){
+      this.compta_serv
+      .Add(this.editFluxFlinancier.datasource)
+      .then((id) => {
+       this.editFluxFlinancier.ID = id;
+       this.VoirSituation();
+      }) .catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+    } else {
+      this.compta_serv
+      .Update(this.editFluxFlinancier.datasource)
+      .then((ok) => {
+        if(ok){
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+          this.VoirSituation();
+        } else {
+          let o = errorService.UnknownError(this.action);
+          errorService.emitChange(o);
+        }
+      }) .catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+    }
+   
+  }
+
+  AjouterPaiement_ff(){
+    let t = new transaction();
+    let newValue = new Transaction(t, this.editFluxFlinancier.Libelle);
+    newValue.Date = this.editFluxFlinancier.Date;
+    newValue.LibelleDestinataire = this.editFluxFlinancier.LibelleDestinataire;
+    let max_id = 1;
+    let total = 0
+    this.editFluxFlinancier.liste_transaction.forEach((f) =>{
+      total += f.Solde;
+      if(f.temp_id && f.temp_id>=max_id){
+        max_id ++;
+      }
+    })
+    newValue.Solde = this.editFluxFlinancier.Montant - total;
+    newValue.IsRecette = this.editFluxFlinancier.IsRecette;
+    newValue.StatutPaiement = 1;
+    newValue.temp_id = max_id;
+    this.editFluxFlinancier.liste_transaction.push(newValue);
+  }
+
+  Remove_liste(cpt:Transaction){
+    if(cpt.ID > 0){
+      this.editFluxFlinancier.liste_transaction = this.editFluxFlinancier.liste_transaction.filter(x => x.ID !== cpt.ID);
+    } else {
+      this.editFluxFlinancier.liste_transaction = this.editFluxFlinancier.liste_transaction.filter(x => x.temp_id !== cpt.temp_id);
+    }
+  }
+
   Edit(t: Transaction){
     let id = t.ID;
-    console.log(t);
-    console.log(id);
     const errorService = ErrorService.instance;
     this.action = $localize`Charger une transaction`;
     this.trns_serv
@@ -298,6 +364,7 @@ export class ComptabiliteComponent implements OnInit {
       });
   }
   Edit_ff(id: number) {
+    this.context = 'EDIT_FLUXFIN';
     const errorService = ErrorService.instance;
     this.action = $localize`Charger une ligne comptable`;
     this.compta_serv
@@ -344,7 +411,13 @@ export class ComptabiliteComponent implements OnInit {
   Ajouter() {
     this.context = 'EDIT_FLUXFIN';
     let ff = new fluxfinancier();
+    ff.date = new Date().toString();
+    let tt = new transaction();
+    tt.date_transaction = new Date().toString();
+    ff.transactions.push(tt);
     this.editFluxFlinancier = new FluxFinancier(ff);
+    
+
   }
 
   getCompte(id: number): CompteBancaire {
@@ -360,9 +433,11 @@ export class ComptabiliteComponent implements OnInit {
   }
 
   BasculerVueCompta(){
+    this.VoirSituation();
     this.context = "COMPTA";
   }
   BasculerVueTransaction(){
+    this.VoirSituation();
     this.context = "LISTE";
   }
   getFFMontant(id ){

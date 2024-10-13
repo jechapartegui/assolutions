@@ -155,11 +155,10 @@ export class FluxFinancier {
   public set TypeDestinataire(v: string) {
     this.datasource.destinataire = v;
   }
-  public get LibelleDestinataire(): string {
-    if (this.datasource.destinataire_id > 0) {
-      return '';
-    } else {
+  public set LibelleDestinataire(v: string) {
+    this.datasource.destinataire_libelle = v;
+  }
+  public get LibelleDestinataire(): string {   
       return this.datasource.destinataire_libelle;
-    }
   }
 }
