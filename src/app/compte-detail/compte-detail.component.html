@@ -1,54 +1,132 @@
 <div class="block" *ngIf="thisCompte && context != 'DEFINIR_MDP'">
-    <ng-container *ngIf="thisCompte.id==0">
-        <div class="field">
-            <label class="label">Login</label>
-            <div class="control">
-                <input type="email" [class]="IsEmail(thisCompte.login) ? 'input' : 'input is-danger'"
-                    [(ngModel)]="thisCompte.login">
-                <p class="help is-danger" *ngIf="!IsEmail(thisCompte.login)" i18n>Le login doit être un email
-                </p>
-            </div>
+  <ng-container *ngIf="thisCompte.id == 0">
+    <ng-container *ngIf="!login_valide">
+      <label class="label">Login</label>
+      <div class="field has-addons">
+        <div class="control">
+          <input
+            type="email"
+            [class]="
+              IsEmail(thisCompte.login)
+                ? 'input is-small'
+                : 'input is-danger is-small'
+            "
+            [(ngModel)]="thisCompte.login"
+          />
+          <p class="help is-danger" *ngIf="!IsEmail(thisCompte.login)" i18n>
+            Le login doit être un email
+          </p>
         </div>
-        <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' " *ngIf="IsEmail(thisCompte.login)"
-            [nomicon]="'fas fa-check'" [libelle]="'Valider le login'" (click)="Valid()"></hover-button>
-        <p *ngIf="login_valide">Login validé : {{login_valide}}</p>
-
+        <div class="control">
+          <button
+            (click)="Valid()"
+            [disabled]="!IsEmail(thisCompte.login)"
+            type="button"
+            class="button is-rounded is-primary is-outlined"
+          >
+            <i class="fas fa-user-check"></i>
+          </button>
+        </div>
+      </div>
     </ng-container>
-    <ng-container *ngIf="thisCompte.id>0">
-        <div class="block">
-            {{login}}
-        </div>
-        <div class="block">
-            <label i18n>Type Compte : </label>&nbsp;:&nbsp;<span *ngIf="thisCompte.est_password" i18n>Avec mot de
-                passe</span><span *ngIf="!thisCompte.est_password" i18n>Avec clé token</span>
-        </div>
-        <div class="block" *ngIf="(GlobalService.Menu$| async) != 'ADHERENT'">
-            <label i18n>Actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.actif" i18n>Oui</span><span
-                *ngIf="!thisCompte.actif" i18n>Non</span>
-        </div>
-        <div class="block" *ngIf="(GlobalService.Menu$| async) != 'ADHERENT'">
-            <label i18n>Mail actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.mail_actif" i18n>Oui</span><span
-                *ngIf="!thisCompte.mail_actif" i18n>Non</span>
-
-        </div>
-        <div style="display: flex;flex-direction: column;">
-            <a *ngIf="!thisCompte.est_password && context == 'VUE'" (click)="RenvoiToken()">Renvoyer les clés de connexion</a>
-            <a *ngIf="!thisCompte.est_password && context == 'VUE'" (click)="context = 'DEFINIR_MDP'">Définir un mot de passe</a>
-            <a *ngIf="thisCompte.est_password && context == 'VUE'" (click)="context = 'DEFINIR_MDP'">Modifier le mot de passe</a>
-            <a *ngIf="context == 'RATTACHER_TOKEN'" (click)="Rattacher()">Rattacher l'adhérent au compte</a>
-        </div>
+    <ng-container *ngIf="login_valide">
+      <div style="display: flex; flex-direction: column; margin: 0.25em;">
+        <p *ngIf="login_valide">Login validé : {{ login_valide }}</p>
+        <button
+          (click)="context = 'DEFINIR_MDP'"
+          type="button"
+          class="button is-rounded is-primary is-outlined"
+        >
+          <i class="fas fa-lock"></i>
+          <span i18n>Définir un mot de passe</span>
+        </button>
+        <button
+          (click)="Rattacher()"
+          type="button"
+          class="button is-rounded is-primary is-outlined"
+        >
+          <i class="fas fa-key"></i>
+          <span i18n>Accès via Clé Token</span>
+        </button>
+        <button
+          (click)="login_valide = null"
+          type="button"
+          class="button is-rounded is-danger is-outlined"
+        >
+          <i class="fas fa-times-circle"></i>
+          <span i18n>Annuler</span>
+        </button>
+      </div>
     </ng-container>
+  </ng-container>
+  <ng-container *ngIf="thisCompte.id > 0">
+    <div class="block">
+      {{ login }}
+    </div>
+    <div class="block">
+      <label i18n>Type Compte : </label>&nbsp;:&nbsp;<span
+        *ngIf="thisCompte.est_password"
+        i18n
+        >Avec mot de passe</span
+      ><span *ngIf="!thisCompte.est_password" i18n>Avec clé token</span>
+    </div>
+    <div class="block" *ngIf="(GlobalService.Menu$ | async) != 'ADHERENT'">
+      <label i18n>Actif</label>&nbsp;:&nbsp;<span *ngIf="thisCompte.actif" i18n
+        >Oui</span
+      ><span *ngIf="!thisCompte.actif" i18n>Non</span>
+    </div>
+    <div class="block" *ngIf="(GlobalService.Menu$ | async) != 'ADHERENT'">
+      <label i18n>Mail actif</label>&nbsp;:&nbsp;<span
+        *ngIf="thisCompte.mail_actif"
+        i18n
+        >Oui</span
+      ><span *ngIf="!thisCompte.mail_actif" i18n>Non</span>
+    </div>
+    <div style="display: flex; flex-direction: column">
+      <a
+        *ngIf="!thisCompte.est_password && context == 'VUE'"
+        (click)="RenvoiToken()"
+        >Renvoyer les clés de connexion</a
+      >
+      <a
+        *ngIf="!thisCompte.est_password && context == 'VUE'"
+        (click)="context = 'DEFINIR_MDP'"
+        >Définir un mot de passe</a
+      >
+      <a
+        *ngIf="thisCompte.est_password && context == 'VUE'"
+        (click)="context = 'DEFINIR_MDP'"
+        >Modifier le mot de passe</a
+      >
+      <a *ngIf="context == 'RATTACHER_TOKEN'" (click)="Rattacher()"
+        >Rattacher l'adhérent au compte</a
+      >
+    </div>
+  </ng-container>
 </div>
-<app-reinit-mdp class="imbrique" [context]="'DEFINE'" *ngIf="context == 'DEFINIR_MDP'" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
-
-</app-reinit-mdp>  
-<app-reinit-mdp class="imbrique" [context]="'CONFIRM'" (rattacher)="Rattacher()" (demanderRattachement)="DemanderRattachement()" *ngIf="context == 'RATTACHER_MDP'" [Login]="thisCompte.login" [Token]="'Gulfed2606'">
-
-</app-reinit-mdp> 
-<button *ngIf="context == 'DEFINIR_MDP' && thisCompte.id==0" (click)="Rattacher()" class="button is-primary is-rounded is-outlined">
-   Créer un compte avec Token
- </button>
- <button *ngIf="context == 'DEFINIR_MDP'" (click)="context = 'VUE'" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
-    Annuler
-  </button>
-
+<app-reinit-mdp
+  class="imbrique"
+  [context]="'DEFINE'"
+  *ngIf="context == 'CREER_MDP'"
+  [Login]="thisCompte.login"
+  [Token]="'Gulfed2606'"
+>
+</app-reinit-mdp>
+<app-reinit-mdp
+  class="imbrique"
+  [context]="'DEFINE'"
+  *ngIf="context == 'DEFINIR_MDP'"
+  [Login]="thisCompte.login"
+  [Token]="'Gulfed2606'"
+>
+</app-reinit-mdp>
+<app-reinit-mdp
+  class="imbrique"
+  [context]="'CONFIRM'"
+  (rattacher)="Rattacher()"
+  (demanderRattachement)="DemanderRattachement()"
+  *ngIf="context == 'RATTACHER_MDP'"
+  [Login]="thisCompte.login"
+  [Token]="'Gulfed2606'"
+>
+</app-reinit-mdp>

@@ -102,6 +102,8 @@
           >
             Groupes
           </a>
+          <ng-container *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
+            
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link"> Gestion </a>
             <div class="navbar-dropdown">
@@ -182,7 +184,6 @@
               </a>
             </div>
           </div>
-          <ng-container *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link"> Paramétrage </a>
 

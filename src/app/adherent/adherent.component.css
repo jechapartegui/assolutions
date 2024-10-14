@@ -26,3 +26,16 @@
 :root {
     --bulma-modal-content-width: 60rem; /* Ajustez la valeur selon vos besoins */
   }
+
+  .span-file-label {
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap; /* Pour s'assurer que le texte ne s'affiche pas */
+    transition: width 0.3s ease; /* Ajoute une transition douce */
+  }
+  
+  .file:hover .span-file-label {
+    width: auto; /* Ou une largeur spécifique si nécessaire */
+    overflow: visible;
+  }
+  

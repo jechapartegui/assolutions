@@ -10,7 +10,6 @@ import {
   AdherentExport,
 } from 'src/class/adherent';
 import { Adhesion } from 'src/class/adhesion';
-import { compte } from 'src/class/compte';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
@@ -58,6 +57,11 @@ export class AdherentComponent implements OnInit {
     LibelleVoie: 'Libellé de la voie',
     ComplementAdresse: 'Complément adresse',
   };
+  libelle_Inscrit = $localize`Filtrer sur les inscrits`;
+  libelle_Export = $localize`Exporter vers Excel`;
+  libelle_Import = $localize`Importer depuis Excel`;
+  libelle_AfficherFiltre = $localize`Afficher les filtres`;
+  libelle_MasquerFiltre = $localize`Réinitialiser les filtres`;
   public thisAdherent: Adherent = null;
   public action: string = '';
   public inscrits: boolean = true;
@@ -111,87 +115,71 @@ export class AdherentComponent implements OnInit {
     this.action = $localize`Charger la page`;
     if (GlobalService.is_logged_in) {
       // Chargez la liste des cours
-      this.grServ
+      this.saisonserv
         .GetAll()
-        .then((groupes) => {
-          this.liste_groupe = groupes;
-          this.liste_groupe_filter = groupes;
-          this.saisonserv
-            .GetAll()
-            .then((sa) => {
-              if (sa.length == 0) {
-                let o = errorService.CreateError(
-                  $localize`Récupérer les saisons`,
-                  $localize`Il faut au moins une saison pour créer un cours`
-                );
-                errorService.emitChange(o);
-                if (
-                  GlobalService.menu === 'ADMIN' ||
-                  GlobalService.menu == 'PROF'
-                ) {
-                  this.router.navigate(['/saison']);
-                } else {
-                  this.router.navigate(['/menu']);
-                  GlobalService.selected_menu = 'MENU';
-                }
-                return;
-              }
-              this.liste_saison = sa.map((x) => new Saison(x));
-              this.active_saison = this.liste_saison.filter(
-                (x) => x.active == true
-              )[0];
-              this.route.queryParams.subscribe((params) => {
-                if ('id' in params) {
-                  this.id = params['id'];
-                  this.context = 'LECTURE';
-                }
-                if ('context' in params) {
-                  this.context = params['context'];
-                }
-              });
-              if (this.context == 'LISTE') {
-                if (GlobalService.menu === 'ADHERENT') {
-                  this.router.navigate(['/menu']);
-                  GlobalService.selected_menu = 'MENU';
-                  return;
-                }
-              }
-              if (this.context == 'ECRITURE' || this.context == 'LECTURE') {
-                if (this.id == 0 && this.context == 'ECRITURE') {
-                  let adh = new adherent();
-                  this.thisAdherent = new Adherent(adh);
-                }
-                if (this.id > 0) {
-                  this.ChargerAdherent();
-                }
-              }
-              if (this.context == 'LISTE') {
-                this.afficher_filtre = false;
-                this.UpdateListeAdherents();
-              }
-
-              let o = errorService.OKMessage(this.action);
-              errorService.emitChange(o);
-            })
-            .catch((err: HttpErrorResponse) => {
-              let o = errorService.CreateError(
-                $localize`récupérer les saisons`,
-                err.message
-              );
-              errorService.emitChange(o);
+        .then((sa) => {
+          if (sa.length == 0) {
+            let o = errorService.CreateError(
+              $localize`Récupérer les saisons`,
+              $localize`Il faut au moins une saison pour créer un cours`
+            );
+            errorService.emitChange(o);
+            if (
+              GlobalService.menu === 'ADMIN' ||
+              GlobalService.menu == 'PROF'
+            ) {
+              this.router.navigate(['/saison']);
+            } else {
+              this.router.navigate(['/menu']);
+              GlobalService.selected_menu = 'MENU';
+            }
+            return;
+          }
+          this.liste_saison = sa.map((x) => new Saison(x));
+          this.active_saison = this.liste_saison.filter(
+            (x) => x.active == true
+          )[0];
+          this.route.queryParams.subscribe((params) => {
+            if ('id' in params) {
+              this.id = params['id'];
+              this.context = 'LECTURE';
+            }
+            if ('context' in params) {
+              this.context = params['context'];
+            }
+          });
+          if (this.context == 'LISTE') {
+            if (GlobalService.menu === 'ADHERENT') {
               this.router.navigate(['/menu']);
               GlobalService.selected_menu = 'MENU';
               return;
-            });
+            }
+          }
+          if (this.context == 'ECRITURE' || this.context == 'LECTURE') {
+            if (this.id == 0 && this.context == 'ECRITURE') {
+              let adh = new adherent();
+              this.thisAdherent = new Adherent(adh);
+            }
+            if (this.id > 0) {
+              this.ChargerAdherent();
+            }
+          }
+          if (this.context == 'LISTE') {
+            this.afficher_filtre = false;
+            this.UpdateListeAdherents();
+          }
+
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
         })
         .catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(
-            $localize`Récupérer les groupes`,
+            $localize`récupérer les saisons`,
             err.message
           );
           errorService.emitChange(o);
-          this.router.navigate(['/groupe']);
-          GlobalService.selected_menu = 'GROUPE';
+          this.router.navigate(['/menu']);
+          GlobalService.selected_menu = 'MENU';
           return;
         });
     } else {
@@ -211,14 +199,32 @@ export class AdherentComponent implements OnInit {
   UpdateListeAdherents() {
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les adhérents`;
-    this.ridersService
-      .GetAdherentAdhesion(this.active_saison.id)
-      .then((adh) => {
-        this.liste_adherents_VM = adh.map((x) => new Adherent(x));
+
+    this.grServ
+      .GetAllEver(this.active_saison.id)
+      .then((groupes) => {
+        this.liste_groupe = groupes;
+        this.liste_groupe_filter = groupes;
+
+        this.ridersService
+          .GetAdherentAdhesion(this.active_saison.id)
+          .then((adh) => {
+            this.liste_adherents_VM = adh.map((x) => new Adherent(x));
+          })
+          .catch((err: HttpErrorResponse) => {
+            let o = errorService.CreateError(this.action, err.message);
+            errorService.emitChange(o);
+            return;
+          });
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        let o = errorService.CreateError(
+          $localize`Récupérer les groupes`,
+          err.message
+        );
         errorService.emitChange(o);
+        this.router.navigate(['/groupe']);
+        GlobalService.selected_menu = 'GROUPE';
         return;
       });
   }

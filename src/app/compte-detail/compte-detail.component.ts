@@ -23,7 +23,7 @@ export class CompteDetailComponent implements OnInit {
   thisCompte: compte;
   valid_login = false;
 
-  context : "RATTACHER_MDP" | "RATTACHER_TOKEN" | "RATTACHER" | "VUE" | "CHANGER_MDP" | "DEFINIR_MDP";
+  context : "RATTACHER_MDP" | "RATTACHER_TOKEN" | "RATTACHER" | "VUE" | "CREER_MDP" | "DEFINIR_MDP";
 
   constructor(public compte_serv: CompteService, public login_serv: LoginService, public GlobalService: GlobalService) { }
 
@@ -74,7 +74,6 @@ export class CompteDetailComponent implements OnInit {
         })
       } else {
         this.login_valide = this.thisCompte.login;
-        this.context = "DEFINIR_MDP";
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       }
