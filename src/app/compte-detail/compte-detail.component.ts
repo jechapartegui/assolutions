@@ -22,10 +22,12 @@ export class CompteDetailComponent implements OnInit {
   action: string = "";
   thisCompte: compte;
   valid_login = false;
+  baseUrl:string;
 
   context : "RATTACHER_MDP" | "RATTACHER_TOKEN" | "RATTACHER" | "VUE" | "CREER_MDP" | "DEFINIR_MDP";
 
-  constructor(public compte_serv: CompteService, public login_serv: LoginService, public GlobalService: GlobalService) { }
+  constructor(public compte_serv: CompteService, public login_serv: LoginService, public GlobalService: GlobalService) { 
+    this.baseUrl = `${window.location.protocol}//${window.location.hostname}`;}
 
   ngOnInit(): void {
     this.Load();
@@ -51,6 +53,24 @@ export class CompteDetailComponent implements OnInit {
 
     }
   }
+  CopierToken(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Copier le token`;
+    this.compte_serv.getToken(this.thisCompte.id, 1).then((token) =>{
+      let url = this.baseUrl + "/login?username=" + this.thisCompte.login + "&token_connexion=" + token + "&droit=1;";
+      navigator.clipboard.writeText(url).then(() => {
+        alert($localize`Texte copié dans le presse-papier !`);
+      }).catch(err => {
+        alert($localize`Échec de la copie du texte : ` + err);
+      });
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    })
+    return;
+     
+  }
+
   Valid() {
     const errorService = ErrorService.instance;
     this.action = $localize`Validation du Login`;

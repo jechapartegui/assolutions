@@ -47,23 +47,12 @@
         >
         </hover-button>
         <ng-container *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
-          <div class="file is-primary is-rounded is-outlined has-name">
-            <label class="file-label">
-              <input
-                class="file-input"
-                type="file"
-                name="resume"
-                (change)="onFileSelected($event)"
-              />
-              <span class="file-cta">
-                <span class="file-icon">
-                  <i class="fas fa-file-import"></i>
-                </span>
-                <span class="span-file-label" i18n>Importer depuis Excel</span>
-              </span>
-              <span *ngIf="file" class="file-name"> {{ file.name }} </span>
-            </label>
-          </div>
+          <hover-button
+          [nomclass]="'button  is-rounded is-primary is-outlined'"
+          [nomicon]="'fas fa-file-import'"
+          [libelle]="libelle_Import"
+          (click)="GotoImport()"
+        ></hover-button>
         </ng-container>
       </div>
       <div
@@ -411,192 +400,7 @@
       </div>
     </div>
   </ng-container>
-  <div class="modal" [ngClass]="{ 'is-active': modal }">
-    <div class="modal-background"></div>
-    <div class="modal-content" style="width: 900px">
-      <div class="card">
-        <header class="card-header">
-          <p class="card-header-title" i18n>
-            Adhérents à importer / mettre à jour
-          </p>
-        </header>
-        <div class="card-content">
-          <span class="tag is-warning" *ngIf="compte_to_force" i18n
-            >Attention certains comptes existent dans d'autres projets et les
-            imports sont par défaut non sélectionné - veuillez vérifier avant de
-            lancer l'import
-          </span>
-          <table
-            class="table"
-            style="width: 100%; font-size: smaller"
-            *ngIf="liste_adherents_export && liste_adherents_export.length > 0"
-          >
-            <thead>
-              <tr>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>MAJ ?</span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Nom</span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n
-                        >Date de naissance</span
-                      >
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Sexe</span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Contact </span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Statut </span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Inscrit </span>
-                    </span>
-                  </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let adherent of liste_adherents_export">
-                <td>
-                  <label class="checkbox">
-                    <input type="checkbox" [(ngModel)]="adherent.maj" />
-                  </label>
-                </td>
-                <td>
-                  {{ adherent.Libelle }}
-                </td>
-                <td>
-                  {{ adherent.DDN | date : "dd/MM/yyyy" }}
-                  ({{ calculateAge(adherent.DDN) }}&nbsp;<span i18n>ans</span>)
-                </td>
-                <td>
-                  <i
-                    *ngIf="adherent.Sexe"
-                    class="fa-solid fa-mars has-text-info"
-                  ></i>
-                  <i
-                    *ngIf="!adherent.Sexe"
-                    class="fa-solid fa-venus has-text-danger"
-                  ></i>
-                </td>
-                <td>
-                  <span *ngIf="adherent.ContactPrefereType == 'EMAIL'"
-                    ><i class="fas fa-at"></i
-                  ></span>
-                  <span *ngIf="adherent.ContactPrefereType == 'PHONE'"
-                    ><i class="fas fa-phone"></i
-                  ></span>
-                  <span *ngIf="adherent.ContactPrefereType == 'INSTA'"
-                    ><i class="fab fa-instagram-square"></i
-                  ></span>
-                  <span *ngIf="adherent.ContactPrefereType == 'FACEBOOK'"
-                    ><i class="fab fa-facebook-square"></i
-                  ></span>
-                  <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"
-                    ><i class="fab fa-twitter-square"></i
-                  ></span>
-                  <span>&nbsp;{{ adherent.ContactPrefere }}</span>
-                </td>
-                <td>
-                  <span *ngIf="StatutMAJ(adherent)" i18n>Mise à jour</span>
-                  <span *ngIf="!StatutMAJ(adherent)" i18n>Ajout</span>
-                </td>
-                <td>
-                  <i *ngIf="!adherent.Inscrit" class="fas fa-times"></i>
-                  <i
-                    *ngIf="adherent.Inscrit"
-                    class="fas fa-check has-text-success"
-                  ></i>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p
-            *ngIf="
-              !liste_adherents_export || liste_adherents_export.length == 0
-            "
-          >
-            Pas de séances disponible
-          </p>
-        </div>
-        <footer class="card-footer">
-          <button
-            type="button"
-            class="is-outlined is-primary button is-rounded"
-            i18n
-            (click)="LancerImport()"
-          >
-            Importer
-          </button>
-          <button
-            type="button"
-            class="is-outlined is-dangerbutton is-rounded"
-            (click)="modal = false"
-            i18n
-          >
-            Annuler
-          </button>
-        </footer>
-      </div>
-    </div>
-    <button
-      class="modal-close is-large"
-      aria-label="close"
-      (click)="modal = false"
-    ></button>
-  </div>
-  <div class="modal" [ngClass]="{ 'is-active': modalLog }">
-    <div class="modal-background" (click)="closePopup()"></div>
-    <div class="modal-card">
-      <header class="modal-card-head">
-        <p class="modal-card-title">Copiez le texte</p>
-        <button
-          class="delete"
-          aria-label="close"
-          (click)="closePopup()"
-        ></button>
-      </header>
-      <section class="modal-card-body">
-        <textarea class="textarea" readonly rows="10" cols="50">{{
-          retourLog
-        }}</textarea>
-      </section>
-      <footer class="modal-card-foot">
-        <button class="button is-primary" (click)="closePopup()">Fermer</button>
-      </footer>
-    </div>
-  </div>
+
   <ng-container *ngIf="context == 'ECRITURE'">
     <div class="columns is-justify-content-center">
       <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
@@ -782,16 +586,19 @@
             >
 
               <label class="label" i18n for="place_maximum">Compte : </label>
-              <span *ngIf="thisAdherent.CompteID==0" class="tag is-warning ">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span i18n>Un compte doit être associé pour inscrire la personne</span>
-              </span>
-              <app-compte-detail
-                (changeRattacher)="Rattacher($event)"
-                (demRattachement)="DemanderRattachement($event)"
-                [login]="thisAdherent.Login"
-                [compte_id]="thisAdherent.CompteID"
-              ></app-compte-detail>
+              <div class="box">
+                <span *ngIf="thisAdherent.CompteID==0" class="tag is-warning ">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <span i18n>Un compte doit être associé pour inscrire la personne</span>
+                </span>
+                <app-compte-detail
+                  (changeRattacher)="Rattacher($event)"
+                  (demRattachement)="DemanderRattachement($event)"
+                  [login]="thisAdherent.Login"
+                  [compte_id]="thisAdherent.CompteID"
+                ></app-compte-detail>
+              </div>
+            
             </div>
           </ng-container>
         </div>

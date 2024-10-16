@@ -1,0 +1,18 @@
+<p>import-adherent works!</p>
+<div class="file is-primary is-rounded is-outlined has-name">
+    <label class="file-label">
+      <input
+        class="file-input"
+        type="file"
+        name="resume"
+        (change)="onFileSelected($event)"
+      />
+      <span class="file-cta">
+        <span class="file-icon">
+          <i class="fas fa-file-import"></i>
+        </span>
+        <span class="span-file-label" i18n>Importer depuis Excel</span>
+      </span>
+      <span *ngIf="file" class="file-name"> {{ file.name }} </span>
+    </label>
+  </div>

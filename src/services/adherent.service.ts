@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
-import { adherent } from 'src/class/adherent';
+import { Adherent, adherent } from 'src/class/adherent';
 import { KeyValuePair } from 'src/class/keyvaluepair';
 
 @Injectable({
@@ -268,6 +268,8 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+
+
   public Check(prenom:string, nom:string, login:string): Promise<number> {
     this.url = environment.maseance + 'maseance/adherents_manage.php';
     //  this.url = this.url + "login.php";
@@ -281,6 +283,24 @@ export class AdherentService {
 
     return this.global.POST(this.url, body)
       .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+
+  public SimulerImport(liste:Adherent[]): Promise<any> {
+    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "simuler_import",
+      liste:liste
+
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: any) => {
         return response;
       })
       .catch(error => {

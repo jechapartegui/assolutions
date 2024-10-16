@@ -215,7 +215,7 @@ export class CompteService {
     this.url = environment.maseance + 'maseance/compte_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
-      command: "getToken",
+      command: "get_token",
       id: id,
       droit:droit
     };

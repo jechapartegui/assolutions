@@ -30,33 +30,7 @@ import { SaisonService } from 'src/services/saison.service';
 })
 export class AdherentComponent implements OnInit {
   @Input() public context: 'LECTURE' | 'LISTE' | 'ECRITURE' = 'LISTE';
-  headers = {
-    ID: 'ID',
-    Nom: 'Nom',
-    Prenom: 'Prénom',
-    DDN: 'Date de naissance',
-    Sexe: 'Sexe',
-    Street: 'Numéro et voie',
-    PostCode: 'Code postal',
-    City: 'Ville',
-    Country: 'Pays',
-    Surnom: 'Surnom',
-    Login: 'Login',
-    Mail: 'Email',
-    MailPref: 'Contact préféré email ?',
-    Phone: 'Téléphone',
-    PhonePref: 'Contact préféré téléphone ?',
-    MailUrgence: 'Mail si urgence',
-    NomMailUrgence: 'Contact mail si urgence',
-    PhoneUrgence: 'Téléphone si urgence',
-    NomPhoneUrgence: 'Contact téléphone si urgence',
-    Inscrit: 'Inscrit',
-    DDNExcel: 'Date de naissance format Excel',
-    NumVoie: 'Numéro dans la voie',
-    TypeVoie: 'Type de voie',
-    LibelleVoie: 'Libellé de la voie',
-    ComplementAdresse: 'Complément adresse',
-  };
+  
   libelle_Inscrit = $localize`Filtrer sur les inscrits`;
   libelle_Export = $localize`Exporter vers Excel`;
   libelle_Import = $localize`Importer depuis Excel`;
@@ -73,7 +47,6 @@ export class AdherentComponent implements OnInit {
   public active_saison: Saison;
   public valid_address: boolean;
   public liste_adherents_VM: Adherent[] = [];
-  public liste_adherents_export: Adherent[] = [];
   public compte_to_force: boolean = false;
   public sort_nom = 'NO';
   public sort_date = 'NO';
@@ -89,14 +62,10 @@ export class AdherentComponent implements OnInit {
 
   public login_adherent: string = '';
   public existing_login: boolean;
-  public retourLog: string = '';
-  public modal: boolean = false;
-  public modalLog: boolean = false;
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
 
-  file: File | null = null;
   constructor(
     public mail_serv: MailService,
     public inscription_saison_serv: InscriptionSaisonService,
@@ -531,185 +500,43 @@ export class AdherentComponent implements OnInit {
     this.filter_nom = null;
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.file = input.files[0];
-      this.ImporterExcel();
-    }
-  }
-  ImporterExcel() {
-    this.excelService
-      .importFromExcelFile(this.file, this.headers)
-      .subscribe((data) => {
-        this.liste_adherents_export = this.mapToAdherentExport(data);
-        this.modal = true;
-        this.liste_adherents_export.forEach((exp) => {
-          if (this.StatutMAJ(exp)) {
-            let n = this.liste_adherents_VM.find((x) => x.ID == exp.ID);
-            if (!n) {
-              let u = this.liste_adherents_VM.find(
-                (x) =>
-                  x.Nom.toUpperCase() == exp.Nom.toUpperCase() &&
-                  x.Prenom.toUpperCase() == exp.Prenom.toUpperCase() &&
-                  x.DDN == exp.DDN
-              );
-              exp.ID = u.ID;
-              n = this.liste_adherents_VM.find((x) => x.ID == exp.ID);
-            }
-            exp = this.Compare(exp, n);
-          }
-        });
-        let liste_compte = this.liste_adherents_export.map((x) => x.Login);
-        this.compte_to_force = false;
-        this.compte_serv.ExistListe(liste_compte).then((list) => {
-          list.forEach((item) => {
-            this.liste_adherents_export
-              .filter((x) => x.Login === item)
-              .forEach((matchingAdherent) => {
-                matchingAdherent.maj = false;
-              });
-          });
-          if (list && list.length > 0) {
-            this.compte_to_force = true;
-          }
-        });
-      });
-  }
-  openModal() {
-    this.modal = true;
-  }
 
-  closeModal() {
-    this.modal = false;
-  }
-  Compare(source: Adherent, cible: Adherent): Adherent {
-    if (!source.Prenom) {
-      source.Prenom = cible.Prenom;
-    }
-    if (!source.Nom) {
-      source.Nom = cible.Nom;
-    }
-    if (!source.Surnom) {
-      source.Surnom = cible.Surnom;
-    }
-    if (source.DDN == '0000-00-00') {
-      source.DDN = cible.DDN;
-    }
 
-    if (!source.Adresse.Street) {
-      source.Adresse.Street = cible.Adresse.Street;
-    }
-    if (!source.Adresse.City) {
-      source.Adresse.City = cible.Adresse.City;
-    }
-    if (!source.Adresse.PostCode) {
-      source.Adresse.PostCode = cible.Adresse.PostCode;
-    }
+  GotoImport(){
+    window.alert( $localize`Fonction prochainement disponible`);
+  }
+ 
 
-    if (source.Contacts.length == 0) {
-      source.Contacts = cible.Contacts;
-      try {
-        source.ContactPrefereType = source.Contacts.find((x) => x.Pref).Type;
-        source.ContactPrefere = source.Contacts.find((x) => x.Pref).Value;
-      } catch (error) {
-        if (cible.Contacts.length > 0) {
-          source.ContactPrefereType = source.Contacts[0].Type;
-          source.ContactPrefere = source.Contacts[0].Value;
-        }
-      }
-    }
-    if (source.ContactsUrgence.length == 0) {
-      source.ContactsUrgence = cible.ContactsUrgence;
-    }
-    if (!source.Login) {
-      source.Login = cible.Login;
-    }
-    return source;
-  }
-  private mapToAdherentExport(data: any[]): Adherent[] {
-    return data.map((item) => {
-      let liste_insc: Adhesion[] = [];
-      if (item.Inscrit) {
-        let insc: Adhesion = new Adhesion();
-        insc.saison_id = this.active_saison.id;
-        liste_insc.push(insc);
-      }
-      let list_item_contact: ItemContact[] = [];
-      if (item.Mail && item.Mail.length > 0) {
-        list_item_contact.push({
-          Type: 'EMAIL',
-          Value: item.Mail,
-          Pref: item.MailPref,
-          Notes: '',
-        });
-      }
-      if (item.Phone && item.Phone.length > 0) {
-        list_item_contact.push({
-          Type: 'PHONE',
-          Value: item.Phone,
-          Pref: item.PhonePref,
-          Notes: '',
-        });
-      }
-      let list_item_contact_urg: ItemContact[] = [];
-      if (item.MailUrgence && item.MailUrgence.length > 0) {
-        list_item_contact_urg.push({
-          Type: 'EMAIL',
-          Value: item.MailUrgence,
-          Notes: item.NomMailUrgence,
-          Pref: false,
-        });
-      }
-      if (item.PhoneUrgence && item.PhoneUrgence.length > 0) {
-        list_item_contact_urg.push({
-          Type: 'PHONE',
-          Value: item.PhoneUrgence,
-          Notes: item.NomPhoneUrgence,
-          Pref: false,
-        });
-      }
-      const adherent = new Adherent(
-        {
-          id: item.ID,
-          nom: item.Nom,
-          prenom: item.Prenom,
-          date_naissance: item.DDN,
-          sexe: item.Sexe,
-          adresse: JSON.stringify({
-            Street: item.Street,
-            PostCode: item.PostCode,
-            City: item.City,
-            Country: item.Country,
-          }),
-          contacts: JSON.stringify(list_item_contact),
-          surnom: item.Surnom,
-          date_creation: new Date(),
-          photo: '',
-          nationalite: '',
-          seances: [],
-          groupes: [],
-          mot_de_passe: '',
-          compte: 0,
-          login: item.Login,
-          inscriptions: [],
-          inscrit: liste_insc.length > 0 ? true : false,
-          seances_prof: [],
-          adhesions: liste_insc,
-          contacts_prevenir: JSON.stringify(list_item_contact_urg),
-          // Ajoute d'autres champs si nécessaire
-        }
-        //item.Inscrit  // On peut passer un ID de saison ici si nécessaire
-      );
-      return adherent;
-    });
-  }
+
+
   ExporterExcel() {
+    let headers = {
+      ID: 'ID',
+      Nom: 'Nom',
+      Prenom: 'Prénom',
+      DDN: 'Date de naissance',
+      Sexe: 'Sexe',
+      Street: 'Numéro et voie',
+      PostCode: 'Code postal',
+      City: 'Ville',
+      Country: 'Pays',
+      Surnom: 'Surnom',
+      Login: 'Login',
+      Mail: 'Email',
+      MailPref: 'Contact préféré email ?',
+      Phone: 'Téléphone',
+      PhonePref: 'Contact préféré téléphone ?',
+      MailUrgence: 'Mail si urgence',
+      NomMailUrgence: 'Contact mail si urgence',
+      PhoneUrgence: 'Téléphone si urgence',
+      NomPhoneUrgence: 'Contact téléphone si urgence',
+      Inscrit: 'Inscrit',
+    };
     let list: Adherent[] = this.getFilteredAdherents();
     this.excelService.exportAsExcelFile(
       list.map((x) => new AdherentExport(x)),
       'liste_adherent',
-      this.headers
+      headers
     );
   }
   onValidMailChange(isValid: boolean) {
@@ -749,180 +576,7 @@ export class AdherentComponent implements OnInit {
       return false;
     }
   }
-  LancerImport() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Sauvegarder l'adhérent`;
-    let nb_import: number = 0;
-    this.liste_adherents_export.forEach((adherent) => {
-      if (adherent.maj) {
-        if (this.StatutMAJ(adherent)) {
-          this.ridersService
-            .Update(adherent.datasource)
-            .then((upd) => {
-              if (upd) {
-                nb_import++;
-                this.compte_serv
-                  .AddOrMAJLogin(adherent.Login, adherent.ID)
-                  .then((cmpt) => {
-                    if (cmpt > 0) {
-                      if (adherent.Inscrit) {
-                        this.inscription_saison_serv
-                          .Add(adherent.Adhesions[0].saison_id, adherent.ID)
-                          .then((id) => {
-                            if (id > 0) {
-                              this.retourLog += adherent.Libelle + ' :  ';
-                              this.retourLog +=
-                                $localize`Mise à jour du compte OK` + '; ';
-                              this.retourLog +=
-                                $localize`Mise à jour adhérent OK` + '; ';
-                              this.retourLog +=
-                                $localize`Mise à jour de l'inscription à la saison OK` +
-                                '; ';
-                              this.retourLog += '\n';
-                            } else {
-                              this.retourLog += adherent.Libelle + ' :  ';
-                              this.retourLog +=
-                                $localize`Mise à jour adhérent OK` + '; ';
-                              this.retourLog +=
-                                $localize`Mise à jour du compte OK` + '; ';
-                              this.retourLog +=
-                                $localize`Mise à jour de l'inscription à la saison KO` +
-                                '; ';
-                              this.retourLog += '\n';
-                            }
-                          })
-                          .catch((err: HttpErrorResponse) => {
-                            this.retourLog += adherent.Libelle + ' :  ';
-                            this.retourLog +=
-                              $localize`Mise à jour adhérent OK` + '; ';
-                            this.retourLog +=
-                              $localize`Mise à jour du compte OK` + '; ';
-                            this.retourLog +=
-                              $localize`Mise à jour de l'inscription à la saison KO` +
-                              err.message +
-                              '; ';
-                            this.retourLog += '\n';
-                          });
-                      }
-                    } else {
-                      this.retourLog += adherent.Libelle + ' :  ';
-                      this.retourLog +=
-                        $localize`Mise à jour adhérent OK` + '; ';
-                      this.retourLog +=
-                        $localize`Mise à jour du compte KO` + '; ';
-                      this.retourLog += '\n';
-                    }
-                  })
-                  .catch((err: HttpErrorResponse) => {
-                    this.retourLog += adherent.Libelle + ' :  ';
-                    this.retourLog += $localize`Mise à jour adhérent OK` + '; ';
-                    this.retourLog +=
-                      $localize`Mise à jour du compte KO` + err.message + '; ';
-                    this.retourLog += '\n';
-                  });
-              } else {
-                this.retourLog += adherent.Libelle + ' :  ';
-                this.retourLog += $localize`Mise à jour adhérent OK` + '; ';
-                this.retourLog += $localize`Mise à jour adhérent KO` + '; ';
-                this.retourLog += '\n';
-              }
-            })
-            .catch((err: HttpErrorResponse) => {
-              this.retourLog += adherent.Libelle + ' :  ';
-              this.retourLog +=
-                $localize`Mise à jour adhérent KO` + err.message + '; ';
-              this.retourLog += '\n';
-            });
-          this.retourLog += '\n';
-        } else {
-          this.ridersService
-            .Add(adherent.datasource)
-            .then((upd) => {
-              if (upd > 0) {
-                adherent.ID = upd;
-                nb_import++;
-                this.compte_serv
-                  .AddOrMAJLogin(adherent.Login, adherent.ID)
-                  .then((cmpt) => {
-                    if (cmpt > 0) {
-                      if (adherent.Inscrit) {
-                        this.inscription_saison_serv
-                          .Add(adherent.Adhesions[0].saison_id, adherent.ID)
-                          .then((id) => {
-                            if (id > 0) {
-                              this.retourLog += adherent.Libelle + ' :  ';
-                              this.retourLog +=
-                                $localize`Ajout de l'adhérent OK` + '; ';
-                              this.retourLog +=
-                                $localize`Ajout du compte OK` + '; ';
-                              this.retourLog +=
-                                $localize`Ajout de l'inscription à la saison OK` +
-                                '; ';
-                              this.retourLog += '\n';
-                            } else {
-                              this.retourLog += adherent.Libelle + ' :  ';
-                              this.retourLog +=
-                                $localize`Ajout de l'adhérent OK` + '; ';
-                              this.retourLog +=
-                                $localize`Ajout du compte OK` + '; ';
-                              this.retourLog +=
-                                $localize`Ajout de l'inscription à la saison KO` +
-                                '; ';
-                              this.retourLog += '\n';
-                            }
-                          })
-                          .catch((err: HttpErrorResponse) => {
-                            this.retourLog += adherent.Libelle + ' :  ';
-                            this.retourLog +=
-                              $localize`Ajout de l'adhérent OK` + '; ';
-                            this.retourLog +=
-                              $localize`Ajout du compte OK` + '; ';
-                            this.retourLog +=
-                              $localize`Ajout de l'inscription à la saison KO` +
-                              err.message +
-                              '; ';
-                            this.retourLog += '\n';
-                          });
-                      }
-                    } else {
-                      this.retourLog += adherent.Libelle + ' :  ';
-                      this.retourLog +=
-                        $localize`Ajout de l'adhérent OK` + '; ';
-                      this.retourLog += $localize`Ajout du compte KO` + '; ';
-                      this.retourLog += '\n';
-                    }
-                  })
-                  .catch((err: HttpErrorResponse) => {
-                    this.retourLog += adherent.Libelle + ' :  ';
-                    this.retourLog += $localize`Ajout de l'adhérent OK` + '; ';
-                    this.retourLog +=
-                      $localize`Ajout du compte KO` + err.message + '; ';
-                    this.retourLog += '\n';
-                  });
-              } else {
-                this.retourLog += adherent.Libelle + ' :  ';
-                this.retourLog += $localize`Ajout adhérent KO` + '; ';
-                this.retourLog += '\n';
-              }
-            })
-            .catch((err: HttpErrorResponse) => {
-              this.retourLog += adherent.Libelle + ' :  ';
-              this.retourLog +=
-                $localize`Ajout adhérent KO` + err.message + '; ';
-              this.retourLog += '\n';
-            });
-        }
-      }
-    });
-    this.retourLog += '\n';
-    this.modal = false;
-    this.modalLog = true;
-  }
-  closePopup() {
-    this.modalLog = false;
-    this.UpdateListeAdherents();
-    this.file = null;
-  }
+ 
   isRegistredSaison(saison_id: number) {
     let u = this.thisAdherent.Adhesions.find((x) => x.saison_id == saison_id);
     if (u) {
