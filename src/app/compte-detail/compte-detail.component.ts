@@ -135,4 +135,18 @@ export class CompteDetailComponent implements OnInit {
     this.demRattachement.emit(this.login_valide);
   }
 
+  CreerMDP(val:string[]){
+    this.action = $localize`Créer un compte avec mot de passe`;
+    const errorService = ErrorService.instance;
+    let login:string = val[0];
+    let psw:string = val[1];
+    this.compte_serv.AddCompteMDP(login,psw).then((id) =>{
+      this.thisCompte.id = id;
+      this.changeRattacher.emit(login);
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+      errorService.emitChange(o);
+    });
+  }
+
 }

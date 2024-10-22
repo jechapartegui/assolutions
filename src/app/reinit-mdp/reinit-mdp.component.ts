@@ -12,8 +12,9 @@ import { LoginService } from 'src/services/login.service';
 export class ReinitMdpComponent implements OnInit {
   @Input() Login: string;
   @Input() Token: string;
-  @Input() context :"REINIT" | "DEFINE" | "CONFIRM" = "REINIT";
+  @Input() context :"REINIT" | "DEFINE" | "CONFIRM" | "CREER" = "REINIT";
   @Output() demanderRattachement = new EventEmitter();
+  @Output() CreerMDP = new EventEmitter<string[]>();
   @Output() rattacher = new EventEmitter();
   Password: string = "";
   action = "";
@@ -107,19 +108,27 @@ export class ReinitMdpComponent implements OnInit {
   DefinirMDP(){
     const errorService = ErrorService.instance;
     this.action = $localize`Définition du mot de passe`;
-    this.compte_serv.UpdateMDP(this.Login, this.Password).then((retour) => {
-      if (retour) {
-        let o = errorService.OKMessage(this.action);
+    if(this.context == 'CREER'){
+      let param = [];
+      param.push(this.Login);
+      param.push(this.Password);
+      this.CreerMDP.emit(param);
+    } else {
+      this.compte_serv.UpdateMDP(this.Login, this.Password).then((retour) => {
+        if (retour) {
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+          this.router.navigate(['/menu']);
+        } else {
+          let o = errorService.UnknownError(this.action);
+          errorService.emitChange(o);
+        }
+      }).catch((error: Error) => {
+        let o = errorService.CreateError(this.action, error.message);
         errorService.emitChange(o);
-        this.router.navigate(['/menu']);
-      } else {
-        let o = errorService.UnknownError(this.action);
-        errorService.emitChange(o);
-      }
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-    });
+      });
+    }
+    
   }
   ConfirmMDP(){
     const errorService = ErrorService.instance;

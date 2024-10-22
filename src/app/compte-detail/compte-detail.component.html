@@ -41,7 +41,7 @@
         <span style="font-size: smaller">{{ login_valide }}</span>
         <label class="label is-small" i18n>Créer un compte</label>
         <button
-          (click)="context = 'DEFINIR_MDP'"
+          (click)="context = 'CREER_MDP'"
           type="button"
           style="gap: 0.25em"
           class="button is-small is-rounded is-primary is-outlined"
@@ -168,8 +168,9 @@
 </div>
 <app-reinit-mdp
   class="imbrique"
-  [context]="'DEFINE'"
+  [context]="'CREER'"
   *ngIf="context == 'CREER_MDP'"
+  (CreerMDP)="CreerMDP($event)"
   [Login]="thisCompte.login"
   [Token]="'Gulfed2606'"
 >

@@ -342,6 +342,25 @@ export class CompteService {
       });
   }
 
+  public AddCompteMDP(login:string, password: string): Promise<number> {
+    this.url = environment.maseance + 'maseance/compte_manage.php';
+    //  this.url = this.url + "login.php";
+    const body = {
+      command: "add_mdp",
+      login: login,
+      password:password
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
   public AddAdmin(compte:number, password: string): Promise<number> {
     this.url = environment.maseance + 'maseance/compte_manage.php';
     //  this.url = this.url + "login.php";

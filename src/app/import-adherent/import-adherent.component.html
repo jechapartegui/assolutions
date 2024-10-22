@@ -1,18 +1,28 @@
-<p>import-adherent works!</p>
-<div class="file is-primary is-rounded is-outlined has-name">
-    <label class="file-label">
-      <input
-        class="file-input"
-        type="file"
-        name="resume"
-        (change)="onFileSelected($event)"
-      />
-      <span class="file-cta">
-        <span class="file-icon">
-          <i class="fas fa-file-import"></i>
-        </span>
-        <span class="span-file-label" i18n>Importer depuis Excel</span>
-      </span>
-      <span *ngIf="file" class="file-name"> {{ file.name }} </span>
-    </label>
+<label class="file-label">
+  <input
+    class="file-input"
+    type="file"
+    name="resume"
+    (change)="onFileChange($event)"
+  />
+  <span class="file-cta">
+    <span class="file-icon">
+      <i class="fas fa-file-import"></i>
+    </span>
+    <span class="span-file-label" i18n>Importer depuis Excel</span>
+  </span>
+  <span *ngIf="file" class="file-name"> {{ file.name }} </span>
+</label>
+<div *ngIf="data.length > 0">
+  <div *ngFor="let key of objectKeys(headers)" class="row">
+    <label>{{ headers[key] }}</label>
+    
+    <select (change)="onSelectHeader(key, $event)">
+      <option *ngFor="let header of listeHeader" [value]="header">{{header}}</option>
+    </select>
+    
+    <span *ngIf="mappedValues[key]">
+      Valeur pour la ligne 2 : {{ mappedValues[key] }}
+    </span>
   </div>
+</div>
