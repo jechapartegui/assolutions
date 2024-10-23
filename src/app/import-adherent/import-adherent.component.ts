@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adherent } from 'src/class/adherent';
+import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
 import { Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
 import { Saison } from 'src/class/saison';
@@ -19,12 +19,19 @@ import * as XLSX from 'xlsx';
 })
 export class ImportAdherentComponent implements OnInit { 
   constructor(public excelService:ExcelService, public riders_serv:AdherentService, public saisonserv:SaisonService, public router:Router){
-
+    this.objectKeys(this.headers).forEach(key => {
+      this.columnCounts[key] = 1;
+      this.mappedValues[key] = [];
+    });
   }
   file:any;
   listeHeader: string[] = [];
   data: any[][] = [];
-  valeurTest: string | null = null;
+  mappedValues: any = {}; 
+  transformationValues: any = {};  // Stocke les valeurs sélectionnées pour chaque clé
+  columnCounts: any = {};  // Stocke le nombre de colonnes de select pour chaque clé
+
+  objectKeys = Object.keys;
   action:string;
   liste_saison:Saison[];
   active_saison:Saison;
@@ -94,11 +101,10 @@ export class ImportAdherentComponent implements OnInit {
     });
   }
 
-  objectKeys = Object.keys;
 
   onFileChange(event: any) {
-    const file = event.target.files[0];
-    if (file) {
+    this.file = event.target.files[0];
+    if (this.file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const bstr: string = e.target.result;
@@ -117,25 +123,113 @@ export class ImportAdherentComponent implements OnInit {
         // Stocke toutes les données
         this.data = data as any[][];
       };
-      reader.readAsBinaryString(file);
+      reader.readAsBinaryString(this.file);
     }
   }
-  mappedValues: any = {};
 
-  onSelectHeader(key: string, event: any) {
-    const selectedHeader = event.target.value;
-    const columnIndex = this.listeHeader.indexOf(selectedHeader);
+  adjustColumnCount(key: string) {
+    // Ajuste le nombre de colonnes et initialise les valeurs sélectionnées
+    const count = this.columnCounts[key];
+    this.mappedValues[key] = new Array(count).fill('');
+  }
 
-    // Vérifie si la colonne sélectionnée existe et stocke la valeur de la ligne 2
-    if (columnIndex >= 0) {
-      this.mappedValues[key] = this.data[1][columnIndex];
+
+
+  onSelectHeader(key: string, index: number, event: any) {
+    const selectedValue = event;
+    console.log(selectedValue);
+    if(!selectedValue){
+      this.mappedValues[key][index] = [];
+      this.mappedValues[key][index][0] = selectedValue;
+      this.mappedValues[key][index][1] = "";
+      this.mappedValues[key][index][2] = "";
+      this.mappedValues[key][index][3] = "";
+      this.mappedValues[key][index][4] = "";
+    } else if (selectedValue === 'Texte'){
+        this.mappedValues[key][index] = [];
+        this.mappedValues[key][index][0] = selectedValue;
+        this.mappedValues[key][index][1] = "";
+        this.mappedValues[key][index][2] = "";
+        this.mappedValues[key][index][3] = "";
+        this.mappedValues[key][index][4] = "";
     } else {
-      this.mappedValues[key] = null;
+      const columnIndex = this.listeHeader.indexOf(selectedValue);
+      console.log(this.data[1][columnIndex]);
+      // Met à jour la valeur sélectionnée pour ce header
+      if (!this.mappedValues[key]) {
+        this.mappedValues[key] = [];
+      }
+      this.mappedValues[key][index] = [];
+      this.mappedValues[key][index][0] = selectedValue;
+      this.mappedValues[key][index][1] = this.data[1][columnIndex];
+      this.mappedValues[key][index][2] = "";
+      this.mappedValues[key][index][3] = "";
+      this.mappedValues[key][index][4] = this.data[1][columnIndex];
+    }
+    
+  }
+  
+  onTextInput(key: string, index: number, event: Event) {
+    const input = event.target as HTMLInputElement; // Assertion de type ici
+    const value = input.value; // Récupération de la valeur
+    // Logique pour utiliser la valeur
+    console.log(`Text input for ${key} at index ${index}: ${value}`);
+    this.mappedValues[key][index][2] = value; // Mettez à jour les valeurs mappées
+  }
+  
+  onTransformationInput(key: string, index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const transformationCode = input.value;  // Le code de transformation saisi par l'utilisateur
+    const originalValue = this.mappedValues[key][index][1];  // La valeur actuelle de la colonne sélectionnée
+  
+    try {
+      this.mappedValues[key][index][3] = transformationCode; // Stocke la transformation saisie
+  
+      // Éviter 'return' dans l'eval, et faire une expression à évaluer directement
+      const expression = transformationCode.replace(/@value/g, `'${originalValue}'`);
+      
+      // Utilisation d'eval pour évaluer cette expression
+      const transformedValue = eval(expression); 
+      this.mappedValues[key][index][4] = transformedValue; // Mettre à jour la valeur transformée
+  
+    } catch (error) {
+      console.log('Erreur dans le code de transformation:', error);
+      this.mappedValues[key][index][4] = originalValue; // Affichage d'une erreur si le code est invalide
     }
   }
-
- 
   
+  
+  
+  logAllValues() {
+    const allValues = {};
+    
+    this.objectKeys(this.headers).forEach(key => {
+      allValues[key] = this.mappedValues[key] ? this.mappedValues[key].map((value, index) => {
+        return value === 'text' ? 'Texte Saisis' : value || 'Aucun';
+      }).join(' | ') : '';
+    });
+  
+    console.log(allValues);
+  }
+
+  importer(){
+    const allValues = {};
+    const list_adh = [];
+    this.data.forEach((val) =>{
+      console.log(val);
+      let adf = new adherent();
+      let Adh = new Adherent(adf);
+      this.objectKeys(this.headers).forEach(key => {
+        console.log(key);
+        console.log(this.mappedValues[key].length);
+        if(key == "ID"){
+          Adh.ID = this.mappedValues[key][0][1];
+        }
+          
+      });
+
+    })
+  }
 
 
 }

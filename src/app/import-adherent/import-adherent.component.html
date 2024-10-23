@@ -1,28 +1,98 @@
-<label class="file-label">
-  <input
-    class="file-input"
-    type="file"
-    name="resume"
-    (change)="onFileChange($event)"
-  />
-  <span class="file-cta">
-    <span class="file-icon">
-      <i class="fas fa-file-import"></i>
+<div class="container">
+  <label class="file-label">
+    <input
+      class="file-input"
+      type="file"
+      name="resume"
+      accept=".xls,.xlsx" 
+      (change)="onFileChange($event)"
+    />
+    <span class="file-cta">
+      <span class="file-icon">
+        <i class="fas fa-file-import"></i>
+      </span>
+      <span class="span-file-label" i18n>Importer depuis Excel</span>
     </span>
-    <span class="span-file-label" i18n>Importer depuis Excel</span>
-  </span>
-  <span *ngIf="file" class="file-name"> {{ file.name }} </span>
-</label>
-<div *ngIf="data.length > 0">
-  <div *ngFor="let key of objectKeys(headers)" class="row">
-    <label>{{ headers[key] }}</label>
+    <span *ngIf="file" class="file-name"> {{ file.name }} </span>
+  </label>
+  <div *ngIf="data.length > 0">
+    <button
+    class="button is-primary is-small is-rounded is-outlined"
+    type="button"
+    (click)="logAllValues()"
+  >
+    Récupérer toutes les valeurs
+  </button>
+  <button
+  class="button is-primary is-small is-rounded is-outlined"
+  type="button"
+  (click)="importer()" i18n
+>
+  Importer
+</button>
+  <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+    <thead>
+      <tr>
+        <th class="is-one-quarter">Nom de la propriété</th>
+        <th class="is-one-eighth">Nombre de colonnes</th>
+        <th>Colonnes sélectionnées</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let key of objectKeys(headers)">
+        <!-- Colonne 1 : Nom du header -->
+        <td class="is-one-quarter">
+          <label class="label is-small">{{ headers[key] }}</label>
+        </td>
+  
+        <!-- Colonne 2 : Sélecteur du nombre de champs -->
+        <td class="is-one-eighth">
+          <input
+            class="input is-small"
+            type="number"
+            [(ngModel)]="columnCounts[key]"
+            min="1"
+            max="7"
+            (change)="adjustColumnCount(key)"
+          />
+        </td>
+  
+        <!-- Colonne 3 : Sélecteur des colonnes de listeHeader et affichage de la valeur -->
+        <td>
+          <div *ngFor="let i of columnCounts[key] | range" class="column is-narrow">
+            <select class="select is-small" [(ngModel)]="mappedValues[key][i]" (ngModelChange)="onSelectHeader(key, i, $event)">
+              <option [ngValue]="null">Aucun</option>
+              <option [ngValue]="'Texte'">Texte</option>
+              <option *ngFor="let header of listeHeader" [value]="header">
+                {{ header.length > 40 ? (header | slice:0:40) + '...' : header }}
+              </option>
+            </select>
+            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[0] !== 'Texte' && mappedValues[key]?.[i]?.[0] !== null" class="help is-small">
+              Valeur Exemple : {{ headers[key] }} (colonne {{ i + 1 }}): {{ mappedValues[key]?.[i]?.[4] || '---' }}
+            </div>
+          
+            <!-- Affichage de l'input texte si 'Texte' est sélectionné -->
+            <div *ngIf="mappedValues[key]?.[i]?.[0] === 'Texte'">
+              <input type="text" class="input is-small" placeholder="Saisissez votre texte ici" 
+                     (input)="onTextInput(key, i, $event)">
+            </div>
+          
+            <!-- Champ de saisie pour la transformation si un header est sélectionné -->
+            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[0] !== 'Texte' && mappedValues[key]?.[i]?.[0] !== null">
+              <input type="text" class="input is-small" placeholder="Transformation" 
+                     (input)="onTransformationInput(key, i, $event)">
+            </div>
+          </div>
+        </td>
+        
+      </tr>
+    </tbody>
+  </table>
+  
+  
     
-    <select (change)="onSelectHeader(key, $event)">
-      <option *ngFor="let header of listeHeader" [value]="header">{{header}}</option>
-    </select>
-    
-    <span *ngIf="mappedValues[key]">
-      Valeur pour la ligne 2 : {{ mappedValues[key] }}
-    </span>
+
+    <!-- Bouton pour récupérer toutes les valeurs -->
+   
   </div>
 </div>

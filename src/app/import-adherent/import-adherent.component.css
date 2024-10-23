@@ -1,1 +1,19 @@
-
+.table {
+    margin-top: 20px;
+  }
+  
+  .columns.is-mobile .column {
+    flex-basis: auto;
+    margin-right: 10px; /* Espacement entre les selects */
+  }
+  
+  .select.is-small {
+    max-width: 150px; /* Limite la largeur des selects */
+  }
+  
+  
+  .help {
+    margin-top: 5px;
+    font-size: 12px; /* Taille plus petite pour le texte de l'exemple */
+  }
+  
