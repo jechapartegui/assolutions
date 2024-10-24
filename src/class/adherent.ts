@@ -221,35 +221,59 @@ export class AdherentExport {
   NomPhoneUrgence: string;
   Inscrit: boolean;
 
-  constructor(a: Adherent) {
-    this.safeAssign(() => this.ID = a.ID);
-    this.safeAssign(() => this.Nom = a.Nom);
-    this.safeAssign(() => this.Prenom = a.Prenom);
-    this.safeAssign(() => this.Surnom = a.Surnom);
-    this.safeAssign(() => this.Login = a.Login);
-    this.safeAssign(() => this.DDN = a.DDN);
-    this.safeAssign(() => this.Sexe = a.Sexe);
-    this.safeAssign(() => this.Street = a.Adresse.Street);
-    this.safeAssign(() => this.PostCode = a.Adresse.PostCode);
-    this.safeAssign(() => this.City = a.Adresse.City);
-    this.safeAssign(() => this.Country = a.Adresse.Country);
-    this.safeAssign(() => this.Mail = a.Contacts.filter(x => x.Type === 'EMAIL')[0]?.Value);
-    this.safeAssign(() => this.MailPref = a.Contacts.filter(x => x.Type === 'EMAIL')[0]?.Pref);
-    this.safeAssign(() => this.Phone = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Value);
-    this.safeAssign(() => this.PhonePref = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Pref);
-    this.safeAssign(() => this.MailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Value);
-    this.safeAssign(() => this.NomMailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Notes);
-    this.safeAssign(() => this.PhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Value);
-    this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes);
+  // Unique constructeur avec un paramètre optionnel
+  constructor(a?: Adherent) {
+    if (a) {
+      this.safeAssign(() => this.ID = a.ID);
+      this.safeAssign(() => this.Nom = a.Nom);
+      this.safeAssign(() => this.Prenom = a.Prenom);
+      this.safeAssign(() => this.Surnom = a.Surnom);
+      this.safeAssign(() => this.Login = a.Login);
+      this.safeAssign(() => this.DDN = a.DDN);
+      this.safeAssign(() => this.Sexe = a.Sexe);
+      this.safeAssign(() => this.Street = a.Adresse.Street);
+      this.safeAssign(() => this.PostCode = a.Adresse.PostCode);
+      this.safeAssign(() => this.City = a.Adresse.City);
+      this.safeAssign(() => this.Country = a.Adresse.Country);
+      this.safeAssign(() => this.Mail = a.Contacts.filter(x => x.Type === 'EMAIL')[0]?.Value);
+      this.safeAssign(() => this.MailPref = a.Contacts.filter(x => x.Type === 'EMAIL')[0]?.Pref);
+      this.safeAssign(() => this.Phone = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Value);
+      this.safeAssign(() => this.PhonePref = a.Contacts.filter(x => x.Type === 'PHONE')[0]?.Pref);
+      this.safeAssign(() => this.MailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Value);
+      this.safeAssign(() => this.NomMailUrgence = a.ContactsUrgence.filter(x => x.Type === 'EMAIL')[0]?.Notes);
+      this.safeAssign(() => this.PhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Value);
+      this.safeAssign(() => this.NomPhoneUrgence = a.ContactsUrgence.filter(x => x.Type === 'PHONE')[0]?.Notes);
 
-    console.log(a.Inscrit);
-    try {
-      console.log(a.Inscrit);
-      if (a.Inscrit) {
-        this.Adhesion = true;
+      try {
+        if (a.Inscrit) {
+          this.Adhesion = true;
+        }
+      } catch (e) {
+        // Gérer les exceptions
       }
-    } catch (e) {
-
+    } else {
+      // Initialisation des propriétés à des valeurs par défaut pour un constructeur sans paramètre
+      this.ID = 0;
+      this.Nom = '';
+      this.Prenom = '';
+      this.DDN = '';
+      this.Sexe = false;
+      this.Street = '';
+      this.PostCode = '';
+      this.City = '';
+      this.Mail = '';
+      this.MailPref = false;
+      this.Phone = '';
+      this.PhonePref = false;
+      this.MailUrgence = '';
+      this.PhoneUrgence = '';
+      this.Surnom = '';
+      this.Login = '';
+      this.Country = '';
+      this.Adhesion = false;
+      this.NomMailUrgence = '';
+      this.NomPhoneUrgence = '';
+      this.Inscrit = false;
     }
   }
 
@@ -257,9 +281,11 @@ export class AdherentExport {
     try {
       assignFn();
     } catch (e) {
+      // Gérer les exceptions
     }
   }
 }
+
 
 export class Validation_Adherent {
   public control: boolean;

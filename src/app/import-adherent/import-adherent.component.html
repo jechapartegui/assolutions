@@ -41,7 +41,7 @@
     <tbody>
       <tr *ngFor="let key of objectKeys(headers)">
         <!-- Colonne 1 : Nom du header -->
-        <td class="is-one-quarter">
+        <td style="width: min-content;">
           <label class="label is-small">{{ headers[key] }}</label>
         </td>
   
@@ -60,25 +60,25 @@
         <!-- Colonne 3 : Sélecteur des colonnes de listeHeader et affichage de la valeur -->
         <td>
           <div *ngFor="let i of columnCounts[key] | range" class="column is-narrow">
-            <select class="select is-small" [(ngModel)]="mappedValues[key][i]" (ngModelChange)="onSelectHeader(key, i, $event)">
+            <select *ngIf="mappedValues[key][i]" class="select is-small" [(ngModel)]="mappedValues[key][i][5]" (ngModelChange)="onSelectHeader(key, i, $event)">
               <option [ngValue]="null">Aucun</option>
               <option [ngValue]="'Texte'">Texte</option>
               <option *ngFor="let header of listeHeader" [value]="header">
                 {{ header.length > 40 ? (header | slice:0:40) + '...' : header }}
               </option>
             </select>
-            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[0] !== 'Texte' && mappedValues[key]?.[i]?.[0] !== null" class="help is-small">
+            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null" class="help is-small">
               Valeur Exemple : {{ headers[key] }} (colonne {{ i + 1 }}): {{ mappedValues[key]?.[i]?.[4] || '---' }}
             </div>
           
             <!-- Affichage de l'input texte si 'Texte' est sélectionné -->
-            <div *ngIf="mappedValues[key]?.[i]?.[0] === 'Texte'">
+            <div *ngIf="mappedValues[key]?.[i]?.[5] === 'Texte'">
               <input type="text" class="input is-small" placeholder="Saisissez votre texte ici" 
                      (input)="onTextInput(key, i, $event)">
             </div>
           
             <!-- Champ de saisie pour la transformation si un header est sélectionné -->
-            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[0] !== 'Texte' && mappedValues[key]?.[i]?.[0] !== null">
+            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null">
               <input type="text" class="input is-small" placeholder="Transformation" 
                      (input)="onTransformationInput(key, i, $event)">
             </div>

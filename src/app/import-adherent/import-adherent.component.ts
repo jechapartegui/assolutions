@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Adresse } from 'src/class/address';
 import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
-import { Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
@@ -15,33 +15,42 @@ import * as XLSX from 'xlsx';
 @Component({
   selector: 'app-import-adherent',
   templateUrl: './import-adherent.component.html',
-  styleUrls: ['./import-adherent.component.css']
+  styleUrls: ['./import-adherent.component.css'],
 })
-export class ImportAdherentComponent implements OnInit { 
-  constructor(public excelService:ExcelService, public riders_serv:AdherentService, public saisonserv:SaisonService, public router:Router){
-    this.objectKeys(this.headers).forEach(key => {
+export class ImportAdherentComponent implements OnInit {
+  constructor(
+    public excelService: ExcelService,
+    public riders_serv: AdherentService,
+    public saisonserv: SaisonService,
+    public router: Router
+  ) {
+    this.objectKeys(this.headers).forEach((key) => {
       this.columnCounts[key] = 1;
-      this.mappedValues[key] = [];
+      this.mappedValues[key] = new Array(1).fill('').map(() => []);
     });
   }
-  file:any;
+  list_adh: Adherent[];
+  adherents_import: AdherentImport[];
+  file: any;
   listeHeader: string[] = [];
   data: any[][] = [];
-  mappedValues: any = {}; 
-  transformationValues: any = {};  // Stocke les valeurs sélectionnées pour chaque clé
-  columnCounts: any = {};  // Stocke le nombre de colonnes de select pour chaque clé
+  mappedValues: any = {};
+  transformationValues: any = {}; // Stocke les valeurs sélectionnées pour chaque clé
+  columnCounts: any = {}; // Stocke le nombre de colonnes de select pour chaque clé
 
   objectKeys = Object.keys;
-  action:string;
-  liste_saison:Saison[];
-  active_saison:Saison;
+  action: string;
+  liste_saison: Saison[];
+  active_saison: Saison;
   headers = {
     ID: 'ID',
     Nom: 'Nom',
     Prenom: 'Prénom',
     DDN: 'Date de naissance',
     Sexe: 'Sexe',
-    Adresse: 'Adresse',
+    Voie: 'Voie',
+    PostCode: 'Code Postal',
+    Ville: 'Ville',
     Country: 'Pays',
     Surnom: 'Surnom',
     Login: 'Login',
@@ -57,50 +66,44 @@ export class ImportAdherentComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    if (
-      GlobalService.menu !== 'ADMIN' 
-    ) {
+    if (GlobalService.menu !== 'ADMIN') {
       this.router.navigate(['/menu']);
-    } 
+    }
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les saisons`;
     this.saisonserv
-    .GetAll()
-    .then((sa) => {
-      if (sa.length == 0) {
+      .GetAll()
+      .then((sa) => {
+        if (sa.length == 0) {
+          let o = errorService.CreateError(
+            $localize`Récupérer les saisons`,
+            $localize`Il faut au moins une saison pour créer un cours`
+          );
+          errorService.emitChange(o);
+          if (GlobalService.menu === 'ADMIN' || GlobalService.menu == 'PROF') {
+            this.router.navigate(['/saison']);
+          } else {
+            this.router.navigate(['/menu']);
+            GlobalService.selected_menu = 'MENU';
+          }
+          return;
+        }
+        this.liste_saison = sa.map((x) => new Saison(x));
+        this.active_saison = this.liste_saison.filter(
+          (x) => x.active == true
+        )[0];
+      })
+      .catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(
-          $localize`Récupérer les saisons`,
-          $localize`Il faut au moins une saison pour créer un cours`
+          $localize`récupérer les saisons`,
+          err.message
         );
         errorService.emitChange(o);
-        if (
-          GlobalService.menu === 'ADMIN' ||
-          GlobalService.menu == 'PROF'
-        ) {
-          this.router.navigate(['/saison']);
-        } else {
-          this.router.navigate(['/menu']);
-          GlobalService.selected_menu = 'MENU';
-        }
+        this.router.navigate(['/menu']);
+        GlobalService.selected_menu = 'MENU';
         return;
-      }
-      this.liste_saison = sa.map((x) => new Saison(x));
-      this.active_saison = this.liste_saison.filter(
-        (x) => x.active == true
-      )[0];
-    })
-    .catch((err: HttpErrorResponse) => {
-      let o = errorService.CreateError(
-        $localize`récupérer les saisons`,
-        err.message
-      );
-      errorService.emitChange(o);
-      this.router.navigate(['/menu']);
-      GlobalService.selected_menu = 'MENU';
-      return;
-    });
+      });
   }
-
 
   onFileChange(event: any) {
     this.file = event.target.files[0];
@@ -130,106 +133,290 @@ export class ImportAdherentComponent implements OnInit {
   adjustColumnCount(key: string) {
     // Ajuste le nombre de colonnes et initialise les valeurs sélectionnées
     const count = this.columnCounts[key];
-    this.mappedValues[key] = new Array(count).fill('');
+    this.mappedValues[key] = new Array(count).fill('').map(() => []);
   }
-
-
 
   onSelectHeader(key: string, index: number, event: any) {
-    const selectedValue = event;
-    console.log(selectedValue);
-    if(!selectedValue){
-      this.mappedValues[key][index] = [];
-      this.mappedValues[key][index][0] = selectedValue;
-      this.mappedValues[key][index][1] = "";
-      this.mappedValues[key][index][2] = "";
-      this.mappedValues[key][index][3] = "";
-      this.mappedValues[key][index][4] = "";
-    } else if (selectedValue === 'Texte'){
-        this.mappedValues[key][index] = [];
-        this.mappedValues[key][index][0] = selectedValue;
-        this.mappedValues[key][index][1] = "";
-        this.mappedValues[key][index][2] = "";
-        this.mappedValues[key][index][3] = "";
-        this.mappedValues[key][index][4] = "";
-    } else {
+    if (
+      this.mappedValues[key][index][5] &&
+      this.mappedValues[key][index][5] !== 'Texte'
+    ) {
+      const selectedValue = event;
       const columnIndex = this.listeHeader.indexOf(selectedValue);
-      console.log(this.data[1][columnIndex]);
-      // Met à jour la valeur sélectionnée pour ce header
-      if (!this.mappedValues[key]) {
-        this.mappedValues[key] = [];
-      }
-      this.mappedValues[key][index] = [];
-      this.mappedValues[key][index][0] = selectedValue;
+      this.mappedValues[key][index][0] = columnIndex;
       this.mappedValues[key][index][1] = this.data[1][columnIndex];
-      this.mappedValues[key][index][2] = "";
-      this.mappedValues[key][index][3] = "";
+      this.mappedValues[key][index][2] = '';
+      this.mappedValues[key][index][3] = '';
       this.mappedValues[key][index][4] = this.data[1][columnIndex];
     }
-    
   }
-  
+
   onTextInput(key: string, index: number, event: Event) {
     const input = event.target as HTMLInputElement; // Assertion de type ici
     const value = input.value; // Récupération de la valeur
     // Logique pour utiliser la valeur
-    console.log(`Text input for ${key} at index ${index}: ${value}`);
     this.mappedValues[key][index][2] = value; // Mettez à jour les valeurs mappées
   }
-  
+
   onTransformationInput(key: string, index: number, event: Event) {
     const input = event.target as HTMLInputElement;
-    const transformationCode = input.value;  // Le code de transformation saisi par l'utilisateur
-    const originalValue = this.mappedValues[key][index][1];  // La valeur actuelle de la colonne sélectionnée
-  
+    const transformationCode = input.value; // Le code de transformation saisi par l'utilisateur
+    const originalValue = this.mappedValues[key][index][1]; // La valeur actuelle de la colonne sélectionnée
+
     try {
       this.mappedValues[key][index][3] = transformationCode; // Stocke la transformation saisie
-  
+
       // Éviter 'return' dans l'eval, et faire une expression à évaluer directement
-      const expression = transformationCode.replace(/@value/g, `'${originalValue}'`);
-      
+      const expression = transformationCode.replace(
+        /@value/g,
+        `'${originalValue}'`
+      );
+
       // Utilisation d'eval pour évaluer cette expression
-      const transformedValue = eval(expression); 
+      const transformedValue = eval(expression);
       this.mappedValues[key][index][4] = transformedValue; // Mettre à jour la valeur transformée
-  
     } catch (error) {
-      console.log('Erreur dans le code de transformation:', error);
       this.mappedValues[key][index][4] = originalValue; // Affichage d'une erreur si le code est invalide
     }
   }
-  
-  
-  
+
   logAllValues() {
     const allValues = {};
-    
-    this.objectKeys(this.headers).forEach(key => {
-      allValues[key] = this.mappedValues[key] ? this.mappedValues[key].map((value, index) => {
-        return value === 'text' ? 'Texte Saisis' : value || 'Aucun';
-      }).join(' | ') : '';
+
+    this.objectKeys(this.headers).forEach((key) => {
+      allValues[key] = this.mappedValues[key]
+        ? this.mappedValues[key]
+            .map((value, index) => {
+              return value === 'text' ? 'Texte Saisis' : value || 'Aucun';
+            })
+            .join(' | ')
+        : '';
     });
-  
-    console.log(allValues);
+
   }
 
-  importer(){
-    const allValues = {};
-    const list_adh = [];
-    this.data.forEach((val) =>{
-      console.log(val);
-      let adf = new adherent();
-      let Adh = new Adherent(adf);
-      this.objectKeys(this.headers).forEach(key => {
-        console.log(key);
-        console.log(this.mappedValues[key].length);
-        if(key == "ID"){
-          Adh.ID = this.mappedValues[key][0][1];
+  //@value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+
+  //@value == 'Monsieur' ? true : false ==> pas fonctionné
+  //new Date(1900, 0, @value- (@value> 60 ? 2 : 1));
+
+  importer() {
+    this.action = $localize`Importer les adhérents`;
+    const errorService = ErrorService.instance;
+    this.list_adh = [];
+
+    // On commence à partir de la ligne 2 (index 1), car la première ligne contient les headers
+    for (let i = 1; i < this.data.length; i++) {
+      const val = this.data[i];
+      let Adh = new AdherentExport();
+
+      this.objectKeys(this.headers).forEach((key) => {
+        if (this.mappedValues[key].length > 0) {
+          let valeur = '';
+          for (let index = 0; index < this.mappedValues[key].length; index++) {
+            // Utiliser la colonne directement
+            if (!this.mappedValues[key][index][5]) {
+              // Champ vide
+              continue;
+            } else if (this.mappedValues[key][index][5] == 'Texte') {
+              valeur += this.mappedValues[key][index][2]; // Texte saisi
+            } else {
+              const colonne = this.mappedValues[key][index][0];
+              const valeur_table = val[colonne];
+              if (valeur_table) {
+                try {
+                  if (
+                    this.mappedValues[key][index][3] &&
+                    this.mappedValues[key][index][3].length > 0
+                  ) {
+                    const expression = this.mappedValues[key][index][3].replace(
+                      /@value/g,
+                      `'${valeur_table}'`
+                    );
+                    const transformedValue = eval(expression); // Transformation personnalisée
+                    valeur += transformedValue;
+                  } else {
+                    valeur += valeur_table;
+                  }
+                } catch (error) {
+                  valeur += valeur_table; // Si la transformation échoue, prendre la valeur brute
+                }
+              }
+            }
+          }
+
+          // Convertir les champs spécifiques en fonction du type
+          switch (key) {
+            case 'ID':
+              if (valeur == '') {
+                Adh.ID = 0;
+              } else {
+                Adh.ID = parseInt(valeur, 10); // Convertir en number
+              }
+              break;
+            case 'Nom':
+              Adh.Nom = valeur; // Garder en string
+              break;
+            case 'Prenom':
+              Adh.Prenom = valeur; // Garder en string
+              break;
+            case 'DDN':
+              if (valeur == '') {
+                Adh.DDN = null;
+              } else {
+                Adh.DDN = new Date(valeur).toISOString().slice(0, 10); // Convertir en date et formater en string
+              }
+              break;
+            case 'Sexe':
+              Adh.Sexe = valeur === 'true'; // Convertir en booléen (true si homme, false sinon)
+              break;
+            case 'Voie':
+              Adh.Street = valeur;
+              break;
+            case 'PostCode':
+              Adh.PostCode = valeur;
+              break;
+            case 'Ville':
+              Adh.City = valeur;
+              break;
+            case 'Country':
+              Adh.Country = valeur;
+              break;
+            case 'Surnom':
+              Adh.Surnom = valeur;
+              break;
+            case 'Login':
+              Adh.Login = valeur;
+              break;
+            case 'Mail':
+              Adh.Mail = valeur;
+              break;
+            case 'MailPref':
+              Adh.MailPref = valeur === 'true';
+              break;
+            case 'Phone':
+              Adh.Phone = valeur;
+              break;
+            case 'PhonePref':
+              Adh.PhonePref = valeur === 'true';
+              break;
+            case 'MailUrgence':
+              Adh.MailUrgence = valeur;
+              break;
+            case 'NomMailUrgence':
+              Adh.NomMailUrgence = valeur;
+              break;
+            case 'PhoneUrgence':
+              Adh.PhoneUrgence = valeur;
+              break;
+            case 'NomPhoneUrgence':
+              Adh.NomPhoneUrgence = valeur;
+              break;
+            case 'Inscrit':
+              Adh.Inscrit = valeur === 'true';
+              break;
+            default:
+              break;
+          }
         }
-          
       });
+      let a = new adherent();
+      let AdherentT = new Adherent(a);
+      AdherentT.ID = Adh.ID;
+      AdherentT.Nom = Adh.Nom;
+      AdherentT.Prenom = Adh.Prenom;
+      AdherentT.DDN = Adh.DDN;
+      AdherentT.Sexe = Adh.Sexe;
+      let adr = new Adresse();
+      adr.Street = Adh.Street;
+      adr.City = Adh.City;
+      adr.Country = Adh.Country;
+      adr.PostCode = Adh.PostCode;
+      AdherentT.Adresse = adr;
+      if (this.IsEmail(Adh.Login)) {
+        AdherentT.Login = Adh.Login;
+      }
+      AdherentT.Login = Adh.Login;
+      AdherentT.Contacts = [];
+      if (Adh.Mail && this.IsEmail(Adh.Mail)) {
+        let icm: ItemContact = new ItemContact();
+        icm.Pref = false;
+        icm.Type = 'EMAIL';
+        icm.Value = Adh.Mail;
+        if (Adh.MailPref) {
+          icm.Pref = true;
+        }
+        AdherentT.Contacts.push(icm);
+      }
+      if (Adh.Phone && this.IsPhone(Adh.Phone)) {
+        let icp: ItemContact = new ItemContact();
+        icp.Pref = false;
+        icp.Type = 'PHONE';
+        icp.Value = Adh.Phone;
+        if (Adh.PhonePref) {
+          icp.Pref = true;
+        }
+        AdherentT.Contacts.push(icp);
+      }
 
-    })
+      AdherentT.ContactsUrgence = [];
+      if (Adh.MailUrgence && this.IsEmail(Adh.MailUrgence)) {
+        let icm: ItemContact = new ItemContact();
+        icm.Pref = false;
+        icm.Type = 'EMAIL';
+        icm.Notes = Adh.NomMailUrgence;
+        icm.Value = Adh.MailUrgence;
+        if (Adh.MailPref) {
+          icm.Pref = true;
+        }
+        AdherentT.ContactsUrgence.push(icm);
+      }
+      if (Adh.PhoneUrgence && this.IsPhone(Adh.PhoneUrgence)) {
+        let icp: ItemContact = new ItemContact();
+        icp.Pref = false;
+        icp.Notes = Adh.NomPhoneUrgence;
+        icp.Type = 'PHONE';
+        icp.Value = Adh.PhoneUrgence;
+        if (Adh.PhonePref) {
+          icp.Pref = true;
+        }
+        AdherentT.ContactsUrgence.push(icp);
+      }
+      AdherentT.Inscrit = Adh.Inscrit;
+
+      this.list_adh.push(AdherentT); // Ajouter l'adhérent à la liste
+      console.log(this.list_adh.length);
+    }
+    
+    console.log(this.list_adh);
+    this.riders_serv
+      .SimulerImport(this.list_adh)
+      .then((retour: AdherentImport[]) => {})
+      .catch((error: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, error.message);
+        errorService.emitChange(o);
+      });
   }
+  IsEmail(text): boolean {
+    var re =
+      /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+    return re.test(text);
+  }
+  IsPhone(value: string): boolean {
+    // Regular expression for international or national phone numbers with optional separators
+    var re =
+      /^(\+?[0-9]{1,3}[-\s\.]?)?(\(?[0-9]{1,4}\)?[-\s\.]?)?([0-9]{1,4}[-\s\.]?[0-9]{1,9})$/;
+    return re.test(value);
+  }
+}
 
-
+export class AdherentImport {
+  import: adherent;
+  source: adherent;
+  Cible: Adherent;
+  public creer_adherent: boolean;
+  public update_adherent: boolean;
+  public inscrire_saison: boolean;
+  public creer_compte: boolean;
+  public rattacher_compte: boolean;
 }
