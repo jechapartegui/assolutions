@@ -29,6 +29,7 @@ export class ImportAdherentComponent implements OnInit {
       this.mappedValues[key] = new Array(1).fill('').map(() => []);
     });
   }
+  context: 'LOAD' | 'VIEW' | 'COMPARE' = 'LOAD';
   list_adh: Adherent[];
   adherents_import: AdherentImport[];
   file: any;
@@ -37,7 +38,7 @@ export class ImportAdherentComponent implements OnInit {
   mappedValues: any = {};
   transformationValues: any = {}; // Stocke les valeurs sélectionnées pour chaque clé
   columnCounts: any = {}; // Stocke le nombre de colonnes de select pour chaque clé
-
+  ListeCompare: AdherentImport[] = [];
   objectKeys = Object.keys;
   action: string;
   liste_saison: Saison[];
@@ -151,21 +152,12 @@ export class ImportAdherentComponent implements OnInit {
     }
   }
 
-  onTextInput(key: string, index: number, event: Event) {
-    const input = event.target as HTMLInputElement; // Assertion de type ici
-    const value = input.value; // Récupération de la valeur
-    // Logique pour utiliser la valeur
-    this.mappedValues[key][index][2] = value; // Mettez à jour les valeurs mappées
-  }
-
   onTransformationInput(key: string, index: number, event: Event) {
     const input = event.target as HTMLInputElement;
-    const transformationCode = input.value; // Le code de transformation saisi par l'utilisateur
+    const transformationCode = this.mappedValues[key][index][3]; // Le code de transformation saisi par l'utilisateur
     const originalValue = this.mappedValues[key][index][1]; // La valeur actuelle de la colonne sélectionnée
 
     try {
-      this.mappedValues[key][index][3] = transformationCode; // Stocke la transformation saisie
-
       // Éviter 'return' dans l'eval, et faire une expression à évaluer directement
       const expression = transformationCode.replace(
         /@value/g,
@@ -192,10 +184,9 @@ export class ImportAdherentComponent implements OnInit {
             .join(' | ')
         : '';
     });
-
   }
 
-  //@value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  //@value.toLowerCase().replace(/(?:^|\s|-)\w/g, (char) => char.toUpperCase());
 
   //@value == 'Monsieur' ? true : false ==> pas fonctionné
   //new Date(1900, 0, @value- (@value> 60 ? 2 : 1));
@@ -385,17 +376,8 @@ export class ImportAdherentComponent implements OnInit {
       AdherentT.Inscrit = Adh.Inscrit;
 
       this.list_adh.push(AdherentT); // Ajouter l'adhérent à la liste
-      console.log(this.list_adh.length);
     }
-    
-    console.log(this.list_adh);
-    this.riders_serv
-      .SimulerImport(this.list_adh)
-      .then((retour: AdherentImport[]) => {})
-      .catch((error: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, error.message);
-        errorService.emitChange(o);
-      });
+    this.context = 'VIEW';
   }
   IsEmail(text): boolean {
     var re =
@@ -407,6 +389,73 @@ export class ImportAdherentComponent implements OnInit {
     var re =
       /^(\+?[0-9]{1,3}[-\s\.]?)?(\(?[0-9]{1,4}\)?[-\s\.]?)?([0-9]{1,4}[-\s\.]?[0-9]{1,9})$/;
     return re.test(value);
+  }
+
+  ExporterJSON() {
+    const content_json: string = JSON.stringify(this.mappedValues);
+    const blob = new Blob([content_json], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'transformation.json';
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  // Importe les données transformées depuis un fichier JSON
+  async ImporterJSON(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const text = await file.text();
+      this.mappedValues = JSON.parse(text);
+
+      // Parcours chaque clé dans mappedValues pour ajuster les colonnes
+      Object.keys(this.mappedValues).forEach((key) => {
+        const entries = this.mappedValues[key];
+        if (Array.isArray(entries)) {
+          // Compte le nombre de colonnes pour chaque entrée
+          this.columnCounts[key] = entries.length;
+
+          // Parcourt les entrées en fonction de la liste de 0 à 5
+          entries.forEach((entry, index) => {
+            if (Array.isArray(entry)) {
+              for (let i = 0; i < Math.min(entry.length, 5); i++) {
+                console.log(
+                  `Clé: ${key}, Index: ${index}, Colonne: ${i}, Valeur:`,
+                  entry[i]
+                );
+              }
+            }
+          });
+
+          // Ajuste la colonne si nécessaire
+          this.adjustColumnCount(key);
+        }
+      });
+      this.mappedValues = JSON.parse(text);
+    }
+  }
+
+  LetsGo() {
+    this.action = $localize`Vérifier l'import`;
+    const errorService = ErrorService.instance;
+    this.riders_serv
+      .SimulerImport(this.list_adh.map(x => x.datasource))
+      .then((retour: AdherentImport[]) => {
+        this.ListeCompare = retour;
+        this.context = 'COMPARE';
+      })
+      .catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+  }
+  LetsGoBase() {
+    this.action = $localize`Importer`;
+    const errorService = ErrorService.instance;
+    this.ListeCompare.forEach((a) =>{
+      
+    })
   }
 }
 

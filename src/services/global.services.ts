@@ -133,6 +133,7 @@ export class GlobalService {
       );
       return response;
     } catch (error) {
+      console.log(error);
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
       } else {

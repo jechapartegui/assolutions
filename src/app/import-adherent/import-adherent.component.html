@@ -1,98 +1,359 @@
 <div class="container">
-  <label class="file-label">
-    <input
-      class="file-input"
-      type="file"
-      name="resume"
-      accept=".xls,.xlsx" 
-      (change)="onFileChange($event)"
-    />
-    <span class="file-cta">
-      <span class="file-icon">
-        <i class="fas fa-file-import"></i>
-      </span>
-      <span class="span-file-label" i18n>Importer depuis Excel</span>
-    </span>
-    <span *ngIf="file" class="file-name"> {{ file.name }} </span>
-  </label>
-  <div *ngIf="data.length > 0">
-    <button
-    class="button is-primary is-small is-rounded is-outlined"
-    type="button"
-    (click)="logAllValues()"
-  >
-    Récupérer toutes les valeurs
-  </button>
-  <button
-  class="button is-primary is-small is-rounded is-outlined"
-  type="button"
-  (click)="importer()" i18n
->
-  Importer
-</button>
-  <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-    <thead>
-      <tr>
-        <th class="is-one-quarter">Nom de la propriété</th>
-        <th class="is-one-eighth">Nombre de colonnes</th>
-        <th>Colonnes sélectionnées</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let key of objectKeys(headers)">
-        <!-- Colonne 1 : Nom du header -->
-        <td style="width: min-content;">
-          <label class="label is-small">{{ headers[key] }}</label>
-        </td>
-  
-        <!-- Colonne 2 : Sélecteur du nombre de champs -->
-        <td class="is-one-eighth">
+  <ng-container *ngIf="context == 'LOAD'">
+    <div class="columns" style="margin: 0px;">
+      <label class="file-label">
+        <input
+          class="input file-input is-small is-primary is-outlined is-rounded"
+          type="file"
+          name="resume"
+          accept=".xls,.xlsx"
+          (change)="onFileChange($event)"
+        />
+        <span
+          type="button"
+          class="button is-small is-primary is-outlined is-rounded"
+        >
+          <span class="span-file-label" i18n>Importer depuis Excel</span>
+        </span>
+        <span *ngIf="file" class="file-name is-small"> {{ file.name }} </span>
+      </label>
+      <ng-container *ngIf="data.length > 0">
+        <button
+          class="button is-primary is-small is-rounded is-outlined"
+          type="button"
+          (click)="ExporterJSON()"
+        >
+          Exporter la transformation
+        </button>
+        <label class="file-label">
           <input
-            class="input is-small"
-            type="number"
-            [(ngModel)]="columnCounts[key]"
-            min="1"
-            max="7"
-            (change)="adjustColumnCount(key)"
+            class="input file-input is-primary is-outlined is-rounded"
+            type="file"
+            name="resume"
+            accept=".json"
+            (change)="ImporterJSON($event)"
           />
-        </td>
-  
-        <!-- Colonne 3 : Sélecteur des colonnes de listeHeader et affichage de la valeur -->
-        <td>
-          <div *ngFor="let i of columnCounts[key] | range" class="column is-narrow">
-            <select *ngIf="mappedValues[key][i]" class="select is-small" [(ngModel)]="mappedValues[key][i][5]" (ngModelChange)="onSelectHeader(key, i, $event)">
-              <option [ngValue]="null">Aucun</option>
-              <option [ngValue]="'Texte'">Texte</option>
-              <option *ngFor="let header of listeHeader" [value]="header">
-                {{ header.length > 40 ? (header | slice:0:40) + '...' : header }}
-              </option>
-            </select>
-            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null" class="help is-small">
-              Valeur Exemple : {{ headers[key] }} (colonne {{ i + 1 }}): {{ mappedValues[key]?.[i]?.[4] || '---' }}
-            </div>
-          
-            <!-- Affichage de l'input texte si 'Texte' est sélectionné -->
-            <div *ngIf="mappedValues[key]?.[i]?.[5] === 'Texte'">
-              <input type="text" class="input is-small" placeholder="Saisissez votre texte ici" 
-                     (input)="onTextInput(key, i, $event)">
-            </div>
-          
-            <!-- Champ de saisie pour la transformation si un header est sélectionné -->
-            <div *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null">
-              <input type="text" class="input is-small" placeholder="Transformation" 
-                     (input)="onTransformationInput(key, i, $event)">
-            </div>
-          </div>
-        </td>
-        
-      </tr>
-    </tbody>
-  </table>
-  
-  
-    
+          <span
+          type="button"
+          class="button is-small is-primary is-outlined is-rounded"
+        >
+          <span class="span-file-label" i18n>Importer depuis un fichier de transformation</span>
+        </span>
+        </label>
+        <button
+          class="button is-primary is-small is-rounded is-outlined"
+          type="button"
+          (click)="importer()"
+          i18n
+        >
+          Importer
+        </button>
+      </ng-container>
+    </div>
+    <div class="columns" style="margin: 0px;" *ngIf="data.length > 0">
+      <table
+        class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth"
+      >
+        <thead>
+          <tr>
+            <th class="is-one-quarter">Nom de la propriété</th>
+            <th class="is-one-eighth">Nombre de colonnes</th>
+            <th>Colonnes sélectionnées</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let key of objectKeys(headers)">
+            <!-- Colonne 1 : Nom du header -->
+            <td style="width: min-content">
+              <label class="label is-small">{{ headers[key] }}</label>
+            </td>
 
+            <!-- Colonne 2 : Sélecteur du nombre de champs -->
+            <td class="is-one-eighth">
+              <input
+                class="input is-small"
+                type="number"
+                [(ngModel)]="columnCounts[key]"
+                min="1"
+                max="7"
+                (change)="adjustColumnCount(key)"
+              />
+            </td>
+
+            <!-- Colonne 3 : Sélecteur des colonnes de listeHeader et affichage de la valeur -->
+            <td>
+              <div
+                *ngFor="let i of columnCounts[key] | range"
+                class="column is-narrow"
+              >
+                <select
+                  *ngIf="mappedValues[key][i]"
+                  class="select is-small"
+                  [(ngModel)]="mappedValues[key][i][5]"
+                  (ngModelChange)="onSelectHeader(key, i, $event)"
+                >
+                  <option [ngValue]="null">Aucun</option>
+                  <option [ngValue]="'Texte'">Texte</option>
+                  <option *ngFor="let header of listeHeader" [value]="header">
+                    {{
+                      header.length > 40
+                        ? (header | slice : 0 : 40) + "..."
+                        : header
+                    }}
+                  </option>
+                </select>
+                <div
+                  *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null"
+                  class="help is-small"
+                >
+                  Valeur Exemple : {{ headers[key] }} (colonne {{ i + 1 }}):
+                  {{ mappedValues[key]?.[i]?.[4] || '---' }}
+                </div>
+
+                <!-- Affichage de l'input texte si 'Texte' est sélectionné -->
+                <div *ngIf="mappedValues[key]?.[i]?.[5] === 'Texte'">
+                  <input
+                    type="text"
+                    class="input is-small"
+                    placeholder="Saisissez votre texte ici"
+                    [(ngModel)]="this.mappedValues[key][i][2]"
+                  />
+                </div>
+
+                <!-- Champ de saisie pour la transformation si un header est sélectionné -->
+                <div
+                  *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null"
+                >
+                  <input
+                    type="text"
+                    class="input is-small"
+                    placeholder="Transformation"
+                    [(ngModel)]="this.mappedValues[key][i][3]"
+                    (input)="onTransformationInput(key, i, $event)"
+                  />
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <!-- Bouton pour récupérer toutes les valeurs -->
-   
-  </div>
+  </ng-container>
+  <ng-container *ngIf="context == 'VIEW'">
+    <button
+      class="button is-danger is-small is-rounded is-outlined"
+      type="button"
+      (click)="context = 'LOAD'; list_adh = []"
+      i18n
+    >
+      Retour
+    </button>
+    <button
+      class="button is-primary is-small is-rounded is-outlined"
+      type="button"
+      (click)="LetsGo()"
+      i18n
+    >
+      Vérifier les données
+    </button>
+    <table class="table is-small">
+      <thead>
+        <tr>
+          <th class="is-small limited-column" i18n>ID</th>
+          <th class="is-small" i18n>Prénom</th>
+          <th class="is-small" i18n>Nom</th>
+          <th class="is-small" i18n>Surnom</th>
+          <th class="is-small" i18n>Date de naissance</th>
+          <th class="is-small" i18n>Civilité</th>
+          <th class="is-small" i18n>Login</th>
+          <th class="is-small" i18n>Contacts</th>
+          <th class="is-small" i18n>Adresse</th>
+          <th class="is-small" i18n>Inscrit ?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let a of list_adh">
+          <tr>
+            <td class="limited-column">
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="a.ID"
+                class="input is-small"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                [(ngModel)]="a.Prenom"
+                class="input is-small"
+              />
+            </td>
+            <td>
+              <input type="text" [(ngModel)]="a.Nom" class="input is-small" />
+            </td>
+            <td>
+              <input
+                type="text"
+                [(ngModel)]="a.Surnom"
+                class="input is-small"
+              />
+            </td>
+            <td>
+              <input
+                class="input is-small"
+                type="date"
+                id="date_naissance"
+                name="date_naissance"
+                i18n-placeholder
+                placeholder="Date de naissance"
+                [(ngModel)]="a.DDN"
+              />
+            </td>
+            <td>
+              <div class="buttons is-small has-addons is-centered">
+                <button
+                  type="button"
+                  style="font-size: small"
+                  [class]="
+                    a.Sexe == true
+                      ? 'button is-small is-link is-active'
+                      : 'button is-small is-active'
+                  "
+                  (click)="a.Sexe == true ? (a.Sexe = false) : (a.Sexe = true)"
+                >
+                  <i class="fa-solid fa-mars has-text-info"></i>
+                </button>
+                <button
+                  type="button"
+                  style="font-size: small"
+                  [class]="
+                    a.Sexe == false
+                      ? 'button is-small is-link is-active'
+                      : 'button is-small is-active'
+                  "
+                  (click)="a.Sexe == true ? (a.Sexe = false) : (a.Sexe = true)"
+                >
+                  <i class="fa-solid fa-venus has-text-danger"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <input
+                class="input is-small"
+                type="text"
+                id="login"
+                name="login"
+                i18n-placeholder
+                placeholder="Login"
+                [(ngModel)]="a.Login"
+              />
+            </td>
+            <td>
+              <span style="display: flex;flex-direction: row;gap: 0px;margin:0px" *ngFor="let c of a.Contacts">
+                <span *ngIf="c.Type == 'EMAIL'"><i class="fas fa-at"></i></span>
+                <span *ngIf="c.Type == 'PHONE'"
+                  ><i class="fas fa-phone"></i
+                ></span>
+                <input
+                  class="input is-small"
+                  type="text"
+                  id="ct"
+                  name="ct"
+                  i18n-placeholder
+                  placeholder="valeur"
+                  [(ngModel)]="c.Value"
+                />
+              </span>
+            </td>
+            <td>
+              <input
+                class="input is-small"
+                type="text"
+                id="adr"
+                name="adr"
+                i18n-placeholder
+                placeholder="Adresse"
+                [(ngModel)]="a.Adresse.Street"
+              />
+              <input
+                class="input is-small"
+                type="text"
+                id="cp"
+                name="cp"
+                i18n-placeholder
+                placeholder="Code postal"
+                [(ngModel)]="a.Adresse.PostCode"
+              />
+              <input
+                class="input is-small"
+                type="text"
+                id="Ville"
+                name="Ville"
+                i18n-placeholder
+                placeholder="Ville"
+                [(ngModel)]="a.Adresse.City"
+              />
+            </td>
+            <td>
+              <div class="buttons is-small has-addons is-centered">
+                <button
+                  type="button"
+                  style="font-size: small"
+                  [class]="
+                    a.Inscrit == true
+                      ? 'button is-small is-link is-active'
+                      : 'button is-small is-active'
+                  "
+                  (click)="
+                    a.Inscrit == true ? (a.Inscrit = false) : (a.Inscrit = true)
+                  "
+                >
+                  <i class="fas fa-check-circle"></i>
+                </button>
+                <button
+                  type="button"
+                  style="font-size: small"
+                  [class]="
+                    a.Inscrit == false
+                      ? 'button is-small is-link is-active'
+                      : 'button is-small is-active'
+                  "
+                  (click)="
+                    a.Inscrit == true ? (a.Inscrit = false) : (a.Inscrit = true)
+                  "
+                >
+                  <i class="fas fa-times-circle"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-container *ngIf="context == 'COMPARE'">
+    <div class="columns" style="margin: 0px;">
+      <button
+      class="button is-danger is-small is-rounded is-outlined"
+      type="button"
+      (click)="context = 'VIEW'; ListeCompare = []"
+      i18n
+    >
+      Retour
+    </button>
+    <button
+      class="button is-primary is-small is-rounded is-outlined"
+      type="button"
+      (click)="LetsGoBase()"
+      i18n
+    >
+      Importer dans la base
+    </button>
+    </div>
+    <div class="columns" style="margin: 0px;">
+      
+    </div>
+  </ng-container>
 </div>

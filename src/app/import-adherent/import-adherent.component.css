@@ -16,4 +16,24 @@
     margin-top: 5px;
     font-size: 12px; /* Taille plus petite pour le texte de l'exemple */
   }
+
+  .filebg{
+    background: transparent;
+    font-size: smaller;
+    border-color: green;
+    border-radius: 25px;
+  }
+  tr td {
+    padding: 1px;
+}
+th{
+  font-size: small;
+}
+.limited-column {
+  max-width: 50px; /* Limite la largeur à 100px */
+}
+.limited-column input {
+  width: 100%; /* Assure que l'input occupe toute la largeur de la cellule */
+  box-sizing: border-box; /* Gère le padding de l'input pour qu'il respecte la largeur de la cellule */
+}
   

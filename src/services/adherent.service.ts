@@ -3,6 +3,7 @@ import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
 import { Adherent, adherent } from 'src/class/adherent';
 import { KeyValuePair } from 'src/class/keyvaluepair';
+import { AdherentImport } from 'src/app/import-adherent/import-adherent.component';
 
 @Injectable({
   providedIn: 'root'
@@ -290,7 +291,7 @@ export class AdherentService {
       });
   }
 
-  public SimulerImport(liste:Adherent[]): Promise<any> {
+  public SimulerImport(liste:adherent[]): Promise<AdherentImport[]> {
     this.url = environment.maseance + 'maseance/adherents_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
@@ -300,7 +301,7 @@ export class AdherentService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: any) => {
+      .then((response: AdherentImport[]) => {
         return response;
       })
       .catch(error => {
