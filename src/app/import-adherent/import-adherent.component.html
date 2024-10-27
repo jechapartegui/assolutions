@@ -334,6 +334,9 @@
     </table>
   </ng-container>
   <ng-container *ngIf="context == 'COMPARE'">
+    <ng-container *ngIf="!editAdherentImport">
+      
+    </ng-container>
     <div class="columns" style="margin: 0px;">
       <button
       class="button is-danger is-small is-rounded is-outlined"
@@ -352,8 +355,137 @@
       Importer dans la base
     </button>
     </div>
+
+    <div class="columns" style="margin: 0px;">
+      <table class="table is-small">
+        <thead>
+          <tr>
+            <th class="is-small limited-column" i18n>ID</th>
+            <th class="is-small" i18n>Prénom</th>
+            <th class="is-small" i18n>Nom</th>
+            <th class="is-small" i18n>Surnom</th>
+            <th class="is-small" i18n>Date de naissance</th>
+            <th class="is-small" i18n>Civilité</th>
+            <th class="is-small" i18n>Login</th>
+            <th class="is-small" i18n>Contacts</th>
+            <th class="is-small" i18n>Adresse</th>
+            <th class="is-small" i18n>Inscrit ?</th>
+            <th class="is-small" i18n>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let a of ListeCompare">
+            <tr  [class]="a.Cible.valid.control ? 'label_green' : 'label_red'">
+              <td class="limited-column">
+                <label>{{a.Cible.ID}}</label>
+              </td>
+              <td>
+                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Prenom}}</label>
+              </td>
+              <td>
+                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Nom}}</label>
+              </td>
+              <td>
+                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Surnom}}</label>
+              </td>
+              <td>
+                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.DDN | date: "dd/MM/yyyy"}}</label>
+              </td>
+              <td>              
+                    <i *ngIf="a.Cible.Sexe" class="fa-solid fa-mars has-text-info"></i>              
+                    <i *ngIf="!a.Cible.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+              </td>
+              <td>
+                <label [class]="!IsEmail(a.Cible.Login) ? 'label_gras' : ''">{{a.Cible.Login}}</label>
+              </td>
+              <td>
+                <span style="display: flex;flex-direction: row;gap: 0px;margin:0px" *ngFor="let c of a.Cible.Contacts">
+                  <span *ngIf="c.Type == 'EMAIL'"><i class="fas fa-at"></i></span>
+                  <span *ngIf="c.Type == 'PHONE'"
+                    ><i class="fas fa-phone"></i
+                  ></span>
+                  <input
+                    class="input is-small"
+                    type="text"
+                    id="ct"
+                    name="ct"
+                    i18n-placeholder
+                    placeholder="valeur"
+                    [(ngModel)]="c.Value"
+                  />
+                </span>
+              </td>
+              <td>
+                <input
+                  class="input is-small"
+                  type="text"
+                  id="adr"
+                  name="adr"
+                  i18n-placeholder
+                  placeholder="Adresse"
+                  [(ngModel)]="a.Cible.Adresse.Street"
+                />
+                <input
+                  class="input is-small"
+                  type="text"
+                  id="cp"
+                  name="cp"
+                  i18n-placeholder
+                  placeholder="Code postal"
+                  [(ngModel)]="a.Cible.Adresse.PostCode"
+                />
+                <input
+                  class="input is-small"
+                  type="text"
+                  id="Ville"
+                  name="Ville"
+                  i18n-placeholder
+                  placeholder="Ville"
+                  [(ngModel)]="a.Cible.Adresse.City"
+                />
+              </td>
+              <td>
+                <div class="buttons is-small has-addons is-centered">
+                  <button
+                    type="button"
+                    style="font-size: small"
+                    [class]="
+                      a.Cible.Inscrit == true
+                        ? 'button is-small is-link is-active'
+                        : 'button is-small is-active'
+                    "
+                    (click)="
+                      a.Cible.Inscrit == true ? (a.Cible.Inscrit = false) : (a.Cible.Inscrit = true)
+                    "
+                  >
+                    <i class="fas fa-check-circle"></i>
+                  </button>
+                  <button
+                    type="button"
+                    style="font-size: small"
+                    [class]="
+                      a.Cible.Inscrit == false
+                        ? 'button is-small is-link is-active'
+                        : 'button is-small is-active'
+                    "
+                    (click)="
+                      a.Cible.Inscrit == true ? (a.Cible.Inscrit = false) : (a.Cible.Inscrit = true)
+                    "
+                  >
+                    <i class="fas fa-times-circle"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
     <div class="columns" style="margin: 0px;">
       
     </div>
+    <ng-container *ngIf="editAdherentImport">
+     
+    </ng-container>
   </ng-container>
 </div>

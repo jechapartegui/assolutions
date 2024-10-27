@@ -39,6 +39,7 @@ export class ImportAdherentComponent implements OnInit {
   transformationValues: any = {}; // Stocke les valeurs sélectionnées pour chaque clé
   columnCounts: any = {}; // Stocke le nombre de colonnes de select pour chaque clé
   ListeCompare: AdherentImport[] = [];
+  editAdherentImport: AdherentImport;
   objectKeys = Object.keys;
   action: string;
   liste_saison: Saison[];
@@ -416,17 +417,17 @@ export class ImportAdherentComponent implements OnInit {
           // Compte le nombre de colonnes pour chaque entrée
           this.columnCounts[key] = entries.length;
 
-          // Parcourt les entrées en fonction de la liste de 0 à 5
-          entries.forEach((entry, index) => {
-            if (Array.isArray(entry)) {
-              for (let i = 0; i < Math.min(entry.length, 5); i++) {
-                console.log(
-                  `Clé: ${key}, Index: ${index}, Colonne: ${i}, Valeur:`,
-                  entry[i]
-                );
-              }
-            }
-          });
+          // // Parcourt les entrées en fonction de la liste de 0 à 5
+          // entries.forEach((entry, index) => {
+          //   if (Array.isArray(entry)) {
+          //     for (let i = 0; i < Math.min(entry.length, 5); i++) {
+          //       console.log(
+          //         `Clé: ${key}, Index: ${index}, Colonne: ${i}, Valeur:`,
+          //         entry[i]
+          //       );
+          //     }
+          //   }
+          // });
 
           // Ajuste la colonne si nécessaire
           this.adjustColumnCount(key);
@@ -440,9 +441,64 @@ export class ImportAdherentComponent implements OnInit {
     this.action = $localize`Vérifier l'import`;
     const errorService = ErrorService.instance;
     this.riders_serv
-      .SimulerImport(this.list_adh.map(x => x.datasource))
+      .SimulerImport(this.list_adh.map((x) => x.datasource))
       .then((retour: AdherentImport[]) => {
         this.ListeCompare = retour;
+        this.ListeCompare.forEach((a) => {
+          if(a.import){
+            a.Import_A = new Adherent(a.import);
+            a.source_A = new Adherent(a.source);
+              if (a.Import_A.ID > 0) {
+                a.Cible.ID = a.Import_A.ID;
+              } else {
+                a.Cible.ID = a.source_A.ID;
+              }
+          
+              if (a.source_A.Nom.length > 0) {
+                a.Cible.Nom = a.source_A.Nom;
+              } else {
+                a.Cible.Nom = a.Import_A.Nom;
+              }
+              if (a.source_A.Prenom.length > 0) {
+                a.Cible.Prenom = a.source_A.Prenom;
+              } else {
+                a.Cible.Prenom = a.Import_A.Prenom;
+              }
+              if (a.source_A.Surnom.length > 0) {
+                a.Cible.Surnom = a.source_A.Surnom;
+              } else {
+                a.Cible.Surnom = a.Import_A.Surnom;
+              }
+              if (a.source_A.DDN.length > 0) {
+                a.Cible.DDN = a.source_A.DDN;
+              } else {
+                a.Cible.DDN = a.Import_A.DDN;
+              }
+              if (a.source_A.Contacts.length > 0) {
+                a.Cible.Contacts = a.source_A.Contacts;
+              } else {
+                a.Cible.Contacts = a.Import_A.Contacts;
+              }
+              if (a.source_A.ContactsUrgence.length > 0) {
+                a.Cible.ContactsUrgence = a.source_A.ContactsUrgence;
+              } else {
+                a.Cible.ContactsUrgence = a.Import_A.ContactsUrgence;
+              }
+              a.Cible.Sexe = a.source_A.Sexe;
+              if (a.source_A.Inscrit || a.Import_A.Inscrit) {
+                a.Cible.Inscrit = true;
+              } else {
+                a.Cible.Inscrit = false;
+              }
+          
+              a.Cible.valid.controler();
+            
+          } else {
+            a.source_A = new Adherent(a.source);
+            a.Cible = a.source_A;
+          }
+          }
+        )
         this.context = 'COMPARE';
       })
       .catch((err: HttpErrorResponse) => {
@@ -453,9 +509,8 @@ export class ImportAdherentComponent implements OnInit {
   LetsGoBase() {
     this.action = $localize`Importer`;
     const errorService = ErrorService.instance;
-    this.ListeCompare.forEach((a) =>{
-      
-    })
+  
+ 
   }
 }
 
@@ -463,9 +518,13 @@ export class AdherentImport {
   import: adherent;
   source: adherent;
   Cible: Adherent;
+  public Import_A: Adherent;
+  public source_A: Adherent;
   public creer_adherent: boolean;
   public update_adherent: boolean;
   public inscrire_saison: boolean;
   public creer_compte: boolean;
   public rattacher_compte: boolean;
+
+ 
 }
