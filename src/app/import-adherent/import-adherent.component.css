@@ -36,4 +36,18 @@ th{
   width: 100%; /* Assure que l'input occupe toute la largeur de la cellule */
   box-sizing: border-box; /* Gère le padding de l'input pour qu'il respecte la largeur de la cellule */
 }
+
+.label_red label {
+  color: red;
+}
+
+/* Pour rendre les labels verts */
+.label_green label {
+  color: green;
+  font-size: small;
+}
+.label_gras{
+  font-weight: bold;
+  font-size: small;
+}
   

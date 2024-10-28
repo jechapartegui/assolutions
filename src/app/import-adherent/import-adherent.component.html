@@ -380,16 +380,16 @@
                 <label>{{a.Cible.ID}}</label>
               </td>
               <td>
-                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Prenom}}</label>
+                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Prenom}}</label>
               </td>
               <td>
-                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Nom}}</label>
+                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Nom}}</label>
               </td>
               <td>
-                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Surnom}}</label>
+                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Surnom}}</label>
               </td>
               <td>
-                <label [class]="a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.DDN | date: "dd/MM/yyyy"}}</label>
+                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.DDN | date: "dd/MM/yyyy"}}</label>
               </td>
               <td>              
                     <i *ngIf="a.Cible.Sexe" class="fa-solid fa-mars has-text-info"></i>              
@@ -404,77 +404,20 @@
                   <span *ngIf="c.Type == 'PHONE'"
                     ><i class="fas fa-phone"></i
                   ></span>
-                  <input
-                    class="input is-small"
-                    type="text"
-                    id="ct"
-                    name="ct"
-                    i18n-placeholder
-                    placeholder="valeur"
-                    [(ngModel)]="c.Value"
-                  />
+                  <label>{{c.Value}}</label>
                 </span>
               </td>
               <td>
-                <input
-                  class="input is-small"
-                  type="text"
-                  id="adr"
-                  name="adr"
-                  i18n-placeholder
-                  placeholder="Adresse"
-                  [(ngModel)]="a.Cible.Adresse.Street"
-                />
-                <input
-                  class="input is-small"
-                  type="text"
-                  id="cp"
-                  name="cp"
-                  i18n-placeholder
-                  placeholder="Code postal"
-                  [(ngModel)]="a.Cible.Adresse.PostCode"
-                />
-                <input
-                  class="input is-small"
-                  type="text"
-                  id="Ville"
-                  name="Ville"
-                  i18n-placeholder
-                  placeholder="Ville"
-                  [(ngModel)]="a.Cible.Adresse.City"
-                />
+                <label>{{a.Cible.Adresse.Street}}</label>
+                <label>{{a.Cible.Adresse.PostCode}}</label>
+                <label>{{a.Cible.Adresse.City}}</label>
+                
               </td>
               <td>
-                <div class="buttons is-small has-addons is-centered">
-                  <button
-                    type="button"
-                    style="font-size: small"
-                    [class]="
-                      a.Cible.Inscrit == true
-                        ? 'button is-small is-link is-active'
-                        : 'button is-small is-active'
-                    "
-                    (click)="
-                      a.Cible.Inscrit == true ? (a.Cible.Inscrit = false) : (a.Cible.Inscrit = true)
-                    "
-                  >
-                    <i class="fas fa-check-circle"></i>
-                  </button>
-                  <button
-                    type="button"
-                    style="font-size: small"
-                    [class]="
-                      a.Cible.Inscrit == false
-                        ? 'button is-small is-link is-active'
-                        : 'button is-small is-active'
-                    "
-                    (click)="
-                      a.Cible.Inscrit == true ? (a.Cible.Inscrit = false) : (a.Cible.Inscrit = true)
-                    "
-                  >
-                    <i class="fas fa-times-circle"></i>
-                  </button>
-                </div>
+                <i *ngIf="a.Cible.Inscrit" class="fas fa-check-circle"></i>
+                <i *ngIf="!a.Cible.Inscrit" class="fas fa-times-circle"></i>
+
+               
               </td>
             </tr>
           </ng-container>

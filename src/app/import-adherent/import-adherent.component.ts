@@ -6,9 +6,11 @@ import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
 import { ItemContact } from 'src/class/contact';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
+import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
 import { ExcelService } from 'src/services/excel.service';
 import { GlobalService } from 'src/services/global.services';
+import { InscriptionSaisonService } from 'src/services/inscription-saison.service';
 import { SaisonService } from 'src/services/saison.service';
 import * as XLSX from 'xlsx';
 
@@ -22,6 +24,8 @@ export class ImportAdherentComponent implements OnInit {
     public excelService: ExcelService,
     public riders_serv: AdherentService,
     public saisonserv: SaisonService,
+    public compte_serv: CompteService,
+    public inscr_saison:InscriptionSaisonService,
     public router: Router
   ) {
     this.objectKeys(this.headers).forEach((key) => {
@@ -440,65 +444,64 @@ export class ImportAdherentComponent implements OnInit {
   LetsGo() {
     this.action = $localize`Vérifier l'import`;
     const errorService = ErrorService.instance;
+    this.list_adh.map((x) => {
+      (x.datasource.contacts = JSON.stringify(x.Contacts)),
+        (x.datasource.contacts_prevenir = JSON.stringify(x.ContactsUrgence));
+      x.datasource.adresse = JSON.stringify(x.Adresse);
+    });
     this.riders_serv
       .SimulerImport(this.list_adh.map((x) => x.datasource))
       .then((retour: AdherentImport[]) => {
         this.ListeCompare = retour;
         this.ListeCompare.forEach((a) => {
-          if(a.import){
+          if (a.import) {
             a.Import_A = new Adherent(a.import);
             a.source_A = new Adherent(a.source);
-              if (a.Import_A.ID > 0) {
-                a.Cible.ID = a.Import_A.ID;
-              } else {
-                a.Cible.ID = a.source_A.ID;
-              }
-          
-              if (a.source_A.Nom.length > 0) {
-                a.Cible.Nom = a.source_A.Nom;
-              } else {
-                a.Cible.Nom = a.Import_A.Nom;
-              }
-              if (a.source_A.Prenom.length > 0) {
-                a.Cible.Prenom = a.source_A.Prenom;
-              } else {
-                a.Cible.Prenom = a.Import_A.Prenom;
-              }
-              if (a.source_A.Surnom.length > 0) {
-                a.Cible.Surnom = a.source_A.Surnom;
-              } else {
-                a.Cible.Surnom = a.Import_A.Surnom;
-              }
-              if (a.source_A.DDN.length > 0) {
-                a.Cible.DDN = a.source_A.DDN;
-              } else {
-                a.Cible.DDN = a.Import_A.DDN;
-              }
-              if (a.source_A.Contacts.length > 0) {
-                a.Cible.Contacts = a.source_A.Contacts;
-              } else {
-                a.Cible.Contacts = a.Import_A.Contacts;
-              }
-              if (a.source_A.ContactsUrgence.length > 0) {
-                a.Cible.ContactsUrgence = a.source_A.ContactsUrgence;
-              } else {
-                a.Cible.ContactsUrgence = a.Import_A.ContactsUrgence;
-              }
-              a.Cible.Sexe = a.source_A.Sexe;
-              if (a.source_A.Inscrit || a.Import_A.Inscrit) {
-                a.Cible.Inscrit = true;
-              } else {
-                a.Cible.Inscrit = false;
-              }
-          
-              a.Cible.valid.controler();
-            
+            a.Cible = new Adherent(a.source);
+            console.log(a.Import_A);
+            console.log(a.source_A);
+            if (a.Import_A.ID > 0) {
+              a.Cible.ID = a.Import_A.ID;
+            }
+
+            if (!a.source_A.Nom || a.source_A.Nom.length == 0) {
+              a.Cible.Nom = a.Import_A.Nom;
+            }
+            if (!a.source_A.Prenom || a.source_A.Prenom.length == 0) {
+              a.Cible.Prenom = a.Import_A.Prenom;
+            }
+            if (!a.source_A.Surnom || a.source_A.Surnom.length == 0) {
+              a.Cible.Surnom = a.Import_A.Surnom;
+            }
+            if (!a.source_A.DDN || a.source_A.DDN.length == 0) {
+              a.Cible.DDN = a.Import_A.DDN;
+            }
+            if (!a.source_A.Contacts || a.source_A.Contacts.length == 0) {
+              a.Cible.Contacts = a.Import_A.Contacts;
+            }
+            if (
+              !a.source_A.ContactsUrgence ||
+              a.source_A.ContactsUrgence.length == 0
+            ) {
+              a.Cible.ContactsUrgence = a.Import_A.ContactsUrgence;
+            }
+            if (!a.source_A.Adresse) {
+              a.Cible.Adresse = a.Import_A.Adresse;
+            }
+            a.Cible.Sexe = a.source_A.Sexe;
+            if (a.source_A.Inscrit || a.Import_A.Inscrit) {
+              a.Cible.Inscrit = true;
+            } else {
+              a.Cible.Inscrit = false;
+            }
+
+            a.Cible.valid.controler();
           } else {
             a.source_A = new Adherent(a.source);
             a.Cible = a.source_A;
+            console.log(a.source_A);
           }
-          }
-        )
+        });
         this.context = 'COMPARE';
       })
       .catch((err: HttpErrorResponse) => {
@@ -509,8 +512,36 @@ export class ImportAdherentComponent implements OnInit {
   LetsGoBase() {
     this.action = $localize`Importer`;
     const errorService = ErrorService.instance;
-  
- 
+    this.ListeCompare.forEach((i) => {
+      if (i.Cible.ID == 0) {
+        this.riders_serv.Add(i.Cible.datasource).then((id) => {
+          i.Cible.ID = id;
+          if (i.creer_compte || i.rattacher_compte) {
+            this.compte_serv.AddOrMAJLogin(i.Cible.Login, id).then((id_c) => {
+              i.Cible.CompteID = id_c;
+              if(i.Cible.Inscrit){
+                this.inscr_saison.Add(this.active_saison.id, id);
+              }
+            });
+
+          }
+        });
+      } else {
+        this.riders_serv.Update(i.Cible.datasource).then(() => {
+          if (i.creer_compte || i.rattacher_compte) {
+            this.compte_serv.AddOrMAJLogin(i.Cible.Login, i.Cible.ID).then((id_c) => {
+              i.Cible.CompteID = id_c;
+              if(i.Cible.Inscrit){
+                this.inscr_saison.Add(this.active_saison.id, i.Cible.ID);
+              }
+            });
+          }
+        });
+      }
+    });
+    let o = errorService.OKMessage(this.action);
+    errorService.emitChange(o);
+    this.router.navigate(['/adherent']);
   }
 }
 
@@ -525,6 +556,4 @@ export class AdherentImport {
   public inscrire_saison: boolean;
   public creer_compte: boolean;
   public rattacher_compte: boolean;
-
- 
 }
