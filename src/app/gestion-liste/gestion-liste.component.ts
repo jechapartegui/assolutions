@@ -18,7 +18,6 @@ export class GestionListeComponent {
   public TypeTransaction: { class_compta: number; libelle: string }[] = [];
   constructor(public SC: StaticClass, public addinfo_serv: AddInfoService) {}
   Load(force:boolean) {
-    this.action = $localize`Réinitialiser`;
     const errorService = ErrorService.instance;
     this.addinfo_serv
       .GetLV(this.lv, force)
@@ -84,9 +83,11 @@ export class GestionListeComponent {
   }
 
   Reinit(){
+    this.action = $localize`Réinitialiser`;
     this.Load(true);
   }
   Charger(){
+    this.action = $localize`Charger`;
     this.Load(false);
   }
 }
