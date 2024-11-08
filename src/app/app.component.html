@@ -226,6 +226,18 @@
                 >
                   Compte bancaire
                 </a>
+                <a
+                [class]="
+                  (GlobalService.SelectedMenu$ | async) === 'LISTE_VALEUR'
+                    ? 'navbar-item is-selected'
+                    : 'navbar-item'
+                "
+                (click)="GlobalService.updateSelectedMenuStatus('LISTE_VALEUR')"
+                [routerLink]="['/gestion-liste']"
+                i18n
+              >
+                Gérer les listes de valeur
+              </a>
               </div>
             </div>
             <div class="navbar-item has-dropdown is-hoverable">

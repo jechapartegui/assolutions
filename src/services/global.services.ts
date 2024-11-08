@@ -14,10 +14,10 @@ import { project_login } from './login.service';
 })
 export class GlobalService {
   static instance: GlobalService;
-  private isSelectedMenu = new BehaviorSubject<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU" | "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION">("MENU");
-  static selected_menu: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION" = "MENU";
+  private isSelectedMenu = new BehaviorSubject<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU" | "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION" | "LISTE_VALEUR">("MENU");
+  static selected_menu: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION" | "LISTE_VALEUR"= "MENU";
 
-  SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION"> = this.isSelectedMenu.asObservable();
+  SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION"| "LISTE_VALEUR"> = this.isSelectedMenu.asObservable();
 
 
   private isCompte = new BehaviorSubject<compte>(null);
@@ -49,7 +49,7 @@ export class GlobalService {
     this.isMenu.next(men);
     GlobalService.menu = men;
   }
-  updateSelectedMenuStatus(selected: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL"| "ADMINISTRATEUR"| "TDB"| "TRANSACTION"): void {
+  updateSelectedMenuStatus(selected: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL"| "ADMINISTRATEUR"| "TDB"| "TRANSACTION"| "LISTE_VALEUR"): void {
     this.isSelectedMenu.next(selected);
     GlobalService.selected_menu = selected;
   }

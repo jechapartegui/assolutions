@@ -1176,8 +1176,8 @@
                             [(ngModel)]="filter_classe_ff"
                           >
                             <ng-container *ngFor="let cl of ClassesComptable">
-                              <option [ngValue]="cl.key">
-                                {{ cl.value }}
+                              <option [ngValue]="cl.numero">
+                                {{cl.numero + " - " + cl.libelle }}
                               </option>
                             </ng-container>
                           </select>

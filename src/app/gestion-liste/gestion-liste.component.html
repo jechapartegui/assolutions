@@ -1,0 +1,108 @@
+<div class="container">
+  <div class="columns">
+    <div class="column">
+      <div class="block">
+        <div class="field">
+          <label class="label" i18n>Liste de valeur</label>
+          <div class="control">
+            <div class="select">
+              <select [(ngModel)]="lv">
+                <option value="class_compta">
+                  <span i18n>Classe Comptable</span>
+                </option>
+                <option value="stock"><span i18n>Type de stock</span></option>
+                <option value="type_achat">
+                  <span i18n>Type d'achat</span>
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button (click)="Charger()" type="button"
+        class="button is-primary is-rounded is-outlined">
+        Charger la liste de valeur
+        </button>
+      </div>
+      <div *ngIf="charge" class="block">
+        <button
+          (click)="Reinit()"
+          type="button"
+          class="button is-info is-rounded is-outlined"
+        >
+          Réinitialiser les valeurs
+        </button>
+        <button
+          (click)="Sauvegarder()"
+          type="button"
+          class="button is-primary is-rounded is-outlined"
+        >
+          Sauvegarder
+        </button>
+        <ng-container *ngIf="lv == 'class_compta'">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">Liste des classes comptables</p>
+
+              <button
+                (click)="AjouterCC()"
+                type="button"
+                class="button is-primary is-rounded is-outlined"
+              >
+                Ajouter
+              </button>
+            </header>
+            <div class="card-content">
+              <label i18n>Liste des classes comptables</label>
+              <table
+                class="table"
+                style="width: 100%; font-size: smaller"
+                *ngIf="ClassComptable"
+              >
+                <thead>
+                  <tr>
+                    <th>Numéro</th>
+                    <th>Nom</th>
+                    <th>Supprimer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngFor="let cc of ClassComptable">
+                    <tr>
+                      <td>
+                        <input
+                          class="input"
+                          type="number"
+                          min="0"
+                          max="999999999"
+                          [(ngModel)]="cc.numero"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          class="input"
+                          type="text"
+                          [(ngModel)]="cc.libelle"
+                        />
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="button is-danger is-rounded is-outlined"
+                          (click)="SupprimerCC(cc)"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="lv == 'stock'"> </ng-container>
+        <ng-container *ngIf="lv == 'type_achat'"> </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

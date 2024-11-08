@@ -2,6 +2,12 @@ import { StatutPresence } from "src/class/inscription";
 
 export class StaticClass{
 
+  public ListeObjet:{id:number, type:"stock"|"rider"|"lieu"|"prof"|"compte",value:string }[] = [];
+  public ClassComptable:{numero:number,libelle:string }[] = [];
+  public TypeStock:{numero:number,libelle:string }[] = [];
+  public TypeTransaction:{class_compta:number,libelle:string }[] = [];
+
+
   parseDate(dateString: string): Date | null {
     if (!dateString || typeof dateString !== 'string') {
       return new Date();
@@ -53,6 +59,8 @@ export class StaticClass{
         return StatutPresence.Présent; // ou vous pouvez lancer une erreur si la valeur n'est pas valide
     }
   }
+
+
   
 
   

@@ -13,6 +13,7 @@ import { CompteBancaireService } from 'src/services/compte-bancaire.service';
 import { ErrorService } from 'src/services/error.service';
 import { SaisonService } from 'src/services/saison.service';
 import { TransactionService } from 'src/services/transaction.service';
+import { StaticClass } from '../global';
 
 @Component({
   selector: 'app-comptabilite',
@@ -30,7 +31,6 @@ export class ComptabiliteComponent implements OnInit {
   filter_date_fin_ff: Date;
   filter_libelle_ff: string;
   filter_classe_ff: number;
-  ClassesComptable:KeyValuePair[] = [];
   filter_sens_transaction: boolean = null;
   filter_montant_min: number = 0;
   filter_montant_max: number;
@@ -42,6 +42,7 @@ export class ComptabiliteComponent implements OnInit {
   editTransactions: Transaction;
   FluxFinanciers: FluxFinancier[];
   editFluxFlinancier: FluxFinancier;
+  ClassesComptable:{numero:number,libelle:string }[];
   stocks: stock[];
   Comptes: CompteBancaire[];
   sort_libelle: string = 'NO';
@@ -62,6 +63,7 @@ export class ComptabiliteComponent implements OnInit {
     public cb_serv:CompteBancaireService,
     public ai_serv:AddInfoService,
     public router: Router,
+    public sc:StaticClass,
     public route:ActivatedRoute
   ) {}
   ngOnInit(): void {
@@ -82,7 +84,7 @@ export class ComptabiliteComponent implements OnInit {
           this.Comptes = cpts;
           this.action = $localize`Charger les classes comptables`;
           this.ai_serv.GetLV("COMPTE").then((lv) =>{
-            this.ClassesComptable = lv;
+            this.ClassesComptable = this.sc.ClassComptable;
             this.VoirSituation();
           }).catch((err: HttpErrorResponse) => {
             let o = errorService.CreateError(this.action, err.message);

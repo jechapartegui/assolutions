@@ -24,6 +24,7 @@ import { StockComponent } from './stock/stock.component';
 import { AdministrateursComponent } from './administrateurs/administrateurs.component';
 import { TableauDeBordComponent } from './tdb/tableau-de-bord.component';
 import { ImportAdherentComponent } from './import-adherent/import-adherent.component';
+import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 
 
 
@@ -53,7 +54,8 @@ const routes: Routes = [
   { path: 'suivi-mail', component: SuiviMailComponent },
   { path: 'administrateurs', component: AdministrateursComponent },
   { path: 'stock', component: StockComponent },
-  { path: 'import-adherent', component: ImportAdherentComponent }
+  { path: 'import-adherent', component: ImportAdherentComponent },
+  { path: 'gestion-liste', component: GestionListeComponent }
 
 
 ];
