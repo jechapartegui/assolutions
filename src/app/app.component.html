@@ -119,7 +119,7 @@
                 [queryParams]="{ context: 'COMPTA' }"
                 i18n
               >
-                Gestion Comptabilité
+                Comptabilité
               </a>
               <a
               [class]="
@@ -128,11 +128,11 @@
                   : 'navbar-item'
               "
               (click)="GlobalService.updateSelectedMenuStatus('TRANSACTION')"
-              [routerLink]="['/comptabilite']"
+              [routerLink]="['/operations']"
               [queryParams]="{ context: 'LISTE' }"
               i18n
             >
-              Gestion des comptes
+              Gestion des transactions
             </a>
               <a
                 [class]="

@@ -38,6 +38,17 @@ export class GestionListeComponent {
       .catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
+        switch (this.lv) {
+          case 'class_compta':
+            this.ClassComptable = [];
+            break;
+          case 'stock':
+            this.TypeStock = [];
+            break;
+          case 'type_achat':
+            this.TypeTransaction =  [];
+            break;
+        }
       });
   }
   Sauvegarder() {
@@ -79,6 +90,30 @@ export class GestionListeComponent {
   SupprimerCC(cc: { numero: number; libelle: string }) {
     this.ClassComptable = this.ClassComptable.filter(
       (x) => x.libelle !== cc.libelle && x.numero !== cc.numero
+    );
+  }
+  AjouterTS() {
+    let cc: { categorie: string; libelle: string } = {
+      categorie: "Categorie",
+      libelle: 'Nouveau',
+    };
+    this.TypeStock.push(cc);
+  }
+  SupprimerTS(cc: { categorie: string; libelle: string }) {
+    this.TypeStock = this.TypeStock.filter(
+      (x) => x.libelle !== cc.libelle && x.categorie !== cc.categorie
+    );
+  }
+  AjouterTA() {
+    let cc: { class_compta: number; libelle: string } = {
+      class_compta: 0,
+      libelle: 'Nouveau',
+    };
+    this.TypeTransaction.push(cc);
+  }
+  SupprimerTA(cc: { class_compta: number; libelle: string }) {
+    this.TypeTransaction = this.TypeTransaction.filter(
+      (x) => x.libelle !== cc.libelle && x.class_compta !== cc.class_compta
     );
   }
 

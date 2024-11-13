@@ -1,22 +1,20 @@
 import { fluxfinancier } from "./fluxfinancier";
 
-export class transaction {
+export class operation {
   public id: number;
   public solde: number;
-  public date_transaction: string;
+  public date_operation: string;
   public mode: number; //liste valeur
   public destinataire:string="";
-  public destinataire_id:number=0;
-  public destinataire_libelle:string="";
   public paiement_execute: number;
   public compte_bancaire_id: number;
   public flux_financier_id: number;
   public info: string;
 }
 
-export class Transaction {
-  public datasource: transaction;
-  constructor(t: transaction, libelleFF:string) {
+export class Operation {
+  public datasource: operation;
+  constructor(t: operation, libelleFF:string) {
     this.datasource = t;
     this.Libelle = libelleFF;
   }
@@ -73,13 +71,13 @@ export class Transaction {
 
   get Date(): string {
     try {
-      return this.datasource.date_transaction.toString();
+      return this.datasource.date_operation.toString();
     } catch (error) {
       return '0000-00-00';
     }
   }
   set Date(value: string) {
-    this.datasource.date_transaction = value;
+    this.datasource.date_operation = value;
   }
 
   public get Info(): string {
@@ -101,28 +99,15 @@ export class Transaction {
   }
   public set StatutPaiement(v: number) {
     this.datasource.paiement_execute = v;
-  }
+  }  
 
-  public get DestinataireID(): number {
-    return this.datasource.destinataire_id;
-  }
-  public set DestinataireID(v: number) {
-    this.datasource.destinataire_id = v;
-  }
-
-  public get TypeDestinataire(): string {
+  public get Destinataire(): any {
     return this.datasource.destinataire;
   }
-  public set TypeDestinataire(v: string) {
+  public set Destinataire(v: any) {
     this.datasource.destinataire = v;
   }
-  public set LibelleDestinataire(v: string) {
-    this.datasource.destinataire_libelle = v;
-  }
-  public get LibelleDestinataire(): string {   
-      return this.datasource.destinataire_libelle;
-  }
-
+  public DestinataireLibelle:string;
   
   public get FluxFinancierID() : number {
     return this.datasource.flux_financier_id;

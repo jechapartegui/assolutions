@@ -41,7 +41,7 @@
         <ng-container *ngIf="lv == 'class_compta'">
           <div class="card">
             <header class="card-header">
-              <p class="card-header-title">Liste des classes comptables</p>
+              <p class="card-header-title" i18n>Liste des classes comptables</p>
 
               <button
                 (click)="AjouterCC()"
@@ -60,9 +60,9 @@
               >
                 <thead>
                   <tr>
-                    <th>Numéro</th>
-                    <th>Nom</th>
-                    <th>Supprimer</th>
+                    <th i18n>Numéro</th>
+                    <th i18n>Nom</th>
+                    <th i18n>Supprimer</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -100,8 +100,123 @@
             </div>
           </div>
         </ng-container>
-        <ng-container *ngIf="lv == 'stock'"> </ng-container>
-        <ng-container *ngIf="lv == 'type_achat'"> </ng-container>
+        <ng-container *ngIf="lv == 'stock'">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title" i18n>Liste des classes comptables</p>
+
+              <button
+                (click)="AjouterTS()"
+                type="button"
+                class="button is-primary is-rounded is-outlined"
+              >
+                Ajouter
+              </button>
+            </header>
+            <div class="card-content">
+              <label i18n>Liste des types de stock</label>
+              <table
+                class="table"
+                style="width: 100%; font-size: smaller"
+                *ngIf="TypeStock"
+              >
+                <thead>
+                  <tr>
+                    <th i18n>Catégorie</th>
+                    <th i18n>Nom</th>
+                    <th i18n>Supprimer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngFor="let cc of TypeStock">
+                    <tr>
+                      <td>
+                        <input
+                        class="input"
+                        type="text"
+                          [(ngModel)]="cc.categorie"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          class="input"
+                          type="text"
+                          [(ngModel)]="cc.libelle"
+                        />
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="button is-danger is-rounded is-outlined"
+                          (click)="SupprimerTS(cc)"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="lv == 'type_achat'"> <div class="card">
+          <header class="card-header">
+            <p class="card-header-title" i18n>Liste des achats</p>
+
+            <button
+              (click)="AjouterTA()"
+              type="button"
+              class="button is-primary is-rounded is-outlined"
+            i18n>Ajouter
+            </button>
+          </header>
+          <div class="card-content">
+            <label i18n>Liste des types d'achat</label>
+            <table
+              class="table"
+              style="width: 100%; font-size: smaller"
+              *ngIf="TypeTransaction"
+            >
+              <thead>
+                <tr>
+                  <th i18n>Classe comptable</th>
+                  <th i18n>Nom</th>
+                  <th i18n>Supprimer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let cc of TypeTransaction">
+                  <tr>
+                    <td>
+                      <input
+                      class="input"
+                      type="text"
+                        [(ngModel)]="cc.class_compta"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        class="input"
+                        type="text"
+                        [(ngModel)]="cc.libelle"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="button is-danger is-rounded is-outlined"
+                        (click)="SupprimerTA(cc)"
+                      >
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div></ng-container>
       </div>
     </div>
   </div>

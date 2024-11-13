@@ -2,7 +2,7 @@ import { StatutPresence } from "src/class/inscription";
 
 export class StaticClass{
 
-  public ListeObjet:{id:number, type:"stock"|"rider"|"lieu"|"prof"|"compte",value:string }[] = [];
+  public ListeObjet:{id:number, type:"stock"|"rider"|"lieu"|"prof"|"compte"|"autre",value:string }[] = [];
   public ClassComptable:{numero:number,libelle:string }[] = [];
   public TypeStock:{numero:number,libelle:string }[] = [];
   public TypeTransaction:{class_compta:number,libelle:string }[] = [];

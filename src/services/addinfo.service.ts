@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from 'src/environments/environment.prod';
-import { fluxfinancier } from 'src/class/fluxfinancier';
-import { KeyValuePair } from 'src/class/keyvaluepair';
 
 @Injectable({
   providedIn: 'root',

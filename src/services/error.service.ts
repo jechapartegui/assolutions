@@ -49,6 +49,13 @@ export class ErrorService {
     o.color = code_alert.OK;
     return o;
   }
+  Warning(action: string): notification {
+    let o = new notification();
+    o.content = $localize`Attention`;
+    o.object = action;
+    o.color = code_alert.Warning;
+    return o;
+  }
   UnknownError(action: string): notification {
     let o = new notification();
     o.content = $localize`Erreur inconnue`;

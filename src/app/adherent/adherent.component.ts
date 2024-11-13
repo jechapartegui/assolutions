@@ -1,19 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
 import { Adresse } from 'src/class/address';
 import {
   adherent,
   Adherent,
-  Adherent_VM,
   AdherentExport,
 } from 'src/class/adherent';
 import { Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
 import { Saison } from 'src/class/saison';
-import { environment } from 'src/environments/environment.prod';
 import { AdherentService } from 'src/services/adherent.service';
 import { CompteService } from 'src/services/compte.service';
 import { ErrorService } from 'src/services/error.service';
@@ -504,11 +501,8 @@ export class AdherentComponent implements OnInit {
 
 
   GotoImport(){
-    if(environment.production){
-      window.alert( $localize`Fonction prochainement disponible`);
-    } else {
+  
       this.router.navigate( ['/import-adherent']);
-    }
   }
  
 

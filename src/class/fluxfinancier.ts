@@ -1,5 +1,5 @@
 import { stock } from './stock';
-import { Transaction, transaction } from './transaction';
+import { Operation, operation } from './operation';
 
 export class fluxfinancier {
   public id: number = 0;
@@ -10,26 +10,27 @@ export class fluxfinancier {
   public info: string = "";
   public document: any;
   public recette: boolean = false;
-  public classe_comptable:number=0;
+  public classe_comptable:string;
   public destinataire:string="";
   public destinataire_id:number=0;
   public destinataire_libelle:string="";
   public stocks: stock[] = [];
-  public transactions: transaction[] = [];
+  public operations: operation[] = [];
 }
 
 export class FluxFinancier {
   datasource: fluxfinancier;
-  liste_transaction: Transaction[];
+  liste_operation: Operation[];
   liste_stock: stock[];
+  NbPaiement:number=1;
   constructor(ff: fluxfinancier) {
     this.datasource = ff;
-    if(ff.transactions){
-      this.liste_transaction = ff.transactions.map(
-        (x) => new Transaction(x, ff.libelle)
+    if(ff.operations){
+      this.liste_operation = ff.operations.map(
+        (x) => new Operation(x, ff.libelle)
       );
     } else {
-      this.liste_transaction = [];
+      this.liste_operation = [];
     }
     if(ff.stocks){
       this.liste_stock = ff.stocks;
@@ -43,11 +44,11 @@ export class FluxFinancier {
   public set ID(v: number) {
     this.datasource.id = v;
   }
-  public get ClasseComptable(): number {
-    return this.datasource.classe_comptable;
+  public get ClasseComptable(): {numero:number, libelle:string} {
+    return JSON.parse(this.datasource.classe_comptable);
   }
-  public set ClasseComptable(v: number) {
-    this.datasource.classe_comptable = v;
+  public set ClasseComptable(v: {numero:number, libelle:string}) {
+    this.datasource.classe_comptable = JSON.stringify(v);
   }
 
   public get Libelle(): string {
@@ -142,23 +143,11 @@ export class FluxFinancier {
     reader.readAsArrayBuffer(file);
   }
 
-  public get DestinataireID(): number {
-    return this.datasource.destinataire_id;
-  }
-  public set DestinataireID(v: number) {
-    this.datasource.destinataire_id = v;
-  }
-
-  public get TypeDestinataire(): string {
+  public get Destinataire(): any {
     return this.datasource.destinataire;
   }
-  public set TypeDestinataire(v: string) {
+  public set Destinataire(v: any) {
     this.datasource.destinataire = v;
   }
-  public set LibelleDestinataire(v: string) {
-    this.datasource.destinataire_libelle = v;
-  }
-  public get LibelleDestinataire(): string {   
-      return this.datasource.destinataire_libelle;
-  }
+  public DestinataireLibelle:string;
 }

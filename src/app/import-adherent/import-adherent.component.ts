@@ -499,7 +499,6 @@ export class ImportAdherentComponent implements OnInit {
           } else {
             a.source_A = new Adherent(a.source);
             a.Cible = a.source_A;
-            console.log(a.source_A);
           }
         });
         this.context = 'COMPARE';
