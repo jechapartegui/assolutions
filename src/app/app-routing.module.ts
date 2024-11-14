@@ -26,6 +26,7 @@ import { TableauDeBordComponent } from './tdb/tableau-de-bord.component';
 import { ImportAdherentComponent } from './import-adherent/import-adherent.component';
 import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
+import { ClementineComponent } from './clementine/clementine.component';
 
 
 
@@ -57,7 +58,8 @@ const routes: Routes = [
   { path: 'stock', component: StockComponent },
   { path: 'import-adherent', component: ImportAdherentComponent },
   { path: 'gestion-liste', component: GestionListeComponent },
-  { path: 'operations', component: OperationsComponent }
+  { path: 'operations', component: OperationsComponent },
+  { path: 'clementine', component: ClementineComponent }
 
 
 ];

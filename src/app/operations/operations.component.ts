@@ -366,8 +366,12 @@ export class OperationsComponent implements OnInit {
       this.FluxFinanciers = ff.map((x) => new FluxFinancier(x));
       this.FluxFinanciers.forEach((fluxf) => {
         fluxf.liste_operation.forEach((ttr) => {
-          let lib_dest = JSON.parse(ttr.datasource.destinataire);
-          ttr.DestinataireLibelle = lib_dest.value;
+          try {
+            let lib_dest = JSON.parse(ttr.datasource.destinataire);
+            ttr.DestinataireLibelle = lib_dest.value;
+        } catch (error) {
+            ttr.DestinataireLibelle = ''; // Définit une chaîne vide en cas d'erreur
+        }
           this.Operations.push(ttr);
         });
       });

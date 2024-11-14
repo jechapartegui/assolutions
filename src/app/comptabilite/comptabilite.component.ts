@@ -123,8 +123,12 @@ export class ComptabiliteComponent implements OnInit {
       this.FluxFinanciers = ff.map((x) => new FluxFinancier(x));
       this.FluxFinanciers.forEach((fluxf) => {
         fluxf.liste_operation.forEach((ttr) => {
-          let lib_dest = JSON.parse(ttr.datasource.destinataire);
-          ttr.DestinataireLibelle = lib_dest.value;
+          try {
+            let lib_dest = JSON.parse(ttr.datasource.destinataire);
+            ttr.DestinataireLibelle = lib_dest.value;
+        } catch (error) {
+            ttr.DestinataireLibelle = ''; // Définit une chaîne vide en cas d'erreur
+        }
         });
       });
     });
@@ -354,6 +358,29 @@ export class ComptabiliteComponent implements OnInit {
       };
       this.editFluxFlinancier.datasource.destinataire = JSON.stringify(
         this.editFluxFlinancier.Destinataire
+      );
+    }
+  }
+  onInputChangeList(displayText: string, cpt:Operation) {
+    // Trouver l'objet complet correspondant à la valeur d'affichage
+    const selectedOption = this.Destinataire.find(
+      (option) => this.formatDestinataire(option) === displayText
+    );
+    if (selectedOption) {
+      // Mettre à jour l'affichage et le modèle avec l'objet sélectionné
+      cpt.DestinataireLibelle = displayText;
+      cpt.Destinataire = selectedOption;
+      cpt.datasource.destinataire =
+        JSON.stringify(selectedOption);
+    } else {
+      // Gérer les saisies libres si nécessaire
+      cpt.Destinataire = {
+        id: 0,
+        type: '',
+        value: displayText,
+      };
+      cpt.datasource.destinataire = JSON.stringify(
+        cpt.Destinataire
       );
     }
   }

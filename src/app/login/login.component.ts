@@ -21,6 +21,9 @@ export class LoginComponent implements OnInit {
   loading: boolean;
   profil: "ADHERENT" | "PROF" | "ADMIN" = null;
   psw_projet: string = null;
+
+
+
   constructor(private login_serv: LoginService, private compte_serv: CompteService, private mail_serv: MailService, private router: Router, private route: ActivatedRoute) {
     this.Source.Login = environment.defaultlogin;
     this.Source.Password = environment.defaultpassword;
@@ -223,8 +226,5 @@ export class LoginComponent implements OnInit {
     }
 
   }
-  text() {
-    window.confirm("aimes tu clémentine ?");
-  }
-
+ 
 }
