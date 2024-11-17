@@ -275,8 +275,11 @@ export class OperationsComponent implements OnInit {
       });
   }
   initializeDisplayValue() {
-    const currentDestinataire = JSON.parse(this.editOperations.Destinataire);
-
+    let currentDestinataire = null;
+    try {
+      currentDestinataire = JSON.parse(this.editOperations.Destinataire);
+    } catch (error) {
+    }
     // Vérification avec conversion pour s'assurer que les types sont identiques
     const matchingOption = this.Destinataire.find(
       (option) =>

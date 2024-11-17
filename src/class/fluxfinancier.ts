@@ -1,5 +1,6 @@
 import { stock } from './stock';
 import { Operation, operation } from './operation';
+import { Doc } from './doc';
 
 export class fluxfinancier {
   public id: number = 0;
@@ -8,12 +9,9 @@ export class fluxfinancier {
   public statut: number = 0;
   public montant: number = 0;
   public info: string = "";
-  public document: any;
   public recette: boolean = false;
-  public classe_comptable:string;
+  public classe_comptable:number;
   public destinataire:string="";
-  public destinataire_id:number=0;
-  public destinataire_libelle:string="";
   public stocks: stock[] = [];
   public operations: operation[] = [];
 }
@@ -44,11 +42,11 @@ export class FluxFinancier {
   public set ID(v: number) {
     this.datasource.id = v;
   }
-  public get ClasseComptable(): {numero:number, libelle:string} {
-    return JSON.parse(this.datasource.classe_comptable);
+  public get ClasseComptable(): number {
+    return this.datasource.classe_comptable;
   }
-  public set ClasseComptable(v: {numero:number, libelle:string}) {
-    this.datasource.classe_comptable = JSON.stringify(v);
+  public set ClasseComptable(v: number) {
+    this.datasource.classe_comptable = v;
   }
 
   public get Libelle(): string {
@@ -79,11 +77,7 @@ export class FluxFinancier {
   }
 
   public get IsRecette(): boolean {
-    if (this.datasource.recette) {
-      return true;
-    } else {
-      return false;
-    }
+    return this.datasource.recette;
   }
   public set IsRecette(v: boolean) {
     this.datasource.recette = v;
@@ -107,41 +101,11 @@ export class FluxFinancier {
     this.datasource.statut = v;
   }
 
-  // Gestion du document
-  public get Document(): Blob {
-    return this.datasource.document;
-  }
+  public Documents:Doc[] = [];
 
-  public set Document(newDocument: Blob) {
-    this.datasource.document = newDocument;
-  }
-
+  
   // Méthode pour télécharger le document
-  public downloadDocument() {
-    if (this.datasource.document) {
-      const blob = new Blob([this.datasource.document], {
-        type: 'application/octet-stream',
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'document';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } else {
-      console.error('Aucun document disponible à télécharger');
-    }
-  }
 
-  // Méthode pour ajouter un nouveau document (en remplacement)
-  public uploadDocument(file: File) {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const result = e.target.result;
-      this.datasource.document = new Blob([result], { type: file.type });
-    };
-    reader.readAsArrayBuffer(file);
-  }
 
   public get Destinataire(): any {
     return this.datasource.destinataire;

@@ -1,4 +1,522 @@
 <div class="container" *ngIf="FluxFinanciers && context == 'FLUXFIN'">
+  
+</div>
+<div class="container" *ngIf="editFluxFlinancier && context == 'EDIT_FLUXFIN'">
+  <div class="columns is-justify-content-center">
+    <div class="column is-12-tablet is-8-widescreen is-6-fullh">
+      <div *ngIf="editFluxFlinancier" class="box">
+        <h2 *ngIf="editFluxFlinancier.ID == 0" class="title is-2" i18n>
+          Créer un flux
+        </h2>
+        <h2 *ngIf="editFluxFlinancier.ID > 0" class="title is-2" i18n>
+          Editer un flux
+        </h2>
+        <div class="columns" style="align-items: flex-end">
+          <div class="column is-4">
+            <div class="field">
+              <label class="label" i18n>Montant</label>
+              <p class="control has-icons-right">
+                <input
+                  class="input"
+                  type="number"
+                  min="0"
+                  placeholder="Montant"
+                  [(ngModel)]="editFluxFlinancier.Montant"
+                />
+                <span class="icon is-small is-right">
+                  <i class="fas fa-euro-sign"></i>
+                </span>
+              </p>
+            </div>
+          </div>
+          <div class="column is-4">
+            <div class="field">
+              <div class="control">
+                <div class="buttons has-addons is-centered">
+                  <button
+                    type="button"
+                    style="font-size: small"
+                    [class]="
+                      editFluxFlinancier.IsRecette == true
+                        ? 'button is-link is-active'
+                        : 'button is-active'
+                    "
+                    (click)="
+                      editFluxFlinancier.IsRecette == true
+                        ? (editFluxFlinancier.IsRecette = false)
+                        : (editFluxFlinancier.IsRecette = true)
+                    "
+                  >
+                    <span i18n>Recette</span>
+                  </button>
+                  <button
+                    type="button"
+                    style="font-size: small"
+                    [class]="
+                      editFluxFlinancier.IsRecette == false
+                        ? 'button is-link is-active'
+                        : 'button is-active'
+                    "
+                    (click)="
+                      editFluxFlinancier.IsRecette == true
+                        ? (editFluxFlinancier.IsRecette = false)
+                        : (editFluxFlinancier.IsRecette = true)
+                    "
+                  >
+                    <span i18n>Dépense</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column is-4">
+            <div class="field">
+              <label class="label" i18n>Date</label>
+              <div class="control">
+                <input
+                  [class]="
+                    editFluxFlinancier.Date ? 'input' : 'input is-danger'
+                  "
+                  type="date"
+                  id="date_naissance"
+                  name="date_naissance"
+                  i18n-placeholder
+                  placeholder="Date comptanle"
+                  [(ngModel)]="editFluxFlinancier.Date"
+                />
+                <p class="help is-danger" *ngIf="!editFluxFlinancier.Date" i18n>
+                  La date doit être saisie
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column is-4">
+            <div class="field">
+              <label class="label" i18n>Destinataire</label>
+              <input
+                class="input"
+                list="destinataires"
+                id="destinataire"
+                [ngModel]="editFluxFlinancier.DestinataireLibelle"
+                (ngModelChange)="onInputChange($event)"
+              />
+              <datalist id="destinataires">
+                <ng-container *ngFor="let option of Destinataire">
+                  <option [value]="formatDestinataire(option)"></option>
+                  <!-- Affiche le texte formaté -->
+                </ng-container>
+              </datalist>
+            </div>
+          </div>
+          <div class="column is-4">
+            <div class="field">
+              <label class="label" i18n>Statut paiement</label>
+              <div class="control">
+                <div class="select">
+                  <select [(ngModel)]="editFluxFlinancier.Statut">
+                    <option value="0"><span i18n>Non exécuté</span></option>
+                    <option value="1"><span i18n>Exécuté</span></option>
+                    <option value="-1"><span i18n>Annulé</span></option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="editFluxFlinancier.ID == 0" class="column is-4">
+            <div class="field">
+              <label class="label" i18n>Nombre de paiement</label>
+              <div class="control">
+                <input
+                  class="input"
+                  type="number"
+                  min="1"
+                  max="36"
+                  placeholder="Nombre de paiement"
+                  [(ngModel)]="editFluxFlinancier.NbPaiement"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column">
+            <div class="field">
+              <label class="label" i18n>Info</label>
+              <p class="control">
+                <input
+                  class="input"
+                  type="text"
+                  placeholder="Info"
+                  [(ngModel)]="editFluxFlinancier.Info"
+                />
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column is-6">
+            <div class="field">
+              <label class="label" i18n>Document</label>
+              <ul *ngIf="editFluxFlinancier.Documents.length>0">
+                <ng-container *ngFor="let doc of editFluxFlinancier.Documents">
+                  <li><a href="">{{doc.titre}}</a></li>
+                </ng-container>
+              </ul>
+              <a (click)="AjouterDoc()" i18n>Ajouter un document</a>
+              </div>
+          </div>
+          <div class="column is-6">
+            <div class="field">
+              <label class="label" i18n>Classe comptable</label>
+              <div class="control">
+                <div class="select">
+                  <select [(ngModel)]="editFluxFlinancier.ClasseComptable">
+                    <option [ngValue]="0">Aucune</option>
+                    <ng-container *ngFor="let cc of ClassesComptable">
+                      <option [ngValue]="cc.numero">{{cc.libelle}}</option>
+                    </ng-container>
+                  </select>
+                </div>
+              </div>
+              </div>
+          </div>
+        </div>
+        
+      </div>
+
+      <div
+        class="field"
+        *ngIf="
+          editFluxFlinancier.liste_operation &&
+          editFluxFlinancier.liste_operation.length > 0
+        "
+      >
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title" i18n>Stock associé</p>
+            <button
+              type="button"
+              (click)="Ajouter_Stock()"
+              class="button is-primary is-rounded is-outlined"
+              style="align-self: center; fill: hsl(171, 100%, 41%)"
+            >
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </header>
+          <span class="fullscreen">
+            <div class="card-content">
+              <table
+                class="table"
+                style="width: 100%; font-size: smaller"
+                *ngIf="
+                  editFluxFlinancier.liste_stock &&
+                  editFluxFlinancier.liste_stock.length > 0
+                "
+              >
+                <thead>
+                  <tr>
+                    <th>
+                      <span style="font-size: smaller" i18n>Quantité</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Date d'achat</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Valeur</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Catégorie</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n
+                        >Lieu de stockage</span
+                      >
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Libellé</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let cpt of editFluxFlinancier.liste_stock">
+                    <td>
+                      <input
+                        class="input is-small"
+                        type="number"
+                        min="0"
+                        i18n-placeholder
+                        placeholder="Quantité"
+                        [(ngModel)]="cpt.qte"
+                      />
+                    </td>
+                    <td>
+                      <div class="control">
+                        <input
+                          class="input is-small"
+                          type="date"
+                          id="date_naissance"
+                          name="date_naissance"
+                          i18n-placeholder
+                          placeholder="Date comptanle"
+                          [(ngModel)]="cpt.date_achat"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <input
+                        class="input is-small"
+                        type="number"
+                        min="0"
+                        placeholder="Solde"
+                        [(ngModel)]="cpt.valeur_achat"
+                      />
+                    </td>
+                    <td></td>
+                    <td>
+                      <input
+                        class="input"
+                        list="destinataires"
+                        id="destinataire"
+                        [(ngModel)]="cpt.lieu_stockage_objet"
+                      />
+                      <datalist id="destinataires">
+                        <option
+                          *ngFor="let option of Destinataire"
+                          [value]="formatDestinataire(option)"
+                        ></option>
+                      </datalist>
+                    </td>
+                    <td>
+                      <input
+                        class="input is-small"
+                        type="text"
+                        i18n-placeholder
+                        placeholder="Libellé"
+                        [(ngModel)]="cpt.libelle"
+                      />
+                    </td>
+                    <td></td>
+                    <td>
+                      <div class="buttons">
+                        <button
+                          i18n-title
+                          title="Supprimer"
+                          class="button is-smallis-danger is-rounded is-outlined"
+                          type="button"
+                          (click)="Delete_stock(cpt)"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </span>
+        </div>
+      </div>
+      <div
+        class="field"
+        *ngIf="
+          editFluxFlinancier.liste_operation &&
+          editFluxFlinancier.liste_operation.length > 0
+        "
+      >
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title" i18n>Paiements</p>
+            <button
+              type="button"
+              (click)="AjouterPaiement_ff()"
+              class="button is-primary is-rounded is-outlined"
+              style="align-self: center; fill: hsl(171, 100%, 41%)"
+            >
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </header>
+          <span class="fullscreen">
+            <div class="card-content">
+              <table
+                class="table"
+                style="width: 100%; font-size: smaller"
+                *ngIf="
+                  editFluxFlinancier.liste_operation &&
+                  editFluxFlinancier.liste_operation.length > 0
+                "
+              >
+                <thead>
+                  <tr>
+                    <th>
+                      <span style="font-size: smaller" i18n
+                        >Date de transaction</span
+                      >
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Montant</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n
+                        >Compte bancaire</span
+                      >
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Destinataire</span>
+                    </th>
+                    <th><span style="font-size: smaller" i18n>Mode</span></th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Statut</span>
+                    </th>
+                    <th>
+                      <span style="font-size: smaller" i18n>Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let cpt of editFluxFlinancier.liste_operation">
+                    <td>
+                      <input
+                        class="input is-small"
+                        type="date"
+                        id="date_operation"
+                        name="date_operation"
+                        i18n-placeholder
+                        placeholder="Date opération"
+                        [(ngModel)]="cpt.Date"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        class="input is-small"
+                        type="number"
+                        min="0"
+                        placeholder="Solde"
+                        [(ngModel)]="cpt.Solde"
+                      />
+                    </td>
+                    <td>
+                      <div class="control">
+                        <div class="select is-small">
+                          <select [(ngModel)]="cpt.CompteBancaireID">
+                            <ng-container *ngFor="let cpt of Comptes">
+                              <option [ngValue]="cpt.id">
+                                {{ cpt.nom }}
+                              </option>
+                            </ng-container>
+                          </select>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <input
+                      class="input is-small"
+                      list="destinataires"
+                      id="destinataire"
+                      [ngModel]="cpt.DestinataireLibelle"
+                      (ngModelChange)="onInputChangeList($event,cpt)"
+                    />
+                    <datalist id="destinataires">
+                      <ng-container *ngFor="let option of Destinataire">
+                        <option [value]="formatDestinataire(option)"></option>
+                        <!-- Affiche le texte formaté -->
+                      </ng-container>
+                    </datalist>
+                    </td>
+                    <td>
+                      <div class="field">
+                        <div class="control">
+                          <div class="select is-small">
+                            <select [(ngModel)]="cpt.ModePaiement">
+                              <option value="0">
+                                <span i18n>Espèces</span>
+                              </option>
+                              <option value="1">
+                                <span i18n>Carte bancaire</span>
+                              </option>
+                              <option value="2">
+                                <span i18n>Virement</span>
+                              </option>
+                              <option value="3">
+                                <span i18n>Chèque</span>
+                              </option>
+                              <option value="4">
+                                <span i18n>Prélèvement</span>
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="field">
+                        <div class="control">
+                          <div class="select is-small">
+                            <select [(ngModel)]="cpt.StatutPaiement">
+                              <option value="0">
+                                <span i18n>Non exécuté</span>
+                              </option>
+                              <option value="1">
+                                <span i18n>Exécuté</span>
+                              </option>
+                              <option value="-1">
+                                <span i18n>Annulé</span>
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="buttons">
+                        <button
+                          i18n-title
+                          title="Supprimer"
+                          class="button is-small is-danger is-rounded is-outlined"
+                          type="button"
+                          (click)="Remove_liste(cpt)"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </span>
+        </div>
+      </div>
+
+      <div
+        *ngIf="
+          editFluxFlinancier && editFluxFlinancier.liste_operation.length > 0
+        "
+        class="buttons"
+      >
+        <button
+          class="button is-primary is-rounded is-outlined"
+          type="button"
+          style="fill: hsl(171, 100%, 41%)"
+          (click)="Save_ff()"
+        >
+          <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container" *ngIf="FluxFinanciers && context == 'COMPTA'">
+<div class="tabs">
+
+  
+</div>
+<ng-container *ngIf="vue === 'LISTE'">
   <div class="columns" style="margin-top: 0.5rem">
     <div class="column menuligne">
       <hover-button
@@ -37,7 +555,7 @@
       </hover-button>
     </div>
   </div>
-
+  
   <div class="columns">
     <div class="column">
       <div class="card">
@@ -45,7 +563,7 @@
           <p class="card-header-title" i18n>
             Liste des comptes comptables ({{ FluxFinanciers.length }})
           </p>
-
+  
           <button
             type="button"
             (click)="Ajouter()"
@@ -384,498 +902,8 @@
       </div>
     </div>
   </div>
-</div>
-<div class="container" *ngIf="editFluxFlinancier && context == 'EDIT_FLUXFIN'">
-  <div class="columns is-justify-content-center">
-    <div class="column is-12-tablet is-8-widescreen is-6-fullh">
-      <div *ngIf="editFluxFlinancier" class="box">
-        <h2 *ngIf="editFluxFlinancier.ID == 0" class="title is-2" i18n>
-          Créer un flux
-        </h2>
-        <h2 *ngIf="editFluxFlinancier.ID > 0" class="title is-2" i18n>
-          Editer un flux
-        </h2>
-        <div class="columns" style="align-items: flex-end">
-          <div class="column is-4">
-            <div class="field">
-              <label class="label" i18n>Montant</label>
-              <p class="control has-icons-right">
-                <input
-                  class="input"
-                  type="number"
-                  min="0"
-                  placeholder="Montant"
-                  [(ngModel)]="editFluxFlinancier.Montant"
-                />
-                <span class="icon is-small is-right">
-                  <i class="fas fa-euro-sign"></i>
-                </span>
-              </p>
-            </div>
-          </div>
-          <div class="column is-4">
-            <div class="field">
-              <div class="control">
-                <div class="buttons has-addons is-centered">
-                  <button
-                    type="button"
-                    style="font-size: small"
-                    [class]="
-                      editFluxFlinancier.IsRecette == true
-                        ? 'button is-link is-active'
-                        : 'button is-active'
-                    "
-                    (click)="
-                      editFluxFlinancier.IsRecette == true
-                        ? (editFluxFlinancier.IsRecette = false)
-                        : (editFluxFlinancier.IsRecette = true)
-                    "
-                  >
-                    <span i18n>Recette</span>
-                  </button>
-                  <button
-                    type="button"
-                    style="font-size: small"
-                    [class]="
-                      editFluxFlinancier.IsRecette == false
-                        ? 'button is-link is-active'
-                        : 'button is-active'
-                    "
-                    (click)="
-                      editFluxFlinancier.IsRecette == true
-                        ? (editFluxFlinancier.IsRecette = false)
-                        : (editFluxFlinancier.IsRecette = true)
-                    "
-                  >
-                    <span i18n>Dépense</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-4">
-            <div class="field">
-              <label class="label" i18n>Date</label>
-              <div class="control">
-                <input
-                  [class]="
-                    editFluxFlinancier.Date ? 'input' : 'input is-danger'
-                  "
-                  type="date"
-                  id="date_naissance"
-                  name="date_naissance"
-                  i18n-placeholder
-                  placeholder="Date comptanle"
-                  [(ngModel)]="editFluxFlinancier.Date"
-                />
-                <p class="help is-danger" *ngIf="!editFluxFlinancier.Date" i18n>
-                  La date doit être saisie
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column">
-            <div class="field">
-              <label class="label" i18n>Info</label>
-              <p class="control">
-                <input
-                  class="input"
-                  type="text"
-                  placeholder="Info"
-                  [(ngModel)]="editFluxFlinancier.Info"
-                />
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column is-4">
-            <div class="field">
-              <label class="label" i18n>Destinataire</label>
-              <input
-                class="input"
-                list="destinataires"
-                id="destinataire"
-                [ngModel]="editFluxFlinancier.DestinataireLibelle"
-                (ngModelChange)="onInputChange($event)"
-              />
-              <datalist id="destinataires">
-                <ng-container *ngFor="let option of Destinataire">
-                  <option [value]="formatDestinataire(option)"></option>
-                  <!-- Affiche le texte formaté -->
-                </ng-container>
-              </datalist>
-            </div>
-          </div>
-          <div class="column is-4">
-            <div class="field">
-              <label class="label" i18n>Statut paiement</label>
-              <div class="control">
-                <div class="select">
-                  <select [(ngModel)]="editFluxFlinancier.Statut">
-                    <option value="0"><span i18n>Non exécuté</span></option>
-                    <option value="1"><span i18n>Exécuté</span></option>
-                    <option value="-1"><span i18n>Annulé</span></option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="editFluxFlinancier.ID == 0" class="column is-4">
-            <div class="field">
-              <label class="label" i18n>Nombre de paiement</label>
-              <div class="control">
-                <input
-                  class="input"
-                  type="number"
-                  min="1"
-                  max="36"
-                  placeholder="Nombre de paiement"
-                  [(ngModel)]="editFluxFlinancier.NbPaiement"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="columns">
-          <div class="column is-6">
-
-          </div>
-          <div class="column is-6">
-
-          </div>
-        </div>
-        
-      </div>
-
-      <div
-        class="field"
-        *ngIf="
-          editFluxFlinancier.liste_operation &&
-          editFluxFlinancier.liste_operation.length > 0
-        "
-      >
-        <div class="card">
-          <header class="card-header">
-            <p class="card-header-title" i18n>Stock associé</p>
-            <button
-              type="button"
-              (click)="Ajouter_Stock()"
-              class="button is-primary is-rounded is-outlined"
-              style="align-self: center; fill: hsl(171, 100%, 41%)"
-            >
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </header>
-          <span class="fullscreen">
-            <div class="card-content">
-              <table
-                class="table"
-                style="width: 100%; font-size: smaller"
-                *ngIf="
-                  editFluxFlinancier.liste_stock &&
-                  editFluxFlinancier.liste_stock.length > 0
-                "
-              >
-                <thead>
-                  <tr>
-                    <th>
-                      <span style="font-size: smaller" i18n>Quantité</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Date d'achat</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Valeur</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Catégorie</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n
-                        >Lieu de stockage</span
-                      >
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Libellé</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let cpt of editFluxFlinancier.liste_stock">
-                    <td>
-                      <input
-                        class="input is-small"
-                        type="number"
-                        min="0"
-                        i18n-placeholder
-                        placeholder="Quantité"
-                        [(ngModel)]="cpt.qte"
-                      />
-                    </td>
-                    <td>
-                      <div class="control">
-                        <input
-                          class="input is-small"
-                          type="date"
-                          id="date_naissance"
-                          name="date_naissance"
-                          i18n-placeholder
-                          placeholder="Date comptanle"
-                          [(ngModel)]="cpt.date_achat"
-                        />
-                      </div>
-                    </td>
-                    <td>
-                      <input
-                        class="input is-small"
-                        type="number"
-                        min="0"
-                        placeholder="Solde"
-                        [(ngModel)]="cpt.valeur_achat"
-                      />
-                    </td>
-                    <td></td>
-                    <td>
-                      <input
-                        class="input"
-                        list="destinataires"
-                        id="destinataire"
-                        [(ngModel)]="cpt.lieu_stockage_objet"
-                      />
-                      <datalist id="destinataires">
-                        <option
-                          *ngFor="let option of Destinataire"
-                          [value]="formatDestinataire(option)"
-                        ></option>
-                      </datalist>
-                    </td>
-                    <td>
-                      <input
-                        class="input is-small"
-                        type="text"
-                        i18n-placeholder
-                        placeholder="Libellé"
-                        [(ngModel)]="cpt.libelle"
-                      />
-                    </td>
-                    <td></td>
-                    <td>
-                      <div class="buttons">
-                        <button
-                          i18n-title
-                          title="Supprimer"
-                          class="button is-smallis-danger is-rounded is-outlined"
-                          type="button"
-                          (click)="Delete_stock(cpt)"
-                        >
-                          <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </span>
-        </div>
-      </div>
-      <div
-        class="field"
-        *ngIf="
-          editFluxFlinancier.liste_operation &&
-          editFluxFlinancier.liste_operation.length > 0
-        "
-      >
-        <div class="card">
-          <header class="card-header">
-            <p class="card-header-title" i18n>Paiements</p>
-            <button
-              type="button"
-              (click)="AjouterPaiement_ff()"
-              class="button is-primary is-rounded is-outlined"
-              style="align-self: center; fill: hsl(171, 100%, 41%)"
-            >
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </header>
-          <span class="fullscreen">
-            <div class="card-content">
-              <table
-                class="table"
-                style="width: 100%; font-size: smaller"
-                *ngIf="
-                  editFluxFlinancier.liste_operation &&
-                  editFluxFlinancier.liste_operation.length > 0
-                "
-              >
-                <thead>
-                  <tr>
-                    <th>
-                      <span style="font-size: smaller" i18n
-                        >Date de transaction</span
-                      >
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Montant</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n
-                        >Compte bancaire</span
-                      >
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Destinataire</span>
-                    </th>
-                    <th><span style="font-size: smaller" i18n>Mode</span></th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Statut</span>
-                    </th>
-                    <th>
-                      <span style="font-size: smaller" i18n>Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let cpt of editFluxFlinancier.liste_operation">
-                    <td>
-                      <input
-                        class="input is-small"
-                        type="date"
-                        id="date_operation"
-                        name="date_operation"
-                        i18n-placeholder
-                        placeholder="Date opération"
-                        [(ngModel)]="cpt.Date"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        class="input is-small"
-                        type="number"
-                        min="0"
-                        placeholder="Solde"
-                        [(ngModel)]="cpt.Solde"
-                      />
-                    </td>
-                    <td>
-                      <div class="control">
-                        <div class="select is-small">
-                          <select [(ngModel)]="cpt.CompteBancaireID">
-                            <ng-container *ngFor="let cpt of Comptes">
-                              <option [ngValue]="cpt.id">
-                                {{ cpt.nom }}
-                              </option>
-                            </ng-container>
-                          </select>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <input
-                      class="input"
-                      list="destinataires"
-                      id="destinataire"
-                      [ngModel]="cpt.DestinataireLibelle"
-                      (ngModelChange)="onInputChangeList($event,cpt)"
-                    />
-                    <datalist id="destinataires">
-                      <ng-container *ngFor="let option of Destinataire">
-                        <option [value]="formatDestinataire(option)"></option>
-                        <!-- Affiche le texte formaté -->
-                      </ng-container>
-                    </datalist>
-                    </td>
-                    <td>
-                      <div class="field">
-                        <div class="control">
-                          <div class="select is-small">
-                            <select [(ngModel)]="cpt.ModePaiement">
-                              <option value="0">
-                                <span i18n>Espèces</span>
-                              </option>
-                              <option value="1">
-                                <span i18n>Carte bancaire</span>
-                              </option>
-                              <option value="2">
-                                <span i18n>Virement</span>
-                              </option>
-                              <option value="3">
-                                <span i18n>Chèque</span>
-                              </option>
-                              <option value="4">
-                                <span i18n>Prélèvement</span>
-                              </option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="field">
-                        <div class="control">
-                          <div class="select is-small">
-                            <select [(ngModel)]="cpt.StatutPaiement">
-                              <option value="0">
-                                <span i18n>Non exécuté</span>
-                              </option>
-                              <option value="1">
-                                <span i18n>Exécuté</span>
-                              </option>
-                              <option value="-1">
-                                <span i18n>Annulé</span>
-                              </option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="buttons">
-                        <button
-                          i18n-title
-                          title="Supprimer"
-                          class="button is-small is-danger is-rounded is-outlined"
-                          type="button"
-                          (click)="Remove_liste(cpt)"
-                        >
-                          <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </span>
-        </div>
-      </div>
-
-      <div
-        *ngIf="
-          editFluxFlinancier && editFluxFlinancier.liste_operation.length > 0
-        "
-        class="buttons"
-      >
-        <button
-          class="button is-primary is-rounded is-outlined"
-          type="button"
-          style="fill: hsl(171, 100%, 41%)"
-          (click)="Save_ff()"
-        >
-          <i class="fa-solid fa-floppy-disk"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="container" *ngIf="FluxFinanciers && context == 'COMPTA'">
+</ng-container>
+<ng-container *ngIf="vue === 'COMPTE'">
   <ng-container *ngFor="let cl of ClassesComptable">
     <ng-container *ngIf="IsCC(cl)">
       <div class="card">
@@ -1079,4 +1107,5 @@
       </div>
     </ng-container>
   </ng-container>
+</ng-container>
 </div>

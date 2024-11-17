@@ -1,3 +1,4 @@
+import { Doc } from "src/class/doc";
 import { StatutPresence } from "src/class/inscription";
 
 export class StaticClass{
@@ -7,6 +8,34 @@ export class StaticClass{
   public TypeStock:{numero:number,libelle:string }[] = [];
   public TypeTransaction:{class_compta:number,libelle:string }[] = [];
 
+  public downloadDocument(docu:Doc) {
+    if (docu) {
+      const blob = new Blob([docu.document], {
+        type: 'application/octet-stream',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } else {
+      console.error('Aucun document disponible à télécharger');
+    }
+  }
+
+  // Méthode pour ajouter un nouveau document (en remplacement)
+  public uploadDocument(file: File) : Doc {
+    const reader = new FileReader();
+    let docu:Doc = new Doc();
+    reader.onload = (e: any) => {
+      const result = e.target.result;
+      docu.titre = file.name;      
+      docu.document = new Blob([result], { type: file.type });
+    };
+    reader.readAsArrayBuffer(file);
+    return docu;
+  }
 
   parseDate(dateString: string): Date | null {
     if (!dateString || typeof dateString !== 'string') {

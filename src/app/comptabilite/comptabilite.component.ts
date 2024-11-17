@@ -50,6 +50,7 @@ export class ComptabiliteComponent implements OnInit {
   destinataireInput: string = '';
 
   context: 'FLUXFIN' | 'COMPTA' | 'EDIT_FLUXFIN' = 'COMPTA';
+  vue : 'LISTE' | 'COMPTE' = 'LISTE';
 
   constructor(
     public compta_serv: ComptabiliteService,
@@ -240,7 +241,11 @@ export class ComptabiliteComponent implements OnInit {
     return true;
   }
   FFByClass(ff:number): FluxFinancier[] {
-      return this.FluxFinanciers.filter(x => x.ClasseComptable.numero == ff);
+      return this.FluxFinanciers.filter(x => x.ClasseComptable == ff);
+  }
+
+  AjouterDoc(){
+
   }
 
   AjouterPaiement_ff() {
