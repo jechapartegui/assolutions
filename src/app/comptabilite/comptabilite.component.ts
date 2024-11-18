@@ -49,8 +49,7 @@ export class ComptabiliteComponent implements OnInit {
   }[] = [];
   destinataireInput: string = '';
 
-  context: 'FLUXFIN' | 'COMPTA' | 'EDIT_FLUXFIN' = 'COMPTA';
-  vue : 'LISTE' | 'COMPTE' = 'LISTE';
+  context: 'FLUXFIN' | 'COMPTA' | 'LISTE' |'EDIT_FLUXFIN' = 'COMPTA';
 
   constructor(
     public compta_serv: ComptabiliteService,
@@ -237,16 +236,15 @@ export class ComptabiliteComponent implements OnInit {
     }
   }
 
-  IsCC(cl: { numero: number; libelle: string }): boolean {
-    return true;
+  IsCC(cl: { numero: number; libelle: string }): boolean {    
+    console.log(this.FluxFinanciers); 
+    console.log(cl.numero);
+    return this.FluxFinanciers.filter(x => x.ClasseComptable == cl.numero).length>0;
   }
   FFByClass(ff:number): FluxFinancier[] {
       return this.FluxFinanciers.filter(x => x.ClasseComptable == ff);
   }
-
-  AjouterDoc(){
-
-  }
+  AjouterDoc(){}
 
   AjouterPaiement_ff() {
     let t = new operation();
