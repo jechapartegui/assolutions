@@ -121,12 +121,23 @@ export class ComptabiliteComponent implements OnInit {
 
     this.compta_serv.VoirSituation(this.saison_id).then((ff) => {
       this.FluxFinanciers = ff.map((x) => new FluxFinancier(x));
+     
       this.FluxFinanciers.forEach((fluxf) => {
+        try {
+          let lib_dest = JSON.parse(fluxf.datasource.destinataire);
+          console.log(lib_dest);
+          fluxf.DestinataireLibelle = lib_dest.value;
+      } catch (error) {
+        console.log(error);
+        fluxf.DestinataireLibelle = ''; // Définit une chaîne vide en cas d'erreur
+      }
         fluxf.liste_operation.forEach((ttr) => {
           try {
             let lib_dest = JSON.parse(ttr.datasource.destinataire);
+            console.log(lib_dest);
             ttr.DestinataireLibelle = lib_dest.value;
         } catch (error) {
+          console.log(error);
             ttr.DestinataireLibelle = ''; // Définit une chaîne vide en cas d'erreur
         }
         });
@@ -237,8 +248,6 @@ export class ComptabiliteComponent implements OnInit {
   }
 
   IsCC(cl: { numero: number; libelle: string }): boolean {    
-    console.log(this.FluxFinanciers); 
-    console.log(cl.numero);
     return this.FluxFinanciers.filter(x => x.ClasseComptable == cl.numero).length>0;
   }
   FFByClass(ff:number): FluxFinancier[] {
@@ -395,11 +404,14 @@ export class ComptabiliteComponent implements OnInit {
   Delete_ff(ff: FluxFinancier) {}
   Read_ff(ff: FluxFinancier) {}
 
-  Ajouter() {
+  Ajouter(numero:number = null) {
     this.context = 'EDIT_FLUXFIN';
     let ff = new fluxfinancier();
-    ff.date = new Date().toString();
     this.editFluxFlinancier = new FluxFinancier(ff);
+    this.editFluxFlinancier.Date = this.SC.formatDate(new Date());
+    if(numero){
+      this.editFluxFlinancier.ClasseComptable = numero;
+    }
   }
 
   getCompte(id: number): CompteBancaire {

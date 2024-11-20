@@ -9,62 +9,46 @@
         <h2 *ngIf="editFluxFlinancier.ID > 0" class="title is-2" i18n>
           Editer un flux
         </h2>
+
         <div class="columns" style="align-items: flex-end">
+          <div class="column is-4">
+            <div class="field">
+              <label class="label" i18n>Libellé</label>
+              <p class="control has-icons-right">
+                <input
+                  class="input"
+                  type="text"
+                  placeholder="Libellé"
+                  [(ngModel)]="editFluxFlinancier.Libelle"
+                />
+              </p>
+            </div>
+          </div>
+
           <div class="column is-4">
             <div class="field">
               <label class="label" i18n>Montant</label>
               <p class="control has-icons-right">
-                <input
+                <input (ngModelChange)="$event < 0 ? editFluxFlinancier.IsRecette = false : editFluxFlinancier.IsRecette = true"
                   class="input"
                   type="number"
-                  min="0"
                   placeholder="Montant"
                   [(ngModel)]="editFluxFlinancier.Montant"
                 />
                 <span class="icon is-small is-right">
-                  <i class="fas fa-euro-sign"></i>
+                  <i
+                  *ngIf="editFluxFlinancier.IsRecette"
+                  style="color: green"
+                  class="fas fa-plus-square"
+                ></i>
+                <i
+                  *ngIf="!editFluxFlinancier.IsRecette"
+                  style="color: red"
+                  class="fas fa-minus-square"
+                ></i>
+                  
                 </span>
               </p>
-            </div>
-          </div>
-          <div class="column is-4">
-            <div class="field">
-              <div class="control">
-                <div class="buttons has-addons is-centered">
-                  <button
-                    type="button"
-                    style="font-size: small"
-                    [class]="
-                      editFluxFlinancier.IsRecette == true
-                        ? 'button is-link is-active'
-                        : 'button is-active'
-                    "
-                    (click)="
-                      editFluxFlinancier.IsRecette == true
-                        ? (editFluxFlinancier.IsRecette = false)
-                        : (editFluxFlinancier.IsRecette = true)
-                    "
-                  >
-                    <span i18n>Recette</span>
-                  </button>
-                  <button
-                    type="button"
-                    style="font-size: small"
-                    [class]="
-                      editFluxFlinancier.IsRecette == false
-                        ? 'button is-link is-active'
-                        : 'button is-active'
-                    "
-                    (click)="
-                      editFluxFlinancier.IsRecette == true
-                        ? (editFluxFlinancier.IsRecette = false)
-                        : (editFluxFlinancier.IsRecette = true)
-                    "
-                  >
-                    <span i18n>Dépense</span>
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
           <div class="column is-4">
@@ -518,52 +502,14 @@
   >
     <span i18n>Vue liste</span>
   </button>
-  <div class="columns" style="margin-top: 0.5rem">
-    <div class="column menuligne">
-      <hover-button
-        [nomclass]="
-          afficher_filtre_ff
-            ? 'button is-info is-rounded'
-            : 'button is-info is-rounded  is-outlined'
-        "
-        [nomicon]="'fa-solid fa-filter'"
-        [libelle]="'Afficher le filtre'"
-        (click)="
-          afficher_filtre_ff
-            ? (afficher_filtre_ff = false)
-            : (afficher_filtre_ff = true)
-        "
-      >
-      </hover-button>
-      <button
-        *ngIf="afficher_filtre_ff"
-        (click)="ReinitFiltre_ff()"
-        class="button is-danger is-rounded is-outlined"
-      >
-        <span class="icon is-large">
-          <span class="fa-stack fa-lg">
-            <i class="fas fa-filter fa-stack-1x"></i>
-            <i class="fas fa-slash fa-stack-1x has-text-danger"></i>
-          </span>
-        </span>
-      </button>
-      <hover-button
-        [nomclass]="'button  is-rounded is-primary is-outlined'"
-        [nomicon]="'fas fa-file-excel'"
-        [libelle]="'Exporter vers Excel'"
-        (click)="ExporterExcel_ff()"
-      >
-      </hover-button>
-    </div>
-  </div>
   <ng-container *ngFor="let cl of ClassesComptable">
     <ng-container *ngIf="IsCC(cl)">
       <div class="card">
         <header class="card-header">
           <p class="card-header-title">{{ cl.numero }} - {{ cl.libelle }}</p>
-          <button class="card-header-icon" aria-label="more options">
+          <button (click)="Ajouter(cl.numero)" class="card-header-icon" aria-label="more options">
             <span class="icon">
-              <i class="fas fa-angle-down" aria-hidden="true"></i>
+              <i class="fa-solid fa-plus"></i>
             </span>
           </button>
         </header>
@@ -768,6 +714,15 @@
   >
     <span i18n>Vue comptable</span>
   </button>
+  <button
+  (click)="Ajouter()"
+  class="button is-outlined is-rounded is-primary"
+  type="button"
+>
+  <span i18n>Ajouter</span>
+  
+              <i class="fa-solid fa-plus"></i>
+</button>
   <div class="card">
     <header class="card-header">
       <p class="card-header-title">Liste des transactions annuelles</p>
