@@ -73,6 +73,7 @@ import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
 import { ClementineComponent } from './clementine/clementine.component';
 import { DocumentComponent } from './document/document.component';
+import { MultifiltersStockPipe } from 'src/filters/multifilters-stock.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -85,7 +86,7 @@ import { DocumentComponent } from './document/document.component';
     ComptabiliteComponent,
     ProfComponent,RangePipe,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe, AdministrateursComponent,
-    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
+    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, MultifiltersStockPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
   , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, TableauDeBordComponent, ImportAdherentComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent],
   imports: [
     BrowserModule,
