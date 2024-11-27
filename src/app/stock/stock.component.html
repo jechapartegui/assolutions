@@ -307,7 +307,7 @@
                         <ng-container *ngIf="IsVendre">
                             <checkbox [(ngModel)]="stock.to_sell">Vendre ?</checkbox>
                         </ng-container>
-                      <div *ngIf="IsVendre ==false"
+                      <div *ngIf="!IsVendre"
                         class="buttons"
                         style="
                           display: flex;
@@ -379,10 +379,10 @@
               <div class="field">
                 <label class="label" i18n>Type d'équipement</label>
                 <div class="select">
-                  <select id="cours" [(ngModel)]="editStock.TypeStock" (ngModelChange)="UpdateTypeStock($event)">
-               
+                  <select id="cours" [(ngModel)]="editStock.TypeStock">
+                    <option value="0" i18n>Autre</option>
                     <ng-container *ngFor="let st of TypeStock">
-                        <option [ngValue]="st">{{st.libelle}}&nbsp;({{st.categorie}}) </option>
+                        <option [value]="st.id">{{st.libelle}}&nbsp;({{st.categorie}}) </option>
                     </ng-container>
                   </select>
                 </div> 
@@ -390,7 +390,22 @@
                   La sélection d'un type de stock est obligatoire
                 </p>
               </div>
-           
+              <div class="field">
+                <label class="label" i18n>Lieu de stockage</label>
+                <input
+                  class="input"
+                  list="liste_lieu"
+                  id="lieu"
+                  [ngModel]="editStock.LieuStockageLibelle"
+                  (ngModelChange)="onInputChange($event)"
+                />
+                <datalist id="liste_lieu">
+                  <ng-container *ngFor="let option of liste_lieu">
+                    <option [value]="formatLieu(option)"></option>
+                    <!-- Affiche le texte formaté -->
+                  </ng-container>
+                </datalist>
+              </div>
                 <div class="field">
                   <label class="label" i18n>Date de la séance</label>
                  
@@ -437,7 +452,7 @@
                 </p>
               </div>
               <div class="field">
-                <label class="label" i18n>Montant</label>
+                <label class="label" i18n>Valeur d'achat</label>
                 <input
                   class="input"
                   id="valeur_achat"
@@ -447,7 +462,7 @@
               </div>
               <div class="field">
                 <label class="label" i18n for="place_maximum"
-                  >Info séance :
+                  >Info stock :
                 </label>
                 <textarea
                   class="textarea"

@@ -26,10 +26,10 @@ export class MultifiltersStockPipe implements PipeTransform {
             return item.Date >= filterValue;
           case 'filter_lieu':
             return item.LieuStockageLibelle.toLowerCase().includes(filterValue.toString().toLowerCase());
-          case 'filter_type_equipement':
-            return item.TypeStock?.categorie === filterValue;
-          case 'filter_equipement':
-            return item.TypeStock?.libelle === filterValue;
+          // case 'filter_type_equipement':
+          //   return item.TypeStock?.categorie === filterValue;
+          // case 'filter_equipement':
+          //   return item.TypeStock?.libelle === filterValue;
           default:
             return true;
         }

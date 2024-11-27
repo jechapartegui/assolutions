@@ -93,15 +93,15 @@ export class GestionListeComponent {
     );
   }
   AjouterTS() {
-    let cc: { categorie: string; libelle: string } = {
-      categorie: "Categorie",
-      libelle: 'Nouveau',
-    };
+    let id = Math.max(...this.TypeStock.map(x => x.id),0)
+    console.log(id);
+    let cc: TypeStock = new TypeStock();
+    cc.id = id + 1;
     this.TypeStock.push(cc);
   }
-  SupprimerTS(cc: { categorie: string; libelle: string }) {
+  SupprimerTS(cc: TypeStock) {
     this.TypeStock = this.TypeStock.filter(
-      (x) => x.libelle !== cc.libelle && x.categorie !== cc.categorie
+      (x) => x.id !== cc.id
     );
   }
   AjouterTA() {

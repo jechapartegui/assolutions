@@ -28,7 +28,7 @@ export class StockComponent implements OnInit {
   editStock: Stock | null = null;
   public TypeStock: TypeStock[] = [];
   public TypeTransaction: TypeTransaction[] = [];
-  public null_item: TypeStock= new TypeStock();
+  public null_item: TypeStock = new TypeStock();
   libelle_Export = $localize`Exporter vers Excel`;
   public sort_libelle = 'NO';
   public sort_type = 'NO';
@@ -127,17 +127,12 @@ export class StockComponent implements OnInit {
       .Get(stock.ID)
       .then((ss) => {
         this.editStock = new Stock(ss);
-        console.log(this.editStock);
         this.editMode = true;
       })
       .catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
-      console.log("là");
-  }
-  UpdateTypeStock(typestock:TypeStock){
-    this.editStock.datasource.type_stock = JSON.stringify(typestock);
   }
 
   Acheter() {}
@@ -158,6 +153,15 @@ export class StockComponent implements OnInit {
       .Get(stock.ID)
       .then((ss) => {
         this.editStock = new Stock(ss);
+        const LS = this.editStock.LieuStockage;
+        if (
+          LS.type == 'autre' &&
+          LS.value == $localize`:@@non_defini:Non défini`
+        ) {
+          this.editStock.LieuStockageLibelle = $localize`:@@non_defini:Non défini`;
+        } else {
+          this.editStock.LieuStockageLibelle = LS.value + '(' + LS.type + ')';
+        }
         this.editMode = false;
       })
       .catch((err: HttpErrorResponse) => {
@@ -180,38 +184,27 @@ export class StockComponent implements OnInit {
         } else {
           this.liste_stock = stocks.map((x) => new Stock(x));
           this.liste_stock.forEach((st) => {
-            console.log(st);
             const LS = st.LieuStockage;
-            const TS = st.TypeStock;
-            if(TS.categorie == $localize`:@@non_defini:Non défini` && TS.libelle == null){
-              st.TypeStockLibelle = $localize`:@@non_defini:Non défini`;
-            } else {
-              st.TypeStockLibelle =
-              TS.libelle + '(' + TS.categorie + ')';
-
-            }
-            // if (!st.datasource.type_stock) {
-            //   st.datasource.type_stock = JSON.stringify({
-            //     categorie: $localize`:@@non_defini:Non défini`,
-            //     libelle: null,
-            //   });
-            // }
-
-            if(LS.type == "autre" && LS.value == $localize`:@@non_defini:Non défini`){
+            if (
+              LS.type == 'autre' &&
+              LS.value == $localize`:@@non_defini:Non défini`
+            ) {
               st.LieuStockageLibelle = $localize`:@@non_defini:Non défini`;
             } else {
-              st.LieuStockageLibelle =
-              LS.type + '(' + LS.value + ')';
-
+              st.LieuStockageLibelle = LS.value + '(' + LS.type + ')';
             }
-            // if(TS.libelle == null && TS.categorie == $localize`:@@non_defini:Non défini`){
-            //   st.TypeStockLibelle = $localize`:@@non_defini:Non défini`;
-            // } else {
-            //   st.TypeStockLibelle =
-            //   TS.libelle + '(' + TS.categorie + ')';
-            // }
-          
+            if (!st.TypeStock || st.TypeStock == 0) {
+              st.TypeStockLibelle = $localize`Autre`;
+            } else {
+              const TS = this.SC.TypeStock.find((x) => x.id == st.TypeStock);
+              if (TS) {
+                st.TypeStockLibelle = TS.libelle + ' (' + TS.categorie + ')';
+              } else {
+                st.TypeStockLibelle = $localize`Autre`;
+              }
+            }
           });
+
           this.liste_stock.sort((a, b) => {
             let dateA = a.datasource.date_achat;
             let dateB = b.datasource.date_achat;
@@ -233,6 +226,34 @@ export class StockComponent implements OnInit {
         return;
       });
   }
+  onInputChange(displayText: string) {
+    // Trouver l'objet complet correspondant à la valeur d'affichage
+    const selectedOption = this.liste_lieu.find(
+      (option) => this.formatLieu(option) === displayText
+    );
+    if (selectedOption) {
+      // Mettre à jour l'affichage et le modèle avec l'objet sélectionné
+      this.editStock.LieuStockageLibelle = displayText;
+      this.editStock.LieuStockage = selectedOption;
+      this.editStock.datasource.lieu_stockage =
+        JSON.stringify(selectedOption);
+    } else {
+      // Gérer les saisies libres si nécessaire
+      this.editStock.LieuStockage = {
+        id: 0,
+        type: '',
+        value: displayText,
+      };
+      this.editStock.datasource.lieu_stockage = JSON.stringify(
+        this.editStock.LieuStockage
+      );
+    }
+  }
+
+  formatLieu(destinataire: ObjetAppli) {
+    return `${destinataire.value} (${destinataire.type})`;
+  }
+
 
   ReinitFiltre() {
     this.filters = {
@@ -277,9 +298,6 @@ export class StockComponent implements OnInit {
   Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un équipement`;
-    this.editStock.datasource.type_stock = JSON.stringify(
-      this.editStock.TypeStock
-    );
     this.editStock.datasource.lieu_stockage = JSON.stringify(
       this.editStock.LieuStockage
     );
