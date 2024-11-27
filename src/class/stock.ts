@@ -1,3 +1,4 @@
+import { ObjetAppli, TypeStock } from 'src/app/global';
 import { Doc } from './doc';
 
 export class stock {
@@ -17,6 +18,23 @@ export class Stock {
   public to_sell:boolean=false;
   constructor(s: stock) {
     this.datasource = s;
+    if (!this.datasource.type_stock) {
+      this.TypeStock = new TypeStock();
+    }  
+    try {
+      const parsed: TypeStock = JSON.parse(this.datasource.type_stock);
+      if (
+        parsed &&
+        typeof parsed.libelle === 'string' &&
+        (typeof parsed.categorie === 'string' || parsed.categorie === null)
+      ) {
+        this.TypeStock = parsed;
+      } else {
+        throw new Error('Invalid structure');
+      }
+    } catch (error) {
+      this.TypeStock = new TypeStock();
+    }
   }
 
   public get ID(): number {
@@ -25,12 +43,8 @@ export class Stock {
   public set ID(v: number) {
     this.datasource.id = v;
   }
-  public get TypeStock(): {categorie:string,libelle:string } {
-    return JSON.parse(this.datasource.type_stock);
-  }
-  public set TypeStock(v: {categorie:string,libelle:string }) {
-    this.datasource.type_stock = JSON.stringify(v);
-  }
+  public TypeStock : TypeStock;
+
   public TypeStockLibelle:string;
 
   public get Libelle(): string {
@@ -80,16 +94,21 @@ export class Stock {
 
   // Méthode pour télécharger le document
 
-  public get LieuStockage(): {
-    id: number;
-    type:  'rider' | 'lieu' | 'autre';
-    value: string;
-  } {
-    return JSON.parse(this.datasource.lieu_stockage);
+  public get LieuStockage(): ObjetAppli {
+    try {
+      const parsed = JSON.parse(this.datasource.lieu_stockage);
+      return parsed;
+    } catch (error) {
+      return {
+        id: 0,
+        type: 'autre',
+        value: $localize`:@@non_defini:Non défini`,
+      };
+    }
   }
   public set LieuStockage(v: {
     id: number;
-    type:  'rider' | 'lieu' | 'autre';
+    type:  string;
     value: string;
   }) {
     this.datasource.lieu_stockage = JSON.stringify(v);

@@ -40,7 +40,7 @@ export class OperationsComponent implements OnInit {
   action = '';
   Destinataire: {
     id: number;
-    type: 'stock' | 'rider' | 'lieu' | 'prof' | 'compte' | 'autre';
+    type: string;
     value: string;
   }[] = [];
   FluxFinanciers: FluxFinancier[];
@@ -351,7 +351,7 @@ export class OperationsComponent implements OnInit {
   }
   formatDestinataire(destinataire: {
     id: number;
-    type: 'stock' | 'rider' | 'lieu' | 'prof' | 'compte' | 'autre';
+    type: string;
     value: string;
   }) {
     return `${destinataire.value} (${destinataire.type})`;

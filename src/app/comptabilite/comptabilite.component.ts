@@ -12,7 +12,7 @@ import { CompteBancaireService } from 'src/services/compte-bancaire.service';
 import { ErrorService } from 'src/services/error.service';
 import { SaisonService } from 'src/services/saison.service';
 import { operationService } from 'src/services/operation.service';
-import { StaticClass } from '../global';
+import { ClassComptable, ObjetAppli, StaticClass } from '../global';
 
 @Component({
   selector: 'app-comptabilite',
@@ -33,7 +33,7 @@ export class ComptabiliteComponent implements OnInit {
   saisons: saison[];
   FluxFinanciers: FluxFinancier[];
   editFluxFlinancier: FluxFinancier;
-  ClassesComptable: { numero: number; libelle: string }[];
+  ClassesComptable: ClassComptable[];
   stocks: stock[];
   Comptes: CompteBancaire[];
 
@@ -42,11 +42,7 @@ export class ComptabiliteComponent implements OnInit {
   sort_montant_ff: string = 'NO';
   sort_sens_ff: string = 'NO';
   action = '';
-  Destinataire: {
-    id: number;
-    type: 'stock' | 'rider' | 'lieu' | 'prof' | 'compte' | 'autre';
-    value: string;
-  }[] = [];
+  Destinataire: ObjetAppli[] = [];
   destinataireInput: string = '';
 
   context: 'FLUXFIN' | 'COMPTA' | 'LISTE' |'EDIT_FLUXFIN' = 'COMPTA';
@@ -444,7 +440,7 @@ export class ComptabiliteComponent implements OnInit {
   }
   formatDestinataire(destinataire: {
     id: number;
-    type: 'stock' | 'rider' | 'lieu' | 'prof' | 'compte' | 'autre';
+    type: string;
     value: string;
   }) {
     return `${destinataire.value} (${destinataire.type})`;

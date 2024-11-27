@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { StaticClass } from '../global';
+import { ClassComptable, StaticClass, TypeStock, TypeTransaction } from '../global';
 import { AddInfoService } from 'src/services/addinfo.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorService } from 'src/services/error.service';
@@ -13,9 +13,9 @@ export class GestionListeComponent {
   lv: string;
   charge: boolean = false;
   action: string = '';
-  public ClassComptable: { numero: number; libelle: string }[] = [];
-  public TypeStock: { categorie: string; libelle: string }[] = [];
-  public TypeTransaction: { class_compta: number; libelle: string }[] = [];
+  public ClassComptable: ClassComptable[] = [];
+  public TypeStock: TypeStock[] = [];
+  public TypeTransaction: TypeTransaction[] = [];
   constructor(public SC: StaticClass, public addinfo_serv: AddInfoService) {}
   Load(force:boolean) {
     const errorService = ErrorService.instance;

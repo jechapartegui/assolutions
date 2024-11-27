@@ -296,7 +296,7 @@
                       {{ stock.Libelle }}
                     </td>
                     <td>
-                      {{ stock.TypeStock }}
+                      {{ stock.TypeStockLibelle }}
                     </td>
                     <td>{{ stock.Date | date : "dd/MM/yyyy" }}</td>
                     <td>{{ stock.LieuStockageLibelle }}</td>
@@ -366,8 +366,7 @@
       </div>
     </div>
   </ng-container>
-  <ng-container *ngIf="editStock">
-    <ng-container *ngIf="editMode">
+  <ng-container *ngIf="editStock && editMode">
       <div class="columns is-justify-content-center">
         <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
           <div class="box">
@@ -380,12 +379,13 @@
               <div class="field">
                 <label class="label" i18n>Type d'équipement</label>
                 <div class="select">
-                  <select id="cours" [(ngModel)]="editStock.TypeStock">
+                  <select id="cours" [(ngModel)]="editStock.TypeStock" (ngModelChange)="UpdateTypeStock($event)">
+               
                     <ng-container *ngFor="let st of TypeStock">
                         <option [ngValue]="st">{{st.libelle}}&nbsp;({{st.categorie}}) </option>
                     </ng-container>
                   </select>
-                </div>
+                </div> 
                 <p class="help is-danger" *ngIf="!editStock.TypeStock" i18n>
                   La sélection d'un type de stock est obligatoire
                 </p>
@@ -440,9 +440,9 @@
                 <label class="label" i18n>Montant</label>
                 <input
                   class="input"
-                  id="qte"
+                  id="valeur_achat"
                   type="number"
-                  [(ngModel)]="editStock.Quantite"
+                  [(ngModel)]="editStock.Valeur_Achat"
                 />
               </div>
               <div class="field">
@@ -489,7 +489,6 @@
           </div>
         </div>
       </div>
-    </ng-container>
     <ng-container *ngIf="!editMode"> </ng-container>
   </ng-container>
 </div>

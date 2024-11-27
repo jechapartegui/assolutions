@@ -3,10 +3,11 @@ import { StatutPresence } from "src/class/inscription";
 
 export class StaticClass{
 
-  public ListeObjet:{id:number, type:"stock"|"rider"|"lieu"|"prof"|"compte"|"transaction"|"autre",value:string }[] = [];
-  public ClassComptable:{numero:number,libelle:string }[] = [];
-  public TypeStock:{numero:number,libelle:string }[] = [];
-  public TypeTransaction:{class_compta:number,libelle:string }[] = [];
+  public ListeObjet:ObjetAppli[] = [];
+  public ClassComptable:ClassComptable[] = [];
+  public TypeStock:TypeStock[] = [];
+  public TypeTransaction:TypeTransaction[] = [];
+
 
   public downloadDocument(docu:Doc) {
     if (docu) {
@@ -125,3 +126,13 @@ export  const configapi= [
     apisportscourt: 'https://equipements.sports.gouv.fr/api/records/1.0/search/?dataset=data-es&',
   }
 ]
+
+export class ObjetAppli{id:number; type:string;value:string }
+export class ClassComptable{numero:number; libelle:string }
+export class TypeStock{id:number =0;categorie: string| null = null; libelle: string = $localize`Autre`
+
+  equals(other: TypeStock): boolean {
+    return this.categorie === other.categorie && other.libelle === this.libelle;
+  }
+}
+export class TypeTransaction{class_compta:number; libelle:string }
