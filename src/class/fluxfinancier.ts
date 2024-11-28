@@ -1,4 +1,4 @@
-import { stock } from './stock';
+import { Stock, stock } from './stock';
 import { Operation, operation } from './operation';
 import { Doc } from './doc';
 
@@ -19,7 +19,7 @@ export class fluxfinancier {
 export class FluxFinancier {
   datasource: fluxfinancier;
   liste_operation: Operation[];
-  liste_stock: stock[];
+  liste_stock: Stock[];
   NbPaiement:number=1;
   constructor(ff: fluxfinancier) {
     this.datasource = ff;
@@ -31,7 +31,9 @@ export class FluxFinancier {
       this.liste_operation = [];
     }
     if(ff.stocks){
-      this.liste_stock = ff.stocks;
+      this.liste_stock =ff.stocks.map(
+        (x) => new Stock(x)
+      );
     } else {
       this.liste_stock = [];
     }
