@@ -3,7 +3,7 @@
   <div class="columns is-justify-content-center">
     <div class="column is-12-tablet is-8-widescreen is-6-fullh">
       <div *ngIf="editFluxFlinancier" class="box">
-        <h2 *ngIf="editFluxFlinancier.ID == 0" class="title is-2" i18n>
+        <h2 *ngIf="editFluxFlinancier.ID < 1" class="title is-2" i18n>
           Créer un flux
         </h2>
         <h2 *ngIf="editFluxFlinancier.ID > 0" class="title is-2" i18n>
@@ -174,10 +174,7 @@
 
       <div
         class="field"
-        *ngIf="
-          editFluxFlinancier.liste_operation &&
-          editFluxFlinancier.liste_operation.length > 0
-        "
+        *ngIf="editFluxFlinancier.ID !=  0"
       >
         <div class="card">
           <header class="card-header">
@@ -277,12 +274,12 @@
                     <td>
                       <input
                         class="input is-small"
-                        list="destinataires"
-                        id="destinataire"
+                        list="lieux"
+                        id="lieu"
                         (ngModelChange)="onInputChangeListStock($event,cpt)"
                         [(ngModel)]="cpt.LieuStockageLibelle"
                       />
-                      <datalist id="destinataires">
+                      <datalist id="lieux">
                         <option
                           *ngFor="let option of Liste_Lieu"
                           [value]="formatDestinataire(option)"
@@ -298,7 +295,6 @@
                         [(ngModel)]="cpt.Libelle"
                       />
                     </td>
-                    <td></td>
                     <td>
                       <div class="buttons">
                         <button
@@ -321,10 +317,7 @@
       </div>
       <div
         class="field"
-        *ngIf="
-          editFluxFlinancier.liste_operation &&
-          editFluxFlinancier.liste_operation.length > 0
-        "
+        *ngIf="editFluxFlinancier.ID !=  0"
       >
         <div class="card">
           <header class="card-header">
@@ -494,7 +487,7 @@
         class="buttons"
       >
       <button         *ngIf="
-      editFluxFlinancier.ID ==0 && editFluxFlinancier.liste_operation.length == 0"
+      editFluxFlinancier.ID ==0"
           class="button is-primary is-rounded is-outlined"
           type="button"
           style="fill: hsl(171, 100%, 41%)"
@@ -510,6 +503,14 @@
           (click)="Save_ff()"
         i18n> Sauvegarder
           <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button 
+          class="button is-danger is-rounded is-outlined"
+          type="button"
+          style="fill: hsl(171, 100%, 41%)"
+          (click)="Retour_menu()"
+        i18n>Retour
+          <i class="fa-solid fa-backward-fast"></i>
         </button>
       </div>
 
@@ -698,7 +699,7 @@
                       type="button"
                       (click)="Payer_ff(cpt)"
                     >
-                      <i class="fas fa-signature"></i>
+                      <i class="fas fa-coins"></i>
                     </button>
                     <button
                       i18n-title
@@ -915,7 +916,7 @@
                   type="button"
                   (click)="Payer_ff(cpt)"
                 >
-                  <i class="fas fa-signature"></i>
+                  <i class="fas fa-coins"></i>
                 </button>
                 <button
                   i18n-title

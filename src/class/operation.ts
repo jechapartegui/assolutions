@@ -1,8 +1,8 @@
 import { fluxfinancier } from "./fluxfinancier";
 
 export class operation {
-  public id: number;
-  public solde: number;
+  public id: number =0;
+  public solde: number = 0;
   public date_operation: string;
   public mode: number; //liste valeur
   public destinataire:string="";

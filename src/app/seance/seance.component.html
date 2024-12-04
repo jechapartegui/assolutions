@@ -243,7 +243,7 @@
         </div>
       </span>
       <span class="mobile">
-        <ng-container *ngFor="let seance of list_seance_VM">
+        <ng-container *ngFor="let seance of list_seance_VM | filterLibelle : filter_nom| filterStatut : filter_statut | filterCours : filter_cours |  filterDateAvant : filter_date_avant|  filterDateApres : filter_date_apres |filterGroupe : filter_groupe | filterLieu : filter_lieu | filterListProf : filter_prof">
           <div class="box">
             <article class="media">
               <div class="media-content">

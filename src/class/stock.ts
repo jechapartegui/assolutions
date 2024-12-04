@@ -23,6 +23,7 @@ export class Stock {
     }  
     
   }
+  public temp_id:number;
 
   public get ID(): number {
     return this.datasource.id;
