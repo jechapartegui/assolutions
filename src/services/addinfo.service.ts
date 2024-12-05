@@ -50,7 +50,7 @@ export class AddInfoService {
       });
   }
 
-  public GetObjet():Promise<{id:number, type:"stock"|"rider"|"lieu"|"prof"|"compte",value:string }[]>{
+  public GetObjet():Promise<{id:number, type:string,value:string }[]>{
     this.url = environment.maseance + 'maseance/addinfo_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
@@ -59,7 +59,7 @@ export class AddInfoService {
 
     return this.global
       .POST(this.url, body)
-      .then((response: {id:number, type:"stock"|"rider"|"lieu"|"prof"|"compte",value:string }[]) => {
+      .then((response: {id:number, type:string,value:string }[]) => {
         return response;
       })
       .catch((error) => {

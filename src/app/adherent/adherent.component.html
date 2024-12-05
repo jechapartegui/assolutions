@@ -1,101 +1,18 @@
 <div class="container">
   <ng-container *ngIf="context == 'LISTE'">
-    <div class="columns" style="margin-top: 0.5rem">
-      <div class="column menuligne">
-        <hover-button
-          *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
-          [nomclass]="
-            inscrits == false
-              ? 'button is-info is-rounded is-outlined'
-              : 'button is-info is-rounded'
-          "
-          [nomicon]="'fas fa-signature'"
-          [libelle]="libelle_Inscrit"
-          (click)="inscrits ? (inscrits = false) : (inscrits = true)"
-        >
-        </hover-button>
-
-        <hover-button
-          [nomclass]="
-            afficher_filtre
-              ? 'button is-info is-rounded'
-              : 'button is-info is-rounded  is-outlined'
-          "
-          [nomicon]="'fa-solid fa-filter'"
-          [libelle]="libelle_AfficherFiltre"
-          (click)="
-            afficher_filtre
-              ? (afficher_filtre = false)
-              : (afficher_filtre = true)
-          "
-        >
-        </hover-button>
-        <hover-button
-          *ngIf="afficher_filtre"
-          [nomclass]="'button is-danger is-rounded is-outlined'"
-          [nomicon]="'fa-solid fa-filter'"
-          [remove]="true"
-          [libelle]="libelle_MasquerFiltre"
-          (click)="ReinitFiltre()"
-        >
-        </hover-button>
-        <hover-button
-          [nomclass]="'button  is-rounded is-primary is-outlined'"
-          [nomicon]="'fas fa-file-export'"
-          [libelle]="libelle_Export"
-          (click)="ExporterExcel()"
-        >
-        </hover-button>
-        <ng-container *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
-          <hover-button
-          [nomclass]="'button  is-rounded is-primary is-outlined'"
-          [nomicon]="'fas fa-file-import'"
-          [libelle]="libelle_Import"
-          (click)="GotoImport()"
-        ></hover-button>
-        </ng-container>
-      </div>
-      <div
-        class="column menuligne"
-        *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
-      >
-        <span>Saison affichée : </span>
-        <div class="field has-addons">
-          <div class="control">
-            <div class="select">
-              <select [(ngModel)]="active_saison">
-                <ng-container *ngFor="let saison of liste_saison">
-                  <option [ngValue]="saison">{{ saison.nom }}</option>
-                </ng-container>
-              </select>
-            </div>
-          </div>
-        </div>
-        <button
-          type="button"
-          (click)="UpdateListeAdherents()"
-          class="is-rounded is-outlined is-primary button"
-        >
-          <i class="fas fa-check"></i>
-        </button>
-      </div>
-    </div>
-    <div class="columns">
+    <ng-container *ngIf="loading">
+      <progress class="progress is-large is-info" max="100">60%</progress>
+      <p>Chargement en cours</p>
+    </ng-container>
+    <ng-container *ngIf="!loading">
+       <div  class="columns">
       <div class="column">
         <div class="card">
-          <header class="card-header">
-            <p class="card-header-title" i18n>
-              Liste des adhérents ({{ getFilteredAdherentsCount() }})
+          <header  class="card-header" style="align-items: center;">
+            <p class="card-header-title">
+              <span i18n>Liste des adhérents</span>&nbsp;({{ getFilteredAdherentsCount() }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{getActiveSaison()}}
             </p>
-            <button
-              *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
-              type="button"
-              (click)="Creer()"
-              class="button is-primary is-rounded is-outlined"
-              style="align-self: center; fill: hsl(171, 100%, 41%)"
-            >
-              <i class="fa-solid fa-plus"></i>
-            </button>
+            <btn  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'" [type_button]="'CreerLight'" (click)="Create()"></btn>           
           </header>
           <span class="fullscreen">
             <div class="card-content">
@@ -325,56 +242,20 @@
                       ></i>
                     </td>
                     <td>
-                      <div class="buttons">
-                        <button
-                          i18n-title
-                          title="Supprimer"
-                          *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
-                          class="button is-danger is-rounded is-outlined"
-                          type="button"
-                          (click)="Delete(adherent)"
-                        >
-                          <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <button
-                          *ngIf="
-                            !adherent.Inscrit &&
-                            adherent.CompteID > 0 &&
-                            adherent.valid.control
-                          "
-                          i18n-title
-                          title="Inscrire"
-                          class="button is-info is-rounded is-outlined"
-                          type="button"
-                          (click)="Register(adherent, active_saison.id, false)"
-                        >
-                          <i class="fas fa-signature"></i>
-                        </button>
-                        <button
-                          i18n-title
-                          title="Editer"
-                          class="button is-info is-rounded is-outlined"
-                          type="button"
-                          (click)="Read(adherent)"
-                        >
-                          <i class="fa-solid fa-binoculars"></i>
-                        </button>
-                        <button
-                          i18n-title
-                          title="Editer"
-                          class="button is-info is-rounded is-outlined"
-                          type="button"
-                          (click)="Edit(adherent)"
-                        >
-                          <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
+                      <div class="buttons" style="flex-wrap: nowrap;">
+                        <btn i18n-title title="Supprimer" [type_button]="'SupprimerLight'" *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'" (click)="Delete(adherent)"></btn>
+                        <btn *ngIf="!adherent.Inscrit && adherent.CompteID > 0 && adherent.valid.control"
+                           i18n-title title="Inscrire" [type_button]="'InscrireLight'" (click)="Register(adherent, active_saison.id, false)"></btn>
+                        <btn i18n-title title="Voir" [type_button]="'VoirLight'"  (click)="Read(adherent)"></btn>
+                        <btn i18n-title title="Editer" [type_button]="'EditerLight'" (click)="Edit(adherent)"></btn>
+                       
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <p *ngIf="!liste_adherents_VM || liste_adherents_VM.length == 0">
-                Pas de séances disponible
+              <p *ngIf="!liste_adherents_VM || liste_adherents_VM.length == 0" i18n>
+                Pas d'adhérents disponible
               </p>
             </div>
           </span>
@@ -399,6 +280,78 @@
         </div>
       </div>
     </div>
+    <footer class="footer" >
+      <div class="columns">
+        <div class="column">
+          <div *ngIf="!afficher_filtre" class="buttons">
+            
+
+          <btn
+            [type_button]="'Filtrer'"
+            (click)="
+              afficher_filtre
+                ? (afficher_filtre = false)
+                : (afficher_filtre = true)
+            "
+          ></btn>
+          <btn
+            [type_button]="'Exporter'"
+            (click)="ExportExcel()"
+          ></btn>
+          <btn
+            [type_button]="'Importer'"
+            (click)="GotoImport()"
+          ></btn>
+          <div class="field is-horizontal">
+            <div class="field-label is-normal is-two-quarter">
+              <label class="label" style="white-space: nowrap;" i18n>Saison affichée</label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select [(ngModel)]="active_saison" (ngModelChange)="UpdateListeAdherents()">
+                <ng-container *ngFor="let saison of liste_saison">
+                  <option [ngValue]="saison">{{ saison.nom }}</option>
+                </ng-container>
+              </select>
+            </div>
+          </div>
+        </div>
+        </div>
+        </div>
+      
+        </div>
+
+        </div>
+        <div class="" *ngIf="afficher_filtre" > 
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label" i18n>Sélection du filtre</label>
+            </div>
+            <div class="field-body">
+              <div class="field is-narrow">
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select [(ngModel)]="selected_filter">
+                      <option value="nom" *ngIf="!filter_nom" >Nom</option>
+                      <option value="date" *ngIf="!filter_date_avant || !filter_date_apres">Date de naissance</option>
+                      <option value="groupe" *ngIf="!filter_groupe">Groupe</option>
+                      <option value="sexe" *ngIf="!filter_sexe">Sexe</option>
+                      <option value="inscrit" *ngIf="!inscrits">Inscrit</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="selected_filter" class="field-label is-normal">
+              <label class="label" i18n>Valeur du filtre</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </ng-container>
   </ng-container>
 
   <ng-container *ngIf="context == 'ECRITURE'">
@@ -584,12 +537,13 @@
               "
               class="field"
             >
-
               <label class="label" i18n for="place_maximum">Compte : </label>
               <div class="box">
-                <span *ngIf="thisAdherent.CompteID==0" class="tag is-warning ">
+                <span *ngIf="thisAdherent.CompteID == 0" class="tag is-warning">
                   <i class="fas fa-exclamation-triangle"></i>
-                  <span i18n>Un compte doit être associé pour inscrire la personne</span>
+                  <span i18n
+                    >Un compte doit être associé pour inscrire la personne</span
+                  >
                 </span>
                 <app-compte-detail
                   (changeRattacher)="Rattacher($event)"
@@ -598,7 +552,6 @@
                   [compte_id]="thisAdherent.CompteID"
                 ></app-compte-detail>
               </div>
-            
             </div>
           </ng-container>
         </div>

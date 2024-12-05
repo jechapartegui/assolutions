@@ -2,11 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from 'src/class/address';
-import {
-  adherent,
-  Adherent,
-  AdherentExport,
-} from 'src/class/adherent';
+import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
 import { Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
 import { Groupe } from 'src/class/groupe';
@@ -28,12 +24,7 @@ import { SaisonService } from 'src/services/saison.service';
 })
 export class AdherentComponent implements OnInit {
   @Input() public context: 'LECTURE' | 'LISTE' | 'ECRITURE' = 'LISTE';
-  
-  libelle_Inscrit = $localize`Filtrer sur les inscrits`;
-  libelle_Export = $localize`Exporter vers Excel`;
-  libelle_Import = $localize`Importer depuis Excel`;
-  libelle_AfficherFiltre = $localize`Afficher les filtres`;
-  libelle_MasquerFiltre = $localize`Réinitialiser les filtres`;
+  public loading: boolean = false;
   public thisAdherent: Adherent = null;
   public action: string = '';
   public inscrits: boolean = true;
@@ -54,6 +45,7 @@ export class AdherentComponent implements OnInit {
   public filter_nom: string;
   public filter_sexe: boolean;
   public filter_groupe: number;
+  public selected_filter: string;
   public liste_groupe_filter: Groupe[];
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
@@ -80,12 +72,14 @@ export class AdherentComponent implements OnInit {
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
+    this.loading = true;
     if (GlobalService.is_logged_in) {
       // Chargez la liste des cours
       this.saisonserv
         .GetAll()
         .then((sa) => {
           if (sa.length == 0) {
+            this.loading = false;
             let o = errorService.CreateError(
               $localize`Récupérer les saisons`,
               $localize`Il faut au moins une saison pour créer un cours`
@@ -117,6 +111,7 @@ export class AdherentComponent implements OnInit {
           });
           if (this.context == 'LISTE') {
             if (GlobalService.menu === 'ADHERENT') {
+              this.loading = false;
               this.router.navigate(['/menu']);
               GlobalService.selected_menu = 'MENU';
               return;
@@ -126,6 +121,7 @@ export class AdherentComponent implements OnInit {
             if (this.id == 0 && this.context == 'ECRITURE') {
               let adh = new adherent();
               this.thisAdherent = new Adherent(adh);
+              this.loading = false;
             }
             if (this.id > 0) {
               this.ChargerAdherent();
@@ -140,6 +136,7 @@ export class AdherentComponent implements OnInit {
           errorService.emitChange(o);
         })
         .catch((err: HttpErrorResponse) => {
+          this.loading = false;
           let o = errorService.CreateError(
             $localize`récupérer les saisons`,
             err.message
@@ -150,6 +147,7 @@ export class AdherentComponent implements OnInit {
           return;
         });
     } else {
+      this.loading = false;
       let o = errorService.CreateError(
         this.action,
         $localize`Accès impossible, vous n'êtes pas connecté`
@@ -177,14 +175,19 @@ export class AdherentComponent implements OnInit {
           .GetAdherentAdhesion(this.active_saison.id)
           .then((adh) => {
             this.liste_adherents_VM = adh.map((x) => new Adherent(x));
+            this.loading = false;
           })
           .catch((err: HttpErrorResponse) => {
+            
+            this.loading = false;
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
             return;
           });
       })
       .catch((err: HttpErrorResponse) => {
+        
+        this.loading = false;
         let o = errorService.CreateError(
           $localize`Récupérer les groupes`,
           err.message
@@ -209,7 +212,16 @@ export class AdherentComponent implements OnInit {
     return age;
   }
 
-  Creer() {
+  getActiveSaison(): string {
+    let s = this.liste_saison.find((x) => x == this.active_saison);
+    if (s) {
+      return s.nom;
+    } else {
+      return '';
+    }
+  }
+
+  Create() {
     let adh: adherent = new adherent();
     this.thisAdherent = new Adherent(adh);
     this.context = 'ECRITURE';
@@ -309,8 +321,10 @@ export class AdherentComponent implements OnInit {
         .Get_Adherent_My(this.id)
         .then((adh) => {
           this.thisAdherent = new Adherent(adh);
+          this.loading = false;
         })
         .catch((err: HttpErrorResponse) => {
+          this.loading = false;
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);
           this.router.navigate(['/menu']);
@@ -498,17 +512,11 @@ export class AdherentComponent implements OnInit {
     this.filter_nom = null;
   }
 
-
-
-  GotoImport(){
-  
-      this.router.navigate( ['/import-adherent']);
+  GotoImport() {
+    this.router.navigate(['/import-adherent']);
   }
- 
 
-
-
-  ExporterExcel() {
+  ExportExcel() {
     let headers = {
       ID: 'ID',
       Nom: 'Nom',
@@ -575,7 +583,7 @@ export class AdherentComponent implements OnInit {
       return false;
     }
   }
- 
+
   isRegistredSaison(saison_id: number) {
     let u = this.thisAdherent.Adhesions.find((x) => x.saison_id == saison_id);
     if (u) {

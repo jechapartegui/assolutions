@@ -114,7 +114,7 @@ export class StockComponent implements OnInit {
   }
   GetTransaction(cours: number) {
     if (cours && cours > 0) {
-      return this.liste_transaction.find((x) => x.id == cours).value;
+      return this.liste_transaction.find((x) => x.id == cours).value  || $localize`Aucune`;
     } else {
       return $localize`Aucune`;
     }

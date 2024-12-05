@@ -1,0 +1,45 @@
+<span [ngSwitch]="type_button">
+    <button class="button is-info is-outlined" *ngSwitchCase="'Filtrer'">
+        <span i18n>Filtrer</span>
+        <i class="fa-solid fa-filter"></i>
+    </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'Exporter'">
+        <span i18n>Exporter</span>
+        <span style="position: relative; display: inline-block; font-size: 1em;">
+            <!-- Icône Excel -->
+            <i class="fa-regular fa-file-excel is-primary" ></i>
+            <!-- Icône flèche -->
+            <i class="fa-solid fa-arrow-right is-primary" 
+               style="
+                 font-size: 0.6em; 
+                 position: absolute; 
+                 top: 30%; 
+                 right: -50%;
+               ">
+            </i>
+          </span>
+    </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'Importer'">
+        <span i18n>Importer</span>
+        <i class="fas fa-file-import" ></i>
+    </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'Creer'" i18n>
+        Créer
+        <i class="fa-solid fa-filter"></i>
+    </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'CreerLight'" i18n>
+        <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerLight'" i18n>
+        <i class="fa-solid fa-trash-can"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'" i18n>
+        <i class="fa-solid fa-binoculars"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'EditerLight'" i18n>
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'InscrireLight'" i18n>
+        <i class="fas fa-signature"></i>
+    </button>
+</span>
