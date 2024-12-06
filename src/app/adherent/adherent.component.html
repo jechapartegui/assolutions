@@ -5,353 +5,464 @@
       <p>Chargement en cours</p>
     </ng-container>
     <ng-container *ngIf="!loading">
-       <div  class="columns">
-      <div class="column">
-        <div class="card">
-          <header  class="card-header" style="align-items: center;">
-            <p class="card-header-title">
-              <span i18n>Liste des adhérents</span>&nbsp;({{ getFilteredAdherentsCount() }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{getActiveSaison()}}
-            </p>
-            <btn  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'" [type_button]="'CreerLight'" (click)="Create()"></btn>           
-          </header>
-          <span class="fullscreen">
-            <div class="card-content">
-              <table
-                class="table"
-                style="width: 100%; font-size: smaller"
-                *ngIf="liste_adherents_VM && liste_adherents_VM.length > 0"
-              >
-                <thead>
-                  <tr>
-                    <th>
-                      <span class="th_filtre">
-                        <span class="ligne">
-                          <span style="font-size: smaller" i18n>Nom</span>
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="sort_nom === 'NO'"
-                              (click)="Sort('ASC', 'nom')"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="sort_nom === 'ASC'"
-                              (click)="Sort('DESC', 'nom')"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="sort_nom === 'DESC'"
-                              (click)="Sort('ASC', 'nom')"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </span>
-                        <input
-                          *ngIf="afficher_filtre"
-                          style="width: fit-content; font-size: smaller"
-                          class="input is-small"
-                          i18n-placeholder
-                          placeholder="Nom du cours"
-                          type="text"
-                          [(ngModel)]="filter_nom"
-                        />
-                      </span>
-                    </th>
-                    <th>
-                      <span class="th_filtre">
-                        <span class="ligne">
-                          <span style="font-size: smaller" i18n
-                            >Date de naissance</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="sort_date === 'NO'"
-                              (click)="Sort('ASC', 'date')"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="sort_date === 'ASC'"
-                              (click)="Sort('DESC', 'date')"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="sort_date === 'DESC'"
-                              (click)="Sort('ASC', 'date')"
-                              class="fa-solid fa-sort-down"
-                            ></i> </span
-                        ></span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div
-                            style="gap: 6px"
-                            class="field is-small is-horizontal field-jecha"
-                          >
-                            <label for="groupe" class="label is-small" i18n
-                              >Du</label
-                            >
-                            <input
-                              style="width: fit-content"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Filtre date avant"
-                              type="date"
-                              [(ngModel)]="filter_date_apres"
-                            />
-                          </div>
-                        </span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div
-                            style="gap: 6px"
-                            class="field is-small is-horizontal field-jecha"
-                          >
-                            <label for="groupe" class="label is-small" i18n
-                              >Au</label
-                            >
-                            <input
-                              style="width: fit-content"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Filtre date après"
-                              type="date"
-                              [(ngModel)]="filter_date_avant"
-                            />
-                          </div>
-                        </span>
-                      </span>
-                    </th>
-                    <th>
-                      <span class="th_filtre">
-                        <span class="ligne">
-                          <span style="font-size: smaller" i18n>Sexe</span
-                          ><span style="cursor: pointer">
-                            <i
-                              *ngIf="sort_sexe === 'NO'"
-                              (click)="Sort('ASC', 'sexe')"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="sort_sexe === 'ASC'"
-                              (click)="Sort('DESC', 'sexe')"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="sort_sexe === 'DESC'"
-                              (click)="Sort('ASC', 'sexe')"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div class="select">
-                            <select
-                              style="font-size: smaller"
-                              [(ngModel)]="filter_sexe"
-                            >
-                              <option [ngValue]="null" i18n>Tous</option>
-                              <option [ngValue]="0" i18n>Femme</option>
-                              <option [ngValue]="1" i18n>Homme</option>
-                            </select>
-                          </div>
-                        </span>
-                      </span>
-                    </th>
-                    <th>
-                      <span class="th_filtre">
-                        <span style="font-size: smaller" i18n>Groupes</span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div class="select">
-                            <select
-                              style="font-size: smaller"
-                              [(ngModel)]="filter_groupe"
-                            >
-                              <option [ngValue]="null" i18n>Tous</option>
-                              <ng-container *ngFor="let gr of liste_groupe">
-                                <option [ngValue]="gr.id">{{ gr.nom }}</option>
-                              </ng-container>
-                            </select>
-                          </div>
-                        </span>
-                      </span>
-                    </th>
-                    <th>Contact</th>
-                    <th>Inscrit</th>
-                    <th><span style="font-size: smaller" i18n>Action</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    *ngFor="
-                      let adherent of liste_adherents_VM
-                        | filterLibelleNom : filter_nom
-                        | filterDDNAvant : filter_date_avant
-                        | filterDDNApres : filter_date_apres
-                        | filterSexe : filter_sexe
-                        | filterInscriptionSaison : inscrits
-                    "
-                  >
-                    <td>
-                      {{ adherent.Libelle }}
-                    </td>
-                    <td>
-                      {{ adherent.DDN | date : "dd/MM/yyyy" }}
-                      ({{ calculateAge(adherent.DDN) }}&nbsp;<span i18n
-                        >ans</span
-                      >)
-                    </td>
-                    <td>
-                      <i
-                        *ngIf="adherent.Sexe"
-                        class="fa-solid fa-mars has-text-info"
-                      ></i>
-                      <i
-                        *ngIf="!adherent.Sexe"
-                        class="fa-solid fa-venus has-text-danger"
-                      ></i>
-                    </td>
-
-                    <td>
-                      <div class="tags">
-                        <ng-container *ngFor="let gr of adherent.Groupes">
-                          <span class="tag is-success">
-                            {{ gr.nom }}
-                          </span>
-                        </ng-container>
-                      </div>
-                    </td>
-                    <td>
-                      <span *ngIf="adherent.ContactPrefereType == 'EMAIL'"
-                        ><i class="fas fa-at"></i
-                      ></span>
-                      <span *ngIf="adherent.ContactPrefereType == 'PHONE'"
-                        ><i class="fas fa-phone"></i
-                      ></span>
-                      <span *ngIf="adherent.ContactPrefereType == 'INSTA'"
-                        ><i class="fab fa-instagram-square"></i
-                      ></span>
-                      <span *ngIf="adherent.ContactPrefereType == 'FACEBOOK'"
-                        ><i class="fab fa-facebook-square"></i
-                      ></span>
-                      <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"
-                        ><i class="fab fa-twitter-square"></i
-                      ></span>
-                      <span>&nbsp;{{ adherent.ContactPrefere }}</span>
-                    </td>
-                    <td>
-                      <i *ngIf="!adherent.Inscrit" class="fas fa-times"></i>
-                      <i
-                        *ngIf="adherent.Inscrit"
-                        class="fas fa-check has-text-success"
-                      ></i>
-                    </td>
-                    <td>
-                      <div class="buttons" style="flex-wrap: nowrap;">
-                        <btn i18n-title title="Supprimer" [type_button]="'SupprimerLight'" *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'" (click)="Delete(adherent)"></btn>
-                        <btn *ngIf="!adherent.Inscrit && adherent.CompteID > 0 && adherent.valid.control"
-                           i18n-title title="Inscrire" [type_button]="'InscrireLight'" (click)="Register(adherent, active_saison.id, false)"></btn>
-                        <btn i18n-title title="Voir" [type_button]="'VoirLight'"  (click)="Read(adherent)"></btn>
-                        <btn i18n-title title="Editer" [type_button]="'EditerLight'" (click)="Edit(adherent)"></btn>
-                       
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <p *ngIf="!liste_adherents_VM || liste_adherents_VM.length == 0" i18n>
-                Pas d'adhérents disponible
-              </p>
-            </div>
-          </span>
-          <span class="mobile">
-            <ng-container *ngFor="let adherent of liste_adherents_VM">
-              <div class="box">
-                <article class="media">
-                  <div class="media-content">
-                    <span class="title" (click)="Edit(adherent)"
-                      ><strong>{{ adherent.Libelle }}</strong></span
-                    >
-                    <div>
-                      {{ adherent.DDN | date : "dd/MM/yyyy" }}&nbsp;{{
-                        calculateAge(adherent.DDN)
-                      }}
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </ng-container>
-          </span>
-        </div>
-      </div>
-    </div>
-    <footer class="footer" >
       <div class="columns">
         <div class="column">
-          <div *ngIf="!afficher_filtre" class="buttons">
-            
+          <div class="card">
+            <header class="card-header" style="align-items: center">
+              <p class="card-header-title"  *ngIf="liste_adherents_VM | multifiltersAdherent : filters as filteredApplis">
+                <span i18n>Liste des adhérents</span>&nbsp;({{ filteredApplis.length }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
+                  getActiveSaison()
+                }}
+              </p>
+              <btn
+                *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+                [type_button]="'CreerLight'"
+                (click)="Create()"
+              ></btn>
+            </header>
+            <span class="fullscreen">
+              <div class="card-content">
+                <table
+                  class="table"
+                  style="width: 100%; font-size: smaller"
+                  *ngIf="liste_adherents_VM && liste_adherents_VM.length > 0"
+                >
+                  <thead>
+                    <tr>
+                      <th>
+                        <span class="th_filtre">
+                          <span class="ligne">
+                            <span style="font-size: smaller" i18n>Nom</span>
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_nom === 'NO'"
+                                (click)="Sort('ASC', 'nom')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_nom === 'ASC'"
+                                (click)="Sort('DESC', 'nom')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_nom === 'DESC'"
+                                (click)="Sort('ASC', 'nom')"
+                                class="fa-solid fa-sort-down"
+                              ></i>
+                            </span>
+                          </span>
+                        </span>
+                      </th>
+                      <th>
+                        <span class="th_filtre">
+                          <span class="ligne">
+                            <span style="font-size: smaller" i18n
+                              >Date de naissance</span
+                            >
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_date === 'NO'"
+                                (click)="Sort('ASC', 'date')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_date === 'ASC'"
+                                (click)="Sort('DESC', 'date')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_date === 'DESC'"
+                                (click)="Sort('ASC', 'date')"
+                                class="fa-solid fa-sort-down"
+                              ></i> </span
+                          ></span>
+                         
+                        </span>
+                      </th>
+                      <th>
+                        <span class="th_filtre">
+                          <span class="ligne">
+                            <span style="font-size: smaller" i18n>Sexe</span
+                            ><span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_sexe === 'NO'"
+                                (click)="Sort('ASC', 'sexe')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_sexe === 'ASC'"
+                                (click)="Sort('DESC', 'sexe')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_sexe === 'DESC'"
+                                (click)="Sort('ASC', 'sexe')"
+                                class="fa-solid fa-sort-down"
+                              ></i>
+                            </span>
+                          </span>
+                          <span *ngIf="afficher_filtre" class="ligne">
+                            <div class="select">
+                              <select
+                                style="font-size: smaller"
+                                [(ngModel)]="filters.filter_sexe"
+                              >
+                                <option [ngValue]="null" i18n>Tous</option>
+                                <option [ngValue]="0" i18n>Femme</option>
+                                <option [ngValue]="1" i18n>Homme</option>
+                              </select>
+                            </div>
+                          </span>
+                        </span>
+                      </th>
+                      <th>
+                        <span class="th_filtre">
+                          <span style="font-size: smaller" i18n>Groupes</span>
+                          <span *ngIf="afficher_filtre" class="ligne">
+                            <div class="select">
+                              <select
+                                style="font-size: smaller"
+                                [(ngModel)]="filters.filter_groupe"
+                              >
+                                <option [ngValue]="null" i18n>Tous</option>
+                                <ng-container *ngFor="let gr of liste_groupe">
+                                  <option [ngValue]="gr.id">
+                                    {{ gr.nom }}
+                                  </option>
+                                </ng-container>
+                              </select>
+                            </div>
+                          </span>
+                        </span>
+                      </th>
+                      <th>Contact</th>
+                      <th>Inscrit</th>
+                      <th>
+                        <span style="font-size: smaller" i18n>Action</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="
+                        let adherent of liste_adherents_VM | multifiltersAdherent : filters
+                      "
+                    >
+                      <td>
+                        {{ adherent.Libelle }}
+                      </td>
+                      <td>
+                        {{ adherent.DDN | date : "dd/MM/yyyy" }}
+                        ({{ calculateAge(adherent.DDN) }}&nbsp;<span i18n
+                          >ans</span
+                        >)
+                      </td>
+                      <td>
+                        <i
+                          *ngIf="adherent.Sexe"
+                          class="fa-solid fa-mars has-text-info"
+                        ></i>
+                        <i
+                          *ngIf="!adherent.Sexe"
+                          class="fa-solid fa-venus has-text-danger"
+                        ></i>
+                      </td>
 
-          <btn
-            [type_button]="'Filtrer'"
-            (click)="
-              afficher_filtre
-                ? (afficher_filtre = false)
-                : (afficher_filtre = true)
-            "
-          ></btn>
-          <btn
-            [type_button]="'Exporter'"
-            (click)="ExportExcel()"
-          ></btn>
-          <btn
-            [type_button]="'Importer'"
-            (click)="GotoImport()"
-          ></btn>
-          <div class="field is-horizontal">
-            <div class="field-label is-normal is-two-quarter">
-              <label class="label" style="white-space: nowrap;" i18n>Saison affichée</label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select [(ngModel)]="active_saison" (ngModelChange)="UpdateListeAdherents()">
-                <ng-container *ngFor="let saison of liste_saison">
-                  <option [ngValue]="saison">{{ saison.nom }}</option>
-                </ng-container>
-              </select>
-            </div>
+                      <td>
+                        <div class="tags">
+                          <ng-container *ngFor="let gr of adherent.Groupes">
+                            <span class="tag is-success">
+                              {{ gr.nom }}
+                            </span>
+                          </ng-container>
+                        </div>
+                      </td>
+                      <td>
+                        <span *ngIf="adherent.ContactPrefereType == 'EMAIL'"
+                          ><i class="fas fa-at"></i
+                        ></span>
+                        <span *ngIf="adherent.ContactPrefereType == 'PHONE'"
+                          ><i class="fas fa-phone"></i
+                        ></span>
+                        <span *ngIf="adherent.ContactPrefereType == 'INSTA'"
+                          ><i class="fab fa-instagram-square"></i
+                        ></span>
+                        <span *ngIf="adherent.ContactPrefereType == 'FACEBOOK'"
+                          ><i class="fab fa-facebook-square"></i
+                        ></span>
+                        <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"
+                          ><i class="fab fa-twitter-square"></i
+                        ></span>
+                        <span>&nbsp;{{ adherent.ContactPrefere }}</span>
+                      </td>
+                      <td>
+                        <i *ngIf="!adherent.Inscrit" class="fas fa-times"></i>
+                        <i
+                          *ngIf="adherent.Inscrit"
+                          class="fas fa-check has-text-success"
+                        ></i>
+                      </td>
+                      <td>
+                        <div class="buttons" style="flex-wrap: nowrap">
+                          <btn
+                            i18n-title
+                            title="Supprimer"
+                            [type_button]="'SupprimerLight'"
+                            *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+                            (click)="Delete(adherent)"
+                          ></btn>
+                          <btn
+                            *ngIf="
+                              !adherent.Inscrit &&
+                              adherent.CompteID > 0 &&
+                              adherent.valid.control
+                            "
+                            i18n-title
+                            title="Inscrire"
+                            [type_button]="'InscrireLight'"
+                            (click)="
+                              Register(adherent, active_saison.id, false)
+                            "
+                          ></btn>
+                          <btn
+                            i18n-title
+                            title="Voir"
+                            [type_button]="'VoirLight'"
+                            (click)="Read(adherent)"
+                          ></btn>
+                          <btn
+                            i18n-title
+                            title="Editer"
+                            [type_button]="'EditerLight'"
+                            (click)="Edit(adherent)"
+                          ></btn>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p
+                  *ngIf="!liste_adherents_VM || liste_adherents_VM.length == 0"
+                  i18n
+                >
+                  Pas d'adhérents disponible
+                </p>
+              </div>
+            </span>
+            <span class="mobile">
+              <ng-container *ngFor="let adherent of liste_adherents_VM">
+                <div class="box">
+                  <article class="media">
+                    <div class="media-content">
+                      <span class="title" (click)="Edit(adherent)"
+                        ><strong>{{ adherent.Libelle }}</strong></span
+                      >
+                      <div>
+                        {{ adherent.DDN | date : "dd/MM/yyyy" }}&nbsp;{{
+                          calculateAge(adherent.DDN)
+                        }}
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </ng-container>
+            </span>
           </div>
         </div>
-        </div>
-        </div>
-      
-        </div>
-
-        </div>
-        <div class="" *ngIf="afficher_filtre" > 
-          <div class="field is-horizontal">
-            <div class="field-label is-normal">
-              <label class="label" i18n>Sélection du filtre</label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select [(ngModel)]="selected_filter">
-                      <option value="nom" *ngIf="!filter_nom" >Nom</option>
-                      <option value="date" *ngIf="!filter_date_avant || !filter_date_apres">Date de naissance</option>
-                      <option value="groupe" *ngIf="!filter_groupe">Groupe</option>
-                      <option value="sexe" *ngIf="!filter_sexe">Sexe</option>
-                      <option value="inscrit" *ngIf="!inscrits">Inscrit</option>
-                    </select>
+      </div>
+      <footer class="footer">
+        <div class="columns">
+          <div class="column">
+            <div *ngIf="!afficher_filtre" class="buttons">
+              <btn
+                [type_button]="'Filtrer'"
+                (click)="
+                  afficher_filtre
+                    ? (afficher_filtre = false)
+                    : (afficher_filtre = true)
+                "
+              ></btn>
+              <btn [type_button]="'Exporter'" (click)="ExportExcel()"></btn>
+              <btn [type_button]="'Importer'" (click)="GotoImport()"></btn>
+              <div class="field is-horizontal">
+                <div class="field-label is-normal is-two-quarter">
+                  <label class="label" style="white-space: nowrap" i18n
+                    >Saison affichée</label
+                  >
+                </div>
+                <div class="field-body">
+                  <div class="field is-narrow">
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select
+                          [(ngModel)]="active_saison"
+                          (ngModelChange)="UpdateListeAdherents()"
+                        >
+                          <ng-container *ngFor="let saison of liste_saison">
+                            <option [ngValue]="saison">{{ saison.nom }}</option>
+                          </ng-container>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div *ngIf="selected_filter" class="field-label is-normal">
-              <label class="label" i18n>Valeur du filtre</label>
+
+            <div class="buttons" *ngIf="afficher_filtre">
+              <btn
+                (click)="afficher_filtre = false; selected_filter=null"
+                [type_button]="'RetourLight'"
+              ></btn>
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label" style="white-space: nowrap" i18n
+                    >Sélection du filtre</label
+                  >
+                </div>
+                <div class="field-body">
+                  <div class="field is-narrow">
+                    <div class="control">
+                      <div class="select is-fullwidth ; font-size: smaller">
+                        <select [(ngModel)]="selected_filter">
+                          <option value="nom" i18n>Nom</option>
+                          <option
+                            value="date" i18n>Date de naissance
+                          </option>
+                          <option value="groupe" i18n>Groupe
+                          </option>
+                          <option value="sexe" i18n>Sexe
+                          </option>
+                          <option value="inscrit" i18n>Inscrit
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="selected_filter" class="field-label is-normal">
+                  <label class="label" style="white-space: nowrap" i18n
+                    >Valeur du filtre</label
+                  >
+                </div>
+                <div class="field-body" *ngIf="selected_filter">
+                  <div class="field is-narrow">
+                    <div class="control">
+                      <input
+                        *ngIf="selected_filter == 'nom'"
+                        style="width: fit-content; font-size: smaller"
+                        class="input is-small"
+                        i18n-placeholder
+                        placeholder="Nom du cours"
+                        type="text"
+                        [(ngModel)]="filters.filter_nom"
+                      />
+                      <div class="select" *ngIf="selected_filter == 'sexe'">
+                        <select 
+                          style="font-size: smaller"
+                          [(ngModel)]="filters.filter_sexe"
+                        >
+                          <option [ngValue]="null" i18n>Tous</option>
+                          <option [ngValue]="0" i18n>Femme</option>
+                          <option [ngValue]="1" i18n>Homme</option>
+                        </select>
+                      </div>
+                      <div class="select" *ngIf="selected_filter == 'inscrit'">
+                        <select 
+                          style="font-size: smaller"
+                          [(ngModel)]="filters.filter_inscrit"
+                        >
+                          <option [ngValue]="null" i18n>Tous</option>
+                          <option [ngValue]="0" i18n>Non</option>
+                          <option [ngValue]="1" i18n>Oui</option>
+                        </select>
+                      </div>
+                      <span *ngIf="selected_filter == 'date'" class="ligne">
+                        <div
+                          style="gap: 6px"
+                          class="field is-small is-horizontal field-jecha"
+                        >
+                          <label for="groupe" class="label is-small" i18n
+                            >Du</label
+                          >
+                          <input
+                            style="width: fit-content"
+                            class="input is-small"
+                            i18n-placeholder
+                            placeholder="Filtre date avant"
+                            type="date"
+                            [(ngModel)]="filters.filter_date_apres"
+                          />
+                        </div>
+                      </span>
+                      <span *ngIf="selected_filter == 'date'"  class="ligne">
+                        <div
+                          style="gap: 6px"
+                          class="field is-small is-horizontal field-jecha"
+                        >
+                          <label for="groupe" class="label is-small" i18n
+                            >Au</label
+                          >
+                          <input
+                            style="width: fit-content"
+                            class="input is-small"
+                            i18n-placeholder
+                            placeholder="Filtre date après"
+                            type="date"
+                            [(ngModel)]="filters.filter_date_avant"
+                          />
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="tags is-medium">
+                  <span *ngIf="filters.filter_nom" style="font-size: x-small;" class="tag is-success">
+                    <span i18n>Nom : </span>{{filters.filter_nom}}
+                    <button class="delete is-medium" (click)="filters.filter_nom=null"></button>
+                  </span>
+                  <span *ngIf="filters.filter_inscrit != null" style="font-size: x-small;"  class="tag is-success">
+                    <span i18n>Inscrits : </span>
+                    <span *ngIf="filters.filter_inscrit == true" i18n>
+                      Oui
+                    </span>
+                    <span *ngIf="filters.filter_inscrit == false" i18n>
+                      Non
+                    </span>
+                    <button class="delete is-medium" (click)="filters.filter_inscrit=null"></button>
+                  </span>
+                  <span *ngIf="filters.filter_date_avant || filters.filter_date_apres" class="tag is-success">
+                    <span i18n>Date de naissance : </span>
+                    <span *ngIf="filters.filter_date_avant">
+                      &nbsp;>&nbsp;
+                      {{filters.filter_date_avant}}
+                    </span>
+                    <span *ngIf="filters.filter_date_avant">
+                      &nbsp;<&nbsp;
+                      {{filters.filter_date_apres}}
+                    </span>
+                    <button class="delete is-medium" (click)="filters.filter_date_apres=null;filters.filter_date_avant=null"></button>
+                  </span>
+                  <span *ngIf="filters.filter_sexe != null" class="tag is-success">
+                    <span i18n>Sexe : </span><span *ngIf="filters.filter_sexe == true" i18n>
+                      Homme
+                    </span>
+                    <span *ngIf="filters.filter_sexe == false" i18n>
+                      Femme
+                    </span>
+                    <button class="delete is-medium" (click)="filters.filter_sexe=null"></button>
+                  </span>
+                  <span *ngIf="filters.filter_groupe" class="tag is-success">
+                    <span i18n>Groupe : </span>{{filters.filter_groupe}}
+                    <button class="delete is-medium" (click)="filters.filter_groupe=null"></button>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </footer>
-  </ng-container>
+      </footer>
+    </ng-container>
   </ng-container>
 
   <ng-container *ngIf="context == 'ECRITURE'">

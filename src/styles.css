@@ -1,17 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
-.mobile{
+.mobile {
     display: none;
 }
-.fullscreen{
+
+.fullscreen {
     display: contents;
 }
+
 @media screen and (max-width: 767px) {
-    .mobile{
+    .mobile {
         display: contents;
     }
-    .fullscreen{
+
+    .fullscreen {
         display: none;
     }
+
     .title {
         cursor: pointer;
         text-transform: uppercase;
@@ -20,11 +24,42 @@
         text-align: start;
     }
 }
+
 .footer {
-    background-color: white; /* Exemple de couleur de fond */
+    text-align: left;
+    font-size: smaller;
+    /* Réduction de la taille du texte */
+    background-color: rgba(255, 255, 255, 0.8);
+    /* Blanc avec 80% d'opacité */
     padding: 10px;
-    border-top: 1px solid #ddd; /* Ligne de séparation */
+    border-top: 1px solid #ddd;
     position: sticky;
     bottom: 0;
-    z-index: 100; /* S'assure que le footer est au-dessus d'autres éléments */
-  }
+    z-index: 100;
+    backdrop-filter: blur(5px);
+    /* Ajoute un effet de flou */
+}
+
+.footer select,
+.footer input,
+.footer label,
+.footer span,
+.footer .btn,
+.footer .buttons {
+    font-size: smaller;
+    /* Appliquer aux inputs, sélecteurs, boutons, etc. */
+}
+.footer .field-label{
+    align-content: center;
+}
+.footer .field-body {
+margin-right: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .footer {
+        background-color: rgba(0, 0, 0, 0.8);
+        /* Noir avec 80% d'opacité */
+        border-top: 1px solid #444;
+    }
+}

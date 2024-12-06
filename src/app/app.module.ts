@@ -34,7 +34,6 @@ import { GroupeDetailComponent } from './groupe-detail/groupe-detail.component';
 import { FilterLibelleNomPipe } from 'src/filters/filter-libellenom.pipe';
 import { FilterDDNApresPipe } from 'src/filters/filter-ddnapres.pipe';
 import { FilterDDNAvantPipe } from 'src/filters/filter-ddnavant.pipe';
-import { FilterSexePipe } from 'src/filters/filter-sexe.pipe';
 import { filterInscriptionSaison } from 'src/filters/filter-inscriptionsaison.pipe';
 import { HoverButtonComponent } from './hover-button/hover-button.component';
 import { FilterNomSeanceMenuPipe } from 'src/filters/filter-nomseance.pipe';
@@ -75,6 +74,7 @@ import { ClementineComponent } from './clementine/clementine.component';
 import { DocumentComponent } from './document/document.component';
 import { MultifiltersStockPipe } from 'src/filters/multifilters-stock.pipe';
 import { CustomButtonComponent } from './custom-button/custom-button.component';
+import { MultifiltersAdherentPipe } from 'src/filters/multifilters-adherent.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -87,7 +87,7 @@ import { CustomButtonComponent } from './custom-button/custom-button.component';
     ComptabiliteComponent,
     ProfComponent,RangePipe,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe, AdministrateursComponent,
-    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, MultifiltersStockPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, FilterSexePipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
+    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, MultifiltersStockPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, MultifiltersAdherentPipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
   , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, TableauDeBordComponent, ImportAdherentComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
   imports: [
     BrowserModule,

@@ -147,7 +147,7 @@
                             </thead>
                             <tbody>
                                 <tr
-                                    *ngFor="let adherent of ListeProf | filterLibelleNom : filter_nom | filterInscriptionSaisonProf : inscrits  | filterDDNAvant : filter_date_avant | filterDDNApres : filter_date_apres | filterSexe : filter_sexe">
+                                    *ngFor="let adherent of ListeProf | filterLibelleNom : filter_nom | filterInscriptionSaisonProf : inscrits  | filterDDNAvant : filter_date_avant | filterDDNApres : filter_date_apres ">
                                     <td>
                                         {{adherent.Libelle}}
                                     </td>

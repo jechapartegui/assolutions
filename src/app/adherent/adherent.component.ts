@@ -27,7 +27,6 @@ export class AdherentComponent implements OnInit {
   public loading: boolean = false;
   public thisAdherent: Adherent = null;
   public action: string = '';
-  public inscrits: boolean = true;
   public afficher_filtre: boolean = false;
   @Input() public id: number;
   public liste_groupe: Groupe[] = [];
@@ -40,11 +39,17 @@ export class AdherentComponent implements OnInit {
   public sort_nom = 'NO';
   public sort_date = 'NO';
   public sort_sexe = 'NO';
-  public filter_date_avant: Date;
-  public filter_date_apres: Date;
-  public filter_nom: string;
-  public filter_sexe: boolean;
-  public filter_groupe: number;
+
+  filters = {
+    filter_nom: null as string | null, 
+    filter_date_avant: null as Date | null,
+    filter_sexe: null as boolean | null, 
+    filter_inscrit: true as boolean | null, 
+    filter_groupe: null as string | null, 
+    filter_date_apres: null as Date | null,
+  };
+
+ 
   public selected_filter: string;
   public liste_groupe_filter: Groupe[];
   public valid_mail: boolean = false;
@@ -502,14 +507,17 @@ export class AdherentComponent implements OnInit {
         });
         break;
     }
+    this.liste_adherents_VM = [...this.liste_adherents_VM];
   }
 
   ReinitFiltre() {
-    this.filter_date_apres = null;
-    this.filter_date_avant = null;
-    this.filter_sexe = null;
-    this.filter_groupe = null;
-    this.filter_nom = null;
+   
+    this.filters.filter_date_apres = null;
+    this.filters.filter_date_avant = null;
+    this.filters.filter_groupe = null;
+    this.filters.filter_inscrit = null;
+    this.filters.filter_nom = null;
+    this.filters.filter_sexe = null;
   }
 
   GotoImport() {
@@ -632,41 +640,26 @@ export class AdherentComponent implements OnInit {
   }
 
   getFilteredAdherents(): Adherent[] {
-    return this.liste_adherents_VM
-      .filter((adherent) => this.filterLibelleNom(adherent))
-      .filter((adherent) => this.filterDDNAvant(adherent))
-      .filter((adherent) => this.filterDDNApres(adherent))
-      .filter((adherent) => this.filterSexe(adherent))
-      .filter((adherent) => this.filterInscriptionSaison(adherent));
+    return this.liste_adherents_VM.filter((adherent) => {
+
+      return (
+        (!this.filters.filter_nom ||
+          adherent.Libelle.toLowerCase().includes(this.filters.filter_nom.toLowerCase())) &&
+        (!this.filters.filter_date_avant ||
+          new Date(adherent.DDN) <= new Date(this.filters.filter_date_avant)) &&
+        (  !this.filters.filter_date_apres ||
+          new Date(adherent.DDN) >= new Date(this.filters.filter_date_apres)) &&
+        (!this.filters.filter_sexe || adherent.Sexe === this.filters.filter_sexe) &&
+        (!this.filters.filter_groupe || adherent.Groupes.find(x => x.nom.toLowerCase().includes(this.filters.filter_groupe.toLowerCase()))) &&
+        (!this.filters.filter_inscrit || adherent.Inscrit === this.filters.filter_inscrit)
+      );
+    })
+
+   
   }
 
   getFilteredAdherentsCount(): number {
     return this.getFilteredAdherents().length;
   }
-
-  filterLibelleNom(adherent: Adherent): boolean {
-    return !this.filter_nom || adherent.Libelle.includes(this.filter_nom);
-  }
-
-  filterDDNAvant(adherent: Adherent): boolean {
-    return (
-      !this.filter_date_avant ||
-      new Date(adherent.DDN) <= new Date(this.filter_date_avant)
-    );
-  }
-
-  filterDDNApres(adherent: Adherent): boolean {
-    return (
-      !this.filter_date_apres ||
-      new Date(adherent.DDN) >= new Date(this.filter_date_apres)
-    );
-  }
-
-  filterSexe(adherent: Adherent): boolean {
-    return !this.filter_sexe || adherent.Sexe === this.filter_sexe;
-  }
-
-  filterInscriptionSaison(adherent: Adherent): boolean {
-    return !this.inscrits || adherent.Inscrit === true;
-  }
+  
 }
