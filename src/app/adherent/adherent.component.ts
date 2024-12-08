@@ -40,15 +40,7 @@ export class AdherentComponent implements OnInit {
   public sort_date = 'NO';
   public sort_sexe = 'NO';
 
-  filters = {
-    filter_nom: null as string | null, 
-    filter_date_avant: null as Date | null,
-    filter_sexe: null as boolean | null, 
-    filter_inscrit: true as boolean | null, 
-    filter_groupe: null as string | null, 
-    filter_date_apres: null as Date | null,
-  };
-
+  public filters:FilterAdherent = new FilterAdherent();
  
   public selected_filter: string;
   public liste_groupe_filter: Groupe[];
@@ -71,7 +63,7 @@ export class AdherentComponent implements OnInit {
     private ridersService: AdherentService,
     private grServ: GroupeService,
     private route: ActivatedRoute,
-    private compte_serv: CompteService
+    private compte_serv: CompteService,
   ) {}
 
   ngOnInit(): void {
@@ -509,7 +501,6 @@ export class AdherentComponent implements OnInit {
     }
     this.liste_adherents_VM = [...this.liste_adherents_VM];
   }
-
   ReinitFiltre() {
    
     this.filters.filter_date_apres = null;
@@ -519,7 +510,6 @@ export class AdherentComponent implements OnInit {
     this.filters.filter_nom = null;
     this.filters.filter_sexe = null;
   }
-
   GotoImport() {
     this.router.navigate(['/import-adherent']);
   }
@@ -553,6 +543,24 @@ export class AdherentComponent implements OnInit {
       'liste_adherent',
       headers
     );
+  }
+  getFilteredAdherents(): Adherent[] {
+    return this.liste_adherents_VM.filter((adherent) => {
+
+      return (
+        (!this.filters.filter_nom ||
+          adherent.Libelle.toLowerCase().includes(this.filters.filter_nom.toLowerCase())) &&
+        (!this.filters.filter_date_avant ||
+          new Date(adherent.DDN) <= new Date(this.filters.filter_date_avant)) &&
+        (  !this.filters.filter_date_apres ||
+          new Date(adherent.DDN) >= new Date(this.filters.filter_date_apres)) &&
+        (!this.filters.filter_sexe || adherent.Sexe === this.filters.filter_sexe) &&
+        (!this.filters.filter_groupe || adherent.Groupes.find(x => x.nom.toLowerCase().includes(this.filters.filter_groupe.toLowerCase()))) &&
+        (!this.filters.filter_inscrit || adherent.Inscrit === this.filters.filter_inscrit)
+      );
+    })
+
+   
   }
   onValidMailChange(isValid: boolean) {
     this.valid_mail = isValid;
@@ -639,27 +647,69 @@ export class AdherentComponent implements OnInit {
       });
   }
 
-  getFilteredAdherents(): Adherent[] {
-    return this.liste_adherents_VM.filter((adherent) => {
 
-      return (
-        (!this.filters.filter_nom ||
-          adherent.Libelle.toLowerCase().includes(this.filters.filter_nom.toLowerCase())) &&
-        (!this.filters.filter_date_avant ||
-          new Date(adherent.DDN) <= new Date(this.filters.filter_date_avant)) &&
-        (  !this.filters.filter_date_apres ||
-          new Date(adherent.DDN) >= new Date(this.filters.filter_date_apres)) &&
-        (!this.filters.filter_sexe || adherent.Sexe === this.filters.filter_sexe) &&
-        (!this.filters.filter_groupe || adherent.Groupes.find(x => x.nom.toLowerCase().includes(this.filters.filter_groupe.toLowerCase()))) &&
-        (!this.filters.filter_inscrit || adherent.Inscrit === this.filters.filter_inscrit)
-      );
-    })
 
-   
-  }
-
-  getFilteredAdherentsCount(): number {
-    return this.getFilteredAdherents().length;
-  }
   
 }
+export class FilterAdherent {
+  private _filter_nom: string | null = null;
+  get filter_nom(): string | null {
+    return this._filter_nom;
+  }
+  set filter_nom(value: string | null) {
+    this._filter_nom = value;
+    this.onFilterChange();
+  }
+
+  private _filter_date_avant: Date | null = null;
+  get filter_date_avant(): Date | null {
+    return this._filter_date_avant;
+  }
+  set filter_date_avant(value: Date | null) {
+    this._filter_date_avant = value;
+    this.onFilterChange();
+  }
+
+  private _filter_date_apres: Date | null = null;
+  get filter_date_apres(): Date | null {
+    return this._filter_date_apres;
+  }
+  set filter_date_apres(value: Date | null) {
+    this._filter_date_apres = value;
+    this.onFilterChange();
+  }
+
+  private _filter_sexe: boolean | null = null;
+  get filter_sexe(): boolean | null {
+    return this._filter_sexe;
+  }
+  set filter_sexe(value: boolean | null) {
+    this._filter_sexe = value;
+    this.onFilterChange();
+  }
+
+  private _filter_inscrit: boolean | null = true;
+  get filter_inscrit(): boolean | null {
+    return this._filter_inscrit;
+  }
+  set filter_inscrit(value: boolean | null) {
+    this._filter_inscrit = value;
+    this.onFilterChange();
+  }
+
+  private _filter_groupe: string | null = null;
+  get filter_groupe(): string | null {
+    return this._filter_groupe;
+  }
+  set filter_groupe(value: string | null) {
+    this._filter_groupe = value;
+    this.onFilterChange();
+  }
+
+  private onFilterChange(): void {
+  }
+}
+
+
+
+

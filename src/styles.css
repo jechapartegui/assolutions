@@ -2,14 +2,31 @@
 .mobile {
     display: none;
 }
+.tablet {
+    display: none;
+}
 
 .fullscreen {
     display: contents;
+}
+@media screen and (min-width: 500px) {
+    .tablet {
+        display: contents;
+    }
 }
 
 @media screen and (max-width: 767px) {
     .mobile {
         display: contents;
+    }
+    .box{
+        padding: 0.25rem;
+    }
+    .panel-block{
+        padding: 0.25rem;
+    }
+    .panel-heading{
+        padding: 0.25rem;
     }
 
     .fullscreen {
@@ -33,7 +50,7 @@
     /* Blanc avec 80% d'opacité */
     padding: 10px;
     border-top: 1px solid #ddd;
-    position: sticky;
+    position: fixed; 
     bottom: 0;
     z-index: 100;
     backdrop-filter: blur(5px);
@@ -49,6 +66,7 @@
     font-size: smaller;
     /* Appliquer aux inputs, sélecteurs, boutons, etc. */
 }
+
 .footer .field-label{
     align-content: center;
 }

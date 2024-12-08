@@ -40,8 +40,8 @@ export class ClementineComponent {
         question = `${a} + ${b}`;
         answer = a + b;
       } else if (type === 1) { // Soustraction
-        const a = this.randomNumber(10, 500);
         const b = this.randomNumber(1, 70);
+        const a = b +this.randomNumber(0, 430);
         question = `${a} - ${b}`;
         answer = a - b;
       } else if (type === 2) { // Multiplication

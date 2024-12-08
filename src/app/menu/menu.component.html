@@ -1,15 +1,10 @@
 <div class="container">
     <ng-container *ngIf="btn_adherent ||btn_admin || btn_prof" >
         <div class="block" >
-            <button (click)="ChangerMenu('ADHERENT')" *ngIf="btn_adherent" type="button" class="button is-outlined is-primary is-rounded mr-1">
-                Basculer Adhérents
-            </button>
-            <button (click)="ChangerMenu('PROF')"*ngIf="btn_prof" type="button" class="button is-outlined is-info is-rounded mr-1">
-                Basculer Professeur
-            </button>
-            <button (click)="ChangerMenu('ADMIN')" *ngIf="btn_admin" type="button" class="button is-outlined is-link is-rounded mr-1">
-                Basculer Administrateur
-            </button>
+            <btn [type_button]="'BasculerAdherents'" (click)="ChangerMenu('ADHERENT')" *ngIf="btn_adherent">
+            </btn>
+            <btn (click)="ChangerMenu('PROF')" *ngIf="btn_prof" [type_button]="'BasculerProf'"></btn>          
+            <btn (click)="ChangerMenu('ADMIN')" *ngIf="btn_admin" [type_button]="'BasculerAdmin'"></btn>
         </div>
     </ng-container>
     <ng-container *ngIf="Riders">

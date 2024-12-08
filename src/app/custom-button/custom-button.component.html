@@ -3,6 +3,15 @@
         <span i18n>Filtrer</span>
         <i class="fa-solid fa-filter"></i>
     </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'BasculerAdherents'">
+        <span i18n>Vue Adhérent</span>
+    </button>
+    <button class="button is-danger is-outlined" *ngSwitchCase="'BasculerAdmin'">
+        <span i18n>Vue Admin</span>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'BasculerProf'">
+        <span i18n>Vue Professeur</span>
+    </button>
     <button class="button is-primary is-outlined" *ngSwitchCase="'Exporter'">
         <span i18n>Exporter</span>
         <span style="position: relative; display: inline-block; font-size: 1em;">

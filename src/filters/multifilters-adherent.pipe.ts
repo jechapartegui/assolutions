@@ -1,48 +1,37 @@
-import { Pipe, PipeTransform, Injectable } from '@angular/core';
+
+import { Pipe, PipeTransform } from '@angular/core';
+import { FilterAdherent } from 'src/app/adherent/adherent.component';
 import { Adherent } from 'src/class/adherent';
-import { Stock } from 'src/class/stock';
 
 @Pipe({
   name: 'multifiltersAdherent',
-})
-@Injectable({
-  providedIn: 'root', // Permet de l'utiliser comme un service global
+  pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersAdherentPipe implements PipeTransform {
-  transform(items: Adherent[], filters: { [key: string]: any }): Adherent[] {
-    console.log(filters)
+  transform(items: Adherent[], filters: FilterAdherent): Adherent[] {
     if (!items) return [];
     if (!filters) return items;
 
     return items.filter((item) => {
-      return Object.keys(filters).every((key) => {
-        const filterValue = filters[key];
-        if (!filterValue) return true;
-        console.log(key);
-        console.log(filterValue);
-        switch (key) {
-          case 'filter_nom':
-            return item.Libelle.toLowerCase().includes(
-              filterValue.toString().toLowerCase()
-            );
-          case 'filter_date_avant':
-            return item.DDN <= filterValue;
-          case 'filter_date_apres':
-            return item.DDN >= filterValue;
-          case 'filter_groupe':
-            return item.Groupes.find((x) =>
-              x.nom.toLowerCase().includes(filterValue.toString().toLowerCase())
-            );
-          case 'filter_inscrit':
-            return item.Inscrit == filterValue;
-          case 'filter_sexe':
-            return item.Sexe == filterValue;
-          // case 'filter_equipement':
-          //   return item.TypeStock?.libelle === filterValue;
-          default:
-            return true;
-        }
-      });
+      return (
+        (!filters.filter_nom ||
+          item.Libelle.toLowerCase().includes(
+            filters.filter_nom.toLowerCase()
+          )) &&
+        (!filters.filter_date_avant ||
+          new Date(item.DDN) <= filters.filter_date_avant) &&
+        (!filters.filter_date_apres || new Date(item.DDN) >= filters.filter_date_apres) &&
+        (!filters.filter_groupe ||
+          item.Groupes.some((x) =>
+            x.nom.toLowerCase().includes(
+              filters.filter_groupe?.toLowerCase() ?? ''
+            )
+          )) &&
+        (filters.filter_inscrit === null ||
+          item.Inscrit === filters.filter_inscrit) &&
+        (filters.filter_sexe === null || item.Sexe === filters.filter_sexe)
+      );
     });
   }
 }
+
