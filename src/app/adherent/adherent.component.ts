@@ -1,5 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from 'src/class/address';
 import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
@@ -24,10 +30,13 @@ import { SaisonService } from 'src/services/saison.service';
 })
 export class AdherentComponent implements OnInit {
   @Input() public context: 'LECTURE' | 'LISTE' | 'ECRITURE' = 'LISTE';
-  public loading: boolean = false;
   public thisAdherent: Adherent = null;
   public action: string = '';
+  public loading: boolean = false;
   public afficher_filtre: boolean = false;
+  @ViewChild('scrollableContent', { static: false })
+  scrollableContent!: ElementRef;
+  showScrollToTop: boolean = false;
   @Input() public id: number;
   public liste_groupe: Groupe[] = [];
   public titre_groupe = $localize`Groupe de l'adhérent`;
@@ -40,8 +49,8 @@ export class AdherentComponent implements OnInit {
   public sort_date = 'NO';
   public sort_sexe = 'NO';
 
-  public filters:FilterAdherent = new FilterAdherent();
- 
+  public filters: FilterAdherent = new FilterAdherent();
+
   public selected_filter: string;
   public liste_groupe_filter: Groupe[];
   public valid_mail: boolean = false;
@@ -52,6 +61,9 @@ export class AdherentComponent implements OnInit {
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
+  public selected_sort: any;
+  public selected_sort_sens: any;
+  public afficher_tri: boolean = false;
 
   constructor(
     public mail_serv: MailService,
@@ -63,7 +75,7 @@ export class AdherentComponent implements OnInit {
     private ridersService: AdherentService,
     private grServ: GroupeService,
     private route: ActivatedRoute,
-    private compte_serv: CompteService,
+    private compte_serv: CompteService
   ) {}
 
   ngOnInit(): void {
@@ -175,7 +187,6 @@ export class AdherentComponent implements OnInit {
             this.loading = false;
           })
           .catch((err: HttpErrorResponse) => {
-            
             this.loading = false;
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
@@ -183,7 +194,6 @@ export class AdherentComponent implements OnInit {
           });
       })
       .catch((err: HttpErrorResponse) => {
-        
         this.loading = false;
         let o = errorService.CreateError(
           $localize`Récupérer les groupes`,
@@ -502,7 +512,6 @@ export class AdherentComponent implements OnInit {
     this.liste_adherents_VM = [...this.liste_adherents_VM];
   }
   ReinitFiltre() {
-   
     this.filters.filter_date_apres = null;
     this.filters.filter_date_avant = null;
     this.filters.filter_groupe = null;
@@ -546,21 +555,27 @@ export class AdherentComponent implements OnInit {
   }
   getFilteredAdherents(): Adherent[] {
     return this.liste_adherents_VM.filter((adherent) => {
-
       return (
         (!this.filters.filter_nom ||
-          adherent.Libelle.toLowerCase().includes(this.filters.filter_nom.toLowerCase())) &&
+          adherent.Libelle.toLowerCase().includes(
+            this.filters.filter_nom.toLowerCase()
+          )) &&
         (!this.filters.filter_date_avant ||
           new Date(adherent.DDN) <= new Date(this.filters.filter_date_avant)) &&
-        (  !this.filters.filter_date_apres ||
+        (!this.filters.filter_date_apres ||
           new Date(adherent.DDN) >= new Date(this.filters.filter_date_apres)) &&
-        (!this.filters.filter_sexe || adherent.Sexe === this.filters.filter_sexe) &&
-        (!this.filters.filter_groupe || adherent.Groupes.find(x => x.nom.toLowerCase().includes(this.filters.filter_groupe.toLowerCase()))) &&
-        (!this.filters.filter_inscrit || adherent.Inscrit === this.filters.filter_inscrit)
+        (!this.filters.filter_sexe ||
+          adherent.Sexe === this.filters.filter_sexe) &&
+        (!this.filters.filter_groupe ||
+          adherent.Groupes.find((x) =>
+            x.nom
+              .toLowerCase()
+              .includes(this.filters.filter_groupe.toLowerCase())
+          )) &&
+        (!this.filters.filter_inscrit ||
+          adherent.Inscrit === this.filters.filter_inscrit)
       );
-    })
-
-   
+    });
   }
   onValidMailChange(isValid: boolean) {
     this.valid_mail = isValid;
@@ -647,9 +662,34 @@ export class AdherentComponent implements OnInit {
       });
   }
 
+  ngAfterViewInit(): void {
+    this.waitForScrollableContainer();
+  }
 
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer(); // Re-tente de le trouver
+      }
+    }, 100); // Réessaie toutes les 100 ms
+  }
 
-  
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth', // Défilement fluide
+    });
+  }
 }
 export class FilterAdherent {
   private _filter_nom: string | null = null;
@@ -706,10 +746,5 @@ export class FilterAdherent {
     this.onFilterChange();
   }
 
-  private onFilterChange(): void {
-  }
+  private onFilterChange(): void {}
 }
-
-
-
-

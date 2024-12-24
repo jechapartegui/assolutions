@@ -40,39 +40,80 @@
         font-size: smaller;
         text-align: start;
     }
+    .container-box{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: stretch;
+        margin-bottom: 50px;
+        margin-top: 60px;
+      }
 }
+/* Rendre la card adaptative */
+.card {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(99vh - 60px); /* Soustraire la hauteur de la navbar */
+    border: 1px solid #ddd;
+    overflow: hidden; /* Coupe tout débordement */
+  }
+  
+  /* Permet de scroller uniquement le contenu */
+  .card-content {
+    flex: 1;
+    overflow-y: auto; /* Active le défilement vertical */
+  }
 
-.footer {
-    text-align: left;
-    font-size: smaller;
-    /* Réduction de la taille du texte */
-    background-color: rgba(255, 255, 255, 0.8);
-    /* Blanc avec 80% d'opacité */
+  .card-footer{
     padding: 10px;
-    border-top: 1px solid #ddd;
-    position: fixed; 
-    bottom: 0;
-    z-index: 100;
-    backdrop-filter: blur(5px);
-    /* Ajoute un effet de flou */
-}
+  }
+  
 
-.footer select,
-.footer input,
-.footer label,
-.footer span,
-.footer .btn,
-.footer .buttons {
+.card-footer select,
+.card-footer input,
+.card-footer label,
+.card-footer span,
+.card-footer .btn,
+.card-footer .buttons {
     font-size: smaller;
     /* Appliquer aux inputs, sélecteurs, boutons, etc. */
 }
 
-.footer .field-label{
+.card-footer .field-label{
     align-content: center;
 }
-.footer .field-body {
+.card-footer .field-body {
 margin-right: 0.5rem;
 }
+
+.scroll-to-top {
+    position: absolute; /* Par rapport au conteneur */
+    bottom: 60px;
+    right: 20px;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  
+  .scroll-to-top:hover {
+    opacity: 1; /* Pleine opacité au survol */
+    transform: scale(1.1); /* Légère augmentation de la taille */
+  }
+
+  .footer{
+    padding: 0.25rem;
+    position: fixed;
+    bottom: 0;
+  }
 
 @media (prefers-color-scheme: dark) {
     .footer {

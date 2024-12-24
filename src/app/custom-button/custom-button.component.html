@@ -1,8 +1,41 @@
 <span [ngSwitch]="type_button">
+    <!--FILTER-->
     <button class="button is-info is-outlined" *ngSwitchCase="'Filtrer'">
         <span i18n>Filtrer</span>
         <i class="fa-solid fa-filter"></i>
     </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'FiltrerSmall'">
+        <span i18n>Filtrer</span>
+        <i class="fa-solid fa-filter"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'FiltrerLight'">
+        <i class="fa-solid fa-filter"></i>
+    </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'FiltrerSmallLight'">
+        <i class="fa-solid fa-filter"></i>
+    </button>
+    <button class="button  is-info is-outlined" *ngSwitchCase="'FiltrerMobile'">
+        <i class="fas fa-2x fa-filter"></i>
+    </button>
+    <!--TRI-->
+    <button class="button is-info is-outlined" *ngSwitchCase="'Trier'">
+        <span i18n>Trier</span>
+        <i class="fas fa-sort"></i>
+    </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'TrierSmall'">
+        <span i18n>Trier</span>
+        <i class="fas fa-sort"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'TrierLight'">
+        <i class="fas fa-sort"></i>
+    </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'TrierSmallLight'">
+        <i class="fas fa-sort"></i>
+    </button>
+    <button class="button  is-info is-outlined" *ngSwitchCase="'TrierMobile'">
+        <i class="fas fa-2x fa-sort"></i>
+    </button>
+    <!--VUE ADHERENT-->
     <button class="button is-primary is-outlined" *ngSwitchCase="'BasculerAdherents'">
         <span i18n>Vue Adhérent</span>
     </button>
@@ -12,6 +45,7 @@
     <button class="button is-info is-outlined" *ngSwitchCase="'BasculerProf'">
         <span i18n>Vue Professeur</span>
     </button>
+    <!-- EXPORTER-->
     <button class="button is-primary is-outlined" *ngSwitchCase="'Exporter'">
         <span i18n>Exporter</span>
         <span style="position: relative; display: inline-block; font-size: 1em;">
@@ -28,20 +62,97 @@
             </i>
           </span>
     </button>
+    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ExporterSmall'">
+        <span i18n>Exporter</span>
+        <span style="position: relative; display: inline-block; font-size: 1em;">
+            <!-- Icône Excel -->
+            <i class="fa-regular fa-file-excel is-primary" ></i>
+            <!-- Icône flèche -->
+            <i class="fa-solid fa-arrow-right is-primary" 
+               style="
+                 font-size: 0.6em; 
+                 position: absolute; 
+                 top: 30%; 
+                 right: -50%;
+               ">
+            </i>
+          </span>
+    </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'ExporterLight'">
+        <span style="position: relative; display: inline-block; font-size: 1em;">
+            <!-- Icône Excel -->
+            <i class="fa-regular fa-file-excel is-primary" ></i>
+            <!-- Icône flèche -->
+            <i class="fa-solid fa-arrow-right is-primary" 
+               style="
+                 font-size: 0.6em; 
+                 position: absolute; 
+                 top: 30%; 
+                 right: -50%;
+               ">
+            </i>
+          </span>
+    </button>
+    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ExporterSmallLight'">
+        <span style="position: relative; display: inline-block; font-size: 1em;">
+            <!-- Icône Excel -->
+            <i class="fa-regular fa-file-excel is-primary" ></i>
+            <!-- Icône flèche -->
+            <i class="fa-solid fa-arrow-right is-primary" 
+               style="
+                 font-size: 0.6em; 
+                 position: absolute; 
+                 top: 30%; 
+                 right: -50%;
+               ">
+            </i>
+          </span>
+    </button>
+    <!-- IMPORTER 4 déclinaisons possibles par bouton-->
     <button class="button is-primary is-outlined" *ngSwitchCase="'Importer'">
         <span i18n>Importer</span>
         <i class="fas fa-file-import" ></i>
     </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'Creer'" i18n>
-        Créer
-        <i class="fa-solid fa-filter"></i>
+    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ImporterSmall'">
+        <span i18n>Importer</span>
+        <i class="fas fa-file-import" ></i>
     </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'CreerLight'" i18n>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'ImporterLight'">
+        <i class="fas fa-file-import" ></i>
+    </button>
+    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ImporterSmallLight'">
+        <i class="fas fa-file-import" ></i>
+    </button>
+<!-- Fin de la déclinaison-->
+
+<!-- CREER-->
+    <button class="button is-primary is-outlined" *ngSwitchCase="'Creer'" >
+        <span i18n>Créer</span>
         <i class="fa-solid fa-plus"></i>
     </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'CreerLight'">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    
+<!-- CREER SERIE-->
+    <button class="button is-primary is-small is-outlined" *ngSwitchCase="'CreerSerieSmall'">
+        <span i18n>Créer une série</span>
+          <i class="fas fa-check-double"></i>
+      </button>
+<!-- TERMINER SERIE-->
+<button class="button is-primary is-small is-outlined" *ngSwitchCase="'TerminerSeancesSmall'">
+    <span i18n>Terminer les séances</span>
+      <i class="fa-solid fa-flag-checkered"></i>
+  </button>
+
     <button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerLight'" i18n>
         <i class="fa-solid fa-trash-can"></i>
     </button>
+    <button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerMobile'" i18n>
+        <i class="fas fa-2x  fa-trash-can"></i>
+    </button>
+
     <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'" i18n>
         <i class="fa-solid fa-binoculars"></i>
     </button>
@@ -53,5 +164,8 @@
     </button>
     <button class="button is-danger is-outlined" *ngSwitchCase="'RetourLight'" i18n>
         <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="button  is-danger is-outlined" *ngSwitchCase="'RetourMobile'">
+        <i class="fas fa-2x fa-chevron-left"></i>
     </button>
 </span>

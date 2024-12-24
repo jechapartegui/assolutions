@@ -75,6 +75,8 @@ import { DocumentComponent } from './document/document.component';
 import { MultifiltersStockPipe } from 'src/filters/multifilters-stock.pipe';
 import { CustomButtonComponent } from './custom-button/custom-button.component';
 import { MultifiltersAdherentPipe } from 'src/filters/multifilters-adherent.pipe';
+import { MultifiltersSeancePipe } from 'src/filters/multifilters-seance.pipe';
+import { MultifiltersCoursPipe } from 'src/filters/multifilters-cours.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -87,7 +89,7 @@ import { MultifiltersAdherentPipe } from 'src/filters/multifilters-adherent.pipe
     ComptabiliteComponent,
     ProfComponent,RangePipe,
     NotifJechaComponent, FilterDroitPipe, FilterLoginPipe, FilterActifPipe, AdministrateursComponent,
-    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, MultifiltersStockPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, MultifiltersAdherentPipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
+    ContactItemComponent, filterInscriptionSaison, filterInscriptionSaisonProf, FilterCoursMenuPipe, MultifiltersStockPipe, FilterDateApresMenuPipe, FilterStatutPipe, FilterDateAvantMenuPipe, FilterLieuMenuPipe, FilterListProfMenuPipe, FilterCoursPipe, FilterDDNApresPipe, FilterDDNAvantPipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, FilterFirstnamePipe, FilterLibelleNomPipe, FilterDateApresPipe, FilterDateAvantPipe, FilterGroupePipe, FilterJourPipe, FilterLibellePipe,FilterLieuPipe, FilterListProfPipe, FilterNamePipe, FilterNamePipe, FilterProfPipe, FilterNomSeanceMenuPipe
   , GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, TableauDeBordComponent, ImportAdherentComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
   imports: [
     BrowserModule,

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { StaticClass } from './global';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import { environment } from 'src/environments/environment.prod';
@@ -69,4 +69,5 @@ export class AppComponent {
   DisplayError(val) {
     this.child.display_notification(val);
   }
+  
 }
