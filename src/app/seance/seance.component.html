@@ -408,9 +408,9 @@
                                   <option value="nom" i18n>Nom</option>
                                   <option value="date" i18n>Date</option>
                                   <option value="groupe" i18n>Groupe</option>
-                                  <option value="Statut" i18n>Statut</option>
+                                  <option value="statut" i18n>Statut</option>
                                   <option value="prof" i18n>Professeur</option>
-                                  <option value="lieu" i18n>Kieu</option>
+                                  <option value="lieu" i18n>Lieu</option>
                                 </select>
                               </div>
                             </div>
@@ -608,12 +608,12 @@
                             <span i18n>Date de naissance : </span>
                             <span *ngIf="filters.filter_date_avant"
                               >&nbsp;>&nbsp;{{
-                                filters.filter_date_avant
+                                filters.filter_date_avant | date : "dd/MM/yyyy"
                               }}</span
                             >
                             <span *ngIf="filters.filter_date_apres"
                               >&nbsp;<&nbsp;{{
-                                filters.filter_date_apres
+                                filters.filter_date_apres | date : "dd/MM/yyyy"
                               }}</span
                             >
                             <button
@@ -707,9 +707,9 @@
                         <option value="nom" i18n>Nom</option>
                         <option value="date" i18n>Date</option>
                         <option value="groupe" i18n>Groupe</option>
-                        <option value="Statut" i18n>Statut</option>
+                        <option value="statut" i18n>Statut</option>
                         <option value="prof" i18n>Professeur</option>
-                        <option value="lieu" i18n>Kieu</option>
+                        <option value="lieu" i18n>Lieu</option>
                       </select>
                     </div>
                   </div>
@@ -860,10 +860,10 @@
                 >
                   <span i18n>Date de naissance : </span>
                   <span *ngIf="filters.filter_date_avant"
-                    >&nbsp;>&nbsp;{{ filters.filter_date_avant }}</span
+                    >&nbsp;>&nbsp;{{ filters.filter_date_avant | date : "dd/MM/yyyy"}}</span
                   >
                   <span *ngIf="filters.filter_date_apres"
-                    >&nbsp;<&nbsp;{{ filters.filter_date_apres }}</span
+                    >&nbsp;<&nbsp;{{ filters.filter_date_apres | date : "dd/MM/yyyy"}}</span
                   >
                   <button
                     class="delete"

@@ -63,6 +63,12 @@
     flex: 1;
     overflow-y: auto; /* Active le défilement vertical */
   }
+  .card-content > .content > .columns {
+    width: 100%;
+}
+.field-container >.columns {
+    width: 100%;
+}
 
   .card-footer{
     padding: 10px;

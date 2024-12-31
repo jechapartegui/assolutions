@@ -114,6 +114,7 @@ export class SeanceComponent implements OnInit {
             return;
           }
           this.liste_groupe = groupes;
+          this.liste_groupe_filter = groupes;
           this.prof_serv
             .GetProf()
             .then((profs) => {
@@ -128,6 +129,7 @@ export class SeanceComponent implements OnInit {
                 return;
               }
               this.listeprof = profs;
+              this.liste_prof_filter = this.listeprof.map((x) => { return { key: x.id, value: x.prenom + ' ' + x.nom } });
               this.lieuserv
                 .GetAllLight()
                 .then((lieux) => {

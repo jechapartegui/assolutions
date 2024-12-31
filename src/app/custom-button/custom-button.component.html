@@ -1,4 +1,121 @@
 <span [ngSwitch]="type_button">
+    
+    <!--SAUVEGARDER-->
+    <button class="button is-primary is-outlined" [disabled]="disabled" *ngSwitchCase="'Sauvegarder'">
+        <span i18n>Sauvegarder</span>     
+        <i class="fa-solid fa-floppy-disk"></i>
+    </button>
+    <button class="button is-small is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'SauvegarderSmall'">
+        <span i18n>Sauvegarder</span>
+        <i class="fa-solid fa-floppy-disk"></i>
+    </button>
+    <button class="button is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'SauvegarderLight'">
+        <i class="fa-solid fa-floppy-disk"></i>
+    </button>
+    <button class="button is-small is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'SauvegarderSmallLight'">
+        <i class="fa-solid fa-floppy-disk"></i>
+    </button>
+    <button class="button  is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'SauvegarderMobile'">
+        <i class="fas fa-2x fa-floppy-disk"></i>
+    </button>
+    <!--RETOUR-->
+    <button class="button is-danger is-outlined" *ngSwitchCase="'Retour'">
+        <span i18n>Retour</span>     
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="button is-small is-danger is-outlined" *ngSwitchCase="'RetourSmall'">
+        <span i18n>Retour</span>
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="button is-danger is-outlined" *ngSwitchCase="'RetourLight'" i18n>
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="button is-small is-danger is-outlined" *ngSwitchCase="'RetourSmallLight'">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="button  is-danger is-outlined" *ngSwitchCase="'RetourMobile'">
+        <i class="fas fa-2x fa-chevron-left"></i>
+    </button>
+
+    <!--EDITER-->
+    <button class="button is-info is-outlined" *ngSwitchCase="'Editer'">
+        <span i18n>Editer</span>     
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'EditerSmall'">
+        <span i18n>Editer</span>
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'EditerLight'" i18n>
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'EditerSmallLight'">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+    <button class="button  is-info is-outlined" *ngSwitchCase="'EditerMobile'">
+        <i class="fas fa-2x fa-pen-to-square"></i>
+    </button>
+
+        <!--ANNULER-->
+        <button class="button is-danger is-outlined" *ngSwitchCase="'Annuler'">
+            <span i18n>Annuler</span>     
+            <i class="fa-solid fa-ban"></i>
+        </button>
+        <button class="button is-small is-danger is-outlined" *ngSwitchCase="'AnnulerSmall'">
+            <span i18n>Annuler</span>
+            <i class="fa-solid fa-ban"></i>
+        </button>
+        <button class="button is-danger is-outlined" *ngSwitchCase="'AnnulerLight'">
+            <i class="fa-solid fa-ban"></i>
+        </button>
+        <button class="button is-small is-danger is-outlined" *ngSwitchCase="'AnnulerSmallLight'">
+            <i class="fa-solid fa-ban"></i>
+        </button>
+        <button class="button  is-danger is-outlined" *ngSwitchCase="'AnnulerMobile'">
+            <i class="fas fa-2x fa-ban"></i>
+        </button>
+<!-- SUPPRIMER-->
+<button class="button is-danger is-outlined" *ngSwitchCase="'Supprimer'" >
+    <span i18n>Supprimer</span>     
+    <i class="fa-solid fa-trash-can"></i>
+</button>
+<button class="button is-danger is-small is-outlined" *ngSwitchCase="'SupprimerSmall'" >
+    <span i18n>Supprimer</span>     
+    <i class="fa-solid fa-trash-can"></i>
+</button>
+<button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerLight'" >
+    <i class="fa-solid fa-trash-can"></i>
+</button>
+<button class="button is-danger is-small is-outlined" *ngSwitchCase="'SupprimerSmallLight'" >
+    <i class="fa-solid fa-trash-can"></i>
+</button>
+<button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerMobile'" >
+    <i class="fas fa-2x  fa-trash-can"></i>
+</button>
+        <!--VOIR-->
+    <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'" >
+        <i class="fa-solid fa-binoculars"></i>
+    </button>
+
+    <!--RELOAD-->
+    
+    <button class="button is-warning is-outlined" [disabled]="disabled" *ngSwitchCase="'Reload'">
+        <span i18n>Rafraîchir</span>     
+        <i class="fa-solid fa-arrows-rotate"></i>
+    </button>
+    <button class="button is-small is-warning is-outlined" [disabled]="disabled"  *ngSwitchCase="'ReloadSmall'">
+        <span i18n>Rafraîchir</span>
+        <i class="fa-solid fa-arrows-rotate"></i>
+    </button>
+    <button class="button is-warning is-outlined" *ngSwitchCase="'ReloadLight'">
+        <i class="fa-solid fa-arrows-rotate"></i>
+    </button>
+    <button class="button is-small is-warning is-outlined" *ngSwitchCase="'ReloadSmallLight'">
+        <i class="fa-solid fa-arrows-rotate"></i>
+    </button>
+    <button class="button  is-warning is-outlined" *ngSwitchCase="'ReloadMobile'">
+        <i class="fas fa-2x fa-arrows-rotate"></i>
+    </button>
     <!--FILTER-->
     <button class="button is-info is-outlined" *ngSwitchCase="'Filtrer'">
         <span i18n>Filtrer</span>
@@ -133,6 +250,9 @@
     <button class="button is-primary is-outlined" *ngSwitchCase="'CreerLight'">
         <i class="fa-solid fa-plus"></i>
     </button>
+    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'CreerSmallLight'">
+        <i class="fa-solid fa-plus"></i>
+    </button>
 
     
 <!-- CREER SERIE-->
@@ -146,26 +266,8 @@
       <i class="fa-solid fa-flag-checkered"></i>
   </button>
 
-    <button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerLight'" i18n>
-        <i class="fa-solid fa-trash-can"></i>
-    </button>
-    <button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerMobile'" i18n>
-        <i class="fas fa-2x  fa-trash-can"></i>
-    </button>
 
-    <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'" i18n>
-        <i class="fa-solid fa-binoculars"></i>
-    </button>
-    <button class="button is-info is-outlined" *ngSwitchCase="'EditerLight'" i18n>
-        <i class="fa-solid fa-pen-to-square"></i>
-    </button>
     <button class="button is-info is-outlined" *ngSwitchCase="'InscrireLight'" i18n>
         <i class="fas fa-signature"></i>
-    </button>
-    <button class="button is-danger is-outlined" *ngSwitchCase="'RetourLight'" i18n>
-        <i class="fas fa-chevron-left"></i>
-    </button>
-    <button class="button  is-danger is-outlined" *ngSwitchCase="'RetourMobile'">
-        <i class="fas fa-2x fa-chevron-left"></i>
     </button>
 </span>

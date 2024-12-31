@@ -2,19 +2,22 @@
     <div class="field is-small">
         <label class="label is-small" i18n>Numéro et Voie</label>
         <div class="control is-small">
-        <input class="input is-small" [(ngModel)]="Adresse.Street" (ngModelChange)="CheckAdresse()">
-        </div>
+        <input *ngIf="edit" class="input is-small" [(ngModel)]="Adresse.Street" (ngModelChange)="CheckAdresse()">
+        <p  *ngIf="!edit" class="is-small">{{Adresse.Street}}</p>    
+    </div>
     </div>
     <div class="field is-small">
         <label class="label is-small" i18n>Code postal</label>
         <div class="control is-small">
-            <input class="input is-small" [(ngModel)]="Adresse.PostCode" (ngModelChange)="CheckAdresse()">
+            <input *ngIf="edit"  class="input is-small" [(ngModel)]="Adresse.PostCode" (ngModelChange)="CheckAdresse()">
+            <p  *ngIf="!edit" class="is-small">{{Adresse.PostCode}}</p>  
         </div>
     </div>
     <div class="field is-small">
         <label class="label is-small" i18n>Ville</label>
         <div class="control is-small">
-            <input class="input is-small" [(ngModel)]="Adresse.City"(ngModelChange)="CheckAdresse()">
+            <input *ngIf="edit"  class="input is-small" [(ngModel)]="Adresse.City"(ngModelChange)="CheckAdresse()">
+            <p  *ngIf="!edit" class="is-small">{{Adresse.City}}</p> 
         </div>
     </div>
 

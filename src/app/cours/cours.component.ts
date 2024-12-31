@@ -121,6 +121,7 @@ export class CoursComponent implements OnInit {
           return;
         }
         this.liste_groupe = groupes;
+        this.liste_groupe_filter = groupes;
         this.prof_serv.GetProf().then((profs) => {
           if (profs.length == 0) {
             let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
@@ -130,6 +131,7 @@ export class CoursComponent implements OnInit {
             return;
           }
           this.listeprof = profs;
+          this.liste_prof_filter = this.listeprof.map((x) => { return { key: x.id, value: x.prenom + ' ' + x.nom } });
           this.lieuserv.GetAllLight().then((lieux) => {
             if (lieux.length == 0) {
               let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);

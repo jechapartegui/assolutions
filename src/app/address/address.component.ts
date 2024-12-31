@@ -11,9 +11,13 @@ export class AddressComponent implements OnInit {
   @Input() valid_address:boolean;
   @Output() validAdresseChange = new EventEmitter<boolean>();
   @Output() AdresseChange = new EventEmitter<Adresse>();
+  @Input() edit:boolean=true
   
   ngOnInit(): void {
-    this.CheckAdresse();
+    if(this.edit){
+      this.CheckAdresse();
+
+    }
   }
   CheckAdresse() {
     this.ChangeAdresse();

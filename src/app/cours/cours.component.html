@@ -301,11 +301,10 @@
                               >
                                 <select [(ngModel)]="selected_filter">
                                   <option value="nom" i18n>Nom</option>
-                                  <option value="date" i18n>Date</option>
+                                  <option value="jour" i18n>Jour</option>
                                   <option value="groupe" i18n>Groupe</option>
-                                  <option value="Statut" i18n>Statut</option>
                                   <option value="prof" i18n>Professeur</option>
-                                  <option value="lieu" i18n>Kieu</option>
+                                  <option value="lieu" i18n>Lieu</option>
                                 </select>
                               </div>
                             </div>
@@ -484,7 +483,7 @@
                               filters.filter_groupe ||
                               filters.filter_nom ||
                               filters.filter_lieu ||
-                              filters.filter_prof
+                              filters.filter_prof || filters.filter_jour
                             "
                           >
                           </btn>

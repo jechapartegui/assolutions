@@ -1,11 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from 'src/class/address';
 import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
@@ -34,6 +28,7 @@ export class AdherentComponent implements OnInit {
   public action: string = '';
   public loading: boolean = false;
   public afficher_filtre: boolean = false;
+  public histo_adherent: string;
   @ViewChild('scrollableContent', { static: false })
   scrollableContent!: ElementRef;
   showScrollToTop: boolean = false;
@@ -64,6 +59,8 @@ export class AdherentComponent implements OnInit {
   public selected_sort: any;
   public selected_sort_sens: any;
   public afficher_tri: boolean = false;
+
+  dropdownActive = false;
 
   constructor(
     public mail_serv: MailService,
@@ -328,6 +325,7 @@ export class AdherentComponent implements OnInit {
         .Get_Adherent_My(this.id)
         .then((adh) => {
           this.thisAdherent = new Adherent(adh);
+          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
           this.loading = false;
         })
         .catch((err: HttpErrorResponse) => {
@@ -344,6 +342,7 @@ export class AdherentComponent implements OnInit {
         .Get_Adherent_Prof(this.id)
         .then((adh) => {
           this.thisAdherent = new Adherent(adh);
+          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
         })
         .catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
@@ -358,6 +357,7 @@ export class AdherentComponent implements OnInit {
         .Get_Adherent_Admin(this.id)
         .then((adh) => {
           this.thisAdherent = new Adherent(adh);
+          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
         })
         .catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
@@ -414,6 +414,7 @@ export class AdherentComponent implements OnInit {
           this.id = id;
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
+          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
         })
         .catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
@@ -426,6 +427,7 @@ export class AdherentComponent implements OnInit {
           if (retour) {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
+            this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
           } else {
             let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
@@ -439,17 +441,21 @@ export class AdherentComponent implements OnInit {
   }
 
   Retour(lieu: 'LISTE' | 'LECTURE'): void {
-    let confirm = window.confirm(
-      $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
-    );
-    if (confirm) {
-      if (lieu == 'LISTE') {
-        this.context = 'LISTE';
-        this.UpdateListeAdherents();
-      } else {
-        this.context = 'LECTURE';
-        this.ChargerAdherent();
+    const ret_adh = JSON.stringify(this.thisAdherent.datasource);
+    if (this.histo_adherent != ret_adh) {
+      let confirm = window.confirm(
+        $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
+      );
+      if (!confirm) {
+        return;
       }
+    }
+    if (lieu == 'LISTE') {
+      this.context = 'LISTE';
+      this.UpdateListeAdherents();
+    } else {
+      this.context = 'LECTURE';
+      this.ChargerAdherent();
     }
   }
 
@@ -689,6 +695,15 @@ export class AdherentComponent implements OnInit {
       top: 0,
       behavior: 'smooth', // Défilement fluide
     });
+  }
+
+  toggleDropdown() {
+    this.dropdownActive = !this.dropdownActive;
+  }
+
+  handleAction(action: string) {
+    console.log(`Action exécutée : ${action}`);
+    this.dropdownActive = false; // Ferme le menu après clic
   }
 }
 export class FilterAdherent {

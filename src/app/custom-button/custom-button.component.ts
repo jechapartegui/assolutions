@@ -7,4 +7,5 @@ import { Component, Input } from '@angular/core';
 })
 export class CustomButtonComponent {
   @Input() type_button:string;
+  @Input() disabled:boolean = false;
 }
