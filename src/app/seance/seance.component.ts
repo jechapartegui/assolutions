@@ -36,6 +36,7 @@ export class SeanceComponent implements OnInit {
   public selected_sort: any;
   public selected_sort_sens: any;
   public afficher_tri: boolean = false;
+  public histo_seance: string;
   listeprof: professeur[];
   listelieu: KeyValuePair[];
   prof_dispo: Professeur[];
@@ -129,7 +130,9 @@ export class SeanceComponent implements OnInit {
                 return;
               }
               this.listeprof = profs;
-              this.liste_prof_filter = this.listeprof.map((x) => { return { key: x.id, value: x.prenom + ' ' + x.nom } });
+              this.liste_prof_filter = this.listeprof.map((x) => {
+                return { key: x.id, value: x.prenom + ' ' + x.nom };
+              });
               this.lieuserv
                 .GetAllLight()
                 .then((lieux) => {
@@ -267,6 +270,7 @@ export class SeanceComponent implements OnInit {
         } else {
           this.coursselectionne = false;
         }
+        this.histo_seance = JSON.stringify(this.editSeance.datasource);
         this.editMode = true;
       })
       .catch((err: HttpErrorResponse) => {
@@ -331,10 +335,24 @@ export class SeanceComponent implements OnInit {
     }
     this.editSeance.date_seance = new Date();
     this.date_fin_serie = new Date();
+    this.histo_seance = JSON.stringify(this.editSeance.datasource);
     this.editMode = true;
   }
 
+  VoirMaSeanceByID(id:number){
+    this.router.navigate(['/ma-seance'], { queryParams: { id: id } });
+  }
+
   VoirMaSeance(seance: Seance = null) {
+    let ret_sa = JSON.stringify(seance.datasource);
+    if (ret_sa != this.histo_seance) {
+      let confirm = window.confirm(
+        $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
+      );
+      if (!confirm) {
+        return;
+      }
+    }
     let id: number;
     if (seance) {
       id = seance.ID;
@@ -343,12 +361,8 @@ export class SeanceComponent implements OnInit {
     } else {
       return;
     }
-    let confirmation = window.confirm(
-      'Voulez-vous aller vers la vue du professeur ? les modifications non sauvegardées seront perdues'
-    );
-    if (confirmation) {
-      this.router.navigate(['/ma-seance'], { queryParams: { id: id } });
-    }
+
+    this.router.navigate(['/ma-seance'], { queryParams: { id: id } });
   }
   TerminerSeances() {
     const errorService = ErrorService.instance;
@@ -606,6 +620,7 @@ export class SeanceComponent implements OnInit {
                 this.editSeance.Groupes.forEach((gr: Groupe) => {
                   this.grServ.AddLien(gr.id, 'séance', id);
                 });
+                this.histo_seance = JSON.stringify(this.editSeance.datasource);
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
                 this.UpdateListeSeance();
@@ -626,6 +641,7 @@ export class SeanceComponent implements OnInit {
           .then((ok) => {
             if (ok) {
               let o = errorService.OKMessage(this.action);
+              this.histo_seance = JSON.stringify(this.editSeance.datasource);
               errorService.emitChange(o);
               this.UpdateListeSeance();
             } else {
@@ -656,6 +672,16 @@ export class SeanceComponent implements OnInit {
   Refresh() {
     const errorService = ErrorService.instance;
     this.action = $localize`Rafraichir la séance`;
+
+    let ret_sa = JSON.stringify(this.editSeance.datasource);
+    if (ret_sa != this.histo_seance) {
+      let confirm = window.confirm(
+        $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
+      );
+      if (!confirm) {
+        return;
+      }
+    }
     this.seancesservice
       .Get(this.editSeance.ID)
       .then((c) => {
@@ -671,14 +697,18 @@ export class SeanceComponent implements OnInit {
   }
 
   Retour(): void {
-    let confirm = window.confirm(
-      $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
-    );
-    if (confirm) {
-      this.editMode = false;
-      this.editSeance = null;
-      this.UpdateListeSeance();
+    let ret_sa = JSON.stringify(this.editSeance.datasource);
+    if (ret_sa != this.histo_seance) {
+      let confirm = window.confirm(
+        $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
+      );
+      if (!confirm) {
+        return;
+      }
     }
+    this.editMode = false;
+    this.editSeance = null;
+    this.UpdateListeSeance();
   }
 
   Sort(sens: 'NO' | 'ASC' | 'DESC', champ: string) {
@@ -800,7 +830,7 @@ export class SeanceComponent implements OnInit {
       EssaiPossible: 'Essai possible',
       Notes: 'Notes',
       InfoSeance: 'Informations de la séance',
-      MailAnnulation: 'Mail d\'annulation',
+      MailAnnulation: "Mail d'annulation",
     };
     let list: Seance[] = this.getFilteredSeances();
     this.excelService.exportAsExcelFile(list, 'liste_seance', headers);

@@ -93,10 +93,24 @@
     <i class="fas fa-2x  fa-trash-can"></i>
 </button>
         <!--VOIR-->
-    <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'" >
+
+    <button class="button is-info is-outlined" *ngSwitchCase="'Voir'">
+        <span i18n>Voir</span>
         <i class="fa-solid fa-binoculars"></i>
     </button>
-
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'VoirSmall'">
+        <span i18n>Voir</span>
+        <i class="fa-solid fa-binoculars"></i>
+    </button>
+    <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'">
+        <i class="fa-solid fa-binoculars"></i>
+    </button>
+    <button class="button is-small is-info is-outlined" *ngSwitchCase="'VoirSmallLight'">
+        <i class="fa-solid fa-binoculars"></i>
+    </button>
+    <button class="button  is-info is-outlined" *ngSwitchCase="'VoirMobile'">
+        <i class="fas fa-2x fa-binoculars"></i>
+    </button>
     <!--RELOAD-->
     
     <button class="button is-warning is-outlined" [disabled]="disabled" *ngSwitchCase="'Reload'">
@@ -134,6 +148,64 @@
     <button class="button  is-info is-outlined" *ngSwitchCase="'FiltrerMobile'">
         <i class="fas fa-2x fa-filter"></i>
     </button>
+     <!--VENDRE-->
+     <button class="button is-link is-outlined" *ngSwitchCase="'Vendre'">
+        <span i18n>Faire une vente</span>
+        <i class="fa-solid fas fa-balance-scale-right"></i>
+    </button>
+    <button class="button is-small is-link is-outlined" *ngSwitchCase="'VendreSmall'">
+        <span i18n>Vendre</span>
+        <i class="fa-solid fas fa-balance-scale-right"></i>
+    </button>
+    <button class="button is-small is-link is-outlined" *ngSwitchCase="'SelectVendreSmall'">
+        <span i18n>Faire une vente</span>
+        <i class="fa-solid fas fa-balance-scale-right"></i>
+    </button>
+    <button class="button is-link is-outlined" *ngSwitchCase="'VendreLight'">
+        <i class="fa-solid fas fa-balance-scale-right"></i>
+    </button>
+    <button class="button is-small is-link is-outlined" *ngSwitchCase="'VendreSmallLight'">
+        <i class="fa-solid fas fa-balance-scale-right"></i>
+    </button>
+    <button class="button  is-link is-outlined" *ngSwitchCase="'VendreMobile'">
+        <i class="fas fa-2x fa-balance-scale-right"></i>
+    </button>
+     <!--ACHETER-->
+     <button class="button is-link is-outlined" *ngSwitchCase="'Acheter'">
+        <span i18n>Acheter</span>
+        <i class="fa-solid fas fa-balance-scale-left"></i>
+    </button>
+    <button class="button is-small is-link is-outlined" *ngSwitchCase="'AcheterSmall'">
+        <span i18n>Acheter</span>
+        <i class="fa-solid fas fa-balance-scale-left"></i>
+    </button>
+    <button class="button is-link is-outlined" *ngSwitchCase="'AcheterLight'">
+        <i class="fa-solid fas fa-balance-scale-left"></i>
+    </button>
+    <button class="button is-small is-link is-outlined" *ngSwitchCase="'AcheterSmallLight'">
+        <i class="fa-solid fas fa-balance-scale-left"></i>
+    </button>
+    <button class="button  is-link is-outlined" *ngSwitchCase="'AcheterMobile'">
+        <i class="fas fa-2x fa-balance-scale-left"></i>
+    </button>
+  <!--INSCRIRE-->
+  <button class="button is-link is-outlined" *ngSwitchCase="'Inscrire'">
+    <span i18n>Inscrire</span>
+    <i class="fas fa-user-check"></i>
+</button>
+<button class="button is-small is-link is-outlined" *ngSwitchCase="'InscrireSmall'">
+    <span i18n>Inscrire</span>
+    <i class="fas fa-user-check"></i>
+</button>
+<button class="button is-link is-outlined" *ngSwitchCase="'InscrireLight'">
+    <i class="fas fa-user-check"></i>
+</button>
+<button class="button is-small is-link is-outlined" *ngSwitchCase="'InscrireSmallLight'">
+    <i class="fas fa-user-check"></i>
+</button>
+<button class="button  is-link is-outlined" *ngSwitchCase="'InscrireMobile'">
+    <i class="fas fa-2x fa-user-check"></i>
+</button>
     <!--TRI-->
     <button class="button is-info is-outlined" *ngSwitchCase="'Trier'">
         <span i18n>Trier</span>
@@ -163,7 +235,9 @@
         <span i18n>Vue Professeur</span>
     </button>
     <!-- EXPORTER-->
-    <button class="button is-primary is-outlined" *ngSwitchCase="'Exporter'">
+    <button class="button is-primary is-outlined" *ngSwitchCase="'Exporter'" style="
+    padding-top: 3px;
+    padding-bottom: 3px;">
         <span i18n>Exporter</span>
         <span style="position: relative; display: inline-block; font-size: 1em;">
             <!-- Icône Excel -->
@@ -179,7 +253,9 @@
             </i>
           </span>
     </button>
-    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ExporterSmall'">
+    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ExporterSmall'" style="
+    padding-top: 3px;
+    padding-bottom: 3px;">
         <span i18n>Exporter</span>
         <span style="position: relative; display: inline-block; font-size: 1em;">
             <!-- Icône Excel -->
@@ -195,7 +271,9 @@
             </i>
           </span>
     </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'ExporterLight'">
+    <button class="button is-primary is-outlined" *ngSwitchCase="'ExporterLight'"  style="
+    padding-top: 3px;
+    padding-bottom: 3px;">
         <span style="position: relative; display: inline-block; font-size: 1em;">
             <!-- Icône Excel -->
             <i class="fa-regular fa-file-excel is-primary" ></i>
@@ -210,7 +288,10 @@
             </i>
           </span>
     </button>
-    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ExporterSmallLight'">
+    <button class="button is-small is-primary is-outlined" style="
+    padding-top: 3px;
+    padding-bottom: 3px;
+" *ngSwitchCase="'ExporterSmallLight'">
         <span style="position: relative; display: inline-block; font-size: 1em;">
             <!-- Icône Excel -->
             <i class="fa-regular fa-file-excel is-primary" ></i>
@@ -243,7 +324,16 @@
 <!-- Fin de la déclinaison-->
 
 <!-- CREER-->
+<button  class="card-header-icon is-primary" *ngSwitchCase="'CreerCard'">
+    <span class="icon">
+      <i class="fa-solid fa-plus"></i>
+    </span>
+  </button>
     <button class="button is-primary is-outlined" *ngSwitchCase="'Creer'" >
+        <span i18n>Créer</span>
+        <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="button is-primary is-small is-outlined" *ngSwitchCase="'CreerSmall'" >
         <span i18n>Créer</span>
         <i class="fa-solid fa-plus"></i>
     </button>
@@ -252,6 +342,9 @@
     </button>
     <button class="button is-small is-primary is-outlined" *ngSwitchCase="'CreerSmallLight'">
         <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="button  is-primary is-outlined" *ngSwitchCase="'CreerMobile'">
+        <i class="fas fa-2x fa-plus"></i>
     </button>
 
     
@@ -267,7 +360,4 @@
   </button>
 
 
-    <button class="button is-info is-outlined" *ngSwitchCase="'InscrireLight'" i18n>
-        <i class="fas fa-signature"></i>
-    </button>
 </span>

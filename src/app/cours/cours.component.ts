@@ -44,6 +44,11 @@ export class CoursComponent implements OnInit {
   public liste_saison: Saison[] = [];
   public active_saison: Saison;
 
+  
+  @ViewChild('scrollableContent', { static: false })
+  scrollableContent!: ElementRef;
+  showScrollToTop: boolean = false;
+
   sort_nom = "NO";
   sort_jour = "NO";
   sort_lieu = "NO";
@@ -68,9 +73,7 @@ export class CoursComponent implements OnInit {
     public afficher_tri: boolean = false;
       public loading: boolean = false;
       public afficher_filtre: boolean = false;
-      @ViewChild('scrollableContent', { static: false })
-      scrollableContent!: ElementRef;
-      showScrollToTop: boolean = false;
+    
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -493,6 +496,30 @@ export class CoursComponent implements OnInit {
     this.filters.filter_lieu = null;
     this.filters.filter_nom = null;
     this.filters.filter_prof = null;
+  }
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer(); // Re-tente de le trouver
+      }
+    }, 100); // Réessaie toutes les 100 ms
+  }
+
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth', // Défilement fluide
+    });
   }
 }
 

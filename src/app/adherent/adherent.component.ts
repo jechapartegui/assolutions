@@ -3,9 +3,11 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from 'src/class/address';
 import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
-import { Adhesion } from 'src/class/adhesion';
+import { Adhesion, paiement_adhesion, Type_Adhesion } from 'src/class/adhesion';
 import { ItemContact } from 'src/class/contact';
+import { fluxfinancier } from 'src/class/fluxfinancier';
 import { Groupe } from 'src/class/groupe';
+import { operation } from 'src/class/operation';
 import { Saison } from 'src/class/saison';
 import { AdherentService } from 'src/services/adherent.service';
 import { CompteService } from 'src/services/compte.service';
@@ -43,6 +45,13 @@ export class AdherentComponent implements OnInit {
   public sort_nom = 'NO';
   public sort_date = 'NO';
   public sort_sexe = 'NO';
+
+  //inscription
+  public afficher_inscription: boolean = false;
+public adherent_inscription: Adherent;
+public saison_inscription: Saison;
+public paiement_adhesion:boolean;
+public type_inscription:boolean;
 
   public filters: FilterAdherent = new FilterAdherent();
 
@@ -242,42 +251,111 @@ export class AdherentComponent implements OnInit {
     this.ChargerAdherent();
   }
   Register(adh: Adherent, saison_id: number, paiement: boolean) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Effectuer une inscription`;
-
-    if (paiement) {
-      let confirm = window.confirm(
-        $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
-      );
-      if (confirm) {
-        this.router.navigate(['/inscription']);
-      }
+    this.afficher_inscription = true;
+    this.adherent_inscription = adh;
+    this.saison_inscription = this.liste_saison.find((x) => x.id == saison_id);
+    if(paiement) {
+      this.type_inscription = true;
     } else {
-      let confirm = window.confirm(
-        $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
-      );
-      if (confirm) {
-        this.inscription_saison_serv
-          .Add(saison_id, adh.ID)
-          .then((id) => {
-            let i = new Adhesion();
-            i.id = id;
-            i.rider_id = adh.ID;
-            i.saison_id = saison_id;
-            if (!adh.Adhesions) {
-              adh.Adhesions = [];
-            }
-            adh.Adhesions.push(i);
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
+      this.type_inscription = false;
+    }
+    // const errorService = ErrorService.instance;
+    // this.action = $localize`Effectuer une inscription`;
+
+    // if (paiement) {
+    //   let confirm = window.confirm(
+    //     $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
+    //   );
+    //   if (confirm) {
+    //     this.router.navigate(['/inscription']);
+    //   }
+    // } else {
+    //   let confirm = window.confirm(
+    //     $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
+    //   );
+    //   if (confirm) {
+    //     this.inscription_saison_serv
+    //       .Add(saison_id, adh.ID)
+    //       .then((id) => {
+    //         let i = new Adhesion();
+    //         i.id = id;
+    //         i.rider_id = adh.ID;
+    //         i.saison_id = saison_id;
+    //         if (!adh.Adhesions) {
+    //           adh.Adhesions = [];
+    //         }
+    //         adh.Adhesions.push(i);
+    //         let o = errorService.OKMessage(this.action);
+    //         errorService.emitChange(o);
+    //       })
+    //       .catch((err: HttpErrorResponse) => {
+    //         let o = errorService.CreateError(this.action, err.message);
+    //         errorService.emitChange(o);
+    //       });
+    //   }
+    // }
+  }
+  CreerPaiement( adh: Adhesion, type_a: Type_Adhesion, libelle_nom: string, libelle_saison: string ) {
+    let dd:string;
+    let st:number = 0;
+    if (type_a.paiements.length == 1) {
+    
+      if (type_a.date_paiement_fixe) {
+        dd =type_a.paiements[0].date_prevue;
+      } else {
+        dd = new Date().toISOString().slice(0, 10);
+        st=1;
       }
+        let ff: fluxfinancier = new fluxfinancier();
+        ff.date = dd;
+        ff.montant = type_a.paiements[0].montant;
+        ff.classe_comptable = type_a.classe_comptable_id;
+        ff.recette = true;
+        ff.statut = st;
+        ff.libelle = $localize`Adhésion ` + type_a.libelle + $localize` pour la saison ` + libelle_saison + $localize` de ` + libelle_nom;
+        let o: operation = new operation();
+        o.solde = type_a.paiements[0].montant;
+        o.date_operation = dd;
+        o.mode = type_a.mode_paiement;
+        o.compte_bancaire_id = type_a.compte_id;
+        o.paiement_execute = st;
+        ff.operations.push(o);
+        let paiement: paiement_adhesion = {
+          numero: 1,
+          date_prevue: dd,
+          montant: type_a.paiements[0].montant,
+        };
+        adh.paiements.push(paiement);
+    } else {
+     
+        let ff: fluxfinancier = new fluxfinancier();
+        ff.date = dd;
+        ff.montant = type_a.paiements[0].montant;
+        ff.classe_comptable = type_a.classe_comptable_id;
+        ff.recette = true;
+        ff.statut = 0;
+        ff.libelle = $localize`Adhésion ` + type_a.libelle + $localize` pour la saison ` + libelle_saison + $localize` de ` + libelle_nom;
+        for(let i=0; i<type_a.paiements.length; i++) {
+          let o: operation = new operation();
+          o.solde = type_a.paiements[i].montant;
+          o.date_operation = type_a.paiements[i].date_prevue;
+          o.mode = type_a.mode_paiement;
+          o.compte_bancaire_id = type_a.compte_id;
+          o.paiement_execute = 0;
+          ff.operations.push(o);
+          let paiement: paiement_adhesion = {
+            numero: i+1,
+            date_prevue: type_a.paiements[i].date_prevue,
+            montant: type_a.paiements[i].montant,
+          };
+          adh.paiements.push(paiement);
+        }
+    
+
+    
     }
   }
+
   RemoveRegister(saison_id: number) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer une inscription`;
@@ -630,7 +708,6 @@ export class AdherentComponent implements OnInit {
     }
   }
 
-  VoirPaiement() {}
   Rattacher(val: string) {
     const errorService = ErrorService.instance;
     this.action = $localize`Rattacher le compte`;
@@ -704,6 +781,15 @@ export class AdherentComponent implements OnInit {
   handleAction(action: string) {
     console.log(`Action exécutée : ${action}`);
     this.dropdownActive = false; // Ferme le menu après clic
+  }
+
+  Fermer(avecreload:boolean = false) {
+    console.log(avecreload);
+    this.afficher_inscription = false;
+    if(avecreload) {
+      this.loading = true;
+      this.UpdateListeAdherents();
+    }
   }
 }
 export class FilterAdherent {

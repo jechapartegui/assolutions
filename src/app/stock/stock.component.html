@@ -1,75 +1,46 @@
 <div class="container">
   <ng-container *ngIf="!editStock">
-    <div class="columns" style="margin-top: 0.5rem">
-      <div class="column menuligne">
+      <ng-container *ngIf="loading">
+        <progress
+          class="progress is-large is-info"
+          style="margin-top: 60px"
+          max="100"
+        >
+          60%
+        </progress>
+        <p>Chargement en cours</p>
+      </ng-container>
+      <ng-container *ngIf="!loading">
         <span class="fullscreen">
-          <hover-button
-            [nomclass]="
-              afficher_filtre
-                ? 'button is-info is-rounded'
-                : 'button is-info is-rounded  is-outlined'
-            "
-            [nomicon]="'fa-solid fa-filter'"
-            [libelle]="
-              afficher_filtre ? 'Masquer les filtres' : 'Afficher les filtres'
-            "
-            (click)="
-              afficher_filtre
-                ? (afficher_filtre = false)
-                : (afficher_filtre = true)
-            "
-          >
-          </hover-button>
-          <button type="button" class="button is-outlined is-rounded is-primary" (click)="Acheter()" >
-            <span i18n>Acheter</span>
-            <i class="fas fa-balance-scale-left"></i>
-          </button>
-          <button type="button" class="button is-outlined is-rounded is-primary" (click)="IsVendre ? VendreList() :  IsVendre = true" >
-            <span *ngIf="IsVendre" i18n>Vendre les objets séléctionnés</span>
-            <span *ngIf="!IsVendre" i18n>Sélectionner les objets à vendre</span>
-            <i class="fas fa-balance-scale-right"></i>
-          </button>
-          <button *ngIf="IsVendre" type="button" class="button is-outlined is-rounded is-danger" (click)="IsVendre = false" >
-            <span i18n>Annuler</span>
-            <i class="fas fa-ban"></i>
-          </button>
-          <hover-button
-          [nomclass]="'button  is-rounded is-primary is-outlined'"
-          [nomicon]="'fas fa-file-export'"
-          [libelle]="libelle_Export"
-          (click)="ExporterExcel()"
-        ></hover-button>
-        </span>
-      </div>
-    </div>
-
-    <div class="columns">
-      <div class="column">
-        <div class="card">
-          <header class="card-header">
-            <p class="card-header-title" i18n>Liste des stocks</p>
-            <button
-              type="button"
-              (click)="Creer()"
-              class="button is-primary is-rounded is-outlined"
-              style="align-self: center; fill: hsl(171, 100%, 41%)"
-            >
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </header>
-          <span class="fullscreen">
-            <div class="card-content">
-              <table
-                class="table"
-                style="width: 100%; font-size: smaller"
-                *ngIf="liste_stock && liste_stock.length > 0"
-              >
+          <div class="columns">
+            <div class="column">
+              <div class="card">
+                <header class="card-header">
+                  <p
+                    class="card-header-title"
+                    *ngIf="
+                      liste_stock
+                        | multifiltersStock : filters as filteredApplis
+                    "
+                  >
+                    <span i18n>Liste des stocks</span>&nbsp;({{
+                      filteredApplis.length
+                    }})
+                  </p>
+                
+                </header>
+                <div class="card-content" #scrollableContent>
+                  <table
+                    class="table"
+                    style="width: 100%; font-size: smaller">
                 <thead>
                   <tr>
                     <th>
-                      <span class="th_filtre">
+                      <span>
                         <span class="ligne">
-                          <span style="font-size: smaller" i18n>Libelle</span>
+                          <span
+                            [ngClass]="
+                              filters.filter_libelle ? 'has-text-info' : ''" i18n>Libellé</span>
                           <span style="cursor: pointer">
                             <i
                               *ngIf="sort_libelle === 'NO'"
@@ -88,85 +59,41 @@
                             ></i>
                           </span>
                         </span>
-                        <input
-                          *ngIf="afficher_filtre"
-                          style="width: fit-content; font-size: smaller"
-                          class="input is-small"
-                          i18n-placeholder
-                          placeholder="Libellé du stock"
-                          type="text"
-                          [(ngModel)]="filters.filter_libelle"
-                        />
                       </span>
                     </th>
                     <th>
-                      <span class="th_filtre">
+                      <span>
                         <span class="ligne">
-                          <span style="font-size: smaller" i18n
-                            >Equipement</span
-                          >
+                          <span
+                            [ngClass]="
+                              filters.filter_equipement || filters.filter_type_equipement ? 'has-text-info' : ''" i18n>Equipement</span>
                           <span style="cursor: pointer">
                             <i
                               *ngIf="sort_type === 'NO'"
-                              (click)="Sort('ASC', 'type')"
+                              (click)="Sort('ASC', 'equipement')"
                               class="fa-solid fa-sort"
                             ></i>
                             <i
                               *ngIf="sort_type === 'ASC'"
-                              (click)="Sort('DESC', 'type')"
+                              (click)="Sort('DESC', 'equipement')"
                               class="fa-solid fa-sort-up"
                             ></i>
                             <i
                               *ngIf="sort_type === 'DESC'"
-                              (click)="Sort('ASC', 'type')"
+                              (click)="Sort('ASC', 'equipement')"
                               class="fa-solid fa-sort-down"
                             ></i>
                           </span>
                         </span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div class="select">
-                            <select
-                              style="font-size: smaller"
-                              [(ngModel)]="filters.filter_type_equipement"
-                            >
-                              <option [value]="0" i18n>Tous</option>
-                              <ng-container
-                                *ngFor="let pr of liste_type_equipement"
-                              >
-                                <option [value]="pr" i18n>{{ pr }}</option>
-                              </ng-container>
-                            </select>
-                          </div>
-                        </span>
-
-                        <span
-                          *ngIf="
-                            afficher_filtre &&
-                            filters.filter_type_equipement &&
-                            filters.filter_type_equipement != 0
-                          "
-                          class="ligne"
-                        >
-                          <div class="select">
-                            <select
-                              style="font-size: smaller"
-                              [(ngModel)]="filters.filter_equipement"
-                            >
-                              <option [value]="0" i18n>Tous</option>
-                              <ng-container *ngFor="let pr of liste_equipement">
-                                <option [value]="pr" i18n>{{ pr }}</option>
-                              </ng-container>
-                            </select>
-                          </div>
-                        </span>
                       </span>
                     </th>
                     <th>
-                      <span class="th_filtre">
+                      <span>
                         <span class="ligne">
-                          <span style="font-size: smaller" i18n
-                            >Date d'achat</span
-                          >
+                          <span
+                            [ngClass]="
+                              filters.filter_date_apres ||
+                              filters.filter_date_avant ? 'has-text-info' : '' " i18n >Date d'achat</span >
                           <span style="cursor: pointer">
                             <i
                               *ngIf="sort_date === 'NO'"
@@ -185,51 +112,12 @@
                             ></i>
                           </span>
                         </span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div
-                            style="gap: 6px"
-                            class="field is-small is-horizontal field-jecha"
-                          >
-                            <label for="groupe" class="label is-small"
-                              >Du</label
-                            >
-                            <input
-                              style="width: fit-content"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Filtre date avant"
-                              type="date"
-                              [(ngModel)]="filters.filter_date_apres"
-                            />
-                          </div>
-                        </span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div
-                            style="gap: 6px"
-                            class="field is-small is-horizontal field-jecha"
-                          >
-                            <label for="groupe" class="label is-small"
-                              >Au</label
-                            >
-                            <input
-                              style="width: fit-content"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Filtre date après"
-                              type="date"
-                              [(ngModel)]="filters.filter_date_avant"
-                            />
-                          </div>
-                        </span>
                       </span>
                     </th>
-
                     <th>
-                      <span class="th_filtre">
+                      <span>
                         <span class="ligne">
-                          <span style="font-size: smaller" i18n
-                            >Lieu de stockage</span
-                          >
+                          <span [ngClass]="filters.filter_lieu ? 'has-text-info' : '' " i18n >Lieu de stockage</span >
                           <span style="cursor: pointer">
                             <i
                               *ngIf="sort_lieu === 'NO'"
@@ -248,50 +136,25 @@
                             ></i>
                           </span>
                         </span>
-                        <span *ngIf="afficher_filtre" class="ligne">
-                          <div class="select">
-                            <select
-                              style="font-size: smaller"
-                              [(ngModel)]="filters.filter_lieu"
-                            >
-                              <option [value]="0" i18n>Tous</option>
-                              <ng-container *ngFor="let pr of liste_lieu">
-                                <option [value]="pr" i18n>{{ pr }}</option>
-                              </ng-container>
-                            </select>
-                          </div>
-                        </span>
                       </span>
                     </th>
                     <th>
-                      <span class="th_filtre">
-                        <span class="ligne"
-                          ><span style="font-size: smaller" i18n
-                            >Valeur d'achat</span
-                          ></span
-                        >
-                      </span>
+                   <span i18n>Valeur d'achat</span>
+                    </th>
+                    <th>
+                   <span i18n>Quantité</span>
                     </th>
 
                     <th>
-                      <span class="th_filtre">
-                        <span class="ligne"
-                          ><span style="font-size: smaller" i18n
-                            >Transaction</span
-                          ></span
-                        >
-                      </span>
-                    </th>
-                    <th><span style="font-size: smaller" i18n>Action</span></th>
+                      <span i18n>Transaction</span>
+                       </th>
+                       <th>
+                        <span i18n>Action</span>
+                         </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    *ngFor="
-                      let stock of liste_stock
-                        | multifiltersStock : filters as filteredStock
-                    "
-                  >
+                  <tr *ngFor="let stock of liste_stock | multifiltersStock : filters as filteredStock">
                     <td>
                       {{ stock.Libelle }}
                     </td>
@@ -301,57 +164,40 @@
                     <td>{{ stock.Date | date : "dd/MM/yyyy" }}</td>
                     <td>{{ stock.LieuStockageLibelle }}</td>
                     <td>{{ stock.Valeur_Achat }}</td>
+                    <td>{{ stock.Quantite }}</td>
                     <td>{{ GetTransaction(stock.FluxFinancierID) }}</td>
 
                     <td>
-                        <ng-container *ngIf="IsVendre">
-                            <checkbox [(ngModel)]="stock.to_sell">Vendre ?</checkbox>
-                        </ng-container>
-                      <div *ngIf="!IsVendre"
-                        class="buttons"
-                        style="
-                          display: flex;
-                          flex-direction: row;
-                          flex-wrap: nowrap;
-                        "
-                      >
-                        <button
+                      <ng-container *ngIf="IsVendre">
+                        <checkbox [(ngModel)]="stock.to_sell"
+                          >Vendre ?</checkbox
+                        >
+                      </ng-container>                     
+                      <div  *ngIf="!IsVendre" class="buttons" style="flex-wrap: nowrap">
+                        <btn
+                          i18n-title
+                          title="Supprimer"
+                          [type_button]="'SupprimerLight'"
+                          (click)="Delete(stock)"
+                        ></btn>
+                        <btn
                           i18n-title
                           title="Voir"
-                          type="button"
+                          [type_button]="'VoirLight'"
                           (click)="Voir(stock)"
-                          class="button is-info is-rounded is-outlined"
-                        >
-                          <i class="fa-solid fa-binoculars"></i>
-                        </button>
-                        <button
-                          i18n-title
-                          title="Supprimer"
-                          class="button is-danger is-rounded is-outlined"
-                          type="button"
-                          (click)="Delete(stock)"
-                        >
-                          <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <button
-                          i18n-title
-                          title="Supprimer"
-                          class="button is-danger is-rounded is-outlined"
-                          type="button"
-                          (click)="Vendre(stock)"
-                        >
-                          <i class="fas fa-balance-scale-right"></i>
-                        </button>
-
-                        <button
+                        ></btn>
+                        <btn
                           i18n-title
                           title="Editer"
-                          class="button is-info is-rounded is-outlined"
-                          type="button"
+                          [type_button]="'EditerLight'"
                           (click)="Edit(stock)"
-                        >
-                          <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
+                        ></btn>
+                        <btn
+                          i18n-title
+                          title="Vendre"
+                          [type_button]="'VendreLight'"
+                          (click)="Vendre(stock)"
+                        ></btn>
                       </div>
                     </td>
                   </tr>
@@ -360,150 +206,433 @@
               <p *ngIf="!liste_stock || liste_stock.length == 0" i18n>
                 Pas de stock disponible
               </p>
+              <button
+              class="scroll-to-top"
+              *ngIf="showScrollToTop"
+              (click)="scrollToTop()"
+              title="Revenir en haut"
+            >
+              ↑
+            </button>
+          </div>
+          <footer class="card-footer">
+            <div class="columns">
+              <div class="column">
+                <div *ngIf="!afficher_filtre" class="buttons">
+                  <btn [type_button]="'CreerSmall'" (click)="Creer()"></btn>
+                  <btn
+                    [type_button]="'FiltrerSmall'"
+                    (click)="
+                      afficher_filtre
+                        ? (afficher_filtre = false)
+                        : (afficher_filtre = true)
+                    "
+                  ></btn>
+                <btn [type_button]="'ExporterSmall'" (click)="ExporterExcel()"></btn>
+                <btn *ngIf="IsVendre"  (click)="IsVendre = false" [type_button]="'RetourSmall'" ></btn>  
+                <btn  (click)="Acheter()" [type_button]="'AcheterSmall'" ></btn>      
+                <btn  (click)="IsVendre ? VendreList() : (IsVendre = true)" [type_button]="IsVendre ? 'VendreSmall' : 'SelectVendreSmall'" ></btn>
             </div>
-          </span>
-        </div>
-      </div>
-    </div>
-  </ng-container>
-  <ng-container *ngIf="editStock && editMode">
-      <div class="columns is-justify-content-center">
-        <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
-          <div class="box">
-            <h2 *ngIf="editStock.ID == 0" class="title is-2" i18n>
-              Créer un équipement
-            </h2>
-            <h2 *ngIf="editStock.ID > 0" class="title is-2" i18n>
-              Editer un équipement
-            </h2>
-              <div class="field">
-                <label class="label" i18n>Type d'équipement</label>
-                <div class="select">
-                  <select id="cours" [(ngModel)]="editStock.TypeStock">
-                    <option value="0" i18n>Autre</option>
-                    <ng-container *ngFor="let st of TypeStock">
-                        <option [value]="st.id">{{st.libelle}}&nbsp;({{st.categorie}}) </option>
-                    </ng-container>
-                  </select>
-                </div> 
-                <p class="help is-danger" *ngIf="!editStock.TypeStock" i18n>
-                  La sélection d'un type de stock est obligatoire
-                </p>
-              </div>
-              <div class="field">
-                <label class="label" i18n>Lieu de stockage</label>
-                <input
-                  class="input"
-                  list="liste_lieu"
-                  id="lieu"
-                  [ngModel]="editStock.LieuStockageLibelle"
-                  (ngModelChange)="onInputChange($event)"
-                />
-                <datalist id="liste_lieu">
-                  <ng-container *ngFor="let option of liste_lieu">
-                    <option [value]="formatLieu(option)"></option>
-                    <!-- Affiche le texte formaté -->
-                  </ng-container>
-                </datalist>
-              </div>
-                <div class="field">
-                  <label class="label" i18n>Date de la séance</label>
-                 
-                  <input
-                    class="input"
-                    id="date_seance"
-                    type="date"
-                    [(ngModel)]="editStock.Date"
-                  />
-                  <p class="help is-danger" *ngIf="!editStock.Date" i18n>
-                    La date d'achat doit doit être saisie
-                  </p>
+            <div class="buttons" *ngIf="afficher_filtre">
+              <btn
+                (click)="
+                  afficher_filtre = false; selected_filter = null
+                "
+                [type_button]="'RetourLight'"
+              ></btn>
+              <div
+                class="field is-horizontal"
+                style="gap: 0.5rem; align-items: center"
+              >
+                <div class="field-label is-normal">
+                  <label class="label" style="white-space: nowrap" i18n
+                    >Sélection du filtre</label
+                  >
                 </div>
-              <div class="field">
-                <label class="label" i18n>Libellé</label>
-                <input
-                  [class]="
-                    editStock.Libelle.length>4 ? 'input' : 'input is-danger'
-                  "
-                  type="text"
-                  id="nom_rider"
-                  name="nom_rider"
-                  i18n-placeholder
-                  placeholder="Nom"
-                  [(ngModel)]="editStock.Libelle"
-                  required
-                />
-                <p class="help is-danger" *ngIf="editStock.Libelle.length<5" i18n>
-                  Le libellé doit faire au moins 5 caractères
-                </p>
-              </div>
-              
-              <div class="field">
-                <label class="label" i18n>Quanité</label>
-                <input
-                  class="input"
-                  id="qte"
-                  type="number"
-                  min="0"
-                  [(ngModel)]="editStock.Quantite"
-                />
-                <p class="help is-danger" *ngIf="!editStock.Quantite" i18n>
-                  La qunatité doit être saisie
-                </p>
-              </div>
-              <div class="field">
-                <label class="label" i18n>Valeur d'achat</label>
-                <input
-                  class="input"
-                  id="valeur_achat"
-                  type="number"
-                  [(ngModel)]="editStock.Valeur_Achat"
-                />
-              </div>
-              <div class="field">
-                <label class="label" i18n for="place_maximum"
-                  >Info stock :
-                </label>
-                <textarea
-                  class="textarea"
-                  [(ngModel)]="editStock.Info"
-                ></textarea>
-              </div>
+                <div class="field-body">
+                  <div class="field is-narrow">
+                    <div class="control">
+                      <div
+                        class="select is-fullwidth ; font-size: smaller"
+                      >
+                        <select [(ngModel)]="selected_filter">
+                          <option value="nom" i18n>Libellé</option>
+                          <option value="date" i18n>Date</option>
+                          <option value="type" i18n>Type équipement</option>
+                          <option value="equipement" i18n>Equipement</option>
+                          <option value="lieu" i18n>Lieu de stockage</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  *ngIf="selected_filter"
+                  class="field-label is-normal"
+                >
+                  <label class="label" style="white-space: nowrap" i18n
+                    >Valeur du filtre
+                  </label>
+                </div>
+                <div class="field-body" *ngIf="selected_filter">
+                  <div class="field is-narrow">
+                    <div class="control">
+                      <input
+                        *ngIf="selected_filter == 'nom'"
+                        style="width: fit-content; font-size: smaller"
+                        class="input is-small"
+                        i18n-placeholder
+                        placeholder="Nom du stock"
+                        type="text"
+                        [(ngModel)]="filters.filter_libelle"
+                      />
 
-            <div class="buttons">
-              <button
-                class="button is-primary is-rounded is-outlined"
-                [disabled]="!editStock.TypeStock || !editStock.Date || editStock.Libelle.length<5"
-                type="button"
-                style="fill: hsl(171, 100%, 41%)"
-                (click)="Save()"
-              >
-                <i class="fa-solid fa-floppy-disk"></i>
-              </button>
-              <button
-                (click)="Voir(editStock)"
-                class="button is-info is-rounded is-outlined"
-              >
-                <i class="fa-solid fa-binoculars"></i>
-              </button>
-              <button
-                (click)="Refresh()"
-                class="button is-warning is-rounded is-outlined"
-                style="fill: #ffb70f"
-              >
-                <i class="fa-solid fa-arrows-rotate"></i>
-              </button>
-              <button
-                (click)="Retour()"
-                class="button is-danger is-rounded is-outlined"
-                style="fill: hsl(348, 100%, 61%)"
-              >
-                <i class="fa-solid fa-backward-fast"></i>
-              </button>
+                      <div
+                        class="select"
+                        *ngIf="selected_filter == 'type'"
+                      >
+                        <select
+                          style="font-size: smaller"
+                          [(ngModel)]="filters.filter_type_equipement"
+                        >
+                          <option [ngValue]="null" i18n>Tous</option>
+                          <ng-container
+                            *ngFor="let te of liste_type_equipement"
+                          >
+                            <option [ngValue]="te">
+                              {{ te }}
+                            </option>
+                          </ng-container>
+                        </select>
+                      </div>
+                      <div
+                        class="select"
+                        *ngIf="selected_filter == 'equipement'"
+                      >
+                        <select
+                          style="font-size: smaller"
+                          [(ngModel)]="filters.filter_equipement"
+                        >
+                          <option [ngValue]="null" i18n>Tous</option>
+                          <ng-container
+                            *ngFor="let eq of liste_equipement"
+                          >
+                            <option [ngValue]="eq">
+                              {{ eq }}
+                            </option>
+                          </ng-container>
+                        </select>
+                      </div>
+                      <div
+                        class="select"
+                        *ngIf="selected_filter == 'lieu'"
+                      >
+                        <select
+                          style="font-size: smaller"
+                          [(ngModel)]="filters.filter_lieu"
+                        >
+                          <option [ngValue]="null" i18n>Tous</option>
+                          <ng-container
+                            *ngFor="let LS of liste_lieu"
+                          >
+                            <option [ngValue]="LS">
+                             {{LS.value}}({{LS.type}})
+                            </option>
+                          </ng-container>
+                        </select>
+                      </div>
+                      <span
+                        *ngIf="selected_filter == 'date'"
+                        class="ligne"
+                      >
+                        <div
+                          style="gap: 6px"
+                          class="field is-small is-horizontal field-jecha"
+                        >
+                          <label
+                            for="groupe"
+                            class="label is-small"
+                            i18n
+                            >Du</label
+                          >
+                          <input
+                            style="width: fit-content"
+                            class="input is-small"
+                            i18n-placeholder
+                            placeholder="Filtre date avant"
+                            type="date"
+                            [(ngModel)]="filters.filter_date_apres"
+                          />
+                        </div>
+                      </span>
+                      <span
+                        *ngIf="selected_filter == 'date'"
+                        class="ligne"
+                      >
+                        <div
+                          style="gap: 6px"
+                          class="field is-small is-horizontal field-jecha"
+                        >
+                          <label
+                            for="groupe"
+                            class="label is-small"
+                            i18n
+                            >Au</label
+                          >
+                          <input
+                            style="width: fit-content"
+                            class="input is-small"
+                            i18n-placeholder
+                            placeholder="Filtre date après"
+                            type="date"
+                            [(ngModel)]="filters.filter_date_avant"
+                          />
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="tags">
+                  <span
+                    *ngIf="filters.filter_libelle"
+                    class="tag is-success"
+                  >
+                    <span i18n>Libelle : </span>
+                    <span>{{ filters.filter_libelle }}</span>
+                    <button
+                      class="delete"
+                      (click)="filters.filter_libelle = null"
+                    ></button>
+                  </span>                  
+
+                  <span
+                    *ngIf="
+                      filters.filter_date_avant ||
+                      filters.filter_date_apres
+                    "
+                    class="tag is-success"
+                  >
+                    <span i18n>Date d'achat : </span>
+                    <span *ngIf="filters.filter_date_avant"
+                      >&nbsp;>&nbsp;{{
+                        filters.filter_date_avant | date : "dd/MM/yyyy"
+                      }}</span
+                    >
+                    <span *ngIf="filters.filter_date_apres"
+                      >&nbsp;<&nbsp;{{
+                        filters.filter_date_apres | date : "dd/MM/yyyy"
+                      }}</span
+                    >
+                    <button
+                      class="delete"
+                      (click)="
+                        filters.filter_date_avant = null;
+                        filters.filter_date_apres = null
+                      "
+                    ></button>
+                  </span>
+
+                  <span
+                    *ngIf="filters.filter_lieu != null"
+                    class="tag is-success"
+                  >
+                    <span i18n>Lieu : </span>
+                    <span i18n>{{ filters.filter_lieu }}</span>
+
+                    <button
+                      class="delete"
+                      (click)="filters.filter_lieu = null"
+                    ></button>
+                  </span>
+                  <span
+                    *ngIf="filters.filter_type_equipement != null"
+                    class="tag is-success"
+                  >
+                    <span i18n>Type d'équipement : </span>
+                    <span i18n>{{ filters.filter_type_equipement }}</span>
+
+                    <button
+                      class="delete"
+                      (click)="filters.filter_type_equipement = null"
+                    ></button>
+                  </span>
+                  <span
+                    *ngIf="filters.filter_equipement != null"
+                    class="tag is-success"
+                  >
+                    <span i18n>Equipement : </span>
+                    <span i18n>{{ filters.filter_equipement }}</span>
+                    <button
+                      class="delete"
+                      (click)="filters.filter_equipement = null"
+                    ></button>
+                  </span>
+                  <btn
+                    [type_button]="'SupprimerLight'"
+                    (click)="ReinitFiltre()"
+                    *ngIf="
+                      filters.filter_date_apres ||
+                      filters.filter_date_avant ||
+                      filters.filter_type_equipement ||
+                      filters.filter_equipement ||
+                      filters.filter_libelle ||
+                      filters.filter_lieu
+                    "
+                  >
+                  </btn>
+                </div>
+              </div>
             </div>
+            </div>
+            </div>
+            </footer>
+              </div>
+            </div>
+          </div>
+          </span>
+      </ng-container>
+</ng-container>
+
+
+  <ng-container *ngIf="editStock && editMode">
+    <div class="columns is-justify-content-center">
+      <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+        <div class="box">
+          <h2 *ngIf="editStock.ID == 0" class="title is-2" i18n>
+            Créer un équipement
+          </h2>
+          <h2 *ngIf="editStock.ID > 0" class="title is-2" i18n>
+            Editer un équipement
+          </h2>
+          <div class="field">
+            <label class="label" i18n>Type d'équipement</label>
+            <div class="select">
+              <select id="cours" [(ngModel)]="editStock.TypeStock">
+                <option value="0" i18n>Autre</option>
+                <ng-container *ngFor="let st of TypeStock">
+                  <option [value]="st.id">
+                    {{ st.libelle }}&nbsp;({{ st.categorie }})
+                  </option>
+                </ng-container>
+              </select>
+            </div>
+            <p class="help is-danger" *ngIf="!editStock.TypeStock" i18n>
+              La sélection d'un type de stock est obligatoire
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" i18n>Lieu de stockage</label>
+            <input
+              class="input"
+              list="liste_lieu"
+              id="lieu"
+              [ngModel]="editStock.LieuStockageLibelle"
+              (ngModelChange)="onInputChange($event)"
+            />
+            <datalist id="liste_lieu">
+              <ng-container *ngFor="let option of liste_lieu">
+                <option [value]="formatLieu(option)"></option>
+                <!-- Affiche le texte formaté -->
+              </ng-container>
+            </datalist>
+          </div>
+          <div class="field">
+            <label class="label" i18n>Date de la séance</label>
+
+            <input
+              class="input"
+              id="date_seance"
+              type="date"
+              [(ngModel)]="editStock.Date"
+            />
+            <p class="help is-danger" *ngIf="!editStock.Date" i18n>
+              La date d'achat doit doit être saisie
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" i18n>Libellé</label>
+            <input
+              [class]="
+                editStock.Libelle.length > 4 ? 'input' : 'input is-danger'
+              "
+              type="text"
+              id="nom_rider"
+              name="nom_rider"
+              i18n-placeholder
+              placeholder="Nom"
+              [(ngModel)]="editStock.Libelle"
+              required
+            />
+            <p class="help is-danger" *ngIf="editStock.Libelle.length < 5" i18n>
+              Le libellé doit faire au moins 5 caractères
+            </p>
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Quanité</label>
+            <input
+              class="input"
+              id="qte"
+              type="number"
+              min="0"
+              [(ngModel)]="editStock.Quantite"
+            />
+            <p class="help is-danger" *ngIf="!editStock.Quantite" i18n>
+              La qunatité doit être saisie
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" i18n>Valeur d'achat</label>
+            <input
+              class="input"
+              id="valeur_achat"
+              type="number"
+              [(ngModel)]="editStock.Valeur_Achat"
+            />
+          </div>
+          <div class="field">
+            <label class="label" i18n for="place_maximum">Info stock : </label>
+            <textarea class="textarea" [(ngModel)]="editStock.Info"></textarea>
+          </div>
+
+          <div class="buttons">
+            <button
+              class="button is-primary is-rounded is-outlined"
+              [disabled]="
+                !editStock.TypeStock ||
+                !editStock.Date ||
+                editStock.Libelle.length < 5
+              "
+              type="button"
+              style="fill: hsl(171, 100%, 41%)"
+              (click)="Save()"
+            >
+              <i class="fa-solid fa-floppy-disk"></i>
+            </button>
+            <button
+              (click)="Voir(editStock)"
+              class="button is-info is-rounded is-outlined"
+            >
+              <i class="fa-solid fa-binoculars"></i>
+            </button>
+            <button
+              (click)="Refresh()"
+              class="button is-warning is-rounded is-outlined"
+              style="fill: #ffb70f"
+            >
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+            <button
+              (click)="Retour()"
+              class="button is-danger is-rounded is-outlined"
+              style="fill: hsl(348, 100%, 61%)"
+            >
+              <i class="fa-solid fa-backward-fast"></i>
+            </button>
           </div>
         </div>
       </div>
+    </div>
     <ng-container *ngIf="!editMode"> </ng-container>
   </ng-container>
 </div>

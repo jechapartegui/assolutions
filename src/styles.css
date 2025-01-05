@@ -16,6 +16,9 @@
 }
 
 @media screen and (max-width: 767px) {
+  .media-content{
+    padding-left: 10px;
+  }
     .mobile {
         display: contents;
     }
@@ -45,7 +48,7 @@
         flex-direction: column;
         justify-content: center;
         align-items: stretch;
-        margin-bottom: 50px;
+        margin-bottom: 60px;
         margin-top: 60px;
       }
 }
@@ -73,6 +76,12 @@
   .card-footer{
     padding: 10px;
   }
+
+  @media screen and (min-width: 768px) {
+    .field-container {
+        margin-top: 30px;
+    }
+}
   
 
 .card-footer select,
@@ -120,6 +129,27 @@ margin-right: 0.5rem;
     position: fixed;
     bottom: 0;
   }
+  .field-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Répartir l'espace entre les champs */
+    gap: 1rem; /* Espacement entre les éléments */
+  }
+  
+  .field-container .field {
+    flex: 1 1 auto; /* Comportement flexible par défaut */
+    min-width: 200px; /* Adjust the minimum width as needed */
+  }
+  
+  .field-container .field input[type="date"],
+  .field-container .field input[type="time"],
+  .field-container .field input[type="number"] {
+    flex: 1 1 200px; /* Minimum 200px, comportement flexible */
+    max-width: 200px; /* Limite maximale */
+    width: 100%; /* Remplit le conteneur disponible */
+  }
+  
+
 
 @media (prefers-color-scheme: dark) {
     .footer {
@@ -127,4 +157,9 @@ margin-right: 0.5rem;
         /* Noir avec 80% d'opacité */
         border-top: 1px solid #444;
     }
+}
+
+.mobile .navbar.is-fixed-top .button{
+margin-left: 10px;
+margin-top: 2x;
 }

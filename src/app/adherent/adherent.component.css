@@ -39,16 +39,7 @@
     overflow: visible;
   }
 
-.field-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem; /* Adjust the gap as needed */
-}
 
-.field {
-  flex: 1 1 30%; /* Adjust the basis percentage as needed */
-  min-width: 200px; /* Adjust the minimum width as needed */
-}
 .dropdown.is-up .dropdown-menu {
   top: auto;
   bottom: 100%;

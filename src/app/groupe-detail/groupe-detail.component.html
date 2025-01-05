@@ -1,25 +1,34 @@
 <div class="tags">
     <ng-container *ngFor="let niv of Groupes">
+        <span class="fullscreen">
         <span class="tag is-success">
             {{niv.nom}}
             <button  class="delete is-small" (click)="RemoveGroupe(niv)"></button>
         </span>
+        </span>
+        <span class="mobile">
+            <span class="tag is-success is-large">
+                {{niv.nom}}
+                <button  class="delete" (click)="RemoveGroupe(niv)"></button>
+            </span>
+            </span>
     </ng-container>
 </div> 
 <ng-container *ngIf="groupe_dispo.length >0">
     <div class="select">
-        <select style="font-size: smaller;" id="professeurs" [(ngModel)]="current_groupe_key">
+        <select class="select_mobile" id="professeurs" [(ngModel)]="current_groupe_key">
             <ng-container *ngFor="let ni of groupe_dispo;let first = first	">
                 <option [value]="ni.id">{{ ni.nom }}</option>
             </ng-container>
         </select>
     </div>
-    <button type="button" [disabled]="!current_groupe_key" (click)="AjouterGroupe()" class="button is-primary is-small is-rounded is-outlined"
-        style="align-self: center; ;fill:hsl(171, 100%, 41%)">
-        <svg width="20" height="20">
-            <use xlink:href=".\assets\liste.svg#plus"></use>
-        </svg>
-    </button>
+    <span class="fullscreen">
+        <btn [type_button]="'CreerSmallLight'" [disabled]="!current_groupe_key" (click)="AjouterGroupe()"></btn>
+
+    </span>
+    <span class="mobile">
+        <btn [type_button]="'CreerMobile'" [disabled]="!current_groupe_key" (click)="AjouterGroupe()"></btn>
+    </span>
 </ng-container>
 <ng-container *ngIf="groupe_dispo.length == 0">
 <p style="font-size: smaller;" i18n>Pas de groupe disponible</p>

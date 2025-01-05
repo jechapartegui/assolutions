@@ -9,7 +9,7 @@
     </ng-container>
     <ng-container *ngIf="Riders">
         <ng-container *ngFor="let rider of Riders">
-            <div class="box">
+            <div class="container-box">
                 <article [class]="(GlobalService.Menu$| async) === 'ADHERENT' ? 'panel is-primary' : 'panel is-info'">
                     <p class="panel-heading">{{rider.Libelle}} <button i18n-title title="Editer"
                             class="button is-black is-rounded is-outlined" type="button"
@@ -288,7 +288,7 @@
                                 </table>
                             </span>
                             <span class="mobile">
-                                <span style="display: flex; flex-direction: column;">
+                                <span style="display: flex; flex-direction: column;width: 100%;">
                                     <ng-container
                                         *ngFor="let seance of rider.InscriptionSeances | filterDateAvantMenu : rider.filter_date_avant|  filterDateApresMenu : rider.filter_date_apres">
                                         <div class="box">
@@ -317,13 +317,10 @@
                                                         ({{seance.thisSeance.duree_seance}}
                                                         <span i18n>&nbsp;min</span>)
                                                         {{trouverLieu(seance.thisSeance.lieu_id)}}
+                                                        </div>
+                                                        <div>
                                                         <ng-container *ngIf="seance.thisSeance.statut == 'prévue'">
-                                                            <span class="tag is-info is-rounded is-light">
-                                                                <span class="icon has-text-info">
-                                                                    <i class="fa-solid fa-calendar-check"></i>
-                                                                </span>
-                                                            </span>
-                                                            <ng-container
+                                                          <ng-container
                                                                 *ngIf="(GlobalService.Menu$| async) === 'ADHERENT'">
                                                                 <span (click)="MAJInscription(seance.thisInscription, null)"
                                                                     *ngIf="seance.thisInscription.statut_inscription == 'présent'"

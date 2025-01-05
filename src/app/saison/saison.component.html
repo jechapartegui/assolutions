@@ -1,1 +1,629 @@
-<p>saison works!</p>
+<div class="container">
+  <ng-container *ngIf="!editMode">
+    <ng-container *ngIf="loading">
+      <progress
+        class="progress is-large is-info"
+        style="margin-top: 60px"
+        max="100"
+      >
+        60%
+      </progress>
+      <p>Chargement en cours</p>
+    </ng-container>
+    <ng-container *ngIf="!loading">
+      <div class="columns">
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p
+                class="card-header-title"
+                *ngIf="
+                  liste_saison | multifiltersSaison : filters as filteredApplis
+                "
+              >
+                <span i18n>Liste des saisons</span>&nbsp;({{
+                  filteredApplis.length
+                }})
+              </p>
+              <btn [type_button]="'CreerLight'" (click)="Creer()"></btn>
+            </header>
+            <div class="card-content" #scrollableContent>
+              <table
+                class="table"
+                style="width: 100%; font-size: smaller"
+                *ngIf="liste_saison && liste_saison.length > 0"
+              >
+                <thead>
+                  <tr>
+                    <th>
+                      <span>
+                        <span class="ligne">
+                          <span
+                            [ngClass]="
+                              filters.filter_nom ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Nom</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_nom === 'NO'"
+                              (click)="Sort('ASC', 'nom')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_nom === 'ASC'"
+                              (click)="Sort('DESC', 'nom')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_nom === 'DESC'"
+                              (click)="Sort('ASC', 'nom')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </span>
+                      </span>
+                    </th>
+
+                    <th>
+                      <span>
+                        <span class="ligne">
+                          <span
+                            [ngClass]="
+                              filters.filter_date_debut_apres ||
+                              filters.filter_date_debut_avant
+                                ? 'has-text-info'
+                                : ''
+                            "
+                            i18n
+                            >Date de début</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_date_debut === 'NO'"
+                              (click)="Sort('ASC', 'date_debut')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_date_debut === 'ASC'"
+                              (click)="Sort('DESC', 'date_debut')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_date_debut === 'DESC'"
+                              (click)="Sort('ASC', 'date_debut')"
+                              class="fa-solid fa-sort-down"
+                            ></i> </span
+                        ></span>
+                      </span>
+                    </th>
+                    <th>
+                      <span>
+                        <span class="ligne">
+                          <span
+                            [ngClass]="
+                              filters.filter_date_fin_apres ||
+                              filters.filter_date_fin_avant
+                                ? 'has-text-info'
+                                : ''
+                            "
+                            i18n
+                            >Date de fin</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_date_fin === 'NO'"
+                              (click)="Sort('ASC', 'date_fin')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_date_fin === 'ASC'"
+                              (click)="Sort('DESC', 'date_fin')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_date_fin === 'DESC'"
+                              (click)="Sort('ASC', 'date_fin')"
+                              class="fa-solid fa-sort-down"
+                            ></i> </span
+                        ></span>
+                      </span>
+                    </th>
+
+                    <th>
+                      <span>
+                        <span
+                          [ngClass]="
+                            filters.filter_active ? 'has-text-info' : ''
+                          "
+                          i18n
+                          >Active</span
+                        >
+                      </span>
+                    </th>
+                    <th>
+                      <span i18n>Adhésions</span>
+                    </th>
+                    <th>
+                      <span i18n>Action</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="
+                      let saison of liste_saison | multifiltersSaison : filters
+                    "
+                  >
+                    <td>
+                      {{ saison.nom }}
+                    </td>
+                    <td>{{ saison.date_debut | date : "dd/MM/yyyy" }}</td>
+                    <td>{{ saison.date_fin | date : "dd/MM/yyyy" }}</td>
+                    <td>
+                      <i
+                        *ngIf="!saison.active"
+                        class="fas fa-times is-primary"
+                      ></i>
+                      <i
+                        *ngIf="saison.active"
+                        class="fas fa-check is-danger"
+                      ></i>
+                    </td>
+                    <td>
+                      <div class="tags is-small">
+                        <ng-container *ngFor="let adh of saison.Type_Adhesion">
+                          <span class="tag is-success">
+                            {{ adh.libelle }}
+                          </span>
+                        </ng-container>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div
+                        class="buttons"
+                        style="
+                          display: flex;
+                          flex-direction: row;
+                          flex-wrap: nowrap;
+                        "
+                      >
+                        <btn
+                          i18n-title
+                          title="Dupliquer la saison"
+                          [type_button]="'CopierLight'"
+                          (click)="Copier(saison)"
+                        ></btn>
+                        <btn
+                          i18n-title
+                          title="Supprimer"
+                          [type_button]="'SupprimerLight'"
+                          (click)="Delete(saison)"
+                        ></btn>
+                        <btn
+                          i18n-title
+                          title="Editer"
+                          [type_button]="'EditerLight'"
+                          (click)="Edit(saison)"
+                        ></btn>
+                        <btn
+                          i18n-title
+                          title="Rendre la saison active"
+                          [type_button]="'ActiveLight'"
+                          (click)="Active(saison)"
+                        ></btn>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p *ngIf="!liste_saison || liste_saison.length == 0">
+                Pas de saison disponible
+              </p>
+              <button
+                class="scroll-to-top"
+                *ngIf="showScrollToTop"
+                (click)="scrollToTop()"
+                title="Revenir en haut"
+              >
+                ↑
+              </button>
+            </div>
+            <footer class="card-footer">
+              <div class="columns">
+                <div class="column">
+                  <div *ngIf="!afficher_filtre" class="buttons">
+                    <btn
+                      [type_button]="'FiltrerSmall'"
+                      (click)="
+                        afficher_filtre
+                          ? (afficher_filtre = false)
+                          : (afficher_filtre = true)
+                      "
+                    ></btn>
+
+                    <btn
+                      [type_button]="'ExporterSmall'"
+                      (click)="ExportExcel()"
+                    ></btn>
+                  </div>
+                  <div class="buttons" *ngIf="afficher_filtre">
+                    <btn
+                      (click)="afficher_filtre = false; selected_filter = null"
+                      [type_button]="'RetourLight'"
+                    ></btn>
+                    <div
+                      class="field is-horizontal"
+                      style="gap: 0.5rem; align-items: center"
+                    >
+                      <div class="field-label is-normal">
+                        <label class="label" style="white-space: nowrap" i18n
+                          >Sélection du filtre</label
+                        >
+                      </div>
+                      <div class="field-body">
+                        <div class="field is-narrow">
+                          <div class="control">
+                            <div
+                              class="select is-fullwidth ; font-size: smaller"
+                            >
+                              <select [(ngModel)]="selected_filter">
+                                <option value="nom" i18n>Nom</option>
+                                <option value="date_debut" i18n>
+                                  Date début de saison
+                                </option>
+                                <option value="date_fin" i18n>
+                                  Date fin de saison
+                                </option>
+                                <option value="active" i18n>Active</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        *ngIf="selected_filter"
+                        class="field-label is-normal"
+                      >
+                        <label class="label" style="white-space: nowrap" i18n
+                          >Valeur du filtre
+                        </label>
+                      </div>
+                      <div class="field-body" *ngIf="selected_filter">
+                        <div class="field is-narrow">
+                          <div class="control">
+                            <input
+                              *ngIf="selected_filter == 'nom'"
+                              style="width: fit-content; font-size: smaller"
+                              class="input is-small"
+                              i18n-placeholder
+                              placeholder="Nom du cours"
+                              type="text"
+                              [(ngModel)]="filters.filter_nom"
+                            />
+                            <div
+                              class="select"
+                              *ngIf="selected_filter == 'active'"
+                            >
+                              <select
+                                style="font-size: smaller"
+                                [(ngModel)]="filters.filter_active"
+                              >
+                                <option [ngValue]="null" i18n>Tous</option>
+                                <option [ngValue]="true" i18n>Oui</option>
+                                <option [ngValue]="false" i18n>Non</option>
+                              </select>
+                            </div>
+                            <span
+                              *ngIf="selected_filter == 'date_debut'"
+                              class="ligne"
+                            >
+                              <div
+                                style="gap: 6px"
+                                class="field is-small is-horizontal field-jecha"
+                              >
+                                <label for="groupe" class="label is-small" i18n
+                                  >Du</label
+                                >
+                                <input
+                                  style="width: fit-content"
+                                  class="input is-small"
+                                  i18n-placeholder
+                                  placeholder="Filtre date avant"
+                                  type="date"
+                                  [(ngModel)]="filters.filter_date_debut_apres"
+                                />
+                              </div>
+                            </span>
+                            <span
+                              *ngIf="selected_filter == 'date_debut'"
+                              class="ligne"
+                            >
+                              <div
+                                style="gap: 6px"
+                                class="field is-small is-horizontal field-jecha"
+                              >
+                                <label for="groupe" class="label is-small" i18n
+                                  >Au</label
+                                >
+                                <input
+                                  style="width: fit-content"
+                                  class="input is-small"
+                                  i18n-placeholder
+                                  placeholder="Filtre date après"
+                                  type="date"
+                                  [(ngModel)]="filters.filter_date_debut_avant"
+                                />
+                              </div>
+                            </span>
+                            <span
+                              *ngIf="selected_filter == 'date_fin'"
+                              class="ligne"
+                            >
+                              <div
+                                style="gap: 6px"
+                                class="field is-small is-horizontal field-jecha"
+                              >
+                                <label for="groupe" class="label is-small" i18n
+                                  >Du</label
+                                >
+                                <input
+                                  style="width: fit-content"
+                                  class="input is-small"
+                                  i18n-placeholder
+                                  placeholder="Filtre date avant"
+                                  type="date"
+                                  [(ngModel)]="filters.filter_date_fin_apres"
+                                />
+                              </div>
+                            </span>
+                            <span
+                              *ngIf="selected_filter == 'date_fin'"
+                              class="ligne"
+                            >
+                              <div
+                                style="gap: 6px"
+                                class="field is-small is-horizontal field-jecha"
+                              >
+                                <label for="groupe" class="label is-small" i18n
+                                  >Au</label
+                                >
+                                <input
+                                  style="width: fit-content"
+                                  class="input is-small"
+                                  i18n-placeholder
+                                  placeholder="Filtre date après"
+                                  type="date"
+                                  [(ngModel)]="filters.filter_date_fin_avant"
+                                />
+                              </div>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="tags">
+                        <span *ngIf="filters.filter_nom" class="tag is-success">
+                          <span i18n>Nom : </span>
+                          <span>{{ filters.filter_nom }}</span>
+                          <button
+                            class="delete"
+                            (click)="filters.filter_nom = null"
+                          ></button>
+                        </span>
+
+                        <span
+                          *ngIf="filters.filter_active != null"
+                          class="tag is-success"
+                        >
+                          <span i18n>Active : </span>
+                          <span *ngIf="filters.filter_active == true" i18n
+                            >Oui</span
+                          >
+                          <span *ngIf="filters.filter_active == false" i18n
+                            >Non</span
+                          >
+                          <button
+                            class="delete"
+                            (click)="filters.filter_active = null"
+                          ></button>
+                        </span>
+
+                        <span
+                          *ngIf="
+                            filters.filter_date_debut_avant ||
+                            filters.filter_date_debut_apres
+                          "
+                          class="tag is-success"
+                        >
+                          <span i18n>Date de début : </span>
+                          <span *ngIf="filters.filter_date_debut_avant"
+                            >&nbsp;>&nbsp;{{
+                              filters.filter_date_debut_avant
+                                | date : "dd/MM/yyyy"
+                            }}</span
+                          >
+                          <span *ngIf="filters.filter_date_debut_apres"
+                            >&nbsp;<&nbsp;{{
+                              filters.filter_date_debut_apres
+                                | date : "dd/MM/yyyy"
+                            }}</span
+                          >
+                          <button
+                            class="delete"
+                            (click)="
+                              filters.filter_date_debut_avant = null;
+                              filters.filter_date_debut_apres = null
+                            "
+                          ></button>
+                        </span>
+
+                        <span
+                          *ngIf="
+                            filters.filter_date_fin_avant ||
+                            filters.filter_date_fin_apres
+                          "
+                          class="tag is-success"
+                        >
+                          <span i18n>Date de fin : </span>
+                          <span *ngIf="filters.filter_date_fin_avant"
+                            >&nbsp;>&nbsp;{{
+                              filters.filter_date_fin_avant
+                                | date : "dd/MM/yyyy"
+                            }}</span
+                          >
+                          <span *ngIf="filters.filter_date_fin_apres"
+                            >&nbsp;<&nbsp;{{
+                              filters.filter_date_fin_apres
+                                | date : "dd/MM/yyyy"
+                            }}</span
+                          >
+                          <button
+                            class="delete"
+                            (click)="
+                              filters.filter_date_fin_avant = null;
+                              filters.filter_date_fin_apres = null
+                            "
+                          ></button>
+                        </span>
+
+                        <btn
+                          [type_button]="'SupprimerLight'"
+                          (click)="ReinitFiltre()"
+                          *ngIf="
+                            filters.filter_date_debut_apres ||
+                            filters.filter_date_debut_avant ||
+                            filters.filter_date_fin_apres ||
+                            filters.filter_date_fin_avant ||
+                            filters.filter_active ||
+                            filters.filter_nom
+                          "
+                        >
+                        </btn>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="editMode">
+    <div class="columns">
+      <div class="column">
+        <div class="card" *ngIf="editSaison">
+          <header class="card-header" style="align-items: center">
+            <p class="card-header-title" *ngIf="editSaison.id == 0" i18n>
+              Créer une saison
+            </p>
+            <p class="card-header-title" *ngIf="editSaison.id > 0" i18n>
+              Editer une saison
+            </p>
+          </header>
+          <div class="card-content" #scrollableContent>
+            <div class="content">
+              <div class="field-container">
+                <div class="field">
+                  <label class="label" i18n>Nom</label>
+                  <div class="control">
+                    <input
+                      [class]="
+                        editSaison.valid.nom ? 'input' : 'input is-danger'
+                      "
+                      type="text"
+                      id="nom_rider"
+                      name="nom_rider"
+                      i18n-placeholder
+                      placeholder="Nom"
+                      [(ngModel)]="editSaison.nom"
+                    />
+                  </div>
+                  <p class="help is-danger" *ngIf="!editSaison.valid.nom" i18n>
+                    Le nom de la saison doit contenir au moins 3 caractères
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="label" i18n>Date de début</label>
+                  <div class="control">
+                    <input
+                      [class]="
+                        editSaison.valid.date_debut ||
+                        editSaison.valid.ordre_date
+                          ? 'input'
+                          : 'input is-danger'
+                      "
+                      type="date"
+                      id="date_debut"
+                      name="date_debut"
+                      i18n-placeholder
+                      placeholder="Date de début"
+                      [(ngModel)]="editSaison.date_debut"
+                    />
+                  </div>
+                  <p
+                    class="help is-danger"
+                    *ngIf="!editSaison.valid.date_debut"
+                    i18n
+                  >
+                    Le date de début de la saison doit être renseignée
+                  </p>
+                  <p
+                    class="help is-danger"
+                    *ngIf="!editSaison.valid.ordre_date"
+                    i18n
+                  >
+                    Le date de début doit être inférieure à la date de fin
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="label" i18n>Date de fin</label>
+                  <div class="control">
+                    <input
+                      [class]="
+                        editSaison.valid.date_fin ? 'input' : 'input is-danger'
+                      "
+                      type="date"
+                      id="date_fin"
+                      name="date_fin"
+                      i18n-placeholder
+                      placeholder="Date de fin"
+                      [(ngModel)]="editSaison.date_fin"
+                    />
+                  </div>
+                  <p
+                    class="help is-danger"
+                    *ngIf="!editSaison.valid.date_fin"
+                    i18n
+                  >
+                    Le date de fin de la saison doit être renseignée
+                  </p>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+          <footer class="card-footer">
+            <div class="columns">
+              <div class="column">
+                <div *ngIf="!afficher_filtre" class="buttons">
+                  <btn
+                    [type_button]="'SauvegarderSmall'"
+                    [disabled]="!editSaison.valid.control"
+                    (click)="Save()"
+                  ></btn>
+
+                  <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
+                  <btn [type_button]="'ReloadSmall'" (click)="Refresh()"></btn>
+                </div>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

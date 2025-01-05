@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, Type } from '@angular/core';
+import { Component, ElementRef, OnInit, Type, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { stock, Stock } from 'src/class/stock';
 import { AddInfoService } from 'src/services/addinfo.service';
@@ -16,6 +16,15 @@ import { MultifiltersStockPipe } from 'src/filters/multifilters-stock.pipe';
   styleUrls: ['./stock.component.css'],
 })
 export class StockComponent implements OnInit {
+
+  
+    @ViewChild('scrollableContent', { static: false })
+    scrollableContent!: ElementRef;
+    showScrollToTop: boolean = false;
+    public loading: boolean = false;
+    public histo_stock: string;
+    public selected_filter: string;
+
   liste_lieu: ObjetAppli[] = [];
   liste_transaction: ObjetAppli[] = [];
   est_prof: boolean = false;
@@ -35,14 +44,7 @@ export class StockComponent implements OnInit {
   public sort_date = 'NO';
   public sort_lieu = 'NO';
   public afficher_filtre: boolean = false;
-  filters = {
-    filter_libelle: '',
-    filter_date_avant: null,
-    filter_date_apres: null,
-    filter_lieu: null,
-    filter_type_equipement: null,
-    filter_equipement: null,
-  };
+  public filters: FilterStock = new FilterStock();
   public action: string = '';
 
   constructor(
@@ -58,8 +60,10 @@ export class StockComponent implements OnInit {
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les stocks`;
+    this.loading = true;
     if (GlobalService.is_logged_in) {
       if (GlobalService.menu === 'ADHERENT') {
+        this.loading = false;
         this.router.navigate(['/menu']);
         return;
       }
@@ -89,6 +93,9 @@ export class StockComponent implements OnInit {
         this.addinfo_serv.GetLV('stock').then((liste) => {
           this.SC.TypeStock = JSON.parse(liste);
           this.TypeStock = this.SC.TypeStock;
+          this.liste_type_equipement = Array.from(
+            new Set(this.TypeStock.map((typeStock) => typeStock.categorie))
+          ).filter((categorie) => categorie !== null);
         });
       } else {
         this.TypeStock = this.SC.TypeStock;
@@ -109,6 +116,7 @@ export class StockComponent implements OnInit {
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
       errorService.emitChange(o);
+      this.loading = false;
       this.router.navigate(['/login']);
     }
   }
@@ -205,6 +213,7 @@ export class StockComponent implements OnInit {
             }
           });
 
+          this.loading = false;
           this.liste_stock.sort((a, b) => {
             let dateA = a.datasource.date_achat;
             let dateB = b.datasource.date_achat;
@@ -223,6 +232,7 @@ export class StockComponent implements OnInit {
       .catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
+        this.loading = false;
         return;
       });
   }
@@ -256,14 +266,7 @@ export class StockComponent implements OnInit {
 
 
   ReinitFiltre() {
-    this.filters = {
-      filter_libelle: '',
-      filter_date_avant: null,
-      filter_date_apres: null,
-      filter_lieu: null,
-      filter_type_equipement: null,
-      filter_equipement: null,
-    };
+    this.filters = new FilterStock();
   }
 
   Delete(stock: Stock): void {
@@ -453,13 +456,6 @@ export class StockComponent implements OnInit {
     }
   }
 
-  Filtrer() {
-    this.UpdateListeStock();
-  }
-  FiltrerBack() {
-    this.UpdateListeStock();
-  }
-
   ExporterExcel() {
     let headers = {
       ID: 'ID',
@@ -476,4 +472,85 @@ export class StockComponent implements OnInit {
   getFilteredStocks(): Stock[] {
     return this.multifiltersStockPipe.transform(this.liste_stock, this.filters);
   }
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer(); // Re-tente de le trouver
+      }
+    }, 100); // Réessaie toutes les 100 ms
+  }
+
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth', // Défilement fluide
+    });
+  }
+}
+
+export class FilterStock {
+  private _filter_libelle: string | null = null;
+  get filter_libelle(): string | null {
+    return this._filter_libelle;
+  }
+  set filter_libelle(value: string | null) {
+    this._filter_libelle = value;
+    this.onFilterChange();
+  }
+
+  private _filter_date_avant: Date | null = null;
+  get filter_date_avant(): Date | null {
+    return this._filter_date_avant;
+  }
+  set filter_date_avant(value: Date | null) {
+    this._filter_date_avant = value;
+    this.onFilterChange();
+  }
+
+  private _filter_date_apres: Date | null = new Date();
+  get filter_date_apres(): Date | null {
+    return this._filter_date_apres;
+  }
+  set filter_date_apres(value: Date | null) {
+    this._filter_date_apres = value;
+    this.onFilterChange();
+  }
+
+  private _filter_type_equipement: string | null = null;
+  get filter_type_equipement(): string | null {
+    return this._filter_type_equipement;
+  }
+  set filter_type_equipement(value: string | null) {
+    this._filter_type_equipement = value;
+    this.onFilterChange();
+  }
+
+  private _filter_equipement: number | null = null;
+  get filter_equipement(): number | null {
+    return this._filter_equipement;
+  }
+  set filter_equipement(value: number | null) {
+    this._filter_equipement = value;
+    this.onFilterChange();
+  }
+  private _filter_lieu: ObjetAppli | null = null;
+  get filter_lieu(): ObjetAppli | null {
+    return this._filter_lieu;
+  }
+  set filter_lieu(value: ObjetAppli | null) {
+    this._filter_lieu = value;
+    this.onFilterChange();
+  }
+
+  private onFilterChange(): void {}
 }
