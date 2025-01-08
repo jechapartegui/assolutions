@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { adherent, Adherent } from 'src/class/adherent';
 import { prof_saison, professeur, Professeur } from 'src/class/professeur';
@@ -9,6 +9,7 @@ import { ErrorService } from 'src/services/error.service';
 import { GlobalService } from 'src/services/global.services';
 import { ProfesseurService } from 'src/services/professeur.service';
 import { SaisonService } from 'src/services/saison.service';
+import { FilterAdherent } from '../adherent/adherent.component';
 
 @Component({
   selector: 'app-professeur',
@@ -16,24 +17,34 @@ import { SaisonService } from 'src/services/saison.service';
   styleUrls: ['./professeur.component.css']
 })
 export class ProfesseurComponent implements OnInit {
+ReinitFiltre() {
+this.filters = new FilterAdherent();
+}
+ExportExcel() {
+throw new Error('Method not implemented.');
+}
   public action: string;
   public ListeProf: Professeur[];
+  public loading:boolean=false;
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   @Input() public id: number;
   public thisProf: Professeur = null;
   public thisAdherent: Adherent = null;
   public inscrits: number = null;
   public afficher_filtre: boolean = false;
+    public histo_prof: string;
+    @ViewChild('scrollableContent', { static: false })
+    scrollableContent!: ElementRef;
+    showScrollToTop: boolean = false;
   public liste_saison: Saison[] = [];
   public active_saison: Saison;
   public liste_adherents_VM: Adherent[] = [];
   public sort_nom = "NO";
   public sort_date = "NO";
   public sort_sexe = "NO";
-  public filter_date_avant: Date;
-  public filter_date_apres: Date;
-  public filter_nom: string;
-  public filter_sexe: boolean;
+  public filters:FilterAdherent = new FilterAdherent();
+  public selected_filter:string;
+  
   public creer:boolean;
 
   public login_adherent: string = "";
@@ -52,9 +63,11 @@ export class ProfesseurComponent implements OnInit {
 
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les professeurs`;
+    this.loading = true;
     if (GlobalService.is_logged_in) {
       if ((GlobalService.menu === "ADHERENT") || (GlobalService.menu === "PROF")) {
         this.router.navigate(['/menu']);
+        this.loading = false;
         return;
       }
       // Chargez la liste des cours
@@ -65,10 +78,12 @@ export class ProfesseurComponent implements OnInit {
           errorService.emitChange(o);
           if (GlobalService.menu === "ADMIN") {
             this.router.navigate(['/saison']);
+            this.loading = false;
 
           } else {
             this.router.navigate(['/menu']);
             GlobalService.selected_menu = "MENU";
+            this.loading = false;
           }
           return;
         }
@@ -130,13 +145,16 @@ export class ProfesseurComponent implements OnInit {
       this.action = $localize`Récupérer les adhérents`;
       this.ridersService.GetAllActiveSaison().then((adhs) => {
         this.liste_adherents_VM = adhs.map(x => new Adherent(x));
+        this.loading = false;
       }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError(this.action, error);
         errorService.emitChange(n);
+        this.loading = false;
       });
     }).catch((error: HttpErrorResponse) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
+      this.loading = false;
     });
 
   }
@@ -248,12 +266,14 @@ export class ProfesseurComponent implements OnInit {
     
       this.prof_serv.Get(this.id).then((pf) => {
         this.thisProf = new Professeur(pf);
+        this.loading = false;
        
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
         GlobalService.selected_menu = "MENU";
+        this.loading = false;
         return;
       })
 
@@ -395,14 +415,6 @@ export class ProfesseurComponent implements OnInit {
 
   }
 
-  ReinitFiltre() {
-    this.filter_date_apres = null;
-    this.filter_date_avant = null;
-    this.filter_sexe = null;
-    this.filter_nom = null;
-  }
-
- 
 
   isRegistredSaison(saison_id: number) {
     let u = this.thisProf.saisons.find(x => x.saison_id == saison_id);
@@ -414,5 +426,33 @@ export class ProfesseurComponent implements OnInit {
   }
   VoirFactures(){}
   
+  ngAfterViewInit(): void {
+    this.waitForScrollableContainer();
+  }
+
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer(); // Re-tente de le trouver
+      }
+    }, 100); // Réessaie toutes les 100 ms
+  }
+
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth', // Défilement fluide
+    });
+  }
 }
 
