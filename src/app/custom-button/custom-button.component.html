@@ -27,6 +27,14 @@
         <span i18n>Retour</span>
         <i class="fas fa-chevron-left"></i>
     </button>
+    <button class="button is-small is-danger is-outlined" *ngSwitchCase="'RetourSeanceSmall'">
+        <span i18n>Retour à la séance</span>
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="button is-small is-danger is-outlined" *ngSwitchCase="'RetourListeSmall'">
+        <span i18n>Retour à la liste</span>
+        <i class="fas fa-chevron-left"></i>
+    </button>
     <button class="button is-danger is-outlined" *ngSwitchCase="'RetourLight'" i18n>
         <i class="fas fa-chevron-left"></i>
     </button>
@@ -333,8 +341,16 @@
         <span i18n>Créer</span>
         <i class="fa-solid fa-plus"></i>
     </button>
+    <button class="button is-primary is-outlined" *ngSwitchCase="'Ajouter'" >
+        <span i18n>Ajouter</span>
+        <i class="fa-solid fa-plus"></i>
+    </button>
     <button class="button is-primary is-small is-outlined" *ngSwitchCase="'CreerSmall'" >
         <span i18n>Créer</span>
+        <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="button is-primary is-small is-outlined" *ngSwitchCase="'AjouterSmall'" >
+        <span i18n>Ajouter</span>
         <i class="fa-solid fa-plus"></i>
     </button>
     <button class="button is-primary is-outlined" *ngSwitchCase="'CreerLight'">

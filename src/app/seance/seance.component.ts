@@ -149,7 +149,7 @@ export class SeanceComponent implements OnInit {
                     return;
                   }
                   this.listelieu = lieux;
-                  this.liste_lieu_filter = this.listelieu.map((x) => x.value);
+                  this.liste_lieu_filter = lieux.map((x) => x.value);
                   this.saisonserv
                     .GetAll()
                     .then((sa) => {
@@ -775,6 +775,25 @@ export class SeanceComponent implements OnInit {
           return this.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
+
+        case 'type':
+          this.sort_nom = "NO";
+          this.sort_date = 'NO';
+          this.sort_lieu = 'NO';
+          this.sort_cours = sens;
+          this.list_seance_VM.sort((a, b) => {
+            const nomA = this.trouverCours(a.datasource);
+            const nomB = this.trouverCours(b.datasource);
+            let comparaison = 0;
+            if (nomA > nomB) {
+              comparaison = 1;
+            } else if (nomA < nomB) {
+              comparaison = -1;
+            }
+  
+            return this.sort_cours === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          });
+          break;
       case 'cours':
         this.sort_lieu = 'NO';
         this.sort_date = 'NO';
@@ -796,6 +815,17 @@ export class SeanceComponent implements OnInit {
           return this.sort_cours === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
+    }
+  }
+  trouverCours(_s:seance) : string{
+    if(_s.type_seance == "ENTRAINEMENT"){
+      return this.listeCours.find(x => x.id == _s.cours).nom || $localize`Cours non trouvé`;
+    } else if(_s.type_seance == "MATCH"){
+      return $localize`Match`;
+    } else if(_s.type_seance == "SORTIE"){
+      return $localize`Sortie`;
+    } else {
+return $localize`Evénement`;
     }
   }
   getActiveSaison(): string {
@@ -920,7 +950,7 @@ export class FilterSeance {
     this.onFilterChange();
   }
 
-  private _filter_date_avant: Date | null = null;
+  private _filter_date_avant: Date | null = new Date();
   get filter_date_avant(): Date | null {
     return this._filter_date_avant;
   }
@@ -929,7 +959,7 @@ export class FilterSeance {
     this.onFilterChange();
   }
 
-  private _filter_date_apres: Date | null = new Date();
+  private _filter_date_apres: Date | null ;
   get filter_date_apres(): Date | null {
     return this._filter_date_apres;
   }

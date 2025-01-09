@@ -10,411 +10,447 @@
           </header>
           <div class="card-content" #scrollableContent>
             <div class="content">
-              <h6 class="title is-6">
-                <span i18n>Présences potentielles</span>&nbsp;({{
+              <h6 style="cursor:pointer;"
+                class="title is-6"
+                (click)="
+                  display_personne
+                    ? (display_personne = false)
+                    : (display_personne = true)
+                "
+              >
+                <i *ngIf="!display_personne" class="fas fa-chevron-down"></i>
+                <i *ngIf="display_personne" class="fas fa-chevron-up"></i>
+                &nbsp; <span i18n>Présences potentielles</span>&nbsp;({{
                   All.length
                 }}&nbsp;<span i18n>personnes</span>)
               </h6>
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="!potentiel.StatutSeance">
-                  <ng-container
-                    *ngIf="potentiel.StatutInscription === 'présent'"
-                  >
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium">
-                          <span
-                            class="fa-stack fa-sm"
-                            (click)="potentiel.isVisible = true"
-                          >
-                            <i
-                              class="fas fa-stack-2x fa-thumbs-up has-text-success"
-                            ></i>
+              <span *ngIf="display_personne">
+                <ng-container *ngFor="let potentiel of All">
+                  <ng-container *ngIf="!potentiel.StatutSeance">
+                    <ng-container
+                      *ngIf="potentiel.StatutInscription === 'présent'"
+                    >
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span
+                              class="fa-stack fa-sm"
+                              (click)="potentiel.isVisible = true"
+                            >
+                              <i
+                                class="fas fa-stack-2x fa-thumbs-up has-text-success"
+                              ></i>
+                            </span>
                           </span>
+                          <ul
+                            class="menu-icons"
+                            [ngClass]="{
+                              'is-visible': potentiel.isVisible,
+                              not: !potentiel.isVisible
+                            }"
+                          >
+                            <li (click)="setStatus('présent', potentiel)">
+                              <i class="fas fa-thumbs-up"></i> Présent
+                            </li>
+                            <li (click)="setStatus('absent', potentiel)">
+                              <i class="fas fa-thumbs-down"></i> Absent
+                            </li>
+                            <li (click)="setStatus('essai', potentiel)">
+                              <i class="fas fa-question"></i> Essai
+                            </li>
+                            <li (click)="setStatus('convoqué', potentiel)">
+                              <i class="fas fa-hand-point-up"></i> Convoqué
+                            </li>
+                            <li (click)="setStatus(null, potentiel)">
+                              <i class="fas fa-ellipsis-h"></i> Non défini
+                            </li>
+                          </ul>
+                          <span class="nom_personne">{{
+                            potentiel.Libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
                         </span>
-                        <ul
-                          class="menu-icons"
-                          [ngClass]="{
-                            'is-visible': potentiel.isVisible,
-                            not: !potentiel.isVisible
-                          }"
-                        >
-                          <li (click)="setStatus('présent', potentiel)">
-                            <i class="fas fa-thumbs-up"></i> Présent
-                          </li>
-                          <li (click)="setStatus('absent', potentiel)">
-                            <i class="fas fa-thumbs-down"></i> Absent
-                          </li>
-                          <li (click)="setStatus('essai', potentiel)">
-                            <i class="fas fa-question"></i> Essai
-                          </li>
-                          <li (click)="setStatus('convoqué', potentiel)">
-                            <i class="fas fa-hand-point-up"></i> Convoqué
-                          </li>
-                          <li (click)="setStatus(null, potentiel)">
-                            <i class="fas fa-ellipsis-h"></i> Non défini
-                          </li>
-                        </ul>
-                        <span class="nom_personne">{{
-                          potentiel.Libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          (click)="MAJInscription(potentiel, true)"
-                          [disabled]="!GetNbPersonne(Presents)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, false)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, true)"
+                            [disabled]="!GetNbPersonne(Presents)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </ng-container>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="!potentiel.StatutSeance">
-                  <ng-container *ngIf="potentiel.StatutInscription === 'essai'">
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium">
-                          <span
-                            class="fa-stack fa-sm"
-                            (click)="potentiel.isVisible = true"
-                          >
-                            <i class="fas fa-stack-2x fa-question"></i>
+                <ng-container *ngFor="let potentiel of All">
+                  <ng-container *ngIf="!potentiel.StatutSeance">
+                    <ng-container
+                      *ngIf="potentiel.StatutInscription === 'essai'"
+                    >
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span
+                              class="fa-stack fa-sm"
+                              (click)="potentiel.isVisible = true"
+                            >
+                              <i class="fas fa-stack-2x fa-question"></i>
+                            </span>
                           </span>
+                          <ul
+                            class="menu-icons"
+                            [ngClass]="{
+                              'is-visible': potentiel.isVisible,
+                              not: !potentiel.isVisible
+                            }"
+                          >
+                            <li (click)="setStatus('présent', potentiel)">
+                              <i class="fas fa-thumbs-up"></i> Présent
+                            </li>
+                            <li (click)="setStatus('absent', potentiel)">
+                              <i class="fas fa-thumbs-down"></i> Absent
+                            </li>
+                            <li (click)="setStatus('essai', potentiel)">
+                              <i class="fas fa-question"></i> Essai
+                            </li>
+                            <li (click)="setStatus('convoqué', potentiel)">
+                              <i class="fas fa-hand-point-up"></i> Convoqué
+                            </li>
+                            <li (click)="setStatus(null, potentiel)">
+                              <i class="fas fa-ellipsis-h"></i> Non défini
+                            </li>
+                          </ul>
+                          <span class="nom_personne">{{
+                            potentiel.Libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
                         </span>
-                        <ul
-                          class="menu-icons"
-                          [ngClass]="{
-                            'is-visible': potentiel.isVisible,
-                            not: !potentiel.isVisible
-                          }"
-                        >
-                          <li (click)="setStatus('présent', potentiel)">
-                            <i class="fas fa-thumbs-up"></i> Présent
-                          </li>
-                          <li (click)="setStatus('absent', potentiel)">
-                            <i class="fas fa-thumbs-down"></i> Absent
-                          </li>
-                          <li (click)="setStatus('essai', potentiel)">
-                            <i class="fas fa-question"></i> Essai
-                          </li>
-                          <li (click)="setStatus('convoqué', potentiel)">
-                            <i class="fas fa-hand-point-up"></i> Convoqué
-                          </li>
-                          <li (click)="setStatus(null, potentiel)">
-                            <i class="fas fa-ellipsis-h"></i> Non défini
-                          </li>
-                        </ul>
-                        <span class="nom_personne">{{
-                          potentiel.Libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          (click)="MAJInscription(potentiel, true)"
-                          [disabled]="!GetNbPersonne(Presents)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, false)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, true)"
+                            [disabled]="!GetNbPersonne(Presents)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </ng-container>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="!potentiel.StatutSeance">
-                  <ng-container
-                    *ngIf="potentiel.StatutInscription === 'convoqué'"
-                  >
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium">
-                          <span
-                            class="fa-stack fa-sm"
-                            (click)="potentiel.isVisible = true"
-                          >
-                            <i
-                              class="fas fa-stack-2x fa-hand-point-up has-text-info"
-                            ></i>
+                <ng-container *ngFor="let potentiel of All">
+                  <ng-container *ngIf="!potentiel.StatutSeance">
+                    <ng-container
+                      *ngIf="potentiel.StatutInscription === 'convoqué'"
+                    >
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span
+                              class="fa-stack fa-sm"
+                              (click)="potentiel.isVisible = true"
+                            >
+                              <i
+                                class="fas fa-stack-2x fa-hand-point-up has-text-info"
+                              ></i>
+                            </span>
                           </span>
+                          <ul
+                            class="menu-icons"
+                            [ngClass]="{
+                              'is-visible': potentiel.isVisible,
+                              not: !potentiel.isVisible
+                            }"
+                          >
+                            <li (click)="setStatus('présent', potentiel)">
+                              <i class="fas fa-thumbs-up"></i> Présent
+                            </li>
+                            <li (click)="setStatus('absent', potentiel)">
+                              <i class="fas fa-thumbs-down"></i> Absent
+                            </li>
+                            <li (click)="setStatus('essai', potentiel)">
+                              <i class="fas fa-question"></i> Essai
+                            </li>
+                            <li (click)="setStatus('convoqué', potentiel)">
+                              <i class="fas fa-hand-point-up"></i> Convoqué
+                            </li>
+                            <li (click)="setStatus(null, potentiel)">
+                              <i class="fas fa-ellipsis-h"></i> Non défini
+                            </li>
+                          </ul>
+                          <span class="nom_personne">{{
+                            potentiel.Libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
                         </span>
-                        <ul
-                          class="menu-icons"
-                          [ngClass]="{
-                            'is-visible': potentiel.isVisible,
-                            not: !potentiel.isVisible
-                          }"
-                        >
-                          <li (click)="setStatus('présent', potentiel)">
-                            <i class="fas fa-thumbs-up"></i> Présent
-                          </li>
-                          <li (click)="setStatus('absent', potentiel)">
-                            <i class="fas fa-thumbs-down"></i> Absent
-                          </li>
-                          <li (click)="setStatus('essai', potentiel)">
-                            <i class="fas fa-question"></i> Essai
-                          </li>
-                          <li (click)="setStatus('convoqué', potentiel)">
-                            <i class="fas fa-hand-point-up"></i> Convoqué
-                          </li>
-                          <li (click)="setStatus(null, potentiel)">
-                            <i class="fas fa-ellipsis-h"></i> Non défini
-                          </li>
-                        </ul>
-                        <span class="nom_personne">{{
-                          potentiel.Libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          (click)="MAJInscription(potentiel, true)"
-                          [disabled]="!GetNbPersonne(Presents)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, false)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, true)"
+                            [disabled]="!GetNbPersonne(Presents)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </ng-container>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="!potentiel.StatutSeance">
-                  <ng-container
-                    *ngIf="potentiel.StatutInscription === 'absent'"
-                  >
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium">
-                          <span
-                            class="fa-stack fa-sm"
-                            (click)="potentiel.isVisible = true"
-                          >
-                            <i
-                              class="fas fa-stack-2x fa-thumbs-down has-text-danger"
-                            ></i>
+                <ng-container *ngFor="let potentiel of All">
+                  <ng-container *ngIf="!potentiel.StatutSeance">
+                    <ng-container
+                      *ngIf="potentiel.StatutInscription === 'absent'"
+                    >
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span
+                              class="fa-stack fa-sm"
+                              (click)="potentiel.isVisible = true"
+                            >
+                              <i
+                                class="fas fa-stack-2x fa-thumbs-down has-text-danger"
+                              ></i>
+                            </span>
                           </span>
+                          <ul
+                            class="menu-icons"
+                            [ngClass]="{
+                              'is-visible': potentiel.isVisible,
+                              not: !potentiel.isVisible
+                            }"
+                          >
+                            <li (click)="setStatus('présent', potentiel)">
+                              <i class="fas fa-thumbs-up"></i> Présent
+                            </li>
+                            <li (click)="setStatus('absent', potentiel)">
+                              <i class="fas fa-thumbs-down"></i> Absent
+                            </li>
+                            <li (click)="setStatus('essai', potentiel)">
+                              <i class="fas fa-question"></i> Essai
+                            </li>
+                            <li (click)="setStatus('convoqué', potentiel)">
+                              <i class="fas fa-hand-point-up"></i> Convoqué
+                            </li>
+                            <li (click)="setStatus(null, potentiel)">
+                              <i class="fas fa-ellipsis-h"></i> Non défini
+                            </li>
+                          </ul>
+                          <span class="nom_personne">{{
+                            potentiel.Libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
                         </span>
-                        <ul
-                          class="menu-icons"
-                          [ngClass]="{
-                            'is-visible': potentiel.isVisible,
-                            not: !potentiel.isVisible
-                          }"
-                        >
-                          <li (click)="setStatus('présent', potentiel)">
-                            <i class="fas fa-thumbs-up"></i> Présent
-                          </li>
-                          <li (click)="setStatus('absent', potentiel)">
-                            <i class="fas fa-thumbs-down"></i> Absent
-                          </li>
-                          <li (click)="setStatus('essai', potentiel)">
-                            <i class="fas fa-question"></i> Essai
-                          </li>
-                          <li (click)="setStatus('convoqué', potentiel)">
-                            <i class="fas fa-hand-point-up"></i> Convoqué
-                          </li>
-                          <li (click)="setStatus(null, potentiel)">
-                            <i class="fas fa-ellipsis-h"></i> Non défini
-                          </li>
-                        </ul>
-                        <span class="nom_personne">{{
-                          potentiel.Libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          (click)="MAJInscription(potentiel, true)"
-                          [disabled]="!GetNbPersonne(Presents)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, false)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, true)"
+                            [disabled]="!GetNbPersonne(Presents)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </ng-container>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="!potentiel.StatutSeance">
-                  <ng-container *ngIf="potentiel.StatutInscription === null">
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium">
-                          <span
-                            class="fa-stack fa-sm"
-                            (click)="potentiel.isVisible = true"
-                          >
-                            <i class="fas fa-stack-2x fa-ellipsis-h"></i>
+                <ng-container *ngFor="let potentiel of All">
+                  <ng-container *ngIf="!potentiel.StatutSeance">
+                    <ng-container *ngIf="potentiel.StatutInscription === null">
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span
+                              class="fa-stack fa-sm"
+                              (click)="potentiel.isVisible = true"
+                            >
+                              <i class="fas fa-stack-2x fa-ellipsis-h"></i>
+                            </span>
                           </span>
+                          <ul
+                            class="menu-icons"
+                            [ngClass]="{
+                              'is-visible': potentiel.isVisible,
+                              not: !potentiel.isVisible
+                            }"
+                          >
+                            <li (click)="setStatus('présent', potentiel)">
+                              <i class="fas fa-thumbs-up"></i> Présent
+                            </li>
+                            <li (click)="setStatus('absent', potentiel)">
+                              <i class="fas fa-thumbs-down"></i> Absent
+                            </li>
+                            <li (click)="setStatus('essai', potentiel)">
+                              <i class="fas fa-question"></i> Essai
+                            </li>
+                            <li (click)="setStatus('convoqué', potentiel)">
+                              <i class="fas fa-hand-point-up"></i> Convoqué
+                            </li>
+                            <li (click)="setStatus(null, potentiel)">
+                              <i class="fas fa-ellipsis-h"></i> Non défini
+                            </li>
+                          </ul>
+                          <span class="nom_personne">{{
+                            potentiel.Libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
                         </span>
-                        <ul
-                          class="menu-icons"
-                          [ngClass]="{
-                            'is-visible': potentiel.isVisible,
-                            not: !potentiel.isVisible
-                          }"
-                        >
-                          <li (click)="setStatus('présent', potentiel)">
-                            <i class="fas fa-thumbs-up"></i> Présent
-                          </li>
-                          <li (click)="setStatus('absent', potentiel)">
-                            <i class="fas fa-thumbs-down"></i> Absent
-                          </li>
-                          <li (click)="setStatus('essai', potentiel)">
-                            <i class="fas fa-question"></i> Essai
-                          </li>
-                          <li (click)="setStatus('convoqué', potentiel)">
-                            <i class="fas fa-hand-point-up"></i> Convoqué
-                          </li>
-                          <li (click)="setStatus(null, potentiel)">
-                            <i class="fas fa-ellipsis-h"></i> Non défini
-                          </li>
-                        </ul>
-                        <span class="nom_personne">{{
-                          potentiel.Libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          (click)="MAJInscription(potentiel, true)"
-                          [disabled]="!GetNbPersonne(Presents)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, false)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, true)"
+                            [disabled]="!GetNbPersonne(Presents)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </ng-container>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <h6 class="title is-6">
-                <span i18n>Présents</span>&nbsp;({{
+              </span>
+              <h6  style="cursor:pointer;"
+                class="title is-6"
+                (click)="
+                  display_present
+                    ? (display_present = false)
+                    : (display_present = true)
+                "
+              >
+                <i *ngIf="!display_present" class="fas fa-chevron-down"></i>
+                <i *ngIf="display_present" class="fas fa-chevron-up"></i>
+                &nbsp;<span i18n>Présents</span>&nbsp;({{
                   Presents.length
                 }}&nbsp;<span i18n>personnes</span>)
               </h6>
-              <ng-container *ngFor="let potentiel of Presents">
-                <ng-container *ngIf="potentiel.StatutSeance">
-                  <ng-container *ngIf="potentiel.StatutSeance === 'présent'">
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium">
-                          <span class="fa-stack fa-sm">
-                            <i
-                              *ngIf="potentiel.StatutInscription == 'présent'"
-                              class="fas fa-stack-2x fa-thumbs-up"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.StatutInscription == 'absent'"
-                              class="fas fa-stack-2x fa-thumbs-down"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.StatutInscription == 'essai'"
-                              class="fas fa-stack-2x fa-question"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.StatutInscription == 'convoqué'"
-                              class="fas fa-stack-2x fa-hand-point-up"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.StatutInscription == null"
-                              class="fas fa-stack-2x fa-ellipsis-h"
-                            ></i>
+              <span *ngIf="display_present">
+                <ng-container *ngFor="let potentiel of Presents">
+                  <ng-container *ngIf="potentiel.StatutSeance">
+                    <ng-container *ngIf="potentiel.StatutSeance === 'présent'">
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span class="fa-stack fa-sm">
+                              <i
+                                *ngIf="potentiel.StatutInscription == 'présent'"
+                                class="fas fa-stack-2x fa-thumbs-up"
+                              ></i>
+                              <i
+                                *ngIf="potentiel.StatutInscription == 'absent'"
+                                class="fas fa-stack-2x fa-thumbs-down"
+                              ></i>
+                              <i
+                                *ngIf="potentiel.StatutInscription == 'essai'"
+                                class="fas fa-stack-2x fa-question"
+                              ></i>
+                              <i
+                                *ngIf="
+                                  potentiel.StatutInscription == 'convoqué'
+                                "
+                                class="fas fa-stack-2x fa-hand-point-up"
+                              ></i>
+                              <i
+                                *ngIf="potentiel.StatutInscription == null"
+                                class="fas fa-stack-2x fa-ellipsis-h"
+                              ></i>
+                            </span>
                           </span>
+                          <span class="nom_personne">{{
+                            potentiel.Libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
                         </span>
-                        <span class="nom_personne">{{
-                          potentiel.Libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
 
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          class="button is-rounded is-primary"
-                          (click)="MAJInscription(potentiel, null)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, false)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, null)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </ng-container>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <h6 class="title is-6">
+              </span>
+              <h6  style="cursor:pointer;"
+                class="title is-6"
+                (click)="
+                  display_absent
+                    ? (display_absent = false)
+                    : (display_absent = true)
+                "
+              >
+                <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
+                <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
                 <span i18n>Absents</span>&nbsp;({{ Absents.length }}&nbsp;<span
                   i18n
                   >personnes</span
                 >)
               </h6>
+              <span *ngIf="display_absent">
               <ng-container *ngFor="let potentiel of Absents">
                 <ng-container *ngIf="potentiel.StatutSeance">
                   <ng-container *ngIf="potentiel.StatutSeance === 'absent'">
@@ -472,23 +508,622 @@
                     </div>
                   </ng-container>
                 </ng-container>
-              </ng-container>
-              <footer class="card-footer">
-                <div class="columns">
-                  <div class="column">
-                    <div class="buttons"></div>
-                  </div>
-                </div>
-              </footer>
+              </ng-container></span>
+              <button
+                class="scroll-to-top"
+                *ngIf="showScrollToTop"
+                (click)="scrollToTop()"
+                title="Revenir en haut"
+              >
+                ↑
+              </button>
             </div>
           </div>
+          <footer class="card-footer">
+            <div class="columns">
+              <div class="column">
+                <div class="buttons">
+                  <btn
+                  [type_button]="'RetourSmall'"
+                  (click)="RetourListe()"
+                >
+                </btn>
+                  <div class="field is-horizontal">
+                    <div class="field-label is-normal is-two-quarter">
+                      <label class="label" style="white-space: nowrap" i18n
+                        >Ajouter un adhérent à la séance</label
+                      >
+                    </div>
+                    <div class="field-body">
+                      <div class="field is-narrow">
+                        <div class="control">
+                          <div class="select is-fullwidth">
+                            <select
+                              id="seasons"
+                              [(ngModel)]="adherent_to"
+                              i18n-placeholder
+                              placeholder="Sélectionner l'adhérent"
+                            >
+                              <!-- Options pour les professeurs -->
+                              <ng-container *ngFor="let add of Autres">
+                                <option [ngValue]="add">
+                                  {{ add.Libelle }}
+                                </option>
+                              </ng-container>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <btn
+                      [type_button]="'AjouterSmall'"
+                      [disabled]="!adherent_to"
+                      (click)="AjouterAdherentsHorsGroupe()"
+                    >
+                    </btn>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
     </div>
   </span>
+<span class="mobile">
+  <div class="container-box">
+    <nav class="navbar is-fixed-top">    
+      <btn *ngIf="!add_adh_seance" [type_button]="'RetourMobile'" (click)="RetourListe()"></btn>
+        <button *ngIf="!add_adh_seance" (click)="add_adh_seance = true" type="button" class="button is-outlined is-primary">
+          <span i18n>Ajouter un adhérent à la séance</span>
+        <i class="fas  fa-2x  fa-plus"></i>
+        </button>
+        <span style="display: flex
+        ;
+            flex-direction: row;">
+            <div  *ngIf="add_adh_seance" class="control">
+              <div class="select">
+                <select
+                  id="seasons"
+                  [(ngModel)]="adherent_to"
+                  i18n-placeholder
+                  placeholder="Sélectionner l'adhérent"
+                >
+                  <!-- Options pour les professeurs -->
+                  <ng-container *ngFor="let add of Autres">
+                    <option [ngValue]="add">
+                      {{ add.Libelle }}
+                    </option>
+                  </ng-container>
+                </select>
+              </div>
+          </div>
+        <btn  *ngIf="add_adh_seance"
+          [type_button]="'CreerMobile'"
+          [disabled]="!adherent_to"
+          (click)="AjouterAdherentsHorsGroupe(); add_adh_seance = false"
+        >
+        </btn></span>
+    </nav>
+    <p class="title is-4">
+      {{ thisSeance.libelle }}&nbsp;{{ seanceText }}
+    </p>
+    <span #scrollableContent>
+      <h6 style="cursor:pointer;"
+      class="title is-6"
+      (click)="
+        display_personne
+          ? (display_personne = false)
+          : (display_personne = true)
+      "
+    >
+      <i *ngIf="!display_personne" class="fas fa-chevron-down"></i>
+      <i *ngIf="display_personne" class="fas fa-chevron-up"></i>
+      &nbsp; <span i18n>Présences potentielles</span>&nbsp;({{
+        All.length
+      }}&nbsp;<span i18n>personnes</span>)
+    </h6>
+    <span *ngIf="display_personne">
+      <ng-container *ngFor="let potentiel of All">
+        <ng-container *ngIf="!potentiel.StatutSeance">
+          <ng-container
+            *ngIf="potentiel.StatutInscription === 'présent'"
+          >
+            <div class="ligne">
+              <span class="partie1">
+                <span class="icon is-medium">
+                  <span
+                    class="fa-stack fa-sm"
+                    (click)="potentiel.isVisible = true"
+                  >
+                    <i
+                      class="fas fa-stack-2x fa-thumbs-up has-text-success"
+                    ></i>
+                  </span>
+                </span>
+                <ul
+                  class="menu-icons"
+                  [ngClass]="{
+                    'is-visible': potentiel.isVisible,
+                    not: !potentiel.isVisible
+                  }"
+                >
+                  <li (click)="setStatus('présent', potentiel)">
+                    <i class="fas fa-thumbs-up"></i> Présent
+                  </li>
+                  <li (click)="setStatus('absent', potentiel)">
+                    <i class="fas fa-thumbs-down"></i> Absent
+                  </li>
+                  <li (click)="setStatus('essai', potentiel)">
+                    <i class="fas fa-question"></i> Essai
+                  </li>
+                  <li (click)="setStatus('convoqué', potentiel)">
+                    <i class="fas fa-hand-point-up"></i> Convoqué
+                  </li>
+                  <li (click)="setStatus(null, potentiel)">
+                    <i class="fas fa-ellipsis-h"></i> Non défini
+                  </li>
+                </ul>
+                <span class="nom_personne">{{
+                  potentiel.Libelle
+                }}</span>
+                <span [title]="contact_urgence_nom(potentiel)">{{
+                  contact_urgence(potentiel)
+                }}</span>
+              </span>
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-primary"
+                  (click)="MAJInscription(potentiel, true)"
+                  [disabled]="!GetNbPersonne(Presents)"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-danger"
+                  (click)="MAJInscription(potentiel, false)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngFor="let potentiel of All">
+        <ng-container *ngIf="!potentiel.StatutSeance">
+          <ng-container
+            *ngIf="potentiel.StatutInscription === 'essai'"
+          >
+            <div class="ligne">
+              <span class="partie1">
+                <span class="icon is-medium">
+                  <span
+                    class="fa-stack fa-sm"
+                    (click)="potentiel.isVisible = true"
+                  >
+                    <i class="fas fa-stack-2x fa-question"></i>
+                  </span>
+                </span>
+                <ul
+                  class="menu-icons"
+                  [ngClass]="{
+                    'is-visible': potentiel.isVisible,
+                    not: !potentiel.isVisible
+                  }"
+                >
+                  <li (click)="setStatus('présent', potentiel)">
+                    <i class="fas fa-thumbs-up"></i> Présent
+                  </li>
+                  <li (click)="setStatus('absent', potentiel)">
+                    <i class="fas fa-thumbs-down"></i> Absent
+                  </li>
+                  <li (click)="setStatus('essai', potentiel)">
+                    <i class="fas fa-question"></i> Essai
+                  </li>
+                  <li (click)="setStatus('convoqué', potentiel)">
+                    <i class="fas fa-hand-point-up"></i> Convoqué
+                  </li>
+                  <li (click)="setStatus(null, potentiel)">
+                    <i class="fas fa-ellipsis-h"></i> Non défini
+                  </li>
+                </ul>
+                <span class="nom_personne">{{
+                  potentiel.Libelle
+                }}</span>
+                <span [title]="contact_urgence_nom(potentiel)">{{
+                  contact_urgence(potentiel)
+                }}</span>
+              </span>
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-primary"
+                  (click)="MAJInscription(potentiel, true)"
+                  [disabled]="!GetNbPersonne(Presents)"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-danger"
+                  (click)="MAJInscription(potentiel, false)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngFor="let potentiel of All">
+        <ng-container *ngIf="!potentiel.StatutSeance">
+          <ng-container
+            *ngIf="potentiel.StatutInscription === 'convoqué'"
+          >
+            <div class="ligne">
+              <span class="partie1">
+                <span class="icon is-medium">
+                  <span
+                    class="fa-stack fa-sm"
+                    (click)="potentiel.isVisible = true"
+                  >
+                    <i
+                      class="fas fa-stack-2x fa-hand-point-up has-text-info"
+                    ></i>
+                  </span>
+                </span>
+                <ul
+                  class="menu-icons"
+                  [ngClass]="{
+                    'is-visible': potentiel.isVisible,
+                    not: !potentiel.isVisible
+                  }"
+                >
+                  <li (click)="setStatus('présent', potentiel)">
+                    <i class="fas fa-thumbs-up"></i> Présent
+                  </li>
+                  <li (click)="setStatus('absent', potentiel)">
+                    <i class="fas fa-thumbs-down"></i> Absent
+                  </li>
+                  <li (click)="setStatus('essai', potentiel)">
+                    <i class="fas fa-question"></i> Essai
+                  </li>
+                  <li (click)="setStatus('convoqué', potentiel)">
+                    <i class="fas fa-hand-point-up"></i> Convoqué
+                  </li>
+                  <li (click)="setStatus(null, potentiel)">
+                    <i class="fas fa-ellipsis-h"></i> Non défini
+                  </li>
+                </ul>
+                <span class="nom_personne">{{
+                  potentiel.Libelle
+                }}</span>
+                <span [title]="contact_urgence_nom(potentiel)">{{
+                  contact_urgence(potentiel)
+                }}</span>
+              </span>
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-primary"
+                  (click)="MAJInscription(potentiel, true)"
+                  [disabled]="!GetNbPersonne(Presents)"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-danger"
+                  (click)="MAJInscription(potentiel, false)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngFor="let potentiel of All">
+        <ng-container *ngIf="!potentiel.StatutSeance">
+          <ng-container
+            *ngIf="potentiel.StatutInscription === 'absent'"
+          >
+            <div class="ligne">
+              <span class="partie1">
+                <span class="icon is-medium">
+                  <span
+                    class="fa-stack fa-sm"
+                    (click)="potentiel.isVisible = true"
+                  >
+                    <i
+                      class="fas fa-stack-2x fa-thumbs-down has-text-danger"
+                    ></i>
+                  </span>
+                </span>
+                <ul
+                  class="menu-icons"
+                  [ngClass]="{
+                    'is-visible': potentiel.isVisible,
+                    not: !potentiel.isVisible
+                  }"
+                >
+                  <li (click)="setStatus('présent', potentiel)">
+                    <i class="fas fa-thumbs-up"></i> Présent
+                  </li>
+                  <li (click)="setStatus('absent', potentiel)">
+                    <i class="fas fa-thumbs-down"></i> Absent
+                  </li>
+                  <li (click)="setStatus('essai', potentiel)">
+                    <i class="fas fa-question"></i> Essai
+                  </li>
+                  <li (click)="setStatus('convoqué', potentiel)">
+                    <i class="fas fa-hand-point-up"></i> Convoqué
+                  </li>
+                  <li (click)="setStatus(null, potentiel)">
+                    <i class="fas fa-ellipsis-h"></i> Non défini
+                  </li>
+                </ul>
+                <span class="nom_personne">{{
+                  potentiel.Libelle
+                }}</span>
+                <span [title]="contact_urgence_nom(potentiel)">{{
+                  contact_urgence(potentiel)
+                }}</span>
+              </span>
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-primary"
+                  (click)="MAJInscription(potentiel, true)"
+                  [disabled]="!GetNbPersonne(Presents)"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-danger"
+                  (click)="MAJInscription(potentiel, false)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngFor="let potentiel of All">
+        <ng-container *ngIf="!potentiel.StatutSeance">
+          <ng-container *ngIf="potentiel.StatutInscription === null">
+            <div class="ligne">
+              <span class="partie1">
+                <span class="icon is-medium">
+                  <span
+                    class="fa-stack fa-sm"
+                    (click)="potentiel.isVisible = true"
+                  >
+                    <i class="fas fa-stack-2x fa-ellipsis-h"></i>
+                  </span>
+                </span>
+                <ul
+                  class="menu-icons"
+                  [ngClass]="{
+                    'is-visible': potentiel.isVisible,
+                    not: !potentiel.isVisible
+                  }"
+                >
+                  <li (click)="setStatus('présent', potentiel)">
+                    <i class="fas fa-thumbs-up"></i> Présent
+                  </li>
+                  <li (click)="setStatus('absent', potentiel)">
+                    <i class="fas fa-thumbs-down"></i> Absent
+                  </li>
+                  <li (click)="setStatus('essai', potentiel)">
+                    <i class="fas fa-question"></i> Essai
+                  </li>
+                  <li (click)="setStatus('convoqué', potentiel)">
+                    <i class="fas fa-hand-point-up"></i> Convoqué
+                  </li>
+                  <li (click)="setStatus(null, potentiel)">
+                    <i class="fas fa-ellipsis-h"></i> Non défini
+                  </li>
+                </ul>
+                <span class="nom_personne">{{
+                  potentiel.Libelle
+                }}</span>
+                <span [title]="contact_urgence_nom(potentiel)">{{
+                  contact_urgence(potentiel)
+                }}</span>
+              </span>
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-primary"
+                  (click)="MAJInscription(potentiel, true)"
+                  [disabled]="!GetNbPersonne(Presents)"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-danger"
+                  (click)="MAJInscription(potentiel, false)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </span>
+    <h6  style="cursor:pointer;"
+      class="title is-6"
+      (click)="
+        display_present
+          ? (display_present = false)
+          : (display_present = true)
+      "
+    >
+      <i *ngIf="!display_present" class="fas fa-chevron-down"></i>
+      <i *ngIf="display_present" class="fas fa-chevron-up"></i>
+      &nbsp;<span i18n>Présents</span>&nbsp;({{
+        Presents.length
+      }}&nbsp;<span i18n>personnes</span>)
+    </h6>
+    <span *ngIf="display_present">
+      <ng-container *ngFor="let potentiel of Presents">
+        <ng-container *ngIf="potentiel.StatutSeance">
+          <ng-container *ngIf="potentiel.StatutSeance === 'présent'">
+            <div class="ligne">
+              <span class="partie1">
+                <span class="icon is-medium">
+                  <span class="fa-stack fa-sm">
+                    <i
+                      *ngIf="potentiel.StatutInscription == 'présent'"
+                      class="fas fa-stack-2x fa-thumbs-up"
+                    ></i>
+                    <i
+                      *ngIf="potentiel.StatutInscription == 'absent'"
+                      class="fas fa-stack-2x fa-thumbs-down"
+                    ></i>
+                    <i
+                      *ngIf="potentiel.StatutInscription == 'essai'"
+                      class="fas fa-stack-2x fa-question"
+                    ></i>
+                    <i
+                      *ngIf="
+                        potentiel.StatutInscription == 'convoqué'
+                      "
+                      class="fas fa-stack-2x fa-hand-point-up"
+                    ></i>
+                    <i
+                      *ngIf="potentiel.StatutInscription == null"
+                      class="fas fa-stack-2x fa-ellipsis-h"
+                    ></i>
+                  </span>
+                </span>
+                <span class="nom_personne">{{
+                  potentiel.Libelle
+                }}</span>
+                <span [title]="contact_urgence_nom(potentiel)">{{
+                  contact_urgence(potentiel)
+                }}</span>
+              </span>
+
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  class="button is-rounded is-primary"
+                  (click)="MAJInscription(potentiel, null)"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="button is-outlined is-rounded is-danger"
+                  (click)="MAJInscription(potentiel, false)"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </span>
+    <h6  style="cursor:pointer;"
+      class="title is-6"
+      (click)="
+        display_absent
+          ? (display_absent = false)
+          : (display_absent = true)
+      "
+    >
+      <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
+      <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
+      <span i18n>Absents</span>&nbsp;({{ Absents.length }}&nbsp;<span
+        i18n
+        >personnes</span
+      >)
+    </h6>
+    <span *ngIf="display_absent">
+    <ng-container *ngFor="let potentiel of Absents">
+      <ng-container *ngIf="potentiel.StatutSeance">
+        <ng-container *ngIf="potentiel.StatutSeance === 'absent'">
+          <div class="ligne">
+            <span class="partie1">
+              <span class="icon is-medium">
+                <span class="fa-stack fa-sm">
+                  <i
+                    *ngIf="potentiel.StatutInscription == 'présent'"
+                    class="fas fa-stack-2x fa-thumbs-up"
+                  ></i>
+                  <i
+                    *ngIf="potentiel.StatutInscription == 'absent'"
+                    class="fas fa-stack-2x fa-thumbs-down"
+                  ></i>
+                  <i
+                    *ngIf="potentiel.StatutInscription == 'essai'"
+                    class="fas fa-stack-2x fa-question"
+                  ></i>
+                  <i
+                    *ngIf="potentiel.StatutInscription == 'convoqué'"
+                    class="fas fa-stack-2x fa-hand-point-up"
+                  ></i>
+                  <i
+                    *ngIf="potentiel.StatutInscription == null"
+                    class="fas fa-stack-2x fa-ellipsis-h"
+                  ></i>
+                </span>
+              </span>
+              <span class="nom_personne">{{
+                potentiel.Libelle
+              }}</span>
+              <span [title]="contact_urgence_nom(potentiel)">{{
+                contact_urgence(potentiel)
+              }}</span>
+            </span>
+
+            <div class="buttons has-addons">
+              <button
+                type="button"
+                class="button is-outlined is-rounded is-primary"
+                [disabled]="!GetNbPersonne(Presents)"
+                (click)="MAJInscription(potentiel, true)"
+              >
+                <i class="fas fa-check"></i>
+              </button>
+              <button
+                type="button"
+                class="button is-rounded is-danger"
+                (click)="MAJInscription(potentiel, null)"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container></span>
+    <button
+      class="scroll-to-top"
+      *ngIf="showScrollToTop"
+      (click)="scrollToTop()"
+      title="Revenir en haut"
+    >
+      ↑
+    </button>
+    </span>
+
+  </div>
+</span>
+
 </ng-container>
 
-<div *ngIf="thisSeance" class="container">
+<!-- <div *ngIf="thisSeance" class="container">
   <div class="columns is-justify-content-center">
     <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
       <div class="box">
@@ -574,7 +1209,6 @@
                 i18n-placeholder
                 placeholder="Sélectionner l'adhérent"
               >
-                <!-- Options pour les professeurs -->
                 <ng-container *ngFor="let add of Autres">
                   <option [ngValue]="add">{{ add.Libelle }}</option>
                 </ng-container>
@@ -1035,4 +1669,4 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->

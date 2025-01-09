@@ -415,8 +415,8 @@
                                   <ng-container
                                     *ngFor="let lieu of liste_lieu_filter"
                                   >
-                                    <option [ngValue]="lieu">
-                                      {{ lieu }}
+                                    <option [ngValue]="lieu.key">
+                                      {{ lieu.value }}
                                     </option>
                                   </ng-container>
                                 </select>
@@ -442,7 +442,7 @@
                             class="tag is-success"
                           >
                             <span i18n>Lieu : </span>
-                            <span i18n>{{ filters.filter_lieu }}</span>
+                            <span i18n>{{ trouverLieu(filters.filter_lieu) }}</span>
 
                             <button
                               class="delete"
@@ -605,8 +605,8 @@
                       >
                         <option [ngValue]="null" i18n>Tous</option>
                         <ng-container *ngFor="let lieu of liste_lieu_filter">
-                          <option [ngValue]="lieu">
-                            {{ lieu }}
+                          <option [ngValue]="lieu.key">
+                            {{ lieu.value }}
                           </option>
                         </ng-container>
                       </select>
@@ -632,7 +632,7 @@
                   class="tag is-large is-success"
                 >
                   <span i18n>Lieu : </span>
-                  <span i18n>{{ filters.filter_lieu }}</span>
+                  <span i18n>{{ trouverLieu(filters.filter_lieu) }}</span>
 
                   <button
                     class="delete"

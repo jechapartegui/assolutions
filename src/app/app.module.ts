@@ -55,6 +55,7 @@ import { MultifiltersSaisonPipe } from 'src/filters/multifilters-saison.pipe';
 import { MultifiltersComptePipe } from 'src/filters/multifilters-compte.pipe';
 import { MultifiltersProfPipe } from 'src/filters/multifilters-prof.pipe';
 import { FilterLibelleNomPipe } from 'src/filters/filter-libellenom.pipe';
+import { MultifiltersMenuPipe } from 'src/filters/multifilters-menu.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -68,7 +69,7 @@ import { FilterLibelleNomPipe } from 'src/filters/filter-libellenom.pipe';
     ProfComponent,RangePipe,
     NotifJechaComponent,  AdministrateursComponent,
     ContactItemComponent, 
-    MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
+    MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, TableauDeBordComponent, ImportAdherentComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
   imports: [
     BrowserModule,

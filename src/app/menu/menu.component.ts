@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adherent_VM } from 'src/class/adherent';
+import { AdherentMenu } from 'src/class/adherent';
 import { cours } from 'src/class/cours';
-import { inscription_seance, StatutPresence } from 'src/class/inscription';
+import { inscription_seance, InscriptionSeance, StatutPresence } from 'src/class/inscription';
 import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
 import { professeur } from 'src/class/professeur';
 import { AdherentService } from 'src/services/adherent.service';
@@ -14,7 +14,7 @@ import { InscriptionSeanceService } from 'src/services/inscription-seance.servic
 import { LieuService } from 'src/services/lieu.service';
 import { StaticClass } from '../global';
 import { ProfesseurService } from 'src/services/professeur.service';
-import { Seance } from 'src/class/seance';
+import { seance, StatutSeance } from 'src/class/seance';
 
 @Component({
   selector: 'app-menu',
@@ -23,15 +23,21 @@ import { Seance } from 'src/class/seance';
 })
 export class MenuComponent implements OnInit {
   action: string;
-  Riders: Adherent_VM[];
+  Riders: AdherentMenu[];
   listeprof: professeur[];
   listelieu: KeyValuePair[];
   btn_adherent: boolean = false;
   btn_admin: boolean = false;
   btn_prof: boolean = false;
 
+
+    public loading: boolean = false;
+    @ViewChild('scrollableContent', { static: false })
+    scrollableContent!: ElementRef;
+    showScrollToTop: boolean = false;
+
   public liste_prof_filter: KeyValuePairAny[];
-  public liste_lieu_filter: KeyValuePairAny[];
+  public liste_lieu_filter: string[];
   listeCours: cours[] = [];
 
   public g: StaticClass;
@@ -48,6 +54,7 @@ export class MenuComponent implements OnInit {
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le menu`;
+    this.loading = true;
     if (GlobalService.is_logged_in) {
       const projet = GlobalService.other_project.find(
         (x) => x.id == GlobalService.projet.id
@@ -94,9 +101,9 @@ export class MenuComponent implements OnInit {
             .Get(GlobalService.compte.id, GlobalService.menu)
             .then((riders) => {
               this.Riders = riders.map((x) => {
-                const rider = new Adherent_VM(x);
-                rider.filter_date_apres = date_apres;
-                rider.filter_date_avant = date_avant;
+                const rider = new AdherentMenu(x);
+                rider.filters.filter_date_avant = yesterday;
+                rider.filters.filter_date_apres = nextMonth;
                 return rider;
               });
 
@@ -120,6 +127,7 @@ export class MenuComponent implements OnInit {
                     );
                     errorService.emitChange(o);
                     this.router.navigate(['/adherent']);
+                    this.loading = false;
                     return;
                   }
                   this.listeprof = profs;
@@ -137,20 +145,24 @@ export class MenuComponent implements OnInit {
                         errorService.emitChange(o);
                         if (GlobalService.menu === 'ADMIN') {
                           this.router.navigate(['/lieu']);
+                          this.loading = false;
                         }
                         return;
                       }
                       this.listelieu = lieux;
+                      this.liste_lieu_filter = lieux.map((x) => x.value);
                       this.coursservice
                         .GetCours()
                         .then((c) => {
                           this.listeCours = c;
+                          this.loading = false;
                         })
                         .catch((err: HttpErrorResponse) => {
                           let o = errorService.CreateError(
                             $localize`récupérer les cours`,
                             err.message
                           );
+                          this.loading = false;
                           errorService.emitChange(o);
                           return;
                         });
@@ -160,6 +172,7 @@ export class MenuComponent implements OnInit {
                         $localize`récupérer les lieux`,
                         err.message
                       );
+                      this.loading = false;
                       errorService.emitChange(o);
                       return;
                     });
@@ -169,6 +182,7 @@ export class MenuComponent implements OnInit {
                     $localize`récupérer les profs`,
                     err.message
                   );
+                  this.loading = false;
                   errorService.emitChange(o);
                   return;
                 });
@@ -176,6 +190,7 @@ export class MenuComponent implements OnInit {
             .catch((error: Error) => {
               let o = errorService.CreateError(this.action, error.message);
               errorService.emitChange(o);
+              this.loading = false;
             });
           break;
         case 'ADMIN':
@@ -190,6 +205,7 @@ export class MenuComponent implements OnInit {
           } else {
             this.btn_adherent = false;
           }
+          this.loading = false;
           break;
       }
     } else {
@@ -197,6 +213,7 @@ export class MenuComponent implements OnInit {
         this.action,
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
+      this.loading = false;
       errorService.emitChange(o);
       this.router.navigate(['/login']);
     }
@@ -206,19 +223,6 @@ export class MenuComponent implements OnInit {
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
     return `${year}-${month}-${day}`;
-  }
-  ChangeFiltreDateApres(rider) {
-    if (rider.filter_date_apres) {
-      rider.filter_date_apres = null;
-    } else {
-      const auj = new Date();
-      const yesterday = new Date(auj);
-      yesterday.setDate(yesterday.getDate() - 1);
-      rider.filter_date_apres = this.formatDate(yesterday);
-      const nextMonth = new Date(auj);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      rider.filter_date_avant = this.formatDate(nextMonth);
-    }
   }
 
   trouverLieu(lieuId: number): any {
@@ -239,14 +243,9 @@ export class MenuComponent implements OnInit {
       return $localize`Lieu non trouvé`;
     }
   }
-  Sort(
-    sens: 'NO' | 'ASC' | 'DESC',
-    champ: string,
-    id: number,
-    rider: Adherent_VM
-  ) {
+  Sort( sens: 'NO' | 'ASC' | 'DESC', champ: string, rider: AdherentMenu ) {
     let liste_seance_VM = this.Riders.find(
-      (x) => x.datasource.id == id
+      (x) => x.datasource.id == rider.ID
     ).InscriptionSeances;
     switch (champ) {
       case 'nom':
@@ -256,7 +255,7 @@ export class MenuComponent implements OnInit {
         rider.sort_cours = 'NO';
         liste_seance_VM.sort((a, b) => {
           const nomA = a.thisSeance.libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = a.thisSeance.libelle.toUpperCase();
+          const nomB = b.thisSeance.libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -265,6 +264,25 @@ export class MenuComponent implements OnInit {
           }
 
           return rider.sort_nom === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+        });
+        break;
+        
+      case 'type':
+        rider.sort_nom = "NO";
+        rider.sort_date = 'NO';
+        rider.sort_lieu = 'NO';
+        rider.sort_cours = sens;
+        liste_seance_VM.sort((a, b) => {
+          const nomA = this.trouverCours(a.thisSeance);
+          const nomB = this.trouverCours(b.thisSeance);
+          let comparaison = 0;
+          if (nomA > nomB) {
+            comparaison = 1;
+          } else if (nomA < nomB) {
+            comparaison = -1;
+          }
+
+          return rider.sort_cours === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
       case 'lieu':
@@ -313,6 +331,17 @@ export class MenuComponent implements OnInit {
           return rider.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
+    }
+  }
+  trouverCours(_s:seance) : string{
+    if(_s.type_seance == "ENTRAINEMENT"){
+      return this.listeCours.find(x => x.id == _s.cours).nom || $localize`Cours non trouvé`;
+    } else if(_s.type_seance == "MATCH"){
+      return $localize`Match`;
+    } else if(_s.type_seance == "SORTIE"){
+      return $localize`Sortie`;
+    } else {
+return $localize`Evénement`;
     }
   }
 
@@ -404,14 +433,8 @@ export class MenuComponent implements OnInit {
     this.router.navigate(['/adherent'], { queryParams: { id: id } });
   }
 
-  ReinitFiltre(adh: Adherent_VM) {
-    adh.filter_date_avant = null;
-    adh.filter_date_apres = null;
-    adh.filter_nom = null;
-    adh.filter_cours = null;
-    adh.filter_groupe = null;
-    adh.filter_lieu = null;
-    adh.filter_prof = null;
+  ReinitFiltre(adh: AdherentMenu) {
+    adh.filters = new FilterMenu();
   }
 
   VoirMaSeance(seance: any) {
@@ -455,5 +478,110 @@ export class MenuComponent implements OnInit {
         }
         break;
     }
+  }
+  ngAfterViewInit(): void {
+    this.waitForScrollableContainer();
+  }
+
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer(); // Re-tente de le trouver
+      }
+    }, 100); // Réessaie toutes les 100 ms
+  }
+
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth', // Défilement fluide
+    });
+  }
+}
+export class FilterMenu {
+  private _filter_date_apres: Date | null = null;
+  get filter_date_apres(): Date | null {
+    return this._filter_date_apres;
+  }
+  set filter_date_apres(value: Date | null) {
+    this._filter_date_apres = value;
+    this.onFilterChange();
+  }
+
+  private _filter_date_avant: Date | null = null;
+  get filter_date_avant(): Date | null {
+    return this._filter_date_avant;
+  }
+  set filter_date_avant(value: Date | null) {
+    this._filter_date_avant = value;
+    this.onFilterChange();
+  }
+
+  private _filter_nom: string | null = null;
+  get filter_nom(): string | null {
+    return this._filter_nom;
+  }
+  set filter_nom(value: string | null) {
+    this._filter_nom = value;
+    this.onFilterChange();
+  }
+
+  private _filter_cours: string | null = null;
+  get filter_cours(): string | null {
+    return this._filter_cours;
+  }
+  set filter_cours(value: string | null) {
+    this._filter_cours = value;
+    this.onFilterChange();
+  }
+
+  private _filter_groupe: string | null = null;
+  get filter_groupe(): string | null {
+    return this._filter_groupe;
+  }
+  set filter_groupe(value: string | null) {
+    this._filter_groupe = value;
+    this.onFilterChange();
+  }
+
+  private _filter_lieu: string | null = null;
+  get filter_lieu(): string | null {
+    return this._filter_lieu;
+  }
+  set filter_lieu(value: string | null) {
+    this._filter_lieu = value;
+    this.onFilterChange();
+  }
+
+  private _filter_statut: StatutSeance | null = null;
+  get filter_statut(): StatutSeance | null {
+    return this._filter_statut;
+  }
+  set filter_statut(value: StatutSeance | null) {
+    this._filter_statut = value;
+    this.onFilterChange();
+  }
+
+  private _filter_prof: string | null = null;
+  get filter_prof(): string | null {
+    return this._filter_prof;
+  }
+  set filter_prof(value: string | null) {
+    this._filter_prof = value;
+    this.onFilterChange();
+  }
+
+  private onFilterChange(): void {
+    // Logic to handle filter changes
   }
 }

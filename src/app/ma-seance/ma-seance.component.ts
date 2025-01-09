@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InscriptionMaSeance, StatutPresence } from 'src/class/inscription';
 import { seance, StatutSeance } from 'src/class/seance';
@@ -15,6 +15,13 @@ import { SeancesService } from 'src/services/seance.service';
 })
 export class MaSeanceComponent implements OnInit {
   @Input() id: number = 0;
+  @ViewChild('scrollableContent', { static: false })
+    scrollableContent!: ElementRef;
+    showScrollToTop: boolean = false;
+    display_personne:boolean = true;
+    display_absent:boolean = true;
+    add_adh_seance:boolean = false;
+    display_present:boolean = true;
   thisSeance: seance;
   afficher_admin: boolean = false;
   Autres: InscriptionMaSeance[] = [];
@@ -113,6 +120,10 @@ export class MaSeanceComponent implements OnInit {
         return;
       })
     }
+  }
+
+  RetourListe(){
+    this.router.navigate(['/seance']);
   }
 
   Load() {
@@ -319,5 +330,33 @@ Save() {
     let o = errorService.CreateError(this.action, err.message);
     errorService.emitChange(o);
   })
+}
+ngAfterViewInit(): void {
+  this.waitForScrollableContainer();
+}
+
+private waitForScrollableContainer(): void {
+  setTimeout(() => {
+    if (this.scrollableContent) {
+      this.scrollableContent.nativeElement.addEventListener(
+        'scroll',
+        this.onContentScroll.bind(this)
+      );
+    } else {
+      this.waitForScrollableContainer(); // Re-tente de le trouver
+    }
+  }, 100); // Réessaie toutes les 100 ms
+}
+
+onContentScroll(): void {
+  const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+  this.showScrollToTop = scrollTop > 200;
+}
+
+scrollToTop(): void {
+  this.scrollableContent.nativeElement.scrollTo({
+    top: 0,
+    behavior: 'smooth', // Défilement fluide
+  });
 }
 }

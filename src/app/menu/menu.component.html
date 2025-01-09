@@ -32,7 +32,7 @@
     </ng-container>
     <ng-container *ngIf="Riders">
       <ng-container *ngFor="let rider of Riders">
-        <div class="container-box">
+        <div class="container-box" style="margin-top: 10px;">
           <article
             [class]="
               (GlobalService.Menu$ | async) === 'ADHERENT'
@@ -53,51 +53,276 @@
               </button>
             </p>
             <div class="panel-block flls">
-              <hover-button
-                [nomclass]="
-                  rider.filter_date_apres == null
-                    ? 'button is-info is-rounded is-outlined'
-                    : 'button is-info is-rounded'
-                "
-                [nomicon]="'fa-solid fa-calendar-check'"
-                [libelle]="
-                  rider.filter_date_apres == null
-                    ? 'Afficher toutes les séances'
-                    : 'Afficher séances prévues uniquement'
-                "
-                (click)="ChangeFiltreDateApres(rider)"
-              >
-              </hover-button>
-              <hover-button
-                [nomclass]="
-                  rider.afficher_filtre
-                    ? 'button is-info is-rounded'
-                    : 'button is-info is-rounded  is-outlined'
-                "
-                [nomicon]="'fa-solid fa-filter'"
-                [libelle]="
-                  rider.afficher_filtre
-                    ? 'Masquer les filtres'
-                    : 'Afficher les filtres'
-                "
-                (click)="
-                  rider.afficher_filtre
-                    ? (rider.afficher_filtre = false)
-                    : (rider.afficher_filtre = true)
-                "
-              >
-              </hover-button>
-              <hover-button
-                *ngIf="rider.afficher_filtre"
-                [nomclass]="'button is-danger is-rounded  is-outlined'"
-                [nomicon]="'fa-solid fa-filter'"
-                [remove]="true"
-                [libelle]="'Réinitialisaer les filtres'"
-                (click)="ReinitFiltre(rider)"
-              >
-              </hover-button>
+              <btn *ngIf="!rider.afficher_filtre" [type_button]="'FiltrerSmall'" (click)="rider.afficher_filtre = true"></btn>
+              <div class="buttons" *ngIf="rider.afficher_filtre">
+                <btn
+                  (click)="
+                    rider.afficher_filtre = false; rider.selected_filter = null
+                  "
+                  [type_button]="'RetourLight'"
+                ></btn>
+                <div
+                  class="field is-horizontal"
+                  style="gap: 0.5rem; align-items: center"
+                >
+                  <div class="field-label is-normal">
+                    <label class="label" style="white-space: nowrap;font-size: smaller;" i18n
+                      >Sélection du filtre</label
+                    >
+                  </div>
+                  <div class="field-body">
+                    <div class="field is-narrow">
+                      <div class="control">
+                        <div
+                          class="select is-fullwidth ; font-size: smaller"
+                        >
+                          <select 
+                          style="font-size: smaller" [(ngModel)]="rider.selected_filter">
+                            <option value="nom" i18n>Nom</option>
+                            <option value="date" i18n>Date</option>
+                            <option value="statut" i18n>Statut</option>
+                            <option value="prof" i18n>Professeur</option>
+                            <option value="lieu" i18n>Lieu</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="rider.selected_filter"
+                    class="field-label is-normal"
+                  >
+                    <label class="label" style="white-space: nowrap" i18n
+                      >Valeur du filtre
+                    </label>
+                  </div>
+                  <div class="field-body" *ngIf="rider.selected_filter">
+                    <div class="field is-narrow">
+                      <div class="control">
+                        <input
+                          *ngIf="rider.selected_filter == 'nom'"
+                          style="width: fit-content; font-size: smaller"
+                          class="input is-small"
+                          i18n-placeholder
+                          placeholder="Nom du cours"
+                          type="text"
+                          [(ngModel)]="rider.filters.filter_nom"
+                        />
+                        <div
+                          class="select"
+                          *ngIf="rider.selected_filter == 'statut'"
+                        >
+                          <select
+                            style="font-size: smaller"
+                            [(ngModel)]="rider.filters.filter_statut"
+                          >
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <option [ngValue]="'prévue'" i18n>
+                              Prévue
+                            </option>
+                            <option [ngValue]="'réalisée'" i18n>
+                              Réalisée
+                            </option>
+                            <option [ngValue]="'annulée'" i18n>
+                              Annulée
+                            </option>
+                          </select>
+                        </div>
+                        <div
+                          class="select"
+                          *ngIf="rider.selected_filter == 'prof'"
+                        >
+                          <select
+                            style="font-size: smaller"
+                            [(ngModel)]="rider.filters.filter_prof"
+                          >
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <ng-container
+                              *ngFor="let prof of liste_prof_filter"
+                            >
+                              <option [ngValue]="prof.value">
+                                {{ prof.value }}
+                              </option>
+                            </ng-container>
+                          </select>
+                        </div>
+                        <div
+                          class="select"
+                          *ngIf="rider.selected_filter == 'lieu'"
+                        >
+                          <select
+                            style="font-size: smaller"
+                            [(ngModel)]="rider.filters.filter_lieu"
+                          >
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <ng-container
+                              *ngFor="let lieu of liste_lieu_filter"
+                            >
+                              <option [ngValue]="lieu">
+                                {{ lieu }}
+                              </option>
+                            </ng-container>
+                          </select>
+                        </div>
+                        <span
+                          *ngIf="rider.selected_filter == 'date'"
+                          class="ligne"
+                        >
+                          <div
+                            style="gap: 6px"
+                            class="field is-small is-horizontal field-jecha"
+                          >
+                            <label
+                              for="groupe"
+                              class="label is-small"
+                              i18n
+                              >Du</label
+                            >
+                            <input
+                              style="width: fit-content"
+                              class="input is-small"
+                              i18n-placeholder
+                              placeholder="Filtre date avant"
+                              type="date"
+                              [(ngModel)]="rider.filters.filter_date_apres"
+                            />
+                          </div>
+                        </span>
+                        <span
+                          *ngIf="rider.selected_filter == 'date'"
+                          class="ligne"
+                        >
+                          <div
+                            style="gap: 6px"
+                            class="field is-small is-horizontal field-jecha"
+                          >
+                            <label
+                              for="groupe"
+                              class="label is-small"
+                              i18n
+                              >Au</label
+                            >
+                            <input
+                              style="width: fit-content"
+                              class="input is-small"
+                              i18n-placeholder
+                              placeholder="Filtre date après"
+                              type="date"
+                              [(ngModel)]="rider.filters.filter_date_avant"
+                            />
+                          </div>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tags">
+                    <span
+                      *ngIf="rider.filters.filter_nom"
+                      class="tag is-success"
+                    >
+                      <span i18n>Nom : </span>
+                      <span>{{ rider.filters.filter_nom }}</span>
+                      <button
+                        class="delete"
+                        (click)="rider.filters.filter_nom = null"
+                      ></button>
+                    </span>
+
+                    <span
+                      *ngIf="rider.filters.filter_statut != null"
+                      class="tag is-success"
+                    >
+                      <span i18n>Statut : </span>
+                      <span *ngIf="rider.filters.filter_statut == 'prévue'" i18n
+                        >Prévue</span
+                      >
+                      <span
+                        *ngIf="rider.filters.filter_statut == 'réalisée'"
+                        i18n
+                        >Réalisée</span
+                      >
+                      <span
+                        *ngIf="rider.filters.filter_statut == 'annulée'"
+                        i18n
+                        >Annulée</span
+                      >
+                      <button
+                        class="delete"
+                        (click)="rider.filters.filter_statut = null"
+                      ></button>
+                    </span>
+
+                    <span
+                      *ngIf="
+                        rider.filters.filter_date_avant ||
+                        rider.filters.filter_date_apres
+                      "
+                      class="tag is-success"
+                    >
+                      <span i18n>Date : </span>
+                      <span *ngIf="rider.filters.filter_date_avant"
+                        >&nbsp;>&nbsp;{{
+                          rider.filters.filter_date_avant | date : "dd/MM/yyyy"
+                        }}</span
+                      >
+                      <span *ngIf="rider.filters.filter_date_apres"
+                        >&nbsp;<&nbsp;{{
+                          rider.filters.filter_date_apres | date : "dd/MM/yyyy"
+                        }}</span
+                      >
+                      <button
+                        class="delete"
+                        (click)="
+                          rider.filters.filter_date_avant = null;
+                          rider.filters.filter_date_apres = null
+                        "
+                      ></button>
+                    </span>
+
+                    <span
+                      *ngIf="rider.filters.filter_lieu != null"
+                      class="tag is-success"
+                    >
+                      <span i18n>Lieu : </span>
+                      <span i18n>{{ rider.filters.filter_lieu }}</span>
+
+                      <button
+                        class="delete"
+                        (click)="rider.filters.filter_lieu = null"
+                      ></button>
+                    </span>
+                    <span
+                      *ngIf="rider.filters.filter_prof != null"
+                      class="tag is-success"
+                    >
+                      <span i18n>Prof : </span>
+                      <span i18n>{{ rider.filters.filter_prof }}</span>
+
+                      <button
+                        class="delete"
+                        (click)="rider.filters.filter_prof = null"
+                      ></button>
+                    </span>
+                    <btn
+                      [type_button]="'SupprimerLight'"
+                      (click)="ReinitFiltre(rider)"
+                      *ngIf="
+                        rider.filters.filter_date_apres ||
+                        rider.filters.filter_date_avant ||
+                        rider.filters.filter_groupe ||
+                        rider.filters.filter_statut ||
+                        rider.filters.filter_nom ||
+                        rider.filters.filter_lieu ||
+                        rider.filters.filter_prof
+                      "
+                    >
+                    </btn>
+                  </div>
+                </div>
+              </div>
+             
             </div>
-            <div class="panel-block">
+            <div class="panel-block"  >
               <ng-container
                 *ngIf="
                   rider.InscriptionSeances &&
@@ -109,100 +334,53 @@
                     <thead>
                       <tr>
                         <th>
-                          <span class="th_filtre">
+                          <span>
                             <span class="ligne">
-                              <span style="font-size: smaller" i18n>Nom</span>
+                              <span
+                                [ngClass]="
+                                  rider.filters.filter_nom ? 'has-text-info' : ''
+                                "
+                                i18n
+                                >Nom</span
+                              >
                               <span style="cursor: pointer">
                                 <i
                                   *ngIf="rider.sort_nom === 'NO'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'nom',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'nom',rider)"
                                   class="fa-solid fa-sort"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_nom === 'ASC'"
-                                  (click)="
-                                    Sort(
-                                      'DESC',
-                                      'nom',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('DESC', 'nom',rider)"
                                   class="fa-solid fa-sort-up"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_nom === 'DESC'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'nom',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'nom',rider)"
                                   class="fa-solid fa-sort-down"
                                 ></i>
                               </span>
                             </span>
-                            <input
-                              *ngIf="rider.afficher_filtre"
-                              style="width: fit-content; font-size: smaller"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Nom du cours"
-                              type="text"
-                              [(ngModel)]="rider.filter_nom"
-                            />
                           </span>
                         </th>
                         <th>
-                          <span class="th_filtre">
+                          <span>
                             <span class="ligne">
-                              <span style="font-size: smaller" i18n
-                                >Cours / Type</span
-                              >
+                              <span i18n>Cours / Type</span>
                               <span style="cursor: pointer">
                                 <i
                                   *ngIf="rider.sort_cours === 'NO'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'cours',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'type',rider)"
                                   class="fa-solid fa-sort"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_cours === 'ASC'"
-                                  (click)="
-                                    Sort(
-                                      'DESC',
-                                      'cours',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('DESC', 'type',rider)"
                                   class="fa-solid fa-sort-up"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_cours === 'DESC'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'cours',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'type',rider)"
                                   class="fa-solid fa-sort-down"
                                 ></i>
                               </span>
@@ -210,161 +388,83 @@
                           </span>
                         </th>
                         <th>
-                          <span class="th_filtre">
+                          <span>
                             <span class="ligne">
-                              <span style="font-size: smaller" i18n>Date</span>
+                              <span
+                                [ngClass]="
+                                  rider.filters.filter_date_apres ||
+                                  rider.filters.filter_date_avant
+                                    ? 'has-text-info'
+                                    : ''
+                                "
+                                i18n
+                                >Date</span
+                              >
                               <span style="cursor: pointer">
                                 <i
                                   *ngIf="rider.sort_date === 'NO'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'date',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'date',rider)"
                                   class="fa-solid fa-sort"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_date === 'ASC'"
-                                  (click)="
-                                    Sort(
-                                      'DESC',
-                                      'date',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('DESC', 'date',rider)"
                                   class="fa-solid fa-sort-up"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_date === 'DESC'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'date',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'date',rider)"
                                   class="fa-solid fa-sort-down"
-                                ></i>
-                              </span>
-                            </span>
-                            <span *ngIf="rider.afficher_filtre" class="ligne">
-                              <div
-                                style="gap: 6px"
-                                class="field is-small is-horizontal field-jecha"
-                              >
-                                <label for="groupe" class="label is-small"
-                                  >Du</label
-                                >
-                                <input
-                                  style="width: fit-content"
-                                  class="input is-small"
-                                  i18n-placeholder
-                                  placeholder="Filtre date avant"
-                                  type="date"
-                                  [(ngModel)]="rider.filter_date_apres"
-                                />
-                              </div>
-                            </span>
-
-                            <span *ngIf="rider.afficher_filtre" class="ligne">
-                              <div
-                                style="gap: 6px"
-                                class="field is-small is-horizontal field-jecha"
-                              >
-                                <label for="groupe" class="label is-small"
-                                  >au</label
-                                >
-                                <input
-                                  style="width: fit-content"
-                                  class="input is-small"
-                                  i18n-placeholder
-                                  placeholder="Filtre date après"
-                                  type="date"
-                                  [(ngModel)]="rider.filter_date_avant"
-                                />
-                              </div>
-                            </span>
+                                ></i> </span
+                            ></span>
                           </span>
                         </th>
+  
                         <th>
-                          <span class="th">
-                            <span class="ligne"
-                              ><span style="font-size: smaller" i18n
-                                >Heure / Durée</span
-                              ></span
-                            >
-                          </span>
-                        </th>
-
-                        <th>
-                          <span class="th_filtre">
-                            <span class="ligne" style="font-size: smaller" i18n
-                              >Professeurs</span
-                            >
-                            <span *ngIf="rider.afficher_filtre" class="ligne">
-                              <div class="select">
-                                <select
-                                  style="font-size: smaller"
-                                  [(ngModel)]="rider.filter_prof"
-                                >
-                                  <option [value]="0" i18n>Tous</option>
-                                  <ng-container
-                                    *ngFor="let pr of liste_prof_filter"
-                                  >
-                                    <option [value]="pr.key" i18n>
-                                      {{ pr.value }}
-                                    </option>
-                                  </ng-container>
-                                </select>
-                              </div>
-                            </span>
-                          </span>
-                        </th>
-
-                        <th>
-                          <span class="th_filtre">
+                          <span>
                             <span class="ligne">
-                              <span style="font-size: smaller" i18n>Lieu</span>
+                              <span i18n>Heure / Durée</span>
+                            </span>
+                          </span>
+                        </th>
+                        <th>
+                          <span>
+                            <span class="ligne">
+                              <span
+                                [ngClass]="
+                                  rider.filters.filter_prof ? 'has-text-info' : ''
+                                "
+                                i18n
+                                >Professeurs</span
+                              >
+                            </span>
+                          </span>
+                        </th>
+  
+                        <th>
+                          <span>
+                            <span class="ligne">
+                              <span
+                                [ngClass]="
+                                  rider.filters.filter_lieu ? 'has-text-info' : ''
+                                "
+                                i18n
+                                >Lieu</span
+                              >
                               <span style="cursor: pointer">
                                 <i
                                   *ngIf="rider.sort_lieu === 'NO'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'lieu',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'lieu',rider)"
                                   class="fa-solid fa-sort"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_lieu === 'ASC'"
-                                  (click)="
-                                    Sort(
-                                      'DESC',
-                                      'lieu',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('DESC', 'lieu',rider)"
                                   class="fa-solid fa-sort-up"
                                 ></i>
                                 <i
                                   *ngIf="rider.sort_lieu === 'DESC'"
-                                  (click)="
-                                    Sort(
-                                      'ASC',
-                                      'lieu',
-                                      rider.datasource.id,
-                                      rider
-                                    )
-                                  "
+                                  (click)="Sort('ASC', 'lieu',rider)"
                                   class="fa-solid fa-sort-down"
                                 ></i>
                               </span>
@@ -372,25 +472,25 @@
                           </span>
                         </th>
                         <th>
-                          <span style="font-size: smaller" i18n>Statut</span>
+                          <span>
+                            <span
+                              [ngClass]="
+                                rider.filters.filter_statut ? 'has-text-info' : ''
+                              "
+                              i18n
+                              >Statut</span
+                            >
+                          </span>
                         </th>
                         <th>
-                          <span style="font-size: smaller" i18n>Présence</span>
+                          <span  i18n>Présence</span>
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr
-                        *ngFor="
-                          let seance of rider.InscriptionSeances
-                            | filternomseanceMenu : rider.filter_nom
-                            | filterCoursMenu : rider.filter_cours
-                            | filterDateAvantMenu : rider.filter_date_avant
-                            | filterDateApresMenu : rider.filter_date_apres
-                            | filterLieuMenu : rider.filter_lieu
-                            | filterListProfMenu : rider.filter_prof
-                        "
-                      >
+                      *ngFor="
+                      let seance of rider.InscriptionSeances | multifiltersMenu : rider.filters" >
                         <td>
                           {{ seance.thisSeance.libelle }}
                         </td>
@@ -490,15 +590,10 @@
                             <ng-container
                               *ngIf="(GlobalService.Menu$ | async) === 'PROF'"
                             >
-                              <button
-                                i18n-title
-                                title="Voir"
-                                type="button"
-                                (click)="VoirMaSeance(seance.thisSeance)"
-                                class="button is-info is-rounded is-outlined"
-                              >
-                                <i class="fa-solid fa-binoculars"></i>
-                              </button>
+                              <btn
+                                [type_button]="'VoirLight'"
+                                (click)="VoirMaSeance(seance.thisSeance)">
+                        </btn>
                             </ng-container>
                           </ng-container>
                           <ng-container
@@ -507,15 +602,10 @@
                             <ng-container
                               *ngIf="(GlobalService.Menu$ | async) === 'PROF'"
                             >
-                              <button
-                                i18n-title
-                                title="Voir"
-                                type="button"
-                                (click)="VoirMaSeance(seance.thisSeance)"
-                                class="button is-info is-rounded is-outlined"
-                              >
-                                <i class="fa-solid fa-binoculars"></i>
-                              </button>
+                            <btn
+                            [type_button]="'VoirLight'"
+                            (click)="VoirMaSeance(seance.thisSeance)">
+                    </btn>
                             </ng-container>
                             <ng-container
                               *ngIf="
@@ -610,8 +700,7 @@
                     <ng-container
                       *ngFor="
                         let seance of rider.InscriptionSeances
-                          | filterDateAvantMenu : rider.filter_date_avant
-                          | filterDateApresMenu : rider.filter_date_apres
+                          | multifiltersMenu : rider.filters
                       "
                     >
                       <div class="box">
@@ -762,15 +851,10 @@
                                     (GlobalService.Menu$ | async) === 'PROF'
                                   "
                                 >
-                                  <button
-                                    i18n-title
-                                    title="Voir"
-                                    type="button"
-                                    (click)="VoirMaSeance(seance.thisSeance)"
-                                    class="button is-info is-rounded is-outlined"
-                                  >
-                                    <i class="fa-solid fa-binoculars"></i>
-                                  </button>
+                                <btn
+                                [type_button]="'VoirLight'"
+                                (click)="VoirMaSeance(seance.thisSeance)">
+                        </btn>
                                 </ng-container>
                               </ng-container>
                               <ng-container
@@ -788,15 +872,10 @@
                                     (GlobalService.Menu$ | async) === 'PROF'
                                   "
                                 >
-                                  <button
-                                    i18n-title
-                                    title="Voir"
-                                    type="button"
-                                    (click)="VoirMaSeance(seance.thisSeance)"
-                                    class="button is-info is-rounded is-outlined"
-                                  >
-                                    <i class="fa-solid fa-binoculars"></i>
-                                  </button>
+                                <btn
+                                [type_button]="'VoirLight'"
+                                (click)="VoirMaSeance(seance.thisSeance)">
+                        </btn>
                                 </ng-container>
                               </ng-container>
                               <ng-container
@@ -824,10 +903,10 @@
               >
                 <p i18n>Pas de séance disponible</p>
               </ng-container>
-            </div>
+            </div>            
           </article>
         </div>
       </ng-container>
-    </ng-container></ng-container
-  >
+    </ng-container>   
+  </ng-container>
 </div>

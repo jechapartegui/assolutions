@@ -5,6 +5,8 @@ import { inscription_seance, InscriptionSeance } from "./inscription";
 import { ItemContact } from "./contact";
 import { Adresse } from "./address";
 import { Adhesion } from "./adhesion";
+import { FilterAdherent } from "src/app/adherent/adherent.component";
+import { FilterMenu } from "src/app/menu/menu.component";
 
 export class adherent {
   public id: number = 0;
@@ -45,7 +47,6 @@ export class Adherent {
     this.datasource.inscrit = v;
   }
   
-
   sLibelle = new Subject<string>();
   dateNaissanceSubject = new Subject<string>();
   constructor(L: adherent) {
@@ -352,19 +353,16 @@ export class Validation_Adherent {
 
 }
 
-export class Adherent_VM {
+export class AdherentMenu extends Adherent {
   public sort_nom = "NO";
   public sort_cours = "NO";
   public sort_date = "NO";
   public sort_lieu = "NO";
-  public filter_date_avant: any;
-  public filter_date_apres: any;
-  public filter_nom: string;
-  public filter_cours: number;
-  public filter_groupe: number;
-  public filter_lieu: number;
-  public filter_prof: number;
+    public selected_filter: string;
+  public filters = new FilterMenu();
+  public InscriptionSeances: InscriptionSeance[];
   constructor(_adh: adherent) {
+    super(_adh);
     this.datasource = _adh;
 
     this.afficher_filtre = false;
@@ -398,9 +396,6 @@ export class Adherent_VM {
 
 
   }
-  public Libelle: string;
-  public datasource: adherent;
-  public InscriptionSeances: InscriptionSeance[];
 
   //mois
 

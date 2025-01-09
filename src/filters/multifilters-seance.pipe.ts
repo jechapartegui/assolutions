@@ -13,6 +13,10 @@ export class MultifiltersSeancePipe implements PipeTransform {
     if (!filters) return items;
 
     return items.filter((item) => {
+      
+      const dateAvant = filters.filter_date_avant ? new Date(filters.filter_date_avant) : null;
+      const dateApres = filters.filter_date_apres ? new Date(filters.filter_date_apres) : null;
+      const dateSeance = new Date(item.date_seance);
       return (
         (!filters.filter_nom ||
           item.libelle.toLowerCase().includes(
@@ -22,9 +26,8 @@ export class MultifiltersSeancePipe implements PipeTransform {
             item.Lieu.toLowerCase().includes(
               filters.filter_lieu.toLowerCase()
             )) &&
-        (!filters.filter_date_avant ||
-          new Date(item.date_seance) <= filters.filter_date_avant) &&
-        (!filters.filter_date_apres || new Date(item.date_seance) >= filters.filter_date_apres) &&
+            (!filters.filter_date_avant || (dateAvant && dateSeance >= dateAvant)) &&
+            (!filters.filter_date_apres || (dateApres && dateSeance <= dateApres)) &&       
         (!filters.filter_groupe ||
           item.Groupes.some((x) =>
             x.nom.toLowerCase().includes(

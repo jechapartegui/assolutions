@@ -75,17 +75,17 @@
                             <span i18n>Cours / Type</span>
                             <span style="cursor: pointer">
                               <i
-                                *ngIf="sort_nom === 'NO'"
+                                *ngIf="sort_cours === 'NO'"
                                 (click)="Sort('ASC', 'type')"
                                 class="fa-solid fa-sort"
                               ></i>
                               <i
-                                *ngIf="sort_nom === 'ASC'"
+                                *ngIf="sort_cours === 'ASC'"
                                 (click)="Sort('DESC', 'type')"
                                 class="fa-solid fa-sort-up"
                               ></i>
                               <i
-                                *ngIf="sort_nom === 'DESC'"
+                                *ngIf="sort_cours === 'DESC'"
                                 (click)="Sort('ASC', 'type')"
                                 class="fa-solid fa-sort-down"
                               ></i>
@@ -159,17 +159,17 @@
                             >
                             <span style="cursor: pointer">
                               <i
-                                *ngIf="sort_nom === 'NO'"
+                                *ngIf="sort_lieu === 'NO'"
                                 (click)="Sort('ASC', 'lieu')"
                                 class="fa-solid fa-sort"
                               ></i>
                               <i
-                                *ngIf="sort_nom === 'ASC'"
+                                *ngIf="sort_lieu === 'ASC'"
                                 (click)="Sort('DESC', 'lieu')"
                                 class="fa-solid fa-sort-up"
                               ></i>
                               <i
-                                *ngIf="sort_nom === 'DESC'"
+                                *ngIf="sort_lieu === 'DESC'"
                                 (click)="Sort('ASC', 'lieu')"
                                 class="fa-solid fa-sort-down"
                               ></i>
@@ -520,7 +520,7 @@
                                     i18n-placeholder
                                     placeholder="Filtre date avant"
                                     type="date"
-                                    [(ngModel)]="filters.filter_date_apres"
+                                    [(ngModel)]="filters.filter_date_avant"
                                   />
                                 </div>
                               </span>
@@ -544,7 +544,7 @@
                                     i18n-placeholder
                                     placeholder="Filtre date après"
                                     type="date"
-                                    [(ngModel)]="filters.filter_date_avant"
+                                    [(ngModel)]="filters.filter_date_apres"
                                   />
                                 </div>
                               </span>
@@ -595,7 +595,7 @@
                             "
                             class="tag is-success"
                           >
-                            <span i18n>Date de naissance : </span>
+                            <span i18n>Date : </span>
                             <span *ngIf="filters.filter_date_avant"
                               >&nbsp;>&nbsp;{{
                                 filters.filter_date_avant | date : "dd/MM/yyyy"
@@ -786,7 +786,7 @@
                           i18n-placeholder
                           placeholder="Filtre date avant"
                           type="date"
-                          [(ngModel)]="filters.filter_date_apres"
+                          [(ngModel)]="filters.filter_date_avant"
                         />
                       </div>
                     </span>
@@ -804,7 +804,7 @@
                           i18n-placeholder
                           placeholder="Filtre date après"
                           type="date"
-                          [(ngModel)]="filters.filter_date_avant"
+                          [(ngModel)]="filters.filter_date_apres"
                         />
                       </div>
                     </span>
@@ -848,7 +848,7 @@
                   *ngIf="filters.filter_date_avant || filters.filter_date_apres"
                   class="tag is-large is-success"
                 >
-                  <span i18n>Date de naissance : </span>
+                  <span i18n>Date : </span>
                   <span *ngIf="filters.filter_date_avant"
                     >&nbsp;>&nbsp;{{
                       filters.filter_date_avant | date : "dd/MM/yyyy"
@@ -1713,10 +1713,10 @@
         ></btn>
         <btn
           [type_button]="'VoirMobile'"
-          (click)="VoirMaSeance()"
+          (click)="VoirMaSeance(editSeance)"
           *ngIf="editSeance.ID > 0"
         ></btn>
-        <btn [type_button]="'ReloadMobile'" (click)="Refresh()"></btn>
+        <btn [type_button]="'ReloadMobile'" *ngIf="editSeance.ID > 0" (click)="Refresh()"></btn>
         <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
       </nav>
       <div class="container-box">

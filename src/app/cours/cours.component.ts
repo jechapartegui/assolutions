@@ -147,6 +147,7 @@ export class CoursComponent implements OnInit {
               return;
             }
             this.listelieu = lieux;
+            this.liste_lieu_filter = lieux;
               this.UpdateListeCours();
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
