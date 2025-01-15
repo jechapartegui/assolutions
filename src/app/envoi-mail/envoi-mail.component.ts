@@ -33,7 +33,7 @@ export class EnvoiMailComponent implements OnInit {
   params: KeyValuePairAny[];
   action: string;
   liste_groupe: Groupe[];
-  groupe_selectionne: Groupe;
+  groupe_selectionne: number;
   liste_adherent: Adherent[];
   ListeUserSelectionne: Adherent[] = [];
   adherent_selectionne: Adherent;
@@ -130,7 +130,15 @@ export class EnvoiMailComponent implements OnInit {
     });
   }
 
-  AddGroupe() {}
+  AddGroupe() {
+    if(!this.ListeUserSelectionne){
+      this.ListeUserSelectionne= [];
+    }
+    if(this.groupe_selectionne){
+      let list = this.liste_adherent.filter(x => x.Groupes.map(x => x.id).includes(this.groupe_selectionne));
+      this.ListeUserSelectionne.push(...list);
+    }
+  }
   RemoveUsers() {
     this.ListeUserSelectionne = [];
   }

@@ -30,29 +30,29 @@
         <button
           type="button"
           (click)="GoToParam('SEANCE_DISPO')"
-          class="button is-primary is-rounded is-outlined"
-        >
+          class="button is-primary is-outlined"
+        i18n>
           Séances disponibles
         </button>
         <button
           type="button"
           (click)="GoToParam('ANNULATION_SEANCE')"
-          class="button is-primary is-rounded is-outlined"
-        >
+          class="button is-primary is-outlined"
+        i18n>
           Annulation séance
         </button>
         <button
           type="button"
           (click)="GoToParam('CONVOCATION_SEANCE')"
-          class="button is-primary is-rounded is-outlined"
-        >
+          class="button is-primary is-outlined"
+        n18n>
           Convocation à un événement
         </button>
         <button
           type="button"
           (click)="Libre()"
-          class="button is-primary is-rounded is-outlined"
-        >
+          class="button is-primary is-outlined"
+        i18n>
           Message libre
         </button>
       </div>
@@ -115,7 +115,7 @@
           <button
             type="button"
             (click)="ValiderPlage()"
-            class="button is-primary is-rounded is-outlined"
+            class="button is-primary is-outlined"
           >
             Valider la plage
           </button>
@@ -193,14 +193,14 @@
         <button
           (click)="AddUsers()"
           type="button"
-          class="button is-rounded is-outlined is-success"
+          class="button is-outlined is-success"
         >
           <span i18n>Ajouter tous les adhérents</span>
         </button>
       </div>
       <div *ngIf="type_audience == 'GROUPE'" class="block">
         <div class="field">
-          <label for="prof" class="label">Professeur</label>
+          <label for="prof" class="label">Groupes</label>
           <div class="select">
             <select style="font-size: smaller" [(ngModel)]="groupe_selectionne">
               <ng-container *ngFor="let pr of liste_groupe">
@@ -214,7 +214,7 @@
             [disabled]="!groupe_selectionne"
             (click)="AddGroupe()"
             type="button"
-            class="button is-rounded is-outlined is-success"
+            class="button is-outlined is-success"
           >
             <span i18n>Ajouter les personnes du groupe</span>
           </button>
@@ -241,7 +241,7 @@
             [disabled]="!seance_selectionnee"
             (click)="AddSeanceTous()"
             type="button"
-            class="button is-rounded is-outlined is-success"
+            class="button is-outlined is-success"
           >
             <span i18n>Ajouter toutes les personnes de la séance</span>
           </button>
@@ -249,7 +249,7 @@
             [disabled]="!seance_selectionnee"
             (click)="AddSeancePresent()"
             type="button"
-            class="button is-rounded is-outlined is-success"
+            class="button is-outlined is-success"
           >
             <span i18n>Seulement ceux déclarés présents</span>
           </button>
@@ -257,7 +257,7 @@
             [disabled]="!seance_selectionnee"
             (click)="AddSeanceConvoque()"
             type="button"
-            class="button is-rounded is-outlined is-success"
+            class="button is-outlined is-success"
           >
             <span i18n>Seulement les convoqués</span>
           </button>
@@ -284,7 +284,7 @@
             [disabled]="!adherent_selectionne"
             (click)="Addherent()"
             type="button"
-            class="button is-rounded is-outlined is-success"
+            class="button is-outlined is-success"
           >
             <span i18n>Ajouter</span>
           </button>
@@ -310,14 +310,14 @@
       type="button"
       [disabled]="ListeUserSelectionne.length == 0"
       (click)="ValiderDestinataire()"
-      class="button is-primary is-rounded is-outlined"
+      class="button is-primary is-outlined"
     >
       Valider la liste de destinataire
     </button>
     <button
       (click)="RemoveUsers()"
       type="button"
-      class="button is-rounded is-outlined is-danger"
+      class="button is-outlined is-danger"
     >
       <span i18n>Vider la liste</span>
     </button>
@@ -382,7 +382,7 @@
           (click)="GenererVue()"
           *ngIf="mail_a_generer"
           type="button"
-          class="button is-rounded is-primary is-outlined"
+          class="button is-primary is-outlined"
         >
           <span i18n>Regénérer la vue</span>
           <i class="fa-solid fa-rotate-right"></i>
@@ -391,7 +391,7 @@
           (click)="SauvegarderTemplate()"
           *ngIf="mail_a_generer"
           type="button"
-          class="button is-rounded is-primary is-outlined"
+          class="button is-primary is-outlined"
         >
           <span i18n>Sauvegarder le template</span>
           <i class="fa-solid fa-floppy-disk"></i>
@@ -426,7 +426,7 @@
           type="button"
           *ngIf="selected_mail"
           (click)="EnvoiMail()"
-          class="button is-rounded is-primary is-outlined"
+          class="button is-primary is-outlined"
         >
           <span i18n>Envoyer cet email</span>
           <i class="far fa-paper-plane"></i>
@@ -441,7 +441,7 @@
     <button
       type="button"
       (click)="EnvoyerTousLesMails()"
-      class="button is-primary is-rounded is-outlined"
+      class="button is-primary is-outlined"
     >
       Envoyer tous les mails
       <i class="far fa-paper-plane"></i>

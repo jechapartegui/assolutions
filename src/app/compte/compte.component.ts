@@ -49,6 +49,7 @@ export class CompteComponent implements OnInit {
 
       this.cpteserv.GetAll().then((cpt) => {
         this.ListeCompte = cpt;
+        console.log("ici");
       }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError("Chargement", error);
         errorService.emitChange(n);

@@ -10,7 +10,7 @@
       </progress>
       <p>Chargement en cours</p>
     </ng-container>
-    <ng-container *ngIf="!ListeCompte">
+    <ng-container *ngIf="ListeCompte">
         <div class="columns">
           <div class="column">
             <div class="card">
@@ -22,7 +22,7 @@
                     | multifiltersCompte : filters as filteredApplis
                 "
               >
-                <span i18n>Liste des adhérents</span>&nbsp;({{
+                <span i18n>Liste des comptes</span>&nbsp;({{
                   filteredApplis.length
                 }})</p>
               </header>
