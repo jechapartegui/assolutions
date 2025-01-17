@@ -58,7 +58,7 @@
 .card {
     display: flex;
     flex-direction: column;
-    max-height: calc(99vh - 60px); /* Soustraire la hauteur de la navbar */
+    max-height: calc(99vh - 250px); /* Soustraire la hauteur de la navbar */
     border: 1px solid #ddd;
     overflow: hidden; /* Coupe tout débordement */
   }

@@ -373,8 +373,8 @@
               class="textarea"
               placeholder="Ici s'affichera le contenu du mail en HTML"
               i18n-placeholder
-              rows="20"
-              >{{ mail_a_generer.content }}</textarea
+              rows="20"  [(ngModel)]='mail_a_generer.content'
+              ></textarea
             >
           </div>
         </article>

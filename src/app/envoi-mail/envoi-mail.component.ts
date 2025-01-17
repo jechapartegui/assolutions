@@ -198,8 +198,8 @@ export class EnvoiMailComponent implements OnInit {
   }
   GenererVue() {
     const errorService = ErrorService.instance;
-    this.action = $localize`Charger le contenu du mail`;
-    this.mail_serv
+    this.action = $localize`Charger le contenu du mail`;   
+      this.mail_serv
       .ChargerTemplateUser(
         this.typemail,
         this.mail_a_generer.content,
@@ -215,6 +215,7 @@ export class EnvoiMailComponent implements OnInit {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
+   
   }
 
   SauvegarderTemplate() {
