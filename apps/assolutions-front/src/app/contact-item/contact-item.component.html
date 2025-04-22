@@ -1,0 +1,62 @@
+<div class="field" style="margin-top: 10px;">
+    <label class="label"><span>{{Titre}}</span>  
+      <btn *ngIf="!thisContact" [type_button]="'CreerSmallLight'" (click)="Add()"></btn></label>
+    
+<div class="container">
+    <div *ngIf="thisContact" class="table" style=" font-size:small; width: 100%;padding: 0px;">
+        <thead>
+            <th i18n>Type</th>
+            <th i18n>Valeur</th>
+            <th i18n>{{Notes}}</th>
+            <th i18n></th>
+        </thead>
+        <tbody>
+            <td>
+              <div class="control">
+                <div class="select is-small">
+                  <select [(ngModel)]="thisContact.Type" (blur)="autoSave()">
+                    <option value="EMAIL" i18n>Email</option>
+                    <option value="PHONE" i18n>Téléphone</option>
+                    <option value="INSTGRAM" i18n>Instagram</option>
+                    <option value="FACEBOOK" i18n>Facebook</option>
+                    <option value="TWITTER" i18n>Twitter</option>
+                  </select>
+                </div>
+              </div>
+            </td>
+            <td>
+              <input class="input is-small" style="width:150px" [(ngModel)]="thisContact.Value" (blur)="autoSave()">
+            </td>
+            <td>
+              <input maxlength="20" class="input is-small" style="width:100px" [(ngModel)]="thisContact.Notes" (blur)="autoSave()">
+            </td>
+            <td>
+              <btn [disabled]="!IsValid(thisContact)"  [type_button]="'SauvegarderSmallLight'" (click)="Save()"></btn>
+              <btn   [type_button]="'AnnulerSmallLight'" (click)="DontSave()"></btn>
+            </td>
+          </tbody>
+    </div>
+    <ng-container *ngFor="let cont of Contacts; let i = index; trackBy: trackByIndex">
+        <div class="box listofbox" style="font-size: small;">
+            <div *ngIf="!thisContact" class="actions" style="margin-right: 2px;">              
+                <button
+                    [class]="cont.Pref ? 'button is-small is-primary' : 'button is-small is-primary is-outlined'"
+                    (click)="!cont.Pref ? NewPref(i) : ''">
+                    <i class="fab fa-get-pocket"></i>
+                </button>
+                <btn [type_button]="'EditerSmallLight'" (click)="Edit(i)"></btn>
+                <btn [type_button]="'SupprimerSmallLight'" (click)="Delete(i)"></btn>
+            </div>
+            <span *ngIf="cont.Type=='EMAIL'"><i class="fas fa-at"></i></span>
+            <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
+            <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
+            <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
+            <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
+            <span>&nbsp;{{cont.Value}}</span>
+            <span>&nbsp;{{cont.Notes}}</span>
+        </div>
+    </ng-container>
+
+
+</div>
+</div>

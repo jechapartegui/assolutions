@@ -1,0 +1,53 @@
+.table {
+    margin-top: 20px;
+  }
+  
+  .columns.is-mobile .column {
+    flex-basis: auto;
+    margin-right: 10px; /* Espacement entre les selects */
+  }
+  
+  .select.is-small {
+    max-width: 150px; /* Limite la largeur des selects */
+  }
+  
+  
+  .help {
+    margin-top: 5px;
+    font-size: 12px; /* Taille plus petite pour le texte de l'exemple */
+  }
+
+  .filebg{
+    background: transparent;
+    font-size: smaller;
+    border-color: green;
+    border-radius: 25px;
+  }
+  tr td {
+    padding: 1px;
+}
+th{
+  font-size: small;
+}
+.limited-column {
+  max-width: 50px; /* Limite la largeur à 100px */
+}
+.limited-column input {
+  width: 100%; /* Assure que l'input occupe toute la largeur de la cellule */
+  box-sizing: border-box; /* Gère le padding de l'input pour qu'il respecte la largeur de la cellule */
+}
+
+.label_red label {
+  color: red;
+}
+
+/* Pour rendre les labels verts */
+.label_green label {
+  color: green;
+  font-size: small;
+}
+.label_gras{
+  font-weight: bold;
+  font-size: small;
+}
+  

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+
+  "compilerOptions": {
+"composite": true,
+    "outDir": "../../dist/out-tsc",
+    "rootDir": "../../", // 👈 pour permettre d'aller lire dans libs/
+    "module": "NodeNext", // 👈 recommandé si tu utilises des alias + ESM
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2021"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [],
+  "references": []
+}

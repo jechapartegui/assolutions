@@ -1,0 +1,141 @@
+<div class="container" *ngIf="context == 'REINIT'">
+    <div class="columns is-justify-content-center">
+        <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+            <div class="box">
+                <h3 class="title is-3" i18n>Réinitialisation du mot de passe</h3>
+                <div class="field">
+                    <label i18n>Login</label>
+                    <p class="control has-icons-left has-icons-right">
+                        <input class="input" [(ngModel)]="Login" type="email" disabled="true" placeholder="Email">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <label i18n>Mot de passe</label>
+                    <p class="control has-icons-left has-icons-right">
+                        <input [class]="Valid(Password) ? 'input' : 'input is-danger'" [(ngModel)]="Password"
+                            type="password" placeholder="Password">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <span *ngIf="Valid(Password)" class="icon is-small is-right">
+                            <i class="fas fa-check"></i>
+                        </span>
+                    </p>
+                    <p class="help is-danger" *ngIf="!Valid(Password)" i18n>Le mot de passe doit contenir au moins 9
+                        caractères dont lettre, chiffre, caractères spéciaux.
+                    </p>
+                </div>
+                <div class="field">
+                    <label i18n>Confirmer le mot de passe</label>
+                    <p class="control has-icons-left has-icons-right">
+                        <input [class]="Confirm(ConfirmPassword) ? 'input' : 'input is-danger'"
+                            [(ngModel)]="ConfirmPassword" type="password" placeholder="Password">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <span *ngIf="Confirm(ConfirmPassword)" class="icon is-small is-right">
+                            <i class="fas fa-check"></i>
+                        </span>
+                    </p>
+                    <p class="help is-danger" *ngIf="!Confirm(ConfirmPassword)" i18n>Les mots de passe doivent
+                        correspondre.
+                    </p>
+                </div>
+
+                <button [disabled]="!Valid(Password) || !Confirm(ConfirmPassword)"
+                    class="button is-success is-outlined is-rounded" (click)="ValiderModificationMDP()" i18n>
+                    Modifier
+                </button><br />
+                <a (click)="RenvoiToken()" i18n>Renvoyer les liens de connexion sans mot de passe</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="box" *ngIf="context == 'DEFINE' || context == 'CREER'">
+    <h5 class="title is-5" i18n>Définition du mot de passe</h5>
+    <div class="field">
+        <label i18n>Login</label>
+        <p class="control has-icons-left has-icons-right">
+            <input class="input is-small" [(ngModel)]="Login" type="email" disabled="true" placeholder="Email">
+            <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+            </span>
+        </p>
+    </div>
+    <div class="field">
+        <label i18n>Mot de passe</label>
+        <p class="control has-icons-left has-icons-right">
+            <input [class]="Valid(Password) ? 'input is-small' : 'input is-small is-danger'" [(ngModel)]="Password" type="password"
+                placeholder="Password">
+            <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+            </span>
+            <span *ngIf="Valid(Password)" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+            </span>
+        </p>
+        <p class="help is-danger is-small" *ngIf="!Valid(Password)" i18n>Le mot de passe doit contenir au moins 9 caractères dont
+            lettre, chiffre, caractères spéciaux.
+        </p>
+    </div>
+    <div class="field">
+        <label i18n>Confirmer le mot de passe</label>
+        <p class="control has-icons-left has-icons-right">
+            <input [class]="Confirm(ConfirmPassword) ? 'input is-small' : 'input is-small is-danger'" [(ngModel)]="ConfirmPassword"
+                type="password" placeholder="Password">
+            <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+            </span>
+            <span *ngIf="Confirm(ConfirmPassword)" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+            </span>
+        </p>
+        <p class="help is-danger is-small" *ngIf="!Confirm(ConfirmPassword)" i18n>Les mots de passe doivent correspondre.
+        </p>
+    </div>
+
+    <button [disabled]="!Valid(Password) || !Confirm(ConfirmPassword)" class="button is-small is-success is-outlined is-rounded"
+        (click)="DefinirMDP()" i18n>
+        Définir
+    </button><br />
+
+</div>
+<div class="box" *ngIf="context == 'CONFIRM'">
+    <h3 class="title is-3" i18n>Confirmation du mot de passe</h3>
+    <div class="field">
+        <label i18n>Login</label>
+        <p class="control has-icons-left has-icons-right">
+            <input class="input" [(ngModel)]="Login" type="email" disabled="true" placeholder="Email">
+            <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+            </span>
+        </p>
+    </div>
+    <div class="field">
+        <label i18n>Mot de passe</label>
+        <p class="control has-icons-left has-icons-right">
+            <input [class]="Valid(Password) ? 'input' : 'input is-danger'" [(ngModel)]="Password" type="password"
+                placeholder="Password">
+            <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+            </span>
+            <span *ngIf="Valid(Password)" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+            </span>
+        </p>
+        <p class="help is-danger" *ngIf="!Valid(Password)" i18n>Le mot de passe doit contenir au moins 9 caractères dont
+            lettre, chiffre, caractères spéciaux.
+        </p>
+    </div>
+
+    <button [disabled]="!Valid(Password)" class="button is-primary is-outlined is-rounded" (click)="ConfirmMDP()" i18n>
+        Valider le mot de passe
+    </button><br /> <button [disabled]="!Valid(Password)" class="button is-info is-outlined is-rounded"
+        (click)="DemanderRattachement()" i18n>
+        Demander le rattachement
+    </button><br />
+
+</div>

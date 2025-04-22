@@ -1,0 +1,25 @@
+<ng-container>
+  <div class="stickyNotificationArea">
+    <ng-container *ngFor="let msg of stickyNotifications">
+      <div class="stickyNotificationWrapper" [@notification]>
+        <div *ngIf="msg.color==1" class="notification stickyNotification is-primary" (click)="Close(msg)">
+          <span>{{msg.object}}</span>&nbsp;: &nbsp;
+          <span>{{msg.content}}</span>
+        </div>
+        <div *ngIf="msg.color==2" class="notification stickyNotification is-danger" (click)="Close(msg)">
+          <span>{{msg.object}}</span>&nbsp;: &nbsp;
+          <span>{{msg.content}}</span>
+        </div>
+        <div *ngIf="msg.color==3" class="notification stickyNotification is-warning" (click)="Close(msg)">
+          <span>{{msg.object}}</span>&nbsp;: &nbsp;
+          <span>{{msg.content}}</span>
+        </div>
+        <div *ngIf="msg.color==4" class="notification stickyNotification is-info" (click)="Close(msg)">
+          <span>{{msg.object}}</span>&nbsp;: &nbsp;
+          <span>{{msg.content}}</span>
+        </div>
+       
+      </div>
+    </ng-container>
+  </div>
+</ng-container>

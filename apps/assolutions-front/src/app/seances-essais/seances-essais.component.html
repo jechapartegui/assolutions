@@ -1,0 +1,212 @@
+<div class="container">
+    <div class="columns is-justify-content-center">
+        <div class="column is-10-tablet is-8-desktop is-6-widescreen is-6-fullh">
+            <ng-container *ngIf="!essai"><h4 class="title is-4">{{ seanceText }}</h4>
+                <span style="display: flex; flex-direction: row;justify-content: space-between;">
+                <hover-button [nomclass]="'button is-info is-rounded is-outlined'" (click)="ChangeSemaine(false)"
+                [libelle]="'Semaine précédente'" [nomicon]="'fas fa-chevron-circle-left'"></hover-button> 
+                <hover-button [nomclass]="'button is-info is-rounded is-outlined'" (click)="ChangeSemaine(true)"
+                [libelle]="'Semaine suivante'" [nomicon]="'fas fa-chevron-circle-right'"></hover-button></span>
+                <br/>
+                <ng-container *ngFor="let day of days; let i = index">
+                    <h4 *ngIf="getSeancesForDay(i + 1).length > 0" class="subtitle is-4">{{ day }}</h4>
+
+                    <ng-container *ngFor="let seance of getSeancesForDay(i + 1)">
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-content">
+                                    <h5 class="title is-5"><strong>{{seance.libelle}}&nbsp;{{ seance.date_seance |
+                                            date: 'dd/MM/yyyy' }}</strong></h5>
+                                    <div class="ligneinfo">
+                                        <ng-container *ngIf="seance.TypeSeance==='ENTRAINEMENT'">
+
+                                            <span i18n>Cours</span>
+                                        </ng-container>
+                                        <ng-container *ngIf="seance.TypeSeance==='MATCH'">
+                                            <span i18n>Match</span>
+                                        </ng-container>
+                                        <ng-container *ngIf="seance.TypeSeance==='EVENEMENT'">
+                                            <span i18n>Evénement</span>
+                                        </ng-container>
+                                        <ng-container *ngIf="seance.TypeSeance==='SORTIE'">
+                                            <span i18n>Sortie</span>
+                                        </ng-container>
+                                        - {{seance.heure_debut}} <span>({{seance.duree_seance}} <span i18n>&nbsp;min</span>)</span>
+                                        {{seance.Lieu}}
+                                        <ng-container *ngIf="seance.Statut == 'prévue'">
+                                            <span class="tag is-info is-large is-rounded">
+                                            <svg width="20" style="fill:blue" height="20">
+                                                <use xlink:href=".\assets\liste.svg#prevu"></use>
+                                            </svg>
+                                            </span>
+                                        </ng-container>
+                                        <ng-container *ngIf="seance.Statut == 'réalisée'">
+                                            <span class="tag is-primary is-large is-rounded">
+                                            <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
+                                                <use xlink:href=".\assets\liste.svg#termine"></use>
+                                            </svg>
+                                            </span>
+                                        </ng-container>
+                                        <ng-container *ngIf="seance.Statut == 'annulée'">
+                                            
+                                            <span class="tag is-danger is-large is-rounded">
+                                            <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
+                                                <use xlink:href=".\assets\liste.svg#annuler"></use>
+                                            </svg>
+                                            </span>
+                                        </ng-container>
+                                        
+                                    </div>
+                                    <div *ngIf="seance.EssaiPossible" class="ligneinfo">
+                                        <button type="button" 
+                                            class="button is-rounded is-primary is-outlined" (click)="Essayer(seance)"
+                                            i18n>
+                                            Essayer
+                                        </button>
+                                    </div>
+                                    <div *ngIf="seance.EstAgeMinimum || seance.EstAgeMaximum" class="ligneinfo">
+                                        <span *ngIf="seance.EstAgeMinimum"><span i18n>Age minimum : </span>{{seance.AgeMinimum}}<span i18n> ans</span></span>
+                                        <span *ngIf="seance.EstAgeMaximum"><span i18n>Age maximum : </span>{{seance.AgeMaximum}}<span i18n> ans</span></span>
+                                    </div>
+
+                                </div>
+                            </article>
+                        </div>
+                    </ng-container>
+
+                </ng-container>
+
+            </ng-container>
+            <ng-container *ngIf="essai">
+                <div *ngIf="thisSeance" class="box">
+                    <article class="media">
+                        <div class="media-content">
+                            <h5 class="title is-5"><strong>{{thisSeance.libelle}}&nbsp;{{ thisSeance.date_seance |
+                                date: 'dd/MM/yyyy' }}</strong></h5>
+                        <div class="ligneinfo">
+                            <ng-container *ngIf="thisSeance.TypeSeance==='ENTRAINEMENT'">
+
+                                <span i18n>Cours</span>
+                            </ng-container>
+                            <ng-container *ngIf="thisSeance.TypeSeance==='MATCH'">
+                                <span i18n>Match</span>
+                            </ng-container>
+                            <ng-container *ngIf="thisSeance.TypeSeance==='EVENEMENT'">
+                                <span i18n>Evénement</span>
+                            </ng-container>
+                            <ng-container *ngIf="thisSeance.TypeSeance==='SORTIE'">
+                                <span i18n>Sortie</span>
+                            </ng-container>
+                            - {{thisSeance.heure_debut}} <span>({{thisSeance.duree_seance}} <span i18n>&nbsp;min</span>)</span>
+                            {{thisSeance.Lieu}}
+                            <ng-container *ngIf="thisSeance.Statut == 'prévue'">
+                                <span class="tag is-info is-large is-rounded">
+                                <svg width="20" style="fill:blue" height="20">
+                                    <use xlink:href=".\assets\liste.svg#prevu"></use>
+                                </svg>
+                                </span>
+                            </ng-container>
+                            <ng-container *ngIf="thisSeance.Statut == 'réalisée'">
+                                <span class="tag is-primary is-large is-rounded">
+                                <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
+                                    <use xlink:href=".\assets\liste.svg#termine"></use>
+                                </svg>
+                                </span>
+                            </ng-container>
+                            <ng-container *ngIf="thisSeance.Statut == 'annulée'">
+                                
+                                <span class="tag is-danger is-large is-rounded">
+                                <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
+                                    <use xlink:href=".\assets\liste.svg#annuler"></use>
+                                </svg>
+                                </span>
+                            </ng-container>
+                           
+                        </div>
+                        <div *ngIf="thisSeance.EstAgeMinimum || thisSeance.EstAgeMaximum" class="ligneinfo">
+                            <span *ngIf="thisSeance.EstAgeMinimum"><span i18n>Age minimum : </span>{{thisSeance.AgeMinimum}}<span i18n> ans</span></span>
+                            <span *ngIf="thisSeance.EstAgeMaximum"><span i18n>Age maximum : </span>{{thisSeance.AgeMaximum}}<span i18n> ans</span></span>
+                        </div>
+
+                        </div>
+                    </article>
+                </div>
+                <div *ngIf="thisEssai" class="box">
+
+                    <h3 class="title is-3" i18n>Saisir les informations du participant</h3>
+                    <div class="field">
+                        <label class="label" i18n>Nom</label>
+                        <div class="control ">
+                            <input [class]="thisEssai.valid.libelle ? 'input' : 'input is-danger'" type="text"
+                                id="nom_rider" name="nom_rider" i18n-placeholder placeholder="Nom"
+                                [(ngModel)]="thisEssai.Nom">
+
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" i18n>Prénom</label>
+                        <div class="control ">
+                            <input [class]="thisEssai.valid.libelle? 'input' : 'input is-danger'" type="text"
+                                id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
+                                [(ngModel)]="thisEssai.Prenom">
+                        </div>
+                    </div>
+                   
+                    <p class="help is-danger" *ngIf="!thisEssai.valid.libelle" i18n>L'ensemble Prénom / Nom doit contenir au moins 2 caractères
+                    </p>
+                    <div class="field">
+                        <label class="label" i18n>Date de naissance</label>
+                        <div class="control ">
+                            <input [class]="thisEssai.valid.date_naissance ? 'input' : 'input is-danger'" type="date"
+                                id="date_naissance" name="date_naissance" i18n-placeholder
+                                placeholder="Date de naissance" [(ngModel)]="thisEssai.DDN">
+                            <p class="help is-danger" *ngIf="!thisEssai.valid.date_naissance" i18n>La date de
+                                naissance doit être
+                                saisie</p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" i18n>Sexe :</label>
+                        <div class="buttons has-addons is-centered">
+                            <button type="button" style="font-size: small;"
+                                [class]="thisEssai.Sexe == true ? 'button is-link is-active' : 'button is-active'"
+                                (click)="thisEssai.Sexe == true ? thisEssai.Sexe = false : thisEssai.Sexe = true">
+                                <span i18n>Homme</span></button>
+                            <button type="button" style="font-size: small;"
+                                [class]="thisEssai.Sexe == false ? 'button is-link is-active' : 'button is-active'"
+                                (click)="thisEssai.Sexe == true ? thisEssai.Sexe = false : thisEssai.Sexe = true">
+                                <span i18n>Femme</span></button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" i18n>Adresse :</label>
+                        <app-address [valid_address]="valid_address" [Adresse]="thisEssai.Adresse"
+                            (validAdresseChange)="onValidAdresseChange($event)"
+                            (AdresseChange)="onAdresseChange($event)"></app-address>
+                    </div>
+                    <p class="help is-danger" *ngIf="!valid_address" i18n>L'adresse doit être saisie (voie, code postal
+                        et ville)</p>
+                    <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel" [Notes]="'Notes'"
+                        [Titre]="'Contacts : '" [Contacts]="thisEssai.Contacts"
+                        (validMailChange)="onValidMailChange($event)" (validTelChange)="onValidTelChange($event)"
+                        (validContactChange)="onValidContactChange($event)"></app-contact-item>
+                    <p class="help is-danger" *ngIf="!valid_mail" i18n>Au moins un mail doit être saisi</p>
+                    <p class="help is-danger" *ngIf="!valid_tel" i18n>Au moins un téléphone doit être saisi</p>
+
+                    <app-contact-item [Notes]="'Relation'" [Titre]="'Contact à prévenir : '"
+                        [Contacts]="thisEssai.ContactsUrgence"
+                        (validContactChange)="onValidContactUrgenceChange($event)">
+                    </app-contact-item>
+
+                </div>
+                <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' "
+                    [disabled]="!thisEssai.valid.control || !this.valid_address || !this.valid_mail || !this.valid_tel"
+                    [nomicon]="'fas fa-check'" [libelle]="'Confirmer'" (click)="Confirmer()">
+                </hover-button>
+                <hover-button [nomclass]="'button  is-rounded is-danger is-outlined' " [nomicon]="'fa-solid fa-backward-fast'"
+                    [libelle]="'Retour'" (click)="Retour()">
+                </hover-button>
+            </ng-container>
+        </div>
+    </div>
+</div>

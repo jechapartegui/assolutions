@@ -1,0 +1,62 @@
+.panel {
+    --bulma-panel-heading-padding: 0.5em 0.75em; /* Seulement pour ce conteneur */
+  }
+  
+.ligne{
+    font-size: small;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: center;
+}
+.nom_personne{
+    font-size: smaller;
+    font-weight: bold;
+    text-transform: uppercase;    
+/* Limite la largeur maximale à 170px */
+    display: inline-block;      /* S'ajuste en fonction du contenu */
+    word-wrap: break-word;      /* Permet le retour à la ligne si nécessaire */
+    white-space: normal;        /* Empêche le texte de rester sur une seule ligne */
+}
+.partie1{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 4px;    min-width: auto;  /* Permet à l'input de s'adapter au contenu */
+    max-width: 240px; 
+    align-items: center;
+    align-content: center;
+}
+.button.is-rounded{
+    border-radius: var(--bulma-radius-rounded);
+    padding-left: calc(var(--bulma-button-padding-horizontal));
+    padding-right: calc(var(--bulma-button-padding-horizontal));
+}
+.menu-icons {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    list-style: none;
+    padding: 10px;
+    z-index: 100;
+  }
+  
+  .menu-icons li {
+    cursor: pointer;
+    padding: 5px 10px;
+  }
+  
+  .menu-icons.is-visible {
+    display: block;
+  }
+  
+  .menu-icons li:hover {
+    background-color: #f0f0f0;
+  }
+  .not{
+    display: none;
+  }
+  

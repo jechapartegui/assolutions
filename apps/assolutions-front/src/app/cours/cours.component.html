@@ -1,0 +1,1552 @@
+<div class="container">
+  <ng-container *ngIf="!editMode">
+    <ng-container *ngIf="loading">
+      <progress
+        class="progress is-large is-info"
+        style="margin-top: 60px"
+        max="100"
+      >
+        60%
+      </progress>
+      <p>Chargement en cours</p>
+    </ng-container>
+    <ng-container *ngIf="!loading">
+      <span class="fullscreen">
+        <div class="columns">
+          <div class="column">
+            <div class="card">
+              <header class="card-header" style="align-items: center">
+                <p
+                  class="card-header-title"
+                  *ngIf="
+                    listeCours_VM
+                      | multifiltersCours : filters as filteredApplis
+                  "
+                >
+                  <span i18n>Liste des cours</span>&nbsp;({{
+                    filteredApplis.length
+                  }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
+                    getActiveSaison()
+                  }}
+                </p>
+               
+              </header>
+              <div class="card-content" #scrollableContent>
+                <div class="content">
+                  <table
+                    class="table"
+                    style="width: 100%; font-size: smaller"
+                    *ngIf="listeCours_VM && listeCours_VM.length > 0"
+                  >
+                    <thead>
+                      <tr>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_nom ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Nom</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_nom === 'NO'"
+                              (click)="Sort('ASC', 'nom')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_nom === 'ASC'"
+                              (click)="Sort('DESC', 'nom')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_nom === 'DESC'"
+                              (click)="Sort('ASC', 'nom')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </th>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_jour ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Jour</span
+                          ><span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_jour === 'NO'"
+                              (click)="Sort('ASC', 'jour')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_jour === 'ASC'"
+                              (click)="Sort('DESC', 'jour')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_jour === 'DESC'"
+                              (click)="Sort('ASC', 'jour')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </th>
+                        <th>Heure</th>
+                        <th>Durée</th>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_prof ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Responsable</span
+                          >
+                        </th>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_lieu ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Lieu</span
+                          ><span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_lieu === 'NO'"
+                              (click)="Sort('ASC', 'lieu')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_lieu === 'ASC'"
+                              (click)="Sort('DESC', 'lieu')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_lieu === 'DESC'"
+                              (click)="Sort('ASC', 'lieu')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </th>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_groupe ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Groupe</span
+                          >
+                        </th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="
+                          let cours of listeCours_VM
+                            | multifiltersCours : filters
+                        "
+                      >
+                        <td>
+                          {{ cours.Nom }}
+                        </td>
+                        <td>
+                          <ng-container *ngIf="cours.JourSemaine == 'lundi'">
+                            <span style="cursor: pointer" i18n>Lundi</span>
+                          </ng-container>
+                          <ng-container *ngIf="cours.JourSemaine == 'mardi'">
+                            <span style="cursor: pointer" i18n>Mardi</span>
+                          </ng-container>
+                          <ng-container *ngIf="cours.JourSemaine == 'mercredi'">
+                            <span style="cursor: pointer" i18n>Mercredi</span>
+                          </ng-container>
+                          <ng-container *ngIf="cours.JourSemaine == 'jeudi'">
+                            <span style="cursor: pointer" i18n>Jeudi</span>
+                          </ng-container>
+                          <ng-container *ngIf="cours.JourSemaine == 'vendredi'">
+                            <span style="cursor: pointer" i18n>Vendredi</span>
+                          </ng-container>
+                          <ng-container *ngIf="cours.JourSemaine == 'samedi'">
+                            <span style="cursor: pointer" i18n>Samedi</span>
+                          </ng-container>
+                          <ng-container *ngIf="cours.JourSemaine == 'dimanche'">
+                            <span style="cursor: pointer" i18n>Dimanche</span>
+                          </ng-container>
+                        </td>
+                        <td>
+                          {{ cours.Heure }}
+                        </td>
+                        <td>
+                          {{ cours.Duree }}
+                        </td>
+                        <td>
+                          {{ trouverProfesseur(cours.ProfPrincipalId) }}
+                        </td>
+                        <td>
+                          {{ trouverLieu(cours.LieuId) }}
+                        </td>
+                        <td>
+                          <div class="tags is-small">
+                            <ng-container *ngFor="let gr of cours.Groupes">
+                              <span class="tag is-success">
+                                {{ gr.nom }}
+                              </span>
+                            </ng-container>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="buttons" style="flex-wrap: nowrap">
+                            <btn
+                              i18n-title
+                              title="Supprimer"
+                              [type_button]="'SupprimerLight'"
+                              (click)="Delete(cours)"
+                            ></btn>
+
+                            <btn
+                              i18n-title
+                              title="Editer"
+                              [type_button]="'EditerLight'"
+                              (click)="Edit(cours)"
+                            ></btn>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <button
+                    class="scroll-to-top"
+                    *ngIf="showScrollToTop"
+                    (click)="scrollToTop()"
+                    title="Revenir en haut"
+                  >
+                    ↑
+                  </button>
+                  <p *ngIf="!listeCours_VM || listeCours_VM.length == 0">
+                    Pas de cours disponible
+                  </p>
+                </div>
+              </div>
+              <footer class="card-footer">
+                <div class="columns">
+                  <div class="column">
+                    <div *ngIf="!afficher_filtre" class="buttons">
+                      <btn [type_button]="'CreerSmall'" (click)="Create()"></btn>
+                      <btn
+                        [type_button]="'FiltrerSmall'"
+                        (click)="
+                          afficher_filtre
+                            ? (afficher_filtre = false)
+                            : (afficher_filtre = true)
+                        "
+                      ></btn>
+
+                      <btn
+                        [type_button]="'ExporterSmall'"
+                        (click)="ExportExcel()"
+                      ></btn>
+                      <div class="field is-horizontal">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Saison affichée</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <div class="select is-fullwidth">
+                                <select
+                                  [(ngModel)]="active_saison"
+                                  (ngModelChange)="UpdateListeCours()"
+                                >
+                                  <ng-container
+                                    *ngFor="let saison of liste_saison"
+                                  >
+                                    <option [ngValue]="saison">
+                                      {{ saison.nom }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="buttons" *ngIf="afficher_filtre">
+                      <btn
+                        (click)="
+                          afficher_filtre = false; selected_filter = null
+                        "
+                        [type_button]="'RetourLight'"
+                      ></btn>
+                      <div
+                        class="field is-horizontal"
+                        style="gap: 0.5rem; align-items: center"
+                      >
+                        <div class="field-label is-normal">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Sélection du filtre</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <div
+                                class="select is-fullwidth ; font-size: smaller"
+                              >
+                                <select [(ngModel)]="selected_filter">
+                                  <option value="nom" i18n>Nom</option>
+                                  <option value="jour" i18n>Jour</option>
+                                  <option value="groupe" i18n>Groupe</option>
+                                  <option value="prof" i18n>Professeur</option>
+                                  <option value="lieu" i18n>Lieu</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          *ngIf="selected_filter"
+                          class="field-label is-normal"
+                        >
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Valeur du filtre
+                          </label>
+                        </div>
+                        <div class="field-body" *ngIf="selected_filter">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <input
+                                *ngIf="selected_filter == 'nom'"
+                                style="width: fit-content; font-size: smaller"
+                                class="input is-small"
+                                i18n-placeholder
+                                placeholder="Nom du cours"
+                                type="text"
+                                [(ngModel)]="filters.filter_nom"
+                              />
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'jour'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_jour"
+                                >
+                                  <ng-container
+                                    *ngFor="let jr of liste_jour_semaine"
+                                  >
+                                    <ng-container *ngIf="jr == 'lundi'">
+                                      <option [value]="jr" i18n>Lundi</option>
+                                    </ng-container>
+                                    <ng-container *ngIf="jr == 'mardi'">
+                                      <option [value]="jr" i18n>Mardi</option>
+                                    </ng-container>
+                                    <ng-container *ngIf="jr == 'mercredi'">
+                                      <option [value]="jr" i18n>
+                                        Mercredi
+                                      </option>
+                                    </ng-container>
+                                    <ng-container *ngIf="jr == 'jeudi'">
+                                      <option [value]="jr" i18n>Jeudi</option>
+                                    </ng-container>
+                                    <ng-container *ngIf="jr == 'vendredi'">
+                                      <option [value]="jr" i18n>
+                                        Vendredi
+                                      </option>
+                                    </ng-container>
+                                    <ng-container *ngIf="jr == 'samedi'">
+                                      <option [value]="jr" i18n>Samedi</option>
+                                    </ng-container>
+                                    <ng-container *ngIf="jr == 'dimanche'">
+                                      <option [value]="jr" i18n>
+                                        Dimanche
+                                      </option>
+                                    </ng-container>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'groupe'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_groupe"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let group of liste_groupe_filter"
+                                  >
+                                    <option [ngValue]="group.nom">
+                                      {{ group.nom }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'prof'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_prof"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let prof of liste_prof_filter"
+                                  >
+                                    <option [ngValue]="prof.value">
+                                      {{ prof.value }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'lieu'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_lieu"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let lieu of liste_lieu_filter"
+                                  >
+                                    <option [ngValue]="lieu.key">
+                                      {{ lieu.value }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tags">
+                          <span
+                            *ngIf="filters.filter_nom"
+                            class="tag is-success"
+                          >
+                            <span i18n>Nom : </span>
+                            <span>{{ filters.filter_nom }}</span>
+                            <button
+                              class="delete"
+                              (click)="filters.filter_nom = null"
+                            ></button>
+                          </span>
+
+                          <span
+                            *ngIf="filters.filter_lieu != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Lieu : </span>
+                            <span i18n>{{ trouverLieu(filters.filter_lieu) }}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_lieu = null"
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_prof != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Prof : </span>
+                            <span i18n>{{ filters.filter_prof }}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_prof = null"
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_groupe != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Groupe : </span>
+                            <span i18n>{{ filters.filter_groupe }}</span>
+                            <button
+                              class="delete"
+                              (click)="filters.filter_groupe = null"
+                            ></button>
+                          </span>
+                          <btn
+                            [type_button]="'SupprimerLight'"
+                            (click)="ReinitFiltre()"
+                            *ngIf="
+                              filters.filter_groupe ||
+                              filters.filter_nom ||
+                              filters.filter_lieu ||
+                              filters.filter_prof ||
+                              filters.filter_jour
+                            "
+                          >
+                          </btn>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </span>
+
+      <span class="mobile">
+        <ng-container *ngIf="afficher_filtre">
+          <nav class="navbar is-fixed-top">
+            <btn
+              [type_button]="'RetourMobile'"
+              (click)="afficher_filtre = false; selected_filter = null"
+            ></btn>
+          </nav>
+          <span class="container-box">
+            <div class="field" style="gap: 0.5rem; align-items: center">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Sélection du filtre</label
+                >
+              </div>
+              <div class="field-body">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <div class="select is-fullwidth ; font-size: smaller">
+                      <select [(ngModel)]="selected_filter">
+                        <option value="nom" i18n>Nom</option>
+                        <option value="groupe" i18n>Groupe</option>
+                        <option value="jour" i18n>Jour</option>
+                        <option value="prof" i18n>Professeur</option>
+                        <option value="lieu" i18n>Lieu</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="selected_filter" class="field-label is-normal">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Valeur du filtre
+                </label>
+              </div>
+              <div class="field-body" *ngIf="selected_filter">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <input
+                      *ngIf="selected_filter == 'nom'"
+                      style="width: fit-content; font-size: smaller"
+                      class="input is-small"
+                      i18n-placeholder
+                      placeholder="Nom du cours"
+                      type="text"
+                      [(ngModel)]="filters.filter_nom"
+                    />
+                    <div class="select" *ngIf="selected_filter == 'jour'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_jour"
+                      >
+                        <ng-container *ngFor="let jr of liste_jour_semaine">
+                          <ng-container *ngIf="jr == 'lundi'">
+                            <option [value]="jr" i18n>Lundi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'mardi'">
+                            <option [value]="jr" i18n>Mardi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'mercredi'">
+                            <option [value]="jr" i18n>Mercredi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'jeudi'">
+                            <option [value]="jr" i18n>Jeudi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'vendredi'">
+                            <option [value]="jr" i18n>Vendredi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'samedi'">
+                            <option [value]="jr" i18n>Samedi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'dimanche'">
+                            <option [value]="jr" i18n>Dimanche</option>
+                          </ng-container>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <div class="select" *ngIf="selected_filter == 'groupe'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_groupe"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <ng-container *ngFor="let group of liste_groupe_filter">
+                          <option [ngValue]="group.nom">
+                            {{ group.nom }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <div class="select" *ngIf="selected_filter == 'prof'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_prof"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <ng-container *ngFor="let prof of liste_prof_filter">
+                          <option [ngValue]="prof.value">
+                            {{ prof.value }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <div class="select" *ngIf="selected_filter == 'lieu'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_lieu"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <ng-container *ngFor="let lieu of liste_lieu_filter">
+                          <option [ngValue]="lieu.key">
+                            {{ lieu.value }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tags">
+                <span
+                  *ngIf="filters.filter_nom"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Nom : </span>
+                  <span>{{ filters.filter_nom }}</span>
+                  <button
+                    class="delete"
+                    (click)="filters.filter_nom = null"
+                  ></button>
+                </span>
+
+                <span
+                  *ngIf="filters.filter_lieu != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Lieu : </span>
+                  <span i18n>{{ trouverLieu(filters.filter_lieu) }}</span>
+
+                  <button
+                    class="delete"
+                    (click)="filters.filter_lieu = null"
+                  ></button>
+                </span>
+                <span
+                  *ngIf="filters.filter_prof != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Prof : </span>
+                  <span i18n>{{ filters.filter_prof }}</span>
+
+                  <button
+                    class="delete"
+                    (click)="filters.filter_prof = null"
+                  ></button>
+                </span>
+                <span
+                  *ngIf="filters.filter_groupe != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Groupe : </span>
+                  <span i18n>{{ filters.filter_groupe }}</span>
+                  <button
+                    class="delete"
+                    (click)="filters.filter_groupe = null"
+                  ></button>
+                </span>
+                <btn
+                  [type_button]="'SupprimerMobile'"
+                  (click)="ReinitFiltre()"
+                  *ngIf="
+                    filters.filter_groupe ||
+                    filters.filter_nom ||
+                    filters.filter_lieu ||
+                    filters.filter_jour ||
+                    filters.filter_prof
+                  "
+                >
+                </btn>
+              </div>
+            </div>
+          </span>
+        </ng-container>
+        <ng-container *ngIf="afficher_tri">
+          <nav class="navbar is-fixed-top">
+            <btn
+              [type_button]="'RetourMobile'"
+              (click)="afficher_tri = false"
+            ></btn>
+          </nav>
+          <span class="container-box">
+            <div class="field">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Sélection du tri</label
+                >
+              </div>
+              <div class="field-body">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <div class="select is-fullwidth ; font-size: smaller">
+                      <select [(ngModel)]="selected_sort">
+                        <option value="nom" i18n>Nom</option>
+                        <option value="date" i18n>Date</option>
+                        <option value="cours" i18n>Cours / Evenement</option>
+                        <option value="lieu" i18n>Lieu</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="field-label is-normal" *ngIf="selected_sort">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Sens du tri
+                </label>
+              </div>
+              <div class="field-body" *ngIf="selected_sort">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <div class="select is-fullwidth ; font-size: smaller">
+                      <select
+                        (ngModelChange)="Sort($event, selected_sort)"
+                        [(ngModel)]="selected_sort_sens"
+                      >
+                        <option value="asc" i18n>Croissant</option>
+                        <option value="desc" i18n>Décroissant</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </span>
+        </ng-container>
+        <ng-container *ngIf="!afficher_tri && !afficher_filtre">
+          <nav class="navbar is-fixed-top">
+            <btn
+              [type_button]="'FiltrerMobile'"
+              (click)="afficher_filtre = true"
+            ></btn>
+            <btn
+              [type_button]="'TrierMobile'"
+              (click)="afficher_tri = true"
+            ></btn>
+            <btn
+                  
+                  [type_button]="'CreerMobile'"
+                  (click)="Create()"
+                ></btn>
+          </nav>
+          <ng-container
+            *ngFor="let cours of listeCours_VM | multifiltersCours : filters"
+          >
+            <div class="container-box">
+              <article class="media">
+                <div class="media-content">
+                  <span class="title" (click)="Edit(cours)"
+                    ><strong
+                      >{{ cours.Nom }}&nbsp;{{ cours.JourSemaine }}</strong
+                    ></span
+                  >
+                  <div>
+                    {{ cours.Heure }} ({{ cours.Duree }}
+                    <span i18n>&nbsp;min</span>)
+                    {{ trouverLieu(cours.LieuId) }}
+                  </div>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+        </ng-container>
+      </span>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="editMode">
+    <span class="fullscreen">
+      <div class="columns">
+        <div class="column">
+          <div class="card" *ngIf="editCours">
+            <header class="card-header" style="align-items: center">
+              <p class="card-header-title" *ngIf="editCours.ID == 0" i18n>
+                Créer un cours
+              </p>
+
+              <p class="card-header-title" *ngIf="editCours.ID > 0" i18n>
+                Editer un cours
+              </p>
+            </header>
+            <div class="card-content" #scrollableContent>
+              <div class="content">
+                <div class="field-container">
+                  <div class="field">
+                    <label class="label" for="nom_cours" i18n
+                      >Nom du cours</label
+                    >
+                    <input
+                      [class]="
+                        editCours.valid.nom ? 'input' : 'input is-danger'
+                      "
+                      id="nom_cours"
+                      type="text"
+                      [(ngModel)]="editCours.Nom"
+                      i18n-placeholder
+                      placeholder="Nom du cours"
+                    />
+                    <p class="help is-danger" *ngIf="!editCours.valid.nom" i18n>
+                      Le nom doit faire au moins 2 caractères
+                    </p>
+                  </div>
+                  <div class="field">
+                    <label class="label" for="jour_semaine" i18n
+                      >Jour de la semaine :</label
+                    >
+                    <div class="select">
+                      <select [(ngModel)]="editCours.JourSemaine">
+                        <ng-container *ngFor="let jr of liste_jour_semaine">
+                          <ng-container *ngIf="jr == 'lundi'">
+                            <option [value]="jr" i18n>Lundi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'mardi'">
+                            <option [value]="jr" i18n>Mardi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'mercredi'">
+                            <option [value]="jr" i18n>Mercredi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'jeudi'">
+                            <option [value]="jr" i18n>Jeudi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'vendredi'">
+                            <option [value]="jr" i18n>Vendredi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'samedi'">
+                            <option [value]="jr" i18n>Samedi</option>
+                          </ng-container>
+                          <ng-container *ngIf="jr == 'dimanche'">
+                            <option [value]="jr" i18n>Dimanche</option>
+                          </ng-container>
+                        </ng-container>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label" for="heure_cours" i18n
+                      >Heure de début :</label
+                    >
+                    <input
+                      [class]="
+                        editCours.valid.heure ? 'input' : 'input is-danger'
+                      "
+                      id="heure_cours"
+                      type="time"
+                      [(ngModel)]="editCours.Heure"
+                    />
+                    <p
+                      class="help is-danger"
+                      *ngIf="!editCours.valid.heure"
+                      i18n
+                    >
+                      L'heure doit être saisie
+                    </p>
+                  </div>
+                  <div class="field">
+                    <label class="label" for="duree_cours" i18n
+                      >Durée du cours :</label
+                    >
+                    <input
+                      [class]="
+                        editCours.valid.duree ? 'input' : 'input is-danger'
+                      "
+                      min="0"
+                      max="1440"
+                      type="number"
+                      id="duree_cours"
+                      [(ngModel)]="editCours.Duree"
+                      placeholder="Durée (en minutes)"
+                    />
+                    <p
+                      class="help is-danger"
+                      *ngIf="!editCours.valid.duree"
+                      i18n
+                    >
+                      La durée doit être saisie
+                    </p>
+                  </div>
+                </div>
+                <div class="field-container">
+                  <div class="field">
+                    <label class="label" for="saison" i18n
+                      >Saison du cours :</label
+                    >
+                    <div class="select">
+                      <select
+                        id="saison"
+                        [(ngModel)]="editCours.SaisonId"
+                        i18n-placeholder
+                        placeholder="Saison"
+                      >
+                        <!-- Options pour les professeurs -->
+                        <ng-container *ngFor="let s of liste_saison">
+                          <option [value]="s.id">{{ s.nom }}</option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <p
+                      class="help is-danger"
+                      *ngIf="!editCours.valid.saison"
+                      i18n
+                    >
+                      Une saison doit être choisie
+                    </p>
+                  </div>
+                  <div class="field">
+                    <label class="label" for="resp_cours" i18n
+                      >Responsable du cours :</label
+                    >
+                    <div class="select">
+                      <select
+                        id="resp_cours"
+                        class="form-control"
+                        [(ngModel)]="editCours.ProfPrincipalId"
+                        placeholder="Professeur Principal"
+                      >
+                        <!-- Options pour les professeurs -->
+                        <ng-container *ngFor="let prof of listeprof">
+                          <option [value]="prof.id">
+                            {{ prof.prenom }}&nbsp;{{ prof.nom }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <p
+                      class="help is-danger"
+                      *ngIf="!editCours.valid.prof"
+                      i18n
+                    >
+                      Un professeur doit être choisi
+                    </p>
+                  </div>
+                  <div class="field">
+                    <label class="label" i18n>Lieu du cours :</label>
+                    <div class="select">
+                      <select
+                        id="lieu_cours"
+                        [(ngModel)]="editCours.LieuId"
+                        placeholder="Lieu du cours"
+                      >
+                        <!-- Options pour les professeurs -->
+                        <ng-container *ngFor="let lieu of listelieu">
+                          <option [value]="lieu.key">{{ lieu.value }}</option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <p
+                      class="help is-danger"
+                      *ngIf="!editCours.valid.prof"
+                      i18n
+                    >
+                      Un professeur doit être choisi
+                    </p>
+                  </div>
+                </div>
+                <div class="field-container">
+                  <div class="field">
+                    <label class="label" i18n for="place_maximum"
+                      >Age minimum ? :</label
+                    >
+                    <div class="buttons has-addons">
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.EstAgeMinimum == true
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.EstAgeMinimum == true
+                            ? (editCours.EstAgeMinimum = false)
+                            : (editCours.EstAgeMinimum = true)
+                        "
+                      >
+                        <span i18n>Age minimum requis</span>
+                      </button>
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.EstAgeMinimum == false
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.EstAgeMinimum == true
+                            ? (editCours.EstAgeMinimum = false)
+                            : (editCours.EstAgeMinimum = true)
+                        "
+                      >
+                        <span i18n>Pas de limite</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div *ngIf="editCours.EstAgeMinimum == true" class="field">
+                    <label class="label" i18n for="age_minimum"
+                      >Age minimum :</label
+                    >
+                    <input
+                      class="input"
+                      min="1"
+                      max="99"
+                      matInput
+                      type="number"
+                      id="age_minimum"
+                      [(ngModel)]="editCours.AgeMinimum"
+                      i18n-placeholder
+                      placeholder="Age requis"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="label" i18n for="place_maximum"
+                      >Age maximum ? :</label
+                    >
+                    <div class="buttons has-addons">
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.EstAgeMaximum == true
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.EstAgeMaximum == true
+                            ? (editCours.EstAgeMaximum = false)
+                            : (editCours.EstAgeMaximum = true)
+                        "
+                      >
+                        <span i18n>Age maximum</span>
+                      </button>
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.EstAgeMaximum == false
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.EstAgeMaximum == true
+                            ? (editCours.EstAgeMaximum = false)
+                            : (editCours.EstAgeMaximum = true)
+                        "
+                      >
+                        <span i18n>Pas de limite</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div *ngIf="editCours.EstAgeMaximum == true" class="field">
+                    <label class="label" i18n for="age_maximum"
+                      >Age maximum :</label
+                    >
+                    <input
+                      class="input"
+                      min="1"
+                      max="99"
+                      matInput
+                      type="number"
+                      id="age_maximum"
+                      [(ngModel)]="editCours.AgeMaximum"
+                      placeholder="Age maximum"
+                    />
+                  </div>
+                </div>
+                <div class="field-container">
+                  <div class="field">
+                    <label class="label" i18n for="place_maximum"
+                      >Place limitée ? :</label
+                    >
+                    <div class="buttons has-addons">
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.EstPlaceMaximum == true
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.EstPlaceMaximum == true
+                            ? (editCours.EstPlaceMaximum = false)
+                            : (editCours.EstPlaceMaximum = true)
+                        "
+                      >
+                        <span i18n>Places limitées</span>
+                      </button>
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.EstPlaceMaximum == false
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.EstPlaceMaximum == true
+                            ? (editCours.EstPlaceMaximum = false)
+                            : (editCours.EstPlaceMaximum = true)
+                        "
+                      >
+                        <span i18n>Places illimitées</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="editCours.EstPlaceMaximum == true"
+                    class="field field-jecha"
+                  >
+                    <label class="label" i18n for="place_maximum"
+                      >Place maximum :</label
+                    >
+                    <input
+                      class="input"
+                      type="number"
+                      id="place_maximum"
+                      min="1"
+                      max="999"
+                      [(ngModel)]="editCours.PlaceMaximum"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="label" i18n for="place_maximum"
+                      >Convocation nominative ? :</label
+                    >
+                    <div class="buttons has-addons">
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.ConvocationNominative == true
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.ConvocationNominative == true
+                            ? (editCours.ConvocationNominative = false)
+                            : (editCours.ConvocationNominative = true)
+                        "
+                      >
+                        <span i18n>Convocation nominative</span>
+                      </button>
+                      <button
+                        type="button"
+                        [class]="
+                          editCours.ConvocationNominative == false
+                            ? 'button is-link is-active'
+                            : 'button is-active'
+                        "
+                        (click)="
+                          editCours.ConvocationNominative == true
+                            ? (editCours.ConvocationNominative = false)
+                            : (editCours.ConvocationNominative = true)
+                        "
+                      >
+                        <span i18n>Groupe entier convoqué</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="field"
+                    *ngIf="editCours.ConvocationNominative == false"
+                  >
+                    <label class="label" i18n for="groupes">Groupes :</label>
+                    <app-groupe-detail
+                      (groupesUpdated)="onGroupesUpdated($event)"
+                      [id_source]="editCours.ID"
+                      [objet_source]="'cours'"
+                      [Groupes]="editCours.Groupes"
+                      [liste_groupe]="liste_groupe"
+                    ></app-groupe-detail>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <footer class="card-footer">
+              <div class="columns">
+                <div class="column">
+                  <div class="buttons">
+                    <btn
+                      [disabled]="!editCours.valid.control"
+                      [type_button]="'SauvegarderSmall'"
+                      (click)="Save(editCours)"
+                    ></btn>
+                    <btn
+                      [type_button]="'ReloadSmall'"
+                      (click)="Refresh()"
+                    ></btn>
+                    <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </span>
+    <span class="mobile">
+      <nav class="navbar is-fixed-top">
+        <btn
+          [disabled]="!editCours.valid.control"
+          [type_button]="'SauvegarderMobile'"
+          (click)="Save(editCours)"
+        ></btn>
+        <btn [type_button]="'ReloadMobile'" (click)="Refresh()"></btn>
+        <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
+      </nav>
+      <div class="container-box">
+        <div class="field-container">
+          <div class="field">
+            <label class="label" for="nom_cours" i18n>Nom du cours</label>
+            <input
+              [class]="editCours.valid.nom ? 'input' : 'input is-danger'"
+              id="nom_cours"
+              type="text"
+              [(ngModel)]="editCours.Nom"
+              i18n-placeholder
+              placeholder="Nom du cours"
+            />
+            <p class="help is-danger" *ngIf="!editCours.valid.nom" i18n>
+              Le nom doit faire au moins 2 caractères
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" for="jour_semaine" i18n
+              >Jour de la semaine :</label
+            >
+            <div class="select">
+              <select [(ngModel)]="editCours.JourSemaine">
+                <ng-container *ngFor="let jr of liste_jour_semaine">
+                  <ng-container *ngIf="jr == 'lundi'">
+                    <option [value]="jr" i18n>Lundi</option>
+                  </ng-container>
+                  <ng-container *ngIf="jr == 'mardi'">
+                    <option [value]="jr" i18n>Mardi</option>
+                  </ng-container>
+                  <ng-container *ngIf="jr == 'mercredi'">
+                    <option [value]="jr" i18n>Mercredi</option>
+                  </ng-container>
+                  <ng-container *ngIf="jr == 'jeudi'">
+                    <option [value]="jr" i18n>Jeudi</option>
+                  </ng-container>
+                  <ng-container *ngIf="jr == 'vendredi'">
+                    <option [value]="jr" i18n>Vendredi</option>
+                  </ng-container>
+                  <ng-container *ngIf="jr == 'samedi'">
+                    <option [value]="jr" i18n>Samedi</option>
+                  </ng-container>
+                  <ng-container *ngIf="jr == 'dimanche'">
+                    <option [value]="jr" i18n>Dimanche</option>
+                  </ng-container>
+                </ng-container>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="heure_cours" i18n>Heure de début :</label>
+            <input
+              [class]="editCours.valid.heure ? 'input' : 'input is-danger'"
+              id="heure_cours"
+              type="time"
+              [(ngModel)]="editCours.Heure"
+            />
+            <p class="help is-danger" *ngIf="!editCours.valid.heure" i18n>
+              L'heure doit être saisie
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" for="duree_cours" i18n>Durée du cours :</label>
+            <input
+              [class]="editCours.valid.duree ? 'input' : 'input is-danger'"
+              min="0"
+              max="1440"
+              type="number"
+              id="duree_cours"
+              [(ngModel)]="editCours.Duree"
+              placeholder="Durée (en minutes)"
+            />
+            <p class="help is-danger" *ngIf="!editCours.valid.duree" i18n>
+              La durée doit être saisie
+            </p>
+          </div>
+        </div>
+        <div class="field-container">
+          <div class="field">
+            <label class="label" for="saison" i18n>Saison du cours :</label>
+            <div class="select">
+              <select
+                id="saison"
+                [(ngModel)]="editCours.SaisonId"
+                i18n-placeholder
+                placeholder="Saison"
+              >
+                <!-- Options pour les professeurs -->
+                <ng-container *ngFor="let s of liste_saison">
+                  <option [value]="s.id">{{ s.nom }}</option>
+                </ng-container>
+              </select>
+            </div>
+            <p class="help is-danger" *ngIf="!editCours.valid.saison" i18n>
+              Une saison doit être choisie
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" for="resp_cours" i18n
+              >Responsable du cours :</label
+            >
+            <div class="select">
+              <select
+                id="resp_cours"
+                class="form-control"
+                [(ngModel)]="editCours.ProfPrincipalId"
+                placeholder="Professeur Principal"
+              >
+                <!-- Options pour les professeurs -->
+                <ng-container *ngFor="let prof of listeprof">
+                  <option [value]="prof.id">
+                    {{ prof.prenom }}&nbsp;{{ prof.nom }}
+                  </option>
+                </ng-container>
+              </select>
+            </div>
+            <p class="help is-danger" *ngIf="!editCours.valid.prof" i18n>
+              Un professeur doit être choisi
+            </p>
+          </div>
+          <div class="field">
+            <label class="label" i18n>Lieu du cours :</label>
+            <div class="select">
+              <select
+                id="lieu_cours"
+                [(ngModel)]="editCours.LieuId"
+                placeholder="Lieu du cours"
+              >
+                <!-- Options pour les professeurs -->
+                <ng-container *ngFor="let lieu of listelieu">
+                  <option [value]="lieu.key">{{ lieu.value }}</option>
+                </ng-container>
+              </select>
+            </div>
+            <p class="help is-danger" *ngIf="!editCours.valid.prof" i18n>
+              Un professeur doit être choisi
+            </p>
+          </div>
+        </div>
+        <div class="field-container">
+          <div class="field">
+            <label class="label" i18n for="place_maximum"
+              >Age minimum ? :</label
+            >
+            <div class="buttons has-addons">
+              <button
+                type="button"
+                [class]="
+                  editCours.EstAgeMinimum == true
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.EstAgeMinimum == true
+                    ? (editCours.EstAgeMinimum = false)
+                    : (editCours.EstAgeMinimum = true)
+                "
+              >
+                <span i18n>Age minimum requis</span>
+              </button>
+              <button
+                type="button"
+                [class]="
+                  editCours.EstAgeMinimum == false
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.EstAgeMinimum == true
+                    ? (editCours.EstAgeMinimum = false)
+                    : (editCours.EstAgeMinimum = true)
+                "
+              >
+                <span i18n>Pas de limite</span>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="editCours.EstAgeMinimum == true" class="field">
+            <label class="label" i18n for="age_minimum">Age minimum :</label>
+            <input
+              class="input"
+              min="1"
+              max="99"
+              matInput
+              type="number"
+              id="age_minimum"
+              [(ngModel)]="editCours.AgeMinimum"
+              i18n-placeholder
+              placeholder="Age requis"
+            />
+          </div>
+          <div class="field">
+            <label class="label" i18n for="place_maximum"
+              >Age maximum ? :</label
+            >
+            <div class="buttons has-addons">
+              <button
+                type="button"
+                [class]="
+                  editCours.EstAgeMaximum == true
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.EstAgeMaximum == true
+                    ? (editCours.EstAgeMaximum = false)
+                    : (editCours.EstAgeMaximum = true)
+                "
+              >
+                <span i18n>Age maximum</span>
+              </button>
+              <button
+                type="button"
+                [class]="
+                  editCours.EstAgeMaximum == false
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.EstAgeMaximum == true
+                    ? (editCours.EstAgeMaximum = false)
+                    : (editCours.EstAgeMaximum = true)
+                "
+              >
+                <span i18n>Pas de limite</span>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="editCours.EstAgeMaximum == true" class="field">
+            <label class="label" i18n for="age_maximum">Age maximum :</label>
+            <input
+              class="input"
+              min="1"
+              max="99"
+              matInput
+              type="number"
+              id="age_maximum"
+              [(ngModel)]="editCours.AgeMaximum"
+              placeholder="Age maximum"
+            />
+          </div>
+        </div>
+        <div class="field-container">
+          <div class="field">
+            <label class="label" i18n for="place_maximum"
+              >Place limitée ? :</label
+            >
+            <div class="buttons has-addons">
+              <button
+                type="button"
+                [class]="
+                  editCours.EstPlaceMaximum == true
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.EstPlaceMaximum == true
+                    ? (editCours.EstPlaceMaximum = false)
+                    : (editCours.EstPlaceMaximum = true)
+                "
+              >
+                <span i18n>Places limitées</span>
+              </button>
+              <button
+                type="button"
+                [class]="
+                  editCours.EstPlaceMaximum == false
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.EstPlaceMaximum == true
+                    ? (editCours.EstPlaceMaximum = false)
+                    : (editCours.EstPlaceMaximum = true)
+                "
+              >
+                <span i18n>Places illimitées</span>
+              </button>
+            </div>
+          </div>
+          <div
+            *ngIf="editCours.EstPlaceMaximum == true"
+            class="field field-jecha"
+          >
+            <label class="label" i18n for="place_maximum"
+              >Place maximum :</label
+            >
+            <input
+              class="input"
+              type="number"
+              id="place_maximum"
+              min="1"
+              max="999"
+              [(ngModel)]="editCours.PlaceMaximum"
+            />
+          </div>
+          <div class="field">
+            <label class="label" i18n for="place_maximum"
+              >Convocation nominative ? :</label
+            >
+            <div class="buttons has-addons">
+              <button
+                type="button"
+                [class]="
+                  editCours.ConvocationNominative == true
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.ConvocationNominative == true
+                    ? (editCours.ConvocationNominative = false)
+                    : (editCours.ConvocationNominative = true)
+                "
+              >
+                <span i18n>Convocation nominative</span>
+              </button>
+              <button
+                type="button"
+                [class]="
+                  editCours.ConvocationNominative == false
+                    ? 'button is-link is-active'
+                    : 'button is-active'
+                "
+                (click)="
+                  editCours.ConvocationNominative == true
+                    ? (editCours.ConvocationNominative = false)
+                    : (editCours.ConvocationNominative = true)
+                "
+              >
+                <span i18n>Groupe entier convoqué</span>
+              </button>
+            </div>
+          </div>
+          <div class="field" *ngIf="editCours.ConvocationNominative == false">
+            <label class="label" i18n for="groupes">Groupes :</label>
+            <app-groupe-detail
+              (groupesUpdated)="onGroupesUpdated($event)"
+              [id_source]="editCours.ID"
+              [objet_source]="'cours'"
+              [Groupes]="editCours.Groupes"
+              [liste_groupe]="liste_groupe"
+            ></app-groupe-detail>
+          </div>
+        </div>
+      </div>
+    </span>
+  </ng-container>
+</div>

@@ -1,42 +1,83 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "targetDefaults": {
-    "build": {
-      "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ]
+  "defaultBase": "master",
+  "cli": {
+    "defaultCollection": "@nrwl/workspace"
+  },
+  "useInferencePlugins": true,
+  "pluginsConfig": {
+    "@nx/js": {
+      "ignoreTypeScriptVersion": true
+    }
+  },
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.js"
+    ],
+    "sharedGlobals": []
+  },
+  "nxCloudId": "6802ccaadf2ef9206b35bfa8",
+  "plugins": [
+    {
+      "plugin": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": {
+          "targetName": "build",
+          "configName": "tsconfig.lib.json",
+          "buildDepsName": "build-deps",
+          "watchDepsName": "watch-deps"
+        }
+      },
+      "exclude": ["libs/*"]
     },
-    "test": {
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "plugin": "@nx/js/typescript",
+      "include": ["libs/*"],
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        }
+      }
+    }
+  ],
+  "targetDefaults": {
+    "@angular-devkit/build-angular:browser": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@nx/eslint:lint": {
       "cache": true,
       "inputs": [
         "default",
-        "^production"
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.js"
       ]
     }
   },
-  "defaultBase": "master",
-  "namedInputs": {
-    "sharedGlobals": [],
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
-    "production": [
-      "default",
-      "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/**/*.spec.[jt]s"
-    ]
-  },
-  "nxCloudAccessToken": "ODg3MDdhNmMtMjA3Ni00MWE3LThhM2QtMmViZjIxYWY3OWRmfHJlYWQtd3JpdGU=",
   "generators": {
-    "@nx/angular:component": {
-      "style": "css"
+    "@nx/angular:application": {
+      "e2eTestRunner": "none",
+      "linter": "eslint",
+      "style": "scss",
+      "unitTestRunner": "none"
     }
-  },
-  "useLegacyCache": true
+  }
 }

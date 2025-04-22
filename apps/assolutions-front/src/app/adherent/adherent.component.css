@@ -1,0 +1,58 @@
+.th{
+    display: flex;
+    flex-direction: column;
+    font-size: smaller;
+    flex-wrap: nowrap;
+}
+.ligne{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.menuligne{
+    display: flex;
+    flex-direction: row;
+    justify-content:flex-start;
+    align-items: flex-start;
+    gap : 3px;
+}
+.th_filtre{
+    display: flex;
+    flex-direction: column;
+    font-size: smaller;
+    flex-wrap: nowrap;
+}
+:root {
+    --bulma-modal-content-width: 60rem; /* Ajustez la valeur selon vos besoins */
+  }
+
+  .span-file-label {
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap; /* Pour s'assurer que le texte ne s'affiche pas */
+    transition: width 0.3s ease; /* Ajoute une transition douce */
+  }
+  
+  .file:hover .span-file-label {
+    width: auto; /* Ou une largeur spécifique si nécessaire */
+    overflow: visible;
+  }
+
+
+.dropdown.is-up .dropdown-menu {
+  top: auto;
+  bottom: 100%;
+  margin-bottom: 0.5rem; /* Adjust as needed */
+}.dropdown-menu {
+  display: none;
+}
+
+.dropdown.is-active .dropdown-menu {
+  display: block;
+}
+app-address,
+app-contact-item {
+  display: block;
+  width: 100%; /* S'assure que les composants remplissent la colonne */
+}

@@ -1,36 +1,10 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
+  "extends": "./tsconfig.base.json",
   "compileOnSave": false,
-  "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "strictNullChecks": false,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true,
-    "strictPropertyInitialization": false,
-    "sourceMap": true,
-    "declaration": false,
-    "downlevelIteration": true,
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-    "importHelpers": true,
-    "target": "es2022",
-    "module": "es2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ]
-  },
-  "angularCompilerOptions": {
-      "enableIvy": true,
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
-  }
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/assolutions-back"
+    }
+  ]
 }

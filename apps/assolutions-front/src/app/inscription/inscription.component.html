@@ -1,0 +1,33 @@
+<div class="card">
+  <div class="card-header">
+    <p class="card-header-title" i18n>Inscription</p>
+  </div>
+  <div class="card-content">
+    <div class="content">
+      <div class="field">
+        <label class="label" for="adherent">Adhérent</label>
+        <div>{{ thisAdherent.Libelle }}</div>
+      </div>
+      <div class="field">
+        <label class="label"  class="label" for="adherent">Saison</label>
+        <div  class="select">
+          <select [(ngModel)]="thisSaison" (change)="onSaisonChange($event)">
+            <option *ngFor="let saison of saisons" [value]="saison.id">
+              {{ saison.nom }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="card-footer">
+    <div class="columns">
+      <div class="column">
+        <div class="buttons">
+          <btn [type_button]="'InscrireSmall'" (click)="Adherer()"></btn>
+          <btn [type_button]="'RetourSmall'" (click)="close()"></btn>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

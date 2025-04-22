@@ -1,0 +1,2323 @@
+<div class="container">
+  <ng-container *ngIf="!editMode">
+    <ng-container *ngIf="loading">
+      <progress
+        class="progress is-large is-info"
+        style="margin-top: 60px"
+        max="100"
+      >
+        60%
+      </progress>
+      <p>Chargement en cours</p>
+    </ng-container>
+    <ng-container *ngIf="!loading">
+      <span class="fullscreen">
+        <div class="columns">
+          <div class="column">
+            <div class="card">
+              <header class="card-header">
+                <p
+                  class="card-header-title"
+                  *ngIf="
+                    list_seance_VM
+                      | multifiltersSeance : filters as filteredApplis
+                  "
+                >
+                  <span i18n>Liste des séances</span>&nbsp;({{
+                    filteredApplis.length
+                  }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
+                    getActiveSaison()
+                  }}
+                </p>
+              
+              </header>
+              <div class="card-content" #scrollableContent>
+                <table
+                  class="table"
+                  style="width: 100%; font-size: smaller"
+                  *ngIf="list_seance_VM && list_seance_VM.length > 0"
+                >
+                  <thead>
+                    <tr>
+                      <th>
+                        <span>
+                          <span class="ligne">
+                            <span
+                              [ngClass]="
+                                filters.filter_nom ? 'has-text-info' : ''
+                              "
+                              i18n
+                              >Nom</span
+                            >
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_nom === 'NO'"
+                                (click)="Sort('ASC', 'nom')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_nom === 'ASC'"
+                                (click)="Sort('DESC', 'nom')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_nom === 'DESC'"
+                                (click)="Sort('ASC', 'nom')"
+                                class="fa-solid fa-sort-down"
+                              ></i>
+                            </span>
+                          </span>
+                        </span>
+                      </th>
+                      <th>
+                        <span>
+                          <span class="ligne">
+                            <span i18n>Cours / Type</span>
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_cours === 'NO'"
+                                (click)="Sort('ASC', 'type')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_cours === 'ASC'"
+                                (click)="Sort('DESC', 'type')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_cours === 'DESC'"
+                                (click)="Sort('ASC', 'type')"
+                                class="fa-solid fa-sort-down"
+                              ></i>
+                            </span>
+                          </span>
+                        </span>
+                      </th>
+                      <th>
+                        <span>
+                          <span class="ligne">
+                            <span
+                              [ngClass]="
+                                filters.filter_date_apres ||
+                                filters.filter_date_avant
+                                  ? 'has-text-info'
+                                  : ''
+                              "
+                              i18n
+                              >Date</span
+                            >
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_date === 'NO'"
+                                (click)="Sort('ASC', 'date')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_date === 'ASC'"
+                                (click)="Sort('DESC', 'date')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_date === 'DESC'"
+                                (click)="Sort('ASC', 'date')"
+                                class="fa-solid fa-sort-down"
+                              ></i> </span
+                          ></span>
+                        </span>
+                      </th>
+
+                      <th>
+                        <span>
+                          <span class="ligne">
+                            <span i18n>Heure / Durée</span>
+                          </span>
+                        </span>
+                      </th>
+                      <th>
+                        <span>
+                          <span class="ligne">
+                            <span
+                              [ngClass]="
+                                filters.filter_prof ? 'has-text-info' : ''
+                              "
+                              i18n
+                              >Professeurs</span
+                            >
+                          </span>
+                        </span>
+                      </th>
+
+                      <th>
+                        <span>
+                          <span class="ligne">
+                            <span
+                              [ngClass]="
+                                filters.filter_lieu ? 'has-text-info' : ''
+                              "
+                              i18n
+                              >Lieu</span
+                            >
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_lieu === 'NO'"
+                                (click)="Sort('ASC', 'lieu')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_lieu === 'ASC'"
+                                (click)="Sort('DESC', 'lieu')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_lieu === 'DESC'"
+                                (click)="Sort('ASC', 'lieu')"
+                                class="fa-solid fa-sort-down"
+                              ></i>
+                            </span>
+                          </span>
+                        </span>
+                      </th>
+                      <th>
+                        <span>
+                          <span
+                            [ngClass]="
+                              filters.filter_groupe ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Groupes</span
+                          >
+                        </span>
+                      </th>
+                      <th>
+                        <span>
+                          <span
+                            [ngClass]="
+                              filters.filter_statut ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Statut</span
+                          >
+                        </span>
+                      </th>
+                      <th>
+                        <span i18n>Action</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="
+                        let seance of list_seance_VM
+                          | multifiltersSeance : filters
+                      "
+                    >
+                      <td>
+                        {{ seance.libelle }}
+                      </td>
+                      <td>
+                        <ng-container
+                          *ngIf="seance.TypeSeance === 'ENTRAINEMENT'"
+                        >
+                          <ng-container *ngFor="let cours of listeCours">
+                            <ng-container *ngIf="seance.Cours == cours.id">
+                              <span>{{ cours.nom }}</span>
+                            </ng-container>
+                          </ng-container>
+                        </ng-container>
+                        <ng-container *ngIf="seance.TypeSeance === 'MATCH'">
+                          <span i18n>Match</span>
+                        </ng-container>
+                        <ng-container *ngIf="seance.TypeSeance === 'EVENEMENT'">
+                          <span i18n>Evénement</span>
+                        </ng-container>
+                        <ng-container *ngIf="seance.TypeSeance === 'SORTIE'">
+                          <span i18n>Sortie</span>
+                        </ng-container>
+                      </td>
+                      <td>{{ seance.date_seance | date : "dd/MM/yyyy" }}</td>
+                      <td>
+                        {{ seance.heure_debut }} ({{ seance.duree_seance }}
+                        <span i18n>&nbsp;min</span>)
+                      </td>
+                      <td class="no_mobile">
+                        <div class="tags is-small">
+                          <ng-container *ngFor="let gr of seance.professeurs">
+                            <span class="tag is-success">
+                              {{ gr.value }}
+                            </span>
+                          </ng-container>
+                        </div>
+                      </td>
+                      <td>{{ trouverLieu(seance.LieuId) }}</td>
+                      <td class="no_mobile">
+                        <div class="tags is-small">
+                          <ng-container *ngFor="let gr of seance.Groupes">
+                            <span class="tag is-success">
+                              {{ gr.nom }}
+                            </span>
+                          </ng-container>
+                        </div>
+                      </td>
+                      <td>
+                        <ng-container *ngIf="seance.Statut == 'prévue'">
+                          <span class="tag is-info is-rounded is-light">
+                            <span class="icon has-text-info">
+                              <i class="fa-solid fa-calendar-check"></i>
+                            </span>
+                          </span>
+                        </ng-container>
+                        <ng-container *ngIf="seance.Statut == 'réalisée'">
+                          <span class="tag is-primary is-rounded is-light">
+                            <span class="icon has-text-success">
+                              <i class="fa-solid fa-flag-checkered"></i>
+                            </span>
+                          </span>
+                        </ng-container>
+                        <ng-container *ngIf="seance.Statut == 'annulée'">
+                          <span class="tag is-danger is-rounded is-light">
+                            <span class="icon has-text-danger">
+                              <i class="fa-solid fa-ban"></i>
+                            </span>
+                          </span>
+                        </ng-container>
+                      </td>
+                      <td>
+                        <div class="buttons" style="flex-wrap: nowrap">
+                          <btn
+                            i18n-title
+                            title="Supprimer"
+                            [type_button]="'SupprimerLight'"
+                            (click)="Delete(seance)"
+                          ></btn>
+                          <btn
+                            i18n-title
+                            title="Voir"
+                            [type_button]="'VoirLight'"
+                            (click)="VoirMaSeanceByID(seance.ID)"
+                          ></btn>
+                          <btn
+                            i18n-title
+                            title="Editer"
+                            [type_button]="'EditerLight'"
+                            (click)="Edit(seance)"
+                          ></btn>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p *ngIf="!list_seance_VM || list_seance_VM.length == 0">
+                  Pas de séances disponible
+                </p>
+                <button
+                  class="scroll-to-top"
+                  *ngIf="showScrollToTop"
+                  (click)="scrollToTop()"
+                  title="Revenir en haut"
+                >
+                  ↑
+                </button>
+              </div>
+              <footer class="card-footer">
+                <div class="columns">
+                  <div class="column">
+                    <div *ngIf="!afficher_filtre" class="buttons">
+                      <btn [type_button]="'CreerSmall'" (click)="Creer()"></btn>
+                      <btn
+                        [type_button]="'FiltrerSmall'"
+                        (click)="
+                          afficher_filtre
+                            ? (afficher_filtre = false)
+                            : (afficher_filtre = true)
+                        "
+                      ></btn>
+                      <btn
+                        [type_button]="'CreerSerieSmall'"
+                        (click)="Creer(true)"
+                      ></btn>
+                      <btn
+                        [type_button]="'TerminerSeancesSmall'"
+                        (click)="TerminerSeances()"
+                      ></btn>
+                      <btn
+                        [type_button]="'ExporterSmall'"
+                        (click)="ExportExcel()"
+                      ></btn>
+                      <div class="field is-horizontal">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Saison affichée</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <div class="select is-fullwidth">
+                                <select
+                                  [(ngModel)]="active_saison"
+                                  (ngModelChange)="UpdateListeSeance()"
+                                >
+                                  <ng-container
+                                    *ngFor="let saison of liste_saison"
+                                  >
+                                    <option [ngValue]="saison">
+                                      {{ saison.nom }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="buttons" *ngIf="afficher_filtre">
+                      <btn
+                        (click)="
+                          afficher_filtre = false; selected_filter = null
+                        "
+                        [type_button]="'RetourLight'"
+                      ></btn>
+                      <div
+                        class="field is-horizontal"
+                        style="gap: 0.5rem; align-items: center"
+                      >
+                        <div class="field-label is-normal">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Sélection du filtre</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <div
+                                class="select is-fullwidth ; font-size: smaller"
+                              >
+                                <select [(ngModel)]="selected_filter">
+                                  <option value="nom" i18n>Nom</option>
+                                  <option value="date" i18n>Date</option>
+                                  <option value="groupe" i18n>Groupe</option>
+                                  <option value="statut" i18n>Statut</option>
+                                  <option value="prof" i18n>Professeur</option>
+                                  <option value="lieu" i18n>Lieu</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          *ngIf="selected_filter"
+                          class="field-label is-normal"
+                        >
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Valeur du filtre
+                          </label>
+                        </div>
+                        <div class="field-body" *ngIf="selected_filter">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <input
+                                *ngIf="selected_filter == 'nom'"
+                                style="width: fit-content; font-size: smaller"
+                                class="input is-small"
+                                i18n-placeholder
+                                placeholder="Nom du cours"
+                                type="text"
+                                [(ngModel)]="filters.filter_nom"
+                              />
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'statut'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_statut"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <option [ngValue]="'prévue'" i18n>
+                                    Prévue
+                                  </option>
+                                  <option [ngValue]="'réalisée'" i18n>
+                                    Réalisée
+                                  </option>
+                                  <option [ngValue]="'annulée'" i18n>
+                                    Annulée
+                                  </option>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'groupe'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_groupe"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let group of liste_groupe_filter"
+                                  >
+                                    <option [ngValue]="group.nom">
+                                      {{ group.nom }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'prof'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_prof"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let prof of liste_prof_filter"
+                                  >
+                                    <option [ngValue]="prof.value">
+                                      {{ prof.value }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'lieu'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_lieu"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let lieu of liste_lieu_filter"
+                                  >
+                                    <option [ngValue]="lieu">
+                                      {{ lieu }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <span
+                                *ngIf="selected_filter == 'date'"
+                                class="ligne"
+                              >
+                                <div
+                                  style="gap: 6px"
+                                  class="field is-small is-horizontal field-jecha"
+                                >
+                                  <label
+                                    for="groupe"
+                                    class="label is-small"
+                                    i18n
+                                    >Du</label
+                                  >
+                                  <input
+                                    style="width: fit-content"
+                                    class="input is-small"
+                                    i18n-placeholder
+                                    placeholder="Filtre date avant"
+                                    type="date"
+                                    [(ngModel)]="filters.filter_date_avant"
+                                  />
+                                </div>
+                              </span>
+                              <span
+                                *ngIf="selected_filter == 'date'"
+                                class="ligne"
+                              >
+                                <div
+                                  style="gap: 6px"
+                                  class="field is-small is-horizontal field-jecha"
+                                >
+                                  <label
+                                    for="groupe"
+                                    class="label is-small"
+                                    i18n
+                                    >Au</label
+                                  >
+                                  <input
+                                    style="width: fit-content"
+                                    class="input is-small"
+                                    i18n-placeholder
+                                    placeholder="Filtre date après"
+                                    type="date"
+                                    [(ngModel)]="filters.filter_date_apres"
+                                  />
+                                </div>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tags">
+                          <span
+                            *ngIf="filters.filter_nom"
+                            class="tag is-success"
+                          >
+                            <span i18n>Nom : </span>
+                            <span>{{ filters.filter_nom }}</span>
+                            <button
+                              class="delete"
+                              (click)="filters.filter_nom = null"
+                            ></button>
+                          </span>
+
+                          <span
+                            *ngIf="filters.filter_statut != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Statut : </span>
+                            <span *ngIf="filters.filter_statut == 'prévue'" i18n
+                              >Prévue</span
+                            >
+                            <span
+                              *ngIf="filters.filter_statut == 'réalisée'"
+                              i18n
+                              >Réalisée</span
+                            >
+                            <span
+                              *ngIf="filters.filter_statut == 'annulée'"
+                              i18n
+                              >Annulée</span
+                            >
+                            <button
+                              class="delete"
+                              (click)="filters.filter_statut = null"
+                            ></button>
+                          </span>
+
+                          <span
+                            *ngIf="
+                              filters.filter_date_avant ||
+                              filters.filter_date_apres
+                            "
+                            class="tag is-success"
+                          >
+                            <span i18n>Date : </span>
+                            <span *ngIf="filters.filter_date_avant"
+                              >&nbsp;>&nbsp;{{
+                                filters.filter_date_avant | date : "dd/MM/yyyy"
+                              }}</span
+                            >
+                            <span *ngIf="filters.filter_date_apres"
+                              >&nbsp;<&nbsp;{{
+                                filters.filter_date_apres | date : "dd/MM/yyyy"
+                              }}</span
+                            >
+                            <button
+                              class="delete"
+                              (click)="
+                                filters.filter_date_avant = null;
+                                filters.filter_date_apres = null
+                              "
+                            ></button>
+                          </span>
+
+                          <span
+                            *ngIf="filters.filter_lieu != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Lieu : </span>
+                            <span i18n>{{ filters.filter_lieu }}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_lieu = null"
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_prof != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Prof : </span>
+                            <span i18n>{{ filters.filter_prof }}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_prof = null"
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_groupe != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Groupe : </span>
+                            <span i18n>{{ filters.filter_groupe }}</span>
+                            <button
+                              class="delete"
+                              (click)="filters.filter_groupe = null"
+                            ></button>
+                          </span>
+                          <btn
+                            [type_button]="'SupprimerLight'"
+                            (click)="ReinitFiltre()"
+                            *ngIf="
+                              filters.filter_date_apres ||
+                              filters.filter_date_avant ||
+                              filters.filter_groupe ||
+                              filters.filter_statut ||
+                              filters.filter_nom ||
+                              filters.filter_lieu ||
+                              filters.filter_prof
+                            "
+                          >
+                          </btn>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </span>
+      <span class="mobile">
+        <ng-container *ngIf="afficher_filtre">
+          <nav class="navbar is-fixed-top">
+            <btn
+              [type_button]="'RetourMobile'"
+              (click)="afficher_filtre = false; selected_filter = null"
+            ></btn>
+          </nav>
+          <span class="container-box">
+            <div class="field" style="gap: 0.5rem; align-items: center">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Sélection du filtre</label
+                >
+              </div>
+              <div class="field-body">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <div class="select is-fullwidth ; font-size: smaller">
+                      <select [(ngModel)]="selected_filter">
+                        <option value="nom" i18n>Nom</option>
+                        <option value="date" i18n>Date</option>
+                        <option value="groupe" i18n>Groupe</option>
+                        <option value="statut" i18n>Statut</option>
+                        <option value="prof" i18n>Professeur</option>
+                        <option value="lieu" i18n>Lieu</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="selected_filter" class="field-label is-normal">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Valeur du filtre
+                </label>
+              </div>
+              <div class="field-body" *ngIf="selected_filter">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <input
+                      *ngIf="selected_filter == 'nom'"
+                      style="width: fit-content; font-size: smaller"
+                      class="input is-small"
+                      i18n-placeholder
+                      placeholder="Nom du cours"
+                      type="text"
+                      [(ngModel)]="filters.filter_nom"
+                    />
+                    <div class="select" *ngIf="selected_filter == 'statut'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_statut"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <option [ngValue]="'prévue'" i18n>Prévue</option>
+                        <option [ngValue]="'réalisée'" i18n>Réalisée</option>
+                        <option [ngValue]="'annulée'" i18n>Annulée</option>
+                      </select>
+                    </div>
+                    <div class="select" *ngIf="selected_filter == 'groupe'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_groupe"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <ng-container *ngFor="let group of liste_groupe_filter">
+                          <option [ngValue]="group.nom">
+                            {{ group.nom }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <div class="select" *ngIf="selected_filter == 'prof'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_prof"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <ng-container *ngFor="let prof of liste_prof_filter">
+                          <option [ngValue]="prof.value">
+                            {{ prof.value }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <div class="select" *ngIf="selected_filter == 'lieu'">
+                      <select
+                        style="font-size: smaller"
+                        [(ngModel)]="filters.filter_lieu"
+                      >
+                        <option [ngValue]="null" i18n>Tous</option>
+                        <ng-container *ngFor="let lieu of liste_lieu_filter">
+                          <option [ngValue]="lieu">
+                            {{ lieu }}
+                          </option>
+                        </ng-container>
+                      </select>
+                    </div>
+                    <span *ngIf="selected_filter == 'date'" class="ligne">
+                      <div
+                        style="gap: 6px"
+                        class="field is-small is-horizontal field-jecha"
+                      >
+                        <label for="groupe" class="label is-small" i18n
+                          >Du</label
+                        >
+                        <input
+                          style="width: fit-content"
+                          class="input is-small"
+                          i18n-placeholder
+                          placeholder="Filtre date avant"
+                          type="date"
+                          [(ngModel)]="filters.filter_date_avant"
+                        />
+                      </div>
+                    </span>
+                    <span *ngIf="selected_filter == 'date'" class="ligne">
+                      <div
+                        style="gap: 6px"
+                        class="field is-small is-horizontal field-jecha"
+                      >
+                        <label for="groupe" class="label is-small" i18n
+                          >Au</label
+                        >
+                        <input
+                          style="width: fit-content"
+                          class="input is-small"
+                          i18n-placeholder
+                          placeholder="Filtre date après"
+                          type="date"
+                          [(ngModel)]="filters.filter_date_apres"
+                        />
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="tags">
+                <span
+                  *ngIf="filters.filter_nom"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Nom : </span>
+                  <span>{{ filters.filter_nom }}</span>
+                  <button
+                    class="delete"
+                    (click)="filters.filter_nom = null"
+                  ></button>
+                </span>
+
+                <span
+                  *ngIf="filters.filter_statut != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Statut : </span>
+                  <span *ngIf="filters.filter_statut == 'prévue'" i18n
+                    >Prévue</span
+                  >
+                  <span *ngIf="filters.filter_statut == 'réalisée'" i18n
+                    >Réalisée</span
+                  >
+                  <span *ngIf="filters.filter_statut == 'annulée'" i18n
+                    >Annulée</span
+                  >
+                  <button
+                    class="delete"
+                    (click)="filters.filter_statut = null"
+                  ></button>
+                </span>
+
+                <span
+                  *ngIf="filters.filter_date_avant || filters.filter_date_apres"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Date : </span>
+                  <span *ngIf="filters.filter_date_avant"
+                    >&nbsp;>&nbsp;{{
+                      filters.filter_date_avant | date : "dd/MM/yyyy"
+                    }}</span
+                  >
+                  <span *ngIf="filters.filter_date_apres"
+                    >&nbsp;<&nbsp;{{
+                      filters.filter_date_apres | date : "dd/MM/yyyy"
+                    }}</span
+                  >
+                  <button
+                    class="delete"
+                    (click)="
+                      filters.filter_date_avant = null;
+                      filters.filter_date_apres = null
+                    "
+                  ></button>
+                </span>
+
+                <span
+                  *ngIf="filters.filter_lieu != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Lieu : </span>
+                  <span i18n>{{ filters.filter_lieu }}</span>
+
+                  <button
+                    class="delete"
+                    (click)="filters.filter_lieu = null"
+                  ></button>
+                </span>
+                <span
+                  *ngIf="filters.filter_prof != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Prof : </span>
+                  <span i18n>{{ filters.filter_prof }}</span>
+
+                  <button
+                    class="delete"
+                    (click)="filters.filter_prof = null"
+                  ></button>
+                </span>
+                <span
+                  *ngIf="filters.filter_groupe != null"
+                  class="tag is-large is-success"
+                >
+                  <span i18n>Groupe : </span>
+                  <span i18n>{{ filters.filter_groupe }}</span>
+                  <button
+                    class="delete"
+                    (click)="filters.filter_groupe = null"
+                  ></button>
+                </span>
+                <btn
+                  [type_button]="'SupprimerMobile'"
+                  (click)="ReinitFiltre()"
+                  *ngIf="
+                    filters.filter_date_apres ||
+                    filters.filter_date_avant ||
+                    filters.filter_groupe ||
+                    filters.filter_statut ||
+                    filters.filter_nom ||
+                    filters.filter_lieu ||
+                    filters.filter_prof
+                  "
+                >
+                </btn>
+              </div>
+            </div>
+          </span>
+        </ng-container>
+        <ng-container *ngIf="afficher_tri">
+          <nav class="navbar is-fixed-top">
+            <btn
+              [type_button]="'RetourMobile'"
+              (click)="afficher_tri = false"
+            ></btn>
+          </nav>
+          <span class="container-box">
+            <div class="field">
+              <div class="field-label is-normal">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Sélection du tri</label
+                >
+              </div>
+              <div class="field-body">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <div class="select is-fullwidth ; font-size: smaller">
+                      <select [(ngModel)]="selected_sort">
+                        <option value="nom" i18n>Nom</option>
+                        <option value="date" i18n>Date</option>
+                        <option value="cours" i18n>Cours / Evenement</option>
+                        <option value="lieu" i18n>Lieu</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="field-label is-normal" *ngIf="selected_sort">
+                <label class="label" style="white-space: nowrap" i18n
+                  >Sens du tri
+                </label>
+              </div>
+              <div class="field-body" *ngIf="selected_sort">
+                <div class="field is-narrow">
+                  <div class="control">
+                    <div class="select is-fullwidth ; font-size: smaller">
+                      <select
+                        (ngModelChange)="Sort($event, selected_sort)"
+                        [(ngModel)]="selected_sort_sens"
+                      >
+                        <option value="asc" i18n>Croissant</option>
+                        <option value="desc" i18n>Décroissant</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </span>
+        </ng-container>
+        <ng-container *ngIf="!afficher_tri && !afficher_filtre">
+          <nav class="navbar is-fixed-top">
+            <btn
+              [type_button]="'FiltrerMobile'"
+              (click)="afficher_filtre = true"
+            ></btn>
+            <btn
+              [type_button]="'TrierMobile'"
+              (click)="afficher_tri = true"
+            ></btn>
+            <btn
+              [type_button]="'CreerMobile'"
+              (click)="Creer()"
+            ></btn>
+            
+          </nav>
+          <ng-container
+            *ngFor="let seance of list_seance_VM | multifiltersSeance : filters"
+          >
+            <div class="container-box">
+              <article class="media">
+                <div class="media-content">
+                  <span class="title" (click)="Edit(seance)"
+                    ><strong
+                      >{{ seance.libelle }}&nbsp;{{
+                        seance.date_seance | date : "dd/MM/yyyy"
+                      }}</strong
+                    ></span
+                  >
+                  <div>
+                    <ng-container *ngIf="seance.TypeSeance === 'ENTRAINEMENT'">
+                      <span i18n>Cours</span>
+                    </ng-container>
+                    <ng-container *ngIf="seance.TypeSeance === 'MATCH'">
+                      <span i18n>Match</span>
+                    </ng-container>
+                    <ng-container *ngIf="seance.TypeSeance === 'EVENEMENT'">
+                      <span i18n>Evénement</span>
+                    </ng-container>
+                    <ng-container *ngIf="seance.TypeSeance === 'SORTIE'">
+                      <span i18n>Sortie</span>
+                    </ng-container>
+                    - {{ seance.heure_debut }} ({{ seance.duree_seance }}
+                    <span i18n>&nbsp;min</span>)
+                    {{ trouverLieu(seance.LieuId) }}
+                    <ng-container *ngIf="seance.Statut == 'prévue'">
+                      <span class="tag is-info is-rounded is-light">
+                        <span class="icon has-text-info">
+                          <i class="fa-solid fa-calendar-check"></i>
+                        </span>
+                      </span>
+                    </ng-container>
+                    <ng-container *ngIf="seance.Statut == 'réalisée'">
+                      <span class="tag is-primary is-rounded is-light">
+                        <span class="icon has-text-success">
+                          <i class="fa-solid fa-flag-checkered"></i>
+                        </span>
+                      </span>
+                    </ng-container>
+                    <ng-container *ngIf="seance.Statut == 'annulée'">
+                      <span class="tag is-danger is-rounded is-light">
+                        <span class="icon has-text-danger">
+                          <i class="fa-solid fa-ban"></i>
+                        </span>
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+        </ng-container>
+      </span>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="editMode">
+    <span class="fullscreen">
+      <div class="columns">
+        <div class="column">
+          <div class="card" *ngIf="editSeance">
+            <header class="card-header" style="align-items: center">
+              <p
+                class="card-header-title"
+                *ngIf="editSeance.ID == 0 && editMode_serie"
+                i18n
+              >
+                Créer une série de séances
+              </p>
+              <p
+                class="card-header-title"
+                *ngIf="editSeance.ID == 0 && !editMode_serie"
+                i18n
+              >
+                Créer une séance
+              </p>
+              <p
+                class="card-header-title"
+                *ngIf="editSeance.ID > 0"
+                i18n
+              >
+                Editer une séance
+              </p>
+            </header>
+            <div class="card-content" #scrollableContent>
+              <div class="content">
+                <div class="field-container">
+                  <ng-container *ngIf="editSeance.ID == 0">
+                    <div class="field">
+                      <label class="label" i18n>Type de séance</label>
+                      <div class="select">
+                        <select id="cours" [(ngModel)]="editSeance.TypeSeance">
+                          <option value="ENTRAINEMENT" i18n>Cours</option>
+                          <option value="SORTIE" i18n>Sortie</option>
+                          <option value="EVENEMENT" i18n>Evenement</option>
+                          <option value="MATCH" i18n>Match</option>
+                        </select>
+                      </div>
+                      <p
+                        class="help is-danger"
+                        *ngIf="!editSeance.TypeSeance"
+                        i18n
+                      >
+                        La sélection d'un type de séance est obligatoire
+                      </p>
+                    </div>
+                    <div
+                      *ngIf="editSeance.TypeSeance == 'ENTRAINEMENT'"
+                      class="field"
+                    >
+                      <label class="label" i18n>Cours</label>
+                      <div class="select">
+                        <select
+                          id="cours"
+                          (ngModelChange)="onCoursSelectionChange($event)"
+                          [(ngModel)]="editSeance.Cours"
+                        >
+                          <option
+                            *ngFor="let cours of listeCours"
+                            [value]="cours.id"
+                          >
+                            {{ cours.nom }}
+                          </option>
+                        </select>
+                      </div>
+                      <p class="help is-danger" *ngIf="!editSeance.Cours" i18n>
+                        La sélection d'un cours est obligatoire
+                      </p>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="editSeance.ID > 0">
+                    <div *ngIf="editSeance.Cours > 0" class="field">
+                      <label class="label" i18n>Cours</label>
+                      <span>{{ GetCours(editSeance.Cours) }}</span>
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n>Type de séance</label>
+                      <span>{{ GetType(editSeance.TypeSeance) }}</span>
+                    </div>
+                  </ng-container>
+                </div>
+                <ng-container
+                  *ngIf="
+                    (editSeance.TypeSeance === 'ENTRAINEMENT' &&
+                      editSeance.Cours > 0) ||
+                    editSeance.TypeSeance != 'ENTRAINEMENT'
+                  "
+                >
+                  <div class="field-container" *ngIf="editMode_serie">
+                    <div class="field">
+                      <label class="label" i18n>Jour de la semaine</label>
+                      <div class="select">
+                        <select
+                          id="jour"
+                          [(ngModel)]="jour_semaine"
+                          placeholder="Jour"
+                        >
+                          <option [value]="'Monday'" i18n>lundi</option>
+                          <option [value]="'Tuesday'" i18n>mardi</option>
+                          <option [value]="'Wednesday'" i18n>mercredi</option>
+                          <option [value]="'Thursday'" i18n>jeudi</option>
+                          <option [value]="'Friday'" i18n>vendredi</option>
+                          <option [value]="'Saturday'" i18n>samedi</option>
+                          <option [value]="'Sunday'" i18n>dimanche</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label class="label" i18n
+                        >Date de début de la série</label
+                      >
+                      <input
+                        class="input"
+                        id="date_seance"
+                        type="date"
+                        [(ngModel)]="editSeance.date_seance"
+                      />
+                      <p
+                        class="help is-danger"
+                        *ngIf="!editSeance.valid.date"
+                        i18n
+                      >
+                        La date de début de la série doit être saisie
+                      </p>
+                    </div>
+
+                    <div class="field">
+                      <label class="label" i18n>Date de fin de la série</label>
+                      <input
+                        class="input"
+                        id="date_seance"
+                        type="date"
+                        [(ngModel)]="date_fin_serie"
+                      />
+                      <p class="help is-danger" *ngIf="!date_fin_serie" i18n>
+                        La date de fin de la série doit être saisie
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="field-container">
+                    <div class="field">
+                      <label class="label" i18n>Libellé</label>
+                      <input
+                        [class]="
+                          editSeance.valid.libelle ? 'input' : 'input is-danger'
+                        "
+                        type="text"
+                        id="nom_rider"
+                        name="nom_rider"
+                        i18n-placeholder
+                        placeholder="Nom"
+                        [(ngModel)]="editSeance.libelle"
+                        required
+                      />
+                      <p
+                        class="help is-danger"
+                        *ngIf="!editSeance.valid.libelle"
+                        i18n
+                      >
+                        Le libellé doit faire au moins 5 caractères
+                      </p>
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n>Statut</label>
+                      <ng-container *ngIf="editSeance.ID < 1">
+                        <span class="tag is-info is-rounded is-light">
+                          <span class="icon has-text-info">
+                            <i class="fa-solid fa-calendar-check"></i>
+                          </span>
+                          <span i18n>Prévue</span>
+                        </span>
+                      </ng-container>
+                      <ng-container *ngIf="editSeance.ID > 0">
+                        <ng-container *ngIf="editSeance.Statut == 'prévue'">
+                          <span class="tag is-info is-rounded is-light">
+                            <span class="icon has-text-info">
+                              <i class="fa-solid fa-calendar-check"></i> </span
+                            >&nbsp;
+                            <span i18n>Prévue</span>
+                          </span>
+                          <hover-button
+                            [nomclass]="
+                              'button is-outlined is-rounded is-primary'
+                            "
+                            [nomicon]="'fa-solid fa-flag-checkered'"
+                            [libelle]="'Terminer la séance'"
+                            (click)="ChangerStatut('réalisée')"
+                          >
+                          </hover-button>
+                          <hover-button
+                            [nomclass]="
+                              'button is-outlined is-rounded is-danger'
+                            "
+                            [nomicon]="'fa-solid fa-ban'"
+                            [libelle]="'Annuler la séance'"
+                            (click)="ChangerStatut('annulée')"
+                          >
+                          </hover-button>
+                        </ng-container>
+                        <ng-container *ngIf="editSeance.Statut == 'réalisée'">
+                          <span class="tag is-primary is-rounded is-light">
+                            <span class="icon has-text-success">
+                              <i class="fa-solid fa-flag-checkered"></i> </span
+                            >&nbsp;
+                            <span i18n>Terminée</span>
+                          </span>
+                          <hover-button
+                            [nomclass]="'button is-outlined is-rounded is-info'"
+                            [nomicon]="'fa-solid fa-calendar-check'"
+                            [libelle]="'Planifier la séance'"
+                            (click)="ChangerStatut('prévue')"
+                          >
+                          </hover-button>
+                          <hover-button
+                            [nomclass]="
+                              'button is-outlined is-rounded is-danger'
+                            "
+                            [nomicon]="'fa-solid fa-ban'"
+                            [libelle]="'Annuler la séance'"
+                            (click)="ChangerStatut('annulée')"
+                          >
+                          </hover-button>
+                        </ng-container>
+                        <ng-container *ngIf="editSeance.Statut == 'annulée'">
+                          <span class="tag is-danger is-rounded is-light">
+                            <span class="icon has-text-danger">
+                              <i class="fa-solid fa-ban"></i> </span
+                            >&nbsp;
+                            <span i18n>Annulée</span>
+                          </span>
+                          <hover-button
+                            [nomclass]="'button is-outlined is-rounded is-info'"
+                            [nomicon]="'fa-solid fa-calendar-check'"
+                            [libelle]="'Planifier la séance'"
+                            (click)="ChangerStatut('prévue')"
+                          >
+                          </hover-button>
+                          <hover-button
+                            [nomclass]="
+                              'button is-outlined is-rounded is-primary'
+                            "
+                            [nomicon]="'fa-solid fa-flag-checkered'"
+                            [libelle]="'Terminer la séance'"
+                            (click)="ChangerStatut('réalisée')"
+                          >
+                          </hover-button>
+                        </ng-container>
+                      </ng-container>
+                    </div>
+                  </div>
+                  <div class="field-container">
+                    <ng-container *ngIf="!editMode_serie">
+                      <div class="field">
+                        <label class="label" i18n>Date de la séance</label>
+                        <span
+                          class="title_label"
+                          *ngIf="editSeance.Cours && editSeance.ID == 0"
+                          >&nbsp;({{ jour_semaine }})</span
+                        >
+                        <input
+                          class="input"
+                          id="date_seance"
+                          type="date"
+                          [(ngModel)]="editSeance.date_seance"
+                        />
+                        <p
+                          class="help is-danger"
+                          *ngIf="!editSeance.valid.date"
+                          i18n
+                        >
+                          La date de la séance doit être saisie
+                        </p>
+                      </div>
+                    </ng-container>
+                    <div class="field">
+                      <label class="label" i18n>Heure de début :</label>
+                      <input
+                        matInput
+                        class="input"
+                        id="heure_debut"
+                        type="time"
+                        [(ngModel)]="editSeance.heure_debut"
+                      />
+                      <p
+                        class="help is-danger"
+                        *ngIf="!editSeance.valid.heure"
+                        i18n
+                      >
+                        L'heure doit être saisie
+                      </p>
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n>Durée de la séance</label>
+                      <input
+                        class="input"
+                        id="duree_seance"
+                        type="number"
+                        [(ngModel)]="editSeance.duree_seance"
+                      />
+                      <p
+                        class="help is-danger"
+                        *ngIf="!editSeance.valid.duree"
+                        i18n
+                      >
+                        La durée doit être saisie
+                      </p>
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n>Lieu</label>
+                      <div class="select">
+                        <select
+                          class="form-control"
+                          id="lieu"
+                          [(ngModel)]="editSeance.LieuId"
+                          placeholder="Lieu"
+                        >
+                          <option
+                            *ngFor="let lieu of listelieu"
+                            [value]="lieu.key"
+                          >
+                            {{ lieu.value }}
+                          </option>
+                        </select>
+                        <p
+                          class="help is-danger"
+                          *ngIf="!editSeance.valid.lieu"
+                          i18n
+                        >
+                          Le lieu doit être renseigné
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field-container">
+                    <div class="field">
+                      <label class="label" i18n for="place_maximum"
+                        >Age minimum ? :</label
+                      >
+                      <div class="buttons has-addons">
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EstAgeMinimum == true
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EstAgeMinimum == true
+                              ? (editSeance.EstAgeMinimum = false)
+                              : (editSeance.EstAgeMinimum = true)
+                          "
+                        >
+                          <span i18n>Age minimum requis</span>
+                        </button>
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EstAgeMinimum == false
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EstAgeMinimum == true
+                              ? (editSeance.EstAgeMinimum = false)
+                              : (editSeance.EstAgeMinimum = true)
+                          "
+                        >
+                          <span i18n>Pas de limite</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div
+                      *ngIf="editSeance.EstAgeMinimum == true"
+                      class="field field-jecha"
+                    >
+                      <label class="label" i18n for="age_minimum"
+                        >Age minimum :</label
+                      >
+                      <input
+                        class="input"
+                        min="1"
+                        max="99"
+                        matInput
+                        type="number"
+                        id="age_minimum"
+                        [(ngModel)]="editSeance.AgeMinimum"
+                        i18n-placeholder
+                        placeholder="Age requis"
+                      />
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n for="place_maximum"
+                        >Age maximum ? :</label
+                      >
+                      <div class="buttons has-addons">
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EstAgeMaximum == true
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EstAgeMaximum == true
+                              ? (editSeance.EstAgeMaximum = false)
+                              : (editSeance.EstAgeMaximum = true)
+                          "
+                        >
+                          <span i18n>Age maximum</span>
+                        </button>
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EstAgeMaximum == false
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EstAgeMaximum == true
+                              ? (editSeance.EstAgeMaximum = false)
+                              : (editSeance.EstAgeMaximum = true)
+                          "
+                        >
+                          <span i18n>Pas de limite</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="field" *ngIf="editSeance.EstAgeMaximum == true">
+                      <label class="label" i18n for="age_maximum"
+                        >Age maximum :</label
+                      >
+                      <input
+                        class="input"
+                        min="1"
+                        max="99"
+                        matInput
+                        type="number"
+                        id="age_maximum"
+                        [(ngModel)]="editSeance.AgeMaximum"
+                        placeholder="Age maximum"
+                      />
+                    </div>
+                  </div>
+                  <div class="field-container">
+                    <div class="field">
+                      <label class="label" i18n for="place_maximum"
+                        >Place limitée ? :</label
+                      >
+                      <div class="buttons has-addons">
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EstPlaceMaximum == true
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EstPlaceMaximum == true
+                              ? (editSeance.EstPlaceMaximum = false)
+                              : (editSeance.EstPlaceMaximum = true)
+                          "
+                        >
+                          <span i18n>Places limitées</span>
+                        </button>
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EstPlaceMaximum == false
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EstPlaceMaximum == true
+                              ? (editSeance.EstPlaceMaximum = false)
+                              : (editSeance.EstPlaceMaximum = true)
+                          "
+                        >
+                          <span i18n>Places illimitées</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div
+                      class="field"
+                      *ngIf="editSeance.EstPlaceMaximum == true"
+                    >
+                      <label class="label" i18n for="place_maximum"
+                        >Place maximum :</label
+                      >
+                      <input
+                        class="input"
+                        type="number"
+                        id="place_maximum"
+                        min="1"
+                        max="999"
+                        [(ngModel)]="editSeance.PlaceMaximum"
+                      />
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n for="place_maximum"
+                        >Convocation nominative ? :</label
+                      >
+                      <div class="buttons has-addons">
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.ConvocationNominative == true
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.ConvocationNominative == true
+                              ? (editSeance.ConvocationNominative = false)
+                              : (editSeance.ConvocationNominative = true)
+                          "
+                        >
+                          <span i18n>Convocation nominative</span>
+                        </button>
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.ConvocationNominative == false
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.ConvocationNominative == true
+                              ? (editSeance.ConvocationNominative = false)
+                              : (editSeance.ConvocationNominative = true)
+                          "
+                        >
+                          <span i18n>Groupe entier convoqué</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n for="place_maximum"
+                        >Essai possible ? :</label
+                      >
+                      <div class="buttons has-addons">
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EssaiPossible == true
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EssaiPossible == true
+                              ? (editSeance.EssaiPossible = false)
+                              : (editSeance.EssaiPossible = true)
+                          "
+                        >
+                          <span i18n>Essai possible</span>
+                        </button>
+                        <button
+                          type="button"
+                          [class]="
+                            editSeance.EssaiPossible == false
+                              ? 'button is-link is-active'
+                              : 'button is-active'
+                          "
+                          (click)="
+                            editSeance.EssaiPossible == true
+                              ? (editSeance.EssaiPossible = false)
+                              : (editSeance.EssaiPossible = true)
+                          "
+                        >
+                          <span i18n>Pas d'essai</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field-container">
+                    <div class="field">
+                      <label class="label" for="place_maximum"
+                        ><span i18n>Professeurs</span>&nbsp;
+                        <button
+                          *ngIf="editSeance.professeurs.length > 0"
+                          (click)="
+                            manage_prof
+                              ? (manage_prof = false)
+                              : (manage_prof = true)
+                          "
+                        >
+                          <i class="fas fa-cog"></i></button
+                      ></label>
+
+                      <app-prof
+                        (profUpdated)="onProfUpdated($event)"
+                        [liste_prof]="listeprof"
+                        [thisSeance]="editSeance"
+                        [manage]="manage_prof"
+                        [Profs]="editSeance.professeurs"
+                      ></app-prof>
+                    </div>
+
+                    <div class="field"   *ngIf="editSeance.ConvocationNominative == false">
+                      <label class="label" i18n for="place_maximum"
+                        >Groupes :</label
+                      >
+                      <app-groupe-detail
+                        (groupesUpdated)="onGroupesUpdated($event)"
+                        [id_source]="editSeance.ID"
+                        [objet_source]="'séance'"
+                      
+                        [title]="titre_groupe"
+                        [Groupes]="editSeance.Groupes"
+                        [liste_groupe]="liste_groupe"
+                      ></app-groupe-detail>
+                    </div>
+                    <div class="field">
+                      <label class="label" i18n for="place_maximum"
+                        >Info séance :
+                      </label>
+                      <textarea
+                        class="textarea"
+                        [(ngModel)]="editSeance.InfoSeance"
+                      ></textarea>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <div class="columns">
+                <div class="column">
+                  <div class="buttons">
+                    <btn
+                      [disabled]="!editSeance.valid.control"
+                      [type_button]="'SauvegarderSmall'"
+                      (click)="Save()"
+                    ></btn>
+                    <btn
+                      [type_button]="'VoirSmall'"
+                      (click)="VoirMaSeance()"
+                      *ngIf="editSeance.ID > 0"
+                    ></btn>
+                    <btn
+                      [type_button]="'ReloadSmall'"
+                      (click)="Refresh()"
+                    ></btn>
+                    <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </span>
+    <span class="mobile">
+      <nav class="navbar is-fixed-top">
+        <btn
+          [disabled]="!editSeance.valid.control"
+          [type_button]="'SauvegarderMobile'"
+          (click)="Save()"
+        ></btn>
+        <btn
+          [type_button]="'VoirMobile'"
+          (click)="VoirMaSeance(editSeance)"
+          *ngIf="editSeance.ID > 0"
+        ></btn>
+        <btn [type_button]="'ReloadMobile'" *ngIf="editSeance.ID > 0" (click)="Refresh()"></btn>
+        <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
+      </nav>
+      <div class="container-box">
+        <div class="field-container">
+          <ng-container *ngIf="editSeance.ID == 0">
+            <div class="field">
+              <label class="label" i18n>Type de séance</label>
+              <div class="select">
+                <select id="cours" [(ngModel)]="editSeance.TypeSeance">
+                  <option value="ENTRAINEMENT" i18n>Cours</option>
+                  <option value="SORTIE" i18n>Sortie</option>
+                  <option value="EVENEMENT" i18n>Evenement</option>
+                  <option value="MATCH" i18n>Match</option>
+                </select>
+              </div>
+              <p
+                class="help is-danger"
+                *ngIf="!editSeance.TypeSeance"
+                i18n
+              >
+                La sélection d'un type de séance est obligatoire
+              </p>
+            </div>
+            <div
+              *ngIf="editSeance.TypeSeance == 'ENTRAINEMENT'"
+              class="field"
+            >
+              <label class="label" i18n>Cours</label>
+              <div class="select">
+                <select
+                  id="cours"
+                  (ngModelChange)="onCoursSelectionChange($event)"
+                  [(ngModel)]="editSeance.Cours"
+                >
+                  <option
+                    *ngFor="let cours of listeCours"
+                    [value]="cours.id"
+                  >
+                    {{ cours.nom }}
+                  </option>
+                </select>
+              </div>
+              <p class="help is-danger" *ngIf="!editSeance.Cours" i18n>
+                La sélection d'un cours est obligatoire
+              </p>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="editSeance.ID > 0">
+            <div *ngIf="editSeance.Cours > 0" class="field">
+              <label class="label" i18n>Cours</label>
+              <span>{{ GetCours(editSeance.Cours) }}</span>
+            </div>
+            <div class="field">
+              <label class="label" i18n>Type de séance</label>
+              <span>{{ GetType(editSeance.TypeSeance) }}</span>
+            </div>
+          </ng-container>
+        </div>
+        <ng-container
+          *ngIf="
+            (editSeance.TypeSeance === 'ENTRAINEMENT' &&
+              editSeance.Cours > 0) ||
+            editSeance.TypeSeance != 'ENTRAINEMENT'
+          "
+        >
+          <div class="field-container" *ngIf="editMode_serie">
+            <div class="field">
+              <label class="label" i18n>Jour de la semaine</label>
+              <div class="select">
+                <select
+                  id="jour"
+                  [(ngModel)]="jour_semaine"
+                  placeholder="Jour"
+                >
+                  <option [value]="'Monday'" i18n>lundi</option>
+                  <option [value]="'Tuesday'" i18n>mardi</option>
+                  <option [value]="'Wednesday'" i18n>mercredi</option>
+                  <option [value]="'Thursday'" i18n>jeudi</option>
+                  <option [value]="'Friday'" i18n>vendredi</option>
+                  <option [value]="'Saturday'" i18n>samedi</option>
+                  <option [value]="'Sunday'" i18n>dimanche</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" i18n
+                >Date de début de la série</label
+              >
+              <input
+                class="input"
+                id="date_seance"
+                type="date"
+                [(ngModel)]="editSeance.date_seance"
+              />
+              <p
+                class="help is-danger"
+                *ngIf="!editSeance.valid.date"
+                i18n
+              >
+                La date de début de la série doit être saisie
+              </p>
+            </div>
+
+            <div class="field">
+              <label class="label" i18n>Date de fin de la série</label>
+              <input
+                class="input"
+                id="date_seance"
+                type="date"
+                [(ngModel)]="date_fin_serie"
+              />
+              <p class="help is-danger" *ngIf="!date_fin_serie" i18n>
+                La date de fin de la série doit être saisie
+              </p>
+            </div>
+          </div>
+
+          <div class="field-container">
+            <div class="field">
+              <label class="label" i18n>Libellé</label>
+              <input
+                [class]="
+                  editSeance.valid.libelle ? 'input' : 'input is-danger'
+                "
+                type="text"
+                id="nom_rider"
+                name="nom_rider"
+                i18n-placeholder
+                placeholder="Nom"
+                [(ngModel)]="editSeance.libelle"
+                required
+              />
+              <p
+                class="help is-danger"
+                *ngIf="!editSeance.valid.libelle"
+                i18n
+              >
+                Le libellé doit faire au moins 5 caractères
+              </p>
+            </div>
+            <div class="field">
+              <label class="label" i18n>Statut</label>
+              <ng-container *ngIf="editSeance.ID < 1">
+                <span class="tag is-info is-rounded is-light">
+                  <span class="icon has-text-info">
+                    <i class="fa-solid fa-calendar-check"></i>
+                  </span>
+                  <span i18n>Prévue</span>
+                </span>
+              </ng-container>
+              <ng-container *ngIf="editSeance.ID > 0">
+                <ng-container *ngIf="editSeance.Statut == 'prévue'">
+                  <span class="tag is-info is-rounded is-light">
+                    <span class="icon has-text-info">
+                      <i class="fa-solid fa-calendar-check"></i> </span
+                    >&nbsp;
+                    <span i18n>Prévue</span>
+                  </span>
+                  <hover-button
+                    [nomclass]="
+                      'button is-outlined is-rounded is-primary'
+                    "
+                    [nomicon]="'fa-solid fa-flag-checkered'"
+                    [libelle]="'Terminer la séance'"
+                    (click)="ChangerStatut('réalisée')"
+                  >
+                  </hover-button>
+                  <hover-button
+                    [nomclass]="
+                      'button is-outlined is-rounded is-danger'
+                    "
+                    [nomicon]="'fa-solid fa-ban'"
+                    [libelle]="'Annuler la séance'"
+                    (click)="ChangerStatut('annulée')"
+                  >
+                  </hover-button>
+                </ng-container>
+                <ng-container *ngIf="editSeance.Statut == 'réalisée'">
+                  <span class="tag is-primary is-rounded is-light">
+                    <span class="icon has-text-success">
+                      <i class="fa-solid fa-flag-checkered"></i> </span
+                    >&nbsp;
+                    <span i18n>Terminée</span>
+                  </span>
+                  <hover-button
+                    [nomclass]="'button is-outlined is-rounded is-info'"
+                    [nomicon]="'fa-solid fa-calendar-check'"
+                    [libelle]="'Planifier la séance'"
+                    (click)="ChangerStatut('prévue')"
+                  >
+                  </hover-button>
+                  <hover-button
+                    [nomclass]="
+                      'button is-outlined is-rounded is-danger'
+                    "
+                    [nomicon]="'fa-solid fa-ban'"
+                    [libelle]="'Annuler la séance'"
+                    (click)="ChangerStatut('annulée')"
+                  >
+                  </hover-button>
+                </ng-container>
+                <ng-container *ngIf="editSeance.Statut == 'annulée'">
+                  <span class="tag is-danger is-rounded is-light">
+                    <span class="icon has-text-danger">
+                      <i class="fa-solid fa-ban"></i> </span
+                    >&nbsp;
+                    <span i18n>Annulée</span>
+                  </span>
+                  <hover-button
+                    [nomclass]="'button is-outlined is-rounded is-info'"
+                    [nomicon]="'fa-solid fa-calendar-check'"
+                    [libelle]="'Planifier la séance'"
+                    (click)="ChangerStatut('prévue')"
+                  >
+                  </hover-button>
+                  <hover-button
+                    [nomclass]="
+                      'button is-outlined is-rounded is-primary'
+                    "
+                    [nomicon]="'fa-solid fa-flag-checkered'"
+                    [libelle]="'Terminer la séance'"
+                    (click)="ChangerStatut('réalisée')"
+                  >
+                  </hover-button>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+          <div class="field-container">
+            <ng-container *ngIf="!editMode_serie">
+              <div class="field">
+                <label class="label" i18n>Date de la séance</label>
+                <span
+                  class="title_label"
+                  *ngIf="editSeance.Cours && editSeance.ID == 0"
+                  >&nbsp;({{ jour_semaine }})</span
+                >
+                <input
+                  class="input"
+                  id="date_seance"
+                  type="date"
+                  [(ngModel)]="editSeance.date_seance"
+                />
+                <p
+                  class="help is-danger"
+                  *ngIf="!editSeance.valid.date"
+                  i18n
+                >
+                  La date de la séance doit être saisie
+                </p>
+              </div>
+            </ng-container>
+            <div class="field">
+              <label class="label" i18n>Heure de début :</label>
+              <input
+                matInput
+                class="input"
+                id="heure_debut"
+                type="time"
+                [(ngModel)]="editSeance.heure_debut"
+              />
+              <p
+                class="help is-danger"
+                *ngIf="!editSeance.valid.heure"
+                i18n
+              >
+                L'heure doit être saisie
+              </p>
+            </div>
+            <div class="field">
+              <label class="label" i18n>Durée de la séance</label>
+              <input
+                class="input"
+                id="duree_seance"
+                type="number"
+                [(ngModel)]="editSeance.duree_seance"
+              />
+              <p
+                class="help is-danger"
+                *ngIf="!editSeance.valid.duree"
+                i18n
+              >
+                La durée doit être saisie
+              </p>
+            </div>
+            <div class="field">
+              <label class="label" i18n>Lieu</label>
+              <div class="select">
+                <select
+                  class="form-control"
+                  id="lieu"
+                  [(ngModel)]="editSeance.LieuId"
+                  placeholder="Lieu"
+                >
+                  <option
+                    *ngFor="let lieu of listelieu"
+                    [value]="lieu.key"
+                  >
+                    {{ lieu.value }}
+                  </option>
+                </select>
+                <p
+                  class="help is-danger"
+                  *ngIf="!editSeance.valid.lieu"
+                  i18n
+                >
+                  Le lieu doit être renseigné
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="field-container">
+            <div class="field">
+              <label class="label" i18n for="place_maximum"
+                >Age minimum ? :</label
+              >
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EstAgeMinimum == true
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EstAgeMinimum == true
+                      ? (editSeance.EstAgeMinimum = false)
+                      : (editSeance.EstAgeMinimum = true)
+                  "
+                >
+                  <span i18n>Age minimum requis</span>
+                </button>
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EstAgeMinimum == false
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EstAgeMinimum == true
+                      ? (editSeance.EstAgeMinimum = false)
+                      : (editSeance.EstAgeMinimum = true)
+                  "
+                >
+                  <span i18n>Pas de limite</span>
+                </button>
+              </div>
+            </div>
+            <div
+              *ngIf="editSeance.EstAgeMinimum == true"
+              class="field field-jecha"
+            >
+              <label class="label" i18n for="age_minimum"
+                >Age minimum :</label
+              >
+              <input
+                class="input"
+                min="1"
+                max="99"
+                matInput
+                type="number"
+                id="age_minimum"
+                [(ngModel)]="editSeance.AgeMinimum"
+                i18n-placeholder
+                placeholder="Age requis"
+              />
+            </div>
+            <div class="field">
+              <label class="label" i18n for="place_maximum"
+                >Age maximum ? :</label
+              >
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EstAgeMaximum == true
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EstAgeMaximum == true
+                      ? (editSeance.EstAgeMaximum = false)
+                      : (editSeance.EstAgeMaximum = true)
+                  "
+                >
+                  <span i18n>Age maximum</span>
+                </button>
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EstAgeMaximum == false
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EstAgeMaximum == true
+                      ? (editSeance.EstAgeMaximum = false)
+                      : (editSeance.EstAgeMaximum = true)
+                  "
+                >
+                  <span i18n>Pas de limite</span>
+                </button>
+              </div>
+            </div>
+            <div class="field" *ngIf="editSeance.EstAgeMaximum == true">
+              <label class="label" i18n for="age_maximum"
+                >Age maximum :</label
+              >
+              <input
+                class="input"
+                min="1"
+                max="99"
+                matInput
+                type="number"
+                id="age_maximum"
+                [(ngModel)]="editSeance.AgeMaximum"
+                placeholder="Age maximum"
+              />
+            </div>
+          </div>
+          <div class="field-container">
+            <div class="field">
+              <label class="label" i18n for="place_maximum"
+                >Place limitée ? :</label
+              >
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EstPlaceMaximum == true
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EstPlaceMaximum == true
+                      ? (editSeance.EstPlaceMaximum = false)
+                      : (editSeance.EstPlaceMaximum = true)
+                  "
+                >
+                  <span i18n>Places limitées</span>
+                </button>
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EstPlaceMaximum == false
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EstPlaceMaximum == true
+                      ? (editSeance.EstPlaceMaximum = false)
+                      : (editSeance.EstPlaceMaximum = true)
+                  "
+                >
+                  <span i18n>Places illimitées</span>
+                </button>
+              </div>
+            </div>
+            <div
+              class="field"
+              *ngIf="editSeance.EstPlaceMaximum == true"
+            >
+              <label class="label" i18n for="place_maximum"
+                >Place maximum :</label
+              >
+              <input
+                class="input"
+                type="number"
+                id="place_maximum"
+                min="1"
+                max="999"
+                [(ngModel)]="editSeance.PlaceMaximum"
+              />
+            </div>
+            <div class="field">
+              <label class="label" i18n for="place_maximum"
+                >Convocation nominative ? :</label
+              >
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.ConvocationNominative == true
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.ConvocationNominative == true
+                      ? (editSeance.ConvocationNominative = false)
+                      : (editSeance.ConvocationNominative = true)
+                  "
+                >
+                  <span i18n>Convocation nominative</span>
+                </button>
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.ConvocationNominative == false
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.ConvocationNominative == true
+                      ? (editSeance.ConvocationNominative = false)
+                      : (editSeance.ConvocationNominative = true)
+                  "
+                >
+                  <span i18n>Groupe entier convoqué</span>
+                </button>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label" i18n for="place_maximum"
+                >Essai possible ? :</label
+              >
+              <div class="buttons has-addons">
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EssaiPossible == true
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EssaiPossible == true
+                      ? (editSeance.EssaiPossible = false)
+                      : (editSeance.EssaiPossible = true)
+                  "
+                >
+                  <span i18n>Essai possible</span>
+                </button>
+                <button
+                  type="button"
+                  [class]="
+                    editSeance.EssaiPossible == false
+                      ? 'button is-link is-active'
+                      : 'button is-active'
+                  "
+                  (click)="
+                    editSeance.EssaiPossible == true
+                      ? (editSeance.EssaiPossible = false)
+                      : (editSeance.EssaiPossible = true)
+                  "
+                >
+                  <span i18n>Pas d'essai</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="field-container">
+            <div class="field">
+              <label class="label" for="place_maximum"
+                ><span i18n>Professeurs</span>&nbsp;
+                <button
+                  *ngIf="editSeance.professeurs.length > 0"
+                  (click)="
+                    manage_prof
+                      ? (manage_prof = false)
+                      : (manage_prof = true)
+                  "
+                >
+                  <i class="fas fa-cog"></i></button
+              ></label>
+
+              <app-prof
+                (profUpdated)="onProfUpdated($event)"
+                [liste_prof]="listeprof"
+                [thisSeance]="editSeance"
+                [manage]="manage_prof"
+                [Profs]="editSeance.professeurs"
+              ></app-prof>
+            </div>
+
+            <div class="field" 
+            *ngIf="editSeance.ConvocationNominative == false">
+              <label class="label" i18n for="place_maximum"
+                >Groupes :</label
+              >
+              <app-groupe-detail
+                (groupesUpdated)="onGroupesUpdated($event)"
+                [id_source]="editSeance.ID"
+                [objet_source]="'séance'"
+                [title]="titre_groupe"
+                [Groupes]="editSeance.Groupes"
+                [liste_groupe]="liste_groupe"
+              ></app-groupe-detail>
+            </div>
+            <div class="field">
+              <label class="label" i18n for="place_maximum"
+                >Info séance :
+              </label>
+              <textarea
+                class="textarea"
+                [(ngModel)]="editSeance.InfoSeance"
+              ></textarea>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </span>
+  </ng-container>
+</div>

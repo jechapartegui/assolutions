@@ -1,0 +1,19 @@
+
+.limited-width {
+    font-size: smaller;
+    display: inline-block; /* Permet de définir des dimensions spécifiques tout en restant en ligne */
+    max-width: 200px; /* Limite la largeur à 100 pixels */
+    word-wrap: break-word; /* Permet de couper les mots pour passer à la ligne */
+    /* overflow-wrap: break-word; alternative property for modern browsers */
+}
+.all-small {
+    font-size: small;
+}
+.all-small * {
+    font-size: inherit;
+}
+.limit50{
+    width: 50px;
+    margin: 2px;
+    height: 23px;
+}

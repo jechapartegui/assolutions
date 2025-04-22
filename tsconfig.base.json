@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "importHelpers": true,
+    "isolatedModules": true,
+    "lib": ["es2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "target": "es2022",
+    "customConditions": ["development"],
+    "baseUrl": ".",
+    "paths": {
+      "@assolutions/adherent": ["libs/shared/adherent/src/index.ts"],
+      "@assolutions/compte": ["libs/shared/compte/src/index.ts"]
+    }
+  }
+}

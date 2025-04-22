@@ -1,0 +1,180 @@
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <div class="card" style="width: 100%;">
+                <header class="card-header">
+                    <p class="card-header-title" i18n>
+                        Ajouter un adhérent au groupe
+                    </p>
+                    <button (click)="afficher_menu_admin ? afficher_menu_admin = false : afficher_menu_admin= true"
+                        class="card-header-icon" aria-label="more options">
+                        <span class="icon">
+                            <svg *ngIf="!afficher_menu_admin" width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#chevron-up" style="fill:blue"></use>
+                            </svg>
+                            <svg *ngIf="afficher_menu_admin" width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#chevron-down" style="fill:blue"></use>
+                            </svg>
+                        </span>
+                    </button>
+                </header>
+                
+                <div class="card-content" *ngIf="afficher_menu_admin">
+                    <div class="content">
+                        <div class="columns">
+                            <div class="column">
+                                <h4 i18n>Sélectionner l'adhérent</h4>
+                                <div class="field ">
+                                    <label for="nom" class="label" i18n>Filtrer sur le nom</label>
+                                    <input style="width: fit-content;font-size:smaller;" class="input" i18n-placeholder
+                                        placeholder="Adhérent" type="text" [(ngModel)]="filter_libelle">
+                                </div>
+                                <div class="field">
+                                    <div class="select">
+                                        <select id="adherents" [(ngModel)]="adherent_to" i18n-placeholder
+                                            placeholder="Choisir un adhérent">
+                                            <option [ngValue]="null">---</option>
+                                            <!-- Options pour les professeurs -->
+                                            <ng-container
+                                                *ngFor="let adh of liste_adherent | filterLibelleNom : filter_libelle ">
+                                                <option [ngValue]="adh">{{adh.Libelle}}</option>
+                                            </ng-container>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <h4 i18n>Sélectionner le groupe</h4>
+                                <div class="field">
+                                    <label for="groupes" class="label" i18n>Liste des groupes</label>
+                                    <div class="select">
+                                        <select id="groupes" [(ngModel)]="groupe_to" i18n-placeholder
+                                            placeholder="Choisir un adhérent">
+                                            <!-- Options pour les professeurs -->
+                                             <option [ngValue]="null">---</option>
+                                            <ng-container *ngFor="let gr of liste_groupe ">
+                                                <option [ngValue]="gr">{{gr.nom}}</option>
+                                            </ng-container>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="button is-rounded is-primary is-outlined" [disabled]="!adherent_to || !groupe_to" (click)="AddToGroupe()"
+                                    style="align-self: center; ;fill:hsl(171, 100%, 41%)">
+                                    <svg width="20" height="20">
+                                        <use xlink:href=".\assets\liste.svg#plus"></use>
+                                    </svg>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="card" style="width: 100%;">
+                <header class="card-header">
+                    <p class="card-header-title" i18n>
+                        Ajouter / Supprimer un groupe
+                    </p>
+                    <button (click)="afficher_creer_groupe ? afficher_creer_groupe = false : afficher_creer_groupe= true"
+                        class="card-header-icon" aria-label="more options">
+                        <span class="icon">
+                            <svg *ngIf="!afficher_menu_admin" width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#chevron-up" style="fill:blue"></use>
+                            </svg>
+                            <svg *ngIf="afficher_menu_admin" width="20" height="20">
+                                <use xlink:href=".\assets\liste.svg#chevron-down" style="fill:blue"></use>
+                            </svg>
+                        </span>
+                    </button>
+                </header>
+                
+                <div class="card-content" *ngIf="afficher_creer_groupe">
+                    <div class="content">
+                        <div class="columns">
+                            <div class="column">
+                                <h4 i18n>Ajouter un groupe</h4>
+                                <div class="field ">
+                                    <label for="nom" class="label">Saisir le nom du groupe</label>
+                                    <input style="width: fit-content;font-size:smaller;" class="input" i18n-placeholder
+                                        placeholder="Nom du groupe" type="text" [(ngModel)]="nom_groupe">
+                                </div>
+                                <button class="button is-rounded is-primary is-outlined" (click)="AjouterGroupe()"
+                                style="align-self: center; ;fill:hsl(171, 100%, 41%)">
+                                <svg width="20" height="20">
+                                    <use xlink:href=".\assets\liste.svg#plus"></use>
+                                </svg>
+                            </button>
+                            </div>
+                            <div class="column">
+                                <h4 i18n>Supprimer un groupe</h4>
+
+
+                                <div class="field">
+                                    <label for="groupes" class="label" i18n>Liste des groupes</label>
+                                    <div class="select">
+                                        <select id="groupes" [(ngModel)]="groupe_to_delete" i18n-placeholder
+                                            placeholder="Choisir un groupe">
+                                            <option [ngValue]="null">---</option>
+                                            <!-- Options pour les professeurs -->
+                                            <ng-container
+                                                *ngFor="let gr of liste_groupe ">
+                                                <option [ngValue]="gr">{{gr.nom}}</option>
+                                            </ng-container>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="button is-rounded is-danger is-outlined" [disabled]="!groupe_to_delete" (click)="SupprimerGroupe()"
+                                    style="align-self: center; fill:hsl(348, 100%, 61%); gap: 5px;">
+                                    <svg width="20" height="20">
+                                        <use xlink:href=".\assets\liste.svg#delete"></use>
+                                    </svg>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div  class="columns">
+        <div class="column" *ngIf="liste_groupe && liste_groupe.length>0">
+            <ng-container *ngFor="let groupe of liste_groupe">
+                <div class="card" *ngIf="groupe">
+                    <header class="card-header">
+                        <p class="card-header-title">{{groupe.nom}} ({{ countAdherents(groupe.id) }}&nbsp;<span i18n>adhérents</span>)</p>
+                        <button (click)="groupe.display ? groupe.display = false : groupe.display= true"
+                            class="card-header-icon" aria-label="more options">
+                            <span class="icon">
+                                <svg *ngIf="!groupe.display" width="20" height="20">
+                                    <use xlink:href=".\assets\liste.svg#chevron-up" style="fill:blue"></use>
+                                </svg>
+                                <svg *ngIf="groupe.display" width="20" height="20">
+                                    <use xlink:href=".\assets\liste.svg#chevron-down" style="fill:blue"></use>
+                                </svg>
+                            </span>
+                        </button>
+                    </header>
+                    <div class="card-content" *ngIf="groupe.display">
+                        <div class="tags is-small">
+                            <ng-container *ngFor="let rider of liste_adherent">
+                                <ng-container *ngIf="isGroupe(groupe.id, rider)">
+                                    <button (click)="DeleteLien(groupe, rider)"
+                                        class="button is-small is-rounded tag is-success is-outlined" style="fill:hsl(348, 100%, 61%); gap: 5px;">
+                                        {{rider.Libelle}}
+                                        <svg width="20"  height="20">
+                                            <use xlink:href=".\assets\liste.svg#rounded_remove">
+                                            </use>
+                                        </svg>
+                                    </button>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>
