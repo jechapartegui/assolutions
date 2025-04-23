@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
-import { environment } from 'src/environments/environment.prod';
-import { fluxfinancier } from 'src/class/fluxfinancier';
+import { environment } from '../environments/environment.prod';
+import { fluxfinancier } from '../class/fluxfinancier';
 
 @Injectable({
   providedIn: 'root'

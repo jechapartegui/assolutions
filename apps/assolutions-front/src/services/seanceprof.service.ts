@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { SeanceProf } from 'src/class/seanceprof';
-import { environment } from 'src/environments/environment.prod';
+import { SeanceProf } from '../class/seanceprof';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 
 @Injectable({

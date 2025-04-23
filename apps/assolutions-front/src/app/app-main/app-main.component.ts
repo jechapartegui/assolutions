@@ -1,20 +1,20 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AdherentMenu } from 'src/class/adherent';
-import { cours } from 'src/class/cours';
-import { inscription_seance, StatutPresence } from 'src/class/inscription';
-import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
-import { professeur } from 'src/class/professeur';
-import { seance, StatutSeance } from 'src/class/seance';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { StaticClass } from '../global';
-import { ProfesseurService } from 'src/services/professeur.service';
 import { Router } from '@angular/router';
-import { AdherentService } from 'src/services/adherent.service';
-import { LieuService } from 'src/services/lieu.service';
-import { CoursService } from 'src/services/cours.service';
-import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
+import { AdherentMenu } from '../../class/adherent';
+import { cours } from '../../class/cours';
+import { inscription_seance, StatutPresence } from '../../class/inscription';
+import { KeyValuePair, KeyValuePairAny } from '../../class/keyvaluepair';
+import { professeur } from '../../class/professeur';
+import { seance, StatutSeance } from '../../class/seance';
+import { AdherentService } from '../../services/adherent.service';
+import { CoursService } from '../../services/cours.service';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { InscriptionSeanceService } from '../../services/inscription-seance.service';
+import { LieuService } from '../../services/lieu.service';
+import { ProfesseurService } from '../../services/professeur.service';
+import { StaticClass } from '../global';
 
 @Component({
   selector: 'app-app-main',
@@ -91,12 +91,10 @@ export class AppMainComponent  implements OnInit {
           const auj = new Date();
           const yesterday = new Date(auj);
           yesterday.setDate(yesterday.getDate() - 1);
-          let date_apres = this.formatDate(yesterday);
 
           // Date dans un mois
           const nextMonth = new Date(auj);
           nextMonth.setMonth(nextMonth.getMonth() + 1);
-          let date_avant = this.formatDate(nextMonth);
           this.adherent_serv
             .Get(GlobalService.compte.id, GlobalService.menu)
             .then((riders) => {

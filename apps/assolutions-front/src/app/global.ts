@@ -1,5 +1,6 @@
-import { Doc } from "src/class/doc";
-import { StatutPresence } from "src/class/inscription";
+import { Doc } from "../class/doc";
+import { StatutPresence } from "../class/inscription";
+
 
 export class StaticClass{
 

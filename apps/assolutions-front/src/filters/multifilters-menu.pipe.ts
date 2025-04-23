@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { FilterMenu } from 'src/app/menu/menu.component';
-import { InscriptionSeance } from 'src/class/inscription';
+import { FilterMenu } from '../app/menu/menu.component';
+import { InscriptionSeance } from '../class/inscription';
 
 @Pipe({
   name: 'multifiltersMenu',

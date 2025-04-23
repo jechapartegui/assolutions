@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { FilterCompte } from 'src/app/compte/compte.component';
-import { compte } from 'src/class/compte';
+import { FilterCompte } from '../app/compte/compte.component';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 
 @Pipe({
   name: 'multifiltersCompte',
@@ -15,7 +15,7 @@ export class MultifiltersComptePipe implements PipeTransform {
     return items.filter((item) => {
       return (
         (!filters.filter_email ||
-          item.login.toLowerCase().includes(
+          item.email.toLowerCase().includes(
             filters.filter_email.toLowerCase()
           )) 
       );

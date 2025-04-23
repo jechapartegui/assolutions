@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/nx/schemas/project-schema.json",
-  "name": "assolutions",
+  "name": "assolutions-front",
   "projectType": "application",
   "generators": {},
   "sourceRoot": "src",
@@ -122,12 +122,12 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "development": {
-          "browserTarget": "assolutions:build:development",
+          "browserTarget": "assolutions-front:build:development",
           "port": 2211,
           "proxyConfig": "./proxy.conf.json"
         },
         "development-en": {
-          "browserTarget": "assolutions:build:development-en",
+          "browserTarget": "assolutions-front:build:development-en",
           "port": 2510,
           "proxyConfig": "./proxy.conf.json"
         }
@@ -137,7 +137,7 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "browserTarget": "assolutions:build",
+        "browserTarget": "assolutions-front:build",
         "outputPath": "src/locale"
       }
     },

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { inscription_seance } from 'src/class/inscription';
+import { inscription_seance } from '../class/inscription';
 
 @Injectable({
   providedIn: 'root'

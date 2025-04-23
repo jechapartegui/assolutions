@@ -1,18 +1,18 @@
 {
-  "name": "assolutions",
+  "name": "assolutions-front",
   "version": "0.0.0",
   "scripts": {
     "ng": "nx exec -- ng",
     "start": "nx exec -- nx serve",
-    "start-jecha": "nx serve assolutions --configuration=development --disable-host-check ",
-    "start-jecha-en": "nx serve assolutions --configuration=development-en --disable-host-check ",
+    "start-jecha": "nx serve assolutions-front --configuration=development --disable-host-check ",
+    "start-jecha-en": "nx serve assolutions-front --configuration=development-en --disable-host-check ",
     "build": "nx exec -- nx build --verbose",
     "build-dev": "nx exec -- nx build --configuration=development",
     "watch": "nx exec -- nx build --watch --configuration development",
     "aot": "nx exec -- nx build --configuration=production --aot --verbose",
     "aot-en": "nx exec -- nx build --configuration=production-en --aot",
     "aot-preprod": "nx exec -- nx build --configuration=preprod --aot",
-    "extract-i18n": "nx run assolutions:extract-i18n",
+    "extract-i18n": "nx run assolutions-front:extract-i18n",
     "merge-i18n": "node_modules/.bin/xliffmerge --profile xliffmerge.json",
     "xliffmerge": "xliffmerge --profile xliffmerge.json"
   },

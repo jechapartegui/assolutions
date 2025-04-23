@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { CompteBancaire } from 'src/class/comptebancaire';
-import { CompteBancaireService } from 'src/services/compte-bancaire.service';
-import { ErrorService } from 'src/services/error.service';
+import { CompteBancaire } from '../../class/comptebancaire';
+import { CompteBancaireService } from '../../services/compte-bancaire.service';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-compte-bancaire',

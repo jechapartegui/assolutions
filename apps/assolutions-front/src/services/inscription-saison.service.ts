@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { Adhesion } from 'src/class/adhesion';
+import { Adhesion } from '../class/adhesion';
 
 @Injectable({
   providedIn: 'root'

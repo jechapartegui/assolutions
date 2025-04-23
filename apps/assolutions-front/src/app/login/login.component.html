@@ -10,24 +10,24 @@
           <h3 class="title is-3" i18n>Connexion</h3>
           <div class="field">
             <p class="control has-icons-left has-icons-right">
-              <input [class]="Source.valid.login ? 'input' : 'input is-danger'" [(ngModel)]="Source.Login" type="email"
+              <input [class]="VM.valid.login ? 'input' : 'input is-danger'" [(ngModel)]="VM.Login" type="email"
                 placeholder="Email">
               <span class="icon is-small is-left">
                 <i class="fas fa-envelope"></i>
               </span>
-              <span *ngIf="Source.valid.login" class="icon is-small is-right">
+              <span *ngIf="VM.valid.login" class="icon is-small is-right">
                 <i class="fas fa-check"></i>
               </span>
             </p>
           </div>
-          <div *ngIf="is_mdp" class="field">
+          <div *ngIf="VM.mdp_requis" class="field">
             <p class="control has-icons-left has-icons-right">
-              <input [class]="Source.valid.password ? 'input' : 'input is-danger'" [(ngModel)]="Source.Password"
+              <input [class]="VM.valid.password ? 'input' : 'input is-danger'" [(ngModel)]="VM.Password"
                 type="password" placeholder="Password">
               <span class="icon is-small is-left">
                 <i class="fas fa-lock"></i>
               </span>
-              <span *ngIf="Source.valid.password" class="icon is-small is-right">
+              <span *ngIf="VM.valid.password" class="icon is-small is-right">
                 <i class="fas fa-check"></i>
               </span>
             </p>
@@ -82,17 +82,16 @@
                 <p class="control" style="display: flex; flex-direction: column; gap: 2px;">
                  
                   
-                  <button *ngIf="!is_mdp" [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded"
+                  <button *ngIf="!VM.mdp_requis" [disabled]="!VM.valid.control" class="button is-success is-outlined is-rounded"
                     (click)="Login2()" i18n>
                     Se connecter
                   </button>
-                  <button *ngIf="is_mdp" [disabled]="!Source.valid.control" class="button is-success is-outlined is-rounded"
+                  <button *ngIf="VM.mdp_requis" [disabled]="!VM.valid.control" class="button is-success is-outlined is-rounded"
                     (click)="Login2()" i18n>
                     Valider le mot de passe
                   </button>
-                  <a *ngIf="Source.valid.login"  (click)="RenvoiToken()" i18n
-                  >Renvoyer les liens de connexion directe</a>
-                  <a *ngIf="Source.valid.login"  (click)="ReinitMDP()" i18n
+                
+                  <a *ngIf="VM.valid.login"  (click)="ReinitMDP()" i18n
                   >Reinitialiser le mot de passe</a>
                 </p>
               </div>

@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Adherent } from 'src/class/adherent';
-import { ErrorService } from 'src/services/error.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Saison } from 'src/class/saison';
-import { SaisonService } from 'src/services/saison.service';
-import { InscriptionSaisonService } from 'src/services/inscription-saison.service';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Adherent } from '../../class/adherent';
+import { Saison } from '../../class/saison';
+import { ErrorService } from '../../services/error.service';
+import { InscriptionSaisonService } from '../../services/inscription-saison.service';
+import { SaisonService } from '../../services/saison.service';
+
 
 @Component({
   selector: 'app-inscription',

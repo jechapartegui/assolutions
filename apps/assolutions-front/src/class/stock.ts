@@ -1,4 +1,4 @@
-import { ObjetAppli, TypeStock } from 'src/app/global';
+import { ObjetAppli } from '../app/global';
 import { Doc } from './doc';
 
 export class stock {

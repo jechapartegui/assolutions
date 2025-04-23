@@ -1,12 +1,11 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { saison, Saison } from 'src/class/saison';
-import { ExcelService } from 'src/services/excel.service';
-import { GroupeService } from 'src/services/groupe.service';
-import { SaisonService } from 'src/services/saison.service';
-import { GlobalService } from 'src/services/global.services';
-import { Router } from '@angular/router';
-import { ErrorService } from 'src/services/error.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Saison, saison } from '../../class/saison';
+import { ErrorService } from '../../services/error.service';
+import { ExcelService } from '../../services/excel.service';
+import { GlobalService } from '../../services/global.services';
+import { SaisonService } from '../../services/saison.service';
 
 @Component({
   selector: 'app-saison',
@@ -44,8 +43,7 @@ export class SaisonComponent {
       public GlobalService: GlobalService,
       private excelService: ExcelService,
       private router: Router,
-      private saisonserv: SaisonService,
-      private grServ: GroupeService
+      private saisonserv: SaisonService
     ) {}
   
     ngOnInit(): void {

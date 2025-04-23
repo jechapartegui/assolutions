@@ -1,15 +1,12 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
-import { Compte, compte } from 'src/class/compte';
-import { environment } from 'src/environments/environment.prod';
-import { CompteService } from 'src/services/compte.service';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { LoginNestService } from 'src/services/login.nest.service';
-import { LoginService, project_login } from 'src/services/login.service';
-import { MailService } from 'src/services/mail.service';
+import { Login_VM } from '../../class/compte';
+import { environment } from '../../environments/environment.prod';
+import { CompteService } from '../../services/compte.service';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { LoginNestService } from '../../services/login.nest.service';
+import { project_login } from '../../services/login.service';
 
 @Component({
   selector: 'app-login',
@@ -17,9 +14,8 @@ import { MailService } from 'src/services/mail.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  Source: Compte = new Compte(new compte());
+  VM: Login_VM = new Login_VM();
   action: string;
-  is_mdp: boolean = false;
   projets: project_login[];
   projets_select: project_login = null;
   loading: boolean;
@@ -28,25 +24,22 @@ export class LoginComponent implements OnInit {
 
 
 
-  constructor(private http: HttpClient,private login_serv: LoginService, private login_serv_nest:LoginNestService, private compte_serv: CompteService, private mail_serv: MailService, private router: Router, private route: ActivatedRoute) {
-    this.Source.Login = environment.defaultlogin;
-    this.Source.Password = environment.defaultpassword;
+  constructor(
+    private login_serv_nest:LoginNestService, 
+    private compte_serv: CompteService, 
+    private router: Router, 
+    private route: ActivatedRoute) 
+    {
+    this.VM.Login = environment.defaultlogin;
+    this.VM.Password = environment.defaultpassword;
   }
 
   ngOnInit(): void {
     let token: string;
     let user: string;
-    let droit: number;
     const errorService = ErrorService.instance;
     this.route.queryParams.subscribe(params => {
-      if ('test_mail' in params) {
-        this.action = $localize`test envoi mail`;
-        this.mail_serv.Test().then((ret => {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        }))
-      }
-      if ('reinit_mdp' in params) {
+          if ('reinit_mdp' in params) {
         this.action = $localize`Lien de réinitialisation du mot de passe`;
         token = params['reinit_mdp'];
         user = params['login'];
@@ -70,84 +63,24 @@ export class LoginComponent implements OnInit {
 
       }
 
-      this.action = $localize`Connexion par token`;
-      if ('token_connexion' in params) {
-        token = params['token_connexion'];
-        if ('username' in params) {
-          user = params['username'];
-          if ('droit' in params) {
-            this.loading = true;
-            droit = params['droit'];
-            this.login_serv.LoginToken(token, user, droit).then((retour) => {
-              if (retour) {
-                this.loading = false;
-                this.router.navigate(['/menu']);
-              } else {
-                this.loading = false;
-              }
-            }).catch((error: Error) => {
-              let o = errorService.CreateError(this.action, error.message);
-              errorService.emitChange(o);
-              this.loading = false;
-            });
-          }
-        }
-      }
     })
   }
-  Login() {
-    this.action = $localize`Se connecter`;
-    this.loading = true;
-    // Appel à la méthode Check_Login du service RidersService
-    const errorService = ErrorService.instance;
-    this.login_serv.Login(this.Source.Login, this.Source.Password).then(() => {
-      this.projets = [];     
-      if (!GlobalService.projet) {
-        if (GlobalService.other_project.length == 0) {
-          let o = errorService.CreateError(this.action, $localize`Aucun projet lié`);
-          errorService.emitChange(o);
-          this.loading = false;
-        }
-        if (GlobalService.other_project.length == 1) {
-          this.projets.push(GlobalService.other_project[0]);
-          this.projets_select = GlobalService.other_project[0];
 
-        } else {
-          GlobalService.other_project.forEach((pp) => {
-            let curpro = this.projets.find(x => x.id == pp.id);
-            if (curpro) {
-              if (pp.adherent == true) {
-                curpro.adherent = true;
-              }
-              if (pp.prof == true) {
-                curpro.prof = true;
-              }
-              if (pp.admin == true) {
-                curpro.admin = true;
-              }
-            } else {
-              this.projets.push(pp);
-            }
-          })
-        }
-        this.loading = false;
-      } else {
-        this.router.navigate(['/menu']);
-        this.loading = false;
-      }
-    }
-    ).catch((error: Error) => {
-      console.log(error.stack);
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-      this.loading = false;
-    });
-  }
+
   async Login2() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
-      this.login_serv_nest.PreLogin(this.Source.Login).then((retour) => {
-        return retour;   
+      this.login_serv_nest.PreLogin(this.VM.Login).then((retour) => {
+       if(retour){
+        this.VM.mdp_requis = true;
+       } else {
+        this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((ok) => {
+
+          
+        let o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+        });
+       }
 
       // Tu peux ensuite appeler une 2e méthode pour vérifier le mot de passe
       // Exemple : this.LoginEtape2(email, password)
@@ -159,7 +92,7 @@ export class LoginComponent implements OnInit {
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    this.login_serv.Logout().then(ok => {
+    this.login_serv_nest.Logout().then(ok => {
       if (ok) {
 
         let o = errorService.OKMessage(this.action);
@@ -179,30 +112,11 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  RenvoiToken() {
-    this.action = $localize`Renvoi des liens de connexion directe`;
-    const errorService = ErrorService.instance;
-    this.login_serv.RenvoiToken(this.Source.Login).then(ok => {
-      if (ok) {
 
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-      } else {
-
-        let o = errorService.UnknownError(this.action);
-        errorService.emitChange(o);
-      }
-
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-      this.loading = false;
-    });
-  }
   ReinitMDP() {
     this.action = $localize`Réinitialiser le mot de passe`;
     const errorService = ErrorService.instance;
-    this.login_serv.ReinitMDP(this.Source.Login).then(ok => {
+    this.login_serv_nest.ReinitMDP(this.VM.Login).then(ok => {
       if (ok) {
 
         let o = errorService.OKMessage(this.action);

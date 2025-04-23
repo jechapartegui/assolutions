@@ -1,0 +1,12 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+      "declaration": true,
+      "composite": true,
+      "emitDeclarationOnly": true,
+      "outDir": "../../dist/out-tsc/libs/shared/compte"
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["**/*.spec.ts"]
+  }
+  

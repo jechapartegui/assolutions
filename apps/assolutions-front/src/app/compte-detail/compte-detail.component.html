@@ -7,15 +7,15 @@
           <input
             type="email"
             [class]="
-              IsEmail(thisCompte.login)
+              IsEmail(thisCompte.email)
                 ? 'input is-small'
                 : 'input is-danger is-small'
             "
-            [(ngModel)]="thisCompte.login"
+            [(ngModel)]="thisCompte.email"
           />
           <p
             class="help is-danger is-small"
-            *ngIf="!IsEmail(thisCompte.login)"
+            *ngIf="!IsEmail(thisCompte.email)"
             i18n
           >
             Le login doit être un email
@@ -24,7 +24,7 @@
         <div class="control">
           <button
             (click)="Valid()"
-            [disabled]="!IsEmail(thisCompte.login)"
+            [disabled]="!IsEmail(thisCompte.email)"
             type="button"
             class="button is-rounded is-primary is-outlined"
           >
@@ -77,12 +77,12 @@
       <span style="display: flex; flex-direction: row; margin: 0.25em">
         <label class="label is-small" i18n>Type Compte : </label>
         <i
-          *ngIf="!thisCompte.est_password"
+          *ngIf="!thisCompte.password"
           title="Avec Clé Token"
           class="fas fa-key"
         ></i>
         <i
-          *ngIf="thisCompte.est_password"
+          *ngIf="thisCompte.password"
           title="Avec mot de passe"
           class="fas fa-lock"
         ></i>
@@ -123,7 +123,7 @@
       <button
         type="button"
         class="button is-small is-primary is-outlined"
-        *ngIf="!thisCompte.est_password && context == 'VUE'"
+        *ngIf="!thisCompte.password && context == 'VUE'"
         (click)="CopierToken()"
       >
         <i class="fas fa-key"></i>Copier la clé Token
@@ -132,7 +132,7 @@
         type="button"
         style="gap: 0.25em; margin: 0.25em"
         class="button is-small is-primary is-outlined"
-        *ngIf="!thisCompte.est_password && context == 'VUE'"
+        *ngIf="!thisCompte.password && context == 'VUE'"
         (click)="RenvoiToken()"
       >
         <i class="fas fa-key"></i>Renvoyer les clés de connexion
@@ -141,7 +141,7 @@
         type="button"
         style="gap: 0.25em; margin: 0.25em"
         class="button is-small is-primary is-outlined"
-        *ngIf="!thisCompte.est_password && context == 'VUE'"
+        *ngIf="!thisCompte.password && context == 'VUE'"
         (click)="context = 'DEFINIR_MDP'"
       >
         <i class="fas fa-lock"></i>Définir un mot de passe
@@ -150,7 +150,7 @@
         type="button"
         style="gap: 0.25em; margin: 0.25em"
         class="button is-small is-primary is-outlined"
-        *ngIf="thisCompte.est_password && context == 'VUE'"
+        *ngIf="thisCompte.password && context == 'VUE'"
         (click)="context = 'DEFINIR_MDP'"
       >
         <i class="fas fa-lock"></i>Modifier le mot de passe
@@ -171,7 +171,7 @@
   [context]="'CREER'"
   *ngIf="context == 'CREER_MDP'"
   (CreerMDP)="CreerMDP($event)"
-  [Login]="thisCompte.login"
+  [Login]="thisCompte.email"
   [Token]="'Gulfed2606'"
 >
 </app-reinit-mdp>
@@ -179,7 +179,7 @@
   class="imbrique"
   [context]="'DEFINE'"
   *ngIf="context == 'DEFINIR_MDP'"
-  [Login]="thisCompte.login"
+  [Login]="thisCompte.email"
   [Token]="'Gulfed2606'"
 >
 </app-reinit-mdp>
@@ -190,7 +190,7 @@
   (rattacher)="Rattacher()"
   (demanderRattachement)="DemanderRattachement()"
   *ngIf="context == 'RATTACHER_MDP'"
-  [Login]="thisCompte.login"
+  [Login]="thisCompte.email"
   [Token]="'Gulfed2606'"
 >
 </app-reinit-mdp>

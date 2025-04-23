@@ -1,55 +1,48 @@
+import { compte } from "@shared/compte/src/lib/compte.interface";
 import { Subject } from "rxjs";
-import { adherent, Adherent } from "./adherent";
 
-export class compte {
-    public id: number = 0;
-    public login: string = "";
-    public password: string;
-    public libelle: string;
-    public date_creation: string;
-    public actif: boolean;
-    public mail_actif: boolean;
-    public derniere_connexion: Date;
-    public echec_connexion: number;
-    public mail_ko: boolean;
-    public activation_token: string;
-    public est_password: boolean;
-    public riders:adherent[];
-    public projet_compte:projet_compte[];
-
-
-}
-
-export class Compte {
-    datasource: compte;
+export class Login_VM {
+    compte: compte;
+    mdp_requis: boolean = false;
+    projets: {id:number, nom:string, admin:boolean} [] = null;
     login_S = new Subject<string>();
     password_S = new Subject<string>();
-    constructor(_c: compte) {
-        this.datasource = _c;
+    constructor(_c: compte = null) {
+        if(_c == null) {
+            this.compte = {
+                id: 0,
+                email: "",
+                password: "",
+                nom: "",
+                mail_actif : false,
+                actif: false,
+                echec_connexion: 0,
+                derniere_connexion:null,
+                mail_ko: false
+            };
+        } else {
+            this.compte = _c;
+        }
         this.valid = new Validation_Compte(this);
         this.valid.controler();
     }
     public valid: Validation_Compte;
 
     public get Login(): string {
-        return this.datasource.login;
+        return this.compte.email;
     }
     public set Login(v: string) {
-        this.datasource.login = v;
+        this.compte.email = v;
         this.login_S.next(v);
     }
 
-
     public get Password(): string {
-        return this.datasource.password;
+        return this.compte.password;
     }
     public set Password(v: string) {
-        this.datasource.password = v;
+        this.compte.password = v;
         this.password_S.next(v);
     }
-
-
-
 }
 
 export class Validation_Compte {
@@ -57,18 +50,16 @@ export class Validation_Compte {
     public login: boolean;
     public password: boolean;
 
-    constructor(private compte: Compte) {
-
-        this.compte.login_S.subscribe((value) => this.validateLogin(value));
-        this.compte.password_S.subscribe((value) => this.validatePassword(value));
-
-    }
+    constructor(private LVM: Login_VM) {
+        this.LVM.login_S.subscribe((value) => this.validateLogin(value));
+        this.LVM.password_S.subscribe((value) => this.validatePassword(value));
+        }
 
     controler() {
         this.control = true;
         // Appeler les méthodes de validation pour tous les champs lors de la première validation
-        this.validateLogin(this.compte.Login);
-        this.validatePassword(this.compte.Password);
+        this.validateLogin(this.LVM.Login);
+        this.validatePassword(this.LVM.Password);
 
     }
     checkcontrolvalue() {
@@ -120,11 +111,4 @@ export class Validation_Compte {
             this.control = false;
         }
     }
-}
-
-export class projet_compte{
-    public id:number;
-    public droit:number;
-    public date_connexion_toker:Date;
-    public connexion_token:string;
 }

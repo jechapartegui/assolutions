@@ -1,8 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { FilterSaison } from 'src/app/saison/saison.component';
-import { Saison } from 'src/class/saison';
-
+import { FilterSaison } from '../app/saison/saison.component';
+import { Saison } from '../class/saison';
 @Pipe({
   name: 'multifiltersSaison',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection

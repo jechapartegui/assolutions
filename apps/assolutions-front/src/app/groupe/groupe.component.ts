@@ -1,12 +1,11 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adherent } from 'src/class/adherent';
-import { Groupe, Lien_Groupe } from 'src/class/groupe';
-import { AdherentService } from 'src/services/adherent.service';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { GroupeService } from 'src/services/groupe.service';
+import { Adherent } from '../../class/adherent';
+import { Groupe } from '../../class/groupe';
+import { AdherentService } from '../../services/adherent.service';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { GroupeService } from '../../services/groupe.service';
 
 @Component({
   selector: 'app-groupe',

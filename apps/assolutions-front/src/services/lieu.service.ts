@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { KeyValuePair } from 'src/class/keyvaluepair';
-import { lieu } from 'src/class/lieu';
-import { environment } from 'src/environments/environment.prod';
+import { KeyValuePair } from '../class/keyvaluepair';
+import { lieu } from '../class/lieu';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 
 @Injectable({

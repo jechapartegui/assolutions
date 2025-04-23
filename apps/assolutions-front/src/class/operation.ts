@@ -1,5 +1,3 @@
-import { fluxfinancier } from "./fluxfinancier";
-
 export class operation {
   public id: number =0;
   public solde: number = 0;

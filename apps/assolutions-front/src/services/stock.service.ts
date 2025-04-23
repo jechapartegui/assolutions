@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { stock } from 'src/class/stock';
-import { environment } from 'src/environments/environment.prod';
+import { stock } from '../class/stock';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 
 @Injectable({

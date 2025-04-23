@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { compte } from 'src/class/compte';
 import { HttpErrorResponse } from '@angular/common/http';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +17,26 @@ export class LoginNestService {
     //  this.url = this.url + "login.php";
     const body = {
       email: username,
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: any) => {
+        console.log(response);
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
+  public Login(email: string, password: string): Promise<compte> {
+    this.url = 'api/auth/login';
+    //  this.url = this.url + "login.php";
+    const body = {
+      email: email,
+      password: password
     };
 
     return this.global.POST(this.url, body)

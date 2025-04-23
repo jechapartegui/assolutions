@@ -1,12 +1,12 @@
-import { Component, HostListener, ViewChild } from '@angular/core';
+import { Component,  ViewChild } from '@angular/core';
 import { StaticClass } from './global';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
-import { environment } from 'src/environments/environment.prod';
-import { ErrorService } from 'src/services/error.service';
 import { Router } from '@angular/router';
-import { CompteService } from 'src/services/compte.service';
-import { GlobalService } from 'src/services/global.services';
-import { LoginService } from 'src/services/login.service';
+import { environment } from '../environments/environment.prod';
+import { CompteService } from '../services/compte.service';
+import { ErrorService } from '../services/error.service';
+import { LoginService } from '../services/login.service';
+import { GlobalService } from '../services/global.services';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +22,7 @@ export class AppComponent {
   envt = environment;
   @ViewChild(NotifJechaComponent, { static: true }) child: NotifJechaComponent;
   constructor(public GlobalService:GlobalService,
-    private erroservice: ErrorService,
+    public erroservice: ErrorService,
     private router: Router,
     public compte_serv:CompteService,
     public login_serv:LoginService,

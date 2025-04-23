@@ -89,24 +89,20 @@
                                     let cpt of ListeCompte
                                       | multifiltersCompte : filters">
                                         <td>
-                                            {{cpt.login}}
+                                            {{cpt.email}}
                                         </td>
                                         <td>
                                             <div class="tags">
-                                                <span style="cursor: pointer;" (click)="getToken(cpt,1)" *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
+                                                <!-- <span style="cursor: pointer;" (click)="getToken(cpt,1)" *ngIf="cpt.riders && cpt.riders.length>0" class="tag is-info">Adhérent</span>
                                                 <span   *ngIf="IsAdminProf(cpt.projet_compte,0)" class="tag is-info">Administrateur</span>
                                                 <span style="cursor: pointer;"   (click)="getToken(cpt,2)" *ngIf="IsAdminProf(cpt.projet_compte,2)"class="tag is-info">Professeur</span>                                                
-                                            </div>
+                                           --> </div>
 
                                         </td>
 
                                         <td>
                                             <div class="tags">
-                                                <ng-container *ngFor="let gr of cpt.riders">
-                                                    <span class="tag is-success">
-                                                        <span>{{gr.prenom}}&nbsp;{{gr.nom}}&nbsp;{{gr.surnom}}</span>
-                                                    </span>
-                                                </ng-container>
+                                               
                                             </div>
                                         </td>
                                         
@@ -311,18 +307,18 @@
                     <div class="field">
                         <label class="label" i18n>Login</label>
                         <div class="control ">
-                            <input [class]="IsEmail(thisCompte.login) ? 'input' : 'input is-danger'" type="text"
+                            <input [class]="IsEmail(thisCompte.email) ? 'input' : 'input is-danger'" type="text"
                                 id="nom_rider" name="nom_rider" i18n-placeholder placeholder="Login"
-                                [(ngModel)]="thisCompte.login">
+                                [(ngModel)]="thisCompte.email">
 
                         </div>
                     </div>
 
-                    <p class="help is-danger" *ngIf="!IsEmail(thisCompte.login)" i18n>Le login doit être saisi
+                    <p class="help is-danger" *ngIf="!IsEmail(thisCompte.email)" i18n>Le login doit être saisi
                     </p>
 
                     <div *ngIf="thisCompte" class="buttons">
-                        <button class="button is-primary is-rounded is-outlined" [disabled]="!IsEmail(thisCompte.login)"
+                        <button class="button is-primary is-rounded is-outlined" [disabled]="!IsEmail(thisCompte.email)"
                             type="button" style="fill:hsl(171, 100%, 41%)" (click)="Save()">
                             <i class="fa-solid fa-floppy-disk"></i>
                         </button>

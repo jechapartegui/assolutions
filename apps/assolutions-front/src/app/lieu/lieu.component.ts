@@ -1,11 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adresse } from 'src/class/address';
-import { lieu, Lieu } from 'src/class/lieu';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { LieuService } from 'src/services/lieu.service';
+import { Adresse } from '../../class/address';
+import { Lieu, lieu } from '../../class/lieu';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { LieuService } from '../../services/lieu.service';
 
 @Component({
   selector: 'app-lieu',

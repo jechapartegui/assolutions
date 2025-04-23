@@ -2,16 +2,15 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "composite": false,
+    "emitDeclarationOnly": false,
     "outDir": "./out-tsc/app",
     "types": [
       "@angular/localize"
     ]
   },
-  "files": [
-    "src/main.ts",
-    "src/polyfills.ts"
-  ],
-  "include": [
-    "src/**/*.d.ts"
-  ]
+"include": [
+  "src/**/*.ts",
+  "../../libs/**/*.ts"  // si tu accèdes à des libs locales partagées
+]
 }

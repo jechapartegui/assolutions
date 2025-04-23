@@ -1,14 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, OnInit, Type, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { stock, Stock } from 'src/class/stock';
-import { AddInfoService } from 'src/services/addinfo.service';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { ObjetAppli, StaticClass, TypeStock, TypeTransaction } from '../global';
-import { StockService } from 'src/services/stock.service';
-import { ExcelService } from 'src/services/excel.service';
-import { MultifiltersStockPipe } from 'src/filters/multifilters-stock.pipe';
+import { Stock, stock } from '../../class/stock';
+import { MultifiltersStockPipe } from '../../filters/multifilters-stock.pipe';
+import { AddInfoService } from '../../services/addinfo.service';
+import { ErrorService } from '../../services/error.service';
+import { ExcelService } from '../../services/excel.service';
+import { GlobalService } from '../../services/global.services';
+import { StockService } from '../../services/stock.service';
+import { ObjetAppli, TypeStock, TypeTransaction, StaticClass } from '../global';
 
 @Component({
   selector: 'app-stock',

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Doc } from 'src/class/doc';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
+import { Doc } from '../class/doc';
 
 @Injectable({
   providedIn: 'root'

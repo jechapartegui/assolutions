@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Groupe, Lien_Groupe } from 'src/class/groupe';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
+import { Groupe, Lien_Groupe } from '../class/groupe';
 
 @Injectable({
   providedIn: 'root'

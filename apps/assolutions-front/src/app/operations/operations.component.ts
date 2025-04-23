@@ -1,17 +1,17 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AddInfoService } from 'src/services/addinfo.service';
-import { ComptabiliteService } from 'src/services/comptabilite.service';
-import { CompteBancaireService } from 'src/services/compte-bancaire.service';
-import { operationService } from 'src/services/operation.service';
-import { SaisonService } from 'src/services/saison.service';
+import { CompteBancaire } from '../../class/comptebancaire';
+import { FluxFinancier } from '../../class/fluxfinancier';
+import { Operation } from '../../class/operation';
+import { saison } from '../../class/saison';
+import { AddInfoService } from '../../services/addinfo.service';
+import { ComptabiliteService } from '../../services/comptabilite.service';
+import { CompteBancaireService } from '../../services/compte-bancaire.service';
+import { ErrorService } from '../../services/error.service';
+import { operationService } from '../../services/operation.service';
+import { SaisonService } from '../../services/saison.service';
 import { StaticClass } from '../global';
-import { ErrorService } from 'src/services/error.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Operation } from 'src/class/operation';
-import { CompteBancaire } from 'src/class/comptebancaire';
-import { saison } from 'src/class/saison';
-import { FluxFinancier } from 'src/class/fluxfinancier';
 
 @Component({
   selector: 'app-operations',
@@ -361,7 +361,6 @@ export class OperationsComponent implements OnInit {
     return this.FluxFinanciers.find((x) => x.ID == id).Montant;
   }
   VoirSituation() {
-    const errorService = ErrorService.instance;
     this.action = $localize`Charger la situation`;
 
     this.compta_serv.VoirSituation(this.saison_id).then((ff) => {

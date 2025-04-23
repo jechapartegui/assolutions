@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { FilterStock } from 'src/app/stock/stock.component';
-import { Stock } from 'src/class/stock';
+import { FilterStock } from '../app/stock/stock.component';
+import { Stock } from '../class/stock';
 
 @Pipe({
   name: 'multifiltersStock',
@@ -25,10 +25,6 @@ export class MultifiltersStockPipe implements PipeTransform {
     });
   }
   
-}
-function extractTextBetweenParentheses(input: string): string | null {
-  const match = input.match(/\((.*?)\)/);
-  return match ? match[1] : null;
 }
 
 

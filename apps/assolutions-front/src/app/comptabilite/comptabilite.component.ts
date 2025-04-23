@@ -1,19 +1,19 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CompteBancaire } from 'src/class/comptebancaire';
-import { fluxfinancier, FluxFinancier } from 'src/class/fluxfinancier';
-import { saison } from 'src/class/saison';
-import { Stock, stock } from 'src/class/stock';
-import { operation, Operation } from 'src/class/operation';
-import { AddInfoService } from 'src/services/addinfo.service';
-import { ComptabiliteService } from 'src/services/comptabilite.service';
-import { CompteBancaireService } from 'src/services/compte-bancaire.service';
-import { ErrorService } from 'src/services/error.service';
-import { SaisonService } from 'src/services/saison.service';
-import { operationService } from 'src/services/operation.service';
-import { ClassComptable, ObjetAppli, StaticClass, TypeStock } from '../global';
-import { StockService } from 'src/services/stock.service';
+import { CompteBancaire } from '../../class/comptebancaire';
+import { FluxFinancier, fluxfinancier } from '../../class/fluxfinancier';
+import { operation, Operation } from '../../class/operation';
+import { saison } from '../../class/saison';
+import { stock, Stock } from '../../class/stock';
+import { AddInfoService } from '../../services/addinfo.service';
+import { ComptabiliteService } from '../../services/comptabilite.service';
+import { CompteBancaireService } from '../../services/compte-bancaire.service';
+import { ErrorService } from '../../services/error.service';
+import { operationService } from '../../services/operation.service';
+import { SaisonService } from '../../services/saison.service';
+import { StockService } from '../../services/stock.service';
+import { ClassComptable, ObjetAppli, TypeStock, StaticClass } from '../global';
 
 @Component({
   selector: 'app-comptabilite',
@@ -129,7 +129,6 @@ export class ComptabiliteComponent implements OnInit {
       });
   }
   VoirSituation() {
-    const errorService = ErrorService.instance;
     this.action = $localize`Charger la situation`;
 
     this.compta_serv.VoirSituation(this.saison_id).then((ff) => {

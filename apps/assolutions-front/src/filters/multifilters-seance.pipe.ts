@@ -1,7 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { FilterSeance } from 'src/app/seance/seance.component';
-import { Seance } from 'src/class/seance';
+import { FilterSeance } from '../app/seance/seance.component';
+import { Seance } from '../class/seance';
 
 @Pipe({
   name: 'multifiltersSeance',

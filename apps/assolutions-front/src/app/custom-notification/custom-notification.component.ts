@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { trigger, state, style, animate, transition, group } from '@angular/animations';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 import { code_alert } from '../global';
 export class notification {
   object: string;

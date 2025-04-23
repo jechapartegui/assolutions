@@ -1,8 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { Cours } from 'src/class/cours';
-import { FilterCours } from 'src/app/cours/cours.component';
-
+import { FilterCours } from '../app/cours/cours.component';
+import { Cours } from '../class/cours';
 @Pipe({
   name: 'multifiltersCours',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection

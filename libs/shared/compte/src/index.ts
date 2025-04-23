@@ -1,5 +1,1 @@
-export interface Compte {
-    id: number;
-    nom: string;
-    email: string;
-  }
+export * from './lib/compte.interface';

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Adresse } from 'src/class/address';
+import { Adresse } from '../../class/address';
 
 @Component({
   selector: 'app-address',

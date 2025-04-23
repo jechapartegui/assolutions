@@ -1,15 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { adherent, Adherent } from 'src/class/adherent';
-import { prof_saison, professeur, Professeur } from 'src/class/professeur';
-import { Saison } from 'src/class/saison';
-import { AdherentService } from 'src/services/adherent.service';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { ProfesseurService } from 'src/services/professeur.service';
-import { SaisonService } from 'src/services/saison.service';
 import { FilterAdherent } from '../adherent/adherent.component';
+import { Adherent } from '../../class/adherent';
+import { Professeur, professeur, prof_saison } from '../../class/professeur';
+import { Saison } from '../../class/saison';
+import { AdherentService } from '../../services/adherent.service';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { ProfesseurService } from '../../services/professeur.service';
+import { SaisonService } from '../../services/saison.service';
 
 @Component({
   selector: 'app-professeur',

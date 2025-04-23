@@ -1,13 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InscriptionMaSeance, StatutPresence } from 'src/class/inscription';
-import { seance, StatutSeance } from 'src/class/seance';
-import { AdherentService } from 'src/services/adherent.service';
-import { ErrorService } from 'src/services/error.service';
-import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
-import { SeancesService } from 'src/services/seance.service';
-
+import { InscriptionMaSeance, StatutPresence } from '../../class/inscription';
+import { seance, StatutSeance } from '../../class/seance';
+import { ErrorService } from '../../services/error.service';
+import { InscriptionSeanceService } from '../../services/inscription-seance.service';
+import { SeancesService } from '../../services/seance.service';
 @Component({
   selector: 'app-ma-seance',
   templateUrl: './ma-seance.component.html',
@@ -33,7 +31,7 @@ export class MaSeanceComponent implements OnInit {
   adherent_to: InscriptionMaSeance;
   action: string;
   seanceText: string;
-  constructor(private adhserv: AdherentService, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
+  constructor( private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
   ngOnInit(): void {

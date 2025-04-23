@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { CompteService } from 'src/services/compte.service';
-import { compte } from 'src/class/compte';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ErrorService } from 'src/services/error.service';
+import { Component, OnInit } from '@angular/core';
+import { CompteService } from '../../services/compte.service';
+import { ErrorService } from '../../services/error.service';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 
 @Component({
   selector: 'app-administrateurs',
@@ -95,8 +95,8 @@ export class AdministrateursComponent implements OnInit {
       case 'login':
         this.sort_login = sens;
         this.ListeCompte.sort((a, b) => {
-          const nomA = a.login.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.login.toUpperCase();
+          const nomA = a.email.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.email.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;

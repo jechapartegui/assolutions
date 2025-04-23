@@ -1,10 +1,10 @@
 import { Subject } from 'rxjs';
 import { Adresse } from './address';
-import { compte } from './compte';
 import { Groupe } from './groupe';
 import { Saison } from './saison';
 import { Lieu } from './lieu';
-import { project_login } from 'src/services/login.service';
+import { project_login } from '../services/login.nest.service';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 
 export class projet {
   public id: number = 0;
@@ -53,7 +53,6 @@ export class Projet {
 
     this.valid = new ValidationProjet(this);
     this.valid.controler();
-    this.Compte = new compte();
     this.Saisons = [];
     this.Lieux = [];
     this.Groupes = [];

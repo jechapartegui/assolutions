@@ -1,25 +1,24 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component,
   ElementRef,
-  Input,
   OnInit,
   ViewChild, } from '@angular/core';
 import { Router } from '@angular/router';
-import { Cours, cours } from 'src/class/cours';
-import { KeyValuePair, KeyValuePairAny } from 'src/class/keyvaluepair';
-import { ErrorService } from 'src/services/error.service';
-import { Groupe } from 'src/class/groupe';
 import { jour_semaine } from '../global';
-import { AdherentService } from 'src/services/adherent.service';
-import { GlobalService } from 'src/services/global.services';
-import { LieuService } from 'src/services/lieu.service';
-import { SaisonService } from 'src/services/saison.service';
-import { CoursService } from 'src/services/cours.service';
-import { GroupeService } from 'src/services/groupe.service';
-import { professeur, Professeur } from 'src/class/professeur';
-import { ProfesseurService } from 'src/services/professeur.service';
-import { Saison } from 'src/class/saison';
-import { ExcelService } from 'src/services/excel.service';
+import { cours, Cours } from '../../class/cours';
+import { Groupe } from '../../class/groupe';
+import { KeyValuePair, KeyValuePairAny } from '../../class/keyvaluepair';
+import { professeur } from '../../class/professeur';
+import { Saison } from '../../class/saison';
+import { AdherentService } from '../../services/adherent.service';
+import { CoursService } from '../../services/cours.service';
+import { ErrorService } from '../../services/error.service';
+import { ExcelService } from '../../services/excel.service';
+import { GlobalService } from '../../services/global.services';
+import { GroupeService } from '../../services/groupe.service';
+import { LieuService } from '../../services/lieu.service';
+import { ProfesseurService } from '../../services/professeur.service';
+import { SaisonService } from '../../services/saison.service';
 
 @Component({
   selector: 'app-cours',
@@ -278,6 +277,7 @@ export class CoursComponent implements OnInit {
             errorService.emitChange(o);
           } else {
             let o = errorService.UnknownError(this.action);
+            errorService.emitChange(o);
           }
         }).catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);

@@ -3,11 +3,11 @@ import * as CryptoJS from 'crypto-js';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { environment } from 'src/environments/environment.prod';
-import { compte } from 'src/class/compte';
-import { projet } from 'src/class/projet';
-import { KeyValuePair } from 'src/class/keyvaluepair';
+
 import { project_login } from './login.service';
+import { KeyValuePair } from '../class/keyvaluepair';
+import { environment } from '../environments/environment.prod';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -82,7 +82,6 @@ export class GlobalService {
   public async GET(url: string): Promise<any> {
 
     try {
-      const headers = new HttpHeaders().set('Content-Type', 'application/json');
       const response = await firstValueFrom(this.http.get(url));
       return response;
     } catch (error) {

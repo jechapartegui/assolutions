@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { notification } from 'src/app/custom-notification/custom-notification.component';
-import { code_alert } from 'src/app/global';
-
+import { notification } from '../app/custom-notification/custom-notification.component';
+import { code_alert } from '../app/global';
 @Injectable({
   providedIn: 'root'
 })

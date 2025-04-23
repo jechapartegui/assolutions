@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
-import { environment } from 'src/environments/environment.prod';
-import { Adherent, adherent } from 'src/class/adherent';
-import { KeyValuePair } from 'src/class/keyvaluepair';
-import { AdherentImport } from 'src/app/import-adherent/import-adherent.component';
+import { environment } from '../environments/environment.prod';
+import { AdherentImport } from '../app/import-adherent/import-adherent.component';
+import { adherent } from '../class/adherent';
+import { KeyValuePair } from '../class/keyvaluepair';
 
 @Injectable({
   providedIn: 'root'

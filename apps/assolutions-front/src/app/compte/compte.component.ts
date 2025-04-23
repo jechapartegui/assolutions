@@ -1,11 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
-import { compte, projet_compte } from 'src/class/compte';
-import { CompteService } from 'src/services/compte.service';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
+import { CompteService } from '../../services/compte.service';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 
 @Component({
   selector: 'app-compte',
@@ -32,7 +31,7 @@ export class CompteComponent implements OnInit {
   selected_filter:string;
 
     // Récupère l'URL actuelle sans les chemins et paramètres supplémentaires
-  constructor(private location: Location, private cpteserv: CompteService, private router: Router) {
+  constructor(private cpteserv: CompteService, private router: Router) {
     
     this.baseUrl = `${window.location.protocol}//${window.location.hostname}`;
    }
@@ -61,27 +60,27 @@ export class CompteComponent implements OnInit {
     }
   }
 
-  IsAdminProf(pro_cp: projet_compte[], droit): boolean {
-    if (pro_cp.find(x => x.droit == droit)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  // IsAdminProf(pro_cp: projet_compte[], droit): boolean {
+  //   if (pro_cp.find(x => x.droit == droit)) {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
-  getToken(pro_cp: compte, droit: number) {
-    if (pro_cp.projet_compte.find(x => x.droit == droit)) {
-      let token = pro_cp.projet_compte.find(x => x.droit == droit).connexion_token;
-      let url = this.baseUrl + "/login?username=" + pro_cp.login + "&token_connexion=" + token + "&droit=" + droit.toString();
-      navigator.clipboard.writeText(url).then(() => {
-        alert($localize`Texte copié dans le presse-papier !`);
-      }).catch(err => {
-        alert($localize`Échec de la copie du texte : ` + err);
-      });
-    }
-    return;
+  // getToken(pro_cp: compte, droit: number) {
+  //   if (pro_cp.projet_compte.find(x => x.droit == droit)) {
+  //     let token = pro_cp.projet_compte.find(x => x.droit == droit).connexion_token;
+  //     let url = this.baseUrl + "/login?username=" + pro_cp.login + "&token_connexion=" + token + "&droit=" + droit.toString();
+  //     navigator.clipboard.writeText(url).then(() => {
+  //       alert($localize`Texte copié dans le presse-papier !`);
+  //     }).catch(err => {
+  //       alert($localize`Échec de la copie du texte : ` + err);
+  //     });
+  //   }
+  //   return;
 
-  }
+  // }
 
   
 

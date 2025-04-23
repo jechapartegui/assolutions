@@ -1,12 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { KeyValuePair } from 'src/class/keyvaluepair';
-import { professeur } from 'src/class/professeur';
-import { Seance } from 'src/class/seance';
-import { SeanceProf } from 'src/class/seanceprof';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { SeanceprofService } from 'src/services/seanceprof.service';
+import { KeyValuePair } from '../../class/keyvaluepair';
+import { professeur } from '../../class/professeur';
+import { Seance } from '../../class/seance';
+import { SeanceProf } from '../../class/seanceprof';
+import { ErrorService } from '../../services/error.service';
+import { GlobalService } from '../../services/global.services';
+import { SeanceprofService } from '../../services/seanceprof.service';
 
 @Component({
   selector: 'app-prof',

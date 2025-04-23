@@ -1,18 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Adresse } from 'src/class/address';
-import { adherent, Adherent } from 'src/class/adherent';
-import { ItemContact } from 'src/class/contact';
-import { KeyValuePair } from 'src/class/keyvaluepair';
-import { professeur } from 'src/class/professeur';
-import { Seance } from 'src/class/seance';
-import { AdherentService } from 'src/services/adherent.service';
-import { ErrorService } from 'src/services/error.service';
-import { InscriptionSeanceService } from 'src/services/inscription-seance.service';
-import { LieuService } from 'src/services/lieu.service';
-import { MailService } from 'src/services/mail.service';
-import { ProfesseurService } from 'src/services/professeur.service';
-import { SeancesService } from 'src/services/seance.service';
+import { Adresse } from '../../class/address';
+import { Adherent, adherent } from '../../class/adherent';
+import { ItemContact } from '../../class/contact';
+import { KeyValuePair } from '../../class/keyvaluepair';
+import { professeur } from '../../class/professeur';
+import { Seance } from '../../class/seance';
+import { AdherentService } from '../../services/adherent.service';
+import { ErrorService } from '../../services/error.service';
+import { InscriptionSeanceService } from '../../services/inscription-seance.service';
+import { LieuService } from '../../services/lieu.service';
+import { MailService } from '../../services/mail.service';
+import { ProfesseurService } from '../../services/professeur.service';
+import { SeancesService } from '../../services/seance.service';
 
 @Component({
   selector: 'app-seances-essais',

@@ -1,16 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Adherent } from 'src/class/adherent';
-import { Groupe } from 'src/class/groupe';
-import { KeyValuePairAny } from 'src/class/keyvaluepair';
-import { MailData } from 'src/class/mail';
-import { seance } from 'src/class/seance';
-import { AdherentService } from 'src/services/adherent.service';
-import { ErrorService } from 'src/services/error.service';
-import { GroupeService } from 'src/services/groupe.service';
-import { MailService } from 'src/services/mail.service';
-import { ProjetService } from 'src/services/projet.service';
-import { SeancesService } from 'src/services/seance.service';
+import { Adherent } from '../../class/adherent';
+import { Groupe } from '../../class/groupe';
+import { KeyValuePairAny } from '../../class/keyvaluepair';
+import { MailData } from '../../class/mail';
+import { seance } from '../../class/seance';
+import { AdherentService } from '../../services/adherent.service';
+import { ErrorService } from '../../services/error.service';
+import { GroupeService } from '../../services/groupe.service';
+import { MailService } from '../../services/mail.service';
+import { ProjetService } from '../../services/projet.service';
+import { SeancesService } from '../../services/seance.service';
 
 @Component({
   selector: 'app-envoi-mail',

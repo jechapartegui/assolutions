@@ -1,5 +1,5 @@
-import { Renderer2, Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
-import { ItemContact } from 'src/class/contact';
+import {  Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
+import { ItemContact } from '../../class/contact';
 
 @Component({
   selector: 'app-contact-item',

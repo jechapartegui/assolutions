@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { ClassComptable, StaticClass, TypeStock, TypeTransaction } from '../global';
-import { AddInfoService } from 'src/services/addinfo.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ErrorService } from 'src/services/error.service';
+import { AddInfoService } from '../../services/addinfo.service';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-gestion-liste',

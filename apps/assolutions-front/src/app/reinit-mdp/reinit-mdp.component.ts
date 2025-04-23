@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CompteService } from 'src/services/compte.service';
-import { ErrorService } from 'src/services/error.service';
-import { LoginService } from 'src/services/login.service';
+import { CompteService } from '../../services/compte.service';
+import { ErrorService } from '../../services/error.service';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-reinit-mdp',

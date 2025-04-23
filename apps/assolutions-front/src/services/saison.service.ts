@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { KeyValuePair } from 'src/class/keyvaluepair';
-import { environment } from 'src/environments/environment.prod';
+import { KeyValuePair } from '../class/keyvaluepair';
+import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { saison } from 'src/class/saison';
+import { saison } from '../class/saison';
 
 @Injectable({
   providedIn: 'root'

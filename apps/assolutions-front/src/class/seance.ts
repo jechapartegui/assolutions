@@ -39,9 +39,6 @@ export class seance {
     return LG;
   }
 }
-class GroupeData {
-  constructor(public groupes: Groupe[], public flag: boolean) {}
-}
 
 
 export class Seance {

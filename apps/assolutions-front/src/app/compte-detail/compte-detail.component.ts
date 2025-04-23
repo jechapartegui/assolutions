@@ -1,12 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { compte, Compte } from 'src/class/compte';
-import { CompteService } from 'src/services/compte.service';
-import { ErrorService } from 'src/services/error.service';
-import { GlobalService } from 'src/services/global.services';
-import { code_alert } from '../global';
-import { LoginService } from 'src/services/login.service';
-
+import { CompteService } from '../../services/compte.service';
+import { ErrorService } from '../../services/error.service';
+import { LoginService } from '../../services/login.service';
+import { GlobalService } from '../../services/global.services';
+import { compte } from '@shared/compte/src/lib/compte.interface';
 @Component({
   selector: 'app-compte-detail',
   templateUrl: './compte-detail.component.html',
@@ -49,7 +47,6 @@ export class CompteDetailComponent implements OnInit {
 
     } else {
       this.context = "RATTACHER";
-      this.thisCompte = new compte();
 
     }
   }
@@ -57,7 +54,7 @@ export class CompteDetailComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Copier le token`;
     this.compte_serv.getToken(this.thisCompte.id, 1).then((token) =>{
-      let url = this.baseUrl + "/login?username=" + this.thisCompte.login + "&token_connexion=" + token + "&droit=1;";
+      let url = this.baseUrl + "/login?username=" + this.thisCompte.email + "&token_connexion=" + token + "&droit=1;";
       navigator.clipboard.writeText(url).then(() => {
         alert($localize`Texte copié dans le presse-papier !`);
       }).catch(err => {
@@ -74,16 +71,16 @@ export class CompteDetailComponent implements OnInit {
   Valid() {
     const errorService = ErrorService.instance;
     this.action = $localize`Validation du Login`;
-    this.compte_serv.Exist(this.thisCompte.login).then((boo) => {
+    this.compte_serv.Exist(this.thisCompte.email).then((boo) => {
       this.valid_login = boo;
       if (boo) {
         let o = errorService.OKMessage(this.action + $localize` : Login déjà utilisé`);
         errorService.emitChange(o);
-        this.login_valide = this.thisCompte.login;
+        this.login_valide = this.thisCompte.email;
         this.compte_serv.getAccountLogin(this.login_valide).then((compte: compte) => {
-          this.login = compte.login;
+          this.login = compte.email;
           this.thisCompte = compte;
-          if(this.thisCompte.est_password){
+          if(this.thisCompte.password){
             this.context = "RATTACHER_MDP";
           } else {
             this.context = "RATTACHER_TOKEN";
@@ -93,7 +90,7 @@ export class CompteDetailComponent implements OnInit {
           errorService.emitChange(o);
         })
       } else {
-        this.login_valide = this.thisCompte.login;
+        this.login_valide = this.thisCompte.email;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       }
@@ -109,7 +106,7 @@ export class CompteDetailComponent implements OnInit {
   RenvoiToken() {
     this.action = $localize`Renvoi des liens de connexion directe`;
     const errorService = ErrorService.instance;
-    this.login_serv.RenvoiToken(this.thisCompte.login).then(ok => {
+    this.login_serv.RenvoiToken(this.thisCompte.email).then(ok => {
       if (ok) {
 
         let o = errorService.OKMessage(this.action);

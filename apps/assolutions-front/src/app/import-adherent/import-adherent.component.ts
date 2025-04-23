@@ -1,18 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adresse } from 'src/class/address';
-import { adherent, Adherent, AdherentExport } from 'src/class/adherent';
-import { ItemContact } from 'src/class/contact';
-import { Saison } from 'src/class/saison';
-import { AdherentService } from 'src/services/adherent.service';
-import { CompteService } from 'src/services/compte.service';
-import { ErrorService } from 'src/services/error.service';
-import { ExcelService } from 'src/services/excel.service';
-import { GlobalService } from 'src/services/global.services';
-import { InscriptionSaisonService } from 'src/services/inscription-saison.service';
-import { SaisonService } from 'src/services/saison.service';
 import * as XLSX from 'xlsx';
+import { Adresse } from '../../class/address';
+import { Adherent, AdherentExport, adherent } from '../../class/adherent';
+import { ItemContact } from '../../class/contact';
+import { Saison } from '../../class/saison';
+import { AdherentService } from '../../services/adherent.service';
+import { CompteService } from '../../services/compte.service';
+import { ErrorService } from '../../services/error.service';
+import { ExcelService } from '../../services/excel.service';
+import { GlobalService } from '../../services/global.services';
+import { InscriptionSaisonService } from '../../services/inscription-saison.service';
+import { SaisonService } from '../../services/saison.service';
 
 @Component({
   selector: 'app-import-adherent',
@@ -158,7 +158,6 @@ export class ImportAdherentComponent implements OnInit {
   }
 
   onTransformationInput(key: string, index: number, event: Event) {
-    const input = event.target as HTMLInputElement;
     const transformationCode = this.mappedValues[key][index][3]; // Le code de transformation saisi par l'utilisateur
     const originalValue = this.mappedValues[key][index][1]; // La valeur actuelle de la colonne sélectionnée
 
@@ -198,7 +197,6 @@ export class ImportAdherentComponent implements OnInit {
 
   importer() {
     this.action = $localize`Importer les adhérents`;
-    const errorService = ErrorService.instance;
     this.list_adh = [];
 
     // On commence à partir de la ligne 2 (index 1), car la première ligne contient les headers

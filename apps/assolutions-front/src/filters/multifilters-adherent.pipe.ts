@@ -1,7 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { FilterAdherent } from 'src/app/adherent/adherent.component';
-import { Adherent } from 'src/class/adherent';
+import { FilterAdherent } from '../app/adherent/adherent.component';
+import { Adherent } from '../class/adherent';
 
 @Pipe({
   name: 'multifiltersAdherent',
