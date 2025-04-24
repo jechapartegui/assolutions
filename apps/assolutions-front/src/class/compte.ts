@@ -59,7 +59,9 @@ export class Validation_Compte {
         this.control = true;
         // Appeler les méthodes de validation pour tous les champs lors de la première validation
         this.validateLogin(this.LVM.Login);
-        this.validatePassword(this.LVM.Password);
+        if(this.LVM.mdp_requis) {
+            
+        this.validatePassword(this.LVM.Password);}
 
     }
     checkcontrolvalue() {

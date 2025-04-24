@@ -96,7 +96,7 @@ export class SeanceComponent implements OnInit {
     this.loading = true;
     this.action = $localize`Charger les cours`;
     if (GlobalService.is_logged_in) {
-      if (GlobalService.menu === 'ADHERENT') {
+      if (GlobalService.menu === 'APPLI') {
         this.router.navigate(['/menu']);
         this.loading = false;
         return;

@@ -62,7 +62,7 @@ export class StockComponent implements OnInit {
     this.action = $localize`Charger les stocks`;
     this.loading = true;
     if (GlobalService.is_logged_in) {
-      if (GlobalService.menu === 'ADHERENT') {
+      if (GlobalService.menu === 'APPLI') {
         this.loading = false;
         this.router.navigate(['/menu']);
         return;

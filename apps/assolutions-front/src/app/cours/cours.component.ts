@@ -80,11 +80,6 @@ export class CoursComponent implements OnInit {
     this.loading = true;
     if (GlobalService.is_logged_in) {
 
-      if (GlobalService.menu === "ADHERENT") {
-        this.router.navigate(['/menu']);
-        this.loading = false;
-        return;
-      }
 
       this.saisonserv
               .GetAll()
@@ -97,9 +92,7 @@ export class CoursComponent implements OnInit {
                   );
                   errorService.emitChange(o);
                   if (
-                    GlobalService.menu === 'ADMIN' ||
-                    GlobalService.menu == 'PROF'
-                  ) {
+                    GlobalService.menu === 'ADMIN'                  ) {
                     this.router.navigate(['/saison']);
                   } else {
                     this.router.navigate(['/menu']);

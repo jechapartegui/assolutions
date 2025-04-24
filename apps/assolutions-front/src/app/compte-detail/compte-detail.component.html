@@ -87,10 +87,6 @@
           class="fas fa-lock"
         ></i>
       </span>
-      <ng-container
-        class="block"
-        *ngIf="(GlobalService.Menu$ | async) != 'ADHERENT'"
-      >
         <span style="display: flex; flex-direction: row; margin: 0.25em">
           <label class="label is-small" i18n>Compte actif : </label>
           <i
@@ -118,7 +114,6 @@
             class="fas fa-times-circle"
           ></i>
         </span>
-      </ng-container>
 
       <button
         type="button"
@@ -128,15 +123,7 @@
       >
         <i class="fas fa-key"></i>Copier la clé Token
       </button>
-      <button
-        type="button"
-        style="gap: 0.25em; margin: 0.25em"
-        class="button is-small is-primary is-outlined"
-        *ngIf="!thisCompte.password && context == 'VUE'"
-        (click)="RenvoiToken()"
-      >
-        <i class="fas fa-key"></i>Renvoyer les clés de connexion
-      </button>
+      
       <button
         type="button"
         style="gap: 0.25em; margin: 0.25em"

@@ -65,7 +65,7 @@ throw new Error('Method not implemented.');
     this.action = $localize`Charger les professeurs`;
     this.loading = true;
     if (GlobalService.is_logged_in) {
-      if ((GlobalService.menu === "ADHERENT") || (GlobalService.menu === "PROF")) {
+      if ((GlobalService.menu === "APPLI")) {
         this.router.navigate(['/menu']);
         this.loading = false;
         return;

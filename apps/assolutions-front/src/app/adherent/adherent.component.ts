@@ -102,8 +102,7 @@ public type_inscription:boolean;
             );
             errorService.emitChange(o);
             if (
-              GlobalService.menu === 'ADMIN' ||
-              GlobalService.menu == 'PROF'
+              GlobalService.menu === 'ADMIN'
             ) {
               this.router.navigate(['/saison']);
             } else {
@@ -126,7 +125,7 @@ public type_inscription:boolean;
             }
           });
           if (this.context == 'LISTE') {
-            if (GlobalService.menu === 'ADHERENT') {
+            if (GlobalService.menu === 'APPLI') {
               this.loading = false;
               this.router.navigate(['/menu']);
               GlobalService.selected_menu = 'MENU';
@@ -396,56 +395,56 @@ public type_inscription:boolean;
   }
 
   ChargerAdherent() {
-    this.thisAdherent = null;
-    const errorService = ErrorService.instance;
-    this.action = $localize`Récupérer l'adhérent`;
-    if (GlobalService.menu == 'ADHERENT') {
-      this.ridersService
-        .Get_Adherent_My(this.id)
-        .then((adh) => {
-          this.thisAdherent = new Adherent(adh);
-          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
-          this.loading = false;
-        })
-        .catch((err: HttpErrorResponse) => {
-          this.loading = false;
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-          this.router.navigate(['/menu']);
-          GlobalService.selected_menu = 'MENU';
-          return;
-        });
-    }
-    if (GlobalService.menu == 'PROF') {
-      this.ridersService
-        .Get_Adherent_Prof(this.id)
-        .then((adh) => {
-          this.thisAdherent = new Adherent(adh);
-          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-          this.router.navigate(['/menu']);
-          GlobalService.selected_menu = 'MENU';
-          return;
-        });
-    }
-    if (GlobalService.menu == 'ADMIN') {
-      this.ridersService
-        .Get_Adherent_Admin(this.id)
-        .then((adh) => {
-          this.thisAdherent = new Adherent(adh);
-          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-          this.router.navigate(['/menu']);
-          GlobalService.selected_menu = 'MENU';
-          return;
-        });
-    }
+    // this.thisAdherent = null;
+    // const errorService = ErrorService.instance;
+    // this.action = $localize`Récupérer l'adhérent`;
+    // if (GlobalService.menu == 'ADHERENT') {
+    //   this.ridersService
+    //     .Get_Adherent_My(this.id)
+    //     .then((adh) => {
+    //       this.thisAdherent = new Adherent(adh);
+    //       this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
+    //       this.loading = false;
+    //     })
+    //     .catch((err: HttpErrorResponse) => {
+    //       this.loading = false;
+    //       let o = errorService.CreateError(this.action, err.message);
+    //       errorService.emitChange(o);
+    //       this.router.navigate(['/menu']);
+    //       GlobalService.selected_menu = 'MENU';
+    //       return;
+    //     });
+    // }
+    // if (GlobalService.menu == 'PROF') {
+    //   this.ridersService
+    //     .Get_Adherent_Prof(this.id)
+    //     .then((adh) => {
+    //       this.thisAdherent = new Adherent(adh);
+    //       this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
+    //     })
+    //     .catch((err: HttpErrorResponse) => {
+    //       let o = errorService.CreateError(this.action, err.message);
+    //       errorService.emitChange(o);
+    //       this.router.navigate(['/menu']);
+    //       GlobalService.selected_menu = 'MENU';
+    //       return;
+    //     });
+    // }
+    // if (GlobalService.menu == 'ADMIN') {
+    //   this.ridersService
+    //     .Get_Adherent_Admin(this.id)
+    //     .then((adh) => {
+    //       this.thisAdherent = new Adherent(adh);
+    //       this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
+    //     })
+    //     .catch((err: HttpErrorResponse) => {
+    //       let o = errorService.CreateError(this.action, err.message);
+    //       errorService.emitChange(o);
+    //       this.router.navigate(['/menu']);
+    //       GlobalService.selected_menu = 'MENU';
+    //       return;
+    //     });
+    // }
   }
 
   Delete(adh: Adherent) {

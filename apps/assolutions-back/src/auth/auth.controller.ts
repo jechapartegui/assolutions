@@ -25,6 +25,6 @@ export class AuthController {
     @Headers() headers: Record<string, string>
   ) {
     console.log('[get_project] headers reçus :', headers);
-    return true;
+    return this.authService.getProjects(id);
   }
 }

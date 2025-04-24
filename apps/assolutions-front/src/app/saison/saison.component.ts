@@ -51,7 +51,7 @@ export class SaisonComponent {
       this.loading = true;
       this.action = $localize`Charger les séances`;
       if (GlobalService.is_logged_in) {
-        if (GlobalService.menu === 'ADHERENT' || GlobalService.menu === 'PROF') {
+        if (GlobalService.menu === 'APPLI') {
           this.router.navigate(['/menu']);
           this.loading = false;
           return;

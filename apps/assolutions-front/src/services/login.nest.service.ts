@@ -52,46 +52,28 @@ export class LoginNestService {
       });
   }
 
-  public LoginToken(token: string, username: string, droit: number): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/login.php';
+  public GetProject(id:number): Promise<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]> {
+    this.url = 'api/auth/get_project';
     //  this.url = this.url + "login.php";
     const body = {
-      command: "login_token",
-      username: username,
-      token: token,
-      droit: droit
+      id: id
     };
 
     return this.global.POST(this.url, body)
-    .then((response: retour_login) => {
-      GlobalService.is_logged_in = true;        
-      GlobalService.instance.updateCompte(response.compte);
-      GlobalService.instance.updateOtherProject(response.projets)
-      if(response.selected_projet){
-        GlobalService.instance.updateProjet(response.selected_projet);
-        if (response.selected_projet.adherent) {
-          GlobalService.instance.updateMenuType("ADHERENT");
-          GlobalService.instance.updateSelectedMenuStatus("MENU");
-        }
-        if (response.selected_projet.prof) {
-          GlobalService.instance.updateMenuType("PROF");
-          GlobalService.instance.updateSelectedMenuStatus("MENU");
-        }
-        if (response.selected_projet.admin) {
-          GlobalService.instance.updateMenuType("ADMIN");
-          GlobalService.instance.updateSelectedMenuStatus("MENU");
-        }
-        return true;
-      } else {
-        return false;
-      }
-    })
-    .catch(error => {
-        GlobalService.instance.updateLoggedin(false);
-        // Gestion de l'erreur
-        return Promise.reject(error);
+      .then((response: any) => {
+        console.log(response);
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
       });
   }
+
+
+
 
   public Logout(): Promise<boolean> {
     this.url = environment.maseance + 'maseance/login.php';

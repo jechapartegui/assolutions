@@ -24,7 +24,7 @@ export class LieuComponent implements OnInit {
   ngOnInit(): void {
     if (GlobalService.is_logged_in) {
 
-      if ((GlobalService.menu === "ADHERENT") || (GlobalService.menu === "PROF")) {
+      if ((GlobalService.menu === "APPLI")) {
         this.router.navigate(['/menu']);
         return;
       }

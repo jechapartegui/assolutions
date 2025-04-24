@@ -32,7 +32,7 @@
               </span>
             </p>
           </div>
-          <ng-container *ngIf="projets">
+          <ng-container *ngIf="VM.projets">
             <ng-container *ngIf="projets.length == 1">
 
               <div class="field">
@@ -53,20 +53,9 @@
                 </div>
               </div>
             </ng-container>
-            <div class="field">
-              <label class="label" for="profil" i18n>Profil</label>
-              <div class="select">
-                <select [(ngModel)]="profil">
-                  <option [ngValue]="null">Aucun</option>
-                  <option *ngIf="projets_select && projets_select.adherent" [ngValue]="'ADHERENT'">Adhérent</option>
-                  <option *ngIf="projets_select && projets_select.prof" [ngValue]="'PROF'">Professeur</option>
-                  <option *ngIf="projets_select && projets_select.admin" [ngValue]="'ADMIN'">Administrateur</option>
-                </select>
-              </div>
-              </div>
-              <div class="field" *ngIf="profil">
+              <div class="field" >
                 <p class="control">
-                  <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject(profil)">
+                  <button class="button is-success is-outlined is-rounded" (click)="ConnectToProject()">
                     Charger le profil
                   </button>
                 </p>
@@ -83,11 +72,11 @@
                  
                   
                   <button *ngIf="!VM.mdp_requis" [disabled]="!VM.valid.control" class="button is-success is-outlined is-rounded"
-                    (click)="Login2()" i18n>
+                    (click)="PreLogin()" i18n>
                     Se connecter
                   </button>
                   <button *ngIf="VM.mdp_requis" [disabled]="!VM.valid.control" class="button is-success is-outlined is-rounded"
-                    (click)="Login2()" i18n>
+                    (click)="Login()" i18n>
                     Valider le mot de passe
                   </button>
                 
@@ -96,6 +85,11 @@
                 </p>
               </div>
               <div class="field" *ngIf="projets">
+                <p class="control">
+                  <button class="button is-primary is-outlined is-rounded" (click)="ConnectToProject()">
+                    Se connecter au projet
+                  </button>
+                </p>
                 <p class="control">
                   <button class="button is-danger is-outlined is-rounded" (click)="LogOut()">
                     Se déconnecter

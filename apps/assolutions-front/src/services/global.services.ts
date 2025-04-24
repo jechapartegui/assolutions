@@ -3,8 +3,6 @@ import * as CryptoJS from 'crypto-js';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-
-import { project_login } from './login.service';
 import { KeyValuePair } from '../class/keyvaluepair';
 import { environment } from '../environments/environment.prod';
 import { compte } from '@shared/compte/src/lib/compte.interface';
@@ -25,27 +23,27 @@ export class GlobalService {
   Compte$: Observable<compte> = this.isCompte.asObservable();
 
 
-  private isMenu = new BehaviorSubject<"ADHERENT" | "PROF" | "ADMIN">(null);
-  static menu: "ADHERENT" | "PROF" | "ADMIN" = null;
-  Menu$: Observable<"ADHERENT" | "PROF" | "ADMIN"> = this.isMenu.asObservable();
+  private isMenu = new BehaviorSubject<"APPLI" | "ADMIN">(null);
+  static menu: "APPLI" | "ADMIN" = null;
+  Menu$: Observable<"APPLI" | "ADMIN"> = this.isMenu.asObservable();
 
   private isLoggedIn = new BehaviorSubject<boolean>(false);
   static is_logged_in: boolean = false;
   isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
 
-  private isProjet = new BehaviorSubject<project_login>(null);
-  static projet: project_login = null;
-  Projet$: Observable<project_login> = this.isProjet.asObservable();
+  private isProjet = new BehaviorSubject<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}>(null);
+  static projet: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean} = null;
+  Projet$: Observable<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}> = this.isProjet.asObservable();
 
-  private isOtherProject = new BehaviorSubject<project_login[]>(null);
-  static other_project: project_login[] = null;
-  OtherProject$: Observable<project_login[]> = this.isOtherProject.asObservable();
+  private isOtherProject = new BehaviorSubject<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]>(null);
+  static other_project: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[] = null;
+  OtherProject$: Observable<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]> = this.isOtherProject.asObservable();
 
   thisLanguage: "FR" | "EN";
   constructor(private http: HttpClient, private datepipe: DatePipe) {
     GlobalService.instance = this;
   }
-  updateMenuType(men: "ADHERENT" | "PROF" | "ADMIN"): void {
+  updateMenuType(men: "APPLI" | "ADMIN"): void {
     this.isMenu.next(men);
     GlobalService.menu = men;
   }
@@ -63,11 +61,11 @@ export class GlobalService {
     this.isLoggedIn.next(b);
     GlobalService.is_logged_in = b;
   }
-  updateProjet(_p: project_login): void {
+  updateProjet(_p: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}): void {
     this.isProjet.next(_p);
     GlobalService.projet = _p;
   }
-  updateOtherProject(_p: project_login[]): void {
+  updateOtherProject(_p: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]): void {
     this.isOtherProject.next(_p);
     GlobalService.other_project = _p;
   }

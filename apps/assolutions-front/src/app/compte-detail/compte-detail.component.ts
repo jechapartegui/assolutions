@@ -2,7 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
-import { LoginService } from '../../services/login.service';
 import { GlobalService } from '../../services/global.services';
 import { compte } from '@shared/compte/src/lib/compte.interface';
 @Component({
@@ -24,7 +23,7 @@ export class CompteDetailComponent implements OnInit {
 
   context : "RATTACHER_MDP" | "RATTACHER_TOKEN" | "RATTACHER" | "VUE" | "CREER_MDP" | "DEFINIR_MDP";
 
-  constructor(public compte_serv: CompteService, public login_serv: LoginService, public GlobalService: GlobalService) { 
+  constructor(public compte_serv: CompteService, public GlobalService: GlobalService) { 
     this.baseUrl = `${window.location.protocol}//${window.location.hostname}`;}
 
   ngOnInit(): void {
@@ -103,26 +102,7 @@ export class CompteDetailComponent implements OnInit {
     var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
     return re.test(text);
   }
-  RenvoiToken() {
-    this.action = $localize`Renvoi des liens de connexion directe`;
-    const errorService = ErrorService.instance;
-    this.login_serv.RenvoiToken(this.thisCompte.email).then(ok => {
-      if (ok) {
-
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-      } else {
-
-        let o = errorService.UnknownError(this.action);
-        errorService.emitChange(o);
-      }
-
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-    });
-  }
-
+ 
   Rattacher(){
     this.context = "VUE";
     this.changeRattacher.emit(this.login_valide);

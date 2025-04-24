@@ -32,7 +32,7 @@ export class GroupeComponent implements OnInit {
     this.action = $localize`Charger les groupes`;
     if (GlobalService.is_logged_in) {
 
-      if (GlobalService.menu === "ADHERENT") {
+      if (GlobalService.menu === "APPLI") {
         this.router.navigate(['/menu']);
         return;
       }

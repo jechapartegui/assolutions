@@ -86,7 +86,7 @@ export class ImportAdherentComponent implements OnInit {
             $localize`Il faut au moins une saison pour créer un cours`
           );
           errorService.emitChange(o);
-          if (GlobalService.menu === 'ADMIN' || GlobalService.menu == 'PROF') {
+          if (GlobalService.menu === 'APPLI') {
             this.router.navigate(['/saison']);
           } else {
             this.router.navigate(['/menu']);

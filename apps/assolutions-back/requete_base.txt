@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS `member_project` (
+  `member_id` int NOT NULL,
+  `project_id` int NOT NULL,
+  PRIMARY KEY (`member_id`, `project_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3;
+
+-- Insertion des données depuis la table riders
+INSERT INTO `member_project` (`member_id`, `project_id`)
+SELECT `id`, `project_id` FROM `riders`;
+

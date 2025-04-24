@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
-import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-reinit-mdp',
@@ -19,7 +18,7 @@ export class ReinitMdpComponent implements OnInit {
   Password: string = "";
   action = "";
   ConfirmPassword: string = "";
-  constructor(public compte_serv: CompteService, public login_serv: LoginService, public route: ActivatedRoute, public router: Router) { }
+  constructor(public compte_serv: CompteService,  public route: ActivatedRoute, public router: Router) { }
 
 
   ngOnInit(): void {
@@ -78,32 +77,7 @@ export class ReinitMdpComponent implements OnInit {
       errorService.emitChange(o);
     });
   }
-  RenvoiToken() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Renvoi des clés token`;
-    this.compte_serv.ValidReinit(this.Login, this.Token).then((retour) => {
-      if (retour) {
-        this.login_serv.RenvoiToken(this.Login).then((ok) => {
-          if (ok) {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
-        }).catch((error: Error) => {
-          let o = errorService.CreateError(this.action, error.message);
-          errorService.emitChange(o);
-        });
-      } else {
-        let o = errorService.UnknownError(this.action);
-        errorService.emitChange(o);
-      }
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-    });
-  }
+  
 
   DefinirMDP(){
     const errorService = ErrorService.instance;

@@ -50,12 +50,7 @@
         class="navbar-start"
         *ngIf="(GlobalService.isLoggedIn$ | async) === true"
       >
-        <ng-container
-          *ngIf="
-            (GlobalService.Menu$ | async) === 'PROF' ||
-            (GlobalService.Menu$ | async) === 'ADMIN'
-          "
-        >
+       
           <a
             [class]="
               (GlobalService.SelectedMenu$ | async) === 'ADHERENT'
@@ -324,7 +319,6 @@
               </div>
             </div>
           </ng-container>
-        </ng-container>
       </div>
       <div class="navbar-end" *ngIf="(GlobalService.Projet$ | async) != null">
         <div class="navbar-item">
@@ -375,12 +369,7 @@
             <span class="tablet">Menu</span>
           </a>
         </li>
-        <ng-container
-        *ngIf="
-          (GlobalService.Menu$ | async) === 'PROF' ||
-          (GlobalService.Menu$ | async) === 'ADMIN'
-        "
-      >
+
         <li>
           <a [class]="
           (GlobalService.SelectedMenu$ | async) === 'ADHERENT'
@@ -433,7 +422,6 @@
               <span class="tablet">Groupes</span>
           </a>
         </li>
-        </ng-container>
       </ul>
     </div>
   </footer>

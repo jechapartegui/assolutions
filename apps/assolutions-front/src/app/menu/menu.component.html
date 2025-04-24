@@ -10,35 +10,11 @@
     <p>Chargement en cours</p>
   </ng-container>
   <ng-container *ngIf="!loading">
-    <ng-container *ngIf="btn_adherent || btn_admin || btn_prof">
-      <div class="block">
-        <btn
-          [type_button]="'BasculerAdherents'"
-          (click)="ChangerMenu('ADHERENT')"
-          *ngIf="btn_adherent"
-        >
-        </btn>
-        <btn
-          (click)="ChangerMenu('PROF')"
-          *ngIf="btn_prof"
-          [type_button]="'BasculerProf'"
-        ></btn>
-        <btn
-          (click)="ChangerMenu('ADMIN')"
-          *ngIf="btn_admin"
-          [type_button]="'BasculerAdmin'"
-        ></btn>
-      </div>
-    </ng-container>
-    <ng-container *ngIf="Riders">
+       <ng-container *ngIf="Riders">
       <ng-container *ngFor="let rider of Riders">
         <div class="container-box" style="margin-top: 10px;">
           <article
-            [class]="
-              (GlobalService.Menu$ | async) === 'ADHERENT'
-                ? 'panel is-primary'
-                : 'panel is-info'
-            "
+            class="panel is-primary"
           >
             <p class="panel-heading">
               {{ rider.Libelle }}
@@ -587,31 +563,20 @@
                           <ng-container
                             *ngIf="seance.thisSeance.statut == 'réalisée'"
                           >
-                            <ng-container
-                              *ngIf="(GlobalService.Menu$ | async) === 'PROF'"
-                            >
+                          
                               <btn
                                 [type_button]="'VoirLight'"
                                 (click)="VoirMaSeance(seance.thisSeance)">
                         </btn>
-                            </ng-container>
                           </ng-container>
                           <ng-container
                             *ngIf="seance.thisSeance.statut == 'prévue'"
                           >
-                            <ng-container
-                              *ngIf="(GlobalService.Menu$ | async) === 'PROF'"
-                            >
+                           
                             <btn
                             [type_button]="'VoirLight'"
                             (click)="VoirMaSeance(seance.thisSeance)">
                     </btn>
-                            </ng-container>
-                            <ng-container
-                              *ngIf="
-                                (GlobalService.Menu$ | async) === 'ADHERENT'
-                              "
-                            >
                               <span
                                 (click)="
                                   MAJInscription(seance.thisInscription, null)
@@ -686,7 +651,6 @@
                                   ></i>
                                 </span>
                               </span>
-                            </ng-container>
                           </ng-container>
                         </td>
                       </tr>
@@ -754,11 +718,7 @@
                               <ng-container
                                 *ngIf="seance.thisSeance.statut == 'prévue'"
                               >
-                                <ng-container
-                                  *ngIf="
-                                    (GlobalService.Menu$ | async) === 'ADHERENT'
-                                  "
-                                >
+                               
                                   <span
                                     (click)="
                                       MAJInscription(
@@ -846,17 +806,11 @@
                                     </span>
                                   </span>
                                 </ng-container>
-                                <ng-container
-                                  *ngIf="
-                                    (GlobalService.Menu$ | async) === 'PROF'
-                                  "
-                                >
+                               
                                 <btn
                                 [type_button]="'VoirLight'"
                                 (click)="VoirMaSeance(seance.thisSeance)">
                         </btn>
-                                </ng-container>
-                              </ng-container>
                               <ng-container
                                 *ngIf="seance.thisSeance.statut == 'réalisée'"
                               >
@@ -867,16 +821,10 @@
                                     <i class="fa-solid fa-flag-checkered"></i>
                                   </span>
                                 </span>
-                                <ng-container
-                                  *ngIf="
-                                    (GlobalService.Menu$ | async) === 'PROF'
-                                  "
-                                >
                                 <btn
                                 [type_button]="'VoirLight'"
                                 (click)="VoirMaSeance(seance.thisSeance)">
                         </btn>
-                                </ng-container>
                               </ng-container>
                               <ng-container
                                 *ngIf="seance.thisSeance.statut == 'annulée'"

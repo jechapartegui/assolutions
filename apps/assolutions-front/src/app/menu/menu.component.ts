@@ -55,38 +55,8 @@ export class MenuComponent implements OnInit {
     this.action = $localize`Charger le menu`;
     this.loading = true;
     if (GlobalService.is_logged_in) {
-      const projet = GlobalService.other_project.find(
-        (x) => x.id == GlobalService.projet.id
-      );
-      switch (GlobalService.menu) {
-        default:
-        case 'PROF':
-        case 'ADHERENT':
-          if (GlobalService.menu == 'PROF') {
-            this.btn_prof = false;
-            if (projet.adherent) {
-              this.btn_adherent = true;
-            } else {
-              this.btn_adherent = false;
-            }
-            if (projet.admin) {
-              this.btn_admin = true;
-            } else {
-              this.btn_admin = false;
-            }
-          } else {
-            this.btn_adherent = false;
-            if (projet.prof) {
-              this.btn_prof = true;
-            } else {
-              this.btn_prof = false;
-            }
-            if (projet.admin) {
-              this.btn_admin = true;
-            } else {
-              this.btn_admin = false;
-            }
-          }
+    
+ 
           const auj = new Date();
           const yesterday = new Date(auj);
           yesterday.setDate(yesterday.getDate() - 1);
@@ -189,22 +159,7 @@ export class MenuComponent implements OnInit {
               errorService.emitChange(o);
               this.loading = false;
             });
-          break;
-        case 'ADMIN':
-          this.btn_admin = false;
-          if (projet.prof) {
-            this.btn_prof = true;
-          } else {
-            this.btn_prof = false;
-          }
-          if (projet.adherent) {
-            this.btn_adherent = true;
-          } else {
-            this.btn_adherent = false;
-          }
-          this.loading = false;
-          break;
-      }
+       
     } else {
       let o = errorService.CreateError(
         this.action,
@@ -440,42 +395,7 @@ return $localize`Evénement`;
     });
   }
 
-  ChangerMenu(type: 'PROF' | 'ADMIN' | 'ADHERENT') {
-    let proj = GlobalService.projet;
-    let proj_compl = GlobalService.other_project.find((x) => x.id == proj.id);
-    switch (type) {
-      case 'ADHERENT':
-        if (proj_compl.adherent) {
-          proj.adherent = true;
-          proj.admin = false;
-          proj.prof = false;
-          GlobalService.instance.updateProjet(proj);
-          GlobalService.instance.updateMenuType(type);
-          this.ngOnInit();
-        }
-        break;
-      case 'ADMIN':
-        if (proj_compl.admin) {
-          proj.adherent = false;
-          proj.admin = true;
-          proj.prof = false;
-          GlobalService.instance.updateProjet(proj);
-          GlobalService.instance.updateMenuType(type);
-          this.ngOnInit();
-        }
-        break;
-      case 'PROF':
-        if (proj_compl.prof) {
-          proj.adherent = false;
-          proj.admin = false;
-          proj.prof = true;
-          GlobalService.instance.updateProjet(proj);
-          GlobalService.instance.updateMenuType(type);
-          this.ngOnInit();
-        }
-        break;
-    }
-  }
+ 
   ngAfterViewInit(): void {
     this.waitForScrollableContainer();
   }
