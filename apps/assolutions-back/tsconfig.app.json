@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
 
   "compilerOptions": {
-"composite": true,
+    "composite": true,
     "outDir": "../../dist/out-tsc",
     "rootDir": "../../", // 👈 pour permettre d'aller lire dans libs/
     "module": "NodeNext", // 👈 recommandé si tu utilises des alias + ESM
@@ -13,7 +13,7 @@
     "emitDecoratorMetadata": true,
     "target": "es2021"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../../libs/**/*.ts"],
   "exclude": [],
   "references": []
 }

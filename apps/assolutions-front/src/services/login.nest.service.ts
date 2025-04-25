@@ -53,13 +53,11 @@ export class LoginNestService {
   }
 
   public GetProject(id:number): Promise<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]> {
-    this.url = 'api/auth/get_project';
+    this.url = 'api/auth/get_project/' + id;
     //  this.url = this.url + "login.php";
-    const body = {
-      id: id
-    };
+   
 
-    return this.global.POST(this.url, body)
+    return this.global.GET(this.url)
       .then((response: any) => {
         console.log(response);
         return response;

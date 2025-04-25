@@ -50,6 +50,7 @@
     "@types/node": "~18.16.9",
     "@typescript-eslint/utils": "^8.0.0",
     "angular-eslint": "^18.3.0",
+    "crypto": "^1.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^9.0.0",
     "nx": "20.8.0",

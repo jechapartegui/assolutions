@@ -8,6 +8,7 @@
     },
     {
       "path": "./apps/assolutions-front"
-    }
+    },
+    { "path": "./libs/shared/compte" }
   ]
 }

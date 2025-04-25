@@ -6,6 +6,8 @@ import { Compte } from './bdd/compte';
 import { Adherent } from './bdd/riders';
 import { AdherentProjet } from './bdd/member_project';
 import { Projet } from './bdd/project';
+import { APP_GUARD } from '@nestjs/core';
+import { PasswordGuard } from '../guards/password.guard';
 
 @Module({
   imports: [
@@ -23,6 +25,11 @@ import { Projet } from './bdd/project';
       synchronize: false, // true uniquement si tu veux que TypeORM crée/modifie les tables tout seul
     }),
     AuthModule
+  ],  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: PasswordGuard,
+    },
   ],
 })
 export class AppModule {}
