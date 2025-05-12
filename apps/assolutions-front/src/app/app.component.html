@@ -324,6 +324,27 @@
         <div class="navbar-item">
           <div class="buttons">
             <a
+              class="button is-rounded is-outlined is-primary"
+              (click)="Dashboard()"
+            >
+            <i class="fa-solid fa-table-columns"></i>
+            </a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <div class="buttons">
+            <a
+              class="button is-rounded is-outlined is-info"
+              (click)="MDP()"
+            >
+            <i class="fa-solid fa-lock"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="navbar-item">
+          <div class="buttons">
+            <a
               class="button is-rounded is-outlined is-danger"
               (click)="LogOut()"
             >

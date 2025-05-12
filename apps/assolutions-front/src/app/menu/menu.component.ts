@@ -208,6 +208,27 @@ export class MenuComponent implements OnInit {
     }
   }
 
+  nbSeanceInscrit(seance: MesSeances[]): {OK:number, KO:number, aucun:number} {
+    let OK = 0;
+    let KO = 0;
+    let aucun = 0;
+    seance.forEach((s) => { 
+      if(s.inscription_id == null || s.inscription_id == 0) {
+        aucun++;
+      }
+      else if (s.statutInscription == StatutPresence.Présent) {
+        OK++;
+      } 
+      else if (s.statutInscription == StatutPresence.Absent) {
+        KO++;
+      } else {
+        aucun++;
+      }
+    });
+
+    return {OK, KO, aucun};
+  }
+
   trouverLieu(lieuId: number): string {
     if (this.listelieu) {
       const lieunom = this.listelieu.find((lieu) => +lieu.id === lieuId);

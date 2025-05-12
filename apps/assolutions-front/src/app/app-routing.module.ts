@@ -31,6 +31,7 @@ import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 
 
 
+
 const routes: Routes = [
   // { path: '', redirectTo: 'defaut', pathMatch: 'full' }, // Redirection vers 'defaut' pour le path vide
   { path: '', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
@@ -62,6 +63,7 @@ const routes: Routes = [
   { path: 'operations', component: OperationsComponent },
   { path: 'clementine', component: ClementineComponent },
   {path:'menu-admin',component:MenuAdminComponent},
+  {path:'tdb',component:TableauDeBordComponent},
 
 
 ];

@@ -23,33 +23,39 @@
     flex-wrap: nowrap;
 }
 .modern-card {
-    border: 1px solid #dbdbdb;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(10, 10, 10, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(10, 10, 10, 0.15);
-      cursor: pointer;
-    }
-  
-    img {
-      object-fit: cover;
-      width: 96px;
-      height: 96px;
-      border: 2px solid #ccc;
-    }
-  
-    p {
-      margin-bottom: 0.25rem;
-    }
+  border: 1px solid #dbdbdb;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
-  
-  .photo-wrapper {
-    display: flex;
-    justify-content: center;
+
+  img {
+    object-fit: cover;
+    width: 80px;
+    height: 80px;
+    border: 2px solid #ccc;
   }
+
+  p {
+    margin-bottom: 0.25rem;
+  }
+
+  .notification {
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+}
+
+.photo-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
 
   .is-primary-border {
     border: 2px solid var(--bulma-primary, #00d1b2);
@@ -67,7 +73,13 @@
     box-shadow: 0 0 10px var(--bulma-info, #209cee);
   }
   
-  
+  .container {
+    height: calc(100vh - 52px);
+  }
+  .card{
+    max-height: calc(99vh - 300px);
+    width: 100%;
+  }
   
 @media screen and (max-width: 767px) {
 .flls{

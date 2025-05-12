@@ -1,12 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Seance } from '../app/bdd/seance';
+import { Seance } from '../bdd/seance';
 import { Between, In } from 'typeorm';
-import { LienGroupe } from '../app/bdd/lien-groupe';
+import { LienGroupe } from '../bdd/lien-groupe';
 import { MesSeances } from '@shared/compte/src/lib/seance.interface';
-import { InscriptionSeance } from '../app/bdd/inscription-seance';
-import { SeanceProfesseur } from '../app/bdd/seance_professeur';
+import { InscriptionSeance } from '../bdd/inscription-seance';
+import { SeanceProfesseur } from '../bdd/seance_professeur';
 
 @Injectable()
 export class SeanceService {

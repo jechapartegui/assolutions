@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Compte } from '../app/bdd/compte';
-import { Adherent } from '../app/bdd/riders';
-import { AdherentProjet } from '../app/bdd/member_project';
-import { Projet } from '../app/bdd/project';
+import { Compte } from '../bdd/compte';
+import { Adherent } from '../bdd/riders';
+import { AdherentProjet } from '../bdd/member_project';
+import { Projet } from '../bdd/project';
 import { MemberController } from './member.controller';
 import { MemberService } from './member.services';
-import { InscriptionSaison } from '../app/bdd/inscription-saison';
-import { InscriptionSeance } from '../app/bdd/inscription-seance';
-import { Saison } from '../app/bdd/saison';
-import { Seance } from '../app/bdd/seance';
-import { ProjectService } from '../app/project/project.service';
+import { InscriptionSaison } from '../bdd/inscription-saison';
+import { InscriptionSeance } from '../bdd/inscription-seance';
+import { Saison } from '../bdd/saison';
+import { Seance } from '../bdd/seance';
+import { ProjectService } from '../project/project.service';
 import { SeanceService } from '../seance/seance.services';
-import { GroupeService } from '../app/groupe/groupe.service';
-import { LienGroupe } from '../app/bdd/lien-groupe';
-import { ProfesseurSaison } from '../app/bdd/prof-saison';
-import { GestionnaireProjet } from '../app/bdd/gestionnaire_projet';
-import { SeanceProfesseur } from '../app/bdd/seance_professeur';
+import { GroupeService } from '../groupe/groupe.service';
+import { LienGroupe } from '../bdd/lien-groupe';
+import { ProfesseurSaison } from '../bdd/prof-saison';
+import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
+import { SeanceProfesseur } from '../bdd/seance_professeur';
 
 @Module({
   imports: [

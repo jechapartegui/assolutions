@@ -57,6 +57,7 @@ import { MultifiltersSeancePipe } from '../filters/multifilters-seance.pipe';
 import { MultifiltersStockPipe } from '../filters/multifilters-stock.pipe';
 import { GlobalService } from '../services/global.services';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
+import { DureeHHMMPipe } from '../pipe/duree.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -69,7 +70,7 @@ import { MenuAdminComponent } from './menu-admin/menu-admin.component';
     ComptabiliteComponent,
     ProfComponent,RangePipe,
     NotifJechaComponent,  AdministrateursComponent,
-    ContactItemComponent, 
+    ContactItemComponent, DureeHHMMPipe,
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
    CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, MenuAdminComponent,

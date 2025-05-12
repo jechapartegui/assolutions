@@ -5,6 +5,7 @@ import { environment } from '../environments/environment.prod';
 import { CompteService } from '../services/compte.service';
 import { ErrorService } from '../services/error.service';
 import { GlobalService } from '../services/global.services';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ export class AppComponent {
   constructor(public GlobalService:GlobalService,
     public erroservice: ErrorService,
     public compte_serv:CompteService,
-    public globals: StaticClass
+    public globals: StaticClass,
+    public router:Router
   ) {
     this.g = globals;
     erroservice.changeEmitted$.subscribe((data) => {
@@ -43,7 +45,15 @@ export class AppComponent {
 
   LogOut() {
     this.action = $localize`Se déconnecter`;
-   
+  
+  }
+
+  MDP() {
+    this.action = $localize`Modifier le mot de passe`;
+  }
+  Dashboard() {
+    this.action = $localize`Afficher le tableau de bord`;
+    this.router.navigate(['tdb']);
   }
 
   DisplayError(val) {

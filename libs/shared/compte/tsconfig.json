@@ -3,7 +3,7 @@
     "compilerOptions": {
       "composite": true
     },
-    "include": ["src/**/*.ts", "../../../apps/assolutions-back/src/guards/password.ts"],
+    "include": ["src/**/*.ts", "../../../apps/assolutions-back/src/app/guards/password.ts"],
     "exclude": ["**/*.spec.ts"]
   }
   

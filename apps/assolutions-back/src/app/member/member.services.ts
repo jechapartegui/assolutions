@@ -1,15 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Adherent } from '../app/bdd/riders';
-import { AdherentProjet } from '../app/bdd/member_project';
-import { ProjectService } from '../app/project/project.service';
-import { InscriptionSaison } from '../app/bdd/inscription-saison';
+import { Adherent } from '../bdd/riders';
+import { AdherentProjet } from '../bdd/member_project';
+import { ProjectService } from '../project/project.service';
+import { InscriptionSaison } from '../bdd/inscription-saison';
 import { SeanceService } from '../seance/seance.services';
-import { GroupeService } from '../app/groupe/groupe.service';
+import { GroupeService } from '../groupe/groupe.service';
 import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
-import { ProfesseurSaison } from '../app/bdd/prof-saison';
-import { GestionnaireProjet } from '../app/bdd/gestionnaire_projet';
+import { ProfesseurSaison } from '../bdd/prof-saison';
+import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
 
 @Injectable()
 export class MemberService {

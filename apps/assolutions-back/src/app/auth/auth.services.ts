@@ -4,17 +4,17 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
-import { Compte } from '../app/bdd/compte';
+import { Compte } from '../bdd/compte';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { AdherentProjet } from '../app/bdd/member_project';
-import { Adherent } from '../app/bdd/riders';
-import { Projet } from '../app/bdd/project';
-import { ProjetLogin } from '../app/bdd/project_login';
+import { AdherentProjet } from '../bdd/member_project';
+import { Adherent } from '../bdd/riders';
+import { Projet } from '../bdd/project';
+import { ProjetLogin } from '../bdd/project_login';
 import { AuthResult, ProjetView } from '@shared/compte/src/lib/compte.interface';
-import { GestionnaireProjet } from '../app/bdd/gestionnaire_projet';
-import { ProfesseurSaison } from '../app/bdd/prof-saison';
-import { ProjectService } from '../app/project/project.service';
+import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
+import { ProfesseurSaison } from '../bdd/prof-saison';
+import { ProjectService } from '../project/project.service';
 
 
 @Injectable()

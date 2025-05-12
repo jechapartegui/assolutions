@@ -28,7 +28,7 @@
   "include": [
     "src/**/*.ts",
     "../../libs/**/*.ts"
-, "../assolutions-back/src/guards/password.ts"  ],
+, "../assolutions-back/src/app/guards/password.ts"  ],
   "angularCompilerOptions": {
     "enableIvy": true,
     "enableI18nLegacyMessageIdFormat": false,

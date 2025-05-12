@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Headers, UseGuards } from '@nestjs/common';
-import { PasswordGuard } from '../../guards/password.guard';
+import { PasswordGuard } from '../guards/password.guard';
 import { LieuService } from './lieu.services';
 
 // src/auth/auth.controller.ts

@@ -14,19 +14,19 @@
        <ng-container *ngIf="Riders">
         <div class="columns is-multiline is-mobile is-centered">
           <div
-            class="column is-2-desktop is-4-tablet is-6-mobile"
+            class="column is-2-desktop is-3-tablet is-6-mobile"
             *ngFor="let personne of Riders"
           >
-          
-            <div (click)="AfficherProfil(personne)"
-              class="card has-text-centered p-3 modern-card"
+            <div
+              (click)="AfficherProfil(personne)"
+              class="card has-text-centered p-2 modern-card"
               [ngClass]="{
                 'is-primary-border': personne.profil === 'ADH',
                 'is-info-border': personne.profil === 'PROF'
               }"
             >
               <div class="photo-wrapper mb-2">
-                <figure class="image is-96x96">
+                <figure class="image is-80x80">
                   <img
                     class="is-rounded"
                     [src]="personne.Photo ?? '../../assets/photo_H.png'"
@@ -34,27 +34,43 @@
                   />
                 </figure>
               </div>
-              <p class="is-size-6 has-text-weight-bold">
+              <p class="is-size-7 has-text-weight-bold">
                 {{ personne.Nom }} {{ personne.Prenom }}
               </p>
-              <p class="is-size-7 has-text-grey">{{ personne.Surnom }}</p>
               <p
-              class="is-size-7"
-              [ngClass]="{
-                'has-text-primary': personne.profil === 'ADH',
-                'has-text-info': personne.profil === 'PROF'
-              }"
-            >
-              {{ getLibelleProfil(personne.profil) }}
-            </p>
+                class="is-size-7"
+                [ngClass]="{
+                  'has-text-primary': personne.profil === 'ADH',
+                  'has-text-info': personne.profil === 'PROF'
+                }"
+              >
+                {{ getLibelleProfil(personne.profil) }}
+              </p>
+        
+              <div class="notification is-light is-small mt-2 px-2 py-1">
+                <span class="has-text-success mr-2">
+                  <span class="icon has-text-success">
+                    <i class="fas fa-thumbs-up has-text-success"></i>
+                  </span>
+                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances).OK }}</span> 
+                </span>
+                <span class="has-text-danger mr-2">
+                  <span class="icon has-text-danger">
+                    <i class="fas fa-thumbs-down has-text-danger"></i>
+                  </span>
+                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances).KO }}</span> 
+                </span>
+                <span class="has-text-info mr-2">
+                  <span class="icon has-text-info">
+                    <i class="fas fa-question has-text-info"></i>
+                  </span>
+                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances).aucun }}</span> 
+                </span>
+              </div>
             </div>
           </div>
-          
-        </div>
-        
-        
-        
-        
+        </div> 
+        <div class="columns is-multiline is-mobile is-centered">
       <ng-container *ngFor="let rider of Riders">
         <ng-container *ngIf="rider.afficher">
           <div
@@ -72,16 +88,16 @@
             }"
           >
             <p class="card-header-title">
-              {{ rider.Libelle }} - {{ getLibelleProfil(rider.profil) }}
+              {{ rider.Libelle }} 
             </p>
             <button
               i18n-title
               title="Éditer"
-              class="button is-black is-rounded is-outlined"
+              class="button is-small is-outlined m-1"
               type="button"
               (click)="Voir(rider.ID)"
             >
-              <i class="fas fa-info-circle"></i>
+            <i class="fa-solid fa-user-pen"></i>
             </button>
           </header>
        
@@ -122,30 +138,6 @@
                     <th>
                       <span>
                         <span class="ligne">
-                          <span i18n>Cours / Type</span>
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="rider.sort_cours === 'NO'"
-                              (click)="Sort('ASC', 'type',rider)"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_cours === 'ASC'"
-                              (click)="Sort('DESC', 'type',rider)"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_cours === 'DESC'"
-                              (click)="Sort('ASC', 'type',rider)"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </span>
-                      </span>
-                    </th>
-                    <th>
-                      <span>
-                        <span class="ligne">
                           <span
                             [ngClass]="
                               rider.filters.filter_date_apres ||
@@ -154,7 +146,7 @@
                                 : ''
                             "
                             i18n
-                            >Date</span
+                            >Date Heure (durée)</span
                           >
                           <span style="cursor: pointer">
                             <i
@@ -174,15 +166,7 @@
                             ></i> </span
                         ></span>
                       </span>
-                    </th>
-
-                    <th>
-                      <span>
-                        <span class="ligne">
-                          <span i18n>Heure / Durée</span>
-                        </span>
-                      </span>
-                    </th>
+                    </th>                  
                     <th>
                       <span>
                         <span class="ligne">
@@ -246,18 +230,14 @@
                 <tbody>
                   <tr
                   *ngFor="
-                  let seance of rider.InscriptionSeances | multifiltersMenu : rider.filters" >
-                    <td>
-                      {{ seance.nom }}
-                    </td>
+                  let seance of rider.InscriptionSeances | multifiltersMenu : rider.filters" >                  
                     <td>
                       <ng-container
                         *ngIf="
                           seance.typeSeance === 'ENTRAINEMENT'
                         "
                       >
-                      <span>{{ seance.cours }}</span>
-                     
+                      <span i18n>Cours</span>                     
                       </ng-container>
                       <ng-container
                         *ngIf="seance.typeSeance === 'MATCH'"
@@ -276,17 +256,13 @@
                       >
                         <span i18n>Sortie</span>
                       </ng-container>
+                      &nbsp;:&nbsp;{{ seance.nom }}
                     </td>
                     <td>
                       {{
                         seance.date | date : "dd/MM/yyyy"
-                      }}
-                    </td>
-                    <td>
-                      {{ seance.heureDebut }} - {{ seance.heureFin }} ({{
-                        seance.duree
-                      }}
-                      <span i18n>&nbsp;min</span>)
+                      }} 
+                      {{ seance.heureDebut }} - {{ seance.heureFin }} ({{ seance.duree | dureeHHMM }})
                     </td>
                     <td>
                       <div class="tags is-small" style="max-width: 300px">
@@ -435,7 +411,6 @@
           <footer class="card-footer">
             <div class="columns">
               <div class="column">
-                <div *ngIf="!rider.afficher_filtre" class="buttons">
               <btn *ngIf="!rider.afficher_filtre" [type_button]="'FiltrerSmall'" (click)="rider.afficher_filtre = true"></btn>
               <div class="buttons" *ngIf="rider.afficher_filtre">
                 <btn
@@ -704,7 +679,6 @@
                 </div>
               </div>
              
-            </div>
            
         </div>
         </div>
@@ -712,6 +686,7 @@
         </div>
     </ng-container>   
   </ng-container>
+  </div>
   </ng-container>
   </ng-container>
 </div>
