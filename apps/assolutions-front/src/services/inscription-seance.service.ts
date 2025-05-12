@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { inscription_seance } from '../class/inscription';
+import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
+import { full_inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,24 @@ export class InscriptionSeanceService {
 
   return this.global.POST(this.url, body)
     .then((response: inscription_seance) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+public GetFull(id:number): Promise<full_inscription_seance> {
+  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+  //  this.url = this.url + "login.php";
+  const body = {
+    command:"get",
+    id:id
+  };
+
+  return this.global.POST(this.url, body)
+    .then((response: full_inscription_seance) => {
       return response;
     })
     .catch(error => {

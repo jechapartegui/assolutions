@@ -16,7 +16,4 @@ export class Projet {
 
   @Column()
   password: string;
-  
-  @Column()
-  activation_token: string;
 }

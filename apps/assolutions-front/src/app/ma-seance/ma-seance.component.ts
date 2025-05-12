@@ -6,6 +6,7 @@ import { seance, StatutSeance } from '../../class/seance';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
+import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
 @Component({
   selector: 'app-ma-seance',
   templateUrl: './ma-seance.component.html',
@@ -241,13 +242,22 @@ contact_urgence_nom(ins: InscriptionMaSeance): string {
 AjouterAdherentsHorsGroupe() {
   const errorService = ErrorService.instance;
   if (this.adherent_to) {
+
     this.action = $localize`Convoquer ` + this.adherent_to.Libelle;
     this.adherent_to.SeanceID = this.thisSeance.seance_id;
     this.adherent_to.StatutInscription = StatutPresence.Convoqué;
     this.adherent_to.StatutSeance = null;
-    this.inscriptionserv.Add(this.adherent_to.datasource).then((id) => {
+      const conv: inscription_seance = {
+              id: 0,
+              rider_id: this.adherent_to.RiderID,
+              seance_id: this.adherent_to.SeanceID,
+              date_inscription: new Date(),
+              statut_inscription: this.adherent_to.StatutInscription,
+              statut_seance: null
+            };
+    this.inscriptionserv.Add(conv).then((id) => {
       this.adherent_to.ID = id;
-      this.inscriptionserv.Get(id).then((ins) => {
+      this.inscriptionserv.GetFull(id).then((ins) => {
         let inscription = new InscriptionMaSeance(ins);
         this.All.push(inscription);
         this.Autres = this.Autres.filter(x => x.RiderID !== inscription.RiderID);

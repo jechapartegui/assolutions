@@ -20,8 +20,8 @@ export class Adherent {
   @Column({ type: 'date' })
   date_naissance: Date;
 
-  @Column()
-  sexe: string;
+  @Column({ type: 'tinyint', default: 0 })
+  sexe: boolean; // 0 = femme, 1 = homme  
 
   @Column()
   adresse: string;

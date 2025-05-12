@@ -22,7 +22,6 @@ export enum StatutPresence {
       Absent = "absent",
       Convoqué = "convoqué",
       Essai = "essai"
-
 }
 
 export class InscriptionMaSeance {

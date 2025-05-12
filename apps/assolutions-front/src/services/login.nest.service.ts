@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { compte } from '@shared/compte/src/lib/compte.interface';
+import { AuthResult, ProjetView, compte } from '@shared/compte/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +31,7 @@ export class LoginNestService {
         return Promise.reject(message);
       });
   }
-  public Login(email: string, password: string): Promise<compte> {
+  public Login(email: string, password: string): Promise<AuthResult> {
     this.url = 'api/auth/login';
     //  this.url = this.url + "login.php";
     const body = {
@@ -40,8 +40,7 @@ export class LoginNestService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: any) => {
-        console.log(response);
+      .then((response: AuthResult) => {
         return response;
       })
       .catch((error: HttpErrorResponse) => {
@@ -52,13 +51,13 @@ export class LoginNestService {
       });
   }
 
-  public GetProject(id:number): Promise<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]> {
+  public GetProject(id:number): Promise<ProjetView[]> {
     this.url = 'api/auth/get_project/' + id;
     //  this.url = this.url + "login.php";
    
 
     return this.global.GET(this.url)
-      .then((response: any) => {
+      .then((response: ProjetView[]) => {
         console.log(response);
         return response;
       })
@@ -83,7 +82,7 @@ export class LoginNestService {
     return this.global.POST(this.url, body)
       .then((response: boolean) => {
         GlobalService.is_logged_in = false;
-        GlobalService.instance.updateMenuType(null);
+        GlobalService.instance.updateTypeApplication(null);
         GlobalService.instance.updateProjet(null);
         GlobalService.instance.updateSelectedMenuStatus(null);
         GlobalService.instance.updateLoggedin(false);

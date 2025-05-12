@@ -8,3 +8,18 @@ CREATE TABLE IF NOT EXISTS `member_project` (
 INSERT INTO `member_project` (`member_id`, `project_id`)
 SELECT `id`, `project_id` FROM `riders`;
 
+ALTER TABLE `projet_login` CHANGE `password` `password` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `projet_login` ADD `login` VARCHAR(100) NOT NULL AFTER `activation_token`;
+
+DROP TABLE IF EXISTS `gestionnaire_projet`;
+CREATE TABLE IF NOT EXISTS `gestionnaire_projet` (
+  `project_id` int NOT NULL,
+  `rider_id` int NOT NULL,
+  PRIMARY KEY (`project_id`,`rider_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3;
+COMMIT;
+
+ALTER TABLE `professeur_saison`
+  DROP `taux_horaire`,
+  DROP `token`,
+  DROP `date_token`;

@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { FilterMenu } from '../app/menu/menu.component';
-import { InscriptionSeance } from '../class/inscription';
+import { MesSeances } from '@shared/compte/src/lib/seance.interface';
 
 @Pipe({
   name: 'multifiltersMenu',
@@ -10,34 +10,34 @@ import { InscriptionSeance } from '../class/inscription';
   providedIn: 'root', // Permet de l'utiliser comme un service global
 })
 export class MultifiltersMenuPipe implements PipeTransform {
-  transform(items: InscriptionSeance[], filters: FilterMenu): InscriptionSeance[] {
+  transform(items: MesSeances[], filters: FilterMenu): MesSeances[] {
     if (!items) return [];
     if (!filters) return items;
 
     return items.filter((item) => {
       const dateAvant = filters.filter_date_avant ? new Date(filters.filter_date_avant) : null;
       const dateApres = filters.filter_date_apres ? new Date(filters.filter_date_apres) : null;
-      const dateSeance = new Date(item.thisSeance.date_seance);
+      const dateSeance = new Date(item.date);
     
       return (
         (!filters.filter_nom ||
-          item.thisSeance.libelle.toLowerCase().includes(
+          item.nom.toLowerCase().includes(
             filters.filter_nom.toLowerCase()
           )) &&
         (!filters.filter_lieu ||
-          item.thisSeance.lieu.toLowerCase().includes(
+          item.lieu.toLowerCase().includes(
             filters.filter_lieu.toLowerCase()
           )) &&
         (!filters.filter_date_avant || (dateAvant && dateSeance >= dateAvant)) &&
         (!filters.filter_date_apres || (dateApres && dateSeance <= dateApres)) &&       
         (!filters.filter_prof ||
-          item.thisSeance.professeurs.some((x) =>
-            (x.value).toLowerCase().includes(
+          item.professeur.some((x) =>
+            (x[1]).toLowerCase().includes(
               filters.filter_prof?.toLowerCase() ?? ''
             )
           )) &&
         (filters.filter_statut === null ||
-          item.thisSeance.statut === filters.filter_statut)
+          item.statut === filters.filter_statut)
       );
     });
     

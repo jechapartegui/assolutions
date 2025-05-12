@@ -5,7 +5,8 @@ import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from
 import { DatePipe } from '@angular/common';
 import { KeyValuePair } from '../class/keyvaluepair';
 import { environment } from '../environments/environment.prod';
-import { compte } from '@shared/compte/src/lib/compte.interface';
+import { compte, ProjetLogin, ProjetView } from '@shared/compte/src/lib/compte.interface';
+import { generatePassword } from '../class/password';
 
 @Injectable({
   providedIn: 'root'
@@ -31,19 +32,27 @@ export class GlobalService {
   static is_logged_in: boolean = false;
   isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
 
-  private isProjet = new BehaviorSubject<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}>(null);
-  static projet: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean} = null;
-  Projet$: Observable<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}> = this.isProjet.asObservable();
+  private isGestionnaire = new BehaviorSubject<boolean>(false);
+  static is_gestionnaire: boolean = false;
+  isGestionnaire$: Observable<boolean> = this.isGestionnaire.asObservable();
 
-  private isOtherProject = new BehaviorSubject<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]>(null);
-  static other_project: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[] = null;
-  OtherProject$: Observable<{id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]> = this.isOtherProject.asObservable();
+  private isProjet = new BehaviorSubject<ProjetView>(null);
+  static projet: ProjetView = null;
+  Projet$: Observable<ProjetView> = this.isProjet.asObservable();
+
+  private isProjetAdmin = new BehaviorSubject<ProjetLogin>(null);
+  static projetAdmin: ProjetLogin = null;
+  ProjetAdmin$: Observable<ProjetLogin> = this.isProjetAdmin.asObservable();
+
+  private isOtherProject = new BehaviorSubject<ProjetView[]>(null);
+  static other_project: ProjetView[] = null;
+  OtherProject$: Observable<ProjetView[]> = this.isOtherProject.asObservable();
 
   thisLanguage: "FR" | "EN";
   constructor(private http: HttpClient, private datepipe: DatePipe) {
     GlobalService.instance = this;
   }
-  updateMenuType(men: "APPLI" | "ADMIN"): void {
+  updateTypeApplication(men: "APPLI" | "ADMIN"): void {
     this.isMenu.next(men);
     GlobalService.menu = men;
   }
@@ -61,13 +70,23 @@ export class GlobalService {
     this.isLoggedIn.next(b);
     GlobalService.is_logged_in = b;
   }
-  updateProjet(_p: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}): void {
+  updateProjet(_p: ProjetView): void {
     this.isProjet.next(_p);
     GlobalService.projet = _p;
   }
-  updateOtherProject(_p: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[]): void {
+  updateListeProjet(_p: ProjetView[]): void {
     this.isOtherProject.next(_p);
     GlobalService.other_project = _p;
+  }
+
+  updateGestionnaire(_p: ProjetView): void {
+    this.isGestionnaire.next(_p.gestionnaire);
+    GlobalService.is_gestionnaire = _p.gestionnaire;
+  }
+
+  updateProjetAdmin(_p: ProjetLogin): void {
+    this.isProjetAdmin.next(_p);
+    GlobalService.projetAdmin = _p;
   }
 
   public ListeSeanceProf: KeyValuePair[] = [
@@ -80,17 +99,49 @@ export class GlobalService {
   public async GET(url: string): Promise<any> {
 
     try {
-      const response = await firstValueFrom(this.http.get(url));
+      let date_ref = new Date();
+      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
+      let _varid: string = "0";
+      let project_id: string = "-1";
+      const timeoutMilliseconds = 50000;
+      if (GlobalService.compte) {
+        _varid = GlobalService.compte.id.toString();
+      }
+      if (GlobalService.projet) {
+        project_id = GlobalService.projet.id.toString();
+      }
+
+      const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
+      const headers = new HttpHeaders()
+        .set('content-type', 'application/json')
+        .set('Access-Control-Allow-Origin', '*')
+        .set('password', expectedPassword)
+        .set('dateref', date_ref_string)
+        .set('projectid', project_id)
+        .set('lang', this.getCurrentLanguage())
+        .set('userid', _varid)
+      const response = await firstValueFrom(this.http.get(url, { headers }).pipe(
+        timeout(timeoutMilliseconds),
+          catchError((error) => {
+            if (error.name === 'TimeoutError') {
+              throw new Error('La requête a expiré en raison du délai dépassé.');
+            } else {
+              throw error; // Gérer d'autres erreurs ici
+            }
+          })
+        )
+      );
       return response;
     } catch (error) {
+      console.log(error);
       if (error instanceof HttpErrorResponse) {
         this.handleError(error);
       } else {
-        console.error('Une erreur inattendue s\'est produite:', error);
         throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
       }
     }
   }
+
   public async POST(url: string, body: any): Promise<any> {
     try {
       let date_ref = new Date();
@@ -161,3 +212,4 @@ export class GlobalService {
   }
 
 }
+

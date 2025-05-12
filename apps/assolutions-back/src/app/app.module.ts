@@ -8,6 +8,21 @@ import { AdherentProjet } from './bdd/member_project';
 import { Projet } from './bdd/project';
 import { APP_GUARD } from '@nestjs/core';
 import { PasswordGuard } from '../guards/password.guard';
+import { Cours } from './bdd/cours';
+import { MemberModule } from '../member/member.module';
+import { SeanceModule } from '../seance/seance.module';
+import { ProjectModule } from './project/project.module';
+import { Saison } from './bdd/saison';
+import { InscriptionSaison } from './bdd/inscription-saison';
+import { InscriptionSeance } from './bdd/inscription-seance';
+import { LienGroupe } from './bdd/lien-groupe';
+import { Seance } from './bdd/seance';
+import { ProjetLogin } from './bdd/project_login';
+import { GestionnaireProjet } from './bdd/gestionnaire_projet';
+import { ProfesseurSaison } from './bdd/prof-saison';
+import { SeanceProfesseur } from './bdd/seance_professeur';
+import { Lieu } from './bdd/lieu';
+import { LieuModule } from './lieu/lieu.module';
 
 @Module({
   imports: [
@@ -21,10 +36,11 @@ import { PasswordGuard } from '../guards/password.guard';
       username: 'root',
       password: '',
       database: 'maseance',
-      entities: [Compte, Adherent, AdherentProjet, Projet],
+      entities: [Compte, Adherent, AdherentProjet, Projet, Cours, Adherent, AdherentProjet, Projet, Saison, 
+        InscriptionSaison, InscriptionSeance, LienGroupe, Seance, ProjetLogin, GestionnaireProjet, ProfesseurSaison, SeanceProfesseur, Lieu],
       synchronize: false, // true uniquement si tu veux que TypeORM crée/modifie les tables tout seul
     }),
-    AuthModule
+    AuthModule, MemberModule, SeanceModule, ProjectModule, LieuModule
   ],  providers: [
     {
       provide: APP_GUARD,

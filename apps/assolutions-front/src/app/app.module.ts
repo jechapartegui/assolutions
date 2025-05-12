@@ -56,6 +56,7 @@ import { MultifiltersSaisonPipe } from '../filters/multifilters-saison.pipe';
 import { MultifiltersSeancePipe } from '../filters/multifilters-seance.pipe';
 import { MultifiltersStockPipe } from '../filters/multifilters-stock.pipe';
 import { GlobalService } from '../services/global.services';
+import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -71,7 +72,7 @@ import { GlobalService } from '../services/global.services';
     ContactItemComponent, 
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
-   CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, 
+   CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, MenuAdminComponent,
    SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, TableauDeBordComponent, ImportAdherentComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
   imports: [
     BrowserModule,

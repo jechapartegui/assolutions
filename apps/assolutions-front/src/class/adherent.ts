@@ -1,11 +1,12 @@
 import { Subject } from "rxjs";
 import { seance } from "./seance";
 import { Groupe } from "./groupe";
-import { inscription_seance, InscriptionSeance } from "./inscription";
+import { inscription_seance } from "./inscription";
 import { ItemContact } from "./contact";
 import { Adresse } from "./address";
 import { Adhesion } from "./adhesion";
 import { FilterMenu } from "../app/menu/menu.component";
+import { AdherentSeance, MesSeances } from "@shared/compte/src/lib/seance.interface";
 
 export class adherent {
   public id: number = 0;
@@ -29,8 +30,6 @@ export class adherent {
   public inscriptions: inscription_seance[] = [];
   public adhesions: Adhesion[] = [];
   public seances_prof: seance[] = [];
-
-
 }
 
 export class Adherent {
@@ -352,25 +351,18 @@ export class Validation_Adherent {
 
 }
 
-export class AdherentMenu extends Adherent {
-  public sort_nom = "NO";
-  public sort_cours = "NO";
-  public sort_date = "NO";
-  public sort_lieu = "NO";
-    public selected_filter: string;
-  public filters = new FilterMenu();
-  public InscriptionSeances: InscriptionSeance[];
-  constructor(_adh: adherent) {
-    super(_adh);
-    this.datasource = _adh;
-
-    this.afficher_filtre = false;
-    this.InscriptionSeances = [];
-    if (this.datasource.seances) {
-      this.datasource.seances.forEach((ss) => {
-        let ins = this.datasource.inscriptions.find(x => x.seance_id == ss.seance_id);
-        let i = new InscriptionSeance(ss, ins, _adh.id)
-        this.InscriptionSeances.push(i);
+export class AdherentMenu  {
+  constructor(_adh: AdherentSeance) {
+    this.ID = _adh.id;
+    this.Prenom = _adh.prenom;
+    this.Nom = _adh.nom;
+    this.Surnom = _adh.surnom;
+    this.Sexe = _adh.sexe;
+    this.DDN = _adh.dateNaissance;
+    this.InscriptionSeances = _adh.mes_seances;
+    if (_adh.mes_seances) {
+      _adh.mes_seances.forEach((ss) => {
+        this.InscriptionSeances.push(ss);
       })
     }
     this.Libelle = "";
@@ -392,10 +384,29 @@ export class AdherentMenu extends Adherent {
       }
     }
 
-
-
   }
 
+  public sort_nom = "NO";
+  public sort_cours = "NO";
+  public sort_date = "NO";
+  public sort_lieu = "NO";
+  public selected_filter: string;
+  public filters = new FilterMenu();
+  public InscriptionSeances: MesSeances[];
+  public ID: number;
+  public Libelle: string;
+  public Nom:string;
+  public Prenom:string;
+  public Surnom:string;
+  public Sexe:boolean;
+  public DDN:Date;
+  public Photo:string;
+  public profil:"PROF" | "ADH"= "ADH";
+  public afficher:boolean = false;
+
+
+   
+   
   //mois
 
 
@@ -416,11 +427,4 @@ export class AdherentMenu extends Adherent {
   public set afficher_filtre(v: boolean) {
     this._afficher_filtre = v;
   }
-
-
-
-
-
-
-
 }

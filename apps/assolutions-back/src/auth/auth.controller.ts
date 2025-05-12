@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.services';
 
 // src/auth/auth.controller.ts
@@ -19,9 +19,8 @@ export class AuthController {
     return this.authService.validatepassword(email, password);
   }
 
-  @Get('get_project')
-  async get_project(
-    @Body() { id }: { id: number },  ) {
+  @Get('get_project/:id')
+  async get_project(@Param('id') id: number) {
     
     return this.authService.getProjects(id);
   }

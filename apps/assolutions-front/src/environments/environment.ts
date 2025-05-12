@@ -6,8 +6,8 @@ export const environment = {
   production: false,
   maseance: "http://localhost/",
   password:'jecha266',
-  defaultlogin:'jechapartegui@test.fr',
-  defaultpassword:'Prout2606!',
+  defaultlogin:'jechapartegui@gmail.com',
+  defaultpassword:'',
   environment: 'dev'
   
 };

@@ -7,13 +7,18 @@ import { Compte } from '../app/bdd/compte';
 import { Adherent } from '../app/bdd/riders';
 import { AdherentProjet } from '../app/bdd/member_project';
 import { Projet } from '../app/bdd/project';
+import { ProjetLogin } from '../app/bdd/project_login';
+import { GestionnaireProjet } from '../app/bdd/gestionnaire_projet';
+import { ProfesseurSaison } from '../app/bdd/prof-saison';
+import { ProjectService } from '../app/project/project.service';
+import { Saison } from '../app/bdd/saison';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet]), // ✅ indispensable
+    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet, ProjetLogin, GestionnaireProjet, ProfesseurSaison, Saison]), // ✅ indispensable
   ],
-  providers: [AuthService],
+  providers: [AuthService, ProjectService],
   controllers: [AuthController],
 })
 export class AuthModule {}

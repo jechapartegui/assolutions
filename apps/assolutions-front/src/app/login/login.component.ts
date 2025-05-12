@@ -6,6 +6,7 @@ import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
+import { AuthResult, ProjetView } from '@shared/compte/src/lib/compte.interface';
 
 @Component({
   selector: 'app-login',
@@ -15,8 +16,8 @@ import { LoginNestService } from '../../services/login.nest.service';
 export class LoginComponent implements OnInit {
   VM: Login_VM = new Login_VM();
   action: string;
-  projets: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean}[];
-  projets_select: {id:number, nom:string, prof:boolean, adherent:boolean, admin:boolean} = null;
+  projets: ProjetView[];
+  projets_select: ProjetView = null;
   loading: boolean;
   psw_projet: string = null;
 
@@ -24,7 +25,8 @@ export class LoginComponent implements OnInit {
     private login_serv_nest: LoginNestService,
     private compte_serv: CompteService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public GlobalService: GlobalService
   ) {
     this.VM.Login = environment.defaultlogin;
     this.VM.Password = environment.defaultpassword;
@@ -89,22 +91,30 @@ export class LoginComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.login_serv_nest
       .Login(this.VM.Login, this.VM.Password)
-      .then((compte) => {
-        GlobalService.instance.updateCompte(compte);
-        GlobalService.instance.updateLoggedin(true);
-        this.action = $localize`Se connecter à un projet`;
+      .then((auth_login:AuthResult) => {
+        if(auth_login.type == 'admin'){
+          GlobalService.instance.updateTypeApplication('ADMIN');
+          GlobalService.instance.updateSelectedMenuStatus('MENU');
+          GlobalService.instance.updateProjetAdmin(auth_login.user)
+          this.router.navigate(['/menu-admin']);
+        } else {
+          GlobalService.instance.updateTypeApplication('APPLI');
+          GlobalService.instance.updateCompte(auth_login.user);
+          this.action = $localize`Se connecter à un projet`;
         this.login_serv_nest
-          .GetProject(compte.id)
-          .then((projets) => {
+          .GetProject(auth_login.user.id)
+          .then((projets : ProjetView[]) => {
             this.projets = projets;
+            GlobalService.instance.updateListeProjet(this.projets);
             if (this.projets.length == 1) {
               this.projets_select = this.projets[0];
-              GlobalService.instance.updateProjet(this.projets[0]);
-              GlobalService.instance.updateOtherProject(this.projets);
-              this.router.navigate(['/menu']);
+              this.ConnectToProject();
+            } else  if (this.projets.length > 1) {
+              this.projets_select = this.projets[0];
             } else {
-              GlobalService.instance.updateOtherProject(this.projets);
-              this.VM.projets = this.projets;
+
+              let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
+              errorService.emitChange(o);
             }
           })
           .catch((error: Error) => {
@@ -113,6 +123,9 @@ export class LoginComponent implements OnInit {
           });
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
+        }
+        GlobalService.instance.updateLoggedin(true);
+        
       })
       .catch((error: Error) => {
         let o = errorService.CreateError(this.action, error.message);
@@ -142,9 +155,6 @@ export class LoginComponent implements OnInit {
       });
   }
 
-  async ConnecterProjet(){
-
-  }
 
   ReinitMDP() {
     this.action = $localize`Réinitialiser le mot de passe`;
@@ -178,16 +188,10 @@ export class LoginComponent implements OnInit {
     const errorService = ErrorService.instance;
 
     if (this.projets_select) {
-      GlobalService.instance.updateProjet(this.projets_select);
-      if(this.projets_select.admin){
-        GlobalService.instance.updateMenuType('ADMIN');
-        GlobalService.instance.updateSelectedMenuStatus('MENU');
-        this.router.navigate(['/menu-admin']);
-      } else {
-        GlobalService.instance.updateMenuType('APPLI');
+        GlobalService.instance.updateProjet(this.projets_select);
+        GlobalService.instance.updateGestionnaire(this.projets_select);
         GlobalService.instance.updateSelectedMenuStatus('MENU');
         this.router.navigate(['/menu']);
-      }
       this.loading = false;
     } else {
       let o = errorService.CreateError(

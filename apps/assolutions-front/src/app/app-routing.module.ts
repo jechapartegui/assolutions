@@ -27,6 +27,7 @@ import { ImportAdherentComponent } from './import-adherent/import-adherent.compo
 import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
 import { ClementineComponent } from './clementine/clementine.component';
+import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 
 
 
@@ -59,7 +60,8 @@ const routes: Routes = [
   { path: 'import-adherent', component: ImportAdherentComponent },
   { path: 'gestion-liste', component: GestionListeComponent },
   { path: 'operations', component: OperationsComponent },
-  { path: 'clementine', component: ClementineComponent }
+  { path: 'clementine', component: ClementineComponent },
+  {path:'menu-admin',component:MenuAdminComponent},
 
 
 ];

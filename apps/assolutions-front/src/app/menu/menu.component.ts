@@ -3,28 +3,33 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdherentMenu } from '../../class/adherent';
 import { cours } from '../../class/cours';
-import { inscription_seance, StatutPresence } from '../../class/inscription';
-import { KeyValuePair, KeyValuePairAny } from '../../class/keyvaluepair';
+import { StatutPresence } from '../../class/inscription';
+import { KeyValuePairAny } from '../../class/keyvaluepair';
 import { professeur } from '../../class/professeur';
-import { seance, StatutSeance } from '../../class/seance';
-import { AdherentService } from '../../services/adherent.service';
+import { StatutSeance } from '../../class/seance';
 import { CoursService } from '../../services/cours.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
-import { LieuService } from '../../services/lieu.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { StaticClass } from '../global';
+import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
+import { AdherentSeance, MesSeances } from '@shared/compte/src/lib/seance.interface';
+import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
+import { LieuNestService } from '../../services/lieu.nest.service';
+import { lieu } from '@shared/compte/src';
+
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css'],
 })
 export class MenuComponent implements OnInit {
+
   action: string;
   Riders: AdherentMenu[];
   listeprof: professeur[];
-  listelieu: KeyValuePair[];
+  listelieu: lieu[];
   btn_adherent: boolean = false;
   btn_admin: boolean = false;
   btn_prof: boolean = false;
@@ -44,132 +49,130 @@ export class MenuComponent implements OnInit {
     public GlobalService: GlobalService,
     private prof_serv: ProfesseurService,
     private router: Router,
-    private adherent_serv: AdherentService,
-    private lieuserv: LieuService,
+    private ma_seance_serv:MaSeanceNestService,
+    private lieuserv: LieuNestService,
     private coursservice: CoursService,
     public inscriptionserv: InscriptionSeanceService
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le menu`;
     this.loading = true;
-    if (GlobalService.is_logged_in) {
-    
- 
-          const auj = new Date();
-          const yesterday = new Date(auj);
-          yesterday.setDate(yesterday.getDate() - 1);
-
-          // Date dans un mois
-          const nextMonth = new Date(auj);
-          nextMonth.setMonth(nextMonth.getMonth() + 1);
-          this.adherent_serv
-            .Get(GlobalService.compte.id, GlobalService.menu)
-            .then((riders) => {
-              this.Riders = riders.map((x) => {
-                const rider = new AdherentMenu(x);
-                rider.filters.filter_date_avant = yesterday;
-                rider.filters.filter_date_apres = nextMonth;
-                return rider;
-              });
-
-              this.Riders.sort((a, b) => {
-                let comparaison = 0;
-                if (a.datasource.id > b.datasource.id) {
-                  comparaison = 1;
-                } else if (a.datasource.id < b.datasource.id) {
-                  comparaison = -1;
-                }
-
-                return comparaison; // Inverse pour le tri descendant
-              });
-              this.prof_serv
-                .GetProf()
-                .then((profs) => {
-                  if (profs.length == 0) {
-                    let o = errorService.CreateError(
-                      $localize`Récupérer les professeurs`,
-                      $localize`Il faut au moins un professeur pour créer un cours`
-                    );
-                    errorService.emitChange(o);
-                    this.router.navigate(['/adherent']);
-                    this.loading = false;
-                    return;
-                  }
-                  this.listeprof = profs;
-                  this.liste_prof_filter = profs.map(
-                    (x) => new KeyValuePairAny(x.id, x.prenom + ' ' + x.nom)
-                  );
-                  this.lieuserv
-                    .GetAllLight()
-                    .then((lieux) => {
-                      if (lieux.length == 0) {
-                        let o = errorService.CreateError(
-                          $localize`Récupérer les lieux`,
-                          $localize`Il faut au moins un lieu pour créer un cours`
-                        );
-                        errorService.emitChange(o);
-                        if (GlobalService.menu === 'ADMIN') {
-                          this.router.navigate(['/lieu']);
-                          this.loading = false;
-                        }
-                        return;
-                      }
-                      this.listelieu = lieux;
-                      this.liste_lieu_filter = lieux.map((x) => x.value);
-                      this.coursservice
-                        .GetCours()
-                        .then((c) => {
-                          this.listeCours = c;
-                          this.loading = false;
-                        })
-                        .catch((err: HttpErrorResponse) => {
-                          let o = errorService.CreateError(
-                            $localize`récupérer les cours`,
-                            err.message
-                          );
-                          this.loading = false;
-                          errorService.emitChange(o);
-                          return;
-                        });
-                    })
-                    .catch((err: HttpErrorResponse) => {
-                      let o = errorService.CreateError(
-                        $localize`récupérer les lieux`,
-                        err.message
-                      );
-                      this.loading = false;
-                      errorService.emitChange(o);
-                      return;
-                    });
-                })
-                .catch((err: HttpErrorResponse) => {
-                  let o = errorService.CreateError(
-                    $localize`récupérer les profs`,
-                    err.message
-                  );
-                  this.loading = false;
-                  errorService.emitChange(o);
-                  return;
-                });
-            })
-            .catch((error: Error) => {
-              let o = errorService.CreateError(this.action, error.message);
-              errorService.emitChange(o);
-              this.loading = false;
-            });
-       
-    } else {
-      let o = errorService.CreateError(
+  
+    if (!GlobalService.is_logged_in) {
+      const o = errorService.CreateError(
         this.action,
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
       this.loading = false;
       errorService.emitChange(o);
       this.router.navigate(['/login']);
+      return;
+    }
+  
+    try {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      const nextMonth = new Date(today);
+      nextMonth.setMonth(today.getMonth() + 1);
+  
+      this.Riders = [];
+  
+      // Partie adhérent
+      if (GlobalService.projet.adherent) {
+        this.action = $localize`Récupérer les adhérents`;
+        const seancesAdh = await this.GetMySeance();
+        const ridersAdh = seancesAdh.map((x) => {
+          const rider = new AdherentMenu(x);
+          rider.profil = "ADH";
+          rider.filters.filter_date_avant = yesterday;
+          rider.filters.filter_date_apres = nextMonth;
+          return rider;
+        });
+        this.Riders.push(...ridersAdh);
+      }
+  
+      // Partie prof
+      if (GlobalService.projet.prof) {
+        this.action = $localize`Récupérer les professeurs`;
+        const seancesProf = await this.GetProfSeance();
+        const ridersProf = seancesProf.map((x) => {
+          const rider = new AdherentMenu(x);
+          rider.profil = "PROF";
+          rider.filters.filter_date_avant = yesterday;
+          rider.filters.filter_date_apres = nextMonth;
+          return rider;
+        });
+        this.Riders.push(...ridersProf);
+      }
+  
+      // Tri final
+      this.Riders.sort((a, b) => a.ID - b.ID);
+  
+      // Chargement des autres données
+        this.action = $localize`Récupérer la liste des professeurs`;
+      const profs = await this.prof_serv.GetProf();
+      if (profs.length === 0) {
+        throw errorService.CreateError(this.action,
+          $localize`Il faut au moins un professeur pour créer un cours`
+        );
+      }
+      this.listeprof = profs;
+      this.liste_prof_filter = profs.map(
+        (x) => new KeyValuePairAny(x.id, `${x.prenom} ${x.nom}`)
+      );
+  
+      this.action = $localize`Récupérer la liste des lieux`;
+      const lieux = await this.lieuserv.GetAll();
+      if (lieux.length === 0) {
+        throw errorService.CreateError(this.action,
+          $localize`Il faut au moins un lieu pour créer un cours`
+        );
+      }
+      this.listelieu = lieux;
+      this.liste_lieu_filter = lieux.map((x) => x.nom);
+  
+      this.listeCours = await this.coursservice.GetCours();
+
+      this.Riders.forEach((rider) => {
+        rider.InscriptionSeances.forEach((seance) => {
+          seance.lieu = this.trouverLieu(seance.lieuId);
+          seance.cours = this.trouverCours(seance);
+        })
+        //trier
+      });
+  
+    } catch (err: any) {
+      const o = err instanceof HttpErrorResponse
+        ? errorService.CreateError(this.action, err.message)
+        : err instanceof Error
+          ? errorService.CreateError(this.action, err.message)
+          : err;
+  
+      errorService.emitChange(o);
+      if(GlobalService.menu === 'ADMIN'){
+        
+      if (o.message.includes('professeur')) {
+        this.router.navigate(['/adherent']);
+      } else if (o.message.includes('lieu') && GlobalService.menu === 'ADMIN') {
+        this.router.navigate(['/lieu']);
+      }
+    } else {
+      this.router.navigate(['/login']);
+    }
+    } finally {
+      this.loading = false;
     }
   }
+
+  getLibelleProfil(profil: string): string {
+    return profil === 'ADH'
+      ? $localize`Adhérent`
+      : $localize`Professeur`;
+  }
+  
   formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -177,16 +180,40 @@ export class MenuComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  trouverLieu(lieuId: number): any {
-    if (this.listelieu) {
-      const indexToUpdate = this.listelieu.findIndex(
-        (lieu) => lieu.key === lieuId
-      );
+  async GetMySeance(): Promise<AdherentSeance[]> {
+    this.action = $localize`Se connecter`;
+    const errorService = ErrorService.instance;
+  
+    try {
+      const retour = await this.ma_seance_serv.Get();
+      return retour;
+    } catch (error: any) {
+      const o = errorService.CreateError(this.action, error);
+      errorService.emitChange(o);
+      return []; // ou `throw error` selon ta logique
+    }
+  }
 
-      if (indexToUpdate !== -1) {
-        // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-        return this.listelieu[indexToUpdate].value;
-      } else {
+  async GetProfSeance(): Promise<AdherentSeance[]> {
+    this.action = $localize`Se connecter`;
+    const errorService = ErrorService.instance;
+  
+    try {
+      const retour = await this.ma_seance_serv.Prof();
+      return retour;
+    } catch (error: any) {
+      const o = errorService.CreateError(this.action, error);
+      errorService.emitChange(o);
+      return []; // ou `throw error` selon ta logique
+    }
+  }
+
+  trouverLieu(lieuId: number): string {
+    if (this.listelieu) {
+      const lieunom = this.listelieu.find((lieu) => +lieu.id === lieuId);
+      if(lieunom) {
+        return lieunom.nom;
+      } else  {
         return $localize`Lieu non trouvé`;
       }
     } // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
@@ -197,7 +224,7 @@ export class MenuComponent implements OnInit {
   }
   Sort( sens: 'NO' | 'ASC' | 'DESC', champ: string, rider: AdherentMenu ) {
     let liste_seance_VM = this.Riders.find(
-      (x) => x.datasource.id == rider.ID
+      (x) => x.ID == rider.ID
     ).InscriptionSeances;
     switch (champ) {
       case 'nom':
@@ -206,8 +233,8 @@ export class MenuComponent implements OnInit {
         rider.sort_lieu = 'NO';
         rider.sort_cours = 'NO';
         liste_seance_VM.sort((a, b) => {
-          const nomA = a.thisSeance.libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.thisSeance.libelle.toUpperCase();
+          const nomA = a.nom.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.nom.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -225,8 +252,8 @@ export class MenuComponent implements OnInit {
         rider.sort_lieu = 'NO';
         rider.sort_cours = sens;
         liste_seance_VM.sort((a, b) => {
-          const nomA = this.trouverCours(a.thisSeance);
-          const nomB = this.trouverCours(b.thisSeance);
+          const nomA = a.cours;
+          const nomB = b.cours;
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -243,12 +270,8 @@ export class MenuComponent implements OnInit {
         rider.sort_nom = 'NO';
         rider.sort_cours = 'NO';
         liste_seance_VM.sort((a, b) => {
-          const lieuA =
-            this.listelieu.find((lieu) => lieu.key === a.thisSeance.lieu_id)
-              ?.value || '';
-          const lieuB =
-            this.listelieu.find((lieu) => lieu.key === b.thisSeance.lieu_id)
-              ?.value || '';
+          const lieuA =a.lieu;           
+          const lieuB =b.lieu;   
 
           // Ignorer la casse lors du tri
           const lieuAUpper = lieuA.toUpperCase();
@@ -270,8 +293,8 @@ export class MenuComponent implements OnInit {
         rider.sort_cours = 'NO';
         rider.sort_nom = 'NO';
         liste_seance_VM.sort((a, b) => {
-          let dateA = a.thisSeance.date_seance;
-          let dateB = b.thisSeance.date_seance;
+          let dateA = a.date;
+          let dateB = b.date;
 
           let comparaison = 0;
           if (dateA > dateB) {
@@ -285,94 +308,104 @@ export class MenuComponent implements OnInit {
         break;
     }
   }
-  trouverCours(_s:seance) : string{
-    if(_s.type_seance == "ENTRAINEMENT"){
-      return this.listeCours.find(x => x.id == _s.cours).nom || $localize`Cours non trouvé`;
-    } else if(_s.type_seance == "MATCH"){
+  trouverCours(_s:MesSeances) : string{
+    if(_s.typeSeance == "ENTRAINEMENT"){
+      return this.listeCours.find(x => x.id == _s.coursId).nom || $localize`Cours non trouvé`;
+    } else if(_s.typeSeance == "MATCH"){
       return $localize`Match`;
-    } else if(_s.type_seance == "SORTIE"){
+    } else if(_s.typeSeance == "SORTIE"){
       return $localize`Sortie`;
     } else {
 return $localize`Evénement`;
     }
   }
 
-  MAJInscription(inscription: inscription_seance, statut: boolean) {
+  MAJInscription(libelle : string, rider_id:number, seance: MesSeances, statut: boolean) {
     const errorService = ErrorService.instance;
-    let oldstatut = inscription.statut_inscription;
-    let libellenom = this.Riders.find(
-      (x) => x.datasource.id == inscription.rider_id
-    ).Libelle;
-    let libelleseab = this.Riders.find(
-      (x) => x.datasource.id == inscription.rider_id
-    ).InscriptionSeances.find(
-      (x) => x.thisSeance.seance_id == inscription.seance_id
-    ).thisSeance.libelle;
-    if (statut == null) {
+    let oldstatut = seance.statutInscription;
+    if (statut == null && oldstatut != null) {
+      this.action =
+      libelle +
+        $localize` ne prévoit plus d'être présent à la séance ` +
+        seance.nom;
       this.inscriptionserv
-        .Delete(inscription.id)
+        .Delete(seance.inscription_id)
         .then((ok) => {
           if (ok) {
-            console.log(this.action);
-            inscription.statut_inscription = null;
+            seance.statutInscription = null;
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
           } else {
             let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
           }
         })
         .catch((err: HttpErrorResponse) => {
-          inscription.statut_inscription = oldstatut;
+          seance.statutInscription = oldstatut;
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);
           return;
         });
       return;
     } else {
+      const uneInscription: inscription_seance = {
+        id: 0,
+        rider_id: rider_id,
+        seance_id: seance.id,
+        date_inscription: new Date(),
+        statut_inscription: statut ? StatutPresence.Présent : StatutPresence.Absent,
+        statut_seance: null
+      };
       if (statut) {
-        inscription.statut_inscription = StatutPresence.Présent;
-        this.action =
-          libellenom +
-          $localize` prévoit d'être présent à la séance ` +
-          libelleseab;
+        seance.statutInscription = StatutPresence.Présent;
+        this.action = 
+        libelle +
+        $localize` prévoit d'être présent à la séance ` +
+        seance.nom;
       } else {
-        inscription.statut_inscription = StatutPresence.Absent;
+        seance.statutInscription = StatutPresence.Absent;
         this.action =
-          libellenom +
-          $localize` prévoit d'être absent à la séance ` +
-          libelleseab;
+        libelle +
+        $localize` ne prévoit plus d'être présent à la séance ` +
+        seance.nom;
       }
-      if (inscription.id == 0) {
+      if (seance.inscription_id == 0) {
+
         this.inscriptionserv
-          .Add(inscription)
+          .Add(uneInscription)
           .then((id) => {
-            inscription.id = id;
-            console.log(this.action);
-            this.inscriptionserv.Get(id).then((ins) => {
-              inscription = ins;
-            });
+            seance.inscription_id = id;
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
           })
           .catch((err: HttpErrorResponse) => {
-            inscription.statut_inscription = oldstatut;
+            seance.statutInscription = oldstatut;
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
             return;
           });
       } else {
+        const update: inscription_seance = {
+          id: seance.inscription_id,
+          rider_id: rider_id,
+          seance_id: seance.id,
+          date_inscription: new Date(),
+          statut_inscription: statut ? StatutPresence.Présent : StatutPresence.Absent,
+          statut_seance: null
+        };
         this.inscriptionserv
-          .Update(inscription)
+          .Update(update)
           .then((retour) => {
             if (retour) {
-              console.log(this.action);
-              this.inscriptionserv.Get(inscription.id).then((ins) => {
-                inscription = ins;
-              });
+              let o = errorService.OKMessage(this.action);
+              errorService.emitChange(o);
             } else {
               let o = errorService.UnknownError(this.action);
               errorService.emitChange(o);
             }
           })
           .catch((err: HttpErrorResponse) => {
-            inscription.statut_inscription = oldstatut;
+            seance.statutInscription = oldstatut;
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
             return;
@@ -423,6 +456,15 @@ return $localize`Evénement`;
       top: 0,
       behavior: 'smooth', // Défilement fluide
     });
+  }
+  AfficherProfil(_t17: AdherentMenu) {
+    for (const r of this.Riders) {
+      if (r.ID == _t17.ID && r.profil == _t17.profil) {
+        r.afficher = !r.afficher;
+      } else {
+        r.afficher = false;
+      }
+    }
   }
 }
 export class FilterMenu {
