@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Lieu } from "../bdd/lieu";
 import { Repository } from "typeorm";
-import { lieu } from "@shared/compte/src";
+import { Lieu } from "../bdd/lieu";
+import { lieu } from "@shared/compte/src/lib/lieu.interface";
 
 @Injectable()
 export class LieuService {

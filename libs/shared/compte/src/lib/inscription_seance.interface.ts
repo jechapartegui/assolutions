@@ -1,5 +1,4 @@
 export interface inscription_seance {
-
     id: number;
      rider_id: number;
      seance_id: number;

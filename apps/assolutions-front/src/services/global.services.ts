@@ -189,6 +189,107 @@ export class GlobalService {
       }
     }
   }
+  public async PUT(url: string, body: any): Promise<any> {
+  try {
+    const date_ref = new Date();
+    const date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
+    let _varid: string = "0";
+    let project_id: string = "-1";
+    const timeoutMilliseconds = 50000;
+
+    if (GlobalService.compte) {
+      _varid = GlobalService.compte.id.toString();
+    }
+    if (GlobalService.projet) {
+      project_id = GlobalService.projet.id.toString();
+    }
+
+    const password = _varid + date_ref_string;
+    const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
+
+    const headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('Access-Control-Allow-Origin', '*')
+      .set('password', hashedPassword)
+      .set('dateref', date_ref_string)
+      .set('projectid', project_id)
+      .set('lang', this.getCurrentLanguage())
+      .set('userid', _varid);
+
+    const response = await firstValueFrom(
+      this.http.put(url, body, { headers }).pipe(
+        timeout(timeoutMilliseconds),
+        catchError((error) => {
+          if (error.name === 'TimeoutError') {
+            throw new Error('La requête a expiré en raison du délai dépassé.');
+          } else {
+            throw error;
+          }
+        })
+      )
+    );
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    if (error instanceof HttpErrorResponse) {
+      this.handleError(error);
+    } else {
+      throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
+    }
+  }
+}
+public async DELETE(url: string): Promise<any> {
+  try {
+    const date_ref = new Date();
+    const date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
+    let _varid: string = "0";
+    let project_id: string = "-1";
+    const timeoutMilliseconds = 50000;
+
+    if (GlobalService.compte) {
+      _varid = GlobalService.compte.id.toString();
+    }
+    if (GlobalService.projet) {
+      project_id = GlobalService.projet.id.toString();
+    }
+
+    const password = _varid + date_ref_string;
+    const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
+
+    const headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('Access-Control-Allow-Origin', '*')
+      .set('password', hashedPassword)
+      .set('dateref', date_ref_string)
+      .set('projectid', project_id)
+      .set('lang', this.getCurrentLanguage())
+      .set('userid', _varid);
+
+    const response = await firstValueFrom(
+      this.http.delete(url, { headers }).pipe(
+        timeout(timeoutMilliseconds),
+        catchError((error) => {
+          if (error.name === 'TimeoutError') {
+            throw new Error('La requête a expiré en raison du délai dépassé.');
+          } else {
+            throw error;
+          }
+        })
+      )
+    );
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    if (error instanceof HttpErrorResponse) {
+      this.handleError(error);
+    } else {
+      throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
+    }
+  }
+}
+
   private handleError(error: HttpErrorResponse): void {
     console.log(error);
     let message: string;

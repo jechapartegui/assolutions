@@ -84,13 +84,29 @@ export class MenuComponent implements OnInit {
       if (GlobalService.projet.adherent) {
         this.action = $localize`Récupérer les adhérents`;
         const seancesAdh = await this.GetMySeance();
+          console.log(seancesAdh.length)
         const ridersAdh = seancesAdh.map((x) => {
+          console.log(x.mes_seances.length)
           const rider = new AdherentMenu(x);
+          console.log(rider.InscriptionSeances.length)
           rider.profil = "ADH";
           rider.filters.filter_date_avant = yesterday;
           rider.filters.filter_date_apres = nextMonth;
+         rider.InscriptionSeances.sort((a, b) => {
+  const dateA = new Date(a.date);
+  const [hA, mA] = a.heureDebut.split(':').map(Number);
+  dateA.setHours(hA, mA, 0, 0);
+
+  const dateB = new Date(b.date);
+  const [hB, mB] = b.heureDebut.split(':').map(Number);
+  dateB.setHours(hB, mB, 0, 0);
+
+  return dateA.getTime() - dateB.getTime();
+});
+
           return rider;
         });
+        console.log(ridersAdh);
         this.Riders.push(...ridersAdh);
       }
   
@@ -103,6 +119,17 @@ export class MenuComponent implements OnInit {
           rider.profil = "PROF";
           rider.filters.filter_date_avant = yesterday;
           rider.filters.filter_date_apres = nextMonth;
+            rider.InscriptionSeances.sort((a, b) => {
+  const dateA = new Date(a.date);
+  const [hA, mA] = a.heureDebut.split(':').map(Number);
+  dateA.setHours(hA, mA, 0, 0);
+
+  const dateB = new Date(b.date);
+  const [hB, mB] = b.heureDebut.split(':').map(Number);
+  dateB.setHours(hB, mB, 0, 0);
+
+  return dateA.getTime() - dateB.getTime();
+});
           return rider;
         });
         this.Riders.push(...ridersProf);
@@ -207,12 +234,25 @@ export class MenuComponent implements OnInit {
       return []; // ou `throw error` selon ta logique
     }
   }
+copierDansPressePapier(texte: string): void {
+  navigator.clipboard.writeText(texte).then(() => {
+    // Optionnel : Afficher un message, toast ou console.log
+    console.log( $localize`Adresse copiée :`, texte);
+  }).catch(err => {
+    console.error( $localize`Erreur de copie`, err);
+  });
+}
+  getadresse(id:number) : string {
+    let ad = this.listelieu.find(x => x.id == id) 
+    return ad!.nom + " " + ad!.adresse + " " + ad!.code_postal + " " + ad!.ville
+  }
 
   nbSeanceInscrit(seance: MesSeances[]): {OK:number, KO:number, aucun:number} {
     let OK = 0;
     let KO = 0;
     let aucun = 0;
     seance.forEach((s) => { 
+      if(s.statut == StatutSeance.prévue){
       if(s.inscription_id == null || s.inscription_id == 0) {
         aucun++;
       }
@@ -224,6 +264,8 @@ export class MenuComponent implements OnInit {
       } else {
         aucun++;
       }
+      }
+     
     });
 
     return {OK, KO, aucun};

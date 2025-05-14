@@ -13,14 +13,10 @@ export class InscriptionSeanceService {
  }
  public Get(id:number): Promise<inscription_seance> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+  this.url = 'api/inscription_seance/get/' + id;
   //  this.url = this.url + "login.php";
-  const body = {
-    command:"get",
-    id:id
-  };
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
     .then((response: inscription_seance) => {
       return response;
     })
@@ -31,14 +27,11 @@ export class InscriptionSeanceService {
 }
 public GetFull(id:number): Promise<full_inscription_seance> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+ this.url = 'api/inscription_seance/get_full/' + id;
   //  this.url = this.url + "login.php";
-  const body = {
-    command:"get",
-    id:id
-  };
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
+
     .then((response: full_inscription_seance) => {
       return response;
     })
@@ -49,14 +42,10 @@ public GetFull(id:number): Promise<full_inscription_seance> {
 }
  public GetAllCours(cours_id:number): Promise<inscription_seance[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+  this.url = 'api/inscription_seance/get_all_cours/' + cours_id;
   //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_cours",
-    cours_id:cours_id
-  };
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
     .then((response: inscription_seance[]) => {
       return response;
     })
@@ -68,14 +57,10 @@ public GetFull(id:number): Promise<full_inscription_seance> {
 
 public GetAllRider(rider_id:number): Promise<inscription_seance[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+  this.url = 'api/inscription_seance/get_all_rider/' + rider_id;
   //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_rider",
-    rider_id:rider_id
-  };
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
     .then((response: inscription_seance[]) => {
       return response;
     })
@@ -86,15 +71,11 @@ public GetAllRider(rider_id:number): Promise<inscription_seance[]> {
 }
 public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<inscription_seance[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_rider",
-    rider_id:rider_id,
-    saison_id:saison_id
-  };
+this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;
 
-  return this.global.POST(this.url, body)
+  //  this.url = this.url + "login.php";
+
+  return this.global.GET(this.url)
     .then((response: inscription_seance[]) => {
       return response;
     })
@@ -105,14 +86,10 @@ public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<inscription
 }
 public GetAllSeance(seance_id:number): Promise<any> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
+ this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
   //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_seance",
-    seance_id:seance_id
-  };
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
     .then((response: any) => {
       return response;
     })
@@ -123,14 +100,9 @@ public GetAllSeance(seance_id:number): Promise<any> {
 }
 
 public Add(inscription:inscription_seance): Promise<number> {
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"add",
-    inscription:inscription,
-  };
+  this.url = 'api/inscription_seance/add';
 
-  return this.global.POST(this.url, body)
+  return this.global.PUT(this.url, inscription)
     .then((response: number) => {
       return response;
     })
@@ -140,14 +112,9 @@ public Add(inscription:inscription_seance): Promise<number> {
     });
 }
 public Update(inscription:inscription_seance): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"update",
-    inscription:inscription,
-  };
+    this.url = 'api/inscription_seance/update';
 
-  return this.global.POST(this.url, body)
+  return this.global.PUT(this.url, inscription)
     .then((response: boolean) => {
       return response;
     })
@@ -157,14 +124,9 @@ public Update(inscription:inscription_seance): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/inscriptionseance_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"delete",
-    id:id,
-  };
+ this.url = 'api/inscription_seance/delete/' + id;
 
-  return this.global.POST(this.url, body)
+  return this.global.DELETE(this.url)
     .then((response: boolean) => {
       return response;
     })

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SeanceController } from './seance.controller';
 import { SeanceService } from './seance.services';
+import { ProfService } from '../prof/prof.services';
 import { Compte } from '../bdd/compte';
 import { InscriptionSaison } from '../bdd/inscription-saison';
 import { AdherentProjet } from '../bdd/member_project';
@@ -14,13 +15,15 @@ import { Cours } from '../bdd/cours';
 import { InscriptionSeance } from '../bdd/inscription-seance';
 import { Saison } from '../bdd/saison';
 import { SeanceProfesseur } from '../bdd/seance_professeur';
+import { Professeur } from '../bdd/professeur';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet, InscriptionSaison, InscriptionSeance, Seance, LienGroupe, Cours, Saison,SeanceProfesseur]), // ✅ indispensable
+    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet, InscriptionSaison, InscriptionSeance, Seance, 
+      LienGroupe, Cours, Saison,SeanceProfesseur, Professeur]), // ✅ indispensable
   ],
-  providers: [SeanceService],
+  providers: [SeanceService, ProfService],
   controllers: [SeanceController],
   exports: [SeanceService], // 👈 ajoute ça
 })

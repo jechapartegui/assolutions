@@ -360,11 +360,6 @@ export class AdherentMenu  {
     this.Sexe = _adh.sexe;
     this.DDN = _adh.dateNaissance;
     this.InscriptionSeances = _adh.mes_seances;
-    if (_adh.mes_seances) {
-      _adh.mes_seances.forEach((ss) => {
-        this.InscriptionSeances.push(ss);
-      })
-    }
     this.Libelle = "";
     if (_adh.prenom && _adh.prenom.length > 0) {
       this.Libelle = _adh.prenom;

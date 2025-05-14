@@ -100,7 +100,6 @@ export class LoginComponent implements OnInit {
         } else {
           GlobalService.instance.updateTypeApplication('APPLI');
           GlobalService.instance.updateCompte(auth_login.user);
-          this.action = $localize`Se connecter à un projet`;
         this.login_serv_nest
           .GetProject(auth_login.user.id)
           .then((projets : ProjetView[]) => {
@@ -121,10 +120,10 @@ export class LoginComponent implements OnInit {
             let o = errorService.CreateError(this.action, error.message);
             errorService.emitChange(o);
           });
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
         }
         GlobalService.instance.updateLoggedin(true);
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
         
       })
       .catch((error: Error) => {

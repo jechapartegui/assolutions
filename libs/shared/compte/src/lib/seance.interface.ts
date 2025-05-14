@@ -1,3 +1,5 @@
+import { prof } from "./prof.interface";
+
 export interface MesSeances {
     id: number;
     nom: string;
@@ -11,7 +13,7 @@ export interface MesSeances {
     coursId?: number;       // Peut être null -> rendu optionnel
     cours?: string;         // Peut être null -> rendu optionnel
     statut: 'prévue' | 'réalisée' | 'annulée';
-    professeur: Array<[number, string]>;  // tableau de [id, nom]
+    professeur: Array<prof>;  // tableau de [id, nom]
     statutInscription?: 'présent' | 'absent' | 'convoqué' | 'essai'; // Peut être null -> optionnel
     statutPrésence?: 'présent' | 'absent'; // Peut être null -> optionnel
     inscription_id?: number; // Peut être null -> optionnel

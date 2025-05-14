@@ -13,8 +13,8 @@ export class LieuNestService {
   constructor(public global: GlobalService) {
   }
 
-  public Get(): Promise<lieu> {
-    this.url = 'api/lieu/get';
+  public Get(id:number): Promise<lieu> {
+    this.url = 'api/lieu/get/' + id;
     //  this.url = this.url + "login.php";
    
 

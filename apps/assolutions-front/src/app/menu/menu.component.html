@@ -47,24 +47,24 @@
                 {{ getLibelleProfil(personne.profil) }}
               </p>
         
-              <div class="notification is-light is-small mt-2 px-2 py-1">
+              <div *ngIf="personne.profil === 'ADH'" class="notification is-light is-small mt-2 px-2 py-1">
                 <span class="has-text-success mr-2">
                   <span class="icon has-text-success">
                     <i class="fas fa-thumbs-up has-text-success"></i>
                   </span>
-                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances).OK }}</span> 
+                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances | multifiltersMenu : personne.filters).OK }}</span> 
                 </span>
                 <span class="has-text-danger mr-2">
                   <span class="icon has-text-danger">
                     <i class="fas fa-thumbs-down has-text-danger"></i>
                   </span>
-                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances).KO }}</span> 
+                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances| multifiltersMenu : personne.filters).KO }}</span> 
                 </span>
                 <span class="has-text-info mr-2">
                   <span class="icon has-text-info">
                     <i class="fas fa-question has-text-info"></i>
                   </span>
-                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances).aucun }}</span> 
+                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances| multifiltersMenu : personne.filters).aucun }}</span> 
                 </span>
               </div>
             </div>
@@ -265,28 +265,43 @@
                       {{ seance.heureDebut }} - {{ seance.heureFin }} ({{ seance.duree | dureeHHMM }})
                     </td>
                     <td>
-                      <div class="tags is-small" style="max-width: 300px">
+                      <div class="tags is-small"  style="max-width: 300px">
                         <ng-container
                           *ngFor="let gr of seance.professeur"
                         >
-                          <span class="tag is-success">
-                            {{ gr[1] }}
+                          <span class="tag is-success" [title]="gr.prenom + ' ' + gr.nom">
+                            <ng-container *ngIf="gr.surnom && gr.surnom.length>0">
+                                {{ gr.surnom }}
+                            </ng-container>
+                            <ng-container *ngIf="!gr.surnom || gr.surnom.length == 0">
+                                {{ gr.prenom }}&nbsp;{{gr.nom}}
+                            </ng-container>
+                           
                           </span>
                         </ng-container>
                       </div>
                     </td>
-                    <td>
-                      <span>{{seance.lieu}}</span>
-                    </td>
+                   <td>
+  <span 
+    [title]="getadresse(seance.lieuId)"
+    (click)="copierDansPressePapier(getadresse(seance.lieuId))"
+    style="cursor: pointer;"
+  >
+    {{ seance.lieu }}
+  </span>
+</td>
+
 
                     <td>
                       <ng-container
                         *ngIf="seance.statut == 'prévue'"
                       >
-                        <span class="tag is-info is-rounded is-light">
-                          <span class="icon has-text-info">
-                            <i class="fa-solid fa-calendar-check"></i>
-                          </span>
+                        <span i18n-title title="Séance prévue" class="tag is-info is-rounded is-light">
+                            <span class="fa-stack fa-lg">
+                              <i
+                                class="fas fa-stack-2x fa-calendar-check has-text-info"
+                              ></i>
+                            </span>
                         </span>
                       </ng-container>
                       <ng-container

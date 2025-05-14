@@ -7,6 +7,7 @@ import { LienGroupe } from '../bdd/lien-groupe';
 import { MesSeances } from '@shared/compte/src/lib/seance.interface';
 import { InscriptionSeance } from '../bdd/inscription-seance';
 import { SeanceProfesseur } from '../bdd/seance_professeur';
+import { ProfService } from '../prof/prof.services';
 
 @Injectable()
 export class SeanceService {
@@ -18,7 +19,8 @@ export class SeanceService {
     @InjectRepository(LienGroupe)
     private readonly lienGrouperepo: Repository<LienGroupe>,
     @InjectRepository(InscriptionSeance)
-    private readonly inscriptionseancerepo: Repository<InscriptionSeance>
+    private readonly inscriptionseancerepo: Repository<InscriptionSeance>,
+    private profservice:ProfService
   ) // @InjectRepository(Projet)
   // private readonly projetRepo: Repository<Projet>,
   {}
@@ -55,6 +57,7 @@ export class SeanceService {
         heureDebut: seance.heure_debut,
         heureFin: calculerHeureFin(seance.heure_debut, seance.duree_seance),
         duree: seance.duree_seance,
+        inscription_id: undefined,
         lieu: '', // sera enrichi plus tard
         lieuId: seance.lieu_id,
         typeSeance: seance.type_seance,
@@ -64,7 +67,6 @@ export class SeanceService {
         statutInscription: undefined,
         professeur: [],
       };
-
       //check si présence signalée...
       const ins = await this.inscriptionseancerepo.findOne({
         where: {
@@ -73,7 +75,9 @@ export class SeanceService {
         },
       });
       if (ins) {
+        maSeance.inscription_id = ins.id;
         maSeance.statutInscription = ins!.statut_inscription;
+         maSeance.professeur = await  this.profservice.GetProfSeance(seance.seance_id);
         filteredSeances.push(maSeance);
       } else {
         let ajout: boolean = true;
@@ -81,7 +85,7 @@ export class SeanceService {
         if (seance.est_limite_age_minimum && age < seance.age_minimum) {
           ajout = false;
         }
-        if (seance.est_limite_age_maximum && age < seance.age_maximum) {
+        if (seance.est_limite_age_maximum && age > seance.age_maximum) {
           ajout = false;
         }
 
@@ -99,6 +103,7 @@ export class SeanceService {
           ajout = false;
         }
         if(ajout==true) {
+         maSeance.professeur = await  this.profservice.GetProfSeance(seance.seance_id);
           filteredSeances.push(maSeance);
         }
       }
@@ -159,6 +164,7 @@ export class SeanceService {
         statutInscription: undefined,
         professeur: [],
       };
+
       filteredSeances.push(maSeance);
     }
 
