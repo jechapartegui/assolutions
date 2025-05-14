@@ -1,10 +1,6 @@
+import { lieu } from "@shared/compte/src/lib/lieu.interface";
 import { Adresse } from "./address";
 
-export class lieu {
-    public id: number = 0;
-    public nom: string = "";
-    public adresse: string = JSON.stringify(new Adresse());
-}
 
 export class Lieu {
     
@@ -27,7 +23,6 @@ export class Lieu {
     constructor(L: lieu) {
         this.datasource = L;
       
-        this.Adresse = JSON.parse(this.datasource.adresse);
     }
 
     // Propriété prenom avec get et set

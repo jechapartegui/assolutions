@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProfController } from './prof.controller';
-import { ProfService } from './prof.services';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { SeanceProfesseur } from '../bdd/seance_professeur';
 import { Professeur } from '../bdd/professeur';
@@ -19,6 +17,8 @@ import { Projet } from '../bdd/project';
 import { ProjetLogin } from '../bdd/project_login';
 import { Saison } from '../bdd/saison';
 import { Seance } from '../bdd/seance';
+import { SaisonController } from './saison.controller';
+import { SaisonService } from './saison.services';
 
 @Module({
   imports: [
@@ -28,8 +28,8 @@ import { Seance } from '../bdd/seance';
             ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison
     ]),
   ],
-  providers: [ProfService],
-  controllers: [ProfController],
-  exports: [ProfService], // 👈 ajoute ça
+  providers: [SaisonService],
+  controllers: [SaisonController],
+  exports: [SaisonService], // 👈 ajoute ça
 })
-export class ProfModule {}
+export class SaisonModule {}

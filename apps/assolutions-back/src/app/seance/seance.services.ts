@@ -25,6 +25,14 @@ export class SeanceService {
   // private readonly projetRepo: Repository<Projet>,
   {}
 
+  async GetSeanceSaison(saison_id:number): Promise<Seance[]>{
+    return this.seanceRepo.find({
+       where: {
+        saison_id: saison_id
+       } 
+    })
+  }
+
   async MySeance(
     adhrent_id: number,
     age: number,

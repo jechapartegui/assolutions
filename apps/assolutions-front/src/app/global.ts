@@ -1,5 +1,4 @@
 import { Doc } from "../class/doc";
-import { StatutPresence } from "../class/inscription";
 
 
 export class StaticClass{
@@ -83,22 +82,6 @@ export class StaticClass{
   convertStringToList(inputString: string): string[] {
     return inputString.split(',');
   }
-  convertirEnStatutPresence(valeur: string): StatutPresence  {
-    switch(valeur) {
-      case "présent":
-        return StatutPresence.Présent;
-      case "absent":
-        return StatutPresence.Absent;
-      case "convoqué":
-        return StatutPresence.Convoqué;
-        case "essai":
-          return StatutPresence.Essai;
-      default:
-        return StatutPresence.Présent; // ou vous pouvez lancer une erreur si la valeur n'est pas valide
-    }
-  }
-
-
   
 
   

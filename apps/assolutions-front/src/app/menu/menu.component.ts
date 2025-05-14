@@ -3,8 +3,6 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdherentMenu } from '../../class/adherent';
 import { cours } from '../../class/cours';
-import { StatutPresence } from '../../class/inscription';
-import { KeyValuePairAny } from '../../class/keyvaluepair';
 import { professeur } from '../../class/professeur';
 import { StatutSeance } from '../../class/seance';
 import { CoursService } from '../../services/cours.service';
@@ -15,9 +13,10 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { StaticClass } from '../global';
 import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
 import { AdherentSeance, MesSeances } from '@shared/compte/src/lib/seance.interface';
-import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { lieu } from '@shared/compte/src';
+import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { lieu } from '@shared/compte/src/lib/lieu.interface';
+import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
 
 @Component({
   selector: 'app-menu',
@@ -84,11 +83,8 @@ export class MenuComponent implements OnInit {
       if (GlobalService.projet.adherent) {
         this.action = $localize`Récupérer les adhérents`;
         const seancesAdh = await this.GetMySeance();
-          console.log(seancesAdh.length)
         const ridersAdh = seancesAdh.map((x) => {
-          console.log(x.mes_seances.length)
           const rider = new AdherentMenu(x);
-          console.log(rider.InscriptionSeances.length)
           rider.profil = "ADH";
           rider.filters.filter_date_avant = yesterday;
           rider.filters.filter_date_apres = nextMonth;
@@ -106,7 +102,6 @@ export class MenuComponent implements OnInit {
 
           return rider;
         });
-        console.log(ridersAdh);
         this.Riders.push(...ridersAdh);
       }
   
@@ -147,9 +142,9 @@ export class MenuComponent implements OnInit {
         );
       }
       this.listeprof = profs;
-      this.liste_prof_filter = profs.map(
-        (x) => new KeyValuePairAny(x.id, `${x.prenom} ${x.nom}`)
-      );
+     this.liste_prof_filter = profs.map((x) => {
+  return { key: x.id, value: `${x.prenom} ${x.nom}` };
+});
   
       this.action = $localize`Récupérer la liste des lieux`;
       const lieux = await this.lieuserv.GetAll();
@@ -235,8 +230,11 @@ export class MenuComponent implements OnInit {
     }
   }
 copierDansPressePapier(texte: string): void {
-  navigator.clipboard.writeText(texte).then(() => {
+    const errorService = ErrorService.instance;
+  navigator.clipboard.writeText(texte).then(() => {    
     // Optionnel : Afficher un message, toast ou console.log
+          const o = errorService.OKMessage($localize`Adresse copiée :` + texte);
+      errorService.emitChange(o);
     console.log( $localize`Adresse copiée :`, texte);
   }).catch(err => {
     console.error( $localize`Erreur de copie`, err);
@@ -256,10 +254,10 @@ copierDansPressePapier(texte: string): void {
       if(s.inscription_id == null || s.inscription_id == 0) {
         aucun++;
       }
-      else if (s.statutInscription == StatutPresence.Présent) {
+      else if (s.statutInscription == "présent") {
         OK++;
       } 
-      else if (s.statutInscription == StatutPresence.Absent) {
+      else if (s.statutInscription == "absent") {
         KO++;
       } else {
         aucun++;
@@ -385,17 +383,19 @@ return $localize`Evénement`;
 
   MAJInscription(libelle : string, rider_id:number, seance: MesSeances, statut: boolean) {
     const errorService = ErrorService.instance;
-    let oldstatut = seance.statutInscription;
-    if (statut == null && oldstatut != null) {
+    let oldstatut = seance.statutInscription || null;
+    let idinscription = seance.inscription_id || null;
+    if (statut == null && oldstatut != null && idinscription) {
       this.action =
       libelle +
         $localize` ne prévoit plus d'être présent à la séance ` +
         seance.nom;
       this.inscriptionserv
-        .Delete(seance.inscription_id)
+        .Delete(idinscription)
         .then((ok) => {
           if (ok) {
             seance.statutInscription = null;
+            seance.inscription_id = null;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           } else {
@@ -416,23 +416,23 @@ return $localize`Evénement`;
         rider_id: rider_id,
         seance_id: seance.id,
         date_inscription: new Date(),
-        statut_inscription: statut ? StatutPresence.Présent : StatutPresence.Absent,
+        statut_inscription: statut ? "présent" : "absent",
         statut_seance: null
       };
       if (statut) {
-        seance.statutInscription = StatutPresence.Présent;
+        seance.statutInscription = "présent";
         this.action = 
         libelle +
         $localize` prévoit d'être présent à la séance ` +
         seance.nom;
       } else {
-        seance.statutInscription = StatutPresence.Absent;
+        seance.statutInscription = "absent";
         this.action =
         libelle +
         $localize` ne prévoit plus d'être présent à la séance ` +
         seance.nom;
       }
-      if (seance.inscription_id == 0) {
+      if (!idinscription) {
 
         this.inscriptionserv
           .Add(uneInscription)
@@ -449,11 +449,11 @@ return $localize`Evénement`;
           });
       } else {
         const update: inscription_seance = {
-          id: seance.inscription_id,
+          id: idinscription,
           rider_id: rider_id,
           seance_id: seance.id,
           date_inscription: new Date(),
-          statut_inscription: statut ? StatutPresence.Présent : StatutPresence.Absent,
+          statut_inscription: statut ? "présent" : "absent",
           statut_seance: null
         };
         this.inscriptionserv

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { cours } from '../class/cours';
-import { KeyValuePair } from '../class/keyvaluepair';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
 
 @Injectable({
   providedIn: 'root'

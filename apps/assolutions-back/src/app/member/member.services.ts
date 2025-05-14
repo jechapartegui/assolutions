@@ -10,6 +10,7 @@ import { GroupeService } from '../groupe/groupe.service';
 import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
+import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
 
 @Injectable()
 export class MemberService {
@@ -29,11 +30,11 @@ export class MemberService {
     private groupeservice: GroupeService
   ) {}
   async GetMyInfo(id: number) {
-    const adherent = await this.adherentRepo.findOne({ where: { id } });
-    if (!adherent) {
+    const pAdh = await this.adherentRepo.findOne({ where: { id } });
+    if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
-    return adherent;
+    return this.toAdh(pAdh);
   }
   async GetGestionnaire(compte: number, project_id: number): Promise<boolean> {
     const temp_adh = await this.GetAdherentProject(compte, project_id);
@@ -161,11 +162,11 @@ export class MemberService {
   }
 
  
-
+//fonction interne
   async AdherentSaisons(
     adherents: Adherent[],
     saison_id: number
-  ): Promise<Adherent[]> {
+  ): Promise<adherent[]> {
     const liste_adherent: Adherent[] = [];
 
     for (const ad of adherents) {
@@ -182,7 +183,9 @@ export class MemberService {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
 
-    return liste_adherent;
+    return liste_adherent.map((plieu) => {
+      return this.toAdh(plieu);
+    });
   }
 
   async ProfSaison(adherents: Adherent[], saison_id: number) {
@@ -238,5 +241,54 @@ export class MemberService {
     }
 
     return age;
+  }
+
+  toAdh(pAdh:Adherent) : adherent{
+ let adre: any = null;
+let cont: any = null;
+let cont_prev: any = null;
+
+try {
+  adre = pAdh.adresse && pAdh.adresse.length > 2 ? JSON.parse(pAdh.adresse) : null;
+} catch (e) {
+  adre = null;
+}
+
+try {
+  cont = pAdh.contacts && pAdh.contacts.length > 2 ? JSON.parse(pAdh.contacts) : null;
+} catch (e) {
+  cont = null;
+}
+try {
+  cont_prev = pAdh.contacts_prevenir && pAdh.contacts_prevenir.length > 2 ? JSON.parse(pAdh.contacts_prevenir) : null;
+} catch (e) {
+  cont_prev = null;
+}
+
+
+// Valeurs par défaut si `adre` ou `cont` sont invalides
+const adresse = adre?.name || "";
+const code_postal = adre?.postcode || "";
+const ville = adre?.city || "";
+
+const contacts: ItemContact[] = Array.isArray(cont) ? cont : [];
+const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : [];
+
+    let AD:adherent = {
+      id:pAdh.id,
+      nom:pAdh.nom,
+      prenom:pAdh.prenom,
+      surnom:pAdh.surnom,
+      date_naissance:pAdh.date_naissance,
+      adresse: adresse,
+      ville:ville,
+      code_postal:code_postal,
+      sexe:pAdh.sexe,
+      compte:pAdh.compte,
+      contact: contacts,
+      contact_prevenir:contacts_prevenir
+
+    }
+    return AD;
   }
 }

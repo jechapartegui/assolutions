@@ -1,5 +1,5 @@
+import { ItemContact } from "@shared/compte/src/lib/member.interface";
 import { Adresse } from "./address";
-import { ItemContact } from "./contact";
 
 export class professeur{
     public id:number;

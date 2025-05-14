@@ -23,7 +23,6 @@ console.warn('route', route);
     }
 
     const expectedPassword = generatePassword(userId, projectId, dateRef);
-
     if (password !== expectedPassword) {
       throw new UnauthorizedException('INVALID PASSWORD REQUEST');
     }

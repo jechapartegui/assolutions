@@ -2,10 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Adresse } from '../../class/address';
-import { Lieu, lieu } from '../../class/lieu';
+import { Lieu } from '../../class/lieu';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { LieuService } from '../../services/lieu.service';
+import { LieuNestService } from '../../services/lieu.nest.service';
+import { lieu } from '@shared/compte/src/lib/lieu.interface';
 
 @Component({
   selector: 'app-lieu',
@@ -19,7 +20,7 @@ export class LieuComponent implements OnInit {
   action: string = "";
   liste_lieu: Lieu[] = [];
   sort_nom: string;
-  constructor(public router: Router, public lieu_serv: LieuService) { }
+  constructor(public router: Router, public lieu_serv: LieuNestService) { }
 
   ngOnInit(): void {
     if (GlobalService.is_logged_in) {
@@ -54,7 +55,13 @@ export class LieuComponent implements OnInit {
     this.editLieu.datasource.adresse = JSON.stringify(data);
   }
   Creer(): void {
-    let c = new lieu();
+    let c:lieu = {
+      id:0,
+      nom:"",
+      adresse:"",
+      code_postal:"",
+      ville:""
+    };
     this.editLieu = new Lieu(c);
     this.editMode = true;
   }

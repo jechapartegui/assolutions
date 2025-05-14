@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InscriptionMaSeance, StatutPresence } from '../../class/inscription';
+import { InscriptionMaSeance } from '../../class/inscription';
 import { seance, StatutSeance } from '../../class/seance';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
@@ -69,19 +69,19 @@ export class MaSeanceComponent implements OnInit {
         break;
       case 'présent':
         this.action = inscription.Libelle + $localize` devrait être présent à la séance ` + libelleseab;
-        inscription.StatutInscription = StatutPresence.Présent;
+        inscription.StatutInscription = "présent";
         break;
       case 'essai':
         this.action = inscription.Libelle + $localize` est à l'essai pour la séance ` + libelleseab;
-        inscription.StatutInscription = StatutPresence.Essai;
+        inscription.StatutInscription = "essai";
         break;
       case 'absent':
         this.action = inscription.Libelle + $localize` devrait être absent à la séance ` + libelleseab;
-        inscription.StatutInscription = StatutPresence.Absent;
+        inscription.StatutInscription = "absent";
         break;
       case 'convoqué':
         this.action = inscription.Libelle + $localize` devrait être présent à la séance ` + libelleseab;
-        inscription.StatutInscription = StatutPresence.Convoqué;
+        inscription.StatutInscription = "convoqué";
         break;
 
     }
@@ -153,10 +153,10 @@ export class MaSeanceComponent implements OnInit {
     let oldstatut = inscription.StatutSeance;
     let libelleseab = this.thisSeance.libelle;
     if (statut == true) {
-      inscription.StatutSeance = StatutPresence.Présent;
+      inscription.StatutSeance = "présent";
       this.action = inscription.Libelle + $localize` est présent à la séance ` + libelleseab;
     } else if (statut == false) {
-      inscription.StatutSeance = StatutPresence.Absent;
+      inscription.StatutSeance = "absent";
       this.action = inscription.Libelle + $localize` est absent à la séance ` + libelleseab;
     } else if (statut == null) {
       inscription.StatutSeance = null;
@@ -245,7 +245,7 @@ AjouterAdherentsHorsGroupe() {
 
     this.action = $localize`Convoquer ` + this.adherent_to.Libelle;
     this.adherent_to.SeanceID = this.thisSeance.seance_id;
-    this.adherent_to.StatutInscription = StatutPresence.Convoqué;
+    this.adherent_to.StatutInscription = "convoqué";
     this.adherent_to.StatutSeance = null;
       const conv: inscription_seance = {
               id: 0,
@@ -277,7 +277,7 @@ AjouterAdherentsHorsGroupe() {
 
 GetNbPersonne(liste: InscriptionMaSeance[]): boolean {
   if (this.thisSeance.est_place_maximum) {
-    let ct = liste.filter(x => x.StatutSeance == StatutPresence.Présent).length;
+    let ct = liste.filter(x => x.StatutSeance == "présent").length;
     if (ct >= this.thisSeance.place_maximum) {
       return false;
     } else {

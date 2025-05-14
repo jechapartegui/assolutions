@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { KeyValuePair } from '../class/keyvaluepair';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { saison } from '../class/saison';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -14,13 +14,9 @@ export class SaisonService {
  }
  public GetAll(): Promise<saison[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/saison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all"
-  };
+    this.url = 'api/saison/getall';
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
     .then((response: saison[]) => {
       return response;
     })
@@ -31,14 +27,11 @@ export class SaisonService {
 }
 public Get(id:number): Promise<saison> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/saison_manage.php';
+    this.url = 'api/saison/get/' + id;
   //  this.url = this.url + "login.php";
-  const body = {
-    command:"get",
-    id:id
-  };
 
-  return this.global.POST(this.url, body)
+
+  return this.global.GET(this.url)
     .then((response: saison) => {
       return response;
     })
@@ -48,14 +41,9 @@ public Get(id:number): Promise<saison> {
     });
 }
 public GetAllLight(): Promise<KeyValuePair[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/saison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_light"
-  };
+    this.url = 'api/saison/getall_light';
 
-  return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
     .then((response: KeyValuePair[]) => {
       return response;
     })
@@ -66,14 +54,9 @@ public GetAllLight(): Promise<KeyValuePair[]> {
 }
 
 public Add(saison:saison): Promise<number> {
-  this.url = environment.maseance + 'maseance/saison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"add",
-    saison:saison,
-  };
+  this.url = 'api/saison/add';
 
-  return this.global.POST(this.url, body)
+  return this.global.PUT(this.url, saison)
     .then((response: number) => {
       return response;
     })
@@ -83,14 +66,9 @@ public Add(saison:saison): Promise<number> {
     });
 }
 public Update(saison:saison): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/saison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"update",
-    saison:saison,
-  };
+  this.url = 'api/saison/update';
 
-  return this.global.POST(this.url, body)
+  return this.global.PUT(this.url, saison)
     .then((response: boolean) => {
       return response;
     })
@@ -100,14 +78,9 @@ public Update(saison:saison): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/saison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"delete",
-    id:id,
-  };
+  this.url = 'api/seance/delete/' + id;
 
-  return this.global.POST(this.url, body)
+  return this.global.DELETE(this.url)
     .then((response: boolean) => {
       return response;
     })

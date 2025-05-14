@@ -2,17 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Adresse } from '../../class/address';
 import { Adherent, adherent } from '../../class/adherent';
-import { ItemContact } from '../../class/contact';
-import { KeyValuePair } from '../../class/keyvaluepair';
 import { professeur } from '../../class/professeur';
 import { Seance } from '../../class/seance';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
-import { LieuService } from '../../services/lieu.service';
 import { MailService } from '../../services/mail.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SeancesService } from '../../services/seance.service';
+import { ItemContact } from '@shared/compte/src/lib/member.interface';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { LieuNestService } from '../../services/lieu.nest.service';
 
 @Component({
   selector: 'app-seances-essais',
@@ -36,7 +36,7 @@ export class SeancesEssaisComponent implements OnInit {
   public essai: boolean = false;
   public action: string = "";
   public seanceText: string = "";
-  constructor(public insc_sean_serv:InscriptionSeanceService, public mail_serv:MailService, public route: ActivatedRoute, public sean_serv: SeancesService, public rider_serv: AdherentService, public prof_serv: ProfesseurService, public lieuserv: LieuService) {
+  constructor(public insc_sean_serv:InscriptionSeanceService, public mail_serv:MailService, public route: ActivatedRoute, public sean_serv: SeancesService, public rider_serv: AdherentService, public prof_serv: ProfesseurService, public lieuserv: LieuNestService) {
 
   }
   ngOnInit(): void {

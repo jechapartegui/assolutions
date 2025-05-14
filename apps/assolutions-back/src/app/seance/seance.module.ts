@@ -16,12 +16,16 @@ import { InscriptionSeance } from '../bdd/inscription-seance';
 import { Saison } from '../bdd/saison';
 import { SeanceProfesseur } from '../bdd/seance_professeur';
 import { Professeur } from '../bdd/professeur';
+import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
+import { Lieu } from '../bdd/lieu';
+import { ProfesseurSaison } from '../bdd/prof-saison';
+import { ProjetLogin } from '../bdd/project_login';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet, InscriptionSaison, InscriptionSeance, Seance, 
-      LienGroupe, Cours, Saison,SeanceProfesseur, Professeur]), // ✅ indispensable
+    TypeOrmModule.forFeature([    InscriptionSeance, Adherent, Seance, SeanceProfesseur, LienGroupe, Compte, Cours, GestionnaireProjet, InscriptionSaison, Lieu, AdherentProjet, 
+        ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison]), // ✅ indispensable
   ],
   providers: [SeanceService, ProfService],
   controllers: [SeanceController],

@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from '../../class/address';
 import { Adherent, adherent, AdherentExport } from '../../class/adherent';
 import { Adhesion, Type_Adhesion, paiement_adhesion } from '../../class/adhesion';
-import { ItemContact } from '../../class/contact';
 import { fluxfinancier } from '../../class/fluxfinancier';
 import { Groupe } from '../../class/groupe';
 import { operation } from '../../class/operation';
@@ -18,6 +17,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
+import { ItemContact } from '@shared/compte/src/lib/member.interface';
 
 
 @Component({
@@ -125,7 +125,7 @@ public type_inscription:boolean;
             }
           });
           if (this.context == 'LISTE') {
-            if (GlobalService.menu === 'APPLI') {
+            if (GlobalService.menu === 'APPLI' && GlobalService.is_gestionnaire === false) {
               this.loading = false;
               this.router.navigate(['/menu']);
               GlobalService.selected_menu = 'MENU';

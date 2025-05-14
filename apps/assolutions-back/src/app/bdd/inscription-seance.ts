@@ -19,12 +19,12 @@ export class InscriptionSeance {
     enum: ['présent', 'absent', 'convoqué', 'essai'],
     nullable: true
   })
-  statut_inscription: 'présent' | 'absent' | 'convoqué' | 'essai';
+  statut_inscription: 'présent' | 'absent' | 'convoqué' | 'essai' | undefined;
 
   @Column({
     type: 'enum',
     enum: ['présent', 'absent'],
     nullable: true
   })
-  statut_seance: 'présent' | 'absent';
+  statut_seance: 'présent' | 'absent'| undefined;
 }

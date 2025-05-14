@@ -2,7 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Adherent } from '../../class/adherent';
 import { Groupe } from '../../class/groupe';
-import { KeyValuePairAny } from '../../class/keyvaluepair';
 import { MailData } from '../../class/mail';
 import { seance } from '../../class/seance';
 import { AdherentService } from '../../services/adherent.service';
@@ -11,6 +10,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { MailService } from '../../services/mail.service';
 import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
+import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 
 @Component({
   selector: 'app-envoi-mail',
@@ -155,8 +155,8 @@ export class EnvoiMailComponent implements OnInit {
         this.mail_a_generer.content = content;
         this.params = [];
         if (this.typemail == 'SEANCE_DISPO') {
-          this.params.push(new KeyValuePairAny('date_debut', this.date_debut));
-          this.params.push(new KeyValuePairAny('date_fin', this.date_fin));
+          this.params.push({ key: 'date_debut', value: this.date_debut });
+  this.params.push({ key: 'date_fin', value: this.date_fin });
         }
         this.mail_serv
           .GetSubjecct(this.typemail)

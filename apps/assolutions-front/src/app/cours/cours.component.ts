@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 import { jour_semaine } from '../global';
 import { cours, Cours } from '../../class/cours';
 import { Groupe } from '../../class/groupe';
-import { KeyValuePair, KeyValuePairAny } from '../../class/keyvaluepair';
 import { professeur } from '../../class/professeur';
 import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
@@ -16,9 +15,10 @@ import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
-import { LieuService } from '../../services/lieu.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
+import { LieuNestService } from '../../services/lieu.nest.service';
+import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 
 @Component({
   selector: 'app-cours',
@@ -27,7 +27,7 @@ import { SaisonService } from '../../services/saison.service';
 })
 export class CoursComponent implements OnInit {
   // cours.component.ts
-  constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
+  constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuNestService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService, private excelService:ExcelService) { }
   listeprof: professeur[];
   listelieu: KeyValuePair[];

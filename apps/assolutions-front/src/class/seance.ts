@@ -1,6 +1,6 @@
 import { Subject } from "rxjs";
 import { Groupe, Lien_Groupe } from "./groupe";
-import { KeyValuePair } from "./keyvaluepair";
+import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
 
 export class seance {
     public seance_id:number =0;

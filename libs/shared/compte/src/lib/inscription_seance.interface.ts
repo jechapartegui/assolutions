@@ -1,18 +1,14 @@
+import { ItemContact } from "./member.interface";
+
 export interface inscription_seance {
     id: number;
      rider_id: number;
      seance_id: number;
      date_inscription: Date;
-     statut_inscription: StatutPresence;
-     statut_seance: StatutPresence;
+     statut_inscription: string | undefined;
+     statut_seance: string | undefined;
 }
 
-export enum StatutPresence {
-    Présent = "présent",
-    Absent = "absent",
-    Convoqué = "convoqué",
-    Essai = "essai"
-}
 
 export interface full_inscription_seance {
 
@@ -20,13 +16,13 @@ export interface full_inscription_seance {
     rider_id: number;
     seance_id: number;
     date_inscription: Date;
-    statut_inscription: StatutPresence;
-    statut_seance: StatutPresence;
+    statut_inscription: string | undefined;
+    statut_seance: string | undefined;
     nom: string;
     prenom: string;
     surnom: string;
-    contacts: string;
-    contacts_prevenir: string;
+    contacts: ItemContact[];
+    contacts_prevenir: ItemContact[];
 
 
 }

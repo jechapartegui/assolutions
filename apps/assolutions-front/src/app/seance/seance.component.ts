@@ -3,7 +3,6 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { cours } from '../../class/cours';
 import { Groupe } from '../../class/groupe';
-import { KeyValuePair, KeyValuePairAny } from '../../class/keyvaluepair';
 import { professeur, Professeur } from '../../class/professeur';
 import { Saison } from '../../class/saison';
 import { seance, Seance, StatutSeance } from '../../class/seance';
@@ -14,11 +13,12 @@ import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
-import { LieuService } from '../../services/lieu.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { SeancesService } from '../../services/seance.service';
 import { SeanceprofService } from '../../services/seanceprof.service';
+import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { LieuNestService } from '../../services/lieu.nest.service';
 
 
 @Component({
@@ -84,7 +84,7 @@ export class SeanceComponent implements OnInit {
     private seancesservice: SeancesService,
     private spservice: SeanceprofService,
     private coursservice: CoursService,
-    private lieuserv: LieuService,
+    private lieuserv: LieuNestService,
     public ridersService: AdherentService,
     private router: Router,
     private saisonserv: SaisonService,

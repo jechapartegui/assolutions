@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { Adresse } from '../../class/address';
 import { Adherent, AdherentExport, adherent } from '../../class/adherent';
-import { ItemContact } from '../../class/contact';
 import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
 import { CompteService } from '../../services/compte.service';
@@ -332,50 +331,46 @@ export class ImportAdherentComponent implements OnInit {
       }
       AdherentT.Login = Adh.Login;
       AdherentT.Contacts = [];
-      if (Adh.Mail && this.IsEmail(Adh.Mail)) {
-        let icm: ItemContact = new ItemContact();
-        icm.Pref = false;
-        icm.Type = 'EMAIL';
-        icm.Value = Adh.Mail;
-        if (Adh.MailPref) {
-          icm.Pref = true;
-        }
-        AdherentT.Contacts.push(icm);
-      }
-      if (Adh.Phone && this.IsPhone(Adh.Phone)) {
-        let icp: ItemContact = new ItemContact();
-        icp.Pref = false;
-        icp.Type = 'PHONE';
-        icp.Value = Adh.Phone;
-        if (Adh.PhonePref) {
-          icp.Pref = true;
-        }
-        AdherentT.Contacts.push(icp);
-      }
 
-      AdherentT.ContactsUrgence = [];
-      if (Adh.MailUrgence && this.IsEmail(Adh.MailUrgence)) {
-        let icm: ItemContact = new ItemContact();
-        icm.Pref = false;
-        icm.Type = 'EMAIL';
-        icm.Notes = Adh.NomMailUrgence;
-        icm.Value = Adh.MailUrgence;
-        if (Adh.MailPref) {
-          icm.Pref = true;
-        }
-        AdherentT.ContactsUrgence.push(icm);
-      }
-      if (Adh.PhoneUrgence && this.IsPhone(Adh.PhoneUrgence)) {
-        let icp: ItemContact = new ItemContact();
-        icp.Pref = false;
-        icp.Notes = Adh.NomPhoneUrgence;
-        icp.Type = 'PHONE';
-        icp.Value = Adh.PhoneUrgence;
-        if (Adh.PhonePref) {
-          icp.Pref = true;
-        }
-        AdherentT.ContactsUrgence.push(icp);
-      }
+if (Adh.Mail && this.IsEmail(Adh.Mail)) {
+  AdherentT.Contacts.push({
+    Type: 'EMAIL',
+    Value: Adh.Mail,
+    Notes: '',
+    Pref: !!Adh.MailPref
+  });
+}
+
+if (Adh.Phone && this.IsPhone(Adh.Phone)) {
+  AdherentT.Contacts.push({
+    Type: 'PHONE',
+    Value: Adh.Phone,
+    Notes: '',
+    Pref: !!Adh.PhonePref
+  });
+}
+
+AdherentT.ContactsUrgence = [];
+
+if (Adh.MailUrgence && this.IsEmail(Adh.MailUrgence)) {
+  AdherentT.ContactsUrgence.push({
+    Type: 'EMAIL',
+    Value: Adh.MailUrgence,
+    Notes: Adh.NomMailUrgence || '',
+    Pref: !!Adh.MailPref // Attention ici : tu veux probablement tester `MailUrgencePref` ?
+  });
+}
+
+if (Adh.PhoneUrgence && this.IsPhone(Adh.PhoneUrgence)) {
+  AdherentT.ContactsUrgence.push({
+    Type: 'PHONE',
+    Value: Adh.PhoneUrgence,
+    Notes: Adh.NomPhoneUrgence || '',
+    Pref: !!Adh.PhonePref // Idem ici : à vérifier si c’est `PhoneUrgencePref`
+  });
+}
+
+   
       AdherentT.Inscrit = Adh.Inscrit;
 
       this.list_adh.push(AdherentT); // Ajouter l'adhérent à la liste

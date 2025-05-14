@@ -296,32 +296,26 @@
                       <ng-container
                         *ngIf="seance.statut == 'prévue'"
                       >
-                        <span i18n-title title="Séance prévue" class="tag is-info is-rounded is-light">
-                            <span class="fa-stack fa-lg">
+                            <span class="fa-stack fa-lg" i18n-title title="Séance prévue" >
                               <i
                                 class="fas fa-stack-2x fa-calendar-check has-text-info"
                               ></i>
                             </span>
-                        </span>
                       </ng-container>
                       <ng-container
                         *ngIf="seance.statut == 'réalisée'"
                       >
-                        <span class="tag is-primary is-rounded is-light">
-                          <span class="icon has-text-success">
+                          <span class="icon has-text-success" i18n-title title="Séance réalisée" >
                             <i class="fa-solid fa-flag-checkered"></i>
                           </span>
-                        </span>
                       </ng-container>
                       <ng-container
                         *ngIf="seance.statut == 'annulée'"
                       >
-                        <span class="tag is-danger is-rounded is-light">
-                          <span class="icon has-text-danger">
+                          <span class="icon has-text-danger"  i18n-title title="Séance annulée">
                             <i class="fa-solid fa-ban"></i>
                           </span>
-                        </span>
-                      </ng-container>
+                               </ng-container>
                     </td>
                     <td>
                       <btn *ngIf="rider.profil == 'PROF'"
@@ -406,6 +400,7 @@
                               ></i>
                             </span>
                           </span>
+                          
                       </ng-container>
                     </td>
                   </tr>

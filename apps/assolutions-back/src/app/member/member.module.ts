@@ -20,19 +20,16 @@ import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
 import { SeanceProfesseur } from '../bdd/seance_professeur';
 import { Professeur } from '../bdd/professeur';
+import { Cours } from '../bdd/cours';
+import { Lieu } from '../bdd/lieu';
+import { ProjetLogin } from '../bdd/project_login';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
-      Compte,
-      Adherent,
-      AdherentProjet,
-      Projet,
-      Seance,
-      InscriptionSaison,
-      InscriptionSeance,
-      Saison, LienGroupe, ProfesseurSaison, GestionnaireProjet, SeanceProfesseur, Professeur
+InscriptionSeance, Adherent, Seance, SeanceProfesseur, LienGroupe, Compte, Cours, GestionnaireProjet, InscriptionSaison, Lieu, AdherentProjet, 
+        ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison
     ]),
   ],
   providers: [MemberService, ProjectService, SeanceService, GroupeService, ProfService],

@@ -3,7 +3,7 @@ import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
 import { adherent } from '../class/adherent';
-import { KeyValuePair } from '../class/keyvaluepair';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
 
 @Injectable({
   providedIn: 'root'

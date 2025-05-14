@@ -4,7 +4,7 @@ import { GlobalService } from './global.services';
 import { adherent } from '../class/adherent';
 import { seance } from '../class/seance';
 import { MailData } from '../class/mail';
-import { KeyValuePairAny } from '../class/keyvaluepair';
+import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 
 @Injectable({
   providedIn: 'root'

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { KeyValuePair } from '../class/keyvaluepair';
 import {  projet } from '../class/projet';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { saison } from '../class/saison';
-import { lieu } from '../class/lieu';
 import { Groupe } from '../class/groupe';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { lieu } from '@shared/compte/src/lib/lieu.interface';
 
 @Injectable({
   providedIn: 'root'

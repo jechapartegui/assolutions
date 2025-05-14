@@ -1,5 +1,5 @@
 import {  Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
-import { ItemContact } from '../../class/contact';
+import { ItemContact } from '@shared/compte/src/lib/member.interface';
 
 @Component({
   selector: 'app-contact-item',
@@ -65,7 +65,12 @@ export class ContactItemComponent implements OnInit {
   }
   Add() {
     this.EditIndex = -1;
-    this.thisContact = new ItemContact();
+    this.thisContact = {
+    Type: 'EMAIL',
+    Value: '',
+    Notes: '',
+    Pref: false
+  };
   }
 
 

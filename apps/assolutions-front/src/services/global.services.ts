@@ -3,10 +3,10 @@ import * as CryptoJS from 'crypto-js';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { KeyValuePair } from '../class/keyvaluepair';
 import { environment } from '../environments/environment.prod';
 import { compte, ProjetLogin, ProjetView } from '@shared/compte/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -191,30 +191,27 @@ export class GlobalService {
   }
   public async PUT(url: string, body: any): Promise<any> {
   try {
-    const date_ref = new Date();
-    const date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
-    let _varid: string = "0";
-    let project_id: string = "-1";
-    const timeoutMilliseconds = 50000;
+    let date_ref = new Date();
+      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
+      let _varid: string = "0";
+      let project_id: string = "-1";
+      const timeoutMilliseconds = 50000;
+      if (GlobalService.compte) {
+        _varid = GlobalService.compte.id.toString();
+      }
+      if (GlobalService.projet) {
+        project_id = GlobalService.projet.id.toString();
+      }
 
-    if (GlobalService.compte) {
-      _varid = GlobalService.compte.id.toString();
-    }
-    if (GlobalService.projet) {
-      project_id = GlobalService.projet.id.toString();
-    }
-
-    const password = _varid + date_ref_string;
-    const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
-
-    const headers = new HttpHeaders()
-      .set('content-type', 'application/json')
-      .set('Access-Control-Allow-Origin', '*')
-      .set('password', hashedPassword)
-      .set('dateref', date_ref_string)
-      .set('projectid', project_id)
-      .set('lang', this.getCurrentLanguage())
-      .set('userid', _varid);
+      const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
+      const headers = new HttpHeaders()
+        .set('content-type', 'application/json')
+        .set('Access-Control-Allow-Origin', '*')
+        .set('password', expectedPassword)
+        .set('dateref', date_ref_string)
+        .set('projectid', project_id)
+        .set('lang', this.getCurrentLanguage())
+        .set('userid', _varid)
 
     const response = await firstValueFrom(
       this.http.put(url, body, { headers }).pipe(
@@ -241,31 +238,27 @@ export class GlobalService {
 }
 public async DELETE(url: string): Promise<any> {
   try {
-    const date_ref = new Date();
-    const date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
-    let _varid: string = "0";
-    let project_id: string = "-1";
-    const timeoutMilliseconds = 50000;
+    let date_ref = new Date();
+      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
+      let _varid: string = "0";
+      let project_id: string = "-1";
+      const timeoutMilliseconds = 50000;
+      if (GlobalService.compte) {
+        _varid = GlobalService.compte.id.toString();
+      }
+      if (GlobalService.projet) {
+        project_id = GlobalService.projet.id.toString();
+      }
 
-    if (GlobalService.compte) {
-      _varid = GlobalService.compte.id.toString();
-    }
-    if (GlobalService.projet) {
-      project_id = GlobalService.projet.id.toString();
-    }
-
-    const password = _varid + date_ref_string;
-    const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
-
-    const headers = new HttpHeaders()
-      .set('content-type', 'application/json')
-      .set('Access-Control-Allow-Origin', '*')
-      .set('password', hashedPassword)
-      .set('dateref', date_ref_string)
-      .set('projectid', project_id)
-      .set('lang', this.getCurrentLanguage())
-      .set('userid', _varid);
-
+      const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
+      const headers = new HttpHeaders()
+        .set('content-type', 'application/json')
+        .set('Access-Control-Allow-Origin', '*')
+        .set('password', expectedPassword)
+        .set('dateref', date_ref_string)
+        .set('projectid', project_id)
+        .set('lang', this.getCurrentLanguage())
+        .set('userid', _varid)
     const response = await firstValueFrom(
       this.http.delete(url, { headers }).pipe(
         timeout(timeoutMilliseconds),

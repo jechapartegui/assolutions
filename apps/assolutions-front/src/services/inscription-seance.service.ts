@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
-import { full_inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
+import { full_inscription_seance, inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface'
 
 @Injectable({
   providedIn: 'root'
@@ -40,35 +39,7 @@ public GetFull(id:number): Promise<full_inscription_seance> {
       return Promise.reject(error);
     });
 }
- public GetAllCours(cours_id:number): Promise<inscription_seance[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = 'api/inscription_seance/get_all_cours/' + cours_id;
-  //  this.url = this.url + "login.php";
-
-  return this.global.GET(this.url)
-    .then((response: inscription_seance[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-
-public GetAllRider(rider_id:number): Promise<inscription_seance[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = 'api/inscription_seance/get_all_rider/' + rider_id;
-  //  this.url = this.url + "login.php";
-
-  return this.global.GET(this.url)
-    .then((response: inscription_seance[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
+ 
 public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<inscription_seance[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
 this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;

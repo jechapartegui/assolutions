@@ -1,12 +1,12 @@
 import { Subject } from "rxjs";
 import { seance } from "./seance";
 import { Groupe } from "./groupe";
-import { inscription_seance } from "./inscription";
-import { ItemContact } from "./contact";
 import { Adresse } from "./address";
 import { Adhesion } from "./adhesion";
 import { FilterMenu } from "../app/menu/menu.component";
 import { AdherentSeance, MesSeances } from "@shared/compte/src/lib/seance.interface";
+import { ItemContact } from "@shared/compte/src/lib/member.interface";
+import { inscription_seance } from "@shared/compte/src/lib/inscription_seance.interface";
 
 export class adherent {
   public id: number = 0;
