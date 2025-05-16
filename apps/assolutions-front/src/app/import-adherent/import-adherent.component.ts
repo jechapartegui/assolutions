@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { Adresse } from '../../class/address';
-import { Adherent, AdherentExport, adherent } from '../../class/adherent';
+import { Adherent, AdherentExport } from '../../class/adherent';
 import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
 import { CompteService } from '../../services/compte.service';
@@ -12,6 +12,7 @@ import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
+import { adherent } from '@shared/compte/src/lib/member.interface';
 
 @Component({
   selector: 'app-import-adherent',
@@ -313,8 +314,25 @@ export class ImportAdherentComponent implements OnInit {
           }
         }
       });
-      let a = new adherent();
-      let AdherentT = new Adherent(a);
+       let adh: adherent = {
+            id:0,
+            nom:"",
+            prenom:"",
+            surnom:"",
+            date_naissance:new Date(),
+            contact:[],
+            contact_prevenir:[],
+            adresse:"",
+            sexe:false,
+            compte:0,
+            code_postal:"",
+            ville:"",
+            inscrit:false,
+            login:"",
+            groupes:[]
+      
+          }
+      let AdherentT = new Adherent(adh);
       AdherentT.ID = Adh.ID;
       AdherentT.Nom = Adh.Nom;
       AdherentT.Prenom = Adh.Prenom;
@@ -438,8 +456,8 @@ if (Adh.PhoneUrgence && this.IsPhone(Adh.PhoneUrgence)) {
     this.action = $localize`Vérifier l'import`;
     const errorService = ErrorService.instance;
     this.list_adh.map((x) => {
-      (x.datasource.contacts = JSON.stringify(x.Contacts)),
-        (x.datasource.contacts_prevenir = JSON.stringify(x.ContactsUrgence));
+      (x.datasource.contact = x.Contacts),
+        (x.datasource.contact_prevenir =x.ContactsUrgence);
       x.datasource.adresse = JSON.stringify(x.Adresse);
     });
     this.riders_serv

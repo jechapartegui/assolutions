@@ -7,6 +7,7 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
 import { AuthResult, ProjetView } from '@shared/compte/src/lib/compte.interface';
+import { ProjetService } from '../../services/projet.service';
 
 @Component({
   selector: 'app-login',
@@ -26,7 +27,8 @@ export class LoginComponent implements OnInit {
     private compte_serv: CompteService,
     private router: Router,
     private route: ActivatedRoute,
-    public GlobalService: GlobalService
+    public GlobalService: GlobalService,
+    private proj_serv:ProjetService
   ) {
     this.VM.Login = environment.defaultlogin;
     this.VM.Password = environment.defaultpassword;
@@ -180,15 +182,34 @@ export class LoginComponent implements OnInit {
     this.projets_select = this.projets.find((x) => x.id == event);
   }
 
-  ConnectToProject() {
+  async ConnectToProject() {
     this.action = $localize`Se connecter au projet`;
     this.loading = true;
     // Appel à la méthode Check_Login du service RidersService
     const errorService = ErrorService.instance;
 
     if (this.projets_select) {
+       
         GlobalService.instance.updateProjet(this.projets_select);
         GlobalService.instance.updateGestionnaire(this.projets_select);
+         try {
+          const adh = await this.proj_serv.GetActiveSaison();
+          GlobalService.instance.updateSaisonActive(adh);
+          
+          if (!adh) {
+            throw new Error($localize`Pas de saison active détectée sur le projet`);
+          }
+
+          // suite du traitement
+        } catch (err: any) {
+          this.loading = false;
+          let o = errorService.CreateError(this.action, err.message || 'Erreur inconnue');
+          errorService.emitChange(o);
+          GlobalService.instance.updateProjet(null);
+          GlobalService.instance.updateGestionnaire(null);
+          this.router.navigate(['/login']);
+          return;
+        }
         GlobalService.instance.updateSelectedMenuStatus('MENU');
         this.router.navigate(['/menu']);
       this.loading = false;

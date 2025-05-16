@@ -62,7 +62,7 @@ export class GroupeComponent implements OnInit {
     this.action = $localize`Ajout d'une personne au groupe`;
     try {
       let Ad = this.liste_adherent.find(x => x.ID == this.adherent_to.ID);
-      if (Ad.datasource.groupes.find(x => x.id == this.groupe_to.id)) {
+      if (Ad.Groupes.find(x => x.id == this.groupe_to.id)) {
         let o = errorService.Create(this.action, $localize`Cet adhérent est déjà présent dans le groupe`, "Warning");
         errorService.emitChange(o);
       } else {

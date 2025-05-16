@@ -9,7 +9,7 @@ export class LieuController {
   constructor(private readonly lieu_serv: LieuService) {}
   @UseGuards(PasswordGuard)
     @Get('get/:id')
-  async Get(@Body() { id }: { id: number }) {
+  async Get(@Param() { id }: { id: number }) {
     return this.lieu_serv.Get(id);
   }
 

@@ -11,6 +11,7 @@ import { MailService } from '../../services/mail.service';
 import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
 import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { GlobalService } from '../../services/global.services';
 
 @Component({
   selector: 'app-envoi-mail',
@@ -52,7 +53,8 @@ export class EnvoiMailComponent implements OnInit {
     public gr_serv: GroupeService,
     public seance_serv: SeancesService,
     public mail_serv: MailService,
-    public proj_serv: ProjetService
+    public proj_serv: ProjetService,
+    public GlobalService:GlobalService
   ) {}
 
   ngOnInit(): void {}
@@ -87,9 +89,9 @@ export class EnvoiMailComponent implements OnInit {
 
   ValiderPlage() {
     const errorService = ErrorService.instance;
-    this.action = $localize`Charger l'audience`;
+    this.action = $localize`Charger l'audience`;    
     this.adh_serv
-      .GetAllActiveSaison()
+      .GetAll(GlobalService.saison_active, true)
       .then((list) => {
         this.liste_adherent = list.map((w) => new Adherent(w));
         this.gr_serv

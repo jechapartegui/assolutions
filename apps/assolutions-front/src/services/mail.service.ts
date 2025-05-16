@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { adherent } from '../class/adherent';
 import { seance } from '../class/seance';
 import { MailData } from '../class/mail';
 import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { adherent } from '@shared/compte/src/lib/member.interface';
 
 @Injectable({
   providedIn: 'root'

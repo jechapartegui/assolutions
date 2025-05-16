@@ -19,6 +19,10 @@ import {
     // private readonly projetRepo: Repository<Projet>,
     ) {
     }
+
+    async numberActiveSaison(project_id: number): Promise<number>{
+      return (await this.getActiveSaion(project_id)).id;
+    }
   
     async getActiveSaion(project_id: number): Promise<Saison> {
       const saison = await this.saisonRepo.findOne({

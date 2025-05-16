@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from '../../class/address';
-import { Adherent, adherent, AdherentExport } from '../../class/adherent';
+import { Adherent, AdherentExport } from '../../class/adherent';
 import { Adhesion, Type_Adhesion, paiement_adhesion } from '../../class/adhesion';
 import { fluxfinancier } from '../../class/fluxfinancier';
 import { Groupe } from '../../class/groupe';
@@ -17,7 +17,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
-import { ItemContact } from '@shared/compte/src/lib/member.interface';
+import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
 
 
 @Component({
@@ -47,7 +47,7 @@ export class AdherentComponent implements OnInit {
   public sort_date = 'NO';
   public sort_sexe = 'NO';
 
-  //inscription
+  inscription
   public afficher_inscription: boolean = false;
 public adherent_inscription: Adherent;
 public saison_inscription: Saison;
@@ -90,7 +90,6 @@ public type_inscription:boolean;
     this.action = $localize`Charger la page`;
     this.loading = true;
     if (GlobalService.is_logged_in) {
-      // Chargez la liste des cours
       this.saisonserv
         .GetAll()
         .then((sa) => {
@@ -134,8 +133,7 @@ public type_inscription:boolean;
           }
           if (this.context == 'ECRITURE' || this.context == 'LECTURE') {
             if (this.id == 0 && this.context == 'ECRITURE') {
-              let adh = new adherent();
-              this.thisAdherent = new Adherent(adh);
+              this.thisAdherent = new Adherent(this.Newadhrent());
               this.loading = false;
             }
             if (this.id > 0) {
@@ -173,7 +171,6 @@ public type_inscription:boolean;
   }
   onGroupesUpdated(updatedGroupes: Groupe[]) {
     this.thisAdherent.Groupes = updatedGroupes;
-    // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
   }
 
   UpdateListeAdherents() {
@@ -234,9 +231,31 @@ public type_inscription:boolean;
     }
   }
 
+  Newadhrent() : adherent{
+  let adh: adherent = {
+      id:0,
+      nom:"",
+      prenom:"",
+      surnom:"",
+      date_naissance:new Date(),
+      contact:[],
+      contact_prevenir:[],
+      adresse:"",
+      sexe:false,
+      compte:0,
+      code_postal:"",
+      ville:"",
+            inscrit:false,
+            login:"",
+            groupes:[]
+
+    }
+    return adh;
+  }
+
   Create() {
-    let adh: adherent = new adherent();
-    this.thisAdherent = new Adherent(adh);
+  
+    this.thisAdherent = new Adherent(this.Newadhrent());
     this.context = 'ECRITURE';
     this.id = 0;
   }
@@ -259,41 +278,41 @@ public type_inscription:boolean;
     } else {
       this.type_inscription = false;
     }
-    // const errorService = ErrorService.instance;
-    // this.action = $localize`Effectuer une inscription`;
+     const errorService = ErrorService.instance;
+     this.action = $localize`Effectuer une inscription`;
 
-    // if (paiement) {
-    //   let confirm = window.confirm(
-    //     $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
-    //   );
-    //   if (confirm) {
-    //     this.router.navigate(['/inscription']);
-    //   }
-    // } else {
-    //   let confirm = window.confirm(
-    //     $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
-    //   );
-    //   if (confirm) {
-    //     this.inscription_saison_serv
-    //       .Add(saison_id, adh.ID)
-    //       .then((id) => {
-    //         let i = new Adhesion();
-    //         i.id = id;
-    //         i.rider_id = adh.ID;
-    //         i.saison_id = saison_id;
-    //         if (!adh.Adhesions) {
-    //           adh.Adhesions = [];
-    //         }
-    //         adh.Adhesions.push(i);
-    //         let o = errorService.OKMessage(this.action);
-    //         errorService.emitChange(o);
-    //       })
-    //       .catch((err: HttpErrorResponse) => {
-    //         let o = errorService.CreateError(this.action, err.message);
-    //         errorService.emitChange(o);
-    //       });
-    //   }
-    // }
+     if (paiement) {
+       let confirm = window.confirm(
+         $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
+       );
+       if (confirm) {
+         this.router.navigate(['/inscription']);
+       }
+     } else {
+       let confirm = window.confirm(
+         $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
+       );
+       if (confirm) {
+         this.inscription_saison_serv
+           .Add(saison_id, adh.ID)
+           .then((id) => {
+             let i = new Adhesion();
+             i.id = id;
+             i.rider_id = adh.ID;
+             i.saison_id = saison_id;
+             if (!adh.Adhesions) {
+               adh.Adhesions = [];
+             }
+             adh.Adhesions.push(i);
+             let o = errorService.OKMessage(this.action);
+             errorService.emitChange(o);
+           })
+           .catch((err: HttpErrorResponse) => {
+             let o = errorService.CreateError(this.action, err.message);
+             errorService.emitChange(o);
+           });
+       }
+     }
   }
   CreerPaiement( adh: Adhesion, type_a: Type_Adhesion, libelle_nom: string, libelle_saison: string ) {
     let dd:string;
@@ -394,57 +413,37 @@ public type_inscription:boolean;
     return this.liste_saison.filter((x) => x.id == id)[0].nom;
   }
 
-  ChargerAdherent() {
-    // this.thisAdherent = null;
-    // const errorService = ErrorService.instance;
-    // this.action = $localize`Récupérer l'adhérent`;
-    // if (GlobalService.menu == 'ADHERENT') {
-    //   this.ridersService
-    //     .Get_Adherent_My(this.id)
-    //     .then((adh) => {
-    //       this.thisAdherent = new Adherent(adh);
-    //       this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
-    //       this.loading = false;
-    //     })
-    //     .catch((err: HttpErrorResponse) => {
-    //       this.loading = false;
-    //       let o = errorService.CreateError(this.action, err.message);
-    //       errorService.emitChange(o);
-    //       this.router.navigate(['/menu']);
-    //       GlobalService.selected_menu = 'MENU';
-    //       return;
-    //     });
-    // }
-    // if (GlobalService.menu == 'PROF') {
-    //   this.ridersService
-    //     .Get_Adherent_Prof(this.id)
-    //     .then((adh) => {
-    //       this.thisAdherent = new Adherent(adh);
-    //       this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
-    //     })
-    //     .catch((err: HttpErrorResponse) => {
-    //       let o = errorService.CreateError(this.action, err.message);
-    //       errorService.emitChange(o);
-    //       this.router.navigate(['/menu']);
-    //       GlobalService.selected_menu = 'MENU';
-    //       return;
-    //     });
-    // }
-    // if (GlobalService.menu == 'ADMIN') {
-    //   this.ridersService
-    //     .Get_Adherent_Admin(this.id)
-    //     .then((adh) => {
-    //       this.thisAdherent = new Adherent(adh);
-    //       this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
-    //     })
-    //     .catch((err: HttpErrorResponse) => {
-    //       let o = errorService.CreateError(this.action, err.message);
-    //       errorService.emitChange(o);
-    //       this.router.navigate(['/menu']);
-    //       GlobalService.selected_menu = 'MENU';
-    //       return;
-    //     });
-    // }
+  async ChargerAdherent() {
+     this.thisAdherent = null;
+     const errorService = ErrorService.instance;
+     this.action = $localize`Récupérer l'adhérent`;
+   try {
+    const adh = await this.ridersService.Get(this.id);
+    if (!adh) {
+      this.loading = false;
+      let o = errorService.CreateError(this.action,  $localize`Aucun adhérent trouvé`);
+      errorService.emitChange(o);
+      this.router.navigate(['/menu']);
+      GlobalService.selected_menu = 'MENU';
+      return;
+    }
+  } catch (err: any) {
+    this.loading = false;
+    let o = errorService.CreateError(this.action, err.message ||  $localize`Erreur inconnue`);
+    errorService.emitChange(o);
+    this.router.navigate(['/menu']);
+    GlobalService.selected_menu = 'MENU';
+  }
+
+     if (GlobalService.menu == 'APPLI' && GlobalService.is_gestionnaire == false) {
+      return;
+     } else if (GlobalService.menu == 'APPLI' && GlobalService.is_gestionnaire == true) {
+      
+      return;
+     } else if (GlobalService.menu == 'ADMIN') {
+      
+      return;
+     }
   }
 
   Delete(adh: Adherent) {
@@ -544,7 +543,7 @@ public type_inscription:boolean;
         this.sort_date = 'NO';
         this.sort_sexe = 'NO';
         this.liste_adherents_VM.sort((a, b) => {
-          const nomA = a.Libelle.toUpperCase(); // Ignore la casse lors du tri
+          const nomA = a.Libelle.toUpperCase();  
           const nomB = b.Libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
@@ -553,7 +552,7 @@ public type_inscription:boolean;
             comparaison = -1;
           }
 
-          return this.sort_nom === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          return this.sort_nom === 'ASC' ? comparaison : -comparaison;  
         });
         break;
       case 'sexe':
@@ -571,7 +570,7 @@ public type_inscription:boolean;
             comparaison = -1;
           }
 
-          return this.sort_sexe === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          return this.sort_sexe === 'ASC' ? comparaison : -comparaison;  
         });
         break;
       case 'date':
@@ -589,7 +588,7 @@ public type_inscription:boolean;
             comparaison = -1;
           }
 
-          return this.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+          return this.sort_date === 'ASC' ? comparaison : -comparaison;  
         });
         break;
     }
@@ -669,11 +668,11 @@ public type_inscription:boolean;
     this.valid_tel = isValid;
   }
   onValidContactChange(data: ItemContact[]) {
-    this.thisAdherent.datasource.contacts = JSON.stringify(data);
+    this.thisAdherent.datasource.contact = data;
     this.thisAdherent.Contacts = data;
   }
   onValidContactUrgenceChange(data: ItemContact[]) {
-    this.thisAdherent.datasource.contacts_prevenir = JSON.stringify(data);
+    this.thisAdherent.datasource.contact_prevenir = data;
     this.thisAdherent.ContactsUrgence = data;
   }
   onValidAdresseChange(isValid: boolean) {
@@ -757,9 +756,9 @@ public type_inscription:boolean;
           this.onContentScroll.bind(this)
         );
       } else {
-        this.waitForScrollableContainer(); // Re-tente de le trouver
+        this.waitForScrollableContainer(); 
       }
-    }, 100); // Réessaie toutes les 100 ms
+    }, 100);  
   }
 
   onContentScroll(): void {
@@ -770,7 +769,7 @@ public type_inscription:boolean;
   scrollToTop(): void {
     this.scrollableContent.nativeElement.scrollTo({
       top: 0,
-      behavior: 'smooth', // Défilement fluide
+      behavior: 'smooth', 
     });
   }
 
@@ -780,7 +779,7 @@ public type_inscription:boolean;
 
   handleAction(action: string) {
     console.log(`Action exécutée : ${action}`);
-    this.dropdownActive = false; // Ferme le menu après clic
+    this.dropdownActive = false;  
   }
 
   Fermer(avecreload:boolean = false) {

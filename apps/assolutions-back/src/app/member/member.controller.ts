@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Headers, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { MemberService } from './member.services';
+import type { adherent } from '@shared/compte/src';
 
 // src/auth/auth.controller.ts
 @Controller('member')
@@ -27,5 +28,44 @@ export class MemberController {
   async IsGestionnaire(@Headers('projectid') projectId: number,@Headers('userid') userid: number) {
     return this.mem_serv.GetGestionnaire(userid, projectId);
   }
+   @UseGuards(PasswordGuard)
+      @Get('get/:id')
+    async Get(@Param() { id }: { id: number }) {
+      return this.mem_serv.Get(id);
+    }
+  
+    @UseGuards(PasswordGuard)
+    @Get('getall/:saison_id/:active_only')
+    async GetAll(@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
+      return this.mem_serv.GetAll(saison_id,active_only);
+    }
+    
+     @UseGuards(PasswordGuard)
+    @Get('getall_light/:saison_id/:active_only')
+    async GetAllLight(@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
+      return this.mem_serv.GetAllLight(saison_id,active_only);
+    }
+       @UseGuards(PasswordGuard)
+    @Get('getall_adherent/:saison_id')
+    async GetAllAdherent(@Param() { saison_id }: { saison_id: number }) {
+      return this.mem_serv.GetAllAdherent(saison_id);
+    }
+  
+    @Put('add')
+    async Add(@Headers('projectid') projectId: number,@Body() s: adherent) {
+      return this.mem_serv.Add(s, projectId);
+    }
+    
+    @Put('update')
+    async Update(@Headers('projectid') projectId: number,@Body() s: adherent) {
+      return this.mem_serv.Update(s, projectId);
+    }
+    
+    
+        @UseGuards(PasswordGuard)
+    @Delete('delete/:id')
+    async Delete(@Param('id') id: number) {
+      return this.mem_serv.Delete(id);
+    }
 
 }

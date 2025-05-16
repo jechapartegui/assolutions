@@ -35,6 +35,20 @@ export class ProjetService {
         return Promise.reject(error);
       });
   }
+  public GetActiveSaison(): Promise<number> {
+      this.url = 'api/project/active_saison/';
+  
+    return this.global.GET(this.url)
+        .then((response: number) => {
+  
+          return response;
+        })
+        .catch(error => {
+          // Gestion de l'erreur
+          return Promise.reject(error);
+        });
+    }
+  
   public GetAll(): Promise<projet[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/projet_manage.php';

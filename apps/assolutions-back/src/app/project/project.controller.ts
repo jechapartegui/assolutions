@@ -13,6 +13,6 @@ export class ProjectController {
       throw new BadRequestException('INVALID HEADER');
     }
 
-    return this.proService.getActiveSaion(projectIdNumber);
+    return this.proService.numberActiveSaison(projectIdNumber);
   }
 }

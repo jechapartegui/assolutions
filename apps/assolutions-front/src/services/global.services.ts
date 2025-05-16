@@ -32,6 +32,10 @@ export class GlobalService {
   static is_logged_in: boolean = false;
   isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
 
+  private isSaisonActive = new BehaviorSubject<number>(null);
+  public static saison_active: number = null;
+  isSaisonActive$: Observable<number> = this.isSaisonActive.asObservable();
+
   private isGestionnaire = new BehaviorSubject<boolean>(false);
   static is_gestionnaire: boolean = false;
   isGestionnaire$: Observable<boolean> = this.isGestionnaire.asObservable();
@@ -87,6 +91,10 @@ export class GlobalService {
   updateProjetAdmin(_p: ProjetLogin): void {
     this.isProjetAdmin.next(_p);
     GlobalService.projetAdmin = _p;
+  }
+    updateSaisonActive(b: number): void {
+    this.isSaisonActive.next(b);
+    GlobalService.saison_active = b;
   }
 
   public ListeSeanceProf: KeyValuePair[] = [

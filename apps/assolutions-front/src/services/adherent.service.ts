@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
-import { adherent } from '../class/adherent';
-import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { adherent } from '@shared/compte/src/lib/member.interface';
+import { compte } from '@shared/compte/src/lib/compte.interface';
+import { ItemList } from '@shared/compte/src';
 
 @Injectable({
   providedIn: 'root'
@@ -13,17 +14,10 @@ export class AdherentService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id: number, menu:string): Promise<adherent[]> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get",
-      menu:menu,
-      id: id
-    };
+  public Get(id: number): Promise<adherent[]> {
+     this.url = 'api/member/get/' + id;
 
-    return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
       .then((response: adherent[]) => {
 
         return response;
@@ -34,15 +28,9 @@ export class AdherentService {
       });
   }
   public Add(adherent: adherent): Promise<number> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "add",
-      adherent: adherent
-    };
+   this.url = 'api/member/add';
 
-    return this.global.POST(this.url, body)
+  return this.global.PUT(this.url, adherent)
       .then((response: number) => {
 
         return response;
@@ -52,6 +40,7 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+
   public Delete(id: number): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/adherents_manage.php';
@@ -90,157 +79,46 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
-  public Get_Adherent_My(id: number): Promise<adherent> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_adherent_my",
-      id: id
-    };
+  
 
-    return this.global.POST(this.url, body)
-      .then((response: adherent) => {
 
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Get_Adherent_Prof(id: number): Promise<adherent> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_adherent_prof",
-      id: id
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: adherent) => {
+  public GetAll(saison_id:number, active_only:boolean=false): Promise<adherent[]> {
+this.url = `api/member/getall/${saison_id}/${active_only}`;
 
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Get_Essai(id: number): Promise<adherent> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_essai",
-      id: id
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: adherent) => {
-
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Get_Adherent_Admin(id: number): Promise<adherent> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_adherent_admin",
-      id: id
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: adherent) => {
-
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
-  public GetAllEver(): Promise<adherent[]> {
-    const body = {
-      command: "get_all"
-    }
-    return this.GetAll(body);
-  }
-  public GetAllActiveSaison(): Promise<adherent[]> {
-    const body = {
-      command: "get_all",
-      active: true
-    }
-    return this.GetAll(body);
-  }
-  public GetAllSeason(saison_id: number): Promise<adherent[]> {
-    const body = {
-      command: "get_all",
-      saison_id: saison_id
-    }
-    return this.GetAll(body);
-  }
-  public GetAll(body): Promise<adherent[]> {
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-
-    return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
       .then((response: adherent[]) => {
 
         return response;
       })
       .catch(error => {
+        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }
-  public GetAllLightEver(): Promise<KeyValuePair[]> {
-    const body = {
-      command: "get_all_light"
-    }
-    return this.GetAllLight(body);
-  }
-  public GetAllLightSeason(saison_id: number): Promise<KeyValuePair[]> {
-    const body = {
-      command: "get_all_light",
-      saison_id: saison_id
-    }
-    return this.GetAllLight(body);
-  }
-  public GetAllLightActiveSaison(): Promise<KeyValuePair[]> {
-    const body = {
-      command: "get_all_light",
-      active: true
-    }
-    return this.GetAllLight(body);
-  }
-  public GetAllLight(body): Promise<KeyValuePair[]> {
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
 
-    return this.global.POST(this.url, body)
-      .then((response: KeyValuePair[]) => {
+  public GetAllLight(saison_id:number, active_only:boolean=false):Promise<ItemList[]>{
+this.url = `api/member/getall_light/${saison_id}/${active_only}`;
+
+  return this.global.GET(this.url)
+      .then((response: ItemList[]) => {
 
         return response;
       })
       .catch(error => {
+        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }
+
+  
+
+  
   public GetAdherentAdhesion(saison_id:number): Promise<adherent[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "adherents_adhesions",
-      saison_id:saison_id
-    };
+       this.url = 'api/member/getall_adherent/' + saison_id;
 
-    return this.global.POST(this.url, body)
+  return this.global.GET(this.url)
       .then((response: adherent[]) => {
 
         return response;
@@ -250,8 +128,8 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
-  public Essayer(essai:adherent, seance_id:number, project_id:number): Promise<number> {
-    this.url = environment.maseance + 'maseance/public_seance.php';
+  public Essayer(essai:adherent, seance_id:number, project_id:number, _compte:compte): Promise<number> {
+    this.url = 'api/member/essayer/'
     //  this.url = this.url + "login.php";
     const body = {
       command: "try",
