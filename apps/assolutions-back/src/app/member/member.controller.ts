@@ -35,13 +35,13 @@ export class MemberController {
     }
   
     @UseGuards(PasswordGuard)
-    @Get('getall/:saison_id/:active_only')
-    async GetAll(@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
-      return this.mem_serv.GetAll(saison_id,active_only);
+    @Get('getall/:saison_id')
+    async GetAll(@Headers('projectid') projectId: number,@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
+      return this.mem_serv.GetAll(saison_id,projectId);
     }
     
      @UseGuards(PasswordGuard)
-    @Get('getall_light/:saison_id/:active_only')
+    @Get('getall_light/:saison_id')
     async GetAllLight(@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
       return this.mem_serv.GetAllLight(saison_id,active_only);
     }
@@ -49,6 +49,11 @@ export class MemberController {
     @Get('getall_adherent/:saison_id')
     async GetAllAdherent(@Param() { saison_id }: { saison_id: number }) {
       return this.mem_serv.GetAllAdherent(saison_id);
+    }
+           @UseGuards(PasswordGuard)
+    @Get('getall_adherent_light/:saison_id')
+    async GetAllAdherentLight(@Param() { saison_id }: { saison_id: number }) {
+      return this.mem_serv.GetAllAdherentLight(saison_id);
     }
   
     @Put('add')

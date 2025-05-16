@@ -91,7 +91,7 @@ export class EnvoiMailComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'audience`;    
     this.adh_serv
-      .GetAll(GlobalService.saison_active, true)
+      .GetAdherentAdhesion(GlobalService.saison_active)
       .then((list) => {
         this.liste_adherent = list.map((w) => new Adherent(w));
         this.gr_serv

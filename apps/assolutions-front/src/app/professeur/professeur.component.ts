@@ -143,7 +143,7 @@ throw new Error('Method not implemented.');
       this.ListeProf = cpt.map(x => new Professeur(x));
      
       this.action = $localize`Récupérer les adhérents`;
-      this.ridersService.GetAllActiveSaison().then((adhs) => {
+      this.ridersService.GetAdherentAdhesion(GlobalService.saison_active).then((adhs) => {
         this.liste_adherents_VM = adhs.map(x => new Adherent(x));
         this.loading = false;
       }).catch((error: HttpErrorResponse) => {

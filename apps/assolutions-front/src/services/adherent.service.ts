@@ -4,7 +4,7 @@ import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
 import { adherent } from '@shared/compte/src/lib/member.interface';
 import { compte } from '@shared/compte/src/lib/compte.interface';
-import { ItemList } from '@shared/compte/src';
+import { ItemList, KeyValuePair } from '@shared/compte/src';
 
 @Injectable({
   providedIn: 'root'
@@ -83,8 +83,8 @@ export class AdherentService {
 
 
 
-  public GetAll(saison_id:number, active_only:boolean=false): Promise<adherent[]> {
-this.url = `api/member/getall/${saison_id}/${active_only}`;
+  public GetAll(saison_id:number): Promise<adherent[]> {
+this.url = `api/member/getall/${saison_id}`;
 
   return this.global.GET(this.url)
       .then((response: adherent[]) => {
@@ -97,8 +97,8 @@ this.url = `api/member/getall/${saison_id}/${active_only}`;
       });
   }
 
-  public GetAllLight(saison_id:number, active_only:boolean=false):Promise<ItemList[]>{
-this.url = `api/member/getall_light/${saison_id}/${active_only}`;
+  public GetAllLight(saison_id:number):Promise<ItemList[]>{
+this.url = `api/member/getall_light/${saison_id}`;
 
   return this.global.GET(this.url)
       .then((response: ItemList[]) => {
@@ -120,6 +120,20 @@ this.url = `api/member/getall_light/${saison_id}/${active_only}`;
 
   return this.global.GET(this.url)
       .then((response: adherent[]) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+    public GetAdherentAdhesionLight(saison_id:number): Promise<KeyValuePair[]> {
+    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+       this.url = 'api/member/getall_adherent_light/' + saison_id;
+
+  return this.global.GET(this.url)
+      .then((response: KeyValuePair[]) => {
 
         return response;
       })

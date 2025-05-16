@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Adherent } from '../bdd/riders';
 import { AdherentProjet } from '../bdd/member_project';
 import { ProjectService } from '../project/project.service';
@@ -11,12 +11,19 @@ import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
 import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
+import { KeyValuePair } from '@shared/compte/src';
+import { LienGroupe } from '../bdd/lien-groupe';
+import { Groupe } from '../bdd/groupe';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectRepository(InscriptionSaison)
     private readonly inscriptionsaisonRepo: Repository<InscriptionSaison>,
+    @InjectRepository(LienGroupe)
+    private readonly LienGroupeRepo: Repository<LienGroupe>,
+    @InjectRepository(Groupe)
+    private readonly GroupeRepo: Repository<Groupe>,
     @InjectRepository(Adherent)
     private readonly adherentRepo: Repository<Adherent>,
     @InjectRepository(AdherentProjet)
@@ -243,7 +250,7 @@ export class MemberService {
     return age;
   }
 
-  toAdh(pAdh:Adherent) : adherent{
+  toAdh(pAdh:Adherent, login:string = "", _inscrit:boolean=true, _groupes:KeyValuePair[] = []) : adherent{
  let adre: any = null;
 let cont: any = null;
 let cont_prev: any = null;
@@ -286,9 +293,134 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
       sexe:pAdh.sexe,
       compte:pAdh.compte,
       contact: contacts,
-      contact_prevenir:contacts_prevenir
+      contact_prevenir:contacts_prevenir,
+      login:login,
+      groupes:_groupes,
+      inscrit:_inscrit,
 
     }
     return AD;
+  }
+
+  async Get(id: number) {
+    const pAdh= await this.adherentRepo.findOne({ where: { id } });
+    if (!pAdh) {
+      throw new UnauthorizedException('NO_USER_FOUND');
+    }
+    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+    return this.toAdh(pAdh);
+
+  }
+ async GetAll(saison_id: number, project_id: number) {
+  const adherentProject = await this.adherentProjetRepo.find({
+    where: { project_id },
+  });
+
+  const adhPr: Adherent[] = await this.adherentRepo.find({
+    where: { id: In(adherentProject.map(x => x.member_id)) },
+  });
+
+  const liste_groupe: Groupe[] = await this.GroupeRepo.find({
+    where: { saison_id },
+  });
+
+  const group: LienGroupe[] = await this.LienGroupeRepo.find({
+    where: {
+      objet_id: In(adherentProject.map(x => x.member_id)),
+      groupe_id: In(liste_groupe.map(x => x.id)),
+      objet_type: "rider"
+    },
+  });
+
+  const adhs = await this.AdherentSaisons(adhPr, saison_id);
+
+  if (!adhs) {
+    throw new UnauthorizedException('NO_USER_FOUND');
+  }
+
+  return adhs.map((adh) => {
+    adh.groupes = group
+      .filter(x => x.objet_id === adh.id)
+      .map(x => ({
+        key: x.groupe_id,
+        value: liste_groupe.find(y => y.id === x.groupe_id)?.nom || ''
+      }));
+    return adh;
+  });
+}
+
+
+  
+private toLieu(pLieu: lieu, project_id: number): Lieu {
+  // Crée un objet pour l'adresse
+  const adresseObj = {
+    name: pLieu.adresse,        // Le nom de l'adresse
+    postcode: pLieu.code_postal, // Le code postal
+    city: pLieu.ville           // La ville
+  };
+
+  // Sérialisation de l'adresse sous forme de chaîne JSON
+  const const_adresse = JSON.stringify(adresseObj);
+
+  const L: Lieu = {
+    id: pLieu.id,
+    nom: pLieu.nom,
+    project_id: project_id,
+    adresse: const_adresse, // Assure que l'adresse est bien stockée en JSON
+    shared: false
+  };
+
+  return L;
+}
+
+  
+    async GetAllLight(project_id:number) {
+      const pISSs = await this.LieuRepo.find({ where: { project_id } });
+      if (!pISSs) {
+        throw new UnauthorizedException('NO_LOCATION_FOUND');
+      }
+   return pISSs.map((plieu): KeyValuePair => {
+    return {
+      key: plieu.id,
+      value: plieu.nom
+    };
+  });
+  
+  
+    }
+  
+    async Add(s: lieu, project_id :number) {
+    if (!s) {
+      throw new BadRequestException('INVALID_LOCATION');
+    }
+    const objet_base = this.toLieu(s, project_id);
+  
+    const newISS = this.LieuRepo.create(objet_base);
+    const saved = await this.LieuRepo.save(newISS);
+    return this.tolieu(saved).id;
+  }
+  async Update(s: lieu, project_id :number) {
+    if (!s) {
+      throw new BadRequestException('INVALID_LOCATION');
+    }
+    const objet_base = this.toLieu(s, project_id);
+  
+    const existing = await this.LieuRepo.findOne({ where: { id: s.id } });
+    if (!existing) {
+      throw new NotFoundException('NO_LOCATION_FOUND');
+    }
+  
+    const updated = await this.LieuRepo.save({ ...existing, ...objet_base });
+    return this.tolieu(updated);
+  }
+  
+  async Delete(id: number) {
+    const toDelete = await this.LieuRepo.findOne({ where: { id } });
+    if (!toDelete) {
+      throw new NotFoundException('NO_LOCATION_FOUND');
+    }
+  
+    await this.LieuRepo.remove(toDelete);
+    return { success: true };
   }
 }
