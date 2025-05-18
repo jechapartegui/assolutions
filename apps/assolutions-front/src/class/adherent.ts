@@ -7,6 +7,7 @@ import { FilterMenu } from "../app/menu/menu.component";
 import { AdherentSeance, MesSeances } from "@shared/compte/src/lib/seance.interface";
 import { adherent, ItemContact } from "@shared/compte/src/lib/member.interface";
 import { inscription_seance } from "@shared/compte/src/lib/inscription_seance.interface";
+import { GlobalService } from "../services/global.services";
 
 
 
@@ -31,6 +32,7 @@ export class Adherent {
     }
     this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
     this.ContactPrefereType = foundContact ? foundContact.Type : null;
+    this.Adresse = new Adresse();
     this.Adresse.Street = this.datasource.adresse;
     this.Adresse.PostCode = this.datasource.code_postal;
     this.Adresse.City = this.datasource.ville;
@@ -52,7 +54,7 @@ export class Adherent {
   }
  
   public get Sexe(): boolean {
-    return this.datasource.sexe;
+        return GlobalService.instance.getBoolean(this.datasource.sexe);
   }
   public set Sexe(v: boolean) {
     this.datasource.sexe = v;
@@ -269,7 +271,7 @@ export class Validation_Adherent {
     this.control = true;
     // Appeler les méthodes de validation pour tous les champs lors de la première validation
     this.validateLibelle(this.rider.Libelle);
-    this.validateDateNaissance(this.rider.datasource.date_naissance.toDateString());
+    this.validateDateNaissance(this.rider.datasource.date_naissance.toString());
 
   }
   checkcontrolvalue() {

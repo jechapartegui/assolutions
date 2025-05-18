@@ -426,6 +426,8 @@ public type_inscription:boolean;
       this.router.navigate(['/menu']);
       GlobalService.selected_menu = 'MENU';
       return;
+    } else {
+      this.thisAdherent = new Adherent(adh);
     }
   } catch (err: any) {
     this.loading = false;

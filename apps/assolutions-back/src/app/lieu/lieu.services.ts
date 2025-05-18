@@ -41,9 +41,10 @@ private tolieu(plieu: Lieu): lieu {
   }
 
   // Valeurs par défaut si l'adresse est manquante ou invalide
-  const adresse = adre?.name || "";
-  const code_postal = adre?.postcode || "";
-  const ville = adre?.city || "";
+const adresse = adre?.Street || "";
+const code_postal = adre?.PostCode || "";
+const ville = adre?.City || "";
+
 
   const lieu: lieu = {
     id: plieu.id,

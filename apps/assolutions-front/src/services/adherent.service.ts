@@ -14,11 +14,11 @@ export class AdherentService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id: number): Promise<adherent[]> {
+  public Get(id: number): Promise<adherent> {
      this.url = 'api/member/get/' + id;
 
   return this.global.GET(this.url)
-      .then((response: adherent[]) => {
+      .then((response: adherent) => {
 
         return response;
       })

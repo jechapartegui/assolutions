@@ -24,13 +24,14 @@ import { Saison } from '../bdd/saison';
 import { ProfService } from '../prof/prof.services';
 import { ProjectService } from '../project/project.service';
 import { GroupeService } from '../groupe/groupe.service';
+import { Groupe } from '../bdd/groupe';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
     InscriptionSeance, Adherent, Seance, SeanceProfesseur, LienGroupe, Compte, Cours, GestionnaireProjet, InscriptionSaison, Lieu, AdherentProjet, 
-    ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison
+    ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison, Groupe
 
     ]),
   ],

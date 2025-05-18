@@ -42,18 +42,18 @@ export class MemberController {
     
      @UseGuards(PasswordGuard)
     @Get('getall_light/:saison_id')
-    async GetAllLight(@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
-      return this.mem_serv.GetAllLight(saison_id,active_only);
+    async GetAllLight(@Headers('projectid') projectId: number,@Param('saison_id') saison_id: number) {
+      return this.mem_serv.GetAllLight(saison_id,projectId);
     }
        @UseGuards(PasswordGuard)
     @Get('getall_adherent/:saison_id')
-    async GetAllAdherent(@Param() { saison_id }: { saison_id: number }) {
-      return this.mem_serv.GetAllAdherent(saison_id);
+    async GetAllAdherent(@Headers('projectid') projectId: number,@Param() { saison_id }: { saison_id: number }) {
+      return this.mem_serv.GetAllAdherent(saison_id,projectId);
     }
            @UseGuards(PasswordGuard)
     @Get('getall_adherent_light/:saison_id')
-    async GetAllAdherentLight(@Param() { saison_id }: { saison_id: number }) {
-      return this.mem_serv.GetAllAdherentLight(saison_id);
+    async GetAllAdherentLight(@Headers('projectid') projectId: number,@Param() { saison_id }: { saison_id: number }) {
+      return this.mem_serv.GetAllAdherentLight(saison_id,projectId);
     }
   
     @Put('add')

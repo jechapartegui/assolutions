@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Adherent } from '../bdd/riders';
@@ -11,9 +11,10 @@ import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
 import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
-import { KeyValuePair } from '@shared/compte/src';
+import { ItemList, KeyValuePair } from '@shared/compte/src';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Groupe } from '../bdd/groupe';
+import { Compte } from '../bdd/compte';
 
 @Injectable()
 export class MemberService {
@@ -22,8 +23,6 @@ export class MemberService {
     private readonly inscriptionsaisonRepo: Repository<InscriptionSaison>,
     @InjectRepository(LienGroupe)
     private readonly LienGroupeRepo: Repository<LienGroupe>,
-    @InjectRepository(Groupe)
-    private readonly GroupeRepo: Repository<Groupe>,
     @InjectRepository(Adherent)
     private readonly adherentRepo: Repository<Adherent>,
     @InjectRepository(AdherentProjet)
@@ -32,6 +31,8 @@ export class MemberService {
     private readonly ProfesseurSaisonRepo: Repository<ProfesseurSaison>,
     @InjectRepository(GestionnaireProjet)
     private readonly GestionnaireProjetRepo: Repository<GestionnaireProjet>,
+    @InjectRepository(Compte)
+    private readonly CompteRepo: Repository<Compte>,
     private projectService: ProjectService,
     private seanceService: SeanceService,
     private groupeservice: GroupeService
@@ -41,7 +42,7 @@ export class MemberService {
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
-    return this.toAdh(pAdh);
+    return this.toadh(pAdh);
   }
   async GetGestionnaire(compte: number, project_id: number): Promise<boolean> {
     const temp_adh = await this.GetAdherentProject(compte, project_id);
@@ -191,7 +192,7 @@ export class MemberService {
     }
 
     return liste_adherent.map((plieu) => {
-      return this.toAdh(plieu);
+      return this.toadh(plieu);
     });
   }
 
@@ -250,7 +251,7 @@ export class MemberService {
     return age;
   }
 
-  toAdh(pAdh:Adherent, login:string = "", _inscrit:boolean=true, _groupes:KeyValuePair[] = []) : adherent{
+  toadh(pAdh:Adherent, login:string = "", _inscrit:boolean=true, _groupes:KeyValuePair[] = []) : adherent{
  let adre: any = null;
 let cont: any = null;
 let cont_prev: any = null;
@@ -271,12 +272,12 @@ try {
 } catch (e) {
   cont_prev = null;
 }
-
+console.warn(adre);
 
 // Valeurs par défaut si `adre` ou `cont` sont invalides
-const adresse = adre?.name || "";
-const code_postal = adre?.postcode || "";
-const ville = adre?.city || "";
+const adresse = adre?.Street || "";
+const code_postal = adre?.PostCode || "";
+const ville = adre?.City || "";
 
 const contacts: ItemContact[] = Array.isArray(cont) ? cont : [];
 const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : [];
@@ -308,7 +309,7 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
       throw new UnauthorizedException('NO_USER_FOUND');
     }
     //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return this.toAdh(pAdh);
+    return this.toadh(pAdh);
 
   }
  async GetAll(saison_id: number, project_id: number) {
@@ -320,8 +321,17 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
     where: { id: In(adherentProject.map(x => x.member_id)) },
   });
 
-  const liste_groupe: Groupe[] = await this.GroupeRepo.find({
-    where: { saison_id },
+  const liste_groupe:Groupe[] = await this.groupeservice.GroupeSaison(saison_id);
+
+  const inscr_saison:InscriptionSaison[] = await this.inscriptionsaisonRepo.find({
+    where: { rider_id: In(adherentProject.map(x => x.member_id)),
+      saison_id
+     },
+  });
+   const comptes:Compte[] = await this.CompteRepo.find({
+    where: { id: In(adhPr.map(x => x.compte)),
+      
+     },
   });
 
   const group: LienGroupe[] = await this.LienGroupeRepo.find({
@@ -345,82 +355,156 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
         key: x.groupe_id,
         value: liste_groupe.find(y => y.id === x.groupe_id)?.nom || ''
       }));
+      adh.inscrit = inscr_saison.find(x => x.rider_id == adh.id)?true:false;
+      adh.login = comptes.find(x => x.id === adh.compte)?.login || '';
     return adh;
   });
 }
 
-
+async GetAllAdherent(saison_id: number, project_id: number) {
+  const adhs = await this.GetAll(saison_id, project_id);
+  return adhs.filter(x => x.inscrit);
+}
   
-private toLieu(pLieu: lieu, project_id: number): Lieu {
-  // Crée un objet pour l'adresse
-  const adresseObj = {
-    name: pLieu.adresse,        // Le nom de l'adresse
-    postcode: pLieu.code_postal, // Le code postal
-    city: pLieu.ville           // La ville
+async  toAdh(pAdh: adherent, project_id:number): Promise<Adherent> {
+  const adhbase = await this.adherentRepo.findOne({
+    where: { id : pAdh.id },
+  });
+   const adresseObj = {
+    name: pAdh.adresse,        // Le nom de l'adresse
+    postcode: pAdh.code_postal, // Le code postal
+    city: pAdh.ville           // La ville
   };
 
   // Sérialisation de l'adresse sous forme de chaîne JSON
   const const_adresse = JSON.stringify(adresseObj);
 
-  const L: Lieu = {
-    id: pLieu.id,
-    nom: pLieu.nom,
-    project_id: project_id,
-    adresse: const_adresse, // Assure que l'adresse est bien stockée en JSON
-    shared: false
-  };
+  // Crée un objet pour l'adresse
+const A:Adherent ={
+id:pAdh.id,
+nom:pAdh.nom,
+prenom:pAdh.prenom,
+date_creation:adhbase?adhbase.date_creation:new Date(),
+adresse: const_adresse,
+sexe:pAdh.sexe,
+compte:pAdh.compte,
+contacts:JSON.stringify(pAdh.contact),
+contacts_prevenir:JSON.stringify(pAdh.contact_prevenir),
+project_id:project_id,
+surnom:pAdh.surnom,
+est_prof:false,
+date_naissance:pAdh.date_naissance
+}
 
-  return L;
+  return A;
 }
 
   
-    async GetAllLight(project_id:number) {
-      const pISSs = await this.LieuRepo.find({ where: { project_id } });
-      if (!pISSs) {
-        throw new UnauthorizedException('NO_LOCATION_FOUND');
-      }
-   return pISSs.map((plieu): KeyValuePair => {
-    return {
-      key: plieu.id,
-      value: plieu.nom
-    };
+    async GetAllLight(project_id:number, saison_id:number):Promise<ItemList[]> {
+     const adherentProject = await this.adherentProjetRepo.find({
+    where: { project_id },
+  });
+
+  const adhPr: Adherent[] = await this.adherentRepo.find({
+    where: { id: In(adherentProject.map(x => x.member_id)) },
+  });
+
+
+
+  const adhs = await this.AdherentSaisons(adhPr, saison_id);
+
+  if (!adhs) {
+    throw new UnauthorizedException('NO_USER_FOUND');
+  }
+
+  return adhs.map((adh) => {
+    let kvp:ItemList = {
+      id:adh.id,
+      libelle:adh.prenom +  " " + adh.nom,
+      objet: 'RIDER'
+    }    
+    return kvp;
   });
   
   
     }
-  
-    async Add(s: lieu, project_id :number) {
-    if (!s) {
-      throw new BadRequestException('INVALID_LOCATION');
-    }
-    const objet_base = this.toLieu(s, project_id);
-  
-    const newISS = this.LieuRepo.create(objet_base);
-    const saved = await this.LieuRepo.save(newISS);
-    return this.tolieu(saved).id;
+
+  async GetAllAdherentLight(project_id: number, saison_id: number): Promise<ItemList[]> {
+  const adherentProject = await this.adherentProjetRepo.find({
+    where: { project_id },
+  });
+
+  const adhPr: Adherent[] = await this.adherentRepo.find({
+    where: { id: In(adherentProject.map(x => x.member_id)) },
+  });
+
+  const adhs = await this.AdherentSaisons(adhPr, saison_id);
+
+  if (!adhs) {
+    throw new UnauthorizedException('NO_USER_FOUND');
   }
-  async Update(s: lieu, project_id :number) {
+
+  const inscr_saison: InscriptionSaison[] = await this.inscriptionsaisonRepo.find({
+    where: {
+      rider_id: In(adherentProject.map(x => x.member_id)),
+      saison_id
+    },
+  });
+
+  const riderIds = inscr_saison.map(x => x.rider_id);
+  const adh_insc = adhs.filter(x => riderIds.includes(x.id));
+
+  return adh_insc.map((adh) => {
+    const kvp: ItemList = {
+      id: adh.id,
+      libelle: `${adh.prenom} ${adh.nom}`,
+      objet: 'RIDER'
+    };
+    return kvp;
+  });
+}
+
+  
+    async Add(s: adherent, project_id :number) : Promise<number> {
     if (!s) {
-      throw new BadRequestException('INVALID_LOCATION');
+      throw new BadRequestException('INVALID_MEMBER');
     }
-    const objet_base = this.toLieu(s, project_id);
+    const objet_base = await this.toAdh(s, project_id);
   
-    const existing = await this.LieuRepo.findOne({ where: { id: s.id } });
+    const newISS = await this.adherentRepo.create(objet_base);
+    const saved = await this.adherentRepo.save(newISS);
+    return saved.id;
+  }
+  async Update(s: adherent, project_id :number) {
+    if (!s) {
+      throw new BadRequestException('INVALID_MEMBER');
+    }
+     const objet_base = this.toAdh(s, project_id);
+  
+    const existing = await this.adherentRepo.findOne({ where: { id: s.id } });
     if (!existing) {
-      throw new NotFoundException('NO_LOCATION_FOUND');
+      throw new NotFoundException('NO_MEMBER_FOUND');
     }
   
-    const updated = await this.LieuRepo.save({ ...existing, ...objet_base });
-    return this.tolieu(updated);
+    const updated = await this.adherentRepo.save({ ...existing, ...objet_base });
+    if(updated){
+      return true;
+    } else {
+      return false;
+    };
   }
   
   async Delete(id: number) {
-    const toDelete = await this.LieuRepo.findOne({ where: { id } });
+    const toDelete = await this.adherentRepo.findOne({ where: { id } });
     if (!toDelete) {
-      throw new NotFoundException('NO_LOCATION_FOUND');
+      throw new NotFoundException('NO_MEMBER_FOUND');
     }
   
-    await this.LieuRepo.remove(toDelete);
-    return { success: true };
+    const i = await this.adherentRepo.remove(toDelete);
+   if(i){
+      return true;
+    } else {
+      return false;
+    };
   }
 }

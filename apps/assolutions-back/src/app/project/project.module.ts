@@ -9,11 +9,13 @@ import { Projet } from '../bdd/project';
 import { Adherent } from '../bdd/riders';
 import { InscriptionSaison } from '../bdd/inscription-saison';
 import { Saison } from '../bdd/saison';
+import { LienGroupe } from '../bdd/lien-groupe';
+import { Groupe } from '../bdd/groupe';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet, InscriptionSaison, Saison]), // ✅ indispensable
+    TypeOrmModule.forFeature([Compte, Adherent, AdherentProjet, Projet, InscriptionSaison, Saison, Groupe,LienGroupe]), // ✅ indispensable
   ],
   providers: [ProjectService],
   controllers: [ProjectController],
