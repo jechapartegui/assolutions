@@ -7,6 +7,8 @@ import { environment } from '../environments/environment.prod';
 import { compte, ProjetLogin, ProjetView } from '@shared/compte/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
 import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { ReglesFormulaire } from '../class/regles';
+import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +24,17 @@ export class GlobalService {
   private isCompte = new BehaviorSubject<compte>(null);
   static compte: compte = null;
   Compte$: Observable<compte> = this.isCompte.asObservable();
+
+   private regles: ReglesFormulaire = REGLES_PAR_DEFAUT;
+
+  getRegles(): ReglesFormulaire {
+    return this.regles;
+  }
+
+  // plus tard : méthode pour charger depuis JSON
+  setRegles(regles: ReglesFormulaire): void {
+    this.regles = regles;
+  }
 
 
   private isMenu = new BehaviorSubject<"APPLI" | "ADMIN">(null);

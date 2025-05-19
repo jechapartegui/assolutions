@@ -3,7 +3,11 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from '../../class/address';
 import { Adherent, AdherentExport } from '../../class/adherent';
-import { Adhesion, Type_Adhesion, paiement_adhesion } from '../../class/adhesion';
+import {
+  Adhesion,
+  Type_Adhesion,
+  paiement_adhesion,
+} from '../../class/adhesion';
 import { fluxfinancier } from '../../class/fluxfinancier';
 import { Groupe } from '../../class/groupe';
 import { operation } from '../../class/operation';
@@ -18,7 +22,6 @@ import { InscriptionSaisonService } from '../../services/inscription-saison.serv
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
 import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
-
 
 @Component({
   selector: 'app-adherent',
@@ -47,12 +50,12 @@ export class AdherentComponent implements OnInit {
   public sort_date = 'NO';
   public sort_sexe = 'NO';
 
-  inscription
+  inscription;
   public afficher_inscription: boolean = false;
-public adherent_inscription: Adherent;
-public saison_inscription: Saison;
-public paiement_adhesion:boolean;
-public type_inscription:boolean;
+  public adherent_inscription: Adherent;
+  public saison_inscription: Saison;
+  public paiement_adhesion: boolean;
+  public type_inscription: boolean;
 
   public filters: FilterAdherent = new FilterAdherent();
 
@@ -71,6 +74,8 @@ public type_inscription:boolean;
   public afficher_tri: boolean = false;
 
   dropdownActive = false;
+  edit_info_adresse: boolean = false;
+  edit_info_perso: boolean = false;
 
   constructor(
     public mail_serv: MailService,
@@ -100,9 +105,7 @@ public type_inscription:boolean;
               $localize`Il faut au moins une saison pour créer un cours`
             );
             errorService.emitChange(o);
-            if (
-              GlobalService.menu === 'ADMIN'
-            ) {
+            if (GlobalService.menu === 'ADMIN') {
               this.router.navigate(['/saison']);
             } else {
               this.router.navigate(['/menu']);
@@ -124,7 +127,10 @@ public type_inscription:boolean;
             }
           });
           if (this.context == 'LISTE') {
-            if (GlobalService.menu === 'APPLI' && GlobalService.is_gestionnaire === false) {
+            if (
+              GlobalService.menu === 'APPLI' &&
+              GlobalService.is_gestionnaire === false
+            ) {
               this.loading = false;
               this.router.navigate(['/menu']);
               GlobalService.selected_menu = 'MENU';
@@ -222,6 +228,17 @@ public type_inscription:boolean;
     return age;
   }
 
+  EditerBloc(bloc: string) {
+    switch (bloc) {
+      case 'info_adresse':
+        this.edit_info_adresse = !this.edit_info_adresse;
+        break;
+      case 'info_perso':
+        this.edit_info_perso = !this.edit_info_perso;
+        break;
+    }
+  }
+
   getActiveSaison(): string {
     let s = this.liste_saison.find((x) => x == this.active_saison);
     if (s) {
@@ -231,30 +248,28 @@ public type_inscription:boolean;
     }
   }
 
-  Newadhrent() : adherent{
-  let adh: adherent = {
-      id:0,
-      nom:"",
-      prenom:"",
-      surnom:"",
-      date_naissance:new Date(),
-      contact:[],
-      contact_prevenir:[],
-      adresse:"",
-      sexe:false,
-      compte:0,
-      code_postal:"",
-      ville:"",
-            inscrit:false,
-            login:"",
-            groupes:[]
-
-    }
+  Newadhrent(): adherent {
+    let adh: adherent = {
+      id: 0,
+      nom: '',
+      prenom: '',
+      surnom: '',
+      date_naissance: new Date(),
+      contact: [],
+      contact_prevenir: [],
+      adresse: '',
+      sexe: false,
+      compte: 0,
+      code_postal: '',
+      ville: '',
+      inscrit: false,
+      login: '',
+      groupes: [],
+    };
     return adh;
   }
 
   Create() {
-  
     this.thisAdherent = new Adherent(this.Newadhrent());
     this.context = 'ECRITURE';
     this.id = 0;
@@ -273,105 +288,117 @@ public type_inscription:boolean;
     this.afficher_inscription = true;
     this.adherent_inscription = adh;
     this.saison_inscription = this.liste_saison.find((x) => x.id == saison_id);
-    if(paiement) {
+    if (paiement) {
       this.type_inscription = true;
     } else {
       this.type_inscription = false;
     }
-     const errorService = ErrorService.instance;
-     this.action = $localize`Effectuer une inscription`;
+    const errorService = ErrorService.instance;
+    this.action = $localize`Effectuer une inscription`;
 
-     if (paiement) {
-       let confirm = window.confirm(
-         $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
-       );
-       if (confirm) {
-         this.router.navigate(['/inscription']);
-       }
-     } else {
-       let confirm = window.confirm(
-         $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
-       );
-       if (confirm) {
-         this.inscription_saison_serv
-           .Add(saison_id, adh.ID)
-           .then((id) => {
-             let i = new Adhesion();
-             i.id = id;
-             i.rider_id = adh.ID;
-             i.saison_id = saison_id;
-             if (!adh.Adhesions) {
-               adh.Adhesions = [];
-             }
-             adh.Adhesions.push(i);
-             let o = errorService.OKMessage(this.action);
-             errorService.emitChange(o);
-           })
-           .catch((err: HttpErrorResponse) => {
-             let o = errorService.CreateError(this.action, err.message);
-             errorService.emitChange(o);
-           });
-       }
-     }
+    if (paiement) {
+      let confirm = window.confirm(
+        $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
+      );
+      if (confirm) {
+        this.router.navigate(['/inscription']);
+      }
+    } else {
+      let confirm = window.confirm(
+        $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
+      );
+      if (confirm) {
+        this.inscription_saison_serv
+          .Add(saison_id, adh.ID)
+          .then((id) => {
+            let i = new Adhesion();
+            i.id = id;
+            i.rider_id = adh.ID;
+            i.saison_id = saison_id;
+            if (!adh.Adhesions) {
+              adh.Adhesions = [];
+            }
+            adh.Adhesions.push(i);
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+          })
+          .catch((err: HttpErrorResponse) => {
+            let o = errorService.CreateError(this.action, err.message);
+            errorService.emitChange(o);
+          });
+      }
+    }
   }
-  CreerPaiement( adh: Adhesion, type_a: Type_Adhesion, libelle_nom: string, libelle_saison: string ) {
-    let dd:string;
-    let st:number = 0;
+  CreerPaiement(
+    adh: Adhesion,
+    type_a: Type_Adhesion,
+    libelle_nom: string,
+    libelle_saison: string
+  ) {
+    let dd: string;
+    let st: number = 0;
     if (type_a.paiements.length == 1) {
-    
       if (type_a.date_paiement_fixe) {
-        dd =type_a.paiements[0].date_prevue;
+        dd = type_a.paiements[0].date_prevue;
       } else {
         dd = new Date().toISOString().slice(0, 10);
-        st=1;
+        st = 1;
       }
-        let ff: fluxfinancier = new fluxfinancier();
-        ff.date = dd;
-        ff.montant = type_a.paiements[0].montant;
-        ff.classe_comptable = type_a.classe_comptable_id;
-        ff.recette = true;
-        ff.statut = st;
-        ff.libelle = $localize`Adhésion ` + type_a.libelle + $localize` pour la saison ` + libelle_saison + $localize` de ` + libelle_nom;
+      let ff: fluxfinancier = new fluxfinancier();
+      ff.date = dd;
+      ff.montant = type_a.paiements[0].montant;
+      ff.classe_comptable = type_a.classe_comptable_id;
+      ff.recette = true;
+      ff.statut = st;
+      ff.libelle =
+        $localize`Adhésion ` +
+        type_a.libelle +
+        $localize` pour la saison ` +
+        libelle_saison +
+        $localize` de ` +
+        libelle_nom;
+      let o: operation = new operation();
+      o.solde = type_a.paiements[0].montant;
+      o.date_operation = dd;
+      o.mode = type_a.mode_paiement;
+      o.compte_bancaire_id = type_a.compte_id;
+      o.paiement_execute = st;
+      ff.operations.push(o);
+      let paiement: paiement_adhesion = {
+        numero: 1,
+        date_prevue: dd,
+        montant: type_a.paiements[0].montant,
+      };
+      adh.paiements.push(paiement);
+    } else {
+      let ff: fluxfinancier = new fluxfinancier();
+      ff.date = dd;
+      ff.montant = type_a.paiements[0].montant;
+      ff.classe_comptable = type_a.classe_comptable_id;
+      ff.recette = true;
+      ff.statut = 0;
+      ff.libelle =
+        $localize`Adhésion ` +
+        type_a.libelle +
+        $localize` pour la saison ` +
+        libelle_saison +
+        $localize` de ` +
+        libelle_nom;
+      for (let i = 0; i < type_a.paiements.length; i++) {
         let o: operation = new operation();
-        o.solde = type_a.paiements[0].montant;
-        o.date_operation = dd;
+        o.solde = type_a.paiements[i].montant;
+        o.date_operation = type_a.paiements[i].date_prevue;
         o.mode = type_a.mode_paiement;
         o.compte_bancaire_id = type_a.compte_id;
-        o.paiement_execute = st;
+        o.paiement_execute = 0;
         ff.operations.push(o);
         let paiement: paiement_adhesion = {
-          numero: 1,
-          date_prevue: dd,
-          montant: type_a.paiements[0].montant,
+          numero: i + 1,
+          date_prevue: type_a.paiements[i].date_prevue,
+          montant: type_a.paiements[i].montant,
         };
         adh.paiements.push(paiement);
-    } else {
-     
-        let ff: fluxfinancier = new fluxfinancier();
-        ff.date = dd;
-        ff.montant = type_a.paiements[0].montant;
-        ff.classe_comptable = type_a.classe_comptable_id;
-        ff.recette = true;
-        ff.statut = 0;
-        ff.libelle = $localize`Adhésion ` + type_a.libelle + $localize` pour la saison ` + libelle_saison + $localize` de ` + libelle_nom;
-        for(let i=0; i<type_a.paiements.length; i++) {
-          let o: operation = new operation();
-          o.solde = type_a.paiements[i].montant;
-          o.date_operation = type_a.paiements[i].date_prevue;
-          o.mode = type_a.mode_paiement;
-          o.compte_bancaire_id = type_a.compte_id;
-          o.paiement_execute = 0;
-          ff.operations.push(o);
-          let paiement: paiement_adhesion = {
-            numero: i+1,
-            date_prevue: type_a.paiements[i].date_prevue,
-            montant: type_a.paiements[i].montant,
-          };
-          adh.paiements.push(paiement);
-        }
-    
-
-    
+      }
     }
   }
 
@@ -414,38 +441,48 @@ public type_inscription:boolean;
   }
 
   async ChargerAdherent() {
-     this.thisAdherent = null;
-     const errorService = ErrorService.instance;
-     this.action = $localize`Récupérer l'adhérent`;
-   try {
-    const adh = await this.ridersService.Get(this.id);
-    if (!adh) {
+    this.thisAdherent = null;
+    const errorService = ErrorService.instance;
+    this.action = $localize`Récupérer l'adhérent`;
+    try {
+      const adh = await this.ridersService.Get(this.id);
+      if (!adh) {
+        this.loading = false;
+        let o = errorService.CreateError(
+          this.action,
+          $localize`Aucun adhérent trouvé`
+        );
+        errorService.emitChange(o);
+        this.router.navigate(['/menu']);
+        GlobalService.selected_menu = 'MENU';
+        return;
+      } else {
+        this.thisAdherent = new Adherent(adh);
+      }
+    } catch (err: any) {
       this.loading = false;
-      let o = errorService.CreateError(this.action,  $localize`Aucun adhérent trouvé`);
+      let o = errorService.CreateError(
+        this.action,
+        err.message || $localize`Erreur inconnue`
+      );
       errorService.emitChange(o);
       this.router.navigate(['/menu']);
       GlobalService.selected_menu = 'MENU';
-      return;
-    } else {
-      this.thisAdherent = new Adherent(adh);
     }
-  } catch (err: any) {
-    this.loading = false;
-    let o = errorService.CreateError(this.action, err.message ||  $localize`Erreur inconnue`);
-    errorService.emitChange(o);
-    this.router.navigate(['/menu']);
-    GlobalService.selected_menu = 'MENU';
-  }
 
-     if (GlobalService.menu == 'APPLI' && GlobalService.is_gestionnaire == false) {
+    if (
+      GlobalService.menu == 'APPLI' &&
+      GlobalService.is_gestionnaire == false
+    ) {
       return;
-     } else if (GlobalService.menu == 'APPLI' && GlobalService.is_gestionnaire == true) {
-      
+    } else if (
+      GlobalService.menu == 'APPLI' &&
+      GlobalService.is_gestionnaire == true
+    ) {
       return;
-     } else if (GlobalService.menu == 'ADMIN') {
-      
+    } else if (GlobalService.menu == 'ADMIN') {
       return;
-     }
+    }
   }
 
   Delete(adh: Adherent) {
@@ -545,7 +582,7 @@ public type_inscription:boolean;
         this.sort_date = 'NO';
         this.sort_sexe = 'NO';
         this.liste_adherents_VM.sort((a, b) => {
-          const nomA = a.Libelle.toUpperCase();  
+          const nomA = a.Libelle.toUpperCase();
           const nomB = b.Libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
@@ -554,7 +591,7 @@ public type_inscription:boolean;
             comparaison = -1;
           }
 
-          return this.sort_nom === 'ASC' ? comparaison : -comparaison;  
+          return this.sort_nom === 'ASC' ? comparaison : -comparaison;
         });
         break;
       case 'sexe':
@@ -572,7 +609,7 @@ public type_inscription:boolean;
             comparaison = -1;
           }
 
-          return this.sort_sexe === 'ASC' ? comparaison : -comparaison;  
+          return this.sort_sexe === 'ASC' ? comparaison : -comparaison;
         });
         break;
       case 'date':
@@ -590,7 +627,7 @@ public type_inscription:boolean;
             comparaison = -1;
           }
 
-          return this.sort_date === 'ASC' ? comparaison : -comparaison;  
+          return this.sort_date === 'ASC' ? comparaison : -comparaison;
         });
         break;
     }
@@ -758,9 +795,9 @@ public type_inscription:boolean;
           this.onContentScroll.bind(this)
         );
       } else {
-        this.waitForScrollableContainer(); 
+        this.waitForScrollableContainer();
       }
-    }, 100);  
+    }, 100);
   }
 
   onContentScroll(): void {
@@ -771,7 +808,7 @@ public type_inscription:boolean;
   scrollToTop(): void {
     this.scrollableContent.nativeElement.scrollTo({
       top: 0,
-      behavior: 'smooth', 
+      behavior: 'smooth',
     });
   }
 
@@ -781,13 +818,13 @@ public type_inscription:boolean;
 
   handleAction(action: string) {
     console.log(`Action exécutée : ${action}`);
-    this.dropdownActive = false;  
+    this.dropdownActive = false;
   }
 
-  Fermer(avecreload:boolean = false) {
+  Fermer(avecreload: boolean = false) {
     console.log(avecreload);
     this.afficher_inscription = false;
-    if(avecreload) {
+    if (avecreload) {
       this.loading = true;
       this.UpdateListeAdherents();
     }

@@ -506,7 +506,6 @@ if (Adh.PhoneUrgence && this.IsPhone(Adh.PhoneUrgence)) {
               a.Cible.Inscrit = false;
             }
 
-            a.Cible.valid.controler();
           } else {
             a.source_A = new Adherent(a.source);
             a.Cible = a.source_A;

@@ -1,0 +1,107 @@
+    <div class="box is-light">
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations personnelles</h3>
+      <btn *ngIf="!edit"
+        [type_button]="'EditerLight'" 
+        (click)="edit = !edit" 
+      ></btn>
+      <btn *ngIf="edit" [disabled]="thisAdherent.Libelle.length < 3 || !thisAdherent.DDN" (click)="Save()"
+        [type_button]="'SauvegarderLight'">
+      </btn> <btn *ngIf="edit" (click)="Cancel()"
+        [type_button]="'AnnulerLight'">
+      </btn>
+    </div>
+
+    <div class="columns is-vcentered">
+
+      <!-- Photo -->
+      <div class="column is-4 has-text-centered">
+  <figure class="image is-square">
+    <img
+      class="is-rounded"
+      [src]="thisAdherent.Photo ?? '../../assets/photo_H.png'"
+      alt="Photo de profil"
+      style="object-fit: cover; height: 100%;"
+    />
+  </figure>
+
+  <input
+    type="file"
+    accept="image/*"
+    #photoInput
+    class="is-hidden"
+    (change)="onPhotoSelected($event)"
+  />
+
+  <label class="button is-small is-info mt-2" i18n (click)="photoInput.click()">Changer la photo</label>
+</div>
+
+
+      <!-- Infos -->
+      <div class="column is-8">
+        <div *ngIf="edit; else readPerso" class="p-2">
+          <div class="field mb-2">
+            <label class="label is-small" i18n>Nom</label>
+            <div class="control">
+              <input
+              [class]="rNom   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="thisAdherent.Nom">
+            </div>
+            <p *ngIf="rNom" class="is-small help is-danger">{{lNom}}</p>
+          </div>
+
+          <div class="field mb-2">
+            <label class="label is-small" i18n>Prénom</label>
+            <div class="control">
+              <input    [class]="rPrenom
+                              ? 'input is-danger is-small'
+                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Prenom">
+            </div>
+            <p *ngIf="rPrenom" class="is-small help is-danger">{{lPrenom}}</p>
+          </div>
+
+          <div class="field mb-2">
+            <label class="label is-small" i18n>Date de naissance</label>
+            <div class="control">
+              <input [class]="rDateNaissance? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.DateNaissance">
+            </div>
+            <p *ngIf="rDateNaissance" class="is-small help is-danger">{{lDateNaissance}}</p>
+          </div>
+
+          <div class="field mb-2">
+            <label class="label is-small" i18n>Sexe</label>
+            <div class="control">
+              <div class="select is-small">
+                <select [(ngModel)]="thisAdherent.Sexe">
+                  <option [ngValue]="true" i18n>Masculin</option>
+                  <option [ngValue]="false" i18n>Féminin</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+ <div class="field mb-2">
+            <label class="label is-small" i18n>Surnom</label>
+            <div class="control">
+              <input    [class]="rSurnom
+                              ? 'input is-danger is-small'
+                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Surnom">
+            </div>
+            <p *ngIf="rSurnom" class="is-small help is-danger">{{lSurnom}}</p>
+          </div>
+        </div>
+
+        <ng-template #readPerso>
+          <p><strong i18n>Nom :</strong>&nbsp;{{ thisAdherent.Nom }}</p>
+          <p><strong i18n>Prénom :</strong>&nbsp;{{ thisAdherent.Prenom }}</p>
+          <p><strong i18n>Date de naissance :</strong>&nbsp;{{ thisAdherent.DDN | date:'dd/MM/yyyy' }}</p>
+          <p >
+            <strong i18n>Sexe :</strong>&nbsp;
+            <i *ngIf="thisAdherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
+            <i *ngIf="!thisAdherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+          </p>
+          <p><strong i18n>Surnom :</strong> {{ thisAdherent.Surnom }}</p>
+        </ng-template>
+      </div>
+
+    </div>
+  </div>

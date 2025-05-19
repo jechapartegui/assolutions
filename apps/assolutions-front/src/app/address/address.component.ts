@@ -6,37 +6,37 @@ import { Adresse } from '../../class/address';
   templateUrl: './address.component.html',
   styleUrls: ['./address.component.css']
 })
-export class AddressComponent implements OnInit {
-  @Input() Adresse: Adresse;
-  @Input() valid_address:boolean;
-  @Output() validAdresseChange = new EventEmitter<boolean>();
-  @Output() AdresseChange = new EventEmitter<Adresse>();
-  @Input() edit:boolean=true
-  
-  ngOnInit(): void {
-    if(this.edit){
-      this.CheckAdresse();
+export class AddressComponent  implements OnInit  {
+ @Input() thisAdresse:Adresse;
+ save:string=null;
+ valid_adresse:boolean = false;
+ @Output() InfoAdresseChange = new EventEmitter();
+ public edit:boolean = false
 
-    }
-  }
-  CheckAdresse() {
-    this.ChangeAdresse();
-    this.valid_address = false;
-    this.validateAdresse(false); 
-    if(this.Adresse.Street && this.Adresse.City && this.Adresse.PostCode){
-      if(this.Adresse.Street.length>1 && this.Adresse.PostCode.toString().length>4 && this.Adresse.City.length > 1){
-        this.validateAdresse(true); 
+ngOnInit(): void {
+    this.save = JSON.stringify(this.thisAdresse); 
+}
+
+ public Save(){
+    this.InfoAdresseChange.emit();
+    this.edit = false;
+ }
+public Cancel(){
+    this.thisAdresse = JSON.parse(this.save);
+    this.edit = false;
+}
+
+ CheckAdresse() {
+    this.valid_adresse = false;
+    if(this.thisAdresse.Street && this.thisAdresse.City && this.thisAdresse.PostCode){
+      if(this.thisAdresse.Street.length>1 && this.thisAdresse.PostCode.toString().length>4 && this.thisAdresse.City.length > 1){
+        this.valid_adresse = true;
       }
 
+    } else if(!this.thisAdresse.Street && !this.thisAdresse.City && !this.thisAdresse.PostCode){
+        this.valid_adresse = true;
     }
 
-  }
-  validateAdresse(isValid: boolean) {
-    this.valid_address = isValid;
-    this.validAdresseChange.emit(this.valid_address);
-  }
-  ChangeAdresse() {
-    this.AdresseChange.emit(this.Adresse);
   }
 
 }

@@ -375,21 +375,21 @@
         </thead>
         <tbody>
           <ng-container *ngFor="let a of ListeCompare">
-            <tr  [class]="a.Cible.valid.control ? 'label_green' : 'label_red'">
+            <tr >
               <td class="limited-column">
                 <label>{{a.Cible.ID}}</label>
               </td>
               <td>
-                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Prenom}}</label>
+                <label >{{a.Cible.Prenom}}</label>
               </td>
               <td>
-                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Nom}}</label>
+                <label >{{a.Cible.Nom}}</label>
               </td>
               <td>
-                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.Surnom}}</label>
+                <label >{{a.Cible.Surnom}}</label>
               </td>
               <td>
-                <label [class]="!a.Cible.valid.libelle ? 'label_gras' : ''">{{a.Cible.DDN | date: "dd/MM/yyyy"}}</label>
+                <label >{{a.Cible.DDN | date: "dd/MM/yyyy"}}</label>
               </td>
               <td>              
                     <i *ngIf="a.Cible.Sexe" class="fa-solid fa-mars has-text-info"></i>              

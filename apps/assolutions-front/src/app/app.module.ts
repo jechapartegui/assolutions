@@ -58,6 +58,7 @@ import { MultifiltersStockPipe } from '../filters/multifilters-stock.pipe';
 import { GlobalService } from '../services/global.services';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { DureeHHMMPipe } from '../pipe/duree.pipe';
+import { InfoPersoComponent } from './component/Infoperso/infoperso.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -67,7 +68,7 @@ import { DureeHHMMPipe } from '../pipe/duree.pipe';
     GroupeComponent,
     CoursComponent,
     SeanceComponent,
-    ComptabiliteComponent,
+    ComptabiliteComponent, InfoPersoComponent,
     ProfComponent,RangePipe,
     NotifJechaComponent,  AdministrateursComponent,
     ContactItemComponent, DureeHHMMPipe,

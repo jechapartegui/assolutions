@@ -132,57 +132,11 @@
                     </article>
                 </div>
                 <div *ngIf="thisEssai" class="box">
-
-                    <h3 class="title is-3" i18n>Saisir les informations du participant</h3>
-                    <div class="field">
-                        <label class="label" i18n>Nom</label>
-                        <div class="control ">
-                            <input [class]="thisEssai.valid.libelle ? 'input' : 'input is-danger'" type="text"
-                                id="nom_rider" name="nom_rider" i18n-placeholder placeholder="Nom"
-                                [(ngModel)]="thisEssai.Nom">
-
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label class="label" i18n>Prénom</label>
-                        <div class="control ">
-                            <input [class]="thisEssai.valid.libelle? 'input' : 'input is-danger'" type="text"
-                                id="prenom_rider" name="prenom_rider" i18n-placeholder placeholder="Prénom"
-                                [(ngModel)]="thisEssai.Prenom">
-                        </div>
-                    </div>
-                   
-                    <p class="help is-danger" *ngIf="!thisEssai.valid.libelle" i18n>L'ensemble Prénom / Nom doit contenir au moins 2 caractères
-                    </p>
-                    <div class="field">
-                        <label class="label" i18n>Date de naissance</label>
-                        <div class="control ">
-                            <input [class]="thisEssai.valid.date_naissance ? 'input' : 'input is-danger'" type="date"
-                                id="date_naissance" name="date_naissance" i18n-placeholder
-                                placeholder="Date de naissance" [(ngModel)]="thisEssai.DDN">
-                            <p class="help is-danger" *ngIf="!thisEssai.valid.date_naissance" i18n>La date de
-                                naissance doit être
-                                saisie</p>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label class="label" i18n>Sexe :</label>
-                        <div class="buttons has-addons is-centered">
-                            <button type="button" style="font-size: small;"
-                                [class]="thisEssai.Sexe == true ? 'button is-link is-active' : 'button is-active'"
-                                (click)="thisEssai.Sexe == true ? thisEssai.Sexe = false : thisEssai.Sexe = true">
-                                <span i18n>Homme</span></button>
-                            <button type="button" style="font-size: small;"
-                                [class]="thisEssai.Sexe == false ? 'button is-link is-active' : 'button is-active'"
-                                (click)="thisEssai.Sexe == true ? thisEssai.Sexe = false : thisEssai.Sexe = true">
-                                <span i18n>Femme</span></button>
-                        </div>
-                    </div>
+<infoperso [thisAdherent]="thisEssai" [Regles]="(GlobalServices.getRegles().InfoPerso_Essai)" ></infoperso>
+</div>
                     <div class="field">
                         <label class="label" i18n>Adresse :</label>
-                        <app-address [valid_address]="valid_address" [Adresse]="thisEssai.Adresse"
-                            (validAdresseChange)="onValidAdresseChange($event)"
-                            (AdresseChange)="onAdresseChange($event)"></app-address>
+                        <app-address ></app-address>
                     </div>
                     <p class="help is-danger" *ngIf="!valid_address" i18n>L'adresse doit être saisie (voie, code postal
                         et ville)</p>
@@ -198,9 +152,8 @@
                         (validContactChange)="onValidContactUrgenceChange($event)">
                     </app-contact-item>
 
-                </div>
                 <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' "
-                    [disabled]="!thisEssai.valid.control || !this.valid_address || !this.valid_mail || !this.valid_tel"
+                    [disabled]="!this.valid_address || !this.valid_mail || !this.valid_tel"
                     [nomicon]="'fas fa-check'" [libelle]="'Confirmer'" (click)="Confirmer()">
                 </hover-button>
                 <hover-button [nomclass]="'button  is-rounded is-danger is-outlined' " [nomicon]="'fa-solid fa-backward-fast'"

@@ -1,4 +1,4 @@
-import { Subject } from "rxjs";
+
 import { seance } from "./seance";
 import { Groupe } from "./groupe";
 import { Adresse } from "./address";
@@ -13,14 +13,7 @@ import { GlobalService } from "../services/global.services";
 
 export class Adherent {
   datasource: adherent;
-  public valid: Validation_Adherent;
   public maj: boolean = true;
-  
-  
-  
-  
-  sLibelle = new Subject<string>();
-  dateNaissanceSubject = new Subject<string>();
   constructor(L: adherent) {
     this.datasource = L;
     this.SetLibelle(this);
@@ -36,8 +29,6 @@ export class Adherent {
     this.Adresse.Street = this.datasource.adresse;
     this.Adresse.PostCode = this.datasource.code_postal;
     this.Adresse.City = this.datasource.ville;
-    this.valid = new Validation_Adherent(this);
-    this.valid.controler();
   }
   public get ID(): number {
     return this.datasource.id;
@@ -75,6 +66,16 @@ public get Inscrit() : boolean {
     this.datasource.inscrit = v;
   }
 
+  
+  private _Photo : any;
+  public get Photo() : any {
+    return this._Photo;
+  }
+  public set Photo(v : any) {
+    this._Photo = v;
+  }
+  
+
   public get Nom(): string {
     return this.datasource.nom;
   }
@@ -101,8 +102,16 @@ public get Inscrit() : boolean {
   }
   set DDN(value: string) {
     this.datasource.date_naissance = new Date(value);
-    this.dateNaissanceSubject.next(value);
   }
+
+  
+  public get DateNaissance() : Date {
+    return this.datasource.date_naissance;
+  }
+  public set DateNaissance(v : Date) {
+    this.datasource.date_naissance = v;
+  }
+  
 
 
   public get Surnom(): string {
@@ -135,10 +144,6 @@ public get Inscrit() : boolean {
   public Contacts: ItemContact[];
   public ContactsUrgence: ItemContact[];
 
-
-
-
-
   public Libelle: string;
 
 
@@ -162,7 +167,6 @@ public get Inscrit() : boolean {
         this.Libelle = t.surnom;
       }
     }
-    this.sLibelle.next(this.Libelle);
   }
 
 
@@ -252,72 +256,6 @@ export class AdherentExport {
       // Gérer les exceptions
     }
   }
-}
-
-
-export class Validation_Adherent {
-  public control: boolean;
-  public libelle: boolean;
-  public date_naissance: boolean;
-
-  constructor(private rider: Adherent) {
-
-    this.rider.sLibelle.subscribe((value) => this.validateLibelle(value));
-    this.rider.dateNaissanceSubject.subscribe((value) => this.validateDateNaissance(value));
-
-  }
-
-  controler() {
-    this.control = true;
-    // Appeler les méthodes de validation pour tous les champs lors de la première validation
-    this.validateLibelle(this.rider.Libelle);
-    this.validateDateNaissance(this.rider.datasource.date_naissance.toString());
-
-  }
-  checkcontrolvalue() {
-
-    if (this.libelle && this.date_naissance) {
-      this.control = true;
-    }
-  }
-
-  private validateLibelle(value: string) {
-    // Code de validation du nom
-    // Mettre à jour this.nom en conséquence
-    if (value) {
-      if (value.length < 2) {
-        this.libelle = false;
-        this.control = false;
-      } else {
-        this.libelle = true;
-        this.checkcontrolvalue();
-      }
-    } else {
-      this.libelle = false;
-      this.control = false;
-    }
-  }
-
-
-
-  private validateDateNaissance(value: string) {
-    // Code de validation de la date de naissance
-    // Mettre à jour this.date_naissance en conséquence
-    if (value) {
-      if (new Date(value) > new Date()) {
-        this.date_naissance = false;
-        this.control = false;
-      } else {
-        this.date_naissance = true;
-        this.checkcontrolvalue();
-      }
-    } else {
-      this.date_naissance = false;
-      this.control = false;
-    }
-  }
-
-
 }
 
 export class AdherentMenu  {

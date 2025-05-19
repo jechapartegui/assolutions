@@ -102,9 +102,7 @@
             </div>
             <div class="field">
                 <label class="label" i18n>Adresse :</label>
-                <app-address [valid_address]="valid_address" [Adresse]="editLieu.Adresse"
-                    (validAdresseChange)="onValidAdresseChange($event)"
-                    (AdresseChange)="onAdresseChange($event)"></app-address>
+                <app-address [thisAdresse]="editLieu.Adresse"></app-address>
             </div>
         </div>
   

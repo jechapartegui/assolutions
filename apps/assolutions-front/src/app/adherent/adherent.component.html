@@ -230,8 +230,7 @@
                             <btn
                               *ngIf="
                                 !adherent.Inscrit &&
-                                adherent.CompteID > 0 &&
-                                adherent.valid.control
+                                adherent.CompteID > 0
                               "
                               i18n-title
                               title="Inscrire"
@@ -883,7 +882,39 @@
       </span>
     </ng-container>
   </ng-container>
+  
+    <ng-container *ngIf="thisAdherent">
+<div class="columns">
+  <div class="column">
+    <div class="card">
+      <header class="card-header" style="align-items: center">
+        <p class="card-header-title subtitle is-6">
+          <span *ngIf="thisAdherent.ID < 1" i18n>Nouvel adhérent</span>
+          <span *ngIf="thisAdherent.ID > 0">
+            <span i18n>Editer</span> : {{ thisAdherent.Prenom }} {{ thisAdherent.Nom }}
+          </span>
+        </p>
+      </header>
 
+      <div class="columns is-multiline is-variable is-4">
+        <!-- Bloc Infos personnelles -->
+       <div class="column is-full-tablet is-half-desktop">
+ <infoperso [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="Save()"></infoperso>
+</div>
+
+
+        <!-- Bloc Adresse -->
+        <div class="column is-full-tablet is-half-desktop">
+
+                          <app-address [thisAdresse]="thisAdherent.Adresse" (InfoAdresseChange)="Save()"
+                          ></app-address>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</ng-container>
   <ng-container *ngIf="context == 'ECRITURE'">
     <ng-container *ngIf="thisAdherent">
       <span class="fullscreen">
@@ -905,11 +936,7 @@
                       <label class="label" i18n>Nom</label>
                       <div class="control">
                         <input
-                          [class]="
-                            thisAdherent.valid.libelle
-                              ? 'input'
-                              : 'input is-danger'
-                          "
+                          
                           type="text"
                           id="nom_rider"
                           name="nom_rider"
@@ -923,11 +950,6 @@
                       <label class="label" i18n>Prénom</label>
                       <div class="control">
                         <input
-                          [class]="
-                            thisAdherent.valid.libelle
-                              ? 'input'
-                              : 'input is-danger'
-                          "
                           type="text"
                           id="prenom_rider"
                           name="prenom_rider"
@@ -941,11 +963,6 @@
                       <label class="label" i18n>Surnom</label>
                       <div class="control">
                         <input
-                          [class]="
-                            thisAdherent.valid.libelle
-                              ? 'input'
-                              : 'input is-danger'
-                          "
                           type="text"
                           id="surnom_rider"
                           name="surnom_rider"
@@ -955,25 +972,14 @@
                         />
                       </div>
                     </div>
-                    <p
-                      class="help is-danger"
-                      *ngIf="!thisAdherent.valid.libelle"
-                      i18n
-                    >
-                      L'ensemble Prénom / Nom / Surnom doit contenir au moins 2
-                      caractères
-                    </p>
+                   
                   </div>
                   <div class="field-container">
                     <div class="field">
                       <label class="label" i18n>Date de naissance</label>
                       <div class="control">
                         <input
-                          [class]="
-                            thisAdherent.valid.date_naissance
-                              ? 'input'
-                              : 'input is-danger'
-                          "
+                          
                           type="date"
                           id="date_naissance"
                           name="date_naissance"
@@ -981,13 +987,7 @@
                           placeholder="Date de naissance"
                           [(ngModel)]="thisAdherent.DDN"
                         />
-                        <p
-                          class="help is-danger"
-                          *ngIf="!thisAdherent.valid.date_naissance"
-                          i18n
-                        >
-                          La date de naissance doit être saisie
-                        </p>
+                       
                       </div>
                     </div>
                     <div class="field">
@@ -1086,11 +1086,7 @@
                       <div class="column is-6">
                         <div class="field">
                           <label class="label" i18n>Adresse :</label>
-                          <app-address
-                            [valid_address]="valid_address"
-                            [Adresse]="thisAdherent.Adresse"
-                            (validAdresseChange)="onValidAdresseChange($event)"
-                            (AdresseChange)="onAdresseChange($event)"
+                          <app-address [thisAdresse]="thisAdherent.Adresse"
                           ></app-address>
                           <p class="help is-danger" *ngIf="!valid_address" i18n>
                             L'adresse doit être saisie (voie, code postal et
@@ -1142,7 +1138,6 @@
                       <btn
                         [type_button]="'SauvegarderSmall'"
                         [disabled]="
-                          !thisAdherent.valid.control ||
                           !this.valid_address ||
                           !this.valid_mail ||
                           !this.valid_tel
@@ -1202,7 +1197,6 @@
           <btn
             [type_button]="'SauvegarderMobile'"
             [disabled]="
-              !thisAdherent.valid.control ||
               !this.valid_address ||
               !this.valid_mail ||
               !this.valid_tel
@@ -1230,9 +1224,6 @@
               <label class="label" i18n>Nom</label>
               <div class="control">
                 <input
-                  [class]="
-                    thisAdherent.valid.libelle ? 'input' : 'input is-danger'
-                  "
                   type="text"
                   id="nom_rider"
                   name="nom_rider"
@@ -1246,9 +1237,7 @@
               <label class="label" i18n>Prénom</label>
               <div class="control">
                 <input
-                  [class]="
-                    thisAdherent.valid.libelle ? 'input' : 'input is-danger'
-                  "
+                 
                   type="text"
                   id="prenom_rider"
                   name="prenom_rider"
@@ -1262,9 +1251,6 @@
               <label class="label" i18n>Surnom</label>
               <div class="control">
                 <input
-                  [class]="
-                    thisAdherent.valid.libelle ? 'input' : 'input is-danger'
-                  "
                   type="text"
                   id="surnom_rider"
                   name="surnom_rider"
@@ -1274,21 +1260,13 @@
                 />
               </div>
             </div>
-            <p class="help is-danger" *ngIf="!thisAdherent.valid.libelle" i18n>
-              L'ensemble Prénom / Nom / Surnom doit contenir au moins 2
-              caractères
-            </p>
           </div>
           <div class="field-container">
             <div class="field">
               <label class="label" i18n>Date de naissance</label>
               <div class="control">
                 <input
-                  [class]="
-                    thisAdherent.valid.date_naissance
-                      ? 'input'
-                      : 'input is-danger'
-                  "
+                  
                   type="date"
                   id="date_naissance"
                   name="date_naissance"
@@ -1296,13 +1274,7 @@
                   placeholder="Date de naissance"
                   [(ngModel)]="thisAdherent.DDN"
                 />
-                <p
-                  class="help is-danger"
-                  *ngIf="!thisAdherent.valid.date_naissance"
-                  i18n
-                >
-                  La date de naissance doit être saisie
-                </p>
+              
               </div>
             </div>
             <div class="field">
@@ -1398,10 +1370,6 @@
                 <div class="field">
                   <label class="label" i18n>Adresse :</label>
                   <app-address
-                    [valid_address]="valid_address"
-                    [Adresse]="thisAdherent.Adresse"
-                    (validAdresseChange)="onValidAdresseChange($event)"
-                    (AdresseChange)="onAdresseChange($event)"
                   ></app-address>
                   <p class="help is-danger" *ngIf="!valid_address" i18n>
                     L'adresse doit être saisie (voie, code postal et ville)
@@ -1578,7 +1546,6 @@
                                 <btn
                                   *ngIf="
                                     !isRegistredSaison(ss.id) &&
-                                    thisAdherent.valid.control &&
                                     thisAdherent.CompteID > 0
                                   "
                                   [type_button]="'InscrireSmall'"
@@ -1602,8 +1569,6 @@
                   <div class="field-container">
                     <div class="field">
                       <app-address
-                        [edit]="false"
-                        [Adresse]="thisAdherent.Adresse"
                       ></app-address>
                     </div>
 
@@ -1784,7 +1749,6 @@
                       <btn
                         *ngIf="
                           !isRegistredSaison(ss.id) &&
-                          thisAdherent.valid.control &&
                           thisAdherent.CompteID > 0
                         "
                         [type_button]="'InscrireMobile'"
@@ -1808,8 +1772,6 @@
           <div class="field-container">
             <div class="field">
               <app-address
-                [edit]="false"
-                [Adresse]="thisAdherent.Adresse"
               ></app-address>
             </div>
 
