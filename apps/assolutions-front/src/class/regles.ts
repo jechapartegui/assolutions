@@ -28,6 +28,7 @@ export interface ReglesAdresse {
   City_min: number;
   City_max: number;
   City_obligatoire: boolean;
+  Adresse_obligatoire: boolean;
 }
 
 export interface ReglesFormulaire {
@@ -35,5 +36,16 @@ export interface ReglesFormulaire {
   Adresse_Adherent: ReglesAdresse;
   InfoPerso_Essai: ReglesPersonne;
   Adresse_Essai: ReglesAdresse;
+  Contact_Adherent: ReglesContact;
+  Contact_Essai: ReglesContact;
+  Contact_Pref_Adherent: ReglesContact;
+  Contact_Pref_Essai: ReglesContact;
+}
 
+export interface ReglesContact {
+  nb_contact_min: number;
+  nb_contact_max: number;
+  verifier_format: boolean;
+  mail_obligatoire: boolean;
+  tel_obligatoire: boolean;
 }

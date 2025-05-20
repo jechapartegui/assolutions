@@ -1,47 +1,53 @@
     <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Adresse</h3>
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold">{{title}}</h3>
+<ng-container *ngIf="!newAdresse">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
       ></btn>
-      <btn *ngIf="edit" [disabled]="valid_adresse" (click)="Save()"
+      <btn *ngIf="edit" [disabled]="!estValid" (click)="Save()"
         [type_button]="'SauvegarderLight'">
       </btn> <btn *ngIf="edit" (click)="Cancel()"
         [type_button]="'AnnulerLight'">
       </btn>
+      </ng-container>
     </div>
 
     <div *ngIf="edit; else readAdresse">
+      <p *ngIf="rLibelle && rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
               <div class="field">
-                <label class="label" i18n>Rue</label>
+                <label class="label" i18n>Voie</label>
                 <div class="control">
                   <input (ngModelChange)="CheckAdresse()"
-                    [ngClass]="!valid_adresse && thisAdresse.Street.length <2 ? 'input is-danger is-small' :'input is-small' "
+                   [ngClass]="!rStreet.key   ? 'input is-danger is-small'   : 'input is-small' "
                     type="text"
                     [(ngModel)]="thisAdresse.Street"
                   />
                 </div>
+                <p *ngIf="rStreet.key" class="is-small help is-danger">{{rStreet.value}}</p>
               </div>
               <div class="field">
                 <label class="label" i18n>Code postal</label>
                 <div class="control">
                   <input (ngModelChange)="CheckAdresse()"
-                     [ngClass]="!valid_adresse && thisAdresse.PostCode.toString().length < 5 ? 'input is-danger is-small' :'input is-small' "
+                     [ngClass]="!rPostCode.key   ? 'input is-danger is-small'   : 'input is-small' "
                     type="text"
                     [(ngModel)]="thisAdresse.PostCode"
                   />
                 </div>
+                <p *ngIf="rPostCode.key" class="is-small help is-danger">{{rPostCode.value}}</p>
               </div>
               <div class="field">
                 <label class="label" i18n>Ville</label>
                 <div class="control">
                   <input (ngModelChange)="CheckAdresse()"
-                   [ngClass]="!valid_adresse && thisAdresse.City.length <2 ? 'input is-danger is-small' :'input is-small' "
+                  [ngClass]="!rCity.key   ? 'input is-danger is-small'   : 'input is-small' "
                     type="text"
                     [(ngModel)]="thisAdresse.City"
                   />
                 </div>
+                <p *ngIf="rCity.key" class="is-small help is-danger">{{rCity.value}}</p>
               </div>
             </div>
 

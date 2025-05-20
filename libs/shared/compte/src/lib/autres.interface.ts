@@ -11,3 +11,7 @@ export interface ItemList{
   libelle:string;
   objet:"RIDER"|"SEANCE"|"LIEU";
 }
+export interface ValidationItem {
+  key: boolean;
+  value: string;
+}

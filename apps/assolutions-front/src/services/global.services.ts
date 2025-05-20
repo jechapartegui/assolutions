@@ -6,9 +6,10 @@ import { DatePipe } from '@angular/common';
 import { environment } from '../environments/environment.prod';
 import { compte, ProjetLogin, ProjetView } from '@shared/compte/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
-import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { KeyValuePair, ValidationItem } from '@shared/compte/src/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
 import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
+import { ItemContact } from '@shared/compte/src';
 
 @Injectable({
   providedIn: 'root'
@@ -338,6 +339,75 @@ public async DELETE(url: string): Promise<any> {
             return false;
     }
 }
+
+public validerChaine(
+  valeur: string,
+  min: number,
+  max: number,
+  obligatoire: boolean,
+  label: string
+): ValidationItem {
+  if (obligatoire && !valeur?.trim()) {
+    return { key:false, value:`${label} obligatoire` };
+  }
+  if (min > -1 && valeur?.length < min) {
+     return { key:false, value:`${label} trop court` };
+  }
+  if (max > -1 && valeur?.length > max) {
+     return { key:false, value:`${label} trop long` };
+  }
+  return { key:true,value:null};
+}
+
+public validerDate(
+  valeur: Date | null,
+  min: Date | null,
+  max: Date | null,
+  obligatoire: boolean,
+  label: string
+): ValidationItem {
+  if (obligatoire && !valeur) {
+    return { key:false, value:`${label} obligatoire` };
+  }
+
+  if (valeur) {
+    if (min && valeur < min) {
+     return { key:false, value:`${label} trop ancienne (min : ${min.toLocaleDateString()})` };
+    }
+
+    if (max && valeur > max) {
+    return { key:false, value:`${label} trop récente (max : ${max.toLocaleDateString()})` };
+    }
+  }
+
+  return { key:true,value:null};
+}
+validerContact(contact:ItemContact) : ValidationItem {
+if(contact.Type== 'EMAIL'){
+  if(!this.checkIfEmailInString(contact.Value)){
+    return { key:false, value:`${contact.Type} ${contact.Value} non valide` };
+  } else {
+    return { key:true,value:null};
+  }
+} else if(contact.Type== 'PHONE'){
+  if(!this.checkIfTelInstring(contact.Value)){
+    return { key:false, value:`${contact.Type} ${contact.Value} non valide` };
+  } else {
+    return { key:true,value:null};
+  }
+}
+return { key:true,value:null};
+}
+
+public checkIfEmailInString(text): boolean {
+    var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+    return re.test(text);
+  }
+  public checkIfTelInstring(value: string): boolean {
+      // Regular expression for international or national phone numbers with optional separators
+      var re = /^(\+?[0-9]{1,3}[-\s\.]?)?(\(?[0-9]{1,4}\)?[-\s\.]?)?([0-9]{1,4}[-\s\.]?[0-9]{1,9})$/;
+      return re.test(value);
+    }
 
 }
 

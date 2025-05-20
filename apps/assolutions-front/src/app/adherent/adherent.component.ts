@@ -268,6 +268,11 @@ export class AdherentComponent implements OnInit {
     };
     return adh;
   }
+  public adherentValide: boolean = false;
+
+valid_adherent(isValid: boolean): void {
+  this.adherentValide = isValid;
+}
 
   Create() {
     this.thisAdherent = new Adherent(this.Newadhrent());

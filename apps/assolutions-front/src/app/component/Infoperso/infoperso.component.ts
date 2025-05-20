@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
-import { adherent } from "@shared/compte/src";
+import { adherent, ValidationItem } from "@shared/compte/src";
 import { Adherent } from "apps/assolutions-front/src/class/adherent";
 import { ReglesPersonne } from "apps/assolutions-front/src/class/regles";
+import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
 @Component({
   selector: 'infoperso',
@@ -12,11 +13,19 @@ export class InfoPersoComponent implements OnInit  {
  @Input() thisAdherent:Adherent;
  @Input() Regles:ReglesPersonne;
  save:string=null;
+ estValid:boolean;
  @Output() InfoPersoChange = new EventEmitter();
+@Output() valid = new EventEmitter<boolean>();
  public edit:boolean = false
 
 ngOnInit(): void {
     this.save = JSON.stringify(this.thisAdherent.datasource); 
+    if(this.thisAdherent.ID <1){
+      this.edit = true;
+    }
+}
+ngOnChanges(): void {
+ this.validerTout();
 }
 
  public Save(){
@@ -28,86 +37,24 @@ public Cancel(){
     this.thisAdherent = new Adherent(adh);
     this.edit = false;
 }
+public rNom:ValidationItem;
+public rPrenom:ValidationItem;
+public rDateNaissance:ValidationItem;
+public rLibelle:ValidationItem;
+public rSurnom:ValidationItem;
 
-private validerChaine(
-  valeur: string,
-  min: number,
-  max: number,
-  obligatoire: boolean,
-  label: string
-): string | null {
-  if (obligatoire && !valeur?.trim()) {
-    return `${label} obligatoire`;
-  }
-  if (min > -1 && valeur?.length < min) {
-    return `${label} trop court`;
-  }
-  if (max > -1 && valeur?.length > max) {
-    return `${label} trop long`;
-  }
-  return null;
-}
 
-public lNom:string = "";
-public get rNom(): boolean {
-  const erreur = this.validerChaine(this.thisAdherent.Nom, this.Regles.Nom_min, this.Regles.Nom_max, this.Regles.Nom_obligatoire, $localize`Nom`);
-  this.lNom = erreur ?? "";
-  return !!erreur;
-}
 
-public get rPrenom(): boolean {
-  const erreur = this.validerChaine(this.thisAdherent.Prenom, this.Regles.Prenom_min, this.Regles.Prenom_max, this.Regles.Prenom_obligatoire, $localize`Prénom`);
-  this.lPrenom = erreur ?? "";
-  return !!erreur;
-}
-public lPrenom:string = "";
-
-public get rSurnom(): boolean {
-  const erreur = this.validerChaine(this.thisAdherent.Surnom, this.Regles.Surnom_min, this.Regles.Surnom_max, this.Regles.Surnom_obligatoire, $localize`Surnom`);
-  this.lSurnom = erreur ?? "";
-  return !!erreur;
-}
-public lSurnom:string = "";
-
-public get rDateNaissance(): boolean {
-const erreurDateNaissance = this.validerDate(
-  this.thisAdherent.DateNaissance,
-  this.Regles.DateNaissance_min,
-  this.Regles.DateNaissance_max,
-  this.Regles.DateNaissance_obligatoire,
-  $localize`Date de naissance`
-);
-
-if (erreurDateNaissance) {
-  this.lDateNaissance = $localize`${erreurDateNaissance}`;
-  return true;
-}
-return false;
-}
-public lDateNaissance:string = "";
-
-private validerDate(
-  valeur: Date | null,
-  min: Date | null,
-  max: Date | null,
-  obligatoire: boolean,
-  label: string
-): string | null {
-  if (obligatoire && !valeur) {
-    return `${label} obligatoire`;
-  }
-
-  if (valeur) {
-    if (min && valeur < min) {
-      return `${label} trop ancienne (min : ${min.toLocaleDateString()})`;
-    }
-
-    if (max && valeur > max) {
-      return `${label} trop récente (max : ${max.toLocaleDateString()})`;
-    }
-  }
-
-  return null;
+public validerTout(): void {
+  this.rNom = GlobalService.instance.validerChaine(this.thisAdherent.Nom, this.Regles.Nom_min, this.Regles.Nom_max, this.Regles.Nom_obligatoire, $localize`Nom`);
+  this.rPrenom= GlobalService.instance.validerChaine(this.thisAdherent.Prenom, this.Regles.Prenom_min, this.Regles.Prenom_max, this.Regles.Prenom_obligatoire, $localize`Prénom`);
+  this.rDateNaissance = GlobalService.instance.validerDate(this.thisAdherent.DateNaissance, this.Regles.DateNaissance_min, this.Regles.DateNaissance_max, this.Regles.DateNaissance_obligatoire, $localize`Date de naissance`);
+  this.rLibelle = GlobalService.instance.validerChaine(this.thisAdherent.Surnom, this.Regles.Surnom_min, this.Regles.Surnom_max, this.Regles.Surnom_obligatoire, $localize`Libellé`);
+  this.rSurnom = GlobalService.instance.validerChaine(this.thisAdherent.Libelle, this.Regles.Libelle_min, this.Regles.Libelle_max, false, $localize`Surnom`);
+  // valide si tout est bon
+  this.estValid = this.rNom.key && this.rPrenom.key && this.rLibelle.key && this.rDateNaissance.key && this.rSurnom.key;
+  // 🔥 émettre vers le parent
+  this.valid.emit(this.estValid);
 }
 
 

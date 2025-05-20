@@ -1,15 +1,18 @@
     <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations personnelles</h3>
+      <ng-container *ngIf="thisAdherent.ID >0">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
       ></btn>
-      <btn *ngIf="edit" [disabled]="thisAdherent.Libelle.length < 3 || !thisAdherent.DDN" (click)="Save()"
+      <btn *ngIf="edit" [disabled]="!estValid" (click)="Save()"
         [type_button]="'SauvegarderLight'">
       </btn> <btn *ngIf="edit" (click)="Cancel()"
         [type_button]="'AnnulerLight'">
       </btn>
+      </ng-container>
+      
     </div>
 
     <div class="columns is-vcentered">
@@ -38,33 +41,34 @@
 
 
       <!-- Infos -->
+      <p *ngIf="rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
       <div class="column is-8">
         <div *ngIf="edit; else readPerso" class="p-2">
           <div class="field mb-2">
             <label class="label is-small" i18n>Nom</label>
             <div class="control">
               <input
-              [class]="rNom   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="thisAdherent.Nom">
+              [ngClass]="!rNom.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="thisAdherent.Nom"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rNom" class="is-small help is-danger">{{lNom}}</p>
+            <p *ngIf="rNom.key" class="is-small help is-danger">{{rNom.value}}</p>
           </div>
 
           <div class="field mb-2">
             <label class="label is-small" i18n>Prénom</label>
             <div class="control">
-              <input    [class]="rPrenom
+              <input    [ngClass]="!rPrenom.key
                               ? 'input is-danger is-small'
-                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Prenom">
+                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Prenom"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rPrenom" class="is-small help is-danger">{{lPrenom}}</p>
+            <p *ngIf="rPrenom.key" class="is-small help is-danger">{{rPrenom.value}}</p>
           </div>
 
           <div class="field mb-2">
             <label class="label is-small" i18n>Date de naissance</label>
             <div class="control">
-              <input [class]="rDateNaissance? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.DateNaissance">
+              <input [ngClass]="!rDateNaissance.key? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.DateNaissance"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rDateNaissance" class="is-small help is-danger">{{lDateNaissance}}</p>
+            <p *ngIf="rDateNaissance.key" class="is-small help is-danger">{{rDateNaissance.value}}</p>
           </div>
 
           <div class="field mb-2">
@@ -82,11 +86,11 @@
  <div class="field mb-2">
             <label class="label is-small" i18n>Surnom</label>
             <div class="control">
-              <input    [class]="rSurnom
+              <input    [ngClass]="!rSurnom.key
                               ? 'input is-danger is-small'
-                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Surnom">
+                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Surnom"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rSurnom" class="is-small help is-danger">{{lSurnom}}</p>
+            <p *ngIf="rSurnom.key" class="is-small help is-danger">{{rSurnom.value}}</p>
           </div>
         </div>
 

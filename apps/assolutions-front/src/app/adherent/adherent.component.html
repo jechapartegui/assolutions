@@ -899,14 +899,14 @@
       <div class="columns is-multiline is-variable is-4">
         <!-- Bloc Infos personnelles -->
        <div class="column is-full-tablet is-half-desktop">
- <infoperso [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="Save()"></infoperso>
+ <infoperso [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="Save()" (valid)="valid_adherent($event)"></infoperso>
 </div>
 
 
         <!-- Bloc Adresse -->
         <div class="column is-full-tablet is-half-desktop">
 
-                          <app-address [thisAdresse]="thisAdherent.Adresse" (InfoAdresseChange)="Save()"
+                          <app-address [thisAdresse]="thisAdherent.Adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="Save()"
                           ></app-address>
         </div>
       </div>
@@ -1086,8 +1086,6 @@
                       <div class="column is-6">
                         <div class="field">
                           <label class="label" i18n>Adresse :</label>
-                          <app-address [thisAdresse]="thisAdherent.Adresse"
-                          ></app-address>
                           <p class="help is-danger" *ngIf="!valid_address" i18n>
                             L'adresse doit être saisie (voie, code postal et
                             ville)
@@ -1369,8 +1367,6 @@
               <div class="column is-6">
                 <div class="field">
                   <label class="label" i18n>Adresse :</label>
-                  <app-address
-                  ></app-address>
                   <p class="help is-danger" *ngIf="!valid_address" i18n>
                     L'adresse doit être saisie (voie, code postal et ville)
                   </p>
@@ -1568,8 +1564,6 @@
                   </div>
                   <div class="field-container">
                     <div class="field">
-                      <app-address
-                      ></app-address>
                     </div>
 
                     <div class="field">
@@ -1771,8 +1765,6 @@
           </div>
           <div class="field-container">
             <div class="field">
-              <app-address
-              ></app-address>
             </div>
 
             <div class="field">

@@ -29,7 +29,8 @@ export const REGLES_PAR_DEFAUT: ReglesFormulaire = {
     PostCode_obligatoire: false,
     City_min: -1,
     City_max: -1,
-    City_obligatoire: false
+    City_obligatoire: false,
+    Adresse_obligatoire: false
   },
   InfoPerso_Essai: {
     Nom_min: 1,
@@ -57,6 +58,35 @@ export const REGLES_PAR_DEFAUT: ReglesFormulaire = {
     PostCode_obligatoire: true,
     City_min: -1,
     City_max: -1,
-    City_obligatoire: true
-  }
+    City_obligatoire: true,
+    Adresse_obligatoire: true
+  }, 
+  Contact_Adherent: {
+    nb_contact_min: 2,
+    nb_contact_max: 5,  
+    verifier_format: true,
+    mail_obligatoire: true,
+    tel_obligatoire: true
+  },
+  Contact_Essai: {
+    nb_contact_min: 2,
+    nb_contact_max: 5,  
+    verifier_format: true,
+    mail_obligatoire: true,
+    tel_obligatoire: true
+  },
+  Contact_Pref_Adherent: {
+    nb_contact_min: -1,
+    nb_contact_max: 5,  
+    verifier_format: true,
+    mail_obligatoire: false,
+    tel_obligatoire: false
+  },
+  Contact_Pref_Essai: {
+    nb_contact_min: -1,
+    nb_contact_max: 5,  
+    verifier_format: true,
+    mail_obligatoire: false,
+    tel_obligatoire: false
+  },
 };
