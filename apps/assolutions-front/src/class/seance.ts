@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import { Groupe, Lien_Groupe } from "./groupe";
+import { Lien_Groupe } from "./groupe";
 import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
 
 export class seance {
@@ -16,7 +16,7 @@ export class seance {
     public professeurs: KeyValuePair[]= [];
     public age_minimum:number =0 ;
     public age_maximum:number =99 ;
-    public groupes: Groupe[] = [];
+    public groupes: KeyValuePair[] = [];
     public place_maximum:number =-1;
     public essai_possible:boolean=false;
     public convocation_nominative :boolean=false;
@@ -35,7 +35,7 @@ export class seance {
     let LG = new Lien_Groupe();
     LG.objet_id = this.seance_id;
     LG.objet_type = 'cours';
-    LG.groupes = this.groupes.map( x => x.id);
+    LG.groupes = this.groupes.map( x => Number(x.key));
     return LG;
   }
 }
@@ -137,10 +137,10 @@ export class Seance {
     this.datasource.lieu_id = value;
     this.lieu_idSubject.next(value);
   }
-  get Groupes(): Groupe[] {
+  get Groupes(): KeyValuePair[] {
     return this.datasource.groupes;
   }
-  set Groupes(value: Groupe[]) {
+  set Groupes(value: KeyValuePair[]) {
     this.datasource.groupes = value;
   }
   get AgeMinimum(): number {

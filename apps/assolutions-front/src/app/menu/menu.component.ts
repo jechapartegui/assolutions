@@ -2,7 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdherentMenu } from '../../class/adherent';
-import { cours } from '../../class/cours';
 import { professeur } from '../../class/professeur';
 import { StatutSeance } from '../../class/seance';
 import { CoursService } from '../../services/cours.service';
@@ -17,6 +16,7 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 import { lieu } from '@shared/compte/src/lib/lieu.interface';
 import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
+import { cours } from '@shared/compte/src/lib/cours.interface';
 
 @Component({
   selector: 'app-menu',
@@ -156,7 +156,7 @@ export class MenuComponent implements OnInit {
       this.listelieu = lieux;
       this.liste_lieu_filter = lieux.map((x) => x.nom);
   
-      this.listeCours = await this.coursservice.GetCours();
+      this.listeCours = await this.coursservice.GetAll(GlobalService.saison_active);
 
       this.Riders.forEach((rider) => {
         rider.InscriptionSeances.forEach((seance) => {

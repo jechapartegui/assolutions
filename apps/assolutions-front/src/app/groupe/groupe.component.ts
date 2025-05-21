@@ -6,6 +6,7 @@ import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
+import { KeyValuePair } from '@shared/compte/src';
 
 @Component({
   selector: 'app-groupe',
@@ -19,9 +20,9 @@ export class GroupeComponent implements OnInit {
   nom_groupe: string = "";
   liste_adherent: Adherent[];
   adherent_to: Adherent;
-  groupe_to: Groupe = null;
-  groupe_to_delete: Groupe = null;
-  liste_groupe: Groupe[];
+  groupe_to: KeyValuePair = null;
+  groupe_to_delete: KeyValuePair = null;
+  liste_groupe: KeyValuePair[];
   action: string = "";
   saison_id: number = null;
 
@@ -39,7 +40,10 @@ export class GroupeComponent implements OnInit {
       // Chargez la liste des cours
 
       this.groupeserv.GetAll().then((result) => {
-        this.liste_groupe = result;
+        this.liste_groupe = result.map(x => {
+          key:x.id;
+          value:x.nom,
+        });
         this.adhserv.GetAdherentAdhesion(GlobalService.saison_active).then((riders) => {
           this.liste_adherent = riders.map(x => new Adherent(x));
         }).catch((error) => {
@@ -62,22 +66,22 @@ export class GroupeComponent implements OnInit {
     this.action = $localize`Ajout d'une personne au groupe`;
     try {
       let Ad = this.liste_adherent.find(x => x.ID == this.adherent_to.ID);
-      if (Ad.Groupes.find(x => x.id == this.groupe_to.id)) {
+      if (Ad.Groupes.find(x => x.key == this.groupe_to.key)) {
         let o = errorService.Create(this.action, $localize`Cet adhérent est déjà présent dans le groupe`, "Warning");
         errorService.emitChange(o);
       } else {
         this.action = $localize`Ajout de `;
         this.action += Ad.Libelle;
         this.action += $localize` au groupe `;
-        this.action += this.groupe_to.nom;
+        this.action += this.groupe_to.value;
        
         let errorService = ErrorService.instance;
-        this.groupeserv.AddLien(this.groupe_to.id, 'rider', Ad.ID).then((id) => {
+        this.groupeserv.AddLien(Number(this.groupe_to.key), 'rider', Ad.ID).then((id) => {
           if (id) {
             let g = new Groupe();
-            g.id = this.groupe_to.id;
-            g.nom = this.groupe_to.nom;
-            g.saison_id = this.groupe_to.saison_id;
+            g.id = Number(this.groupe_to.key);
+            g.nom = this.groupe_to.value;
+            g.saison_id = GlobalService.saison_active;
             g.lien_groupe_id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
@@ -102,7 +106,7 @@ export class GroupeComponent implements OnInit {
   AjouterGroupe() {
     let errorService = ErrorService.instance;
     this.action = $localize`Ajouter un groupe`;
-    if (this.liste_groupe.find(x => x.nom.toLowerCase() == this.nom_groupe.toLowerCase())) {
+    if (this.liste_groupe.find(x => x.value.toLowerCase() == this.nom_groupe.toLowerCase())) {
       let o = errorService.CreateError(this.action, $localize`Un groupe existe déjà sous ce nom`);
       errorService.emitChange(o);
     } else {
@@ -127,16 +131,16 @@ export class GroupeComponent implements OnInit {
   SupprimerGroupe() {
     let errorService = ErrorService.instance;
     this.action = $localize`Supprimer un groupe`;
-    if (this.countAdherents(this.groupe_to_delete.id) > 0) {
+    if (this.countAdherents(this.groupe_to_delete.key) > 0) {
       let confirm = window.confirm($localize`Vous supprimez un groupe composé d'adhérents, voulez-vous continuer ?`);
       if (confirm) {
-        let list = this.liste_adherent.filter(rider => this.isGroupe(this.groupe_to_delete.id, rider));
+        let list = this.liste_adherent.filter(rider => this.isGroupe(this.groupe_to_delete.key, rider));
         list.forEach((rider) => {
-          let groupe = rider.Groupes.find(x => x.id == this.groupe_to_delete.id);
+          let groupe = rider.Groupes.find(x => x.key == this.groupe_to_delete.key);
           if(groupe){
             this.groupeserv.DeleteLien(groupe.lien_groupe_id).then((retour) => {
               if(retour){
-                rider.Groupes = rider.Groupes.filter(e => e.id !== groupe.id);
+                rider.Groupes = rider.Groupes.filter(e => e.key !== groupe.key);
               }
               else {
                 let o = errorService.CreateError(this.action, $localize`Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);

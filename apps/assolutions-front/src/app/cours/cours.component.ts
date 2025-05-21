@@ -5,8 +5,6 @@ import { Component,
   ViewChild, } from '@angular/core';
 import { Router } from '@angular/router';
 import { jour_semaine } from '../global';
-import { cours, Cours } from '../../class/cours';
-import { Groupe } from '../../class/groupe';
 import { professeur } from '../../class/professeur';
 import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
@@ -19,6 +17,8 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { cours, initCours } from '@shared/compte/src/lib/cours.interface';
+import { Cours } from '../../class/cours';
 
 @Component({
   selector: 'app-cours',
@@ -37,8 +37,8 @@ export class CoursComponent implements OnInit {
   editMode = false;
   editCours: Cours | null = null;
   current_groupe_id: number;
-  groupe_dispo: Groupe[] = [];
-  liste_groupe: Groupe[] = [];
+  groupe_dispo: KeyValuePair[] = [];
+  liste_groupe: KeyValuePair[] = [];
   
   public liste_saison: Saison[] = [];
   public active_saison: Saison;
@@ -57,7 +57,7 @@ export class CoursComponent implements OnInit {
   filter_groupe: number;
   filter_lieu: number;
   filter_prof: number;
-  liste_groupe_filter: Groupe[];
+  liste_groupe_filter: KeyValuePair[];
   liste_prof_filter: KeyValuePairAny[];
   liste_lieu_filter: KeyValuePairAny[];
   action: string = "";
@@ -115,8 +115,12 @@ export class CoursComponent implements OnInit {
           this.router.navigate(['/groupe']);
           return;
         }
-        this.liste_groupe = groupes;
-        this.liste_groupe_filter = groupes;
+        this.liste_groupe = groupes.map((x) => {
+          return { key: x.id, value: x.nom };
+        });
+        this.liste_groupe_filter = groupes.map((x) => {
+          return { key: x.id, value: x.nom };
+        });
         this.prof_serv.GetProf().then((profs) => {
           if (profs.length == 0) {
             let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);
@@ -174,7 +178,7 @@ export class CoursComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
-  onGroupesUpdated(updatedGroupes: Groupe[]) {
+  onGroupesUpdated(updatedGroupes: KeyValuePair[]) {
     this.editCours.Groupes = updatedGroupes;
     // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
   }
@@ -185,7 +189,7 @@ export class CoursComponent implements OnInit {
     
     this.loading = true;
     if (this.season_id && this.season_id > 0) {
-      this.coursservice.GetCoursSeason(this.season_id).then((c) => {
+      this.coursservice.GetAll(this.season_id).then((c) => {
         this.listeCours = c;
         this.listeCours_VM = this.listeCours.map(x => new Cours(x));        
         this.loading = false;
@@ -197,7 +201,7 @@ export class CoursComponent implements OnInit {
         return;
       })
     } else {
-      this.coursservice.GetCours().then((c) => {
+      this.coursservice.GetAll(GlobalService.saison_active).then((c) => {
         this.listeCours = c;
         this.listeCours_VM = this.listeCours.map(x => new Cours(x));
         this.loading = false;
@@ -262,7 +266,7 @@ export class CoursComponent implements OnInit {
     let confirmation = window.confirm($localize`Voulez-vous supprimer ce cours ? Cette action est définitive. `);
     if (confirmation) {
       this.action = $localize`Supprimer un cours`;
-      if (cours) {
+      if (c) {
         this.coursservice.Delete(c.ID).then((result) => {
           if (result) {
             this.UpdateListeCours();
@@ -281,8 +285,7 @@ export class CoursComponent implements OnInit {
   }
 
   Create(): void {
-    let c = new cours();
-    this.editCours = new Cours(c);
+    this.editCours = new Cours(initCours());
     this.editMode = true;
   }
 
@@ -471,7 +474,7 @@ export class CoursComponent implements OnInit {
        
           (!this.filters.filter_groupe ||
             item.Groupes.some((x) =>
-              x.nom.toLowerCase().includes(
+              x.value.toLowerCase().includes(
                 this.filters.filter_groupe?.toLowerCase() ?? ''
               )
             )) && 

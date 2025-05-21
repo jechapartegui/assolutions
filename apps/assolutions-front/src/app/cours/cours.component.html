@@ -188,7 +188,7 @@
                           <div class="tags is-small">
                             <ng-container *ngFor="let gr of cours.Groupes">
                               <span class="tag is-success">
-                                {{ gr.nom }}
+                                {{ gr.value }}
                               </span>
                             </ng-container>
                           </div>
@@ -379,8 +379,8 @@
                                   <ng-container
                                     *ngFor="let group of liste_groupe_filter"
                                   >
-                                    <option [ngValue]="group.nom">
-                                      {{ group.nom }}
+                                    <option [ngValue]="group.value">
+                                      {{ group.value }}
                                     </option>
                                   </ng-container>
                                 </select>
@@ -579,8 +579,8 @@
                       >
                         <option [ngValue]="null" i18n>Tous</option>
                         <ng-container *ngFor="let group of liste_groupe_filter">
-                          <option [ngValue]="group.nom">
-                            {{ group.nom }}
+                          <option [ngValue]="group.value">
+                            {{ group.value }}
                           </option>
                         </ng-container>
                       </select>

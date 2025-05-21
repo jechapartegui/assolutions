@@ -9,7 +9,6 @@ import {
   paiement_adhesion,
 } from '../../class/adhesion';
 import { fluxfinancier } from '../../class/fluxfinancier';
-import { Groupe } from '../../class/groupe';
 import { operation } from '../../class/operation';
 import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
@@ -22,6 +21,7 @@ import { InscriptionSaisonService } from '../../services/inscription-saison.serv
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
 import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
+import { KeyValuePair } from '@shared/compte/src';
 
 @Component({
   selector: 'app-adherent',
@@ -39,7 +39,7 @@ export class AdherentComponent implements OnInit {
   scrollableContent!: ElementRef;
   showScrollToTop: boolean = false;
   @Input() public id: number;
-  public liste_groupe: Groupe[] = [];
+  public liste_groupe: KeyValuePair[] = [];
   public titre_groupe = $localize`Groupe de l'adhérent`;
   public liste_saison: Saison[] = [];
   public active_saison: Saison;
@@ -60,7 +60,7 @@ export class AdherentComponent implements OnInit {
   public filters: FilterAdherent = new FilterAdherent();
 
   public selected_filter: string;
-  public liste_groupe_filter: Groupe[];
+  public liste_groupe_filter: KeyValuePair[];
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
 
@@ -175,7 +175,7 @@ export class AdherentComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
-  onGroupesUpdated(updatedGroupes: Groupe[]) {
+  onGroupesUpdated(updatedGroupes: KeyValuePair[]) {
     this.thisAdherent.Groupes = updatedGroupes;
   }
 
@@ -186,8 +186,18 @@ export class AdherentComponent implements OnInit {
     this.grServ
       .GetAllEver(this.active_saison.id)
       .then((groupes) => {
-        this.liste_groupe = groupes;
-        this.liste_groupe_filter = groupes;
+        this.liste_groupe = groupes.map((x) => {
+          return {
+            key: x.id,
+            value: x.nom,
+          };
+        });
+        this.liste_groupe_filter = groupes.map((x) => {
+          return {
+            key: x.id,
+            value: x.nom,
+          };
+        });;
 
         this.ridersService
           .GetAdherentAdhesion(this.active_saison.id)
@@ -502,7 +512,7 @@ valid_adherent(isValid: boolean): void {
       }
       if (adh.Groupes) {
         adh.Groupes.forEach((gr) => {
-          this.grServ.DeleteLien(gr.lien_groupe_id);
+          this.grServ.DeleteLien(Number(gr.key));
         });
       }
       this.ridersService
@@ -695,7 +705,7 @@ valid_adherent(isValid: boolean): void {
           adherent.Sexe === this.filters.filter_sexe) &&
         (!this.filters.filter_groupe ||
           adherent.Groupes.find((x) =>
-            x.nom
+            x.value
               .toLowerCase()
               .includes(this.filters.filter_groupe.toLowerCase())
           )) &&

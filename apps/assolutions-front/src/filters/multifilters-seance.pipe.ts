@@ -30,7 +30,7 @@ export class MultifiltersSeancePipe implements PipeTransform {
             (!filters.filter_date_apres || (dateApres && dateSeance <= dateApres)) &&       
         (!filters.filter_groupe ||
           item.Groupes.some((x) =>
-            x.nom.toLowerCase().includes(
+            x.value.toLowerCase().includes(
               filters.filter_groupe?.toLowerCase() ?? ''
             )
           )) && 

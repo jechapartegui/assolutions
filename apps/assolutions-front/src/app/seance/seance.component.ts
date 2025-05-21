@@ -1,8 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { cours } from '../../class/cours';
-import { Groupe } from '../../class/groupe';
 import { professeur, Professeur } from '../../class/professeur';
 import { Saison } from '../../class/saison';
 import { seance, Seance, StatutSeance } from '../../class/seance';
@@ -19,6 +17,7 @@ import { SeancesService } from '../../services/seance.service';
 import { SeanceprofService } from '../../services/seanceprof.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
+import { cours } from '@shared/compte/src/lib/cours.interface';
 
 
 @Component({
@@ -59,8 +58,8 @@ export class SeanceComponent implements OnInit {
   coursselectionne: boolean = false;
 
   current_groupe_id: number;
-  groupe_dispo: Groupe[] = [];
-  liste_groupe: Groupe[] = [];
+  groupe_dispo: KeyValuePair[] = [];
+  liste_groupe: KeyValuePair[] = [];
 
   public sort_nom = 'NO';
   public sort_cours = 'NO';
@@ -68,7 +67,7 @@ export class SeanceComponent implements OnInit {
   public sort_lieu = 'NO';
   public season_id: number;
 
-  public liste_groupe_filter: Groupe[];
+  public liste_groupe_filter: KeyValuePair[];
   public liste_prof_filter: KeyValuePairAny[];
   public liste_lieu_filter: string[];
   public liste_saison: Saison[] = [];
@@ -115,8 +114,12 @@ export class SeanceComponent implements OnInit {
             this.loading = false;
             return;
           }
-          this.liste_groupe = groupes;
-          this.liste_groupe_filter = groupes;
+          this.liste_groupe = groupes.map((x) => {
+            return { key: x.id, value: x.nom };
+          });
+          this.liste_groupe_filter = groupes.map((x) => {
+            return { key: x.id, value: x.nom };
+          });
           this.prof_serv
             .GetProf()
             .then((profs) => {
@@ -171,7 +174,7 @@ export class SeanceComponent implements OnInit {
                         (x) => x.active == true
                       )[0];
                       this.coursservice
-                        .GetCours()
+                        .GetAll(this.active_saison.id)
                         .then((c) => {
                           this.listeCours = c;
                           this.UpdateListeSeance();
@@ -297,7 +300,7 @@ export class SeanceComponent implements OnInit {
       this.editSeance.ConvocationNominative = newValue.convocation_nominative;
       this.editSeance.EstPlaceMaximum = newValue.est_place_maximum;
       this.editSeance.PlaceMaximum = newValue.place_maximum;
-      this.editSeance.EssaiPossible = newValue.essai_possible;
+      this.editSeance.EssaiPossible = false;
       this.editSeance.AfficherPresent = newValue.afficher_present;
       this.editSeance.date_seance = null;
       this.editSeance.Groupes = [];
@@ -561,7 +564,7 @@ export class SeanceComponent implements OnInit {
     this.editSeance.professeurs = updatedProfs;
     // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
   }
-  onGroupesUpdated(updatedGroupes: Groupe[]) {
+  onGroupesUpdated(updatedGroupes: KeyValuePair[]) {
     this.editSeance.Groupes = updatedGroupes;
     // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
   }
@@ -587,8 +590,8 @@ export class SeanceComponent implements OnInit {
                     prof.seance_id = id_s;
                     this.spservice.Add(prof);
                   });
-                  this.editSeance.Groupes.forEach((gr: Groupe) => {
-                    this.grServ.AddLien(gr.id, 'séance', id_s);
+                  this.editSeance.Groupes.forEach((gr: KeyValuePair) => {
+                    this.grServ.AddLien(Number(gr.key), 'séance', id_s);
                   });
                 });
                 let o = errorService.OKMessage(this.action);
@@ -618,8 +621,8 @@ export class SeanceComponent implements OnInit {
                   ss.seance_id = id;
                   this.spservice.Add(ss);
                 });
-                this.editSeance.Groupes.forEach((gr: Groupe) => {
-                  this.grServ.AddLien(gr.id, 'séance', id);
+                this.editSeance.Groupes.forEach((gr: KeyValuePair) => {
+                  this.grServ.AddLien(Number(gr.key), 'séance', id);
                 });
                 this.histo_seance = JSON.stringify(this.editSeance.datasource);
                 let o = errorService.OKMessage(this.action);
@@ -887,7 +890,7 @@ return $localize`Evénement`;
           seance.Statut === this.filters.filter_statut) &&
         (!this.filters.filter_groupe ||
           seance.Groupes.find((x) =>
-            x.nom
+            x.value
               .toLowerCase()
               .includes(this.filters.filter_groupe.toLowerCase())
           )) &&

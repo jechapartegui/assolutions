@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Groupe } from '../bdd/groupe';
-import { groupe } from '@shared/compte/src/lib/groupe.interface';
+import { KeyValuePair } from '@shared/compte/src';
 
 @Injectable()
 export class GroupeService {
@@ -15,7 +15,7 @@ export class GroupeService {
   ) // @InjectRepository(Projet)
   // private readonly projetRepo: Repository<Projet>,
   {}
-  async getGroupe(
+  async getGroupeObjet(
     id: number,
     type: 'cours' | 'séance' | 'rider'
   ): Promise<LienGroupe[]> {
@@ -24,25 +24,79 @@ export class GroupeService {
     });
     return groupe;
   }
+  async Get(id: number): Promise<KeyValuePair> {
+    const gr = await this.GroupeRepo.findOne({
+      where: { id },
+    });
+     if (!gr) {
+        throw new BadRequestException('NO_GROUP_FOUND');
+      }
+      return {
+        key: gr.id,
+        value: gr.nom,
+      };
+  }
 
-  async GroupeSaison(saison_id: number): Promise<groupe[]> {
+
+  async GetAll(saison_id: number): Promise<KeyValuePair[]> {
     const gr = await this.GroupeRepo.find({
       where: { saison_id },
     });
-    return gr.map((x) => this.togroup(x));
+     if (!gr) {
+        throw new BadRequestException('NO_GROUP_FOUND');
+      }
+    return gr.map((x) => { 
+      return {
+        key: x.id,
+        value: x.nom,
+      };
+    });
   }
-  togroup(gr: Groupe): groupe {
-    return {
-      id: gr.id,
-      nom: gr.nom,
-      saison_id: gr.saison_id ?? gr.saison_id ?? 0,
-    };
-  }
-  toGroupe(gr: groupe): Groupe {
+
+    async Add(s: KeyValuePair, saison_id :number) {
+      if (!s) {
+        throw new BadRequestException('INVALID_GROUP');
+      }
+      const objet_base = this.toGroupe(s, saison_id);
+    
+      const newISS = this.GroupeRepo.create(objet_base);
+      const saved = await this.GroupeRepo.save(newISS);
+      return saved.id;
+    }
+    async Update(s: KeyValuePair, saison_id :number) {
+      if (!s) {
+        throw new BadRequestException('INVALID_GROUP');
+      }
+      const objet_base = this.toGroupe(s, saison_id);
+    
+      const existing = await this.GroupeRepo.findOne({ where: { id: Number(s.key) } });
+      if (!existing) {
+        throw new NotFoundException('NO_GROUP_FOUND');
+      }
+    
+      const updated = await this.GroupeRepo.save({ ...existing, ...objet_base });
+      if(updated) {
+        return true;
+      } else {
+        return false
+      }
+    }
+    
+    async Delete(id: number) {
+      const toDelete = await this.GroupeRepo.findOne({ where: { id } });
+      if (!toDelete) {
+        throw new NotFoundException('NO_GROUP_FOUND');
+      }
+    
+      await this.GroupeRepo.remove(toDelete);
+      return { success: true };
+    }
+
+  toGroupe(gr: KeyValuePair, saison_id:number): Groupe {
   const g = new Groupe();
-  g.id = gr.id;
-  g.nom = gr.nom;
-  g.saison_id = gr.saison_id;
+  g.id = Number(gr.key);
+  g.nom = gr.value;
+  g.saison_id = saison_id;
   return g;
 }
 }

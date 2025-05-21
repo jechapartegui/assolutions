@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Groupe } from '../../class/groupe';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
+import { KeyValuePair } from '@shared/compte/src';
 
 
 @Component({
@@ -10,13 +10,13 @@ import { GroupeService } from '../../services/groupe.service';
   styleUrls: ['./groupe-detail.component.css']
 })
 export class GroupeDetailComponent {
-  @Input() liste_groupe: Groupe[];
+  @Input() liste_groupe: KeyValuePair[];
   @Input() id_source: number;
   @Input() objet_source: string;
-  @Input() Groupes: Groupe[];
+  @Input() Groupes: KeyValuePair[];
   current_groupe_key: number;
-  @Input() groupe_dispo: Groupe[] = [];
-  @Output() groupesUpdated = new EventEmitter<Groupe[]>();  // Ajout du @Output()
+  @Input() groupe_dispo: KeyValuePair[] = [];
+  @Output() groupesUpdated = new EventEmitter<KeyValuePair[]>();  // Ajout du @Output()
   public action: string = "";
   constructor(public gr_serv: GroupeService) { }
 
@@ -27,11 +27,10 @@ export class GroupeDetailComponent {
   AjouterGroupe() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un groupe`;
-    const indexToUpdate = this.liste_groupe.findIndex(cc => cc.id === this.current_groupe_key);
+    const indexToUpdate = this.liste_groupe.findIndex(cc => cc.key === this.current_groupe_key);
     const newValue = this.liste_groupe[indexToUpdate];
     if (this.id_source > 0) {
-      this.gr_serv.AddLien(newValue.id, this.objet_source, this.id_source).then((id) => {
-        newValue.lien_groupe_id = id;
+      this.gr_serv.AddLien(Number(newValue.key), this.objet_source, this.id_source).then((id) => {
         this.Groupes.push(newValue);
         this.current_groupe_key = null;
         this.MAJListeGroupe();
@@ -41,13 +40,6 @@ export class GroupeDetailComponent {
         errorService.emitChange(o);
       });
     } else {
-      let max_id = 1;
-      this.Groupes.forEach((f) =>{
-        if(f.temp_id && f.temp_id>=max_id){
-          max_id ++;
-        }
-      })
-      newValue.temp_id = max_id
       this.Groupes.push(newValue);
       this.current_groupe_key = null;
       this.MAJListeGroupe();
@@ -61,7 +53,7 @@ export class GroupeDetailComponent {
     if (this.id_source > 0) {
       this.gr_serv.DeleteLien(item.lien_groupe_id).then((ok) => {
         if (ok) {
-          this.Groupes = this.Groupes.filter(e => e.id !== item.id);
+          this.Groupes = this.Groupes.filter(e => Number(e.key) !== item.id);
           this.MAJListeGroupe();
           this.groupesUpdated.emit(this.Groupes);  // Emettre l'event après l'ajout
         } else {
@@ -74,17 +66,16 @@ export class GroupeDetailComponent {
         errorService.emitChange(o);
       });
     } else {
-      this.Groupes = this.Groupes.filter(e => e.temp_id !== item.temp_id);
       this.MAJListeGroupe();
       this.groupesUpdated.emit(this.Groupes);  // Emettre l'event après l'ajout
     }
   }
   MAJListeGroupe() {
     this.groupe_dispo = this.liste_groupe;
-    this.Groupes.forEach((element: Groupe) => {
-      let element_to_remove = this.groupe_dispo.find(e => e.id == element.id);
+    this.Groupes.forEach((element: KeyValuePair) => {
+      let element_to_remove = this.groupe_dispo.find(e => Number(e.key) == element.key);
       if (element_to_remove) {
-        this.groupe_dispo = this.groupe_dispo.filter(e => e.id !== element_to_remove.id);
+        this.groupe_dispo = this.groupe_dispo.filter(e => e.key !== element_to_remove.key);
       }
     });
   }

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { CoursProfesseur } from "./cours_professeur";
 
 @Entity('cours')
 export class Cours {
@@ -52,4 +53,7 @@ export class Cours {
 
   @Column({ type: 'tinyint', default: 0 })
   est_place_maximum: boolean;
+
+  @OneToMany(() => CoursProfesseur, cp => cp.cours)
+professeursCours: CoursProfesseur[];
 }

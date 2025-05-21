@@ -26,7 +26,7 @@ export class MultifiltersCoursPipe implements PipeTransform {
      
         (!filters.filter_groupe ||
           item.Groupes.some((x) =>
-            x.nom.toLowerCase().includes(
+            x.value.toLowerCase().includes(
               filters.filter_groupe?.toLowerCase() ?? ''
             )
           )) && 

@@ -53,7 +53,7 @@
                                             <!-- Options pour les professeurs -->
                                              <option [ngValue]="null">---</option>
                                             <ng-container *ngFor="let gr of liste_groupe ">
-                                                <option [ngValue]="gr">{{gr.nom}}</option>
+                                                <option [ngValue]="gr">{{gr.value}}</option>
                                             </ng-container>
                                         </select>
                                     </div>
@@ -120,7 +120,7 @@
                                             <!-- Options pour les professeurs -->
                                             <ng-container
                                                 *ngFor="let gr of liste_groupe ">
-                                                <option [ngValue]="gr">{{gr.nom}}</option>
+                                                <option [ngValue]="gr">{{gr.value}}</option>
                                             </ng-container>
                                         </select>
                                     </div>
@@ -144,7 +144,7 @@
             <ng-container *ngFor="let groupe of liste_groupe">
                 <div class="card" *ngIf="groupe">
                     <header class="card-header">
-                        <p class="card-header-title">{{groupe.nom}} ({{ countAdherents(groupe.id) }}&nbsp;<span i18n>adhérents</span>)</p>
+                        <p class="card-header-title">{{groupe.value}} ({{ countAdherents(groupe.id) }}&nbsp;<span i18n>adhérents</span>)</p>
                         <button (click)="groupe.display ? groupe.display = false : groupe.display= true"
                             class="card-header-icon" aria-label="more options">
                             <span class="icon">

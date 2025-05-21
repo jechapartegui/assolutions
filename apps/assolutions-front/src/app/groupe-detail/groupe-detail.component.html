@@ -2,13 +2,13 @@
     <ng-container *ngFor="let niv of Groupes">
         <span class="fullscreen">
         <span class="tag is-success">
-            {{niv.nom}}
+            {{niv.value}}
             <button  class="delete is-small" (click)="RemoveGroupe(niv)"></button>
         </span>
         </span>
         <span class="mobile">
             <span class="tag is-success is-large">
-                {{niv.nom}}
+                {{niv.value}}
                 <button  class="delete" (click)="RemoveGroupe(niv)"></button>
             </span>
             </span>
@@ -18,7 +18,7 @@
     <div class="select">
         <select class="select_mobile" id="professeurs" [(ngModel)]="current_groupe_key">
             <ng-container *ngFor="let ni of groupe_dispo;let first = first	">
-                <option [value]="ni.id">{{ ni.nom }}</option>
+                <option [value]="ni.key">{{ ni.value }}</option>
             </ng-container>
         </select>
     </div>

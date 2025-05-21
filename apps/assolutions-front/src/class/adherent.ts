@@ -1,6 +1,5 @@
 
 import { seance } from "./seance";
-import { Groupe } from "./groupe";
 import { Adresse } from "./address";
 import { Adhesion } from "./adhesion";
 import { FilterMenu } from "../app/menu/menu.component";
@@ -8,6 +7,7 @@ import { AdherentSeance, MesSeances } from "@shared/compte/src/lib/seance.interf
 import { adherent, ItemContact } from "@shared/compte/src/lib/member.interface";
 import { inscription_seance } from "@shared/compte/src/lib/inscription_seance.interface";
 import { GlobalService } from "../services/global.services";
+import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
 
 
 
@@ -171,7 +171,7 @@ public get Inscrit() : boolean {
 
 
 
-  public Groupes: Groupe[] = [];
+  public Groupes: KeyValuePair[] = [];
   public inscriptions: inscription_seance[] = [];
   public seances: seance[] = [];
   public seances_prof: seance[] = [];

@@ -36,7 +36,7 @@ export class MemberController {
   
     @UseGuards(PasswordGuard)
     @Get('getall/:saison_id')
-    async GetAll(@Headers('projectid') projectId: number,@Param('saison_id') saison_id: number, @Param('active_only') active_only: boolean) {
+    async GetAll(@Headers('projectid') projectId: number,@Param('saison_id') saison_id: number) {
       return this.mem_serv.GetAll(saison_id,projectId);
     }
     

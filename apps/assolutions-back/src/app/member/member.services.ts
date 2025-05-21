@@ -13,7 +13,6 @@ import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
 import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
 import { ItemList, KeyValuePair } from '@shared/compte/src';
 import { LienGroupe } from '../bdd/lien-groupe';
-import { Groupe } from '../bdd/groupe';
 import { Compte } from '../bdd/compte';
 
 @Injectable()
@@ -69,7 +68,7 @@ export class MemberService {
   
     for (const ad of adhrents) {
       const age = this.calculateAge(ad.date_naissance);
-      const groupe = await this.groupeservice.getGroupe(ad.id, 'rider');
+      const groupe = await this.groupeservice.getGroupeObjet(ad.id, 'rider');
       const mes_seances = await this.seanceService.MySeance(
         ad.id,
         age,
@@ -321,7 +320,7 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
     where: { id: In(adherentProject.map(x => x.member_id)) },
   });
 
-  const liste_groupe:Groupe[] = await this.groupeservice.GroupeSaison(saison_id);
+  const liste_groupe:KeyValuePair[] = await this.groupeservice.GetAll(saison_id);
 
   const inscr_saison:InscriptionSaison[] = await this.inscriptionsaisonRepo.find({
     where: { rider_id: In(adherentProject.map(x => x.member_id)),
@@ -337,7 +336,7 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
   const group: LienGroupe[] = await this.LienGroupeRepo.find({
     where: {
       objet_id: In(adherentProject.map(x => x.member_id)),
-      groupe_id: In(liste_groupe.map(x => x.id)),
+      groupe_id: In(liste_groupe.map(x => x.key)),
       objet_type: "rider"
     },
   });
@@ -353,7 +352,7 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
       .filter(x => x.objet_id === adh.id)
       .map(x => ({
         key: x.groupe_id,
-        value: liste_groupe.find(y => y.id === x.groupe_id)?.nom || ''
+        value: liste_groupe.find(y => y.key === x.groupe_id)?.value || ''
       }));
       adh.inscrit = inscr_saison.find(x => x.rider_id == adh.id)?true:false;
       adh.login = comptes.find(x => x.id === adh.compte)?.login || '';
