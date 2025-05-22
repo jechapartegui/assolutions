@@ -30,7 +30,7 @@ export class GroupeDetailComponent {
     const indexToUpdate = this.liste_groupe.findIndex(cc => cc.key === this.current_groupe_key);
     const newValue = this.liste_groupe[indexToUpdate];
     if (this.id_source > 0) {
-      this.gr_serv.AddLien(Number(newValue.key), this.objet_source, this.id_source).then((id) => {
+      this.gr_serv.AddLien(this.id_source, this.objet_source, Number(newValue.key)).then((id) => {
         this.Groupes.push(newValue);
         this.current_groupe_key = null;
         this.MAJListeGroupe();
@@ -51,7 +51,7 @@ export class GroupeDetailComponent {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer un groupe`;
     if (this.id_source > 0) {
-      this.gr_serv.DeleteLien(item.lien_groupe_id).then((ok) => {
+      this.gr_serv.DeleteLien(this.id_source, this.objet_source,item.lien_groupe_id).then((ok) => {
         if (ok) {
           this.Groupes = this.Groupes.filter(e => Number(e.key) !== item.id);
           this.MAJListeGroupe();

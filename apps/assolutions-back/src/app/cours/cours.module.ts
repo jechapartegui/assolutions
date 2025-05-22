@@ -20,13 +20,14 @@ import { ProjetLogin } from '../bdd/project_login';
 import { Groupe } from '../bdd/groupe';
 import { CoursService } from './cours.services';
 import { CoursController } from './cours.controller';
+import { CoursProfesseur } from '../bdd/cours_professeur';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
 InscriptionSeance, Adherent, Seance, SeanceProfesseur, LienGroupe, Compte, Cours, GestionnaireProjet, InscriptionSaison, Lieu, AdherentProjet, 
-        ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison, Groupe
+        ProfesseurSaison, Professeur, Projet, ProjetLogin, Saison, Groupe, CoursProfesseur  
     ]),
   ],
   providers: [CoursService],

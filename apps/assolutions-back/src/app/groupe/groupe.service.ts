@@ -82,6 +82,7 @@ export class GroupeService {
       }
     }
     
+    
     async Delete(id: number) {
       const toDelete = await this.GroupeRepo.findOne({ where: { id } });
       if (!toDelete) {
@@ -90,6 +91,32 @@ export class GroupeService {
     
       await this.GroupeRepo.remove(toDelete);
       return { success: true };
+    }
+    async AddLien(
+      id_objet: number,
+      type_objet: string,
+      id_groupe: number
+    ): Promise<number> {
+      const newLien = this.lienGrouperepo.create({
+        objet_id: id_objet,
+        objet_type: type_objet,
+        groupe_id: id_groupe,
+      });
+      return (await this.lienGrouperepo.save(newLien)).id;
+    }
+    async DeleteLien(
+      id_objet: number,
+      type_objet: string,
+      id_groupe: number
+    ): Promise<boolean> {
+      const lien = await this.lienGrouperepo.findOne({
+        where: { objet_id: id_objet, objet_type: type_objet, groupe_id: id_groupe },
+      });
+      if (!lien) {
+        throw new NotFoundException('NO_LINK_FOUND');
+      }
+      await this.lienGrouperepo.remove(lien);
+      return true;
     }
 
   toGroupe(gr: KeyValuePair, saison_id:number): Groupe {

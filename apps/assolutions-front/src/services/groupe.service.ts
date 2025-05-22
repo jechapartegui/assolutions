@@ -28,8 +28,12 @@ export class GroupeService {
         return Promise.reject(message);
       });
   }
-  public GetAll(saison_id:number): Promise<KeyValuePair[]> {
+  public GetAll(saison_id:number =0): Promise<KeyValuePair[]> {
+    if(saison_id ===0){
+    saison_id = GlobalService.saison_active
+  }
     this.url = 'api/groupe/getall/'  + saison_id;
+    
     //  this.url = this.url + "login.php";
    
 
@@ -46,9 +50,15 @@ export class GroupeService {
   }
  
 
-  public Add(l:KeyValuePair): Promise<number> {
+  public Add(gr:KeyValuePair, saison_id:number =0): Promise<number> {
   this.url = 'api/groupe/add';
-
+  if(saison_id ===0){
+    saison_id = GlobalService.saison_active
+  }
+ const l = {
+    saison_id: saison_id,
+    gr: gr
+  };
   return this.global.PUT(this.url, l)
     .then((response: number) => {
       return response;
@@ -58,9 +68,15 @@ export class GroupeService {
       return Promise.reject(error);
     });
 }
-public Update(l:KeyValuePair): Promise<boolean> {
+public Update(gr:KeyValuePair, saison_id:number =0): Promise<boolean> {
   this.url = 'api/groupe/update';
-
+if(saison_id ===0){
+    saison_id = GlobalService.saison_active
+  }
+ const l = {
+    saison_id: saison_id,
+    gr: gr
+  };
   return this.global.PUT(this.url, l)
     .then((response: boolean) => {
       return response;
@@ -82,4 +98,35 @@ public Delete(id:number): Promise<boolean> {
       return Promise.reject(error);
     });
 }
+
+public AddLien(
+      id_objet: number,
+      type_objet: string,
+      id_groupe: number
+    ): Promise<number> {
+  this.url = 'api/groupe/addlien';
+  const l = {
+    id_objet: id_objet,
+    type_objet: type_objet,
+    id_groupe: id_groupe
+  };
+  return this.global.PUT(this.url, l)
+    .then((response: number) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+
+public DeleteLien(id_objet: number, type_objet: string, id_groupe: number): Promise<boolean> {
+  // encodeURIComponent protège contre les '/' ou caractères spéciaux dans type_objet
+  const url = `api/groupe/deletelien/${id_objet}/${encodeURIComponent(type_objet)}/${id_groupe}`;
+
+  return this.global.DELETE(url)
+    .then((response: boolean) => response)
+    .catch(error => Promise.reject(error));
+}
+
 }

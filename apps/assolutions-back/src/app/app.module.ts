@@ -29,6 +29,8 @@ import { InscriptionSeanceModule } from './inscription_seance/inscription_seance
 import { SaisonModule } from './saison/saison.module';
 import { Groupe } from './bdd/groupe';
 import { CoursModule } from './cours/cours.module';
+import { CoursProfesseur } from './bdd/cours_professeur';
+import { GroupeModule } from './groupe/groupe.module';
 
 @Module({
   imports: [
@@ -42,11 +44,11 @@ import { CoursModule } from './cours/cours.module';
       username: 'root',
       password: '',
       database: 'maseance',
-      entities: [Compte, Adherent, AdherentProjet, Projet, Cours, Adherent, AdherentProjet, Projet, Saison,  
+      entities: [Compte, Adherent, AdherentProjet, Projet, Cours, Adherent, AdherentProjet, Projet, Saison,  CoursProfesseur,
         InscriptionSaison, InscriptionSeance, LienGroupe, Seance, ProjetLogin, GestionnaireProjet, ProfesseurSaison, SeanceProfesseur, Lieu, Professeur, Groupe],
       synchronize: false, // true uniquement si tu veux que TypeORM crée/modifie les tables tout seul
     }),
-    AuthModule, MemberModule, SeanceModule, ProjectModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule
+    AuthModule, MemberModule, SeanceModule, ProjectModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule
   ],  providers: [
     {
       provide: APP_GUARD,

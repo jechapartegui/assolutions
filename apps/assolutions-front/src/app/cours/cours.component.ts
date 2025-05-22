@@ -115,12 +115,8 @@ export class CoursComponent implements OnInit {
           this.router.navigate(['/groupe']);
           return;
         }
-        this.liste_groupe = groupes.map((x) => {
-          return { key: x.id, value: x.nom };
-        });
-        this.liste_groupe_filter = groupes.map((x) => {
-          return { key: x.id, value: x.nom };
-        });
+        this.liste_groupe = groupes;
+        this.liste_groupe_filter = groupes;
         this.prof_serv.GetProf().then((profs) => {
           if (profs.length == 0) {
             let o = errorService.CreateError($localize`Récupérer les professeurs`, $localize`Il faut au moins un professeur pour créer un cours`);

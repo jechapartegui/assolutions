@@ -150,7 +150,7 @@ toCours(data: cours, project_id: number): Cours {
     c.project_id = project_id;
   return c;
 }
-to_cours(entity: Cours) : cours {
+to_cours(entity: Cours): cours {
   return {
     id: entity.id,
     nom: entity.nom,
@@ -169,11 +169,15 @@ to_cours(entity: Cours) : cours {
     place_maximum: entity.place_maximum,
     prof_principal_id: entity.prof_principal_id,
     groupes: [],
-    profs:entity.professeursCours.map(cp => ({
-        key: cp.professeur.id,
-        value: `${cp.professeur.prenom} ${cp.professeur.nom}`
-}))
-}    }
+    profs: Array.isArray(entity.professeursCours)
+      ? entity.professeursCours.map(cp => ({
+          key: cp.professeur.id,
+          value: `${cp.professeur.prenom} ${cp.professeur.nom}`,
+        }))
+      : [],
+  };
+}
+
 
 async getGroupesForCours(cours_id: number): Promise<KeyValuePair[]> {
   const liens = await this.LienGroupeRepo
@@ -181,7 +185,7 @@ async getGroupesForCours(cours_id: number): Promise<KeyValuePair[]> {
     .innerJoin(Groupe, 'groupe', 'groupe.id = lien.groupe_id')
     .where('lien.objet_type = :type', { type: 'cours' })
     .andWhere('lien.objet_id = :id', { id: cours_id })
-    .select(['groupe.id as key', 'groupe.nom as value'])
+    .select(['groupe.id as `key`', 'groupe.nom as `value`'])
     .getRawMany();
 
   return liens; // déjà au format KeyValuePair

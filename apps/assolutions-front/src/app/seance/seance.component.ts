@@ -114,12 +114,8 @@ export class SeanceComponent implements OnInit {
             this.loading = false;
             return;
           }
-          this.liste_groupe = groupes.map((x) => {
-            return { key: x.id, value: x.nom };
-          });
-          this.liste_groupe_filter = groupes.map((x) => {
-            return { key: x.id, value: x.nom };
-          });
+          this.liste_groupe = groupes;
+          this.liste_groupe_filter = groupes;
           this.prof_serv
             .GetProf()
             .then((profs) => {

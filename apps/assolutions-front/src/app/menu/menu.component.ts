@@ -65,7 +65,7 @@ export class MenuComponent implements OnInit {
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
       this.loading = false;
-      errorService.emitChange(o);
+      errorService.emitChange(o);      
       this.router.navigate(['/login']);
       return;
     }
@@ -182,6 +182,8 @@ export class MenuComponent implements OnInit {
         this.router.navigate(['/lieu']);
       }
     } else {
+      GlobalService.is_logged_in = false;
+      GlobalService.projet = null;
       this.router.navigate(['/login']);
     }
     } finally {

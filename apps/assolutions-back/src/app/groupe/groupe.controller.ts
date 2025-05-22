@@ -21,15 +21,15 @@ export class GroupeController {
      
   
     @Put('add')
-    async Add(@Body() body: { saison_id: number; s: KeyValuePair }) {
-      const { saison_id, s } = body;
-      return this.groupe_serv.Add(s, saison_id);
+    async Add(@Body() body: { saison_id: number; gr: KeyValuePair }) {
+      const { saison_id, gr } = body;
+      return this.groupe_serv.Add(gr, saison_id);
     }
 
 @Put('update')
-async Update(@Body() body: { saison_id: number; s: KeyValuePair }) {
-  const { saison_id, s } = body;
-  return this.groupe_serv.Update(s, saison_id);
+async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
+  const { saison_id, gr } = body;
+  return this.groupe_serv.Update(gr, saison_id);
 }
 
         @UseGuards(PasswordGuard)
@@ -37,5 +37,21 @@ async Update(@Body() body: { saison_id: number; s: KeyValuePair }) {
     async Delete(@Param('id') id: number) {
       return this.groupe_serv.Delete(id);
     }
+
+     @Put('addlien')
+    async AddLien(@Body() body: { id_objet: number; type_objet: string; id_groupe: number }) {
+      const { id_objet, type_objet, id_groupe} = body;
+      return this.groupe_serv.AddLien(id_objet, type_objet, id_groupe);
+    }
+
+        @UseGuards(PasswordGuard)
+@Delete('deletelien/:id_objet/:type_objet/:id_groupe')
+async DeleteLien(
+  @Param('id_objet') id_objet: number,
+  @Param('type_objet') type_objet: string,
+  @Param('id_groupe') id_groupe: number,
+) {
+  return this.groupe_serv.DeleteLien(id_objet, type_objet, id_groupe);
+}
 
 }

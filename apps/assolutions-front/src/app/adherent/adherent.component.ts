@@ -184,20 +184,10 @@ export class AdherentComponent implements OnInit {
     this.action = $localize`Récupérer les adhérents`;
 
     this.grServ
-      .GetAllEver(this.active_saison.id)
+      .GetAll()
       .then((groupes) => {
-        this.liste_groupe = groupes.map((x) => {
-          return {
-            key: x.id,
-            value: x.nom,
-          };
-        });
-        this.liste_groupe_filter = groupes.map((x) => {
-          return {
-            key: x.id,
-            value: x.nom,
-          };
-        });;
+        this.liste_groupe = groupes;
+        this.liste_groupe_filter = groupes;
 
         this.ridersService
           .GetAdherentAdhesion(this.active_saison.id)
@@ -512,7 +502,7 @@ valid_adherent(isValid: boolean): void {
       }
       if (adh.Groupes) {
         adh.Groupes.forEach((gr) => {
-          this.grServ.DeleteLien(Number(gr.key));
+          this.grServ.DeleteLien(adh.ID, "rider",Number(gr.key));
         });
       }
       this.ridersService

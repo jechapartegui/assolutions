@@ -204,7 +204,7 @@
           <div class="select">
             <select style="font-size: smaller" [(ngModel)]="groupe_selectionne">
               <ng-container *ngFor="let pr of liste_groupe">
-                <option [value]="pr.id">{{ pr.nom }}</option>
+                <option [value]="pr.key">{{ pr.value }}</option>
               </ng-container>
             </select>
           </div>

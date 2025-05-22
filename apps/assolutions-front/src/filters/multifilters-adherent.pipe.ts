@@ -23,7 +23,7 @@ export class MultifiltersAdherentPipe implements PipeTransform {
         (!filters.filter_date_apres || new Date(item.DDN) >= filters.filter_date_apres) &&
         (!filters.filter_groupe ||
           item.Groupes.some((x) =>
-            x.nom.toLowerCase().includes(
+            x.value.toLowerCase().includes(
               filters.filter_groupe?.toLowerCase() ?? ''
             )
           )) &&

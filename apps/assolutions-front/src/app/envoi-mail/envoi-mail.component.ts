@@ -1,7 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Adherent } from '../../class/adherent';
-import { Groupe } from '../../class/groupe';
 import { MailData } from '../../class/mail';
 import { seance } from '../../class/seance';
 import { AdherentService } from '../../services/adherent.service';
@@ -10,7 +9,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { MailService } from '../../services/mail.service';
 import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
-import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
 
 @Component({
@@ -33,7 +32,7 @@ export class EnvoiMailComponent implements OnInit {
   date_fin: string;
   params: KeyValuePairAny[];
   action: string;
-  liste_groupe: Groupe[];
+  liste_groupe: KeyValuePair[];
   groupe_selectionne: number;
   liste_adherent: Adherent[];
   ListeUserSelectionne: Adherent[] = [];
@@ -137,7 +136,7 @@ export class EnvoiMailComponent implements OnInit {
       this.ListeUserSelectionne= [];
     }
     if(this.groupe_selectionne){
-      let list = this.liste_adherent.filter(x => x.Groupes.map(x => x.id).includes(this.groupe_selectionne));
+      let list = this.liste_adherent.filter(x => x.Groupes.map(x => x.key).includes(this.groupe_selectionne));
       this.ListeUserSelectionne.push(...list);
     }
   }
