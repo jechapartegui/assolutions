@@ -59,6 +59,8 @@ import { GlobalService } from '../services/global.services';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { DureeHHMMPipe } from '../pipe/duree.pipe';
 import { InfoPersoComponent } from './component/Infoperso/infoperso.component';
+import { DateLieuComponent } from './component/datelieu/datelieu.component';
+import { CaracSeanceComponent } from './component/caracteristique_seance/caracteristique_seance.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -71,7 +73,7 @@ import { InfoPersoComponent } from './component/Infoperso/infoperso.component';
     ComptabiliteComponent, InfoPersoComponent,
     ProfComponent,RangePipe,
     NotifJechaComponent,  AdministrateursComponent,
-    ContactItemComponent, DureeHHMMPipe,
+    ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
    CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, MenuAdminComponent,

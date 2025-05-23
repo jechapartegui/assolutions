@@ -16,7 +16,7 @@
 </div> 
 <ng-container *ngIf="groupe_dispo.length >0">
     <div class="select">
-        <select class="select_mobile" id="professeurs" [(ngModel)]="current_groupe_key">
+        <select class="select is-small" id="groupes" [(ngModel)]="current_groupe_key">
             <ng-container *ngFor="let ni of groupe_dispo;let first = first	">
                 <option [value]="ni.key">{{ ni.value }}</option>
             </ng-container>

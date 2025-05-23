@@ -1,5 +1,18 @@
 // types/regles-formulaire.model.ts
 
+
+export interface ReglesFormulaire {
+  InfoPerso_Adherent: ReglesPersonne;
+  Adresse_Adherent: ReglesAdresse;
+  InfoPerso_Essai: ReglesPersonne;
+  Adresse_Essai: ReglesAdresse;
+  Contact_Adherent: ReglesContact;
+  Contact_Essai: ReglesContact;
+  Contact_Pref_Adherent: ReglesContact;
+  Contact_Pref_Essai: ReglesContact;
+  Seance_DateLieu: ReglesDateLieu;
+  Cours_DateLIeu: ReglesDateLieu;
+}
 export interface ReglesPersonne {
   Nom_min: number;
   Nom_max: number;
@@ -31,16 +44,6 @@ export interface ReglesAdresse {
   Adresse_obligatoire: boolean;
 }
 
-export interface ReglesFormulaire {
-  InfoPerso_Adherent: ReglesPersonne;
-  Adresse_Adherent: ReglesAdresse;
-  InfoPerso_Essai: ReglesPersonne;
-  Adresse_Essai: ReglesAdresse;
-  Contact_Adherent: ReglesContact;
-  Contact_Essai: ReglesContact;
-  Contact_Pref_Adherent: ReglesContact;
-  Contact_Pref_Essai: ReglesContact;
-}
 
 export interface ReglesContact {
   nb_contact_min: number;
@@ -48,4 +51,18 @@ export interface ReglesContact {
   verifier_format: boolean;
   mail_obligatoire: boolean;
   tel_obligatoire: boolean;
+}
+export interface ReglesDateLieu {
+  date_dans_saison:boolean;
+  date_min: Date | null;
+  date_max: Date | null;
+  heure_min: string;
+  heure_max: string;
+  date_obligatoire: boolean;
+  heure_obligatoire:boolean;
+  lieu_obligatoire:boolean;
+  creneau_obligatoire:boolean;
+  duree_obligatoire:boolean;
+  duree_min: number;
+  duree_max: number;
 }

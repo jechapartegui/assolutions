@@ -27,10 +27,9 @@ export class GroupeDetailComponent {
   AjouterGroupe() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un groupe`;
-    const indexToUpdate = this.liste_groupe.findIndex(cc => cc.key === this.current_groupe_key);
-    const newValue = this.liste_groupe[indexToUpdate];
+    const newValue = this.liste_groupe.find(cc => Number(cc.key) === Number(this.current_groupe_key));
     if (this.id_source > 0) {
-      this.gr_serv.AddLien(this.id_source, this.objet_source, Number(newValue.key)).then((id) => {
+      this.gr_serv.AddLien(this.id_source, this.objet_source, Number(this.current_groupe_key)).then((id) => {
         this.Groupes.push(newValue);
         this.current_groupe_key = null;
         this.MAJListeGroupe();
@@ -47,14 +46,16 @@ export class GroupeDetailComponent {
     }
 
   }
-  RemoveGroupe(item) {
+  RemoveGroupe(item :KeyValuePair) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer un groupe`;
     if (this.id_source > 0) {
-      this.gr_serv.DeleteLien(this.id_source, this.objet_source,item.lien_groupe_id).then((ok) => {
+      this.gr_serv.DeleteLien(this.id_source, this.objet_source,Number(item.key)).then((ok) => {
         if (ok) {
-          this.Groupes = this.Groupes.filter(e => Number(e.key) !== item.id);
+          this.Groupes = this.Groupes.filter(e => Number(e.key) !== Number(item.key));
           this.MAJListeGroupe();
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
           this.groupesUpdated.emit(this.Groupes);  // Emettre l'event après l'ajout
         } else {
           let o = errorService.UnknownError(this.action);
