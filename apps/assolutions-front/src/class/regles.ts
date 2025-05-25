@@ -11,7 +11,11 @@ export interface ReglesFormulaire {
   Contact_Pref_Adherent: ReglesContact;
   Contact_Pref_Essai: ReglesContact;
   Seance_DateLieu: ReglesDateLieu;
-  Cours_DateLIeu: ReglesDateLieu;
+  SeanceSerie_DateLieu: ReglesDateLieu;
+  Cours_DateLieu: ReglesDateLieu;
+  Cours_Parametres: ReglesSeance;
+  Seance_Parametres: ReglesSeance;
+
 }
 export interface ReglesPersonne {
   Nom_min: number;
@@ -65,4 +69,16 @@ export interface ReglesDateLieu {
   duree_obligatoire:boolean;
   duree_min: number;
   duree_max: number;
+}
+export  interface ReglesSeance {
+  age_min: boolean;
+  age_min_valeur_min: number;
+  age_min_valeur_max: number;
+  age_max: boolean;
+  age_max_valeur_min: number;
+  age_max_valeur_max: number;
+  place_limite: boolean;
+  place_limite_valeur_min: number;
+  place_limite_valeur_max: number;
+  vis_essai_possible: boolean; // si true, on affiche le bouton "essai" dans la liste des caractéristiques
 }

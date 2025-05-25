@@ -64,7 +64,7 @@ export class CoursComponent implements OnInit {
   liste_jour_semaine = Object.keys(jour_semaine).map(key => jour_semaine[key]);
   afficher_menu_admin: boolean = false;
 
-  
+  public GlobalService = GlobalService.instance;
     public filters: FilterCours = new FilterCours();  
     public selected_filter: string;
     public selected_sort: any;
@@ -284,6 +284,16 @@ export class CoursComponent implements OnInit {
     this.editCours = new Cours(initCours());
     this.editMode = true;
   }
+   public is_valid_datelieu: boolean = false;
+
+valid_DateLieu(isValid: boolean): void {
+  this.is_valid_datelieu = isValid;
+}
+   public is_valid_caracteristique: boolean = false;
+
+valid_Caracteristique(isValid: boolean): void {
+  this.is_valid_caracteristique = isValid;
+}
 
   Save(cours: Cours) {
     const errorService = ErrorService.instance;

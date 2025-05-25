@@ -1,7 +1,7 @@
     <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Date et lieu</h3>
-      <ng-container *ngIf="thisAdherent.ID >0">
+      <ng-container *ngIf="ID>0">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
@@ -17,19 +17,23 @@
 
     <div class="columns is-vcentered">
 
-      <div class="column is-4">
+      <div class="column is-12">
          <div *ngIf="edit; else readLieu" class="p-2">
-
-         </div>
-           <ng-template #readLieu>
-          <p><strong i18n>Lieu :</strong>&nbsp;{{ thisAdherent.Nom }}</p>
-          <p><strong i18n>Adresse :</strong>&nbsp;{{ thisAdherent.Prenom }}</p>
-           </ng-template>
-        </div>
-     <!-- Infos -->
-      <div class="column is-8">
-        <div *ngIf="edit; else readPerso" class="p-2">
           <div class="field mb-2">
+            <label class="label is-small" i18n>Lieu</label>
+            <div class="control">
+              <div class="select is-small"  [ngClass]="!rLieu.key   ? 'select is-danger is-small'   : 'select is-small' ">
+                <select [(ngModel)]="lieu_id" (ngModelChange)="validerTout()">
+                  <option [ngValue]="0" i18n>Aucun</option>
+                  <option *ngFor="let l of lieux" [ngValue]="l.id">{{l.nom}}</option>
+                </select>
+              </div>
+            </div>
+            <p *ngIf="rLieu.key" class="is-small help is-danger">{{rLieu.value}}</p>
+          </div>
+
+         
+          <div class="field mb-2" *ngIf="!creneau">
             <label class="label is-small" i18n>Date</label>
             <div class="control">
               <input
@@ -37,58 +41,90 @@
             </div>
             <p *ngIf="rDate.key" class="is-small help is-danger">{{rDate.value}}</p>
           </div>
-
-          <div class="field mb-2">
-            <label class="label is-small" i18n>Prénom</label>
+          <div class="field mb-2" *ngIf="creneau">
+            <label class="label is-small" i18n>Jour de la semaine</label>
             <div class="control">
-              <input    [ngClass]="!rPrenom.key
-                              ? 'input is-danger is-small'
-                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Prenom"  (ngModelChange)="validerTout()">
-            </div>
-            <p *ngIf="rPrenom.key" class="is-small help is-danger">{{rPrenom.value}}</p>
-          </div>
-
-          <div class="field mb-2">
-            <label class="label is-small" i18n>Date de naissance</label>
-            <div class="control">
-              <input [ngClass]="!rDateNaissance.key? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.DateNaissance"  (ngModelChange)="validerTout()">
-            </div>
-            <p *ngIf="rDateNaissance.key" class="is-small help is-danger">{{rDateNaissance.value}}</p>
-          </div>
-
-          <div class="field mb-2">
-            <label class="label is-small" i18n>Sexe</label>
-            <div class="control">
-              <div class="select is-small">
-                <select [(ngModel)]="thisAdherent.Sexe">
-                  <option [ngValue]="true" i18n>Masculin</option>
-                  <option [ngValue]="false" i18n>Féminin</option>
+            <div class="select is-small"  [ngClass]="!rCreneau.key   ? 'select is-danger is-small'   : 'select is-small' ">
+                <select [(ngModel)]="jour_semaine" (ngModelChange)="validerTout()" >
+                  <option [ngValue]="'lundi'" i18n>Lundi</option>
+                  <option [ngValue]="'mardi'" i18n>Mardi</option>
+                  <option [ngValue]="'mercredi'" i18n>Mercredi</option>
+                  <option [ngValue]="'jeudi'" i18n>Jeudi</option>
+                  <option [ngValue]="'vendredi'" i18n>Vendredi</option>
+                  <option [ngValue]="'samedi'" i18n>Samedi</option>
+                  <option [ngValue]="'dimanche'" i18n>Dimanche</option>
                 </select>
               </div>
             </div>
+            <p *ngIf="rCreneau.key" class="is-small help is-danger">{{rDate.value}}</p>
           </div>
-
- <div class="field mb-2">
-            <label class="label is-small" i18n>Surnom</label>
+           <div class="field mb-2" *ngIf="creneau && serie">
+            <label class="label is-small" i18n>Date de début</label>
             <div class="control">
-              <input    [ngClass]="!rSurnom.key
-                              ? 'input is-danger is-small'
-                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Surnom"  (ngModelChange)="validerTout()">
+              <input
+              [ngClass]="!rDateDebut.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="date"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rSurnom.key" class="is-small help is-danger">{{rSurnom.value}}</p>
+            <p *ngIf="rDateDebut.key" class="is-small help is-danger">{{rDateDebut.value}}</p>
           </div>
+          
+           <div class="field mb-2" *ngIf="creneau && serie">
+            <label class="label is-small" i18n>Date de début</label>
+            <div class="control">
+              <input
+              [ngClass]="!rDateFin.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="date"  (ngModelChange)="validerTout()">
+            </div>
+            <p *ngIf="rDateFin.key" class="is-small help is-danger">{{rDateFin.value}}</p>
+          </div>
+           <div class="field mb-2" >
+            <label class="label is-small" i18n>Heure de début</label>
+            <div class="control">
+          <input
+                        matInput
+                        class="input"
+                        id="heure_debut"
+                        type="time"
+                        [(ngModel)]="heure"
+                      />
+                      </div>
+                           <p *ngIf="rHeure.key" class="is-small help is-danger">{{rHeure.value}}</p>
+          </div>
+            <div class="field mb-2" >
+            <label class="label is-small" i18n>Durée en minutes</label>
+            <div class="control">
+              <input
+              [ngClass]="!rDuree.key   ? 'input is-danger is-small'   : 'input is-small' " type="number" [(ngModel)]="duree"  (ngModelChange)="validerTout()">
+            </div>
+            <p *ngIf="rDuree.key" class="is-small "><span i18n>Heure de fin</span>&nbsp;:&nbsp;{{calculerHeureFin(heure,duree)}}</p>
+            <p *ngIf="rDuree.key" class="is-small help is-danger">{{rDuree.value}}</p>
+          </div>
+        
+         
         </div>
 
-        <ng-template #readPerso>
-          <p><strong i18n>Nom :</strong>&nbsp;{{ thisAdherent.Nom }}</p>
-          <p><strong i18n>Prénom :</strong>&nbsp;{{ thisAdherent.Prenom }}</p>
-          <p><strong i18n>Date de naissance :</strong>&nbsp;{{ thisAdherent.DDN | date:'dd/MM/yyyy' }}</p>
-          <p >
-            <strong i18n>Sexe :</strong>&nbsp;
-            <i *ngIf="thisAdherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
-            <i *ngIf="!thisAdherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+          <ng-template #readLieu>
+          <p><strong i18n>Lieu :</strong>&nbsp;{{ getLieuNom(lieu_id) }}</p>
+          <p><strong i18n>Adresse :</strong>&nbsp;{{ getLieuAdresse(lieu_id) }}</p>
+          <ng-container *ngIf="creneau">
+          <p><strong i18n>Jour de la semaine :</strong>&nbsp;
+            <span *ngIf="jour_semaine==='lundi'" i18n>Lundi</span>
+            <span *ngIf="jour_semaine==='mardi'" i18n>Mardi</span>
+            <span *ngIf="jour_semaine==='mercredi'" i18n>Mercredi</span>
+            <span *ngIf="jour_semaine==='jeudi'" i18n>Jeudi</span>
+            <span *ngIf="jour_semaine==='vendredi'" i18n>Vendredi</span>
+            <span *ngIf="jour_semaine==='samedi'" i18n>Samedi</span>
+            <span *ngIf="jour_semaine==='dimanche'" i18n>Dimanche</span>
           </p>
-          <p><strong i18n>Surnom :</strong> {{ thisAdherent.Surnom }}</p>
+          <ng-container *ngIf="serie">
+            <p><strong i18n>Date de début :</strong>&nbsp;{{ date_debut | date:'dd/MM/yyyy' }}</p>
+            <p><strong i18n>Date de fin :</strong>&nbsp;{{ date_fin | date:'dd/MM/yyyy' }}</p>
+          </ng-container>
+          </ng-container>
+          <ng-container *ngIf="!creneau">
+            <p><strong i18n>Date :</strong>&nbsp;{{ date | date:'dd/MM/yyyy' }}</p>
+          </ng-container>
+          <p><strong i18n>Heure de début :</strong>&nbsp;{{ heure | date:'HH:mm' }}</p>
+          <p><strong i18n>Durée :</strong>&nbsp;{{ duree }}&nbsp;min</p>
+          <p><strong i18n>Heure de fin :</strong>&nbsp;{{ calculerHeureFin(heure,duree) | date:'HH:mm' }}</p>
         </ng-template>
       </div>
 

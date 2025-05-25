@@ -358,6 +358,36 @@ public validerChaine(
   }
   return { key:true,value:null};
 }
+public validerNombre(
+  valeur: number  | null,
+  min: number,
+  max: number,
+  obligatoire: boolean,
+  label: string
+): ValidationItem {
+  if (obligatoire && !valeur) {
+    return { key:false, value:`${label} obligatoire` };
+  }
+  if (min > -1 && valeur < min) {
+     return { key:false, value:`${label} trop court` };
+  }
+  if (max > -1 && valeur > max) {
+     return { key:false, value:`${label} trop long` };
+  }
+  return { key:true,value:null};
+}
+
+public validerSaisie(
+  valeur: number | string | null, obligatoire: boolean, label: string
+): ValidationItem {
+  if (obligatoire && !valeur) {
+    return { key:false, value:`${label} obligatoire` };
+  }
+  if (valeur === null || valeur === undefined || valeur === '') {
+    return { key:false, value:`${label} obligatoire` };
+  }
+  return { key:true,value:null};
+}
 
 public validerDate(
   valeur: Date | null,
@@ -382,6 +412,43 @@ public validerDate(
 
   return { key:true,value:null};
 }
+public validerHeure(
+  valeur: string | null,
+  min: string | null,
+  max: string | null,
+  obligatoire: boolean,
+  label: string
+): ValidationItem {
+  if (obligatoire && !valeur) {
+    return { key: false, value: `${label} obligatoire` };
+  }
+
+  if (valeur) {
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(':').map(Number);
+      return h * 60 + m;
+    };
+
+    const valeurMinutes = toMinutes(valeur);
+
+    if (min && valeurMinutes < toMinutes(min)) {
+      return {
+        key: false,
+        value: `${label} trop tôt (min : ${min})`
+      };
+    }
+
+    if (max && valeurMinutes > toMinutes(max)) {
+      return {
+        key: false,
+        value: `${label} trop tard (max : ${max})`
+      };
+    }
+  }
+
+  return { key: true, value: null };
+}
+
 validerContact(contact:ItemContact) : ValidationItem {
 if(contact.Type== 'EMAIL'){
   if(!this.checkIfEmailInString(contact.Value)){

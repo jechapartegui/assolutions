@@ -1,0 +1,71 @@
+<div class="box is-light">
+  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+    <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Caractéristiques</h3>
+    <ng-container *ngIf="ID > 0">
+      <btn *ngIf="!edit"
+        [type_button]="'EditerLight'" 
+        (click)="edit = !edit">
+      </btn>
+      <btn *ngIf="edit" [disabled]="!estValid" (click)="Save()" [type_button]="'SauvegarderLight'"></btn>
+      <btn *ngIf="edit" (click)="Cancel()" [type_button]="'AnnulerLight'"></btn>
+    </ng-container>
+  </div>
+
+  <div class="columns is-vcentered">
+    <div class="column is-12">
+      <div *ngIf="edit; else readMode" class="p-2">
+
+        <!-- Âge minimum -->
+        <div class="field mb-2">
+          <label class="checkbox is-small">
+            <input type="checkbox" [(ngModel)]="age_min" (ngModelChange)="validerTout()"> 
+            <span i18n>Âge minimum requis</span>
+          </label>
+          <div class="control mt-1" *ngIf="age_min">
+            <input type="number" class="input is-small" [(ngModel)]="age_min_valeur" (ngModelChange)="validerTout()" min="0" />
+          </div>
+        </div>
+
+        <!-- Âge maximum -->
+        <div class="field mb-2">
+          <label class="checkbox is-small">
+            <input type="checkbox" [(ngModel)]="age_max" (ngModelChange)="validerTout()"> 
+            <span i18n>Âge maximum autorisé</span>
+          </label>
+          <div class="control mt-1" *ngIf="age_max">
+            <input type="number" class="input is-small" [(ngModel)]="age_max_valeur" (ngModelChange)="validerTout()" min="0" />
+          </div>
+        </div>
+
+        <!-- Limite de places -->
+        <div class="field mb-2">
+          <label class="checkbox is-small">
+            <input type="checkbox" [(ngModel)]="place_limite" (ngModelChange)="validerTout()"> 
+            <span i18n>Limiter le nombre de places</span>
+          </label>
+          <div class="control mt-1" *ngIf="place_limite">
+            <input type="number" class="input is-small" [(ngModel)]="place_limite_valeur" (ngModelChange)="validerTout()" min="1" />
+          </div>
+        </div>
+
+        <!-- Essai possible -->
+        <div class="field mb-2">
+          <label class="checkbox is-small">
+            <input type="checkbox" [(ngModel)]="essai_possible" (ngModelChange)="validerTout()">
+            <span i18n>Essai possible</span>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- 🟢 Lecture seule -->
+      <ng-template #readMode>
+        <p *ngIf="age_min"><strong i18n>Âge minimum :</strong> {{ age_min_valeur }} ans</p>
+        <p *ngIf="age_max"><strong i18n>Âge maximum :</strong> {{ age_max_valeur }} ans</p>
+        <p *ngIf="place_limite"><strong i18n>Places disponibles :</strong> {{ place_limite_valeur }}</p>
+        <p *ngIf="essai_possible"><strong i18n>Essai possible :</strong> <span i18n>Oui</span></p>
+        <p *ngIf="!essai_possible"><strong i18n>Essai possible :</strong> <span i18n>Non</span></p>
+      </ng-template>
+    </div>
+  </div>
+</div>
