@@ -58,18 +58,22 @@ public validerTout(): void {
 }
 
 
- onPhotoSelected(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (input.files && input.files.length > 0) {
-    const file = input.files[0];
-    const reader = new FileReader();
+  @Output() photoSelected = new EventEmitter<string>(); // Base64 string
 
-    reader.onload = () => {
-      this.thisAdherent.Photo = reader.result as string; // En base64
-    };
-    reader.readAsDataURL(file);
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const base64Photo = reader.result as string;
+        this.photoSelected.emit(base64Photo); // ✅ Émettre vers le parent
+      };
+
+      reader.readAsDataURL(file);
+    }
   }
-}
 
  
 }

@@ -527,13 +527,16 @@ valid_adresse(isValid: boolean): void {
     }
   }
   SaveAdresse(thisAdresse :Adresse){
-    console.log(thisAdresse);
     this.thisAdherent.Adresse = thisAdresse;
     this.thisAdherent.datasource.adresse = thisAdresse.Street;
     this.thisAdherent.datasource.code_postal = thisAdresse.PostCode;
     this.thisAdherent.datasource.ville = thisAdresse.City;
     this.Save();
   }
+
+  onPhotoSelectedFromChild(photoBase64: string): void {
+  this.ridersService.modifyphoto({ Photo: photoBase64 }); // ✅ Appel de ta méthode avec un objet
+}
 
   Save() {
     const errorService = ErrorService.instance;

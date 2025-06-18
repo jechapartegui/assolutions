@@ -27,6 +27,19 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+
+  loadPhoto(id: number) {
+        this.url = `api/document/photo/${id}`
+   return this.global.GET(this.url)
+      .then((response: any) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
   public Add(adherent: adherent): Promise<number> {
    this.url = 'api/member/add';
 

@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Adherent } from '../bdd/riders';
@@ -67,4 +67,21 @@ export class DocumentService {
       return { success: !!updated, action: 'updated' };
     }
   }
+ 
+async getPhoto(id: number): Promise<Buffer> {
+  const existingPhoto = await this.DocumentRepo.findOne({
+    where: {
+      objet_type: 'member',
+      objet_id: id,
+      typedoc: 'photo',
+    },
+  });
+
+  if (!existingPhoto || !existingPhoto.document) {
+    throw new NotFoundException('PHOTO_NOT_FOUND');
+  }
+
+  return existingPhoto.document; // <-- juste on retourne le buffer
+}
+
 }

@@ -899,7 +899,7 @@
       <div class="columns is-multiline is-variable is-4">
         <!-- Bloc Infos personnelles -->
        <div class="column is-full-tablet is-half-desktop">
- <infoperso [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="Save()" (valid)="valid_adherent($event)"></infoperso>
+ <infoperso  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="Save()" (valid)="valid_adherent($event)"></infoperso>
 </div>
 
 
