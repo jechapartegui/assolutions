@@ -8,7 +8,6 @@ export class AuthController {
 
   @Post('prelogin')
   async preLogin(@Body('email') email: string) {
-    console.log('[preLogin] email reçu :', email); // 👈 pour vérifier l'appel
     return this.authService.prelogin(email);
   }
 

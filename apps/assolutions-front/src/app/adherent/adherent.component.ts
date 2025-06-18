@@ -43,7 +43,7 @@ export class AdherentComponent implements OnInit {
   public titre_groupe = $localize`Groupe de l'adhérent`;
   public liste_saison: Saison[] = [];
   public active_saison: Saison;
-  public valid_address: boolean;
+  public AdresseValide: boolean;
   public liste_adherents_VM: Adherent[] = [];
   public compte_to_force: boolean = false;
   public sort_nom = 'NO';
@@ -272,6 +272,9 @@ export class AdherentComponent implements OnInit {
 
 valid_adherent(isValid: boolean): void {
   this.adherentValide = isValid;
+}
+valid_adresse(isValid: boolean): void {
+  this.AdresseValide = isValid;
 }
 
   Create() {
@@ -523,6 +526,14 @@ valid_adherent(isValid: boolean): void {
         });
     }
   }
+  SaveAdresse(thisAdresse :Adresse){
+    console.log(thisAdresse);
+    this.thisAdherent.Adresse = thisAdresse;
+    this.thisAdherent.datasource.adresse = thisAdresse.Street;
+    this.thisAdherent.datasource.code_postal = thisAdresse.PostCode;
+    this.thisAdherent.datasource.ville = thisAdresse.City;
+    this.Save();
+  }
 
   Save() {
     const errorService = ErrorService.instance;
@@ -718,9 +729,6 @@ valid_adherent(isValid: boolean): void {
   onValidContactUrgenceChange(data: ItemContact[]) {
     this.thisAdherent.datasource.contact_prevenir = data;
     this.thisAdherent.ContactsUrgence = data;
-  }
-  onValidAdresseChange(isValid: boolean) {
-    this.valid_address = isValid;
   }
   onAdresseChange(data: Adresse) {
     this.thisAdherent.Adresse = data;

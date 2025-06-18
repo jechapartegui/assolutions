@@ -271,7 +271,6 @@ try {
 } catch (e) {
   cont_prev = null;
 }
-console.warn(adre);
 
 // Valeurs par défaut si `adre` ou `cont` sont invalides
 const adresse = adre?.Street || "";

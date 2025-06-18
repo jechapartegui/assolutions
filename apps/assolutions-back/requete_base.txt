@@ -23,3 +23,5 @@ ALTER TABLE `professeur_saison`
   DROP `taux_horaire`,
   DROP `token`,
   DROP `date_token`;
+
+  ALTER TABLE `document` ADD `objet_id` INT NOT NULL AFTER `titre`, ADD `objet_type` VARCHAR(25) NOT NULL AFTER `objet_id`, ADD `typedoc` VARCHAR(25) NOT NULL AFTER `objet_type`;

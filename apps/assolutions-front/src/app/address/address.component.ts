@@ -16,7 +16,7 @@ export class AddressComponent  implements OnInit  {
 @Input() title:string = $localize`Adresse`;
  save:string=null;
  estValid:boolean;
- @Output() InfoAdresseChange = new EventEmitter();
+ @Output() InfoAdresseChange = new EventEmitter<Adresse>();
 @Output() valid = new EventEmitter<boolean>();
  public edit:boolean = false
 
@@ -26,7 +26,7 @@ ngOnInit(): void {
 }
 
  public Save(){
-    this.InfoAdresseChange.emit();
+    this.InfoAdresseChange.emit(this.thisAdresse);
     this.edit = false;
  }
 public Cancel(){

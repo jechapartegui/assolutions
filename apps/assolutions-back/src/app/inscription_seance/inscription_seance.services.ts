@@ -70,7 +70,6 @@ export class InscriptionSeanceService {
   }
 
   async Add(inscription: inscription_seance) {
-    console.warn(inscription);
   if (!inscription) {
     throw new BadRequestException('INVALID_REGISTRATION');
   }

@@ -43,14 +43,10 @@ export class AdherentService {
 
   public Delete(id: number): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    this.url =  'api/member/delete/' + id;
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "delete",
-      id: id
-    };
 
-    return this.global.POST(this.url, body)
+    return this.global.DELETE(this.url)
       .then((response: boolean) => {
 
         return response;
@@ -62,14 +58,11 @@ export class AdherentService {
   }
   public Update(adherent: adherent): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
+    this.url = 'api/member/update';
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "update",
-      adherent: adherent
-    };
+   
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, adherent)
       .then((response: boolean) => {
 
         return response;

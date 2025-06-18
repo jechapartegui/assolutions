@@ -21,7 +21,6 @@ export class LoginNestService {
 
     return this.global.POST(this.url, body)
       .then((response: any) => {
-        console.log(response);
         return response;
       })
       .catch((error: HttpErrorResponse) => {
