@@ -31,7 +31,7 @@ export interface MesSeances {
   }
 
   export interface seance {
-    id: number;
+    seance_id: number;
     nom: string;
     date: Date;
     heureDebut: string;

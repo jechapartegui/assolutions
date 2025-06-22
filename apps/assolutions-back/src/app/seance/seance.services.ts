@@ -271,7 +271,7 @@ export class SeanceService {
 
 export function toSeance(row: Seance): seance {
   return {
-    id: row.seance_id,
+    seance_id: row.seance_id,
     nom: row.libelle ?? '',
     date: new Date(row.date_seance),
     heureDebut: row.heure_debut,
@@ -298,7 +298,7 @@ export function toSeance(row: Seance): seance {
 export function toSeanceEntity(obj: seance, saison_id: number): Seance {
   const entity = new Seance();
 
-  entity.seance_id = obj.id;
+  entity.seance_id = obj.seance_id ?? 0; // Assurez-vous que l'ID est défini, sinon utilisez 0
   entity.saison_id = saison_id;
   entity.cours = obj.coursId ?? 0;
   entity.libelle = obj.nom;

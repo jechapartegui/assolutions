@@ -4,7 +4,7 @@ import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
 import { adherent } from '@shared/compte/src/lib/member.interface';
 import { compte } from '@shared/compte/src/lib/compte.interface';
-import { ItemList, KeyValuePair } from '@shared/compte/src';
+import { ItemList, KeyValuePair, seance } from '@shared/compte/src';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +32,21 @@ export class AdherentService {
         this.url = 'api/document/get_photo_user/' + id;
    return this.global.GET(this.url, 'text')
       .then((response: string) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
+  GetAllSeance(): Promise<seance[]> {
+    let saison_id = this.global.saison_active;
+    this.url = 'api/member/getallseance/' + saison_id;
+
+    return this.global.GET(this.url)
+      .then((response: seance[]) => {
 
         return response;
       })

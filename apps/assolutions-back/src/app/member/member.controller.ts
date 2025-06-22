@@ -2,17 +2,22 @@ import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@
 import { PasswordGuard } from '../guards/password.guard';
 import { MemberService } from './member.services';
 import type { adherent } from '@shared/compte/src';
+import { SeanceService } from '../seance/seance.services';
 
 // src/auth/auth.controller.ts
 @Controller('member')
 export class MemberController {
-  constructor(private readonly mem_serv: MemberService) {}
+  constructor(private readonly mem_serv: MemberService, private readonly seance_serv:SeanceService) {}
   @UseGuards(PasswordGuard)
   @Get('my_info')
   async MyInfo(@Body() { id }: { id: number }) {
     return this.mem_serv.GetMyInfo(id);
   }
-
+@UseGuards(PasswordGuard)
+  @Get('getallseance')
+async GetAllSeance(@Param('saison_id') saison_id: number) {
+    return this.seance_serv.GetAll(saison_id);
+  }
   @UseGuards(PasswordGuard)
   @Get('my_seance')
   async MySeance(@Headers('projectid') projectId: number,@Headers('userid') userid: number) {

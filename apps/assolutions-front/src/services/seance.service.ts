@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import {  seance } from '../class/seance';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import {  InscriptionSeance } from '../class/inscription';
+import { seance } from '@shared/compte/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -22,14 +22,13 @@ export class SeancesService {
   static Seances: seance[];
 
   public Update(seance: seance): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
+    this.url = environment.maseance + "api/seance/update"; 
     //  this.url = this.url + "login.php";
     const body = {
-      command: "update",
       seance: seance,
     };
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response: boolean) => {
         return response;
       })
@@ -39,14 +38,11 @@ export class SeancesService {
   }
   
   public Delete(id: number): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
+    this.url = environment.maseance + "api/seance/get/" + id; 
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "delete",
-      id: id,
-    };
+    
 
-    return this.global.POST(this.url, body)
+    return this.global.DELETE(this.url)
       .then((response: boolean) => {
         return response;
       })
@@ -107,23 +103,7 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public GetSeancesSeason(season_id: number,all:boolean =false): Promise<seance[]> {
-    this.url = environment.maseance + "maseance/seance_manage.php";
-    const body = {
-      command: "get_all",
-      season_id: season_id,
-      all:all
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: seance[]) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
   public GetPlageDate(date_debut:string, date_fin:string): Promise<seance[]> {
     this.url = environment.maseance + "api/seance/getbydate/" + this.global.saison_active + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";

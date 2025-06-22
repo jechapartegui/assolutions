@@ -3,7 +3,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { professeur, Professeur } from '../../class/professeur';
 import { Saison } from '../../class/saison';
-import { seance, Seance, StatutSeance } from '../../class/seance';
+import { Seance, StatutSeance } from '../../class/seance';
 import { SeanceProf } from '../../class/seanceprof';
 import { AdherentService } from '../../services/adherent.service';
 import { CoursService } from '../../services/cours.service';
@@ -18,6 +18,7 @@ import { SeanceprofService } from '../../services/seanceprof.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { cours } from '@shared/compte/src/lib/cours.interface';
+import { seance } from '@shared/compte/src/lib/seance.interface';
 
 
 @Component({
@@ -101,12 +102,6 @@ export class SeanceComponent implements OnInit {
         return;
       }
       // Chargez la liste des cours
-      let i = await this.seancesservice.Add(new seance());
-      let n = await this.seancesservice.Get(12);
-      let j = await this.seancesservice.GetPlageDate(new Date().toLocaleDateString(), new Date().toLocaleDateString() );
-      console.log('i', i);
-      console.log('j', j);
-      console.log('n', n);
       this.grServ
         .GetAll()
         .then((groupes) => {
@@ -332,7 +327,30 @@ export class SeanceComponent implements OnInit {
   }
 
   Creer(serie: boolean = false): void {
-    this.editSeance = new Seance(new seance());
+    let s = {
+      seance_id: 0,
+      nom: '',
+      date: new Date(),
+      heureDebut: '14:00',
+      heureFin: '15:00',
+      duree: 60,
+      lieuId: 0,
+      lieu: '',
+      typeSeance: 'ENTRAINEMENT',
+      cours: 0,
+      statut: StatutSeance.prévue,
+      age_minimum: null,
+      age_maximum: null,
+      place_maximum: null,
+      essai_possible: false,
+      nb_essai_possible: null,
+      info_seance: '',
+      convocation_nominative: false,
+      afficher_present: false,
+      professeurs: [],
+      rdv:'',
+    }
+    this.editSeance = new Seance(s);
     this.coursselectionne = false;
     if (serie) {
       this.editMode_serie = true;
@@ -443,8 +461,8 @@ export class SeanceComponent implements OnInit {
     this.loading = true;
     this.action = $localize`Charger les séances`;
     if (this.season_id && this.season_id > 0) {
-      this.seancesservice
-        .GetSeancesSeason(this.active_saison.id, true)
+      this.ridersService
+        .GetAllSeance()
         .then((seances) => {
           this.list_seance = seances;
           this.list_seance_VM = this.list_seance.map((x) => new Seance(x));

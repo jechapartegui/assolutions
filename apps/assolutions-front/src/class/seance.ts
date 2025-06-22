@@ -1,44 +1,7 @@
 import { Subject } from "rxjs";
-import { Lien_Groupe } from "./groupe";
 import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
+import { seance } from "@shared/compte/src/lib/seance.interface";
 
-export class seance {
-    public seance_id:number =0;
-    public cours: number = 0;
-    public saison_id: number = 0;
-    public date_seance: Date = new Date();
-    public heure_debut: string = "";
-    public duree_seance: number = 0;
-    public lieu_id: number= 0;
-    public lieu: string;
-    public libelle:string;
-    public statut:StatutSeance=StatutSeance.prévue;
-    public professeurs: KeyValuePair[]= [];
-    public age_minimum:number =0 ;
-    public age_maximum:number =99 ;
-    public groupes: KeyValuePair[] = [];
-    public place_maximum:number =-1;
-    public essai_possible:boolean=false;
-    public convocation_nominative :boolean=false;
-    public est_place_maximum:boolean=false;
-    public est_limite_age_minimum:boolean=false;
-    public est_limite_age_maximum:boolean=false;
-    public type_seance:string;
-    public afficher_present:boolean = false;
-    public notes:string="";
-    public info_seance:string="";
-  constructor() {
-    
-  }
-
-  ToLienGroupe() : Lien_Groupe{
-    let LG = new Lien_Groupe();
-    LG.objet_id = this.seance_id;
-    LG.objet_type = 'cours';
-    LG.groupes = this.groupes.map( x => Number(x.key));
-    return LG;
-  }
-}
 
 
 export class Seance {
@@ -81,18 +44,18 @@ export class Seance {
   // Utilisez des sujets pour chaque propriété
 
   get TypeSeance(): string {
-    return this.datasource.type_seance;
+    return this.datasource.typeSeance;
   }
   set TypeSeance(value: string) {
-    this.datasource.type_seance = value;
+    this.datasource.typeSeance = value;
   }
 
 
   get AfficherPresent(): boolean {
-    return this.datasource.afficher_present;
+    return this.datasource.afficherPresent;
   }
   set AfficherPresent(value: boolean) {
-    this.datasource.afficher_present = value;
+    this.datasource.afficherPresent = value;
   }
   // Propriété nom avec get et set
   get libelle(): string {
