@@ -60,14 +60,13 @@ export class SeancesService {
 
 
   public Add(seance: seance): Promise<number> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
+    this.url = environment.maseance + "api/seance/add/"
     //  this.url = this.url + "login.php";
     const body = {
-      command: "add",
       seance: seance,
     };
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response: number) => {
         return response;
       })
@@ -77,17 +76,16 @@ export class SeancesService {
       });
   }
   public AddRange(seance: seance, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
+    this.url = environment.maseance + "api/seance/add_range/"
     //  this.url = this.url + "login.php";
     const body = {
-      command: "add_range",
       seance: seance,
       date_debut_serie:date_debut_serie,
       date_fin_serie:date_fin_serie,
       jour_semaine:jour_semaine
     };
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response: number[]) => {
         return response;
       })
@@ -99,13 +97,8 @@ export class SeancesService {
 
 
   public GetSeances(all:boolean =false): Promise<seance[]> {
-    this.url = environment.maseance + "maseance/seance_manage.php";
-    const body = {
-      command: "get_all",
-      all:all
-    };
-
-    return this.global.POST(this.url, body)
+    this.url = environment.maseance + "api/seance/getall/" + this.global.saison_active;
+    return this.global.GET(this.url)
       .then((response: seance[]) => {
         return response;
       })
@@ -131,17 +124,11 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public GetPlageDate(date_debut:string, project_id:number): Promise<seance[]> {
-    this.url = environment.maseance + 'maseance/public_seance.php';
+  public GetPlageDate(date_debut:string, date_fin:string): Promise<seance[]> {
+    this.url = environment.maseance + "api/seance/getbydate/" + this.global.saison_active + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_seance_plagedate",
-      date_debut:date_debut,
-      project_id:project_id
 
-    };
-
-    return this.global.POST(this.url, body)
+    return this.global.GET(this.url)
       .then((response: seance[]) => {
         SeancesService.Seances = response;
         return response;
@@ -153,14 +140,10 @@ export class SeancesService {
  
 
   public Get(id: number): Promise<seance> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
+    this.url = environment.maseance + "api/seance/get/" + id; 
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "get",
-      id: id
-    };
 
-    return this.global.POST(this.url, body)
+    return this.global.GET(this.url)
       .then((response: seance) => {
         return response;
       })

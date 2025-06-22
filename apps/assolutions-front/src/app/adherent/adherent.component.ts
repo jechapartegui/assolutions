@@ -20,7 +20,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
-import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
+import { adherent } from '@shared/compte/src/lib/member.interface';
 import { KeyValuePair } from '@shared/compte/src';
 
 @Component({
@@ -41,16 +41,20 @@ export class AdherentComponent implements OnInit {
   @Input() public id: number;
   public liste_groupe: KeyValuePair[] = [];
   public titre_groupe = $localize`Groupe de l'adhérent`;
+  public titre_contact = $localize`Contacts de l'adhérent`;
+  public titre_contact_prevenir = $localize`Contacts à prévenir de l'adhérent`;
   public liste_saison: Saison[] = [];
   public active_saison: Saison;
   public AdresseValide: boolean;
+  public ContactValide: boolean;
+  public ContactUrgenceValide: boolean;
   public liste_adherents_VM: Adherent[] = [];
   public compte_to_force: boolean = false;
   public sort_nom = 'NO';
   public sort_date = 'NO';
   public sort_sexe = 'NO';
+public photoAdherent: string | null = null;
 
-  inscription;
   public afficher_inscription: boolean = false;
   public adherent_inscription: Adherent;
   public saison_inscription: Saison;
@@ -61,8 +65,6 @@ export class AdherentComponent implements OnInit {
 
   public selected_filter: string;
   public liste_groupe_filter: KeyValuePair[];
-  public valid_mail: boolean = false;
-  public valid_tel: boolean = false;
 
   public login_adherent: string = '';
   public existing_login: boolean;
@@ -276,6 +278,13 @@ valid_adherent(isValid: boolean): void {
 valid_adresse(isValid: boolean): void {
   this.AdresseValide = isValid;
 }
+valid_contact(isValid: boolean): void {
+  this.ContactValide = isValid;
+}
+valid_contact_urgence(isValid: boolean): void {
+  this.ContactUrgenceValide = isValid;
+}
+
 
   Create() {
     this.thisAdherent = new Adherent(this.Newadhrent());
@@ -447,6 +456,17 @@ valid_adresse(isValid: boolean): void {
   getSaison(id: number): string {
     return this.liste_saison.filter((x) => x.id == id)[0].nom;
   }
+  createBlobUrl(base64Data: string): string {
+  const byteString = atob(base64Data.split(',')[1]);
+  const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  const blob = new Blob([ab], { type: mimeString });
+  return URL.createObjectURL(blob);
+}
 
   async ChargerAdherent() {
     this.thisAdherent = null;
@@ -456,6 +476,7 @@ valid_adresse(isValid: boolean): void {
       const adh = await this.ridersService.Get(this.id);
       if (!adh) {
         this.loading = false;
+
         let o = errorService.CreateError(
           this.action,
           $localize`Aucun adhérent trouvé`
@@ -466,6 +487,12 @@ valid_adresse(isValid: boolean): void {
         return;
       } else {
         this.thisAdherent = new Adherent(adh);
+        this.ridersService.GetPhoto(this.id).then((PhotBase64) =>{
+
+
+          console.log('Photo récupérée avec succès', PhotBase64);
+           this.photoAdherent =this.createBlobUrl(PhotBase64); // pour Angular
+        })
       }
     } catch (err: any) {
       this.loading = false;
@@ -531,11 +558,23 @@ valid_adresse(isValid: boolean): void {
     this.thisAdherent.datasource.adresse = thisAdresse.Street;
     this.thisAdherent.datasource.code_postal = thisAdresse.PostCode;
     this.thisAdherent.datasource.ville = thisAdresse.City;
-    this.Save();
+    this.PreSave();
   }
 
-  onPhotoSelectedFromChild(photoBase64: string): void {
-  this.ridersService.modifyphoto({ Photo: photoBase64 }); // ✅ Appel de ta méthode avec un objet
+onPhotoSelectedFromChild(base64Photo: string): void {
+  this.photoAdherent = base64Photo; // utile si tu veux que ça déclenche un Save() aussi
+    this.ridersService.UpdatePhoto(this.thisAdherent.ID, base64Photo).then((test) =>{
+      console.log('Photo mise à jour avec succès', test);
+    }).catch((error) => {
+      console.error('Erreur lors de la mise à jour de la photo', error);
+
+    }); // ✅ Appel de ta méthode avec un objet
+}
+
+PreSave() {
+  if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide) {
+    this.Save();
+  }
 }
 
   Save() {
@@ -718,25 +757,7 @@ valid_adresse(isValid: boolean): void {
       );
     });
   }
-  onValidMailChange(isValid: boolean) {
-    this.valid_mail = isValid;
-  }
 
-  onValidTelChange(isValid: boolean) {
-    this.valid_tel = isValid;
-  }
-  onValidContactChange(data: ItemContact[]) {
-    this.thisAdherent.datasource.contact = data;
-    this.thisAdherent.Contacts = data;
-  }
-  onValidContactUrgenceChange(data: ItemContact[]) {
-    this.thisAdherent.datasource.contact_prevenir = data;
-    this.thisAdherent.ContactsUrgence = data;
-  }
-  onAdresseChange(data: Adresse) {
-    this.thisAdherent.Adresse = data;
-    this.thisAdherent.datasource.adresse = JSON.stringify(data);
-  }
 
   StatutMAJ(ad: Adherent) {
     let n = this.liste_adherents_VM.find((x) => x.ID == ad.ID);

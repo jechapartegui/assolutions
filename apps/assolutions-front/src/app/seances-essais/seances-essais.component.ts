@@ -80,7 +80,7 @@ export class SeancesEssaisComponent implements OnInit {
     this.GetPlageDate();
   }
   public GetPlageDate() {
-    this.sean_serv.GetPlageDate(this.date_debut, this.project_id).then((seances) => {
+    this.sean_serv.GetPlageDate(this.date_debut, this.DateFin.toLocaleDateString()).then((seances) => {
       this.ListeSeance = seances.map(x => new Seance(x));
       this.ListeSeance.sort((a, b) => {
         const nomA = a.heure_debut // Ignore la casse lors du tri

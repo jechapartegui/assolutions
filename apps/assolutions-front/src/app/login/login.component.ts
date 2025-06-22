@@ -194,7 +194,7 @@ export class LoginComponent implements OnInit {
         GlobalService.instance.updateGestionnaire(this.projets_select);
          try {
           const adh = await this.proj_serv.GetActiveSaison();
-          GlobalService.instance.updateSaisonActive(adh);
+          this.GlobalService.saison_active = adh;
           
           if (!adh) {
             throw new Error($localize`Pas de saison active détectée sur le projet`);
@@ -207,6 +207,7 @@ export class LoginComponent implements OnInit {
           errorService.emitChange(o);
           GlobalService.instance.updateProjet(null);
           GlobalService.instance.updateGestionnaire(null);
+          GlobalService.instance.updateLoggedin(false);
           this.router.navigate(['/login']);
           return;
         }

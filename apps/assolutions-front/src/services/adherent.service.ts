@@ -28,10 +28,10 @@ export class AdherentService {
       });
   }
 
-  loadPhoto(id: number) {
-        this.url = `api/document/photo/${id}`
-   return this.global.GET(this.url)
-      .then((response: any) => {
+  GetPhoto(id: number): Promise<string> {
+        this.url = 'api/document/get_photo_user/' + id;
+   return this.global.GET(this.url, 'text')
+      .then((response: string) => {
 
         return response;
       })
@@ -40,6 +40,25 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+
+UpdatePhoto(id: number, photo: string): Promise<any> {
+    this.url = 'api/document/modify_photo_user';
+    //  this.url = this.url + "login.php";  
+    const body = {
+      id: id, 
+      photo: photo
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: any) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+
+
   public Add(adherent: adherent): Promise<number> {
    this.url = 'api/member/add';
 

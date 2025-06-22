@@ -6,6 +6,7 @@ import { Adherent } from "../bdd/riders";
 import { Professeur } from "../bdd/professeur";
 import { professeur, prof } from "@shared/compte/src";
 import { SeanceProfesseur } from "../bdd/seance_professeur";
+import { ProfesseurSaison } from "../bdd/prof-saison";
 
 @Injectable()
 export class ProfService {
@@ -16,6 +17,8 @@ export class ProfService {
     private readonly ProfesseurRepo: Repository<Professeur>,
     @InjectRepository(SeanceProfesseur)
     private readonly SeanceProfesseurRepo: Repository<SeanceProfesseur>,
+    @InjectRepository(ProfesseurSaison)
+    private readonly ProfesseurSaisonRepo: Repository<ProfesseurSaison>,
   ) {}
   async Get(id: number) {
     const adh = await this.AdherentRepo.findOne({ where: { id } });
@@ -39,6 +42,22 @@ export class ProfService {
       const prof_rider = await this.AdherentRepo.find({
                 where: {
                   id: In(profs.map((prof) => prof.professeur_id)),
+                },
+              });
+    if (!prof_rider) {
+      throw new UnauthorizedException('NO_PROF_FOUND');
+    }
+    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+    return prof_rider.map(adh => this.toprof(adh));
+  }
+  async GetProfSaison(saison_id: number)  {
+    const profs = await this.ProfesseurSaisonRepo.find({ where: { saison_id } });
+    if (!profs) {
+      throw new UnauthorizedException('NO_USER_FOUND');
+    }
+      const prof_rider = await this.AdherentRepo.find({
+                where: {
+                  id: In(profs.map((prof) => prof.rider_id)),
                 },
               });
     if (!prof_rider) {

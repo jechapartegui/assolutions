@@ -17,6 +17,7 @@ import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 import { lieu } from '@shared/compte/src/lib/lieu.interface';
 import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
 import { cours } from '@shared/compte/src/lib/cours.interface';
+import { AdherentService } from '../../services/adherent.service';
 
 @Component({
   selector: 'app-menu',
@@ -51,7 +52,8 @@ export class MenuComponent implements OnInit {
     private ma_seance_serv:MaSeanceNestService,
     private lieuserv: LieuNestService,
     private coursservice: CoursService,
-    public inscriptionserv: InscriptionSeanceService
+    public inscriptionserv: InscriptionSeanceService,
+    public riderservice:AdherentService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -156,9 +158,17 @@ export class MenuComponent implements OnInit {
       this.listelieu = lieux;
       this.liste_lieu_filter = lieux.map((x) => x.nom);
   
-      this.listeCours = await this.coursservice.GetAll(GlobalService.saison_active);
+      this.listeCours = await this.coursservice.GetAll(this.GlobalService.saison_active);
 
       this.Riders.forEach((rider) => {
+        this.riderservice.GetPhoto(rider.ID).then((profil) => {
+          if(profil && profil.length > 0) {
+            
+          rider.Photo = profil;}
+          else {
+            rider.Photo = undefined;
+          }
+        });
         rider.InscriptionSeances.forEach((seance) => {
           seance.lieu = this.trouverLieu(seance.lieuId);
           seance.cours = this.trouverCours(seance);

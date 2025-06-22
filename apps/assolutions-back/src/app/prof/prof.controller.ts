@@ -1,4 +1,4 @@
-import { Body, Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { ProfService } from './prof.services';
 
@@ -8,14 +8,20 @@ export class ProfController {
   constructor(private readonly prof_serv: ProfService) {}
   @UseGuards(PasswordGuard)
   @Get('get')
-  async Get(@Body() { id }: { id: number }) {
+  async Get(@Param() { id }: { id: number }) {
     return this.prof_serv.Get(id);
   }
 
    @UseGuards(PasswordGuard)
   @Get('get_prof_seance')
-  async GetProfSeance(@Body() { seance_id }: { seance_id: number }) {
+  async GetProfSeance(@Param() { seance_id }: { seance_id: number }) {
     return this.prof_serv.GetProfSeance(seance_id);
+  }
+
+    @UseGuards(PasswordGuard)
+  @Get('get_prof_saison/:saison_id')
+async GetProfSaison(@Param('saison_id') saison_id : number ) {
+    return this.prof_serv.GetProfSaison(saison_id);
   }
 
 }

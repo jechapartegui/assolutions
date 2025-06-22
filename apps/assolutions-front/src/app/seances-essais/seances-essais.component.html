@@ -140,16 +140,14 @@
                     </div>
                     <p class="help is-danger" *ngIf="!valid_address" i18n>L'adresse doit être saisie (voie, code postal
                         et ville)</p>
-                    <app-contact-item [valid_mail]="valid_mail" [valid_tel]="valid_tel" [Notes]="'Notes'"
-                        [Titre]="'Contacts : '" [Contacts]="thisEssai.Contacts"
-                        (validMailChange)="onValidMailChange($event)" (validTelChange)="onValidTelChange($event)"
-                        (validContactChange)="onValidContactChange($event)"></app-contact-item>
+                    <app-contact-item  [Notes]="'Notes'"
+                        [Titre]="'Contacts : '" [Contacts]="thisEssai.Contacts" ></app-contact-item>
                     <p class="help is-danger" *ngIf="!valid_mail" i18n>Au moins un mail doit être saisi</p>
                     <p class="help is-danger" *ngIf="!valid_tel" i18n>Au moins un téléphone doit être saisi</p>
 
                     <app-contact-item [Notes]="'Relation'" [Titre]="'Contact à prévenir : '"
                         [Contacts]="thisEssai.ContactsUrgence"
-                        (validContactChange)="onValidContactUrgenceChange($event)">
+                        >
                     </app-contact-item>
 
                 <hover-button [nomclass]="'button  is-rounded is-primary is-outlined' "

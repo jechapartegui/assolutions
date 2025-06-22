@@ -1,7 +1,10 @@
-<div class="field" style="margin-top: 10px;">
-    <label class="label"><span>{{Titre}}</span>  
-      <btn *ngIf="!thisContact" [type_button]="'CreerSmallLight'" (click)="Add()"></btn></label>
-    
+ <div class="box is-light">
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold">{{Titre}}</h3>
+      <btn *ngIf="!thisContact" [type_button]="'CreerLight'" (click)="Add()"></btn>
+        </div>
+
+    <div class="columns is-vcentered">
 <div class="container">
     <div *ngIf="thisContact" class="table" style=" font-size:small; width: 100%;padding: 0px;">
         <thead>
@@ -58,5 +61,6 @@
     </ng-container>
 
 
+</div>
 </div>
 </div>

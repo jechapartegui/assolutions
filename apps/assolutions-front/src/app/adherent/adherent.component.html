@@ -899,7 +899,7 @@
       <div class="columns is-multiline is-variable is-4">
         <!-- Bloc Infos personnelles -->
        <div class="column is-full-tablet is-half-desktop">
- <infoperso  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="Save()" (valid)="valid_adherent($event)"></infoperso>
+ <infoperso [photoBase64]="photoAdherent"  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="PreSave()" (valid)="valid_adherent($event)"></infoperso>
 </div>
 
 
@@ -909,6 +909,14 @@
                           <app-address [thisAdresse]="thisAdherent.Adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
 (valid)="valid_adherent($event)"></app-address>
         </div>
+        
+       <div class="column is-full-tablet is-half-desktop">
+        <app-contact-item [Contacts]="thisAdherent.Contacts" [Regles]="(GlobalService.getRegles().Contact_Adherent)" [Titre]="titre_contact" (ContactChange)="PreSave()" (valid)="valid_contact($event)"></app-contact-item>
+        </div>
+         <div class="column is-full-tablet is-half-desktop">
+        <app-contact-item [Contacts]="thisAdherent.ContactsUrgence" [Regles]="(GlobalService.getRegles().Contact_Pref_Adherent)" [Titre]="titre_contact_prevenir"  (ContactChange)="PreSave()" (valid)="valid_contact_urgence($event)"></app-contact-item>
+        </div>
+          
       </div>
     </div>
   </div>

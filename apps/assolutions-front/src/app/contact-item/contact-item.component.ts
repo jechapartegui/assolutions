@@ -1,5 +1,7 @@
 import {  Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import { ItemContact } from '@shared/compte/src/lib/member.interface';
+import { ReglesContact } from '../../class/regles';
+import { ValidationItem } from '@shared/compte/src';
 
 @Component({
   selector: 'app-contact-item',
@@ -8,13 +10,12 @@ import { ItemContact } from '@shared/compte/src/lib/member.interface';
 })
 export class ContactItemComponent implements OnInit {
   @Input()   Contacts: ItemContact[];
-  @Input() valid_mail: boolean;
-  @Input() valid_tel: boolean;
+ 
+  @Input() Regles:ReglesContact;
   @Input() Notes: string = $localize`Notes`;
   @Input() Titre: string = $localize`Contacts : `;
-  @Output() validMailChange = new EventEmitter<boolean>();
-  @Output() validTelChange = new EventEmitter<boolean>();
-  @Output() validContactChange = new EventEmitter<ItemContact[]>();
+ @Output() ContactChange = new EventEmitter();
+  @Output() valid = new EventEmitter<boolean>();
 
   // Exemple de méthode qui change la validité de l'email
  
@@ -27,27 +28,16 @@ export class ContactItemComponent implements OnInit {
   ngOnInit(): void {
     this.CheckContact();
   }
-  validateEmail(isValid: boolean) {
-    this.valid_mail = isValid;
-    this.validMailChange.emit(this.valid_mail);
-  }
   autoSave() {
     if (this.IsValid(this.thisContact)) {
       this.Save();
+      this.CheckContact();
     }
   }
   
 
-  // Exemple de méthode qui change la validité du téléphone
-  validateTel(isValid: boolean) {
-    this.valid_tel = isValid;
-    this.validTelChange.emit(this.valid_tel);
-  }
-
    // Exemple de méthode qui change la validité du téléphone
-   validateContact() {  
-    this.validContactChange.emit(this.Contacts);
-  }
+ 
 
   Save() {
     if(this.EditIndex >= 0){
@@ -62,6 +52,7 @@ export class ContactItemComponent implements OnInit {
   DontSave(){
     this.thisContact = null;
     this.EditIndex = null;
+    this.CheckContact();
   }
   Add() {
     this.EditIndex = -1;
@@ -73,26 +64,42 @@ export class ContactItemComponent implements OnInit {
   };
   }
 
-
+  rNbContactMin:ValidationItem;
+  rNbContactMax:ValidationItem;
+  rMail:ValidationItem;
+  rTel:ValidationItem;
+  estValid: boolean = false;
 
   CheckContact() {
-    this.valid_mail = false;
-    this.validateEmail(false);
-    this.valid_tel = false;
-    this.validateTel(false);
-    this.Contacts.forEach((cont) => {
-      if (this.IsValid(cont)) {
-        if (cont.Type == "EMAIL") {
-          this.valid_mail = true;
-          this.validateEmail(true);
-        }
-        if (cont.Type == "PHONE") {
-          this.valid_mail = true;
-          this.validateTel(true);
-        }
-      }
-    })
-    this.validateContact();
+    let nbcontact_mail = this.Contacts.filter(contact => contact.Type === 'EMAIL').length;
+    let nbcontact_tel = this.Contacts.filter(contact => contact.Type === 'PHONE').length;
+    let nbcontact = this.Contacts.length;
+    if(nbcontact> this.Regles.nb_contact_max){
+      this.rNbContactMax = { key: false, value: $localize`Le nombre de contacts ne doit pas dépasser ${this.Regles.nb_contact_max}` };
+    } else {
+      this.rNbContactMax = { key: true, value: '' };
+    }
+    if(nbcontact< this.Regles.nb_contact_min){
+      this.rNbContactMin = { key: false, value: $localize`Le nombre de contacts doit être au moins de ${this.Regles.nb_contact_min}` };
+     } else {
+      this.rNbContactMin = { key: true, value: '' };
+    }
+    if(this.Regles.mail_obligatoire && nbcontact_mail < 1){
+      this.rMail = { key: false, value: $localize`Au moins un contact doit être un email` };
+    } else {
+      this.rMail = { key: true, value: '' };
+    } 
+    if(this.Regles.tel_obligatoire && nbcontact_tel < 1){
+      this.rTel = { key: false, value: $localize`Au moins un contact doit être un téléphone` };
+    } else {
+      this.rTel = { key: true, value: '' };
+    }
+
+
+ this.estValid = this.rNbContactMin.key && this.rNbContactMax.key && this.rMail.key && this.rTel.key 
+  // 🔥 émettre vers le parent
+  this.valid.emit(this.estValid);
+    this.ContactChange.emit(this.Contacts);
 
   }
   NewPref(index: number) {
@@ -126,12 +133,15 @@ export class ContactItemComponent implements OnInit {
     if (!item.Type) {
       return false;
     }
-    if (item.Type == "EMAIL") {
+    if(this.Regles.verifier_format){
+   if (item.Type == "EMAIL") {
       return this.checkIfEmailInString(item.Value);
     }
     if (item.Type == "PHONE") {
       return this.checkIfTelInstring(item.Value);
     }
+    }
+ 
     return item.Value.length > 3;
   }
 

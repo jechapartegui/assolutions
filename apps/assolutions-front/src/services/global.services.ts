@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import * as CryptoJS from 'crypto-js';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { environment } from '../environments/environment.prod';
 import { compte, ProjetLogin, ProjetView } from '@shared/compte/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/compte/src/lib/autres.interface';
@@ -47,7 +45,7 @@ export class GlobalService {
   isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
 
   private isSaisonActive = new BehaviorSubject<number>(null);
-  public static saison_active: number = null;
+  public saison_active: number = null;
   isSaisonActive$: Observable<number> = this.isSaisonActive.asObservable();
 
   private isGestionnaire = new BehaviorSubject<boolean>(false);
@@ -106,10 +104,7 @@ export class GlobalService {
     this.isProjetAdmin.next(_p);
     GlobalService.projetAdmin = _p;
   }
-    updateSaisonActive(b: number): void {
-    this.isSaisonActive.next(b);
-    GlobalService.saison_active = b;
-  }
+   
 
   public ListeSeanceProf: KeyValuePair[] = [
     { key: 0, value: $localize`Prévue` },
@@ -118,10 +113,67 @@ export class GlobalService {
     // Ajoutez d'autres paires key-value selon vos besoins
   ];
 
-  public async GET(url: string): Promise<any> {
+public async GET(url: string): Promise<any>;
+public async GET(url: string, responseType: 'json'): Promise<any>;
+public async GET(url: string, responseType: 'text'): Promise<string>;
+public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<any> {
+  try {
+    let date_ref = new Date();
+    let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
+    let _varid: string = "0";
+    let project_id: string = "-1";
+    const timeoutMilliseconds = 50000;
 
+    if (GlobalService.compte) {
+      _varid = GlobalService.compte.id.toString();
+    }
+    if (GlobalService.projet) {
+      project_id = GlobalService.projet.id.toString();
+    }
+
+    const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
+    const headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('Access-Control-Allow-Origin', '*')
+      .set('password', expectedPassword)
+      .set('dateref', date_ref_string)
+      .set('projectid', project_id)
+      .set('lang', this.getCurrentLanguage())
+      .set('userid', _varid);
+
+    const options: any = {
+      headers,
+      responseType: responseType === 'text' ? 'text' : 'json',
+    };
+
+    const response = await firstValueFrom(
+      this.http.get(url, options).pipe(
+        timeout(timeoutMilliseconds),
+        catchError((error) => {
+          if (error.name === 'TimeoutError') {
+            throw new Error('La requête a expiré en raison du délai dépassé.');
+          } else {
+            throw error;
+          }
+        })
+      )
+    );
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    if (error instanceof HttpErrorResponse) {
+      this.handleError(error);
+    } else {
+      throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
+    }
+  }
+}
+
+
+  public async POST(url: string, body: any): Promise<any> {
     try {
-      let date_ref = new Date();
+     let date_ref = new Date();
       let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
       let _varid: string = "0";
       let project_id: string = "-1";
@@ -138,53 +190,6 @@ export class GlobalService {
         .set('content-type', 'application/json')
         .set('Access-Control-Allow-Origin', '*')
         .set('password', expectedPassword)
-        .set('dateref', date_ref_string)
-        .set('projectid', project_id)
-        .set('lang', this.getCurrentLanguage())
-        .set('userid', _varid)
-      const response = await firstValueFrom(this.http.get(url, { headers }).pipe(
-        timeout(timeoutMilliseconds),
-          catchError((error) => {
-            if (error.name === 'TimeoutError') {
-              throw new Error('La requête a expiré en raison du délai dépassé.');
-            } else {
-              throw error; // Gérer d'autres erreurs ici
-            }
-          })
-        )
-      );
-      return response;
-    } catch (error) {
-      console.log(error);
-      if (error instanceof HttpErrorResponse) {
-        this.handleError(error);
-      } else {
-        throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
-      }
-    }
-  }
-
-  public async POST(url: string, body: any): Promise<any> {
-    try {
-      let date_ref = new Date();
-      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
-      let _varid: string = "0";
-      let project_id: string = "-1";
-      const timeoutMilliseconds = 50000;
-      if (GlobalService.compte) {
-        _varid = GlobalService.compte.id.toString();
-      }
-      if (GlobalService.projet) {
-        project_id = GlobalService.projet.id.toString();
-      }
-
-      const password = _varid + date_ref_string; // Remplacez par le mot de passe à hacher
-      const hashedPassword = CryptoJS.HmacSHA256(password, environment.password).toString(CryptoJS.enc.Hex);
-
-      const headers = new HttpHeaders()
-        .set('content-type', 'application/json')
-        .set('Access-Control-Allow-Origin', '*')
-        .set('password', hashedPassword)
         .set('dateref', date_ref_string)
         .set('projectid', project_id)
         .set('lang', this.getCurrentLanguage())

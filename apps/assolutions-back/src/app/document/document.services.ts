@@ -1,87 +1,68 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Adherent } from '../bdd/riders';
 import { Document } from '../bdd/document';
-import { MemberService } from '../member/member.services';
+import { fileTypeFromBuffer } from 'file-type';
+
 
 @Injectable()
 export class DocumentService {
   constructor(
-    @InjectRepository(Adherent)
-    private readonly AdherentRepo: Repository<Adherent>,
     @InjectRepository(Document)
-    private readonly DocumentRepo: Repository<Document>,
-    private readonly memberservice: MemberService
+    private readonly DocumentRepo: Repository<Document>
   ) {}
 
-  async ModifyPhoto(id: number, photoBlob?: Blob) {
-    if (!id) {
-      throw new BadRequestException('INVALID_MEMBER_ID');
-    }
-
-    const existingPhoto = await this.DocumentRepo.findOne({
-      where: {
-        objet_type: 'member',
-        objet_id: id,
-        typedoc: 'photo',
-      },
+  async GetPhotoAsBase64(id: number): Promise<string> {
+    const existing = await this.DocumentRepo.findOne({
+      where: { objet_type: 'member', objet_id: id, typedoc: 'photo' }
     });
 
-    // SUPPRESSION
-    if (!photoBlob && existingPhoto) {
-      await this.DocumentRepo.remove(existingPhoto);
-      return { success: true, action: 'deleted' };
+    if (!existing || !existing.document) {
+      return ''; // ou undefined
     }
 
-    // AUCUNE ACTION
-    if (!photoBlob && !existingPhoto) {
-      return { success: false, message: 'No photo to delete or update' };
+    const fileType = await fileTypeFromBuffer(existing.document);
+    const mime = fileType?.mime || 'image/png';
+
+    const base64 = existing.document.toString('base64');
+    return `data:${mime};base64,${base64}`;
+  }
+
+  async ModifyPhoto(id: number, base64?: string): Promise<string> {
+    const existing = await this.DocumentRepo.findOne({
+      where: { objet_type: 'member', objet_id: id, typedoc: 'photo' }
+    });
+
+    if (!base64) {
+      // Suppression de la photo
+      if (existing) await this.DocumentRepo.remove(existing);
+      return 'PHOTO_DELETED';
     }
 
-    // CONVERT BLOB → Buffer (important)
-    const buffer = Buffer.from(await photoBlob!.arrayBuffer());
-
-    if (!buffer || buffer.length === 0) {
-      throw new BadRequestException('EMPTY_PHOTO');
+    const matches = base64.match(/^data:(.+);base64,(.*)$/);
+    if (!matches) {
+      throw new Error('Invalid base64 format');
     }
 
-    if (!existingPhoto) {
-      // AJOUT
-      const newDoc = this.DocumentRepo.create({
-        date_import: new Date(),
-        document: buffer,
-        objet_id: id,
-        objet_type: 'member',
-        projet: 0,
-        typedoc: 'photo',
-        titre: 'Photo du membre',
-      });
-      const saved = await this.DocumentRepo.save(newDoc);
-      return { success: !!saved, action: 'created' };
+    const mime = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+
+    if (existing) {
+      existing.document = buffer;
+      existing.mimetype = mime;
+      await this.DocumentRepo.save(existing);
     } else {
-      // MISE À JOUR
-      existingPhoto.document = buffer;
-      existingPhoto.date_import = new Date();
-      const updated = await this.DocumentRepo.save(existingPhoto);
-      return { success: !!updated, action: 'updated' };
+      const doc = this.DocumentRepo.create({
+        objet_type: 'member',
+        objet_id: id,
+        typedoc: 'photo',
+        document: buffer,
+        mimetype: mime
+      });
+      await this.DocumentRepo.save(doc);
     }
-  }
- 
-async getPhoto(id: number): Promise<Buffer> {
-  const existingPhoto = await this.DocumentRepo.findOne({
-    where: {
-      objet_type: 'member',
-      objet_id: id,
-      typedoc: 'photo',
-    },
-  });
 
-  if (!existingPhoto || !existingPhoto.document) {
-    throw new NotFoundException('PHOTO_NOT_FOUND');
+    return 'PHOTO_UPDATED';
   }
-
-  return existingPhoto.document; // <-- juste on retourne le buffer
 }
 
-}

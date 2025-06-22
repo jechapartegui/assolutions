@@ -90,17 +90,23 @@ export class SeanceComponent implements OnInit {
     private grServ: GroupeService
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.loading = true;
     this.action = $localize`Charger les cours`;
     if (GlobalService.is_logged_in) {
-      if (GlobalService.menu === 'APPLI') {
+      if (GlobalService.menu === 'ADMIN') {
         this.router.navigate(['/menu']);
         this.loading = false;
         return;
       }
       // Chargez la liste des cours
+      let i = await this.seancesservice.Add(new seance());
+      let n = await this.seancesservice.Get(12);
+      let j = await this.seancesservice.GetPlageDate(new Date().toLocaleDateString(), new Date().toLocaleDateString() );
+      console.log('i', i);
+      console.log('j', j);
+      console.log('n', n);
       this.grServ
         .GetAll()
         .then((groupes) => {

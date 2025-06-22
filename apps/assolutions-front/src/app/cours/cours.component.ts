@@ -28,7 +28,7 @@ import { Cours } from '../../class/cours';
 export class CoursComponent implements OnInit {
   // cours.component.ts
   constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuNestService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
-    private grServ: GroupeService, private excelService:ExcelService) { }
+    private grServ: GroupeService, private excelService:ExcelService, private dbs:GlobalService) { }
   listeprof: professeur[];
   listelieu: KeyValuePair[];
 
@@ -197,7 +197,7 @@ export class CoursComponent implements OnInit {
         return;
       })
     } else {
-      this.coursservice.GetAll(GlobalService.saison_active).then((c) => {
+      this.coursservice.GetAll(this.dbs.saison_active).then((c) => {
         this.listeCours = c;
         this.listeCours_VM = this.listeCours.map(x => new Cours(x));
         this.loading = false;

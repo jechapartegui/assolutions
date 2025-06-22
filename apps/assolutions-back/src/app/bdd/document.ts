@@ -25,4 +25,7 @@ export class Document {
 
   @Column({ type: 'int' })
   projet: number;
+  
+  @Column({ type: 'varchar', length: 255 })
+  mimetype: string;
 }

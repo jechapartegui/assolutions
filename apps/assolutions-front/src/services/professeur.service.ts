@@ -87,12 +87,12 @@ export class ProfesseurService {
       });
   }
   public GetProf(): Promise<professeur[]> {
-    this.url = environment.maseance + "maseance/professeur_manage.php";
-    const body = {
-      command: "get_all_saison",
-    };
+    let saison_id= this.global.saison_active;
+  this.url = 'api/prof/get_prof_saison/' + saison_id;
+    //  this.url = this.url + "login.php";
+   
 
-    return this.global.POST(this.url, body)
+    return this.global.GET(this.url)
       .then((response: professeur[]) => {
         return response;
       })

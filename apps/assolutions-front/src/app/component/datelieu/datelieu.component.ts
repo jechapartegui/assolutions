@@ -33,7 +33,7 @@ date_min: Date = null;
 date_max: Date = null;
 public lieux : lieu[] = [];
 
-constructor(private lieuService: LieuNestService, private saison_serv:SaisonService) { }
+constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, private dbs:GlobalService) { }
 
     async ngOnInit(): Promise<void> {
 let ddl: donnee_date_lieu = {
@@ -50,7 +50,7 @@ this.save = JSON.stringify(ddl);
             this.lieux = lieux;
         });
         if(this.Regles.date_dans_saison){
-            await this.saison_serv.Get(GlobalService.saison_active).then((saison) => {
+            await this.saison_serv.Get(this.dbs.saison_active).then((saison) => {
                 this.date_min = saison.date_debut;
                 this.date_max = saison.date_fin;
             })

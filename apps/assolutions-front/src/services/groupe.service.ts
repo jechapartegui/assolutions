@@ -30,7 +30,7 @@ export class GroupeService {
   }
   public GetAll(saison_id:number =0): Promise<KeyValuePair[]> {
     if(saison_id ===0){
-    saison_id = GlobalService.saison_active
+    saison_id = this.global.saison_active
   }
     this.url = 'api/groupe/getall/'  + saison_id;
     
@@ -53,7 +53,7 @@ export class GroupeService {
   public Add(gr:KeyValuePair, saison_id:number =0): Promise<number> {
   this.url = 'api/groupe/add';
   if(saison_id ===0){
-    saison_id = GlobalService.saison_active
+    saison_id = this.global.saison_active
   }
  const l = {
     saison_id: saison_id,
@@ -71,7 +71,7 @@ export class GroupeService {
 public Update(gr:KeyValuePair, saison_id:number =0): Promise<boolean> {
   this.url = 'api/groupe/update';
 if(saison_id ===0){
-    saison_id = GlobalService.saison_active
+    saison_id = this.global.saison_active
   }
  const l = {
     saison_id: saison_id,

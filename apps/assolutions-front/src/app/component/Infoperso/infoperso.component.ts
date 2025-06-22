@@ -12,10 +12,11 @@ import { GlobalService } from "apps/assolutions-front/src/services/global.servic
 export class InfoPersoComponent implements OnInit  {
  @Input() thisAdherent:Adherent;
  @Input() Regles:ReglesPersonne;
+ @Input() photoBase64: string | null = null;
  save:string=null;
  estValid:boolean;
  @Output() InfoPersoChange = new EventEmitter();
-@Output() valid = new EventEmitter<boolean>();
+  @Output() valid = new EventEmitter<boolean>();
  public edit:boolean = false
 
 ngOnInit(): void {
@@ -58,22 +59,23 @@ public validerTout(): void {
 }
 
 
-  @Output() photoSelected = new EventEmitter<string>(); // Base64 string
+ @Output() photoSelected = new EventEmitter<string>();
 
-  onPhotoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const reader = new FileReader();
+onPhotoSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+    const reader = new FileReader();
 
-      reader.onload = () => {
-        const base64Photo = reader.result as string;
-        this.photoSelected.emit(base64Photo); // ✅ Émettre vers le parent
-      };
+    reader.onload = () => {
+      const base64Photo = reader.result as string;
+      this.photoBase64 = base64Photo; // Pour affichage immédiat
+      this.photoSelected.emit(base64Photo);  // Pour le parent
+    };
 
-      reader.readAsDataURL(file);
-    }
+    reader.readAsDataURL(file); // ==> base64: data:image/...;base64,xxxx
   }
+}
 
  
 }

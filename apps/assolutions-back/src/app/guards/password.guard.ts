@@ -3,6 +3,7 @@ import { generatePassword } from './password';
 
 @Injectable()
 export class PasswordGuard implements CanActivate {
+
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
 

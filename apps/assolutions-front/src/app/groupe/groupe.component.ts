@@ -26,7 +26,7 @@ export class GroupeComponent implements OnInit {
   action: string = "";
   saison_id: number = null;
 
-  constructor(private groupeserv: GroupeService, private adhserv: AdherentService, private router: Router) { }
+  constructor(private groupeserv: GroupeService, private adhserv: AdherentService, private router: Router, public dbs:GlobalService) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -39,7 +39,7 @@ export class GroupeComponent implements OnInit {
       }
       // Chargez la liste des cours
 
-      this.groupeserv.GetAll(GlobalService.saison_active).then((result) => {
+      this.groupeserv.GetAll(this.dbs.saison_active).then((result) => {
         this.liste_groupe = result.map(x => {
   const g = new Groupe();
   g.id = Number(x.key);
@@ -47,7 +47,7 @@ export class GroupeComponent implements OnInit {
   g.display = false;
   return g;
 });
-        this.adhserv.GetAdherentAdhesion(GlobalService.saison_active).then((riders) => {
+        this.adhserv.GetAdherentAdhesion(this.dbs.saison_active).then((riders) => {
           this.liste_adherent = riders.map(x => new Adherent(x));
         }).catch((error) => {
           let n = errorService.CreateError("Chargement", error);
