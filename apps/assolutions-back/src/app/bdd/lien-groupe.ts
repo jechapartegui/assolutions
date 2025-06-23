@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Groupe } from "./groupe";
 
 @Entity('lien_groupe')
 export class LienGroupe {
@@ -13,4 +14,8 @@ export class LienGroupe {
 
   @Column({ length: 20 })
   objet_type: string;
+
+@ManyToOne(() => Groupe, { nullable: true })
+@JoinColumn({ name: 'groupe_id' })
+groupeEntity?: Groupe;
 }

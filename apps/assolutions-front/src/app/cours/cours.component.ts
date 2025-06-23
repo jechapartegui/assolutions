@@ -17,8 +17,8 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
-import { cours, initCours } from '@shared/compte/src/lib/cours.interface';
-import { Cours } from '../../class/cours';
+import { CoursVM } from '@shared/compte/src';
+import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
 
 @Component({
   selector: 'app-cours',
@@ -32,10 +32,8 @@ export class CoursComponent implements OnInit {
   listeprof: professeur[];
   listelieu: KeyValuePair[];
 
-  listeCours: cours[] = [];
-  listeCours_VM: Cours[] = []; // Initialisez la liste des cours (vous pouvez la charger à partir d'une API, par exemple)
-  editMode = false;
-  editCours: Cours | null = null;
+  listeCours: CoursVM[] = [];
+  editCours: CoursVM | null = null;
   current_groupe_id: number;
   groupe_dispo: KeyValuePair[] = [];
   liste_groupe: KeyValuePair[] = [];
@@ -174,8 +172,8 @@ export class CoursComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
-  onGroupesUpdated(updatedGroupes: KeyValuePair[]) {
-    this.editCours.Groupes = updatedGroupes;
+  onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
+    this.editCours.groupes = updatedGroupes;
     // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
   }
 
@@ -187,7 +185,6 @@ export class CoursComponent implements OnInit {
     if (this.season_id && this.season_id > 0) {
       this.coursservice.GetAll(this.season_id).then((c) => {
         this.listeCours = c;
-        this.listeCours_VM = this.listeCours.map(x => new Cours(x));        
         this.loading = false;
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
@@ -199,7 +196,6 @@ export class CoursComponent implements OnInit {
     } else {
       this.coursservice.GetAll(this.dbs.saison_active).then((c) => {
         this.listeCours = c;
-        this.listeCours_VM = this.listeCours.map(x => new Cours(x));
         this.loading = false;
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
@@ -214,8 +210,8 @@ export class CoursComponent implements OnInit {
   Refresh(){
     const errorService = ErrorService.instance;
     this.action = $localize`Rafraichir le cours`;
-    this.coursservice.Get(this.editCours.ID).then((c)=>{
-      this.editCours = new Cours(c);
+    this.coursservice.Get(this.editCours.id).then((c)=>{
+      this.editCours = c;
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
      }).catch((err: HttpErrorResponse) => {
@@ -251,19 +247,18 @@ export class CoursComponent implements OnInit {
       return $localize`Lieu non trouvé`;
     }
   }
-  Edit(c: Cours): void {
+  Edit(c: CoursVM): void {
     this.editCours = c;
-    this.editMode = true;
   }
 
-  Delete(c: Cours): void {
+  Delete(c: CoursVM): void {
     const errorService = ErrorService.instance;
 
     let confirmation = window.confirm($localize`Voulez-vous supprimer ce cours ? Cette action est définitive. `);
     if (confirmation) {
       this.action = $localize`Supprimer un cours`;
       if (c) {
-        this.coursservice.Delete(c.ID).then((result) => {
+        this.coursservice.Delete(c.id).then((result) => {
           if (result) {
             this.UpdateListeCours();
             let o = errorService.OKMessage(this.action);
@@ -281,8 +276,7 @@ export class CoursComponent implements OnInit {
   }
 
   Create(): void {
-    this.editCours = new Cours(initCours());
-    this.editMode = true;
+    this.editCours = new CoursVM();
   }
    public is_valid_datelieu: boolean = false;
 
@@ -295,15 +289,15 @@ valid_Caracteristique(isValid: boolean): void {
   this.is_valid_caracteristique = isValid;
 }
 
-  Save(cours: Cours) {
+  Save(cours: CoursVM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un cours`;
     if (cours) {
-      if (cours.ID == 0) {
+      if (cours.id == 0) {
 
-        this.coursservice.Add(cours.datasource).then((id) => {
+        this.coursservice.Add(cours).then((id) => {
           if (id > 0) {
-            this.editCours.ID = id;
+            this.editCours.id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
             this.UpdateListeCours();
@@ -318,7 +312,7 @@ valid_Caracteristique(isValid: boolean): void {
         });
       }
       else {
-        this.coursservice.Update(cours.datasource).then((ok) => {
+        this.coursservice.Update(cours).then((ok) => {
 
           this.action = $localize`Mettre à jour un cours`;
           if (ok) {
@@ -340,9 +334,9 @@ valid_Caracteristique(isValid: boolean): void {
     }
   }
 
-  public GetCoursID(id: number): Promise<cours | null> {
+  public GetCoursID(id: number): Promise<CoursVM | null> {
     return this.coursservice.Get(id)
-      .then((c: cours) => {
+      .then((c: CoursVM) => {
         return c; // Retourne la valeur du cours récupéré
       })
       .catch(() => {
@@ -354,7 +348,6 @@ valid_Caracteristique(isValid: boolean): void {
 
     let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
     if (confirm) {
-      this.editMode = false;
       this.editCours = null;
       this.UpdateListeCours();
     }
@@ -368,9 +361,9 @@ valid_Caracteristique(isValid: boolean): void {
         this.sort_nom = sens;
         this.sort_jour = "NO";
         this.sort_lieu = "NO";
-        this.listeCours_VM.sort((a, b) => {
-          const nomA = a.Nom.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.Nom.toUpperCase();
+        this.listeCours.sort((a, b) => {
+          const nomA = a.nom.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.nom.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -385,9 +378,9 @@ valid_Caracteristique(isValid: boolean): void {
         this.sort_lieu = sens;
         this.sort_jour = "NO";
         this.sort_nom = "NO";
-        this.listeCours_VM.sort((a, b) => {
-          const lieuA = this.listelieu.find(lieu => lieu.key === a.LieuId)?.value || '';
-          const lieuB = this.listelieu.find(lieu => lieu.key === b.LieuId)?.value || '';
+        this.listeCours.sort((a, b) => {
+          const lieuA = this.listelieu.find(lieu => lieu.key === a.lieu_id)?.value || '';
+          const lieuB = this.listelieu.find(lieu => lieu.key === b.lieu_id)?.value || '';
 
           // Ignorer la casse lors du tri
           const lieuAUpper = lieuA.toUpperCase();
@@ -407,14 +400,14 @@ valid_Caracteristique(isValid: boolean): void {
         this.sort_lieu = "NO";
         this.sort_jour = sens;
         this.sort_nom = "NO";
-        this.listeCours_VM.sort((a, b) => {
+        this.listeCours.sort((a, b) => {
           let jourA = 0;
           let jourB = 0;
-          let jourEnum = jour_semaine[a.JourSemaine.toLowerCase() as keyof typeof jour_semaine];
+          let jourEnum = jour_semaine[a.jour_semaine.toLowerCase() as keyof typeof jour_semaine];
           if (jourEnum !== undefined) {
             jourA = jourEnum;
           };
-          jourEnum = jour_semaine[b.JourSemaine.toLowerCase() as keyof typeof jour_semaine];
+          jourEnum = jour_semaine[b.jour_semaine.toLowerCase() as keyof typeof jour_semaine];
           if (jourEnum !== undefined) {
             jourB = jourEnum;
           };
@@ -461,31 +454,31 @@ valid_Caracteristique(isValid: boolean): void {
         AfficherPresent: 'Afficher présent',
         EssaiPossible: 'Essai possible',
       };
-      let list: Cours[] = this.getFilteredCours();
+      let list: CoursVM[] = this.getFilteredCours();
       this.excelService.exportAsExcelFile(list, 'liste_cours', headers);
     }
-    getFilteredCours(): Cours[] {
-      return this.listeCours_VM.filter((item) => {
+    getFilteredCours(): CoursVM[] {
+      return this.listeCours.filter((item) => {
         return (
           (!this.filters.filter_nom ||
-            item.Nom.toLowerCase().includes(
+            item.nom.toLowerCase().includes(
               this.filters.filter_nom.toLowerCase()
             )) &&
             (!this.filters.filter_lieu ||
-              item.LieuId == this.filters.filter_lieu
+              item.lieu_id == this.filters.filter_lieu
               ) &&
               (!this.filters.filter_jour ||
-                  item.JourSemaine == this.filters.filter_jour
+                  item.jour_semaine == this.filters.filter_jour
                   ) &&
        
           (!this.filters.filter_groupe ||
-            item.Groupes.some((x) =>
-              x.value.toLowerCase().includes(
+            item.groupes.some((x) =>
+              x.nom.toLowerCase().includes(
                 this.filters.filter_groupe?.toLowerCase() ?? ''
               )
             )) && 
             (!this.filters.filter_prof ||
-              item.ProfPrincipalId == 
+              item.prof_principal_id == 
               this.filters.filter_prof
                 ))
                 

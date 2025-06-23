@@ -1,45 +1,42 @@
-import { KeyValuePair } from "./autres.interface";
+import { LienGroupe_VM } from "./groupe.interface";
 
-export interface cours {
+export class CoursVM {
   id: number;
   nom: string;
-  saison_id: number;
-  afficher_present: boolean;
-  age_maximum: number;
-  age_minimum: number;
-  convocation_nominative: boolean;
-  duree: number;
-  est_limite_age_maximum: boolean;
-  est_limite_age_minimum: boolean;
-  est_place_maximum: boolean;
-  heure: string;
-  lieu_id: number;
   jour_semaine: string;
-  place_maximum: number;
+  heure: string;
+  duree: number;
   prof_principal_id: number;
-  profs : KeyValuePair[];
-  groupes : KeyValuePair[];
+  lieu_id: number;
+  saison_id: number;
+
+  age_minimum?: number;
+  age_maximum?: number;
+  place_maximum?: number;
+
+  convocation_nominative: boolean;
+  afficher_present: boolean;
+  est_limite_age_minimum: boolean;
+  est_limite_age_maximum: boolean;
+  est_place_maximum: boolean;
+
+  // Champs enrichis
+  lieu_nom?: string;
+
+  // Professeurs liés
+  professeursCours: CoursProfesseurVM[];
+
+  // Groupes liés
+  groupes: LienGroupe_VM[];
 }
 
-export function initCours(): cours {
-  return {
-    id: 0,
-    nom: '',
-    saison_id: 0,
-    afficher_present: false,
-    age_maximum: 0,
-    age_minimum: 0,
-    convocation_nominative: false,
-    duree: 0,
-    est_limite_age_maximum: false,
-    est_limite_age_minimum: false,
-    est_place_maximum: false,
-    heure: '', // format attendu ? (ex: "18:30")
-    lieu_id: 0,
-    jour_semaine: '', // ou par défaut "Lundi" ?
-    place_maximum: 0,
-    prof_principal_id: 0,
-    profs: [],
-    groupes: [],
-  };
+export class CoursProfesseurVM {
+  cours_id: number;
+  prof_id: number;
+
+  constructor(cours_id: number, prof_id: number) {
+    this.prof_id = prof_id;
+    this.cours_id = cours_id;
+  }
 }
+

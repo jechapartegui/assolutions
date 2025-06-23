@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Document } from '../bdd/document';
-import { fileTypeFromBuffer } from 'file-type';
+const { fileTypeFromBuffer } = require('file-type');
 
 
 @Injectable()

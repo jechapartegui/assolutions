@@ -6,3 +6,4 @@ export * from './lib/member.interface';
 export * from './lib/saison.interface';
 export * from './lib/autres.interface';
 export * from './lib/cours.interface';
+export * from './lib/groupe.interface';

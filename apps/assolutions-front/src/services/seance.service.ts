@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import {  InscriptionSeance } from '../class/inscription';
-import { seance } from '@shared/compte/src/lib/seance.interface';
+import { SeanceVM } from '@shared/compte/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SeancesService {
   static instance: SeancesService;
-  static get ListeSeance(): seance[] {
+  static get ListeSeance(): SeanceVM[] {
     return SeancesService.Seances;
   }
 
@@ -19,9 +19,9 @@ export class SeancesService {
 
   url = environment.maseance;
 
-  static Seances: seance[];
+  static Seances: SeanceVM[];
 
-  public Update(seance: seance): Promise<boolean> {
+  public Update(seance: SeanceVM): Promise<boolean> {
     this.url = environment.maseance + "api/seance/update"; 
     //  this.url = this.url + "login.php";
     const body = {
@@ -55,7 +55,7 @@ export class SeancesService {
 
 
 
-  public Add(seance: seance): Promise<number> {
+  public Add(seance: SeanceVM): Promise<number> {
     this.url = environment.maseance + "api/seance/add/"
     //  this.url = this.url + "login.php";
     const body = {
@@ -71,7 +71,7 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public AddRange(seance: seance, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
+  public AddRange(seance: SeanceVM, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
     this.url = environment.maseance + "api/seance/add_range/"
     //  this.url = this.url + "login.php";
     const body = {
@@ -92,10 +92,10 @@ export class SeancesService {
   }
 
 
-  public GetSeances(all:boolean =false): Promise<seance[]> {
+  public GetSeances(): Promise<SeanceVM[]> {
     this.url = environment.maseance + "api/seance/getall/" + this.global.saison_active;
     return this.global.GET(this.url)
-      .then((response: seance[]) => {
+      .then((response: SeanceVM[]) => {
         return response;
       })
       .catch(error => {
@@ -104,12 +104,12 @@ export class SeancesService {
       });
   }
 
-  public GetPlageDate(date_debut:string, date_fin:string): Promise<seance[]> {
+  public GetPlageDate(date_debut:string, date_fin:string): Promise<SeanceVM[]> {
     this.url = environment.maseance + "api/seance/getbydate/" + this.global.saison_active + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
-      .then((response: seance[]) => {
+      .then((response: SeanceVM[]) => {
         SeancesService.Seances = response;
         return response;
       })
@@ -119,12 +119,12 @@ export class SeancesService {
   }
  
 
-  public Get(id: number): Promise<seance> {
+  public Get(id: number): Promise<SeanceVM> {
     this.url = environment.maseance + "api/seance/get/" + id; 
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
-      .then((response: seance) => {
+      .then((response: SeanceVM) => {
         return response;
       })
       .catch(error => {
@@ -165,39 +165,4 @@ export class SeancesService {
       });
   }
 
-
-  
-  public TerminerSeances(list_id: number[]): Promise<number> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "terminer_seances",
-      list_id: list_id,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
-  public MAJStatutSeance(id: number, statut:string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/seance_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "maj_statut_seance",
-      id: id,
-      statut:statut
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
 }

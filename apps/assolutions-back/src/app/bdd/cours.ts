@@ -1,5 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CoursProfesseur } from "./cours_professeur";
+import { LienGroupe } from "./lien-groupe";
+import { Lieu } from "./lieu";
 
 @Entity('cours')
 export class Cours {
@@ -56,4 +58,11 @@ export class Cours {
 
   @OneToMany(() => CoursProfesseur, cp => cp.cours)
 professeursCours: CoursProfesseur[];
+
+ @ManyToOne(() => Lieu, { nullable: true })
+@JoinColumn({ name: 'lieu_id' })
+lieu?: Lieu;
+
+// Pas de décorateur TypeORM
+lienGroupes?: LienGroupe[];
 }

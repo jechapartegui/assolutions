@@ -1,4 +1,4 @@
-export interface lieu {
+export class LieuVM {
     id: number;
     nom: string;
     adresse: string;

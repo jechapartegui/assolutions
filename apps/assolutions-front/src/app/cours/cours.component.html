@@ -1,5 +1,4 @@
 <div class="container">
-  <ng-container *ngIf="!editMode">
     <ng-container *ngIf="loading">
       <progress
         class="progress is-large is-info"
@@ -19,7 +18,7 @@
                 <p
                   class="card-header-title"
                   *ngIf="
-                    listeCours_VM
+                    listeCours
                       | multifiltersCours : filters as filteredApplis
                   "
                 >
@@ -36,7 +35,7 @@
                   <table
                     class="table"
                     style="width: 100%; font-size: smaller"
-                    *ngIf="listeCours_VM && listeCours_VM.length > 0"
+                    *ngIf="listeCours && listeCours.length > 0"
                   >
                     <thead>
                       <tr>
@@ -142,7 +141,7 @@
                     <tbody>
                       <tr
                         *ngFor="
-                          let cours of listeCours_VM
+                          let cours of listeCours
                             | multifiltersCours : filters
                         "
                       >
@@ -221,7 +220,7 @@
                   >
                     ↑
                   </button>
-                  <p *ngIf="!listeCours_VM || listeCours_VM.length == 0">
+                  <p *ngIf="!listeCours || listeCours.length == 0">
                     Pas de cours disponible
                   </p>
                 </div>
@@ -746,7 +745,7 @@
                 ></btn>
           </nav>
           <ng-container
-            *ngFor="let cours of listeCours_VM | multifiltersCours : filters"
+            *ngFor="let cours of listeCours | multifiltersCours : filters"
           >
             <div class="container-box">
               <article class="media">
@@ -768,16 +767,14 @@
         </ng-container>
       </span>
     </ng-container>
-  </ng-container>
-  <ng-container *ngIf="editMode">
 <div class="columns">
   <div class="column">
     <div class="card">
       <header class="card-header" style="align-items: center">
         <p class="card-header-title subtitle is-6">
-          <span *ngIf="editCours.ID < 1" i18n>Nouveau cours</span>
-          <span *ngIf="editCours.ID > 0">
-            <span i18n>Editer</span> : {{ editCours.Nom }} 
+          <span *ngIf="editCours.id < 1" i18n>Nouveau cours</span>
+          <span *ngIf="editCours.id > 0">
+            <span i18n>Editer</span> : {{ editCours.nom }} 
           </span>
         </p>
       </header>
@@ -785,8 +782,8 @@
       <div class="columns is-multiline is-variable is-4">
         <!-- Bloc Infos personnelles -->
        <div class="column is-full-tablet is-half-desktop">
- <datelieu [creneau]="true" [duree]="editCours.Duree" [heure]="editCours.Heure" [jour_semaine]="editCours.JourSemaine" [ID]="editCours.ID" [lieu_id]="editCours.LieuId" [Regles]="(GlobalService.getRegles().Cours_DateLieu)" (datelieuChange)="Save(editCours)" (valid)="valid_DateLieu($event)"></datelieu>
-<caracteristique-seance [essai_possible]="false" [place_limite]="editCours.EstPlaceMaximum" [place_limite_valeur]="editCours.PlaceMaximum" [age_max]="editCours.EstAgeMaximum" [age_min]="editCours.EstAgeMinimum" [age_max_valeur]="editCours.AgeMaximum" [age_min_valeur]="editCours.AgeMinimum"[ID]="editCours.ID"  [Regles]="(GlobalService.getRegles().Cours_Parametres)"  (caracteristiqueChange)="Save(editCours)" (valid)="valid_Caracteristique($event)"></caracteristique-seance>
+ <datelieu [creneau]="true" [duree]="editCours.duree" [heure]="editCours.heure" [jour_semaine]="editCours.jour_semaine" [ID]="editCours.id" [lieu_id]="editCours.lieu_id" [Regles]="(GlobalService.getRegles().Cours_DateLieu)" (datelieuChange)="Save(editCours)" (valid)="valid_DateLieu($event)"></datelieu>
+<caracteristique-seance [essai_possible]="false" [place_limite]="editCours.est_place_maximum" [place_limite_valeur]="editCours.place_maximum" [age_max]="editCours.est_limite_age_maximum" [age_min]="editCours.est_limite_age_minimum" [age_max_valeur]="editCours.age_maximum" [age_min_valeur]="editCours.age_minimum" [ID]="editCours.id"  [Regles]="(GlobalService.getRegles().Cours_Parametres)"  (caracteristiqueChange)="Save(editCours)" (valid)="valid_Caracteristique($event)"></caracteristique-seance>
 </div>
 
 
@@ -799,5 +796,4 @@
     </div>
   </div>
 </div>
-  </ng-container>
 </div>

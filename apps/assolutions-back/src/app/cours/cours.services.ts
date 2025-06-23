@@ -3,10 +3,10 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
 import { Cours } from "../bdd/cours";
-import { cours } from "@shared/compte/src/lib/cours.interface";
 import { CoursProfesseur } from "../bdd/cours_professeur";
 import { LienGroupe } from "../bdd/lien-groupe";
-import { Groupe } from "../bdd/groupe";
+import { LienGroupe_VM } from "@shared/compte/src/lib/groupe.interface";
+import { CoursProfesseurVM, CoursVM } from "@shared/compte/src/lib/cours.interface";
 
 @Injectable()
 export class CoursService {
@@ -16,7 +16,6 @@ export class CoursService {
   @InjectRepository(CoursProfesseur) 
   private readonly CoursProfRepo: Repository<CoursProfesseur>,
   @InjectRepository(LienGroupe) private readonly LienGroupeRepo: Repository<LienGroupe>,
-  @InjectRepository(Groupe) private readonly GroupeRepo: Repository<Groupe>,
   ) {}
 
   async Get(id: number) {
@@ -63,7 +62,7 @@ async GetAll(saison_id: number) {
 
   }
 
-  async Add(s: cours, project_id: number) {
+  async Add(s: CoursVM, project_id: number) {
   if (!s) {
     throw new BadRequestException('INVALID_ITEM');
   }
@@ -73,12 +72,12 @@ async GetAll(saison_id: number) {
   const saved = await this.CoursRepo.save(newISS);
     await this.updateGroupesForCours(saved.id, s.groupes);
   // 🔁 Ajouter les liaisons professeurs
-  await this.updateCoursProfesseurs(saved.id, s.profs);
+  await this.updateCoursProfesseurs(saved.id, s.professeursCours);
 
   return saved.id;
 }
 
-async Update(s: cours, project_id: number) {
+async Update(s: CoursVM, project_id: number) {
   if (!s) {
     throw new BadRequestException('INVALID_ITEM');
   }
@@ -94,12 +93,12 @@ async Update(s: cours, project_id: number) {
 
   // 🔁 Mettre à jour les liaisons professeurs
     await this.updateGroupesForCours(updated.id, s.groupes);
-  await this.updateCoursProfesseurs(updated.id, s.profs);
+  await this.updateCoursProfesseurs(updated.id, s.professeursCours);
 
   return true;
 }
 
-private async updateCoursProfesseurs(cours_id: number, profs: KeyValuePair[]) {
+private async updateCoursProfesseurs(cours_id: number, profs: CoursProfesseurVM[]) {
   // Supprimer les liaisons existantes
   await this.CoursProfRepo.delete({ cours_id });
 
@@ -107,7 +106,7 @@ private async updateCoursProfesseurs(cours_id: number, profs: KeyValuePair[]) {
   const newLiaisons = profs.map(kvp => {
     const cp = new CoursProfesseur();
     cp.cours_id = cours_id;
-    cp.prof_id = Number(kvp.key);
+    cp.prof_id = Number(kvp.prof_id);
     return cp;
   });
 
@@ -129,13 +128,13 @@ async Delete(id: number) {
 }
 
 
-toCours(data: cours, project_id: number): Cours {
+toCours(data: CoursVM, project_id: number): Cours {
   const c = new Cours();
     c.nom = data.nom;
     c.saison_id = data.saison_id;
     c.afficher_present = data.afficher_present;
-    c.age_maximum = data.age_maximum;
-    c.age_minimum = data.age_minimum;
+    c.age_maximum = data.age_maximum ?? null;
+    c.age_minimum = data.age_minimum ?? null;
     c.convocation_nominative = data.convocation_nominative;
     c.duree = data.duree;
     c.est_limite_age_maximum = data.est_limite_age_maximum;
@@ -145,19 +144,32 @@ toCours(data: cours, project_id: number): Cours {
     c.id = data.id;
     c.lieu_id = data.lieu_id;
     c.jour_semaine = data.jour_semaine;
-    c.place_maximum = data.place_maximum;
+    c.place_maximum = data.place_maximum ?? null;
     c.prof_principal_id = data.prof_principal_id;
     c.project_id = project_id;
+    c.lienGroupes = data.groupes.map(g => {
+      const lien = new LienGroupe();
+      lien.objet_type = 'cours';
+      lien.objet_id = c.id;
+      lien.groupe_id = g.id;
+      return lien;
+    });
+    c.professeursCours = data.professeursCours.map(p => {
+      const cp = new CoursProfesseur();
+      cp.cours_id = c.id;
+      cp.prof_id = Number(p.prof_id);
+      return cp;
+    });
   return c;
 }
-to_cours(entity: Cours): cours {
+to_cours(entity: Cours): CoursVM {
   return {
     id: entity.id,
     nom: entity.nom,
     saison_id: entity.saison_id,
     afficher_present: entity.afficher_present,
-    age_maximum: entity.age_maximum,
-    age_minimum: entity.age_minimum,
+    age_maximum: entity.age_maximum ?? undefined,
+    age_minimum: entity.age_minimum?? undefined,
     convocation_nominative: entity.convocation_nominative,
     duree: entity.duree,
     est_limite_age_maximum: entity.est_limite_age_maximum,
@@ -166,44 +178,60 @@ to_cours(entity: Cours): cours {
     heure: entity.heure,
     lieu_id: entity.lieu_id,
     jour_semaine: entity.jour_semaine,
-    place_maximum: entity.place_maximum,
+    place_maximum: entity.place_maximum ?? undefined,
     prof_principal_id: entity.prof_principal_id,
-    groupes: [],
-    profs: Array.isArray(entity.professeursCours)
-      ? entity.professeursCours.map(cp => ({
-          key: cp.professeur.id,
-          value: `${cp.professeur.prenom} ${cp.professeur.nom}`,
+    groupes: entity.lienGroupes
+      ? entity.lienGroupes.map(g => ({
+          id: g.groupe_id,
+          nom: g.groupeEntity?.nom || '',
+          id_lien: g.id,
         }))
       : [],
+    professeursCours: entity.professeursCours
+      ? entity.professeursCours.map(p => ({ 
+          cours_id: entity.id,
+          prof_id: p.prof_id
+        }))
+      : [], 
   };
 }
 
 
-async getGroupesForCours(cours_id: number): Promise<KeyValuePair[]> {
+async getGroupesForCours(cours_id: number): Promise<LienGroupe_VM[]> {
   const liens = await this.LienGroupeRepo
     .createQueryBuilder('lien')
-    .innerJoin(Groupe, 'groupe', 'groupe.id = lien.groupe_id')
+    .leftJoinAndSelect('lien.groupeEntity', 'groupe')
     .where('lien.objet_type = :type', { type: 'cours' })
     .andWhere('lien.objet_id = :id', { id: cours_id })
-    .select(['groupe.id as `key`', 'groupe.nom as `value`'])
+    .select([
+      'lien.id AS id_lien',
+      'groupe.id AS id',
+      'groupe.nom AS nom',
+    ])
     .getRawMany();
 
-  return liens; // déjà au format KeyValuePair
+  return liens.map(lien => ({
+    id_lien: lien.id_lien,
+    id: lien.id,
+    nom: lien.nom,
+  }));
 }
 
-private async updateGroupesForCours(cours_id: number, groupes: KeyValuePair[]) {
+
+private async updateGroupesForCours(cours_id: number, groupes: LienGroupe_VM[]) {
   await this.LienGroupeRepo.delete({ objet_type: 'cours', objet_id: cours_id });
 
-  const nouveauxLiens = groupes.map(kvp => {
+  const nouveauxLiens = groupes.map(vm => {
     const lien = new LienGroupe();
     lien.objet_type = 'cours';
     lien.objet_id = cours_id;
-    lien.groupe_id = Number(kvp.key);
+    lien.groupe_id = vm.id;
     return lien;
   });
 
   await this.LienGroupeRepo.save(nouveauxLiens);
 }
+
 
 
 }

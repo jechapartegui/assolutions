@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Lieu } from "./lieu";
 import { Cours } from "./cours";
 import { SeanceProfesseur } from "./seance_professeur";
+import { LienGroupe } from "./lien-groupe";
 
 @Entity('seance')
 export class Seance {
@@ -88,4 +89,8 @@ coursEntity?: Cours;
 
 @OneToMany(() => SeanceProfesseur, cp => cp.seance_id)
 professeursSeance: SeanceProfesseur[];
+
+// Pas de décorateur TypeORM
+lienGroupes?: LienGroupe[];
+
 }

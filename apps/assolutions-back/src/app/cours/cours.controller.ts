@@ -1,14 +1,10 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
-import type { cours } from '@shared/compte/src/lib/cours.interface';
 import { CoursService } from './cours.services';
 
-// src/auth/auth.controller.ts
 @Controller('cours')
 export class CoursController {
   constructor(private readonly cours_serv: CoursService) {}
-
-
     @UseGuards(PasswordGuard)
       @Get('get/:id')
     async Get(@Param() { id }: { id: number }) {
@@ -28,12 +24,12 @@ export class CoursController {
     }
   
     @Put('add')
-    async Add(@Headers('projectid') projectId: number,@Body() s: cours) {
+    async Add(@Headers('projectid') projectId: number,@Body() s: any) {
       return this.cours_serv.Add(s, projectId);
     }
     
     @Put('update')
-    async Update(@Headers('projectid') projectId: number,@Body() s: cours) {
+    async Update(@Headers('projectid') projectId: number,@Body() s: any) {
       return this.cours_serv.Update(s, projectId);
     }
     
