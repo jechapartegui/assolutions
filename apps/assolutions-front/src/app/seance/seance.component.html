@@ -212,7 +212,7 @@
                       "
                     >
                       <td>
-                        {{ seance.libelle }}
+                        {{ seance.nom }}
                       </td>
                       <td>
                         <ng-container
@@ -1056,21 +1056,21 @@
             <header class="card-header" style="align-items: center">
               <p
                 class="card-header-title"
-                *ngIf="editSeance.ID == 0 && editMode_serie"
+                *ngIf="editSeance.seance_id == 0 && editMode_serie"
                 i18n
               >
                 Créer une série de séances
               </p>
               <p
                 class="card-header-title"
-                *ngIf="editSeance.ID == 0 && !editMode_serie"
+                *ngIf="editSeance.seance_id == 0 && !editMode_serie"
                 i18n
               >
                 Créer une séance
               </p>
               <p
                 class="card-header-title"
-                *ngIf="editSeance.ID > 0"
+                *ngIf="editSeance.seance_id > 0"
                 i18n
               >
                 Editer une séance
@@ -1079,11 +1079,11 @@
             <div class="card-content" #scrollableContent>
               <div class="content">
                 <div class="field-container">
-                  <ng-container *ngIf="editSeance.ID == 0">
+                  <ng-container *ngIf="editSeance.seance_id == 0">
                     <div class="field">
                       <label class="label" i18n>Type de séance</label>
                       <div class="select">
-                        <select id="cours" [(ngModel)]="editSeance.TypeSeance">
+                        <select id="cours" [(ngModel)]="editSeance.type_seance">
                           <option value="ENTRAINEMENT" i18n>Cours</option>
                           <option value="SORTIE" i18n>Sortie</option>
                           <option value="EVENEMENT" i18n>Evenement</option>
@@ -1092,14 +1092,14 @@
                       </div>
                       <p
                         class="help is-danger"
-                        *ngIf="!editSeance.TypeSeance"
+                        *ngIf="!editSeance.type_seance"
                         i18n
                       >
                         La sélection d'un type de séance est obligatoire
                       </p>
                     </div>
                     <div
-                      *ngIf="editSeance.TypeSeance == 'ENTRAINEMENT'"
+                      *ngIf="editSeance.type_seance == 'ENTRAINEMENT'"
                       class="field"
                     >
                       <label class="label" i18n>Cours</label>
@@ -1107,7 +1107,7 @@
                         <select
                           id="cours"
                           (ngModelChange)="onCoursSelectionChange($event)"
-                          [(ngModel)]="editSeance.Cours"
+                          [(ngModel)]="editSeance.cours"
                         >
                           <option
                             *ngFor="let cours of listeCours"
@@ -1117,7 +1117,7 @@
                           </option>
                         </select>
                       </div>
-                      <p class="help is-danger" *ngIf="!editSeance.Cours" i18n>
+                      <p class="help is-danger" *ngIf="!editSeance.cours" i18n>
                         La sélection d'un cours est obligatoire
                       </p>
                     </div>
@@ -2009,7 +2009,7 @@
                 <select
                   class="form-control"
                   id="lieu"
-                  [(ngModel)]="editSeance.LieuId"
+                  [(ngModel)]="editSeance.lieu_id"
                   placeholder="Lieu"
                 >
                   <option
@@ -2038,14 +2038,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EstAgeMinimum == true
+                    editSeance.est_limite_age_minimum == true
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EstAgeMinimum == true
-                      ? (editSeance.EstAgeMinimum = false)
-                      : (editSeance.EstAgeMinimum = true)
+                    editSeance.est_limite_age_minimum == true
+                      ? (editSeance.est_limite_age_minimum = false)
+                      : (editSeance.est_limite_age_minimum = true)
                   "
                 >
                   <span i18n>Age minimum requis</span>
@@ -2053,14 +2053,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EstAgeMinimum == false
+                    editSeance.est_limite_age_minimum == false
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EstAgeMinimum == true
-                      ? (editSeance.EstAgeMinimum = false)
-                      : (editSeance.EstAgeMinimum = true)
+                    editSeance.est_limite_age_minimum == true
+                      ? (editSeance.est_limite_age_minimum = false)
+                      : (editSeance.est_limite_age_minimum = true)
                   "
                 >
                   <span i18n>Pas de limite</span>
@@ -2068,7 +2068,7 @@
               </div>
             </div>
             <div
-              *ngIf="editSeance.EstAgeMinimum == true"
+              *ngIf="editSeance.est_limite_age_minimum == true"
               class="field field-jecha"
             >
               <label class="label" i18n for="age_minimum"
@@ -2081,7 +2081,7 @@
                 matInput
                 type="number"
                 id="age_minimum"
-                [(ngModel)]="editSeance.AgeMinimum"
+                [(ngModel)]="editSeance.est_limite_age_minimum"
                 i18n-placeholder
                 placeholder="Age requis"
               />
@@ -2094,14 +2094,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EstAgeMaximum == true
+                    editSeance.est_limite_age_maximum == true
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EstAgeMaximum == true
-                      ? (editSeance.EstAgeMaximum = false)
-                      : (editSeance.EstAgeMaximum = true)
+                    editSeance.est_limite_age_maximum == true
+                      ? (editSeance.est_limite_age_maximum = false)
+                      : (editSeance.est_limite_age_maximum = true)
                   "
                 >
                   <span i18n>Age maximum</span>
@@ -2109,21 +2109,21 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EstAgeMaximum == false
+                    editSeance.est_limite_age_maximum == false
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EstAgeMaximum == true
-                      ? (editSeance.EstAgeMaximum = false)
-                      : (editSeance.EstAgeMaximum = true)
+                    editSeance.est_limite_age_maximum == true
+                      ? (editSeance.est_limite_age_maximum = false)
+                      : (editSeance.est_limite_age_maximum = true)
                   "
                 >
                   <span i18n>Pas de limite</span>
                 </button>
               </div>
             </div>
-            <div class="field" *ngIf="editSeance.EstAgeMaximum == true">
+            <div class="field" *ngIf="editSeance.est_limite_age_maximum == true">
               <label class="label" i18n for="age_maximum"
                 >Age maximum :</label
               >

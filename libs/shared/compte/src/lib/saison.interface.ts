@@ -1,4 +1,4 @@
-export interface saison{
+export class SaisonVM{
     id:number;
     nom:string;
     active:boolean;

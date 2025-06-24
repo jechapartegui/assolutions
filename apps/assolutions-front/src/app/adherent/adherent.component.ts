@@ -2,7 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adresse } from '../../class/address';
-import { Adherent, AdherentExport } from '../../class/adherent';
 import {
   Adhesion,
   Type_Adhesion,
@@ -10,7 +9,6 @@ import {
 } from '../../class/adhesion';
 import { fluxfinancier } from '../../class/fluxfinancier';
 import { operation } from '../../class/operation';
-import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
@@ -20,8 +18,10 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
-import { adherent } from '@shared/compte/src/lib/member.interface';
-import { KeyValuePair } from '@shared/compte/src';
+import { AdherentVM } from '@shared/compte/src/lib/member.interface';
+import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { SaisonVM } from '@shared/compte/src/lib/saison.interface';
+import { LienGroupe_VM } from '@shared/compte/src';
 
 @Component({
   selector: 'app-adherent',
@@ -29,56 +29,71 @@ import { KeyValuePair } from '@shared/compte/src';
   styleUrls: ['./adherent.component.css'],
 })
 export class AdherentComponent implements OnInit {
+  // === Inputs / ViewChild ===
   @Input() public context: 'LECTURE' | 'LISTE' | 'ECRITURE' = 'LISTE';
-  public thisAdherent: Adherent = null;
-  public action: string = '';
-  public loading: boolean = false;
-  public afficher_filtre: boolean = false;
-  public histo_adherent: string;
-  @ViewChild('scrollableContent', { static: false })
-  scrollableContent!: ElementRef;
-  showScrollToTop: boolean = false;
   @Input() public id: number;
+  @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
+
+  // === États généraux ===
+  public loading = false;
+  public action = '';
+  public showScrollToTop = false;
+  public dropdownActive = false;
+
+  // === Données de l’adhérent ===
+  public thisAdherent: AdherentVM = null;
+  public photoAdherent: string | null = null;
+  public histo_adherent: string;
+  public liste_adherents_VM: AdherentVM[] = [];
+
+  // === Groupes et saisons ===
   public liste_groupe: KeyValuePair[] = [];
+  public liste_groupe_filter: KeyValuePair[];
   public titre_groupe = $localize`Groupe de l'adhérent`;
-  public titre_contact = $localize`Contacts de l'adhérent`;
-  public titre_contact_prevenir = $localize`Contacts à prévenir de l'adhérent`;
-  public liste_saison: Saison[] = [];
-  public active_saison: Saison;
-  public AdresseValide: boolean;
-  public ContactValide: boolean;
-  public ContactUrgenceValide: boolean;
-  public liste_adherents_VM: Adherent[] = [];
-  public compte_to_force: boolean = false;
+  public liste_saison: SaisonVM[] = [];
+  public active_saison: SaisonVM;
+
+  // === Filtres / tris ===
+  public filters: FilterAdherent = new FilterAdherent();
+  public selected_filter: string;
   public sort_nom = 'NO';
   public sort_date = 'NO';
   public sort_sexe = 'NO';
-public photoAdherent: string | null = null;
+  public selected_sort: any;
+  public selected_sort_sens: any;
+  public afficher_tri = false;
+  public afficher_filtre = false;
 
-  public afficher_inscription: boolean = false;
-  public adherent_inscription: Adherent;
-  public saison_inscription: Saison;
-  public paiement_adhesion: boolean;
-  public type_inscription: boolean;
-
-  public filters: FilterAdherent = new FilterAdherent();
-
-  public selected_filter: string;
-  public liste_groupe_filter: KeyValuePair[];
-
-  public login_adherent: string = '';
-  public existing_login: boolean;
+  // === Texte et traduction ===
+  public titre_contact = $localize`Contacts de l'adhérent`;
+  public titre_contact_prevenir = $localize`Contacts à prévenir de l'adhérent`;
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
-  public selected_sort: any;
-  public selected_sort_sens: any;
-  public afficher_tri: boolean = false;
 
-  dropdownActive = false;
-  edit_info_adresse: boolean = false;
-  edit_info_perso: boolean = false;
+  // === Verification ===
+  public adherentValide: boolean = false;
+  public AdresseValide: boolean;
+  public ContactValide: boolean;
+  public ContactUrgenceValide: boolean;
 
+  // === Inscription / adhésion ===
+  public afficher_inscription = false;
+  public adherent_inscription: AdherentVM;
+  public saison_inscription: SaisonVM;
+  public paiement_adhesion: boolean;
+  public type_inscription: boolean;
+
+  // === Données liées au compte ===
+  public login_adherent: string = '';
+  public existing_login: boolean;
+  public compte_to_force: boolean = false;
+
+  // === État de l’édition UI ===
+  public edit_info_adresse = false;
+  public edit_info_perso = false;
+
+  // === Constructeur ===
   constructor(
     public mail_serv: MailService,
     public inscription_saison_serv: InscriptionSaisonService,
@@ -91,7 +106,6 @@ public photoAdherent: string | null = null;
     private route: ActivatedRoute,
     private compte_serv: CompteService
   ) {}
-
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
@@ -115,7 +129,7 @@ public photoAdherent: string | null = null;
             }
             return;
           }
-          this.liste_saison = sa.map((x) => new Saison(x));
+          this.liste_saison = sa;
           this.active_saison = this.liste_saison.filter(
             (x) => x.active == true
           )[0];
@@ -141,7 +155,7 @@ public photoAdherent: string | null = null;
           }
           if (this.context == 'ECRITURE' || this.context == 'LECTURE') {
             if (this.id == 0 && this.context == 'ECRITURE') {
-              this.thisAdherent = new Adherent(this.Newadhrent());
+              this.thisAdherent = new AdherentVM();
               this.loading = false;
             }
             if (this.id > 0) {
@@ -177,8 +191,8 @@ public photoAdherent: string | null = null;
       this.router.navigate(['/login']);
     }
   }
-  onGroupesUpdated(updatedGroupes: KeyValuePair[]) {
-    this.thisAdherent.Groupes = updatedGroupes;
+  onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
+    this.thisAdherent.groupes = updatedGroupes;
   }
 
   UpdateListeAdherents() {
@@ -194,7 +208,7 @@ public photoAdherent: string | null = null;
         this.ridersService
           .GetAdherentAdhesion(this.active_saison.id)
           .then((adh) => {
-            this.liste_adherents_VM = adh.map((x) => new Adherent(x));
+            this.liste_adherents_VM = adh;
             this.loading = false;
           })
           .catch((err: HttpErrorResponse) => {
@@ -250,27 +264,6 @@ public photoAdherent: string | null = null;
     }
   }
 
-  Newadhrent(): adherent {
-    let adh: adherent = {
-      id: 0,
-      nom: '',
-      prenom: '',
-      surnom: '',
-      date_naissance: new Date(),
-      contact: [],
-      contact_prevenir: [],
-      adresse: '',
-      sexe: false,
-      compte: 0,
-      code_postal: '',
-      ville: '',
-      inscrit: false,
-      login: '',
-      groupes: [],
-    };
-    return adh;
-  }
-  public adherentValide: boolean = false;
 
 valid_adherent(isValid: boolean): void {
   this.adherentValide = isValid;
@@ -287,21 +280,21 @@ valid_contact_urgence(isValid: boolean): void {
 
 
   Create() {
-    this.thisAdherent = new Adherent(this.Newadhrent());
+    this.thisAdherent = new AdherentVM();
     this.context = 'ECRITURE';
     this.id = 0;
   }
-  Edit(adh: Adherent) {
+  Edit(adh: AdherentVM) {
     this.context = 'ECRITURE';
-    this.id = adh.ID;
+    this.id = adh.id;
     this.ChargerAdherent();
   }
-  Read(adh: Adherent) {
+  Read(adh: AdherentVM) {
     this.context = 'LECTURE';
-    this.id = adh.ID;
+    this.id = adh.id;
     this.ChargerAdherent();
   }
-  Register(adh: Adherent, saison_id: number, paiement: boolean) {
+  Register(adh: AdherentVM, saison_id: number, paiement: boolean) {
     this.afficher_inscription = true;
     this.adherent_inscription = adh;
     this.saison_inscription = this.liste_saison.find((x) => x.id == saison_id);
@@ -326,16 +319,16 @@ valid_contact_urgence(isValid: boolean): void {
       );
       if (confirm) {
         this.inscription_saison_serv
-          .Add(saison_id, adh.ID)
+          .Add(saison_id, adh.id)
           .then((id) => {
             let i = new Adhesion();
             i.id = id;
-            i.rider_id = adh.ID;
+            i.rider_id = adh.id;
             i.saison_id = saison_id;
-            if (!adh.Adhesions) {
-              adh.Adhesions = [];
+            if (!adh.adhesion) {
+              adh.adhesion = [];
             }
-            adh.Adhesions.push(i);
+            adh.adhesion.push(i);
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           })
@@ -422,7 +415,7 @@ valid_contact_urgence(isValid: boolean): void {
   RemoveRegister(saison_id: number) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer une inscription`;
-    let u = this.thisAdherent.Adhesions.find((x) => x.saison_id == saison_id);
+    let u = this.thisAdherent.adhesion.find((x) => x.saison_id == saison_id);
     if (u) {
       let confirm = window.confirm(
         $localize`Voulez-vous supprimer l'inscription ?`
@@ -434,7 +427,7 @@ valid_contact_urgence(isValid: boolean): void {
             if (retour) {
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
-              this.thisAdherent.Adhesions = this.thisAdherent.Adhesions.filter(
+              this.thisAdherent.adhesion = this.thisAdherent.adhesion.filter(
                 (x) => x.saison_id !== saison_id
               );
             } else {
@@ -486,7 +479,7 @@ valid_contact_urgence(isValid: boolean): void {
         GlobalService.selected_menu = 'MENU';
         return;
       } else {
-        this.thisAdherent = new Adherent(adh);
+        this.thisAdherent = adh;
         this.ridersService.GetPhoto(this.id).then((PhotBase64) =>{
 
 
@@ -563,7 +556,7 @@ valid_contact_urgence(isValid: boolean): void {
 
 onPhotoSelectedFromChild(base64Photo: string): void {
   this.photoAdherent = base64Photo; // utile si tu veux que ça déclenche un Save() aussi
-    this.ridersService.UpdatePhoto(this.thisAdherent.ID, base64Photo).then((test) =>{
+    this.ridersService.UpdatePhoto(this.thisAdherent.id, base64Photo).then((test) =>{
       console.log('Photo mise à jour avec succès', test);
     }).catch((error) => {
       console.error('Erreur lors de la mise à jour de la photo', error);
@@ -580,15 +573,15 @@ PreSave() {
   Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder l'adhérent`;
-    if (this.thisAdherent.ID == 0) {
+    if (this.thisAdherent.id == 0) {
       this.ridersService
-        .Add(this.thisAdherent.datasource)
+        .Add(this.thisAdherent)
         .then((id) => {
-          this.thisAdherent.ID = id;
+          this.thisAdherent.id = id;
           this.id = id;
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-          this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
+          this.histo_adherent = JSON.stringify(this.thisAdherent);
         })
         .catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
@@ -596,12 +589,12 @@ PreSave() {
         });
     } else {
       this.ridersService
-        .Update(this.thisAdherent.datasource)
+        .Update(this.thisAdherent)
         .then((retour) => {
           if (retour) {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-            this.histo_adherent = JSON.stringify(this.thisAdherent.datasource);
+            this.histo_adherent = JSON.stringify(this.thisAdherent);
           } else {
             let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
@@ -615,7 +608,7 @@ PreSave() {
   }
 
   Retour(lieu: 'LISTE' | 'LECTURE'): void {
-    const ret_adh = JSON.stringify(this.thisAdherent.datasource);
+    const ret_adh = JSON.stringify(this.thisAdherent);
     if (this.histo_adherent != ret_adh) {
       let confirm = window.confirm(
         $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
@@ -640,8 +633,8 @@ PreSave() {
         this.sort_date = 'NO';
         this.sort_sexe = 'NO';
         this.liste_adherents_VM.sort((a, b) => {
-          const nomA = a.Libelle.toUpperCase();
-          const nomB = b.Libelle.toUpperCase();
+          const nomA = a.libelle.toUpperCase();
+          const nomB = b.libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -657,8 +650,8 @@ PreSave() {
         this.sort_date = 'NO';
         this.sort_nom = 'NO';
         this.liste_adherents_VM.sort((a, b) => {
-          const lieuA = a.Sexe;
-          const lieuB = b.Sexe;
+          const lieuA = a.sexe;
+          const lieuB = b.sexe;
 
           let comparaison = 0;
           if (lieuA > lieuB) {
@@ -675,8 +668,8 @@ PreSave() {
         this.sort_date = sens;
         this.sort_nom = 'NO';
         this.liste_adherents_VM.sort((a, b) => {
-          let dateA = a.DDN;
-          let dateB = b.DDN;
+          let dateA = a.date_naissance;
+          let dateB = b.date_naissance;
 
           let comparaison = 0;
           if (dateA > dateB) {
@@ -726,46 +719,46 @@ PreSave() {
       NomPhoneUrgence: 'Contact téléphone si urgence',
       Inscrit: 'Inscrit',
     };
-    let list: Adherent[] = this.getFilteredAdherents();
+    let list: AdherentVM[] = this.getFilteredAdherents();
     this.excelService.exportAsExcelFile(
       list.map((x) => new AdherentExport(x)),
       'liste_adherent',
       headers
     );
   }
-  getFilteredAdherents(): Adherent[] {
+  getFilteredAdherents(): AdherentVM[] {
     return this.liste_adherents_VM.filter((adherent) => {
       return (
         (!this.filters.filter_nom ||
-          adherent.Libelle.toLowerCase().includes(
+          adherent.libelle.toLowerCase().includes(
             this.filters.filter_nom.toLowerCase()
           )) &&
         (!this.filters.filter_date_avant ||
-          new Date(adherent.DDN) <= new Date(this.filters.filter_date_avant)) &&
+          new Date(adherent.date_naissance) <= new Date(this.filters.filter_date_avant)) &&
         (!this.filters.filter_date_apres ||
-          new Date(adherent.DDN) >= new Date(this.filters.filter_date_apres)) &&
+          new Date(adherent.date_naissance) >= new Date(this.filters.filter_date_apres)) &&
         (!this.filters.filter_sexe ||
-          adherent.Sexe === this.filters.filter_sexe) &&
+          adherent.sexe === this.filters.filter_sexe) &&
         (!this.filters.filter_groupe ||
-          adherent.Groupes.find((x) =>
-            x.value
+          adherent.groupes.find((x) =>
+            x.nom
               .toLowerCase()
               .includes(this.filters.filter_groupe.toLowerCase())
           )) &&
         (!this.filters.filter_inscrit ||
-          adherent.Inscrit === this.filters.filter_inscrit)
+          adherent.inscrit === this.filters.filter_inscrit)
       );
     });
   }
 
 
-  StatutMAJ(ad: Adherent) {
-    let n = this.liste_adherents_VM.find((x) => x.ID == ad.ID);
+  StatutMAJ(ad: AdherentVM) {
+    let n = this.liste_adherents_VM.find((x) => x.id == ad.id);
     if (n) {
       return true;
     }
     let u = this.liste_adherents_VM.find(
-      (x) => x.Nom == ad.Nom && x.Prenom == ad.Prenom && x.DDN == ad.DDN
+      (x) => x.nom == ad.nom && x.prenom == ad.prenom && x.date_naissance == ad.date_naissance
     );
     if (u) {
       return true;
@@ -775,7 +768,7 @@ PreSave() {
   }
 
   isRegistredSaison(saison_id: number) {
-    let u = this.thisAdherent.Adhesions.find((x) => x.saison_id == saison_id);
+    let u = this.thisAdherent.adhesion.find((x) => x.saison_id == saison_id);
     if (u) {
       return true;
     } else {
@@ -787,9 +780,9 @@ PreSave() {
     const errorService = ErrorService.instance;
     this.action = $localize`Rattacher le compte`;
     this.compte_serv
-      .AddOrMAJLogin(val, this.thisAdherent.ID)
+      .AddOrMAJLogin(val, this.thisAdherent.id)
       .then((id) => {
-        this.thisAdherent.CompteID = id;
+        this.thisAdherent.compte = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
         this.ChargerAdherent();
@@ -803,7 +796,7 @@ PreSave() {
     const errorService = ErrorService.instance;
     this.action = $localize`demander le rattachement du compte`;
     this.mail_serv
-      .DemandeRattachement(val, this.thisAdherent.ID)
+      .DemandeRattachement(val, this.thisAdherent.id)
       .then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);

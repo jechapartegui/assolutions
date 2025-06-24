@@ -1,5 +1,5 @@
 import { LienGroupe_VM } from "./groupe.interface";
-import { prof } from "./prof.interface";
+import { ProfVM } from "./prof.interface";
 
 export interface MesSeances {
     id: number;
@@ -14,7 +14,7 @@ export interface MesSeances {
     coursId?: number;       // Peut être null -> rendu optionnel
     cours?: string;         // Peut être null -> rendu optionnel
     statut: 'prévue' | 'réalisée' | 'annulée';
-    professeur: Array<prof>;  // tableau de [id, nom]
+    professeur: Array<ProfVM>;  // tableau de [id, nom]
     statutInscription?: 'présent' | 'absent' | 'convoqué' | 'essai'; // Peut être null -> optionnel
     statutPrésence?: 'présent' | 'absent'; // Peut être null -> optionnel
     inscription_id?: number; // Peut être null -> optionnel

@@ -9,3 +9,17 @@ export class LienGroupe_VM {
     this.id_lien = id_lien;
   }
 }
+
+export class Groupe_VM {
+  id: number;
+  nom: string;
+  saison_id: number;
+  // Lien vers les groupes
+  groupes?: LienGroupe_VM[];
+
+  constructor(id: number, nom: string, saison_id: number) {
+    this.id = id;
+    this.nom = nom;
+    this.saison_id = saison_id;
+  }
+}

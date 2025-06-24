@@ -1,8 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { professeur, Professeur } from '../../class/professeur';
-import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
 import { CoursService } from '../../services/cours.service';
 import { ErrorService } from '../../services/error.service';
@@ -16,8 +14,9 @@ import { SeanceprofService } from '../../services/seanceprof.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { CoursVM } from '@shared/compte/src/lib/cours.interface';
-import { SeanceProfesseurVM, SeanceVM, StatutSeance } from '@shared/compte/src';
+import { SeanceProfesseurVM, SeanceVM, StatutSeance } from '@shared/compte/src/lib/seance.interface';
 import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
+import { ProfessuerVM, SaisonVM } from '@shared/compte/src';
 
 
 @Component({
@@ -37,9 +36,9 @@ export class SeanceComponent implements OnInit {
   public selected_sort_sens: any;
   public afficher_tri: boolean = false;
   public histo_seance: string;
-  listeprof: professeur[];
+  listeprof: ProfessuerVM[];
   listelieu: KeyValuePair[];
-  prof_dispo: Professeur[];
+  prof_dispo: ProfessuerVM[];
   est_prof: boolean = false;
   est_admin: boolean = false;
   manage_prof: boolean = false;
@@ -71,8 +70,8 @@ export class SeanceComponent implements OnInit {
   public liste_groupe_filter: KeyValuePair[];
   public liste_prof_filter: KeyValuePairAny[];
   public liste_lieu_filter: string[];
-  public liste_saison: Saison[] = [];
-  public active_saison: Saison;
+  public liste_saison: SaisonVM[] = [];
+  public active_saison: SaisonVM;
   public showText: boolean = false;
   public action: string = '';
   public listeStatuts: StatutSeance[];
@@ -166,7 +165,7 @@ export class SeanceComponent implements OnInit {
                         }
                         return;
                       }
-                      this.liste_saison = sa.map((x) => new Saison(x));
+                      this.liste_saison = sa;
                       this.active_saison = this.liste_saison.filter(
                         (x) => x.active == true
                       )[0];

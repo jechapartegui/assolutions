@@ -1,20 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Adresse } from '../../class/address';
-import { Adherent } from '../../class/adherent';
-import { professeur } from '../../class/professeur';
-import { Seance } from '../../class/seance';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { MailService } from '../../services/mail.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SeancesService } from '../../services/seance.service';
-import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
+import { AdherentVM, ItemContact } from '@shared/compte/src/lib/member.interface';
 import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { compte } from '@shared/compte/src/lib/compte.interface';
 import { GlobalService } from '../../services/global.services';
+import { SeanceVM } from '@shared/compte/src/lib/seance.interface';
+import { ProfesseurVM } from '@shared/compte/src/lib/prof.interface';
 
 @Component({
   selector: 'app-seances-essais',
@@ -25,13 +23,13 @@ export class SeancesEssaisComponent implements OnInit {
   public date_debut: string;
   public DateDeb: Date;
   public DateFin: Date;
-  public thisEssai: Adherent = null;
-  public ListeSeance: Seance[] = []
+  public thisEssai: AdherentVM = null;
+  public ListeSeance: SeanceVM[] = []
   public days: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-  public listeprof: professeur[];
+  public listeprof: ProfesseurVM[];
   public listelieu: KeyValuePair[];
   public project_id: number;
-  public thisSeance: Seance = null;
+  public thisSeance: SeanceVM = null;
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
   public valid_address: boolean = false;
@@ -81,7 +79,7 @@ export class SeancesEssaisComponent implements OnInit {
   }
   public GetPlageDate() {
     this.sean_serv.GetPlageDate(this.date_debut, this.DateFin.toLocaleDateString()).then((seances) => {
-      this.ListeSeance = seances.map(x => new Seance(x));
+      this.ListeSeance = seances;
       this.ListeSeance.sort((a, b) => {
         const nomA = a.heure_debut // Ignore la casse lors du tri
         const nomB = b.heure_debut;
@@ -147,17 +145,17 @@ export class SeancesEssaisComponent implements OnInit {
     // Mettre à jour le texte affiché
     this.generateSeanceText();
   }
-  Essayer(seance: Seance) {
+  Essayer(seance: SeanceVM) {
     let libelle: string = $localize`Avant de saisir votre essai, êtes-vous sûr de bien être éligible à la séance ? `;
-    if (seance.EstAgeMinimum) {
-      libelle += "\n" + $localize`Age minimum : ` + seance.AgeMinimum + " " + $localize`ans`;
+    if (seance.est_limite_age_minimum) {
+      libelle += "\n" + $localize`Age minimum : ` + seance.age_minimum + " " + $localize`ans`;
     }
-    if (seance.EstAgeMaximum) {
-      libelle += "\n" + $localize`Age maximum : ` + seance.AgeMaximum + " " + $localize`ans`;
+    if (seance.est_limite_age_maximum) {
+      libelle += "\n" + $localize`Age maximum : ` + seance.age_maximum + " " + $localize`ans`;
     }
     if (window.confirm(libelle)) {
       this.thisSeance = seance;
-       let adh: adherent = {
+       let adh: AdherentVM = {
             id:0,
             nom:"",
             prenom:"",
@@ -175,7 +173,7 @@ export class SeancesEssaisComponent implements OnInit {
             groupes:[]
       
           }
-      this.thisEssai = new Adherent(adh);
+      this.thisEssai = adh;
       this.essai = true;
     }
   }

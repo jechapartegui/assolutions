@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { saison } from '../class/saison';
 import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { SaisonVM } from '@shared/compte/src/lib/saison.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,12 +12,12 @@ export class SaisonService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
  }
- public GetAll(): Promise<saison[]> {
+ public GetAll(): Promise<SaisonVM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = 'api/saison/getall';
 
   return this.global.GET(this.url)
-    .then((response: saison[]) => {
+    .then((response: SaisonVM[]) => {
       return response;
     })
     .catch(error => {
@@ -25,14 +25,14 @@ export class SaisonService {
       return Promise.reject(error);
     });
 }
-public Get(id:number): Promise<saison> {
+public Get(id:number): Promise<SaisonVM> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = 'api/saison/get/' + id;
   //  this.url = this.url + "login.php";
 
 
   return this.global.GET(this.url)
-    .then((response: saison) => {
+    .then((response: SaisonVM) => {
       return response;
     })
     .catch(error => {
@@ -53,7 +53,7 @@ public GetAllLight(): Promise<KeyValuePair[]> {
     });
 }
 
-public Add(saison:saison): Promise<number> {
+public Add(saison:SaisonVM): Promise<number> {
   this.url = 'api/saison/add';
 
   return this.global.PUT(this.url, saison)
@@ -65,7 +65,7 @@ public Add(saison:saison): Promise<number> {
       return Promise.reject(error);
     });
 }
-public Update(saison:saison): Promise<boolean> {
+public Update(saison:SaisonVM): Promise<boolean> {
   this.url = 'api/saison/update';
 
   return this.global.PUT(this.url, saison)

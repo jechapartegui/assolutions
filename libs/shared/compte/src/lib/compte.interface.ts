@@ -1,4 +1,4 @@
-export interface compte {
+export class compteVM {
     id: number;
     nom: string;
     email: string;
@@ -10,7 +10,7 @@ export interface compte {
     mail_ko: boolean;
   }
 
-  export interface ProjetLogin {
+  export class ProjetLogin {
     id: number;
     nom: string;
     actif: boolean;

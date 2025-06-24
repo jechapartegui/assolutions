@@ -164,30 +164,30 @@
                         "
                       >
                         <td>
-                          {{ adherent.Libelle }}
+                          {{ adherent.libelle }}
                         </td>
                         <td>
-                          {{ adherent.DDN | date : "dd/MM/yyyy" }}
-                          ({{ calculateAge(adherent.DDN) }}&nbsp;<span i18n
+                          {{ adherent.date_naissance | date : "dd/MM/yyyy" }}
+                          ({{ calculateAge(adherent.date_naissance) }}&nbsp;<span i18n
                             >ans</span
                           >)
                         </td>
                         <td>
                           <i
-                            *ngIf="adherent.Sexe"
+                            *ngIf="adherent.sexe"
                             class="fa-solid fa-mars has-text-info"
                           ></i>
                           <i
-                            *ngIf="!adherent.Sexe"
+                            *ngIf="!adherent.sexe"
                             class="fa-solid fa-venus has-text-danger"
                           ></i>
                         </td>
 
                         <td>
                           <div class="tags">
-                            <ng-container *ngFor="let gr of adherent.Groupes">
+                            <ng-container *ngFor="let gr of adherent.groupes">
                               <span class="tag is-success">
-                                {{ gr.value }}
+                                {{ gr.nom }}
                               </span>
                             </ng-container>
                           </div>
@@ -889,9 +889,9 @@
     <div class="card">
       <header class="card-header" style="align-items: center">
         <p class="card-header-title subtitle is-6">
-          <span *ngIf="thisAdherent.ID < 1" i18n>Nouvel adhérent</span>
-          <span *ngIf="thisAdherent.ID > 0">
-            <span i18n>Editer</span> : {{ thisAdherent.Prenom }} {{ thisAdherent.Nom }}
+          <span *ngIf="thisAdherent.id < 1" i18n>Nouvel adhérent</span>
+          <span *ngIf="thisAdherent.id > 0">
+            <span i18n>Editer</span> : {{ thisAdherent.prenom }} {{ thisAdherent.nom }}
           </span>
         </p>
       </header>
@@ -911,10 +911,10 @@
         </div>
         
        <div class="column is-full-tablet is-half-desktop">
-        <app-contact-item [Contacts]="thisAdherent.Contacts" [Regles]="(GlobalService.getRegles().Contact_Adherent)" [Titre]="titre_contact" (ContactChange)="PreSave()" (valid)="valid_contact($event)"></app-contact-item>
+        <app-contact-item [Contacts]="thisAdherent.contact" [Regles]="(GlobalService.getRegles().Contact_Adherent)" [Titre]="titre_contact" (ContactChange)="PreSave()" (valid)="valid_contact($event)"></app-contact-item>
         </div>
          <div class="column is-full-tablet is-half-desktop">
-        <app-contact-item [Contacts]="thisAdherent.ContactsUrgence" [Regles]="(GlobalService.getRegles().Contact_Pref_Adherent)" [Titre]="titre_contact_prevenir"  (ContactChange)="PreSave()" (valid)="valid_contact_urgence($event)"></app-contact-item>
+        <app-contact-item [Contacts]="thisAdherent.contact_prevenir" [Regles]="(GlobalService.getRegles().Contact_Pref_Adherent)" [Titre]="titre_contact_prevenir"  (ContactChange)="PreSave()" (valid)="valid_contact_urgence($event)"></app-contact-item>
         </div>
           
       </div>

@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
-import { adherent } from '@shared/compte/src/lib/member.interface';
-import { compte } from '@shared/compte/src/lib/compte.interface';
-import { ItemList, KeyValuePair, seance } from '@shared/compte/src';
+import { AdherentVM } from '@shared/compte/src/lib/member.interface';
+import { compteVM } from '@shared/compte/src/lib/compte.interface';
+import { SeanceVM } from '@shared/compte/src/lib/seance.interface';
+import { ItemList, KeyValuePair } from '@shared/compte/src';
 
 @Injectable({
   providedIn: 'root'
@@ -14,11 +15,11 @@ export class AdherentService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id: number): Promise<adherent> {
+  public Get(id: number): Promise<AdherentVM> {
      this.url = 'api/member/get/' + id;
 
   return this.global.GET(this.url)
-      .then((response: adherent) => {
+      .then((response: AdherentVM) => {
 
         return response;
       })
@@ -41,12 +42,12 @@ export class AdherentService {
       });
   }
 
-  GetAllSeance(): Promise<seance[]> {
+  GetAllSeance(): Promise<SeanceVM[]> {
     let saison_id = this.global.saison_active;
     this.url = 'api/member/getallseance/' + saison_id;
 
     return this.global.GET(this.url)
-      .then((response: seance[]) => {
+      .then((response: SeanceVM[]) => {
 
         return response;
       })
@@ -74,7 +75,7 @@ UpdatePhoto(id: number, photo: string): Promise<any> {
   }
 
 
-  public Add(adherent: adherent): Promise<number> {
+  public Add(adherent: AdherentVM): Promise<number> {
    this.url = 'api/member/add';
 
   return this.global.PUT(this.url, adherent)
@@ -103,7 +104,7 @@ UpdatePhoto(id: number, photo: string): Promise<any> {
         return Promise.reject(error);
       });
   }
-  public Update(adherent: adherent): Promise<boolean> {
+  public Update(adherent: AdherentVM): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = 'api/member/update';
     //  this.url = this.url + "login.php";
@@ -123,11 +124,11 @@ UpdatePhoto(id: number, photo: string): Promise<any> {
 
 
 
-  public GetAll(saison_id:number): Promise<adherent[]> {
+  public GetAll(saison_id:number): Promise<AdherentVM[]> {
 this.url = `api/member/getall/${saison_id}`;
 
   return this.global.GET(this.url)
-      .then((response: adherent[]) => {
+      .then((response: AdherentVM[]) => {
 
         return response;
       })
@@ -154,12 +155,12 @@ this.url = `api/member/getall_light/${saison_id}`;
   
 
   
-  public GetAdherentAdhesion(saison_id:number): Promise<adherent[]> {
+  public GetAdherentAdhesion(saison_id:number): Promise<AdherentVM[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
        this.url = 'api/member/getall_adherent/' + saison_id;
 
   return this.global.GET(this.url)
-      .then((response: adherent[]) => {
+      .then((response: AdherentVM[]) => {
 
         return response;
       })
@@ -182,7 +183,7 @@ this.url = `api/member/getall_light/${saison_id}`;
         return Promise.reject(error);
       });
   }
-  public Essayer(essai:adherent, seance_id:number, project_id:number, _compte:compte): Promise<number> {
+  public Essayer(essai:AdherentVM, seance_id:number, project_id:number, _compte:compteVM): Promise<number> {
     this.url = 'api/member/essayer/'
     //  this.url = this.url + "login.php";
     const body = {
@@ -223,7 +224,7 @@ this.url = `api/member/getall_light/${saison_id}`;
       });
   }
 
-  public SimulerImport(liste:adherent[]): Promise<AdherentImport[]> {
+  public SimulerImport(liste:AdherentVM[]): Promise<AdherentImport[]> {
     this.url = environment.maseance + 'maseance/adherents_manage.php';
     //  this.url = this.url + "login.php";
     const body = {

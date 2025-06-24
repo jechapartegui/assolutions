@@ -10,7 +10,7 @@ import { GroupeService } from '../groupe/groupe.service';
 import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
-import { adherent, ItemContact } from '@shared/compte/src/lib/member.interface';
+import { AdherentVM, ItemContact } from '@shared/compte/src/lib/member.interface';
 import { ItemList, KeyValuePair } from '@shared/compte/src';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Compte } from '../bdd/compte';
@@ -173,7 +173,7 @@ export class MemberService {
   async AdherentSaisons(
     adherents: Adherent[],
     saison_id: number
-  ): Promise<adherent[]> {
+  ): Promise<AdherentVM[]> {
     const liste_adherent: Adherent[] = [];
 
     for (const ad of adherents) {
@@ -250,7 +250,7 @@ export class MemberService {
     return age;
   }
 
-  toadh(pAdh:Adherent, login:string = "", _inscrit:boolean=true, _groupes:KeyValuePair[] = []) : adherent{
+  toadh(pAdh:Adherent, login:string = "", _inscrit:boolean=true, _groupes:KeyValuePair[] = []) : AdherentVM{
  let adre: any = null;
 let cont: any = null;
 let cont_prev: any = null;
@@ -463,7 +463,7 @@ date_naissance:pAdh.date_naissance
 }
 
   
-    async Add(s: adherent, project_id :number) : Promise<number> {
+    async Add(s: AdherentVM, project_id :number) : Promise<number> {
     if (!s) {
       throw new BadRequestException('INVALID_MEMBER');
     }
@@ -473,7 +473,7 @@ date_naissance:pAdh.date_naissance
     const saved = await this.adherentRepo.save(newISS);
     return saved.id;
   }
-  async Update(s: adherent, project_id :number) {
+  async Update(s: AdherentVM, project_id :number) {
     if (!s) {
       throw new BadRequestException('INVALID_MEMBER');
     }
