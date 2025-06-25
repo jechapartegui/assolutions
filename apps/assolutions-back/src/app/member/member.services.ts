@@ -10,10 +10,11 @@ import { GroupeService } from '../groupe/groupe.service';
 import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
-import { AdherentVM, ItemContact } from '@shared/compte/src/lib/member.interface';
 import { ItemList, KeyValuePair } from '@shared/compte/src';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Compte } from '../bdd/compte';
+import { AdherentVM } from '@shared/compte/src/lib/member.interface';
+import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
 
 @Injectable()
 export class MemberService {
@@ -41,7 +42,7 @@ export class MemberService {
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
-    return this.toadh(pAdh);
+    return toAdherentVM(pAdh);
   }
   async GetGestionnaire(compte: number, project_id: number): Promise<boolean> {
     const temp_adh = await this.GetAdherentProject(compte, project_id);
@@ -191,7 +192,7 @@ export class MemberService {
     }
 
     return liste_adherent.map((plieu) => {
-      return this.toadh(plieu);
+      return toAdherentVM(plieu);
     });
   }
 
@@ -250,64 +251,13 @@ export class MemberService {
     return age;
   }
 
-  toadh(pAdh:Adherent, login:string = "", _inscrit:boolean=true, _groupes:KeyValuePair[] = []) : AdherentVM{
- let adre: any = null;
-let cont: any = null;
-let cont_prev: any = null;
-
-try {
-  adre = pAdh.adresse && pAdh.adresse.length > 2 ? JSON.parse(pAdh.adresse) : null;
-} catch (e) {
-  adre = null;
-}
-
-try {
-  cont = pAdh.contacts && pAdh.contacts.length > 2 ? JSON.parse(pAdh.contacts) : null;
-} catch (e) {
-  cont = null;
-}
-try {
-  cont_prev = pAdh.contacts_prevenir && pAdh.contacts_prevenir.length > 2 ? JSON.parse(pAdh.contacts_prevenir) : null;
-} catch (e) {
-  cont_prev = null;
-}
-
-// Valeurs par défaut si `adre` ou `cont` sont invalides
-const adresse = adre?.Street || "";
-const code_postal = adre?.PostCode || "";
-const ville = adre?.City || "";
-
-const contacts: ItemContact[] = Array.isArray(cont) ? cont : [];
-const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : [];
-
-    let AD:adherent = {
-      id:pAdh.id,
-      nom:pAdh.nom,
-      prenom:pAdh.prenom,
-      surnom:pAdh.surnom,
-      date_naissance:pAdh.date_naissance,
-      adresse: adresse,
-      ville:ville,
-      code_postal:code_postal,
-      sexe:pAdh.sexe,
-      compte:pAdh.compte,
-      contact: contacts,
-      contact_prevenir:contacts_prevenir,
-      login:login,
-      groupes:_groupes,
-      inscrit:_inscrit,
-
-    }
-    return AD;
-  }
-
   async Get(id: number) {
     const pAdh= await this.adherentRepo.findOne({ where: { id } });
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
     //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return this.toadh(pAdh);
+    return toAdherentVM(pAdh);
 
   }
  async GetAll(saison_id: number, project_id: number) {
@@ -346,17 +296,22 @@ const contacts_prevenir: ItemContact[] = Array.isArray(cont_prev) ? cont_prev : 
     throw new UnauthorizedException('NO_USER_FOUND');
   }
 
-  return adhs.map((adh) => {
-    adh.groupes = group
-      .filter(x => x.objet_id === adh.id)
-      .map(x => ({
-        key: x.groupe_id,
-        value: liste_groupe.find(y => y.key === x.groupe_id)?.value || ''
-      }));
-      adh.inscrit = inscr_saison.find(x => x.rider_id == adh.id)?true:false;
-      adh.login = comptes.find(x => x.id === adh.compte)?.login || '';
-    return adh;
-  });
+return adhs.map((adh) => {
+  adh.groupes = group
+    .filter(x => x.objet_id === adh.id)
+    .map(x => new LienGroupe_VM(
+      x.groupe_id,
+      liste_groupe.find(y => y.key === x.groupe_id)?.value || '',
+      x.id
+    ))
+    .sort((a, b) => a.nom.localeCompare(b.nom));
+ adh.adhesion = inscr_saison;
+  adh.inscrit = inscr_saison.find(x => x.rider_id === adh.id) ? true : false;
+  adh.login = comptes.find(x => x.id === adh.compte)?.login || '';
+
+  return adh;
+});
+
 }
 
 async GetAllAdherent(saison_id: number, project_id: number) {
@@ -364,38 +319,6 @@ async GetAllAdherent(saison_id: number, project_id: number) {
   return adhs.filter(x => x.inscrit);
 }
   
-async  toAdh(pAdh: adherent, project_id:number): Promise<Adherent> {
-  const adhbase = await this.adherentRepo.findOne({
-    where: { id : pAdh.id },
-  });
-   const adresseObj = {
-    name: pAdh.adresse,        // Le nom de l'adresse
-    postcode: pAdh.code_postal, // Le code postal
-    city: pAdh.ville           // La ville
-  };
-
-  // Sérialisation de l'adresse sous forme de chaîne JSON
-  const const_adresse = JSON.stringify(adresseObj);
-
-  // Crée un objet pour l'adresse
-const A:Adherent ={
-id:pAdh.id,
-nom:pAdh.nom,
-prenom:pAdh.prenom,
-date_creation:adhbase?adhbase.date_creation:new Date(),
-adresse: const_adresse,
-sexe:pAdh.sexe,
-compte:pAdh.compte,
-contacts:JSON.stringify(pAdh.contact),
-contacts_prevenir:JSON.stringify(pAdh.contact_prevenir),
-project_id:project_id,
-surnom:pAdh.surnom,
-est_prof:false,
-date_naissance:pAdh.date_naissance
-}
-
-  return A;
-}
 
   
     async GetAllLight(project_id:number, saison_id:number):Promise<ItemList[]> {
@@ -467,17 +390,20 @@ date_naissance:pAdh.date_naissance
     if (!s) {
       throw new BadRequestException('INVALID_MEMBER');
     }
-    const objet_base = await this.toAdh(s, project_id);
-  
+    const objet_base = await toAdherentEntity(s);  
     const newISS = await this.adherentRepo.create(objet_base);
     const saved = await this.adherentRepo.save(newISS);
+    const adh_project = new AdherentProjet();
+    adh_project.member_id = saved.id;
+    adh_project.project_id = project_id;
+    await this.adherentProjetRepo.save(adh_project);
     return saved.id;
   }
   async Update(s: AdherentVM, project_id :number) {
     if (!s) {
       throw new BadRequestException('INVALID_MEMBER');
     }
-     const objet_base = this.toAdh(s, project_id);
+     const objet_base = await toAdherentEntity(s);
   
     const existing = await this.adherentRepo.findOne({ where: { id: s.id } });
     if (!existing) {
@@ -505,4 +431,35 @@ date_naissance:pAdh.date_naissance
       return false;
     };
   }
+}
+export function toAdherentEntity(obj: AdherentVM): Adherent {
+  const entity = new Adherent();
+  entity.id = obj.id;
+  entity.nom = obj.nom;
+  entity.prenom = obj.prenom;
+  entity.surnom = obj.surnom;
+  entity.date_naissance = obj.date_naissance;
+  entity.sexe = obj.sexe;
+  entity.adresse = obj.adresse ? JSON.stringify(obj.adresse) : '';
+  entity.compte = obj.compte;
+  entity.contacts = JSON.stringify(obj.contact);
+  entity.contacts_prevenir = JSON.stringify(obj.contact_prevenir);  
+  entity.date_creation = new Date();
+  return entity;
+
+}
+
+export function toAdherentVM(obj: Adherent): AdherentVM {
+  const adh = new AdherentVM();
+  adh.id = obj.id;
+  adh.nom = obj.nom;
+  adh.prenom = obj.prenom;
+  adh.surnom = obj.surnom;
+  adh.date_naissance = obj.date_naissance;
+  adh.sexe = obj.sexe;
+  adh.adresse = JSON.parse(obj.adresse || '{}');
+  adh.compte = obj.compte;
+  adh.contact = JSON.parse(obj.contacts || '[]');
+  adh.contact_prevenir = JSON.parse(obj.contacts_prevenir || '[]');
+  return adh;
 }

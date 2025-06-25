@@ -1,3 +1,4 @@
+import { Adresse } from "./adresse.interface";
 import { LienGroupe_VM } from "./groupe.interface";
 
 export class AdherentVM{
@@ -7,9 +8,7 @@ export class AdherentVM{
      surnom:string = "";
      date_naissance:Date = new Date();
      sexe:boolean=false;
-    adresse: string;
-    code_postal: string;
-    ville: string;
+    adresse: Adresse = new Adresse();
     compte:number;
     contact:ItemContact[] = [];
     contact_prevenir:ItemContact[]= [];
@@ -81,10 +80,10 @@ export class AdherentExport {
       this.safeAssign(() => this.Surnom = a.surnom);
       this.safeAssign(() => this.DDN = a.date_naissance.toDateString());
       this.safeAssign(() => this.Sexe = a.sexe);
-      this.safeAssign(() => this.Street = a.Adresse.Street);
-      this.safeAssign(() => this.PostCode = a.Adresse.PostCode);
-      this.safeAssign(() => this.City = a.Adresse.City);
-      this.safeAssign(() => this.Country = a.Adresse.Country);
+      this.safeAssign(() => this.Street = a.adresse.Street);
+      this.safeAssign(() => this.PostCode = a.adresse.PostCode);
+      this.safeAssign(() => this.City = a.adresse.City);
+      this.safeAssign(() => this.Country = a.adresse.Country);
       this.safeAssign(() => this.Mail = a.contact.filter(x => x.Type === 'EMAIL')[0]?.Value);
       this.safeAssign(() => this.MailPref = a.contact.filter(x => x.Type === 'EMAIL')[0]?.Pref);
       this.safeAssign(() => this.Phone = a.contact.filter(x => x.Type === 'PHONE')[0]?.Value);

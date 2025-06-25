@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Saison } from "../bdd/saison";
-import { saison } from "@shared/compte/src/lib/saison.interface";
+import { SaisonVM } from "@shared/compte/src/lib/saison.interface";
 import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
 
 @Injectable()
@@ -55,7 +55,7 @@ export class SaisonService {
 
   }
 
-  async Add(s: saison, project_id :number) {
+  async Add(s: SaisonVM, project_id :number) {
   if (!s) {
     throw new BadRequestException('INVALID_SEASON');
   }
@@ -65,7 +65,7 @@ export class SaisonService {
   const saved = await this.SaisonRepo.save(newISS);
   return this.to_saison(saved).id;
 }
-async Update(s: saison, project_id :number) {
+async Update(s: SaisonVM, project_id :number) {
   if (!s) {
     throw new BadRequestException('INVALID_SEASON');
   }
@@ -91,7 +91,7 @@ async Delete(id: number) {
 }
 
 
-toSaison(data: saison, project_id: number): Saison {
+toSaison(data: SaisonVM, project_id: number): Saison {
   const s = new Saison();
   s.id = data.id;
   s.nom = data.nom;
@@ -101,7 +101,7 @@ toSaison(data: saison, project_id: number): Saison {
   s.project_id = project_id;
   return s;
 }
-to_saison(entity: Saison): saison {
+to_saison(entity: Saison): SaisonVM {
   return {
     id: entity.id,
     nom: entity.nom,

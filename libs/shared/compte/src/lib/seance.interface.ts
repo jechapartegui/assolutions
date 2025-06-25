@@ -75,11 +75,11 @@ export class SeanceProfesseurVM {
   id: number;
   seance_id: number;
   professeur_id: number;
-  minutes: number| null;
-  taux_horaire: number | null;
-  minutes_payees: number| null;
+  minutes: number;
+  taux_horaire: number ;
+  minutes_payees: number;
   statut: number; // 0 = à payer, 1 = payé, 2 = en attente
-  info: string | null;
+  info: string ;
   prenom:string;
   nom:string;
 }
