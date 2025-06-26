@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { compte } from '@shared/compte/src/lib/compte.interface';
+import { compte } from '@shared/src/lib/compte.interface';
 
 @Component({
   selector: 'app-compte',

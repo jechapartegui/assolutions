@@ -6,7 +6,7 @@ import { seance, StatutSeance } from '../../class/seance';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
-import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
+import { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
 @Component({
   selector: 'app-ma-seance',
   templateUrl: './ma-seance.component.html',

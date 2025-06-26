@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Lieu } from "../bdd/lieu";
-import { lieu } from "@shared/compte/src/lib/lieu.interface";
-import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
+import { lieu } from "@shared/src/lib/lieu.interface";
+import { KeyValuePair } from "@shared/src/lib/autres.interface";
 
 @Injectable()
 export class LieuService {

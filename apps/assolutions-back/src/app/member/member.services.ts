@@ -7,14 +7,14 @@ import { ProjectService } from '../project/project.service';
 import { InscriptionSaison } from '../bdd/inscription-saison';
 import { SeanceService } from '../seance/seance.services';
 import { GroupeService } from '../groupe/groupe.service';
-import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
+import { AdherentSeance } from '@shared/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
-import { ItemList, KeyValuePair } from '@shared/compte/src';
+import { ItemList, KeyValuePair } from '@shared/src';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Compte } from '../bdd/compte';
-import { AdherentVM } from '@shared/compte/src/lib/member.interface';
-import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
+import { AdherentVM } from '@shared/src/lib/member.interface';
+import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 
 @Injectable()
 export class MemberService {

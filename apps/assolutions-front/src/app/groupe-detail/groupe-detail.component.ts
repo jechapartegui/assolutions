@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
-import { KeyValuePair } from '@shared/compte/src';
+import { KeyValuePair } from '@shared/src';
 
 
 @Component({

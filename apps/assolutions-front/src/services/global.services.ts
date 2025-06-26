@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { compte, ProjetLogin, ProjetView } from '@shared/compte/src/lib/compte.interface';
+import { compte, ProjetLogin, ProjetView } from '@shared/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
-import { KeyValuePair, ValidationItem } from '@shared/compte/src/lib/autres.interface';
+import { KeyValuePair, ValidationItem } from '@shared/src/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
 import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
-import { ItemContact } from '@shared/compte/src';
+import { ItemContact } from '@shared/src';
 
 @Injectable({
   providedIn: 'root'

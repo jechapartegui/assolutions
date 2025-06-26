@@ -6,7 +6,7 @@ import { Lieu } from '../../class/lieu';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { lieu } from '@shared/compte/src/lib/lieu.interface';
+import { lieu } from '@shared/src/lib/lieu.interface';
 
 @Component({
   selector: 'app-lieu',

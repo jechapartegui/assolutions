@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Groupe } from '../bdd/groupe';
-import { KeyValuePair } from '@shared/compte/src';
+import { KeyValuePair } from '@shared/src';
 
 @Injectable()
 export class GroupeService {

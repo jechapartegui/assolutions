@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { In } from 'typeorm';
 import { Adherent } from "../bdd/riders";
 import { Professeur } from "../bdd/professeur";
-import { professeur, prof } from "@shared/compte/src";
+import { professeur, prof } from "@shared/src";
 import { SeanceProfesseur } from "../bdd/seance_professeur";
 import { ProfesseurSaison } from "../bdd/prof-saison";
 

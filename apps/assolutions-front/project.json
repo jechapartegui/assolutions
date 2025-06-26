@@ -1,163 +1,134 @@
 {
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "name": "assolutions-front",
+  "root": "apps/assolutions-front",
+  "sourceRoot": "apps/assolutions-front/src",
   "projectType": "application",
-  "generators": {},
-  "sourceRoot": "src",
   "prefix": "app",
   "i18n": {
-    "sourceLocale": {
-      "code": "fr",
-      "baseHref": "/"
-    },
+    "sourceLocale": "fr",
     "locales": {
-      "en": {
-        "translation": "src/locale/messages.en.xlf",
-        "baseHref": "/en/"
-      }
+      "en": "apps/assolutions-front/src/locale/messages.en.xlf"
     }
   },
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:browser",
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/assolutions",
-        "index": "src/index.html",
-        "main": "src/main.ts",
-        "polyfills": [
-          "zone.js"
-        ],
-        "tsConfig": "tsconfig.app.json",
+        "outputPath": "dist/apps/assolutions-front",
+        "index": "apps/assolutions-front/src/index.html",
+        "main": "apps/assolutions-front/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/assolutions-front/tsconfig.app.json",
         "assets": [
-          "src/favicon.ico",
-          "src/assets"
+          "apps/assolutions-front/src/favicon.ico",
+          "apps/assolutions-front/src/assets"
         ],
-        "styles": [
-          "src/styles.css"
-        ],
+        "styles": ["apps/assolutions-front/src/styles.css"],
         "scripts": [],
-        "localize": [
-          "en",
-          "fr"
-        ]
+        "localize": ["fr", "en"]
       },
       "configurations": {
         "production": {
-          "budgets": [
+          "fileReplacements": [
             {
-              "type": "initial",
-              "maximumWarning": "2mb",
-              "maximumError": "3mb"
-            },
-            {
-              "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
-            }
-          ],
-          "outputHashing": "all"
-        },
-        "preprod": {
-          "budgets": [
-            {
-              "type": "initial",
-              "maximumWarning": "2mb",
-              "maximumError": "3mb"
-            },
-            {
-              "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
+              "replace": "apps/assolutions-front/src/environments/environment.ts",
+              "with": "apps/assolutions-front/src/environments/environment.prod.ts"
             }
           ],
           "outputHashing": "all",
+          "budgets": [
+            { "type": "initial", "maximumWarning": "2mb", "maximumError": "3mb" },
+            { "type": "anyComponentStyle", "maximumWarning": "2kb", "maximumError": "4kb" }
+          ]
+        },
+        "preprod": {
           "fileReplacements": [
             {
-              "replace": "src/environments/environment.prod.ts",
-              "with": "src/environments/environment.preprod.ts"
+              "replace": "apps/assolutions-front/src/environments/environment.ts",
+              "with": "apps/assolutions-front/src/environments/environment.preprod.ts"
             }
+          ],
+          "outputHashing": "all",
+          "budgets": [
+            { "type": "initial", "maximumWarning": "2mb", "maximumError": "3mb" },
+            { "type": "anyComponentStyle", "maximumWarning": "2kb", "maximumError": "4kb" }
           ]
         },
         "development": {
-          "buildOptimizer": false,
           "optimization": false,
+          "buildOptimizer": false,
           "vendorChunk": true,
           "extractLicenses": false,
           "sourceMap": true,
           "namedChunks": true,
-          "localize": [
-            "fr"
-          ],
+          "localize": ["fr"],
           "fileReplacements": [
             {
-              "replace": "src/environments/environment.prod.ts",
-              "with": "src/environments/environment.ts"
+              "replace": "apps/assolutions-front/src/environments/environment.ts",
+              "with": "apps/assolutions-front/src/environments/environment.ts"
             }
           ]
         },
         "development-en": {
-          "buildOptimizer": false,
           "optimization": false,
+          "buildOptimizer": false,
           "vendorChunk": true,
           "extractLicenses": false,
           "sourceMap": true,
           "namedChunks": true,
-          "localize": [
-            "en"
-          ],
+          "localize": ["en"],
           "fileReplacements": [
             {
-              "replace": "src/environments/environment.prod.ts",
-              "with": "src/environments/environment.en.ts"
+              "replace": "apps/assolutions-front/src/environments/environment.ts",
+              "with": "apps/assolutions-front/src/environments/environment.en.ts"
             }
           ]
         }
       },
-      "defaultConfiguration": "production",
-      "outputs": [
-        "{options.outputPath}"
-      ]
+      "defaultConfiguration": "production"
     },
     "serve": {
-      "executor": "@angular-devkit/build-angular:dev-server",
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "buildTarget": "assolutions-front:build"
+      },
       "configurations": {
         "development": {
-          "browserTarget": "assolutions-front:build:development",
+          "buildTarget": "assolutions-front:build:development",
           "port": 2211,
-          "proxyConfig": "./proxy.conf.json"
+          "proxyConfig": "apps/assolutions-front/proxy.conf.json"
         },
         "development-en": {
-          "browserTarget": "assolutions-front:build:development-en",
+          "buildTarget": "assolutions-front:build:development-en",
           "port": 2510,
-          "proxyConfig": "./proxy.conf.json"
+          "proxyConfig": "apps/assolutions-front/proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"
     },
     "extract-i18n": {
-      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "executor": "@nx/angular:extract-i18n",
       "options": {
-        "browserTarget": "assolutions-front:build",
-        "outputPath": "src/locale"
-      }
+        "browserTarget": "assolutions-front:build"
+      },
+      "outputs": ["apps/assolutions-front/src/locale"]
     },
     "test": {
-      "executor": "@angular-devkit/build-angular:karma",
+      "executor": "@nx/angular:karma",
       "options": {
-        "polyfills": [
-          "zone.js",
-          "zone.js/testing"
-        ],
-        "tsConfig": "tsconfig.spec.json",
+        "polyfills": ["zone.js", "zone.js/testing"],
+        "tsConfig": "apps/assolutions-front/tsconfig.spec.json",
+        "karmaConfig": "apps/assolutions-front/karma.conf.js",
         "assets": [
-          "src/favicon.ico",
-          "src/assets"
+          "apps/assolutions-front/src/favicon.ico",
+          "apps/assolutions-front/src/assets"
         ],
-        "styles": [
-          "src/styles.css"
-        ],
+        "styles": ["apps/assolutions-front/src/styles.css"],
         "scripts": []
       }
     }
-  }
+  },
+  "tags": []
 }

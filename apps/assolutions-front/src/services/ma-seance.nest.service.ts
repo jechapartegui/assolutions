@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AdherentSeance } from '@shared/compte/src/lib/seance.interface';
+import { AdherentSeance } from '@shared/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'

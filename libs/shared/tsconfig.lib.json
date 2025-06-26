@@ -1,10 +1,10 @@
 {
-    "extends": "../../../tsconfig.base.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
       "declaration": true,
       "composite": true,
       "emitDeclarationOnly": true,
-      "outDir": "../../../dist/out-tsc/libs/shared/compte",
+      "outDir": "../../../dist/out-tsc/libs/shared/",
       "types": ["node"],                      
       "module": "NodeNext",                  
       "moduleResolution": "NodeNext",           

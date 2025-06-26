@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Put, UseGuards } from "@nestjs/common";
 import { GroupeService } from "./groupe.service";
 import { PasswordGuard } from "../guards/password.guard";
-import type { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
+import type { KeyValuePair } from "@shared/src/lib/autres.interface";
 
 @Controller('groupe')
 export class GroupeController {

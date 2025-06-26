@@ -4,7 +4,7 @@ import { Groupe } from './groupe';
 import { Saison } from './saison';
 import { Lieu } from './lieu';
 import { project_login } from '../services/login.nest.service';
-import { compte } from '@shared/compte/src/lib/compte.interface';
+import { compte } from '@shared/src/lib/compte.interface';
 
 
 export class projet {

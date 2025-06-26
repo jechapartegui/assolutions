@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import {  InscriptionSeance } from '../class/inscription';
-import { SeanceVM } from '@shared/compte/src/lib/seance.interface';
+import { SeanceVM } from '@shared/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'

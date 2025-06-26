@@ -1,9 +1,0 @@
-{
-    "extends": "./tsconfig.lib.json",
-    "compilerOptions": {
-      "composite": true
-    },
-    "include": ["src/**/*.ts", "../../../apps/assolutions-back/src/app/guards/password.ts"],
-    "exclude": ["**/*.spec.ts"]
-  }
-  

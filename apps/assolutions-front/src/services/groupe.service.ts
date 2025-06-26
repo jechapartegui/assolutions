@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { KeyValuePair } from '@shared/compte/src';
+import { KeyValuePair } from '@shared/src';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({

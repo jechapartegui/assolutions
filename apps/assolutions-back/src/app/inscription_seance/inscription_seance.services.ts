@@ -4,8 +4,8 @@ import { In, Repository } from "typeorm";
 import { InscriptionSeance } from "../bdd/inscription-seance";
 import { SeanceService } from "../seance/seance.services";
 import { MemberService } from "../member/member.services";
-import { adherent } from "@shared/compte/src/lib/member.interface";
-import { full_inscription_seance, inscription_seance } from "@shared/compte/src/lib/inscription_seance.interface";
+import { adherent } from "@shared/src/lib/member.interface";
+import { full_inscription_seance, inscription_seance } from "@shared/src/lib/inscription_seance.interface";
 
 @Injectable()
 //   this.url = 'api/inscription_seance/get/' + id;

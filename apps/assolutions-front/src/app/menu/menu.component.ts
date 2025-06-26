@@ -11,12 +11,12 @@ import { InscriptionSeanceService } from '../../services/inscription-seance.serv
 import { ProfesseurService } from '../../services/professeur.service';
 import { StaticClass } from '../global';
 import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
-import { AdherentSeance, MesSeances } from '@shared/compte/src/lib/seance.interface';
+import { AdherentSeance, MesSeances } from '@shared/src/lib/seance.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
-import { lieu } from '@shared/compte/src/lib/lieu.interface';
-import { inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface';
-import { cours } from '@shared/compte/src/lib/cours.interface';
+import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
+import { lieu } from '@shared/src/lib/lieu.interface';
+import { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
+import { cours } from '@shared/src/lib/cours.interface';
 import { AdherentService } from '../../services/adherent.service';
 
 @Component({

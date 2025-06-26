@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { LieuService } from './lieu.services';
-import type { lieu } from '@shared/compte/src/lib/lieu.interface';
+import type { lieu } from '@shared/src/lib/lieu.interface';
 
 // src/auth/auth.controller.ts
 @Controller('lieu')

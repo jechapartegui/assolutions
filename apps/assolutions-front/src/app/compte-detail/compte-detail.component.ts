@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { compte } from '@shared/compte/src/lib/compte.interface';
+import { compte } from '@shared/src/lib/compte.interface';
 @Component({
   selector: 'app-compte-detail',
   templateUrl: './compte-detail.component.html',

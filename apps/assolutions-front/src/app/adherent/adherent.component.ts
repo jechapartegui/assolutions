@@ -18,10 +18,10 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
-import { AdherentVM } from '@shared/compte/src/lib/member.interface';
-import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
-import { SaisonVM } from '@shared/compte/src/lib/saison.interface';
-import { LienGroupe_VM } from '@shared/compte/src';
+import { AdherentVM } from '@shared/src/lib/member.interface';
+import { KeyValuePair } from '@shared/src/lib/autres.interface';
+import { SaisonVM } from '@shared/src/lib/saison.interface';
+import { LienGroupe_VM } from '@shared/src';
 
 @Component({
   selector: 'app-adherent',

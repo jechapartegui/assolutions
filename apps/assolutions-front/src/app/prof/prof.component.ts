@@ -6,7 +6,7 @@ import { SeanceProf } from '../../class/seanceprof';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { SeanceprofService } from '../../services/seanceprof.service';
-import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { KeyValuePair } from '@shared/src/lib/autres.interface';
 
 @Component({
   selector: 'app-prof',

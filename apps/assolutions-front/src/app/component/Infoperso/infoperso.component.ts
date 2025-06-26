@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
-import { adherent, ValidationItem } from "@shared/compte/src";
+import { adherent, ValidationItem } from "@shared/src";
 import { Adherent } from "apps/assolutions-front/src/class/adherent";
 import { ReglesPersonne } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";

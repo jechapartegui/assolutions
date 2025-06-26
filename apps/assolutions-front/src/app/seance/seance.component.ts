@@ -11,12 +11,12 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { SeancesService } from '../../services/seance.service';
 import { SeanceprofService } from '../../services/seanceprof.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { CoursVM } from '@shared/compte/src/lib/cours.interface';
-import { SeanceProfesseurVM, SeanceVM, StatutSeance } from '@shared/compte/src/lib/seance.interface';
-import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
-import { ProfessuerVM, SaisonVM } from '@shared/compte/src';
+import { CoursVM } from '@shared/src/lib/cours.interface';
+import { SeanceProfesseurVM, SeanceVM, StatutSeance } from '@shared/src/lib/seance.interface';
+import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
+import { ProfessuerVM, SaisonVM } from '@shared/src';
 
 
 @Component({

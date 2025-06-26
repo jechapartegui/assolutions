@@ -9,7 +9,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { MailService } from '../../services/mail.service';
 import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
 
 @Component({

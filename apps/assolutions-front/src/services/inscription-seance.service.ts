@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { full_inscription_seance, inscription_seance } from '@shared/compte/src/lib/inscription_seance.interface'
+import { full_inscription_seance, inscription_seance } from '@shared/src/lib/inscription_seance.interface'
 
 @Injectable({
   providedIn: 'root'

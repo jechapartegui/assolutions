@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { ValidationItem } from "@shared/compte/src/lib/autres.interface";
+import { ValidationItem } from "@shared/src/lib/autres.interface";
 import { ReglesSeance } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 

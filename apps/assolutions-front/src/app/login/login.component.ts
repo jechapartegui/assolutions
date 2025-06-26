@@ -6,7 +6,7 @@ import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
-import { AuthResult, ProjetView } from '@shared/compte/src/lib/compte.interface';
+import { AuthResult, ProjetView } from '@shared/src/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
 
 @Component({

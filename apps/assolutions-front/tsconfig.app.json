@@ -5,12 +5,15 @@
     "composite": false,
     "emitDeclarationOnly": false,
     "outDir": "./out-tsc/app",
-    "types": [
-      "@angular/localize"
-    ]
+    "types": ["@angular/localize"]
   },
-"include": [
-  "src/**/*.ts",
-  "../../libs/**/*.ts"  // si tu accèdes à des libs locales partagées
-]
+  "include": [
+    "src/**/*.ts",
+    "../../libs/**/*.ts" // si tu accèdes à des libs locales partagées
+  ],
+  "references": [
+    {
+      "path": "../../libs/shared/tsconfig.lib.json"
+    }
+  ]
 }

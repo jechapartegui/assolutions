@@ -6,7 +6,7 @@ import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
-import { KeyValuePair } from '@shared/compte/src';
+import { KeyValuePair } from '@shared/src';
 
 @Component({
   selector: 'app-groupe',

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Adresse } from '../../class/address';
 import { ReglesAdresse } from '../../class/regles';
-import { ValidationItem } from '@shared/compte/src/lib/autres.interface';
+import { ValidationItem } from '@shared/src/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
 
 @Component({

@@ -1,6 +1,6 @@
-import { ItemContact } from "@shared/compte/src/lib/member.interface";
+import { ItemContact } from "@shared/src/lib/member.interface";
 import { seance } from "./seance";
-import { full_inscription_seance, inscription_seance } from "@shared/compte/src/lib/inscription_seance.interface";
+import { full_inscription_seance, inscription_seance } from "@shared/src/lib/inscription_seance.interface";
 
 
 

@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { FilterMenu } from '../app/menu/menu.component';
-import { MesSeances } from '@shared/compte/src/lib/seance.interface';
+import { MesSeances } from '@shared/src/lib/seance.interface';
 
 @Pipe({
   name: 'multifiltersMenu',

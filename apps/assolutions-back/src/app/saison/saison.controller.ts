@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
-import type { saison } from '@shared/compte/src/lib/saison.interface';
+import type { saison } from '@shared/src/lib/saison.interface';
 import { SaisonService } from './saison.services';
 
 @Controller('saison')

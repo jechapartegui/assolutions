@@ -11,7 +11,7 @@ import { AdherentProjet } from '../bdd/member_project';
 import { Adherent } from '../bdd/riders';
 import { Projet } from '../bdd/project';
 import { ProjetLogin } from '../bdd/project_login';
-import { AuthResult, ProjetView } from '@shared/compte/src/lib/compte.interface';
+import { AuthResult, ProjetView } from '@shared/src/lib/compte.interface';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { ProjectService } from '../project/project.service';

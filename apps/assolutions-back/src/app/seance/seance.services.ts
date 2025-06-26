@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { Seance } from '../bdd/seance';
 import { Between, In } from 'typeorm';
 import { LienGroupe } from '../bdd/lien-groupe';
-import { MesSeances, SeanceProfesseurVM, SeanceVM } from '@shared/compte/src/lib/seance.interface';
+import { MesSeances, SeanceProfesseurVM, SeanceVM } from '@shared/src/lib/seance.interface';
 import { InscriptionSeance } from '../bdd/inscription-seance';
 import { ProfService } from '../prof/prof.services';
 import { SeanceProfesseur } from '../bdd/seance_professeur';
-import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
+import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 
 @Injectable()
 export class SeanceService {

@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
+import { KeyValuePair } from "@shared/src/lib/autres.interface";
 import { Cours } from "../bdd/cours";
 import { CoursProfesseur } from "../bdd/cours_professeur";
 import { LienGroupe } from "../bdd/lien-groupe";
-import { LienGroupe_VM } from "@shared/compte/src/lib/groupe.interface";
-import { CoursProfesseurVM, CoursVM } from "@shared/compte/src/lib/cours.interface";
+import { LienGroupe_VM } from "@shared/src/lib/groupe.interface";
+import { CoursProfesseurVM, CoursVM } from "@shared/src/lib/cours.interface";
 
 @Injectable()
 export class CoursService {

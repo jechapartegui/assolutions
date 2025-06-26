@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Saison } from "../bdd/saison";
-import { SaisonVM } from "@shared/compte/src/lib/saison.interface";
-import { KeyValuePair } from "@shared/compte/src/lib/autres.interface";
+import { SaisonVM } from "@shared/src/lib/saison.interface";
+import { KeyValuePair } from "@shared/src/lib/autres.interface";
 
 @Injectable()
 //   this.url = 'api/inscription_seance/get/' + id;

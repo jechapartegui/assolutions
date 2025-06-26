@@ -16,9 +16,9 @@ import { GroupeService } from '../../services/groupe.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/compte/src/lib/autres.interface';
-import { CoursVM } from '@shared/compte/src';
-import { LienGroupe_VM } from '@shared/compte/src/lib/groupe.interface';
+import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
+import { CoursVM } from '@shared/src';
+import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 
 @Component({
   selector: 'app-cours',

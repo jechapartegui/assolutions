@@ -19,8 +19,7 @@
     "baseUrl": ".",
     "rootDir": ".",
     "paths": {
-      "@shared/*": ["libs/shared/*"],
-      "@shared/compte": ["libs/shared/compte/src/index.ts"]
+      "@shared/*": ["libs/shared/*"]
     }
   }
 }

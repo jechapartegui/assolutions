@@ -7,12 +7,12 @@ import { InscriptionSeanceService } from '../../services/inscription-seance.serv
 import { MailService } from '../../services/mail.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SeancesService } from '../../services/seance.service';
-import { AdherentVM, ItemContact } from '@shared/compte/src/lib/member.interface';
-import { KeyValuePair } from '@shared/compte/src/lib/autres.interface';
+import { AdherentVM, ItemContact } from '@shared/src/lib/member.interface';
+import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { GlobalService } from '../../services/global.services';
-import { SeanceVM } from '@shared/compte/src/lib/seance.interface';
-import { ProfesseurVM } from '@shared/compte/src/lib/prof.interface';
+import { SeanceVM } from '@shared/src/lib/seance.interface';
+import { ProfesseurVM } from '@shared/src/lib/prof.interface';
 
 @Component({
   selector: 'app-seances-essais',

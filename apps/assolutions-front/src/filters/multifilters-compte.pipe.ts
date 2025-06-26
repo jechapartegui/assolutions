@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { FilterCompte } from '../app/compte/compte.component';
-import { compte } from '@shared/compte/src/lib/compte.interface';
+import { compte } from '@shared/src/lib/compte.interface';
 
 @Pipe({
   name: 'multifiltersCompte',

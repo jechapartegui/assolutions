@@ -12,7 +12,7 @@ import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
-import { adherent } from '@shared/compte/src/lib/member.interface';
+import { adherent } from '@shared/src/lib/member.interface';
 
 @Component({
   selector: 'app-import-adherent',
