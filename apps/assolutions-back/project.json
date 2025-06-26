@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/nx/schemas/project-schema.json",
+  "name": "assolutions-back",
+  "root": "apps/assolutions-back",
+  "sourceRoot": "apps/assolutions-back/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "main": "apps/assolutions-back/src/main.ts",
+        "tsConfig": "apps/assolutions-back/tsconfig.app.json",
+        "bundle": true,
+        "platform": "node",
+        "format":  ["cjs"],
+        "outputPath": "dist/apps/assolutions-back",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/assolutions-back/src/assets",
+            "output": "assets"
+          }
+        ]
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "assolutions-back:build",
+        "watch": true
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    }
+  },
+  "tags": []
+}
+

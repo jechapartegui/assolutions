@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { LieuService } from './lieu.services';
-import type { lieu } from '@shared/src/lib/lieu.interface';
+import { LieuVM } from '@shared/src/lib/lieu.interface';
 
 // src/auth/auth.controller.ts
 @Controller('lieu')
@@ -26,12 +26,12 @@ export class LieuController {
   }
 
   @Put('add')
-  async Add(@Headers('projectid') projectId: number,@Body() s: lieu) {
+  async Add(@Headers('projectid') projectId: number,@Body() s: LieuVM) {
     return this.lieu_serv.Add(s, projectId);
   }
   
   @Put('update')
-  async Update(@Headers('projectid') projectId: number,@Body() s: lieu) {
+  async Update(@Headers('projectid') projectId: number,@Body() s: LieuVM) {
     return this.lieu_serv.Update(s, projectId);
   }
   

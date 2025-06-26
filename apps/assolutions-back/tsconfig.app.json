@@ -1,20 +1,18 @@
+/* apps/assolutions-back/tsconfig.app.json */
 {
-  "extends": "../../tsconfig.base.json",
-
+  "extends": "./tsconfig.json",          // étend ton tsconfig racine/commun
   "compilerOptions": {
-    "composite": true,
-    "outDir": "../../dist/out-tsc",
-    "rootDir": "../../", // 👈 pour permettre d'aller lire dans libs/
-    "module": "NodeNext", // 👈 recommandé si tu utilises des alias + ESM
-    "moduleResolution": "NodeNext",
-    "types": ["node"],
-    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "composite": false,                  // on ne veut pas d'un projet composite ici
+    "emitDeclarationOnly": false,        // on génère du JS, pas que des .d.ts
+    "outDir": "./out-tsc/app",           // là où tes .js seront mis
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "target": "es2021"
+    "types": ["node"]                    // typés Node (reflect-metadata, etc.)
   },
-  "include": ["src/**/*.ts", "../../libs/**/*.ts"],
-  "exclude": [],
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared/src/**/*.ts"      // visible dans l'IDE, mais pas compilé en propre
+  ],
   "references": [
     {
       "path": "../../libs/shared/tsconfig.lib.json"

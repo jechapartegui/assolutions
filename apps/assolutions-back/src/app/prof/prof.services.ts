@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { In } from 'typeorm';
 import { Adherent } from "../bdd/riders";
 import { Professeur } from "../bdd/professeur";
-import { professeur, prof } from "@shared/src";
+import { ProfesseurVM, ProfVM } from "@shared/src";
 import { SeanceProfesseur } from "../bdd/seance_professeur";
 import { ProfesseurSaison } from "../bdd/prof-saison";
 
@@ -30,7 +30,7 @@ export class ProfService {
       throw new UnauthorizedException('NO_PROF_FOUND');
     }
     //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    const xd: professeur = this.toprofesseur(adh, prof);
+    const xd: ProfesseurVM = this.toprofesseur(adh, prof);
     return xd;
   }
 
@@ -67,8 +67,8 @@ export class ProfService {
     return prof_rider.map(adh => this.toprof(adh));
   }
 
-  private toprof(adh: Adherent): prof {
-    let p: prof = {
+  private toprof(adh: Adherent): ProfVM {
+    let p: ProfVM = {
       id: adh.id,
       nom: adh.nom,
       prenom: adh.prenom,
@@ -77,8 +77,8 @@ export class ProfService {
     return p;
   }
 
-  private toprofesseur(adh: Adherent, pprof: Professeur): professeur {
-    let p: professeur = {
+  private toprofesseur(adh: Adherent, pprof: Professeur): ProfesseurVM {
+    let p: ProfesseurVM = {
       id: adh.id,
       nom: adh.nom,
       prenom: adh.prenom,

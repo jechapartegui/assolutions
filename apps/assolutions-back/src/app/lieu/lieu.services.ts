@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Lieu } from "../bdd/lieu";
-import { lieu } from "@shared/src/lib/lieu.interface";
+import { LieuVM } from "@shared/src/lib/lieu.interface";
 import { KeyValuePair } from "@shared/src/lib/autres.interface";
 
 @Injectable()
@@ -30,7 +30,7 @@ export class LieuService {
     });
   }
 
-private tolieu(plieu: Lieu): lieu {
+private tolieu(plieu: Lieu): LieuVM {
   let adre: any = null;
 
   try {
@@ -46,7 +46,7 @@ const code_postal = adre?.PostCode || "";
 const ville = adre?.City || "";
 
 
-  const lieu: lieu = {
+  const lieu: LieuVM = {
     id: plieu.id,
     nom: plieu.nom,
     adresse,
@@ -58,7 +58,7 @@ const ville = adre?.City || "";
 }
 
   
-private toLieu(pLieu: lieu, project_id: number): Lieu {
+private toLieu(pLieu: LieuVM, project_id: number): Lieu {
   // Crée un objet pour l'adresse
   const adresseObj = {
     name: pLieu.adresse,        // Le nom de l'adresse
@@ -96,7 +96,7 @@ private toLieu(pLieu: lieu, project_id: number): Lieu {
   
     }
   
-    async Add(s: lieu, project_id :number) {
+    async Add(s: LieuVM, project_id :number) {
     if (!s) {
       throw new BadRequestException('INVALID_LOCATION');
     }
@@ -106,7 +106,7 @@ private toLieu(pLieu: lieu, project_id: number): Lieu {
     const saved = await this.LieuRepo.save(newISS);
     return this.tolieu(saved).id;
   }
-  async Update(s: lieu, project_id :number) {
+  async Update(s: LieuVM, project_id :number) {
     if (!s) {
       throw new BadRequestException('INVALID_LOCATION');
     }

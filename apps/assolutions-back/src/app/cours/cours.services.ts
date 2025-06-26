@@ -133,8 +133,8 @@ toCours(data: CoursVM, project_id: number): Cours {
     c.nom = data.nom;
     c.saison_id = data.saison_id;
     c.afficher_present = data.afficher_present;
-    c.age_maximum = data.age_maximum ?? null;
-    c.age_minimum = data.age_minimum ?? null;
+    c.age_maximum = data.age_maximum!;
+    c.age_minimum = data.age_minimum!;
     c.convocation_nominative = data.convocation_nominative;
     c.duree = data.duree;
     c.est_limite_age_maximum = data.est_limite_age_maximum;
@@ -144,7 +144,7 @@ toCours(data: CoursVM, project_id: number): Cours {
     c.id = data.id;
     c.lieu_id = data.lieu_id;
     c.jour_semaine = data.jour_semaine;
-    c.place_maximum = data.place_maximum ?? null;
+    c.place_maximum = data.place_maximum!;
     c.prof_principal_id = data.prof_principal_id;
     c.project_id = project_id;
     c.lienGroupes = data.groupes.map(g => {

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
-import type { saison } from '@shared/src/lib/saison.interface';
+import { SaisonVM } from '@shared/src/lib/saison.interface';
 import { SaisonService } from './saison.services';
 
 @Controller('saison')
@@ -24,12 +24,12 @@ export class SaisonController {
   }
 
 @Put('add')
-async Add(@Headers('projectid') projectId: number,@Body() s: saison) {
+async Add(@Headers('projectid') projectId: number,@Body() s: SaisonVM) {
   return this.saison_serv.Add(s, projectId);
 }
 
 @Put('update')
-async Update(@Headers('projectid') projectId: number,@Body() s: saison) {
+async Update(@Headers('projectid') projectId: number,@Body() s: SaisonVM) {
   return this.saison_serv.Update(s, projectId);
 }
 

@@ -1,57 +1,7 @@
 {
-  "name": "@assolutions/assolutions-back",
+  "name": "assolutions-back", 
   "version": "0.0.1",
   "private": true,
-  "nx": {
-    "targets": {
-      "build": {
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "webpack-cli build",
-          "args": [
-            "node-env=production"
-          ]
-        },
-        "configurations": {
-          "development": {
-            "args": [
-              "node-env=development"
-            ]
-          }
-        }
-      },
-      "serve": {
-        "executor": "@nx/js:node",
-        "defaultConfiguration": "development",
-        "dependsOn": [
-          "build"
-        ],
-        "options": {
-          "buildTarget": "@assolutions/assolutions-back:build",
-          "runBuildTargetDependencies": false
-        },
-        "configurations": {
-          "development": {
-            "buildTarget": "@assolutions/assolutions-back:build:development"
-          },
-          "production": {
-            "buildTarget": "@assolutions/assolutions-back:build:production"
-          }
-        }
-      }
-    }
-  },
-  "dependencies": {
-    "@nestjs/config": "^4.0.2",
-    "@nestjs/typeorm": "^11.0.0",
-    "bcryptjs": "^3.0.2",
-    "crypto-js": "^4.2.0",
-    "file-type": "^21.0.0",
-    "multer": "^2.0.1",
-    "mysql2": "^3.14.0",
-    "typeorm": "^0.3.22"
-  },
-  "devDependencies": {
-    "@types/multer": "^1.4.13"
-  }
+  "dependencies": { },
+  "devDependencies": {  }
 }

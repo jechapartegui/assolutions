@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { MemberService } from './member.services';
-import type { adherent } from '@shared/src';
+import  { AdherentVM } from '@shared/src';
 import { SeanceService } from '../seance/seance.services';
 
 // src/auth/auth.controller.ts
@@ -62,12 +62,12 @@ async GetAllSeance(@Param('saison_id') saison_id: number) {
     }
   
     @Put('add')
-    async Add(@Headers('projectid') projectId: number,@Body() s: adherent) {
+    async Add(@Headers('projectid') projectId: number,@Body() s: AdherentVM) {
       return this.mem_serv.Add(s, projectId);
     }
     
     @Put('update')
-    async Update(@Headers('projectid') projectId: number,@Body() s: adherent) {
+    async Update(@Headers('projectid') projectId: number,@Body() s: AdherentVM) {
       return this.mem_serv.Update(s, projectId);
     }
     

@@ -1,0 +1,582 @@
+{
+  "graph": {
+    "nodes": {
+      "assolutions-front": {
+        "name": "assolutions-front",
+        "type": "app",
+        "data": {
+          "root": "apps/assolutions-front",
+          "projectType": "application",
+          "targets": {
+            "typecheck": {
+              "dependsOn": [
+                "^typecheck"
+              ],
+              "options": {
+                "cwd": "apps/assolutions-front",
+                "command": "tsc --build --emitDeclarationOnly"
+              },
+              "cache": true,
+              "inputs": [
+                "{projectRoot}/package.json",
+                "{workspaceRoot}/tsconfig.base.json",
+                "{projectRoot}/tsconfig.json",
+                "{projectRoot}/src/**/*.ts",
+                "{workspaceRoot}/libs/**/*.ts",
+                "{workspaceRoot}/apps/assolutions-back/src/app/guards/password.ts",
+                "^production",
+                {
+                  "externalDependencies": [
+                    "typescript"
+                  ]
+                }
+              ],
+              "outputs": [
+                "{projectRoot}/dist/out-tsc/**/*.d.ts",
+                "{projectRoot}/dist/out-tsc/apps/assolutions-front/*.tsbuildinfo"
+              ],
+              "syncGenerators": [
+                "@nx/js:typescript-sync"
+              ],
+              "metadata": {
+                "technologies": [
+                  "typescript"
+                ],
+                "description": "Runs type-checking for the project.",
+                "help": {
+                  "command": "npx tsc --build --help",
+                  "example": {
+                    "args": [
+                      "--force"
+                    ]
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "ng": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "ng"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- ng",
+                "runCommand": "npm run ng"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- nx serve",
+                "runCommand": "npm run start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start-jecha": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start-jecha"
+              },
+              "metadata": {
+                "scriptContent": "nx serve assolutions-front --configuration=development ",
+                "runCommand": "npm run start-jecha"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start-jecha-en": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start-jecha-en"
+              },
+              "metadata": {
+                "scriptContent": "nx serve assolutions-front --configuration=development-en --disable-host-check ",
+                "runCommand": "npm run start-jecha-en"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build-dev"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- nx build --configuration=development",
+                "runCommand": "npm run build-dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "watch": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "watch"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- nx build --watch --configuration development",
+                "runCommand": "npm run watch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "aot": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "aot"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- nx build --configuration=production --aot --verbose",
+                "runCommand": "npm run aot"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "aot-en": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "aot-en"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- nx build --configuration=production-en --aot",
+                "runCommand": "npm run aot-en"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "aot-preprod": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "aot-preprod"
+              },
+              "metadata": {
+                "scriptContent": "nx exec -- nx build --configuration=preprod --aot",
+                "runCommand": "npm run aot-preprod"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "merge-i18n": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "merge-i18n"
+              },
+              "metadata": {
+                "scriptContent": "node_modules/.bin/xliffmerge --profile xliffmerge.json",
+                "runCommand": "npm run merge-i18n"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "xliffmerge": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "xliffmerge"
+              },
+              "metadata": {
+                "scriptContent": "xliffmerge --profile xliffmerge.json",
+                "runCommand": "npm run xliffmerge"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/angular:webpack-browser",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/apps/assolutions-front",
+                "index": "apps/assolutions-front/src/index.html",
+                "main": "apps/assolutions-front/src/main.ts",
+                "polyfills": [
+                  "zone.js"
+                ],
+                "tsConfig": "apps/assolutions-front/tsconfig.app.json",
+                "assets": [
+                  "apps/assolutions-front/src/favicon.ico",
+                  "apps/assolutions-front/src/assets"
+                ],
+                "styles": [
+                  "apps/assolutions-front/src/styles.css"
+                ],
+                "scripts": [],
+                "localize": [
+                  "fr",
+                  "en"
+                ]
+              },
+              "configurations": {
+                "production": {
+                  "fileReplacements": [
+                    {
+                      "replace": "apps/assolutions-front/src/environments/environment.ts",
+                      "with": "apps/assolutions-front/src/environments/environment.prod.ts"
+                    }
+                  ],
+                  "outputHashing": "all",
+                  "budgets": [
+                    {
+                      "type": "initial",
+                      "maximumWarning": "2mb",
+                      "maximumError": "3mb"
+                    },
+                    {
+                      "type": "anyComponentStyle",
+                      "maximumWarning": "2kb",
+                      "maximumError": "4kb"
+                    }
+                  ]
+                },
+                "preprod": {
+                  "fileReplacements": [
+                    {
+                      "replace": "apps/assolutions-front/src/environments/environment.ts",
+                      "with": "apps/assolutions-front/src/environments/environment.preprod.ts"
+                    }
+                  ],
+                  "outputHashing": "all",
+                  "budgets": [
+                    {
+                      "type": "initial",
+                      "maximumWarning": "2mb",
+                      "maximumError": "3mb"
+                    },
+                    {
+                      "type": "anyComponentStyle",
+                      "maximumWarning": "2kb",
+                      "maximumError": "4kb"
+                    }
+                  ]
+                },
+                "development": {
+                  "optimization": false,
+                  "buildOptimizer": false,
+                  "vendorChunk": true,
+                  "extractLicenses": false,
+                  "sourceMap": true,
+                  "namedChunks": true,
+                  "localize": [
+                    "fr"
+                  ],
+                  "fileReplacements": [
+                    {
+                      "replace": "apps/assolutions-front/src/environments/environment.ts",
+                      "with": "apps/assolutions-front/src/environments/environment.ts"
+                    }
+                  ]
+                },
+                "development-en": {
+                  "optimization": false,
+                  "buildOptimizer": false,
+                  "vendorChunk": true,
+                  "extractLicenses": false,
+                  "sourceMap": true,
+                  "namedChunks": true,
+                  "localize": [
+                    "en"
+                  ],
+                  "fileReplacements": [
+                    {
+                      "replace": "apps/assolutions-front/src/environments/environment.ts",
+                      "with": "apps/assolutions-front/src/environments/environment.en.ts"
+                    }
+                  ]
+                }
+              },
+              "defaultConfiguration": "production",
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "@nx/angular:dev-server",
+              "options": {
+                "buildTarget": "assolutions-front:build"
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "assolutions-front:build:development",
+                  "port": 2211,
+                  "proxyConfig": "apps/assolutions-front/proxy.conf.json"
+                },
+                "development-en": {
+                  "buildTarget": "assolutions-front:build:development-en",
+                  "port": 2510,
+                  "proxyConfig": "apps/assolutions-front/proxy.conf.json"
+                }
+              },
+              "defaultConfiguration": "development",
+              "parallelism": true
+            },
+            "extract-i18n": {
+              "executor": "@nx/angular:extract-i18n",
+              "options": {
+                "browserTarget": "assolutions-front:build"
+              },
+              "outputs": [
+                "apps/assolutions-front/src/locale"
+              ],
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "@nx/angular:karma",
+              "options": {
+                "polyfills": [
+                  "zone.js",
+                  "zone.js/testing"
+                ],
+                "tsConfig": "apps/assolutions-front/tsconfig.spec.json",
+                "karmaConfig": "apps/assolutions-front/karma.conf.js",
+                "assets": [
+                  "apps/assolutions-front/src/favicon.ico",
+                  "apps/assolutions-front/src/assets"
+                ],
+                "styles": [
+                  "apps/assolutions-front/src/styles.css"
+                ],
+                "scripts": []
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "assolutions-front",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "ng",
+                "start",
+                "start-jecha",
+                "start-jecha-en",
+                "build-dev",
+                "watch",
+                "aot",
+                "aot-en",
+                "aot-preprod",
+                "merge-i18n",
+                "xliffmerge"
+              ]
+            },
+            "js": {
+              "packageName": "assolutions-front",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "apps/assolutions-front/src",
+          "prefix": "app",
+          "i18n": {
+            "sourceLocale": "fr",
+            "locales": {
+              "en": "apps/assolutions-front/src/locale/messages.en.xlf"
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "assolutions-back": {
+        "name": "assolutions-back",
+        "type": "app",
+        "data": {
+          "root": "apps/assolutions-back",
+          "projectType": "application",
+          "targets": {
+            "typecheck": {
+              "dependsOn": [
+                "^typecheck"
+              ],
+              "options": {
+                "cwd": "apps/assolutions-back",
+                "command": "tsc --build --emitDeclarationOnly"
+              },
+              "cache": true,
+              "inputs": [
+                "{projectRoot}/package.json",
+                "{workspaceRoot}/tsconfig.base.json",
+                "{projectRoot}/tsconfig.json",
+                "{projectRoot}/tsconfig.app.json",
+                "{projectRoot}/src/**/*.ts",
+                "{workspaceRoot}/libs/shared/src/**/*.ts",
+                {
+                  "dependentTasksOutputFiles": "**/*.d.ts"
+                },
+                {
+                  "externalDependencies": [
+                    "typescript"
+                  ]
+                }
+              ],
+              "outputs": [
+                "{projectRoot}/**/*.js",
+                "{projectRoot}/**/*.cjs",
+                "{projectRoot}/**/*.mjs",
+                "{projectRoot}/**/*.jsx",
+                "{projectRoot}/**/*.js.map",
+                "{projectRoot}/**/*.jsx.map",
+                "{projectRoot}/**/*.d.ts",
+                "{projectRoot}/**/*.d.cts",
+                "{projectRoot}/**/*.d.mts",
+                "{projectRoot}/**/*.d.ts.map",
+                "{projectRoot}/**/*.d.cts.map",
+                "{projectRoot}/**/*.d.mts.map",
+                "{projectRoot}/tsconfig.tsbuildinfo",
+                "{projectRoot}/out-tsc/app/**/*.d.ts",
+                "{projectRoot}/out-tsc/app/apps/assolutions-back/*.tsbuildinfo"
+              ],
+              "syncGenerators": [
+                "@nx/js:typescript-sync"
+              ],
+              "metadata": {
+                "technologies": [
+                  "typescript"
+                ],
+                "description": "Runs type-checking for the project.",
+                "help": {
+                  "command": "npx tsc --build --help",
+                  "example": {
+                    "args": [
+                      "--force"
+                    ]
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "apps/assolutions-back/src/main.ts",
+                "tsConfig": "apps/assolutions-back/tsconfig.app.json",
+                "bundle": true,
+                "platform": "node",
+                "format": [
+                  "cjs"
+                ],
+                "outputPath": "dist/apps/assolutions-back",
+                "assets": [
+                  {
+                    "glob": "**/*",
+                    "input": "apps/assolutions-back/src/assets",
+                    "output": "assets"
+                  }
+                ]
+              },
+              "configurations": {
+                "development": {},
+                "production": {}
+              },
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "@nx/js:node",
+              "defaultConfiguration": "development",
+              "options": {
+                "buildTarget": "assolutions-back:build",
+                "watch": true
+              },
+              "configurations": {
+                "development": {},
+                "production": {}
+              },
+              "parallelism": true
+            }
+          },
+          "name": "assolutions-back",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "assolutions-back",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "apps/assolutions-back/src",
+          "implicitDependencies": []
+        }
+      },
+      "shared": {
+        "name": "shared",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared",
+          "name": "shared",
+          "$schema": "node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared/src",
+          "projectType": "library",
+          "targets": {
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/shared",
+                "tsConfig": "libs/shared/tsconfig.lib.json",
+                "main": "libs/shared/src/index.ts"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:eslint",
+              "options": {
+                "lintFilePatterns": [
+                  "libs/shared/**/*.ts"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "options": {
+                "jestConfig": "libs/shared/jest.config.js",
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": [],
+          "tags": []
+        }
+      }
+    },
+    "dependencies": {
+      "assolutions-front": [
+        {
+          "source": "assolutions-front",
+          "target": "shared",
+          "type": "static"
+        }
+      ],
+      "assolutions-back": [
+        {
+          "source": "assolutions-back",
+          "target": "shared",
+          "type": "static"
+        }
+      ],
+      "shared": []
+    }
+  }
+}
