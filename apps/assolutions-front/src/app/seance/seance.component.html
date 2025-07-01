@@ -1122,22 +1122,22 @@
                       </p>
                     </div>
                   </ng-container>
-                  <ng-container *ngIf="editSeance.ID > 0">
-                    <div *ngIf="editSeance.Cours > 0" class="field">
+                  <ng-container *ngIf="editSeance.seance_id > 0">
+                    <div *ngIf="editSeance.cours > 0" class="field">
                       <label class="label" i18n>Cours</label>
-                      <span>{{ GetCours(editSeance.Cours) }}</span>
+                      <span>{{ GetCours(editSeance.cours) }}</span>
                     </div>
                     <div class="field">
                       <label class="label" i18n>Type de séance</label>
-                      <span>{{ GetType(editSeance.TypeSeance) }}</span>
+                      <span>{{ GetType(editSeance.type_seance) }}</span>
                     </div>
                   </ng-container>
                 </div>
                 <ng-container
                   *ngIf="
-                    (editSeance.TypeSeance === 'ENTRAINEMENT' &&
-                      editSeance.Cours > 0) ||
-                    editSeance.TypeSeance != 'ENTRAINEMENT'
+                    (editSeance.type_seance === 'ENTRAINEMENT' &&
+                      editSeance.cours > 0) ||
+                    editSeance.type_seance != 'ENTRAINEMENT'
                   "
                 >
                   <div class="field-container" *ngIf="editMode_serie">
@@ -1170,13 +1170,7 @@
                         type="date"
                         [(ngModel)]="editSeance.date_seance"
                       />
-                      <p
-                        class="help is-danger"
-                        *ngIf="!editSeance.valid.date"
-                        i18n
-                      >
-                        La date de début de la série doit être saisie
-                      </p>
+                      
                     </div>
 
                     <div class="field">
@@ -1197,9 +1191,7 @@
                     <div class="field">
                       <label class="label" i18n>Libellé</label>
                       <input
-                        [class]="
-                          editSeance.valid.libelle ? 'input' : 'input is-danger'
-                        "
+                        class="input"
                         type="text"
                         id="nom_rider"
                         name="nom_rider"
@@ -1208,17 +1200,11 @@
                         [(ngModel)]="editSeance.libelle"
                         required
                       />
-                      <p
-                        class="help is-danger"
-                        *ngIf="!editSeance.valid.libelle"
-                        i18n
-                      >
-                        Le libellé doit faire au moins 5 caractères
-                      </p>
+                      
                     </div>
                     <div class="field">
                       <label class="label" i18n>Statut</label>
-                      <ng-container *ngIf="editSeance.ID < 1">
+                      <ng-container *ngIf="editSeance.seance_id < 1">
                         <span class="tag is-info is-rounded is-light">
                           <span class="icon has-text-info">
                             <i class="fa-solid fa-calendar-check"></i>
@@ -1226,8 +1212,8 @@
                           <span i18n>Prévue</span>
                         </span>
                       </ng-container>
-                      <ng-container *ngIf="editSeance.ID > 0">
-                        <ng-container *ngIf="editSeance.Statut == 'prévue'">
+                      <ng-container *ngIf="editSeance.seance_id > 0">
+                        <ng-container *ngIf="editSeance.statut == 'prévue'">
                           <span class="tag is-info is-rounded is-light">
                             <span class="icon has-text-info">
                               <i class="fa-solid fa-calendar-check"></i> </span
@@ -1253,7 +1239,7 @@
                           >
                           </hover-button>
                         </ng-container>
-                        <ng-container *ngIf="editSeance.Statut == 'réalisée'">
+                        <ng-container *ngIf="editSeance.statut == 'réalisée'">
                           <span class="tag is-primary is-rounded is-light">
                             <span class="icon has-text-success">
                               <i class="fa-solid fa-flag-checkered"></i> </span
@@ -1277,7 +1263,7 @@
                           >
                           </hover-button>
                         </ng-container>
-                        <ng-container *ngIf="editSeance.Statut == 'annulée'">
+                        <ng-container *ngIf="editSeance.statut == 'annulée'">
                           <span class="tag is-danger is-rounded is-light">
                             <span class="icon has-text-danger">
                               <i class="fa-solid fa-ban"></i> </span
@@ -1310,7 +1296,7 @@
                         <label class="label" i18n>Date de la séance</label>
                         <span
                           class="title_label"
-                          *ngIf="editSeance.Cours && editSeance.ID == 0"
+                          *ngIf="editSeance.cours && editSeance.seance_id == 0"
                           >&nbsp;({{ jour_semaine }})</span
                         >
                         <input
@@ -1319,13 +1305,7 @@
                           type="date"
                           [(ngModel)]="editSeance.date_seance"
                         />
-                        <p
-                          class="help is-danger"
-                          *ngIf="!editSeance.valid.date"
-                          i18n
-                        >
-                          La date de la séance doit être saisie
-                        </p>
+                        
                       </div>
                     </ng-container>
                     <div class="field">
@@ -1337,13 +1317,6 @@
                         type="time"
                         [(ngModel)]="editSeance.heure_debut"
                       />
-                      <p
-                        class="help is-danger"
-                        *ngIf="!editSeance.valid.heure"
-                        i18n
-                      >
-                        L'heure doit être saisie
-                      </p>
                     </div>
                     <div class="field">
                       <label class="label" i18n>Durée de la séance</label>
@@ -1353,13 +1326,7 @@
                         type="number"
                         [(ngModel)]="editSeance.duree_seance"
                       />
-                      <p
-                        class="help is-danger"
-                        *ngIf="!editSeance.valid.duree"
-                        i18n
-                      >
-                        La durée doit être saisie
-                      </p>
+                  
                     </div>
                     <div class="field">
                       <label class="label" i18n>Lieu</label>
@@ -1367,7 +1334,7 @@
                         <select
                           class="form-control"
                           id="lieu"
-                          [(ngModel)]="editSeance.LieuId"
+                          [(ngModel)]="editSeance.lieu_id"
                           placeholder="Lieu"
                         >
                           <option
@@ -1377,13 +1344,7 @@
                             {{ lieu.value }}
                           </option>
                         </select>
-                        <p
-                          class="help is-danger"
-                          *ngIf="!editSeance.valid.lieu"
-                          i18n
-                        >
-                          Le lieu doit être renseigné
-                        </p>
+                        
                       </div>
                     </div>
                   </div>
@@ -1396,14 +1357,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EstAgeMinimum == true
+                            editSeance.est_limite_age_minimum == true
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EstAgeMinimum == true
-                              ? (editSeance.EstAgeMinimum = false)
-                              : (editSeance.EstAgeMinimum = true)
+                            editSeance.est_limite_age_minimum == true
+                              ? (editSeance.est_limite_age_minimum = false)
+                              : (editSeance.est_limite_age_minimum = true)
                           "
                         >
                           <span i18n>Age minimum requis</span>
@@ -1411,14 +1372,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EstAgeMinimum == false
+                            editSeance.est_limite_age_minimum == false
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EstAgeMinimum == true
-                              ? (editSeance.EstAgeMinimum = false)
-                              : (editSeance.EstAgeMinimum = true)
+                            editSeance.est_limite_age_minimum == true
+                              ? (editSeance.est_limite_age_minimum = false)
+                              : (editSeance.est_limite_age_minimum = true)
                           "
                         >
                           <span i18n>Pas de limite</span>
@@ -1426,7 +1387,7 @@
                       </div>
                     </div>
                     <div
-                      *ngIf="editSeance.EstAgeMinimum == true"
+                      *ngIf="editSeance.est_limite_age_minimum == true"
                       class="field field-jecha"
                     >
                       <label class="label" i18n for="age_minimum"
@@ -1439,7 +1400,7 @@
                         matInput
                         type="number"
                         id="age_minimum"
-                        [(ngModel)]="editSeance.AgeMinimum"
+                        [(ngModel)]="editSeance.age_minimum"
                         i18n-placeholder
                         placeholder="Age requis"
                       />
@@ -1452,14 +1413,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EstAgeMaximum == true
+                            editSeance.est_limite_age_maximum == true
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EstAgeMaximum == true
-                              ? (editSeance.EstAgeMaximum = false)
-                              : (editSeance.EstAgeMaximum = true)
+                            editSeance.est_limite_age_maximum == true
+                              ? (editSeance.est_limite_age_maximum = false)
+                              : (editSeance.est_limite_age_maximum = true)
                           "
                         >
                           <span i18n>Age maximum</span>
@@ -1467,21 +1428,21 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EstAgeMaximum == false
+                            editSeance.est_limite_age_maximum == false
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EstAgeMaximum == true
-                              ? (editSeance.EstAgeMaximum = false)
-                              : (editSeance.EstAgeMaximum = true)
+                            editSeance.est_limite_age_maximum == true
+                              ? (editSeance.est_limite_age_maximum = false)
+                              : (editSeance.est_limite_age_maximum = true)
                           "
                         >
                           <span i18n>Pas de limite</span>
                         </button>
                       </div>
                     </div>
-                    <div class="field" *ngIf="editSeance.EstAgeMaximum == true">
+                    <div class="field" *ngIf="editSeance.est_limite_age_maximum == true">
                       <label class="label" i18n for="age_maximum"
                         >Age maximum :</label
                       >
@@ -1492,7 +1453,7 @@
                         matInput
                         type="number"
                         id="age_maximum"
-                        [(ngModel)]="editSeance.AgeMaximum"
+                        [(ngModel)]="editSeance.age_maximum"
                         placeholder="Age maximum"
                       />
                     </div>
@@ -1506,14 +1467,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EstPlaceMaximum == true
+                            editSeance.est_place_maximum == true
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EstPlaceMaximum == true
-                              ? (editSeance.EstPlaceMaximum = false)
-                              : (editSeance.EstPlaceMaximum = true)
+                            editSeance.est_place_maximum == true
+                              ? (editSeance.est_place_maximum = false)
+                              : (editSeance.est_place_maximum = true)
                           "
                         >
                           <span i18n>Places limitées</span>
@@ -1521,14 +1482,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EstPlaceMaximum == false
+                            editSeance.est_place_maximum == false
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EstPlaceMaximum == true
-                              ? (editSeance.EstPlaceMaximum = false)
-                              : (editSeance.EstPlaceMaximum = true)
+                            editSeance.est_place_maximum == true
+                              ? (editSeance.est_place_maximum = false)
+                              : (editSeance.est_place_maximum = true)
                           "
                         >
                           <span i18n>Places illimitées</span>
@@ -1537,7 +1498,7 @@
                     </div>
                     <div
                       class="field"
-                      *ngIf="editSeance.EstPlaceMaximum == true"
+                      *ngIf="editSeance.est_place_maximum == true"
                     >
                       <label class="label" i18n for="place_maximum"
                         >Place maximum :</label
@@ -1548,7 +1509,7 @@
                         id="place_maximum"
                         min="1"
                         max="999"
-                        [(ngModel)]="editSeance.PlaceMaximum"
+                        [(ngModel)]="editSeance.place_maximum"
                       />
                     </div>
                     <div class="field">
@@ -1559,14 +1520,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.ConvocationNominative == true
+                            editSeance.convocation_nominative == true
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.ConvocationNominative == true
-                              ? (editSeance.ConvocationNominative = false)
-                              : (editSeance.ConvocationNominative = true)
+                            editSeance.convocation_nominative == true
+                              ? (editSeance.convocation_nominative = false)
+                              : (editSeance.convocation_nominative = true)
                           "
                         >
                           <span i18n>Convocation nominative</span>
@@ -1574,14 +1535,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.ConvocationNominative == false
+                            editSeance.convocation_nominative == false
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.ConvocationNominative == true
-                              ? (editSeance.ConvocationNominative = false)
-                              : (editSeance.ConvocationNominative = true)
+                            editSeance.convocation_nominative == true
+                              ? (editSeance.convocation_nominative = false)
+                              : (editSeance.convocation_nominative = true)
                           "
                         >
                           <span i18n>Groupe entier convoqué</span>
@@ -1596,14 +1557,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EssaiPossible == true
+                            editSeance.essai_possible == true
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EssaiPossible == true
-                              ? (editSeance.EssaiPossible = false)
-                              : (editSeance.EssaiPossible = true)
+                            editSeance.essai_possible == true
+                              ? (editSeance.essai_possible = false)
+                              : (editSeance.essai_possible = true)
                           "
                         >
                           <span i18n>Essai possible</span>
@@ -1611,14 +1572,14 @@
                         <button
                           type="button"
                           [class]="
-                            editSeance.EssaiPossible == false
+                            editSeance.essai_possible == false
                               ? 'button is-link is-active'
                               : 'button is-active'
                           "
                           (click)="
-                            editSeance.EssaiPossible == true
-                              ? (editSeance.EssaiPossible = false)
-                              : (editSeance.EssaiPossible = true)
+                            editSeance.essai_possible == true
+                              ? (editSeance.essai_possible = false)
+                              : (editSeance.essai_possible = true)
                           "
                         >
                           <span i18n>Pas d'essai</span>
@@ -1631,7 +1592,7 @@
                       <label class="label" for="place_maximum"
                         ><span i18n>Professeurs</span>&nbsp;
                         <button
-                          *ngIf="editSeance.professeurs.length > 0"
+                          *ngIf="editSeance.seanceProfesseurs.length > 0"
                           (click)="
                             manage_prof
                               ? (manage_prof = false)
@@ -1646,21 +1607,21 @@
                         [liste_prof]="listeprof"
                         [thisSeance]="editSeance"
                         [manage]="manage_prof"
-                        [Profs]="editSeance.professeurs"
+                        [Profs]="editSeance.seanceProfesseurs"
                       ></app-prof>
                     </div>
 
-                    <div class="field"   *ngIf="editSeance.ConvocationNominative == false">
+                    <div class="field"   *ngIf="editSeance.convocation_nominative == false">
                       <label class="label" i18n for="place_maximum"
                         >Groupes :</label
                       >
                       <app-groupe-detail
                         (groupesUpdated)="onGroupesUpdated($event)"
-                        [id_source]="editSeance.ID"
+                        [id_source]="editSeance.seance_id"
                         [objet_source]="'séance'"
                       
                         [title]="titre_groupe"
-                        [Groupes]="editSeance.Groupes"
+                        [Groupes]="editSeance.groupes"
                         [liste_groupe]="liste_groupe"
                       ></app-groupe-detail>
                     </div>
@@ -1670,7 +1631,7 @@
                       </label>
                       <textarea
                         class="textarea"
-                        [(ngModel)]="editSeance.InfoSeance"
+                        [(ngModel)]="editSeance.info_seance"
                       ></textarea>
                     </div>
                   </div>
@@ -1682,14 +1643,13 @@
                 <div class="column">
                   <div class="buttons">
                     <btn
-                      [disabled]="!editSeance.valid.control"
                       [type_button]="'SauvegarderSmall'"
                       (click)="Save()"
                     ></btn>
                     <btn
                       [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
-                      *ngIf="editSeance.ID > 0"
+                      *ngIf="editSeance.seance_id > 0"
                     ></btn>
                     <btn
                       [type_button]="'ReloadSmall'"
@@ -1707,25 +1667,24 @@
     <span class="mobile">
       <nav class="navbar is-fixed-top">
         <btn
-          [disabled]="!editSeance.valid.control"
           [type_button]="'SauvegarderMobile'"
           (click)="Save()"
         ></btn>
         <btn
           [type_button]="'VoirMobile'"
           (click)="VoirMaSeance(editSeance)"
-          *ngIf="editSeance.ID > 0"
+          *ngIf="editSeance.seance_id > 0"
         ></btn>
-        <btn [type_button]="'ReloadMobile'" *ngIf="editSeance.ID > 0" (click)="Refresh()"></btn>
+        <btn [type_button]="'ReloadMobile'" *ngIf="editSeance.seance_id > 0" (click)="Refresh()"></btn>
         <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
       </nav>
       <div class="container-box">
         <div class="field-container">
-          <ng-container *ngIf="editSeance.ID == 0">
+          <ng-container *ngIf="editSeance.seance_id == 0">
             <div class="field">
               <label class="label" i18n>Type de séance</label>
               <div class="select">
-                <select id="cours" [(ngModel)]="editSeance.TypeSeance">
+                <select id="cours" [(ngModel)]="editSeance.type_seance">
                   <option value="ENTRAINEMENT" i18n>Cours</option>
                   <option value="SORTIE" i18n>Sortie</option>
                   <option value="EVENEMENT" i18n>Evenement</option>
@@ -1734,14 +1693,14 @@
               </div>
               <p
                 class="help is-danger"
-                *ngIf="!editSeance.TypeSeance"
+                *ngIf="!editSeance.type_seance"
                 i18n
               >
                 La sélection d'un type de séance est obligatoire
               </p>
             </div>
             <div
-              *ngIf="editSeance.TypeSeance == 'ENTRAINEMENT'"
+              *ngIf="editSeance.type_seance == 'ENTRAINEMENT'"
               class="field"
             >
               <label class="label" i18n>Cours</label>
@@ -1749,7 +1708,7 @@
                 <select
                   id="cours"
                   (ngModelChange)="onCoursSelectionChange($event)"
-                  [(ngModel)]="editSeance.Cours"
+                  [(ngModel)]="editSeance.cours"
                 >
                   <option
                     *ngFor="let cours of listeCours"
@@ -1759,27 +1718,27 @@
                   </option>
                 </select>
               </div>
-              <p class="help is-danger" *ngIf="!editSeance.Cours" i18n>
+              <p class="help is-danger" *ngIf="!editSeance.cours" i18n>
                 La sélection d'un cours est obligatoire
               </p>
             </div>
           </ng-container>
-          <ng-container *ngIf="editSeance.ID > 0">
-            <div *ngIf="editSeance.Cours > 0" class="field">
+          <ng-container *ngIf="editSeance.seance_id > 0">
+            <div *ngIf="editSeance.cours > 0" class="field">
               <label class="label" i18n>Cours</label>
-              <span>{{ GetCours(editSeance.Cours) }}</span>
+              <span>{{ GetCours(editSeance.cours) }}</span>
             </div>
             <div class="field">
               <label class="label" i18n>Type de séance</label>
-              <span>{{ GetType(editSeance.TypeSeance) }}</span>
+              <span>{{ GetType(editSeance.type_seance) }}</span>
             </div>
           </ng-container>
         </div>
         <ng-container
           *ngIf="
-            (editSeance.TypeSeance === 'ENTRAINEMENT' &&
-              editSeance.Cours > 0) ||
-            editSeance.TypeSeance != 'ENTRAINEMENT'
+            (editSeance.type_seance === 'ENTRAINEMENT' &&
+              editSeance.cours > 0) ||
+            editSeance.type_seance != 'ENTRAINEMENT'
           "
         >
           <div class="field-container" *ngIf="editMode_serie">
@@ -1812,13 +1771,7 @@
                 type="date"
                 [(ngModel)]="editSeance.date_seance"
               />
-              <p
-                class="help is-danger"
-                *ngIf="!editSeance.valid.date"
-                i18n
-              >
-                La date de début de la série doit être saisie
-              </p>
+             
             </div>
 
             <div class="field">
@@ -1839,9 +1792,7 @@
             <div class="field">
               <label class="label" i18n>Libellé</label>
               <input
-                [class]="
-                  editSeance.valid.libelle ? 'input' : 'input is-danger'
-                "
+                class="input"
                 type="text"
                 id="nom_rider"
                 name="nom_rider"
@@ -1850,17 +1801,11 @@
                 [(ngModel)]="editSeance.libelle"
                 required
               />
-              <p
-                class="help is-danger"
-                *ngIf="!editSeance.valid.libelle"
-                i18n
-              >
-                Le libellé doit faire au moins 5 caractères
-              </p>
+              
             </div>
             <div class="field">
               <label class="label" i18n>Statut</label>
-              <ng-container *ngIf="editSeance.ID < 1">
+              <ng-container *ngIf="editSeance.seance_id < 1">
                 <span class="tag is-info is-rounded is-light">
                   <span class="icon has-text-info">
                     <i class="fa-solid fa-calendar-check"></i>
@@ -1868,8 +1813,8 @@
                   <span i18n>Prévue</span>
                 </span>
               </ng-container>
-              <ng-container *ngIf="editSeance.ID > 0">
-                <ng-container *ngIf="editSeance.Statut == 'prévue'">
+              <ng-container *ngIf="editSeance.seance_id > 0">
+                <ng-container *ngIf="editSeance.statut == 'prévue'">
                   <span class="tag is-info is-rounded is-light">
                     <span class="icon has-text-info">
                       <i class="fa-solid fa-calendar-check"></i> </span
@@ -1895,7 +1840,7 @@
                   >
                   </hover-button>
                 </ng-container>
-                <ng-container *ngIf="editSeance.Statut == 'réalisée'">
+                <ng-container *ngIf="editSeance.statut == 'réalisée'">
                   <span class="tag is-primary is-rounded is-light">
                     <span class="icon has-text-success">
                       <i class="fa-solid fa-flag-checkered"></i> </span
@@ -1919,7 +1864,7 @@
                   >
                   </hover-button>
                 </ng-container>
-                <ng-container *ngIf="editSeance.Statut == 'annulée'">
+                <ng-container *ngIf="editSeance.statut == 'annulée'">
                   <span class="tag is-danger is-rounded is-light">
                     <span class="icon has-text-danger">
                       <i class="fa-solid fa-ban"></i> </span
@@ -1952,7 +1897,7 @@
                 <label class="label" i18n>Date de la séance</label>
                 <span
                   class="title_label"
-                  *ngIf="editSeance.Cours && editSeance.ID == 0"
+                  *ngIf="editSeance.cours && editSeance.seance_id == 0"
                   >&nbsp;({{ jour_semaine }})</span
                 >
                 <input
@@ -1961,13 +1906,7 @@
                   type="date"
                   [(ngModel)]="editSeance.date_seance"
                 />
-                <p
-                  class="help is-danger"
-                  *ngIf="!editSeance.valid.date"
-                  i18n
-                >
-                  La date de la séance doit être saisie
-                </p>
+                
               </div>
             </ng-container>
             <div class="field">
@@ -1979,13 +1918,6 @@
                 type="time"
                 [(ngModel)]="editSeance.heure_debut"
               />
-              <p
-                class="help is-danger"
-                *ngIf="!editSeance.valid.heure"
-                i18n
-              >
-                L'heure doit être saisie
-              </p>
             </div>
             <div class="field">
               <label class="label" i18n>Durée de la séance</label>
@@ -1995,13 +1927,6 @@
                 type="number"
                 [(ngModel)]="editSeance.duree_seance"
               />
-              <p
-                class="help is-danger"
-                *ngIf="!editSeance.valid.duree"
-                i18n
-              >
-                La durée doit être saisie
-              </p>
             </div>
             <div class="field">
               <label class="label" i18n>Lieu</label>
@@ -2019,13 +1944,7 @@
                     {{ lieu.value }}
                   </option>
                 </select>
-                <p
-                  class="help is-danger"
-                  *ngIf="!editSeance.valid.lieu"
-                  i18n
-                >
-                  Le lieu doit être renseigné
-                </p>
+              
               </div>
             </div>
           </div>
@@ -2134,7 +2053,7 @@
                 matInput
                 type="number"
                 id="age_maximum"
-                [(ngModel)]="editSeance.AgeMaximum"
+                [(ngModel)]="editSeance.age_maximum"
                 placeholder="Age maximum"
               />
             </div>
@@ -2148,14 +2067,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EstPlaceMaximum == true
+                    editSeance.est_place_maximum == true
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EstPlaceMaximum == true
-                      ? (editSeance.EstPlaceMaximum = false)
-                      : (editSeance.EstPlaceMaximum = true)
+                    editSeance.est_place_maximum == true
+                      ? (editSeance.est_place_maximum = false)
+                      : (editSeance.est_place_maximum = true)
                   "
                 >
                   <span i18n>Places limitées</span>
@@ -2163,14 +2082,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EstPlaceMaximum == false
+                    editSeance.est_place_maximum == false
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EstPlaceMaximum == true
-                      ? (editSeance.EstPlaceMaximum = false)
-                      : (editSeance.EstPlaceMaximum = true)
+                    editSeance.est_place_maximum == true
+                      ? (editSeance.est_place_maximum = false)
+                      : (editSeance.est_place_maximum = true)
                   "
                 >
                   <span i18n>Places illimitées</span>
@@ -2179,7 +2098,7 @@
             </div>
             <div
               class="field"
-              *ngIf="editSeance.EstPlaceMaximum == true"
+              *ngIf="editSeance.est_place_maximum == true"
             >
               <label class="label" i18n for="place_maximum"
                 >Place maximum :</label
@@ -2190,7 +2109,7 @@
                 id="place_maximum"
                 min="1"
                 max="999"
-                [(ngModel)]="editSeance.PlaceMaximum"
+                [(ngModel)]="editSeance.place_maximum"
               />
             </div>
             <div class="field">
@@ -2201,14 +2120,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.ConvocationNominative == true
+                    editSeance.convocation_nominative == true
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.ConvocationNominative == true
-                      ? (editSeance.ConvocationNominative = false)
-                      : (editSeance.ConvocationNominative = true)
+                    editSeance.convocation_nominative == true
+                      ? (editSeance.convocation_nominative = false)
+                      : (editSeance.convocation_nominative = true)
                   "
                 >
                   <span i18n>Convocation nominative</span>
@@ -2216,14 +2135,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.ConvocationNominative == false
+                    editSeance.convocation_nominative == false
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.ConvocationNominative == true
-                      ? (editSeance.ConvocationNominative = false)
-                      : (editSeance.ConvocationNominative = true)
+                    editSeance.convocation_nominative == true
+                      ? (editSeance.convocation_nominative = false)
+                      : (editSeance.convocation_nominative = true)
                   "
                 >
                   <span i18n>Groupe entier convoqué</span>
@@ -2238,14 +2157,14 @@
                 <button
                   type="button"
                   [class]="
-                    editSeance.EssaiPossible == true
+                    editSeance.essai_possible == true
                       ? 'button is-link is-active'
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EssaiPossible == true
-                      ? (editSeance.EssaiPossible = false)
-                      : (editSeance.EssaiPossible = true)
+                    editSeance.essai_possible == true
+                      ? (editSeance.essai_possible = false)
+                      : (editSeance.essai_possible = true)
                   "
                 >
                   <span i18n>Essai possible</span>
@@ -2258,9 +2177,9 @@
                       : 'button is-active'
                   "
                   (click)="
-                    editSeance.EssaiPossible == true
-                      ? (editSeance.EssaiPossible = false)
-                      : (editSeance.EssaiPossible = true)
+                    editSeance.essai_possible == true
+                      ? (editSeance.essai_possible = false)
+                      : (editSeance.essai_possible = true)
                   "
                 >
                   <span i18n>Pas d'essai</span>
@@ -2273,7 +2192,7 @@
               <label class="label" for="place_maximum"
                 ><span i18n>Professeurs</span>&nbsp;
                 <button
-                  *ngIf="editSeance.professeurs.length > 0"
+                  *ngIf="editSeance.seanceProfesseurs.length > 0"
                   (click)="
                     manage_prof
                       ? (manage_prof = false)
@@ -2288,21 +2207,21 @@
                 [liste_prof]="listeprof"
                 [thisSeance]="editSeance"
                 [manage]="manage_prof"
-                [Profs]="editSeance.professeurs"
+                [Profs]="editSeance.seanceProfesseurs"
               ></app-prof>
             </div>
 
             <div class="field" 
-            *ngIf="editSeance.ConvocationNominative == false">
+            *ngIf="editSeance.convocation_nominative == false">
               <label class="label" i18n for="place_maximum"
                 >Groupes :</label
               >
               <app-groupe-detail
                 (groupesUpdated)="onGroupesUpdated($event)"
-                [id_source]="editSeance.ID"
+                [id_source]="editSeance.seance_id"
                 [objet_source]="'séance'"
                 [title]="titre_groupe"
-                [Groupes]="editSeance.Groupes"
+                [Groupes]="editSeance.groupes"
                 [liste_groupe]="liste_groupe"
               ></app-groupe-detail>
             </div>
@@ -2312,7 +2231,7 @@
               </label>
               <textarea
                 class="textarea"
-                [(ngModel)]="editSeance.InfoSeance"
+                [(ngModel)]="editSeance.info_seance"
               ></textarea>
             </div>
           </div>

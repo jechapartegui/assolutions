@@ -1,4 +1,7 @@
 export class LienGroupe_VM {
+  key(key: any) {
+    throw new Error('Method not implemented.');
+  }
   id: number;
   nom: string;
   id_lien: number;

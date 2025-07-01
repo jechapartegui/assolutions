@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Adresse } from '../../class/address';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
@@ -13,6 +12,8 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { GlobalService } from '../../services/global.services';
 import { SeanceVM } from '@shared/src/lib/seance.interface';
 import { ProfesseurVM } from '@shared/src/lib/prof.interface';
+import { Adresse } from '@shared/src/lib/adresse.interface';
+import { compteVM } from '@shared/src';
 
 @Component({
   selector: 'app-seances-essais',
@@ -155,24 +156,7 @@ export class SeancesEssaisComponent implements OnInit {
     }
     if (window.confirm(libelle)) {
       this.thisSeance = seance;
-       let adh: AdherentVM = {
-            id:0,
-            nom:"",
-            prenom:"",
-            surnom:"",
-            date_naissance:new Date(),
-            contact:[],
-            contact_prevenir:[],
-            adresse:"",
-            sexe:false,
-            compte:0,
-            code_postal:"",
-            ville:"",
-            inscrit:false,
-            login:"",
-            groupes:[]
-      
-          }
+       let adh = new AdherentVM();
       this.thisEssai = adh;
       this.essai = true;
     }
@@ -186,20 +170,17 @@ export class SeancesEssaisComponent implements OnInit {
     this.valid_tel = isValid;
   }
   onValidContactChange(data: ItemContact[]) {
-    this.thisEssai.datasource.contact = data;
-    this.thisEssai.Contacts = data;
+    this.thisEssai.contact = data;
 
   }
   onValidContactUrgenceChange(data: ItemContact[]) {
-    this.thisEssai.datasource.contact_prevenir = data;
-    this.thisEssai.ContactsUrgence = data;
+    this.thisEssai.contact_prevenir = data;
   }
   onValidAdresseChange(isValid: boolean) {
     this.valid_address = isValid;
   }
   onAdresseChange(data: Adresse) {
-    this.thisEssai.Adresse = data;
-    this.thisEssai.datasource.adresse = JSON.stringify(data);
+    this.thisEssai.adresse = data;
   }
   Retour() {
     let libelle = $localize`Les informations saisies seront perdues, voulez-vous continuer? `;
@@ -212,22 +193,14 @@ export class SeancesEssaisComponent implements OnInit {
   Confirmer() {
     const errorService = ErrorService.instance;
     this.action = $localize`Essayer une séance`;
-    this.thisEssai.Login = this.thisEssai.Contacts.filter(x => x.Type=="EMAIL")[0].Value;
-    let co:compte={
-      id:this.thisEssai.CompteID,
-    nom: "",
-    email: this.thisEssai.Login,
-    password: "",
-    actif: false,
-    mail_actif: true,
-    derniere_connexion: new Date(),
-    echec_connexion: 0,
-    mail_ko: false
-    }
-    this.rider_serv.Essayer(this.thisEssai.datasource, this.thisSeance.ID, this.project_id, co).then((ID) => {
+    this.thisEssai.login = this.thisEssai.contact.filter(x => x.Type=="EMAIL")[0].Value;
+    let co = new compteVM();
+co.id =this.thisEssai.compte;
+
+    this.rider_serv.Essayer(this.thisEssai, this.thisSeance.seance_id, this.project_id, co).then((ID) => {
       if (ID > 0) {
         
-        this.mail_serv.EnvoiMailEssai(this.thisEssai.datasource, this.thisSeance.datasource, this.thisEssai.Login,ID, this.project_id).then((retour) => {
+        this.mail_serv.EnvoiMailEssai(this.thisEssai, this.thisSeance, this.thisEssai.login,ID, this.project_id).then((retour) => {
           if (retour) {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);

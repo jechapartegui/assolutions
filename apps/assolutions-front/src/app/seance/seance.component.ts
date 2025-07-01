@@ -16,7 +16,7 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { CoursVM } from '@shared/src/lib/cours.interface';
 import { SeanceProfesseurVM, SeanceVM, StatutSeance } from '@shared/src/lib/seance.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import { ProfessuerVM, SaisonVM } from '@shared/src';
+import { ProfesseurVM, SaisonVM } from '@shared/src';
 
 
 @Component({
@@ -36,9 +36,9 @@ export class SeanceComponent implements OnInit {
   public selected_sort_sens: any;
   public afficher_tri: boolean = false;
   public histo_seance: string;
-  listeprof: ProfessuerVM[];
+  listeprof: ProfesseurVM[];
   listelieu: KeyValuePair[];
-  prof_dispo: ProfessuerVM[];
+  prof_dispo: ProfesseurVM[];
   est_prof: boolean = false;
   est_admin: boolean = false;
   manage_prof: boolean = false;

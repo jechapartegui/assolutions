@@ -84,36 +84,36 @@
                             <h5 class="title is-5"><strong>{{thisSeance.libelle}}&nbsp;{{ thisSeance.date_seance |
                                 date: 'dd/MM/yyyy' }}</strong></h5>
                         <div class="ligneinfo">
-                            <ng-container *ngIf="thisSeance.TypeSeance==='ENTRAINEMENT'">
+                            <ng-container *ngIf="thisSeance.type_seance==='ENTRAINEMENT'">
 
                                 <span i18n>Cours</span>
                             </ng-container>
-                            <ng-container *ngIf="thisSeance.TypeSeance==='MATCH'">
+                            <ng-container *ngIf="thisSeance.type_seance==='MATCH'">
                                 <span i18n>Match</span>
                             </ng-container>
-                            <ng-container *ngIf="thisSeance.TypeSeance==='EVENEMENT'">
+                            <ng-container *ngIf="thisSeance.type_seance==='EVENEMENT'">
                                 <span i18n>Evénement</span>
                             </ng-container>
-                            <ng-container *ngIf="thisSeance.TypeSeance==='SORTIE'">
+                            <ng-container *ngIf="thisSeance.type_seance==='SORTIE'">
                                 <span i18n>Sortie</span>
                             </ng-container>
                             - {{thisSeance.heure_debut}} <span>({{thisSeance.duree_seance}} <span i18n>&nbsp;min</span>)</span>
-                            {{thisSeance.Lieu}}
-                            <ng-container *ngIf="thisSeance.Statut == 'prévue'">
+                            {{thisSeance.lieu_nom}}
+                            <ng-container *ngIf="thisSeance.statut == 'prévue'">
                                 <span class="tag is-info is-large is-rounded">
                                 <svg width="20" style="fill:blue" height="20">
                                     <use xlink:href=".\assets\liste.svg#prevu"></use>
                                 </svg>
                                 </span>
                             </ng-container>
-                            <ng-container *ngIf="thisSeance.Statut == 'réalisée'">
+                            <ng-container *ngIf="thisSeance.statut == 'réalisée'">
                                 <span class="tag is-primary is-large is-rounded">
                                 <svg width="20" style="fill:hsl(171, 100%, 41%)" height="20">
                                     <use xlink:href=".\assets\liste.svg#termine"></use>
                                 </svg>
                                 </span>
                             </ng-container>
-                            <ng-container *ngIf="thisSeance.Statut == 'annulée'">
+                            <ng-container *ngIf="thisSeance.statut == 'annulée'">
                                 
                                 <span class="tag is-danger is-large is-rounded">
                                 <svg width="20" style="fill:hsl(348, 100%, 61%)" height="20">
@@ -123,9 +123,9 @@
                             </ng-container>
                            
                         </div>
-                        <div *ngIf="thisSeance.EstAgeMinimum || thisSeance.EstAgeMaximum" class="ligneinfo">
-                            <span *ngIf="thisSeance.EstAgeMinimum"><span i18n>Age minimum : </span>{{thisSeance.AgeMinimum}}<span i18n> ans</span></span>
-                            <span *ngIf="thisSeance.EstAgeMaximum"><span i18n>Age maximum : </span>{{thisSeance.AgeMaximum}}<span i18n> ans</span></span>
+                        <div *ngIf="thisSeance.est_limite_age_minimum || thisSeance.est_limite_age_maximum" class="ligneinfo">
+                            <span *ngIf="thisSeance.est_limite_age_minimum"><span i18n>Age minimum : </span>{{thisSeance.age_minimum}}<span i18n> ans</span></span>
+                            <span *ngIf="thisSeance.est_limite_age_maximum"><span i18n>Age maximum : </span>{{thisSeance.age_maximum}}<span i18n> ans</span></span>
                         </div>
 
                         </div>
@@ -141,12 +141,12 @@
                     <p class="help is-danger" *ngIf="!valid_address" i18n>L'adresse doit être saisie (voie, code postal
                         et ville)</p>
                     <app-contact-item  [Notes]="'Notes'"
-                        [Titre]="'Contacts : '" [Contacts]="thisEssai.Contacts" ></app-contact-item>
+                        [Titre]="'Contacts : '" [Contacts]="thisEssai.contact" ></app-contact-item>
                     <p class="help is-danger" *ngIf="!valid_mail" i18n>Au moins un mail doit être saisi</p>
                     <p class="help is-danger" *ngIf="!valid_tel" i18n>Au moins un téléphone doit être saisi</p>
 
                     <app-contact-item [Notes]="'Relation'" [Titre]="'Contact à prévenir : '"
-                        [Contacts]="thisEssai.ContactsUrgence"
+                        [Contacts]="thisEssai.contact_prevenir"
                         >
                     </app-contact-item>
 
