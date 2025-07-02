@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.preprod';
-import { compte } from '@shared/src/lib/compte.interface';
+import { compteVM } from '@shared/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,16 +12,14 @@ export class CompteService {
   constructor(public global: GlobalService) {
   }
 
-  public GetAll(): Promise<compte[]> {
+  public GetAll(): Promise<compteVM[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/compte_manage.php';
+   this.url = 'api/compte/getall';
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_all"
-    };
+   
 
-    return this.global.POST(this.url, body)
-      .then((response: compte[]) => {
+    return this.global.GET(this.url)
+      .then((response: compteVM[]) => {
         return response;
       })
       .catch(error => {
@@ -30,14 +28,12 @@ export class CompteService {
       });
   }
 
-  public getAccount(id: number): Promise<compte> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
+  public getAccount(id: number): Promise<compteVM> {
+    this.url = 'api/compte/get/'  + id;
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_account",
-      id: id
-    };
-    return this.global.POST(this.url, body)
+   
+
+    return this.global.GET(this.url)
       .then((response) => {
         return response;
       })
@@ -45,14 +41,12 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
-  public getAccountLogin(login: string): Promise<compte> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
+  public getAccountLogin(login: string): Promise<compteVM> {
+     this.url = 'api/compte/get_login/'  + login;
     //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_account",
-      login: login
-    };
-    return this.global.POST(this.url, body)
+   
+
+    return this.global.GET(this.url)
       .then((response) => {
         return response;
       })
@@ -62,14 +56,13 @@ export class CompteService {
   }
 
   public UpdateMail_Active(id: number, mail_active: number): Promise<any> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
+     this.url = 'api/compte/update_mail_active';
     //  this.url = this.url + "login.php";
     const body = {
-      command: "update_mail_active",
       compte: id,
       mail_active: mail_active
     };
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response) => {
         return response;
       })
@@ -78,15 +71,14 @@ export class CompteService {
       });
   }
   public UpdateMail(compte: number, mail: string, password: string): Promise<boolean> {
-    this.url = environment.maseance + "maseance/compte_manage.php";
+     this.url = 'api/compte/update_mail';
     const body = {
-      command: "update_mail",
       compte: compte,
       mail: mail,
       password: password
     };
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response: boolean) => {
         return response;
       })
@@ -95,14 +87,13 @@ export class CompteService {
       });
   }
   public AddOrMAJLogin(login: string, id: number): Promise<number> {
-    this.url = environment.maseance + "maseance/compte_manage.php";
+     this.url = 'api/compte/add_or_maj_login';
     const body = {
-      command: "add_or_maj_login",
       login: login,
       id: id
     };
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response: number) => {
         return response;
       })
@@ -111,72 +102,11 @@ export class CompteService {
       });
   }
 
-  public CheckReinit(login: string, token: string):Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "check_reinit",
-      login: login,
-      token: token
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public ValidReinit(login: string, token: string):Promise<boolean>  {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "valid_reinit_sans_mdp",
-      login: login,
-      token: token
-    };   
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public ValidReinitMDP(login: string, token: string, password:string):Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    let body = {
-      command: "valid_reinit_mdp",
-      login: login,
-      token: token,
-      password:password
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
 
   ActiverCompte(id: number): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "activate_account",
-      id: id,
-    };
+     this.url = 'api/compte/activate_account';
 
-    return this.global.POST(this.url, body)
+    return this.global.POST(this.url, id)
       .then((response: boolean) => {
         return response;
       })
@@ -190,9 +120,8 @@ export class CompteService {
 
 
 
-  public CheckLogin(login: string, psw: string): Promise<compte> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/compte_manage.php';
+  public CheckLogin(login: string, psw: string): Promise<compteVM> {
+     this.url = 'api/compte/activate_account';
     //  this.url = this.url + "login.php";
     const body = {
       command: "check",
@@ -201,7 +130,7 @@ export class CompteService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: compte) => {
+      .then((response: compteVM) => {
         return response;
       })
       .catch(error => {
@@ -209,35 +138,11 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
-  public getToken(id: number, droit:number): Promise<string> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_token",
-      id: id,
-      droit:droit
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: string) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Creer(compte: compte): Promise<number> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "add",
-      compte: compte
-    };
+  public Add(compte: compteVM): Promise<number> {
+     this.url = 'api/compte/add';
 
-    return this.global.POST(this.url, body)
+    return this.global.POST(this.url, compte)
       .then((response: number) => {
         return response;
       })
@@ -247,14 +152,9 @@ export class CompteService {
       });
   }
   public Exist(login: string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "exist",
-      login: login,
-    };
+     this.url = 'api/compte/exist';
 
-    return this.global.POST(this.url, body)
+    return this.global.POST(this.url, login)
       .then((response: boolean) => {
         return response;
       })
@@ -266,14 +166,9 @@ export class CompteService {
 
 
   public ExistListe(list_login: string[]): Promise<string[]> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "exist",
-      list_login: list_login,
-    };
+     this.url = 'api/compte/exists';
 
-    return this.global.POST(this.url, body)
+    return this.global.POST(this.url, list_login)
       .then((response: string[]) => {
         return response;
       })
@@ -284,10 +179,9 @@ export class CompteService {
   }
 
   public Attacher(compte_id: number, rider_id: number): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
+     this.url = 'api/compte/attacher';
+
     const body = {
-      command: "attacher",
       compte_id: compte_id,
       rider_id: rider_id,
     };
@@ -304,34 +198,16 @@ export class CompteService {
   public Detacher(rider_id: number): Promise<boolean> {
     return this.Attacher(0, rider_id);
   }
-  public UpdateMailRelance(compte_id: number): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "update_mail_relance",
-      compte_id: compte_id,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
 
   public UpdateMDP(login:string, password: string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
+     this.url = 'api/compte/update_mdp';
     //  this.url = this.url + "login.php";
     const body = {
-      command: "update_mdp",
       login: login,
       password:password
     };
 
-    return this.global.POST(this.url, body)
+    return this.global.PUT(this.url, body)
       .then((response: boolean) => {
         return response;
       })
@@ -341,75 +217,5 @@ export class CompteService {
       });
   }
 
-  public AddCompteMDP(login:string, password: string): Promise<number> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "add_mdp",
-      login: login,
-      password:password
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
-  public AddAdmin(compte:number, password: string): Promise<number> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "add_admin",
-      id: compte,
-      password:password
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public DeleteAdmin(compte:number, password: string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "delete_admin",
-      id: compte,
-      password:password
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public GetAllAdmin(): Promise<compte[]> {
-    this.url = environment.maseance + 'maseance/compte_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_all_admin"
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: compte[]) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
 }

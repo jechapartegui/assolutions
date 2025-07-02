@@ -1,6 +1,6 @@
 import { ItemContact } from "@shared/src/lib/member.interface";
-import { seance } from "./seance";
 import { full_inscription_seance, inscription_seance } from "@shared/src/lib/inscription_seance.interface";
+import { SeanceVM } from "@shared/src";
 
 
 
@@ -123,10 +123,10 @@ export class InscriptionMaSeance {
 
 
 export class InscriptionSeance {
-      public thisSeance: seance;
+      public thisSeance: SeanceVM;
       public thisInscription: inscription_seance;
 
-      public constructor(seance: seance, inscription: inscription_seance, rider_id: number) {
+      public constructor(seance: SeanceVM, inscription: inscription_seance, rider_id: number) {
             this.thisSeance = seance;
 
             if (inscription) {

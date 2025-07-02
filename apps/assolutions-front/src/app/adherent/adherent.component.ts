@@ -1,7 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Adresse } from '../../class/address';
 import {
   Adhesion,
   Type_Adhesion,
@@ -18,10 +17,11 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
-import { AdherentVM } from '@shared/src/lib/member.interface';
+import { AdherentExport, AdherentVM } from '@shared/src/lib/member.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { SaisonVM } from '@shared/src/lib/saison.interface';
 import { LienGroupe_VM } from '@shared/src';
+import { Adresse } from '@shared/src/lib/adresse.interface';
 
 @Component({
   selector: 'app-adherent',
@@ -513,23 +513,23 @@ valid_contact_urgence(isValid: boolean): void {
     }
   }
 
-  Delete(adh: Adherent) {
+  Delete(adh: AdherentVM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer l'adhérent`;
     let confirm = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
     if (confirm) {
-      if (adh.Adhesions) {
-        adh.Adhesions.forEach((adhesion) => {
+      if (adh.adhesion) {
+        adh.adhesion.forEach((adhesion) => {
           this.inscription_saison_serv.Delete(adhesion.id);
         });
       }
-      if (adh.Groupes) {
-        adh.Groupes.forEach((gr) => {
-          this.grServ.DeleteLien(adh.ID, "rider",Number(gr.key));
+      if (adh.groupes) {
+        adh.groupes.forEach((gr) => {
+          this.grServ.DeleteLien(adh.id, "rider",Number(gr.key));
         });
       }
       this.ridersService
-        .Delete(adh.ID)
+        .Delete(adh.id)
         .then((retour) => {
           if (retour) {
             let o = errorService.OKMessage(this.action);
@@ -547,10 +547,7 @@ valid_contact_urgence(isValid: boolean): void {
     }
   }
   SaveAdresse(thisAdresse :Adresse){
-    this.thisAdherent.Adresse = thisAdresse;
-    this.thisAdherent.datasource.adresse = thisAdresse.Street;
-    this.thisAdherent.datasource.code_postal = thisAdresse.PostCode;
-    this.thisAdherent.datasource.ville = thisAdresse.City;
+    this.thisAdherent.adresse = thisAdresse;
     this.PreSave();
   }
 

@@ -1,10 +1,7 @@
 import { Subject } from 'rxjs';
-import { Adresse } from './address';
-import { Groupe } from './groupe';
-import { Saison } from './saison';
-import { Lieu } from './lieu';
 import { project_login } from '../services/login.nest.service';
-import { compte } from '@shared/src/lib/compte.interface';
+import { compteVM, Groupe_VM, LieuVM, SaisonVM } from '@shared/src';
+import { Adresse } from '@shared/src/lib/adresse.interface';
 
 
 export class projet {
@@ -27,7 +24,7 @@ export class projet {
   public libelle_facturation: string = "";
   public activite: string = "";
   public pays:string = "FR";
-  public groupe:Groupe[] = [];
+  public groupe:Groupe_VM[] = [];
   public place_maximum:boolean = true;
   public saison_active:number=0;
   public essai_possible:boolean=false;
@@ -96,11 +93,11 @@ export class Projet {
   }
 
 
-  private compte: compte;
-  public get Compte(): compte {
+  private compte: compteVM;
+  public get Compte(): compteVM {
     return this.compte;
   }
-  public set Compte(value: compte) {
+  public set Compte(value: compteVM) {
     this.compte = value;
   }
 
@@ -219,25 +216,25 @@ export class Projet {
   get Mail_Relance_Actif(): boolean {
     return this.datasource.mail_relance_actif;
   }
-  set Groupes(value: Groupe[]) {
+  set Groupes(value: Groupe_VM[]) {
     this.datasource.groupe = value;
   }
-  get Groupes(): Groupe[] {
+  get Groupes(): Groupe_VM[] {
     return this.datasource.groupe;
   }
-  saisons:Saison[];
-  set Saisons  (value: Saison[]) {
+  saisons:SaisonVM[];
+  set Saisons  (value: SaisonVM[]) {
     this.saisons = value;
   }
-  get Saisons(): Saison[] {
+  get Saisons(): SaisonVM[] {
     return this.saisons;
   }
   
-  lieux:Lieu[];
-  set Lieux  (value: Lieu[]) {
+  lieux:LieuVM[];
+  set Lieux  (value: LieuVM[]) {
     this.lieux = value;
   }
-  get Lieux(): Lieu[] {
+  get Lieux(): LieuVM[] {
     return this.lieux;
   }
 

@@ -2,14 +2,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FilterAdherent } from '../adherent/adherent.component';
-import { Adherent } from '../../class/adherent';
-import { Professeur, professeur, prof_saison } from '../../class/professeur';
-import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
+import { AdherentVM, ProfesseurVM, ProfSaisonVM, SaisonVM } from '@shared/src';
 
 @Component({
   selector: 'app-professeur',
@@ -24,21 +22,21 @@ ExportExcel() {
 throw new Error('Method not implemented.');
 }
   public action: string;
-  public ListeProf: Professeur[];
+  public ListeProf: ProfesseurVM[];
   public loading:boolean=false;
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   @Input() public id: number;
-  public thisProf: Professeur = null;
-  public thisAdherent: Adherent = null;
+  public thisProf: ProfesseurVM = null;
+  public thisAdherent: AdherentVM = null;
   public inscrits: number = null;
   public afficher_filtre: boolean = false;
     public histo_prof: string;
     @ViewChild('scrollableContent', { static: false })
     scrollableContent!: ElementRef;
     showScrollToTop: boolean = false;
-  public liste_saison: Saison[] = [];
-  public active_saison: Saison;
-  public liste_adherents_VM: Adherent[] = [];
+  public liste_saison: SaisonVM[] = [];
+  public active_saison: SaisonVM;
+  public liste_adherents_VM: AdherentVM[] = [];
   public sort_nom = "NO";
   public sort_date = "NO";
   public sort_sexe = "NO";
@@ -87,7 +85,7 @@ throw new Error('Method not implemented.');
           }
           return;
         }
-        this.liste_saison = sa.map(x => new Saison(x));
+        this.liste_saison = sa;
         this.active_saison = this.liste_saison.filter(x => x.active == true)[0];
         this.route.queryParams.subscribe(params => {
           if ('id' in params) {
@@ -140,11 +138,11 @@ throw new Error('Method not implemented.');
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les professeurs`;
     this.prof_serv.GetProfAll().then((cpt) => {
-      this.ListeProf = cpt.map(x => new Professeur(x));
+      this.ListeProf = cpt;
      
       this.action = $localize`Récupérer les adhérents`;
       this.ridersService.GetAdherentAdhesion(this.GlobalService.saison_active).then((adhs) => {
-        this.liste_adherents_VM = adhs.map(x => new Adherent(x));
+        this.liste_adherents_VM = adhs;
         this.loading = false;
       }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError(this.action, error);
@@ -171,45 +169,38 @@ throw new Error('Method not implemented.');
 
   Creer() {
     if (this.thisAdherent) {
-      let prof = new professeur();
-      this.thisProf = new Professeur(prof);
-      this.thisProf.ID = this.thisAdherent.ID;
-      this.thisProf.Prenom = this.thisAdherent.Prenom;
-      this.thisProf.Nom = this.thisAdherent.Nom;
-      this.thisProf.Surnom = this.thisAdherent.Surnom;
-      this.thisProf.Adresse = this.thisAdherent.Adresse;
-      this.thisProf.Contacts = this.thisAdherent.Contacts;
-      this.thisProf.Sexe = this.thisAdherent.Sexe;
-      this.thisProf.DDN = this.thisAdherent.DDN;
+      this.thisProf = new ProfesseurVM();
+      this.thisProf.id = this.thisAdherent.id;
+      this.thisProf.prenom = this.thisAdherent.prenom;
+      this.thisProf.nom = this.thisAdherent.nom;
+      this.thisProf.surnom = this.thisAdherent.surnom;
       this.context = "ECRITURE";
       this.creer = true;
-      this.id = this.thisAdherent.ID;
+      this.id = this.thisAdherent.id;
 
     }
   }
-  Edit(prof: Professeur) {
+  Edit(prof: ProfesseurVM) {
     this.context = "ECRITURE";
-    this.id = prof.ID;
+    this.id = prof.id;
     this.creer =false;
     this.ChargerProf();
   }
-  Read(prof: Professeur) {
+  Read(prof: ProfesseurVM) {
     this.context = "LECTURE";
-    this.id = prof.ID;
+    this.id = prof.id;
     this.ChargerProf();
   }
-  Register(adh: Professeur, saison_id: number, taux_horaire: number) {
+  Register(adh: ProfesseurVM, saison_id: number, taux_horaire: number) {
     const errorService = ErrorService.instance;
     this.action = $localize`Déclarer en tant que professeur`;
-    let pss: prof_saison = {
+    let pss: ProfSaisonVM = {
       saison_id: saison_id,
-      rider_id: adh.ID,
-      taux_horaire: taux_horaire
+      prof_id: adh.id
     }
 
     this.prof_serv.AddSaison(pss).then((retour) => {
       if (retour) {
-        adh.saisons.push(pss);
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
 
@@ -223,11 +214,10 @@ throw new Error('Method not implemented.');
     })
 
   }
-  RemoveRegister(adh: Professeur, saison_id: number) {
-    let pss: prof_saison = {
+  RemoveRegister(adh: ProfesseurVM, saison_id: number) {
+       let pss: ProfSaisonVM = {
       saison_id: saison_id,
-      rider_id: adh.ID,
-      taux_horaire: 0
+      prof_id: adh.id
     }
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer un professeur sur une saison`;
@@ -236,7 +226,6 @@ throw new Error('Method not implemented.');
       if (retour) {
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-        this.thisAdherent.Adhesions = this.thisAdherent.Adhesions.filter(x => x.saison_id !== saison_id);
       } else {
         let o = errorService.UnknownError(this.action);
         errorService.emitChange(o);
@@ -247,12 +236,8 @@ throw new Error('Method not implemented.');
       errorService.emitChange(o);
     })
   }
-  isRegistred(adh: Professeur): boolean {
-    if (adh.saisons.filter(x => x.saison_id == this.active_saison.id).length > 0) {
-      return true;
-    } else {
-      return false;
-    }
+  isRegistred(adh: ProfesseurVM): boolean {
+   return true;
   }
 
   getSaison(id: number): string {
@@ -265,7 +250,7 @@ throw new Error('Method not implemented.');
     this.action = $localize`Récupérer le prof`;
     
       this.prof_serv.Get(this.id).then((pf) => {
-        this.thisProf = new Professeur(pf);
+        this.thisProf = pf;
         this.loading = false;
        
       }).catch((err: HttpErrorResponse) => {
@@ -279,16 +264,12 @@ throw new Error('Method not implemented.');
 
   }
 
-  Delete(pf: Professeur) {
+  Delete(pf: ProfesseurVM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer le professeur`;
     let confirm = window.confirm($localize`Voulez-vous supprimer le professeur ?`);
     if (confirm) {
-      pf.saisons.forEach((ss) => {
-        ss.rider_id = pf.ID;
-        this.prof_serv.DeleteSaison(ss);
-      })    
-      this.prof_serv.Delete(pf.ID).then((retour) => {
+      this.prof_serv.Delete(pf.id).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
@@ -309,7 +290,7 @@ throw new Error('Method not implemented.');
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder l'adhérent`;
     if (this.creer) {
-      this.prof_serv.Add(this.thisProf.datasource).then((retour) => {
+      this.prof_serv.Add(this.thisProf).then((retour) => {
         if(retour){
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
@@ -321,7 +302,7 @@ throw new Error('Method not implemented.');
         errorService.emitChange(o);
       })
     } else {
-      this.prof_serv.Update(this.thisProf.datasource).then((retour) => {
+      this.prof_serv.Update(this.thisProf).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
@@ -360,8 +341,8 @@ throw new Error('Method not implemented.');
         this.sort_date = "NO";
         this.sort_sexe = "NO";
         this.liste_adherents_VM.sort((a, b) => {
-          const nomA = a.Libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.Libelle.toUpperCase();
+          const nomA = a.libelle.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -377,8 +358,8 @@ throw new Error('Method not implemented.');
         this.sort_date = "NO";
         this.sort_nom = "NO";
         this.liste_adherents_VM.sort((a, b) => {
-          const lieuA = a.Sexe;
-          const lieuB = b.Sexe;
+          const lieuA = a.sexe;
+          const lieuB = b.sexe;
 
 
           let comparaison = 0;
@@ -396,8 +377,8 @@ throw new Error('Method not implemented.');
         this.sort_date = sens;
         this.sort_nom = "NO";
         this.liste_adherents_VM.sort((a, b) => {
-          let dateA = a.DDN;
-          let dateB = b.DDN;
+          let dateA = a.date_naissance;
+          let dateB = b.date_naissance;
 
           let comparaison = 0;
           if (dateA > dateB) {
@@ -417,12 +398,7 @@ throw new Error('Method not implemented.');
 
 
   isRegistredSaison(saison_id: number) {
-    let u = this.thisProf.saisons.find(x => x.saison_id == saison_id);
-    if (u) {
-      return true;
-    } else {
-      return false;
-    }
+    return true;
   }
   VoirFactures(){}
   

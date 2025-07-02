@@ -1,14 +1,14 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterSeance } from '../app/seance/seance.component';
-import { Seance } from '../class/seance';
+import { SeanceVM } from '@shared/src';
 
 @Pipe({
   name: 'multifiltersSeance',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersSeancePipe implements PipeTransform {
-  transform(items: Seance[], filters: FilterSeance): Seance[] {
+  transform(items: SeanceVM[], filters: FilterSeance): SeanceVM[] {
     if (!items) return [];
     if (!filters) return items;
 
@@ -23,25 +23,25 @@ export class MultifiltersSeancePipe implements PipeTransform {
             filters.filter_nom.toLowerCase()
           )) &&
           (!filters.filter_lieu ||
-            item.Lieu.toLowerCase().includes(
+            item.lieu_nom.toLowerCase().includes(
               filters.filter_lieu.toLowerCase()
             )) &&
             (!filters.filter_date_avant || (dateAvant && dateSeance >= dateAvant)) &&
             (!filters.filter_date_apres || (dateApres && dateSeance <= dateApres)) &&       
         (!filters.filter_groupe ||
-          item.Groupes.some((x) =>
-            x.value.toLowerCase().includes(
+          item.groupes.some((x) =>
+            x.nom.toLowerCase().includes(
               filters.filter_groupe?.toLowerCase() ?? ''
             )
           )) && 
           (!filters.filter_prof ||
-            item.professeurs.some((x) =>
-             (x.value).toLowerCase().includes(
+            item.seanceProfesseurs.some((x) =>
+             (x.nom).toLowerCase().includes(
                 filters.filter_prof?.toLowerCase() ?? ''
               )
             )) &&
         (filters.filter_statut === null ||
-          item.Statut === filters.filter_statut)
+          item.statut === filters.filter_statut)
       );
     });
   }

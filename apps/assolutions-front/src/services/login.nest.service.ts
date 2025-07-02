@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AuthResult, ProjetView, compte } from '@shared/src/lib/compte.interface';
+import { AuthResult, ProjetView, compteVM } from '@shared/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -172,7 +172,7 @@ export class project_login {
   public actif:boolean;
 }
 export class retour_login {
-  public compte:compte;
+  public compte:compteVM;
   public projets:project_login[];
   public selected_projet:project_login;
 }

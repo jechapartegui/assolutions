@@ -1,11 +1,11 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Saison, saison } from '../../class/saison';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { SaisonService } from '../../services/saison.service';
+import { SaisonVM } from '@shared/src';
 
 @Component({
   selector: 'app-saison',
@@ -27,16 +27,16 @@ export class SaisonComponent {
     est_prof: boolean = false;
     est_admin: boolean = false;
     manage_prof: boolean = false;
-    liste_saison: Saison[] = []; // Initialisez la liste des séances (vous pouvez la charger à partir d'une API, par exemple)
+    liste_saison: SaisonVM[] = []; // Initialisez la liste des séances (vous pouvez la charger à partir d'une API, par exemple)
     editMode = false;
-    editSaison: Saison | null = null;
+    editSaison: SaisonVM | null = null;
   
   
     public sort_nom = 'NO';
     public sort_date_debut = 'NO';
     public sort_date_fin = 'NO';
 
-    public active_saison: Saison;
+    public active_saison: SaisonVM;
     public action: string = '';
   
     constructor(
@@ -71,14 +71,14 @@ export class SaisonComponent {
     }
 
   
-    Edit(saison: Saison): void {
+    Edit(saison: SaisonVM): void {
       const errorService = ErrorService.instance;
       this.action = $localize`Charger la saison`;
       this.saisonserv
         .Get(saison.id)
         .then((ss) => {
-          this.editSaison = new Saison(ss);
-          this.histo_saison = JSON.stringify(this.editSaison.datasource);
+          this.editSaison = ss;
+          this.histo_saison = JSON.stringify(this.editSaison);
           
           this.editMode = true;
         })
@@ -90,20 +90,20 @@ export class SaisonComponent {
    
   
     Creer(): void {    
-    this.editSaison = new Saison(new saison());
-    this.histo_saison = JSON.stringify(this.editSaison.datasource);
+    this.editSaison = new SaisonVM();
+    this.histo_saison = JSON.stringify(this.editSaison);
       this.editMode = true;
     }
-    Copier(saison:Saison): void {    
+    Copier(saison:SaisonVM): void {    
       this.histo_saison = JSON.stringify(saison);
       let ss = JSON.parse(this.histo_saison);
-        this.editSaison = new Saison(ss);
+        this.editSaison = ss
         this.editSaison.id = 0;
         this.editSaison.active = false;
         this.editSaison.date_debut.setFullYear(this.editSaison.date_debut.getFullYear() + 1);
         this.editSaison.date_fin.setFullYear(this.editSaison.date_debut.getFullYear() + 1);
         this.editSaison.nom = this.editSaison.nom + ' (copie)';
-        this.histo_saison = JSON.stringify(this.editSaison.datasource);
+        this.histo_saison = JSON.stringify(this.editSaison);
         this.editMode = true;
       }
     
@@ -121,7 +121,7 @@ export class SaisonComponent {
           this.loading = false;
           return;
         } else {
-          this.liste_saison = saison.map(x => new Saison(x));
+          this.liste_saison = saison;
           this.liste_saison.sort((a, b) => {
             let dateA = a.date_debut;
             let dateB = b.date_debut;
@@ -153,7 +153,7 @@ export class SaisonComponent {
     }
   
   
-    Delete(saison: Saison): void {
+    Delete(saison: SaisonVM): void {
       const errorService = ErrorService.instance;
   
       let confirmation = window.confirm(
@@ -188,13 +188,13 @@ export class SaisonComponent {
       if (this.editSaison) {
         if (this.editSaison.id == 0) {
             this.saisonserv
-              .Add(this.editSaison.datasource)
+              .Add(this.editSaison)
               .then((id) => {
                 if (id > 0) {
                   this.editSaison.id = id;
                 
                   let o = errorService.OKMessage(this.action);
-                  this.histo_saison = JSON.stringify(this.editSaison.datasource);
+                  this.histo_saison = JSON.stringify(this.editSaison);
                   errorService.emitChange(o);
                   this.UpdateListeSaison();
                 } else {
@@ -210,11 +210,11 @@ export class SaisonComponent {
         } else {
           this.action = $localize`Mettre à jour une saison`;
           this.saisonserv
-            .Update(this.editSaison.datasource)
+            .Update(this.editSaison)
             .then((ok) => {
               if (ok) {
                 let o = errorService.OKMessage(this.action);
-                this.histo_saison = JSON.stringify(this.editSaison.datasource);
+                this.histo_saison = JSON.stringify(this.editSaison);
                 errorService.emitChange(o);
                 this.UpdateListeSaison();
               } else {
@@ -231,13 +231,13 @@ export class SaisonComponent {
       }
     }
 
-    Active(saison: Saison): void {
+    Active(saison: SaisonVM): void {
       const errorService = ErrorService.instance;
       this.action = $localize`Activer une saison`;
       this.liste_saison.forEach((s) => {
         if(s.active){
           s.active = false;
-          this.saisonserv.Update(s.datasource).then((result) => {
+          this.saisonserv.Update(s).then((result) => {
             if (!result) {
              let o = errorService.UnknownError(this.action);
               errorService.emitChange(o);
@@ -250,7 +250,7 @@ export class SaisonComponent {
         }
     });
     saison.active = true;
-    this.saisonserv.Update(saison.datasource).then((result) => {
+    this.saisonserv.Update(saison).then((result) => {
 
       if (result) {
         this.UpdateListeSaison();
@@ -272,7 +272,7 @@ export class SaisonComponent {
     Refresh() {
       const errorService = ErrorService.instance;
       this.action = $localize`Rafraichir la saison`;
-      const ret_adh = JSON.stringify(this.editSaison.datasource);
+      const ret_adh = JSON.stringify(this.editSaison);
     if (this.histo_saison != ret_adh) {
       let confirm = window.confirm(
         $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
@@ -284,7 +284,7 @@ export class SaisonComponent {
       this.saisonserv
         .Get(this.editSaison.id)
         .then((c) => {
-          this.editSaison = new Saison(c);
+          this.editSaison = c;
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
         })
@@ -296,7 +296,7 @@ export class SaisonComponent {
     }
   
     Retour(): void {
-      const ret_adh = JSON.stringify(this.editSaison.datasource);
+      const ret_adh = JSON.stringify(this.editSaison);
       if (this.histo_saison != ret_adh) {
         let confirm = window.confirm(
           $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
@@ -377,10 +377,10 @@ export class SaisonComponent {
         date_fin: 'Date de fin',
         active: 'Saison active ?',
       };
-      let list: Saison[] = this.getFilteredSaisons();
+      let list: SaisonVM[] = this.getFilteredSaisons();
       this.excelService.exportAsExcelFile(list, 'liste_saison', headers);
     }
-    getFilteredSaisons(): Saison[] {
+    getFilteredSaisons(): SaisonVM[] {
       return this.liste_saison.filter((saison) => {
         return (
           (!this.filters.filter_nom ||

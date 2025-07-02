@@ -1,13 +1,13 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterSaison } from '../app/saison/saison.component';
-import { Saison } from '../class/saison';
+import { SaisonVM } from '@shared/src';
 @Pipe({
   name: 'multifiltersSaison',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersSaisonPipe implements PipeTransform {
-  transform(items: Saison[], filters: FilterSaison): Saison[] {
+  transform(items: SaisonVM[], filters: FilterSaison): SaisonVM[] {
     if (!items) return [];
     if (!filters) return items;
 

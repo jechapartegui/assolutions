@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { seance } from '../class/seance';
 import { MailData } from '../class/mail';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { adherent } from '@shared/src/lib/member.interface';
+import { AdherentVM, SeanceVM } from '@shared/src';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +29,7 @@ export class MailService {
       return Promise.reject(error);
     });
 }
-public EnvoiMailEssai(essai:adherent, seance:seance, mail:string, id:number, project_id:number): Promise<boolean> {
+public EnvoiMailEssai(essai:AdherentVM, seance:SeanceVM, mail:string, id:number, project_id:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";
   const body = {

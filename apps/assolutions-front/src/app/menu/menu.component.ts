@@ -1,9 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdherentMenu } from '../../class/adherent';
-import { professeur } from '../../class/professeur';
-import { StatutSeance } from '../../class/seance';
 import { CoursService } from '../../services/cours.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
@@ -14,10 +11,9 @@ import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
 import { AdherentSeance, MesSeances } from '@shared/src/lib/seance.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { lieu } from '@shared/src/lib/lieu.interface';
 import { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
-import { cours } from '@shared/src/lib/cours.interface';
 import { AdherentService } from '../../services/adherent.service';
+import {  CoursVM, LieuVM, ProfesseurVM } from '@shared/src';
 
 @Component({
   selector: 'app-menu',
@@ -28,8 +24,8 @@ export class MenuComponent implements OnInit {
 
   action: string;
   Riders: AdherentMenu[];
-  listeprof: professeur[];
-  listelieu: lieu[];
+  listeprof: ProfesseurVM[];
+  listelieu: LieuVM[];
   btn_adherent: boolean = false;
   btn_admin: boolean = false;
   btn_prof: boolean = false;
@@ -42,7 +38,7 @@ export class MenuComponent implements OnInit {
 
   public liste_prof_filter: KeyValuePairAny[];
   public liste_lieu_filter: string[];
-  listeCours: cours[] = [];
+  listeCours: CoursVM[] = [];
 
   public g: StaticClass;
   constructor(

@@ -61,21 +61,7 @@ export class ReinitMdpComponent implements OnInit {
   }
 
   ValiderModificationMDP() {
-    const errorService = ErrorService.instance;
     this.action = $localize`Réinitialisation de mot de passe`;
-    this.compte_serv.ValidReinitMDP(this.Login, this.Token, this.Password).then((retour) => {
-      if (retour) {
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-        this.router.navigate(['/login']);
-      } else {
-        let o = errorService.UnknownError(this.action);
-        errorService.emitChange(o);
-      }
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-    });
   }
   
 

@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CompteBancaire } from '../../class/comptebancaire';
 import { FluxFinancier } from '../../class/fluxfinancier';
 import { Operation } from '../../class/operation';
-import { saison } from '../../class/saison';
 import { AddInfoService } from '../../services/addinfo.service';
 import { ComptabiliteService } from '../../services/comptabilite.service';
 import { CompteBancaireService } from '../../services/compte-bancaire.service';
@@ -12,6 +11,7 @@ import { ErrorService } from '../../services/error.service';
 import { operationService } from '../../services/operation.service';
 import { SaisonService } from '../../services/saison.service';
 import { StaticClass } from '../global';
+import { SaisonVM } from '@shared/src';
 
 @Component({
   selector: 'app-operations',
@@ -32,7 +32,7 @@ export class OperationsComponent implements OnInit {
   ClassesComptable: { numero: number; libelle: string }[];
   Comptes: CompteBancaire[];
   saison_id: number;
-  saisons: saison[];
+  saisons: SaisonVM[];
   sort_libelle: string = 'NO';
   sort_date: string = 'NO';
   sort_sens: string = 'NO';

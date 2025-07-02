@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { compte, ProjetLogin, ProjetView } from '@shared/src/lib/compte.interface';
+import { compteVM, ProjetLogin, ProjetView } from '@shared/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/src/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
@@ -20,9 +20,9 @@ export class GlobalService {
   SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION"| "LISTE_VALEUR"> = this.isSelectedMenu.asObservable();
 
 
-  private isCompte = new BehaviorSubject<compte>(null);
-  static compte: compte = null;
-  Compte$: Observable<compte> = this.isCompte.asObservable();
+  private isCompte = new BehaviorSubject<compteVM>(null);
+  static compte: compteVM = null;
+  Compte$: Observable<compteVM> = this.isCompte.asObservable();
 
    private regles: ReglesFormulaire = REGLES_PAR_DEFAUT;
 
@@ -76,7 +76,7 @@ export class GlobalService {
     this.isSelectedMenu.next(selected);
     GlobalService.selected_menu = selected;
   }
-  updateCompte(_c: compte): void {
+  updateCompte(_c: compteVM): void {
     this.isCompte.next(_c);
     GlobalService.compte = _c;
     this.isLoggedIn.next(true);

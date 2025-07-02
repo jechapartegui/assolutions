@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import {  projet } from '../class/projet';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { saison } from '../class/saison';
-import { Groupe } from '../class/groupe';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { lieu } from '@shared/src/lib/lieu.interface';
+import { LieuVM } from '@shared/src/lib/lieu.interface';
+import { Groupe_VM, SaisonVM } from '@shared/src';
 
 @Injectable({
   providedIn: 'root'
@@ -126,7 +125,7 @@ export class ProjetService {
 
 
 
-  public Add(projet: projet, groupes: Groupe[], saisons: saison[], compte_id: number, ll: lieu[]): Promise<number> {
+  public Add(projet: projet, groupes: Groupe_VM[], saisons: SaisonVM[], compte_id: number, ll: LieuVM[]): Promise<number> {
     this.url = environment.maseance + 'maseance/projet_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
