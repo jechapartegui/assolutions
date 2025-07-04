@@ -1,7 +1,16 @@
 {
-  "name": "assolutions-back", 
+  "name": "assolutions-back",
+  "scripts": {
+  "typeorm": "typeorm-ts-node-commonjs --dataSource ./src/data-source.ts",
+  "migration:generate": "npm run typeorm migration:generate",
+  "migration:run": "npm run typeorm migration:run"
+},
   "version": "0.0.1",
   "private": true,
-  "dependencies": { },
-  "devDependencies": {  }
+  "dependencies": {
+    "@nestjs/typeorm": "^11.0.0",
+    "pg": "^8.16.3",
+    "typeorm": "^0.3.25",
+    "typeorm-naming-strategies": "^4.1.0"
+  }
 }
