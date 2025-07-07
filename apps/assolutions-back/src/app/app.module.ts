@@ -15,21 +15,30 @@ import { CoursModule } from './cours/cours.module';
 import { GroupeModule } from './groupe/groupe.module';
 import { DocumentModule } from './document/document.module';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-        type: 'postgres',
-      url: process.env.DATABASE_URL,    // ou host/port/user/pass/db
-      ssl: { rejectUnauthorized: false },// si nécessaire sur Render
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      migrations: [__dirname + '/migration/**/*{.ts,.js}'],
-      synchronize: false,               // ne jamais true en prod
-      namingStrategy: new SnakeNamingStrategy(),
-        }),
+TypeOrmModule.forRoot({
+  type: 'postgres',
+  url: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : false,
+  entities: [
+    // pour les .js compilés en prod
+    join(__dirname, '../entities', '*.entity.js'),
+    // pour les .ts en dev (ts-node-dev)
+    join(__dirname, '../entities', '*.entity.ts'),
+  ],
+  migrations: [join(__dirname, 'migration', '*{.ts,.js}')],
+  synchronize: process.env.NODE_ENV !== 'production',
+  namingStrategy: new SnakeNamingStrategy(),
+  logging: ['schema'],
+}),
     AuthModule, MemberModule, SeanceModule, ProjectModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule
   ],  providers: [
     {

@@ -180,13 +180,13 @@ to_cours(entity: Cours): CoursVM {
     jour_semaine: entity.jour_semaine,
     place_maximum: entity.place_maximum ?? undefined,
     prof_principal_id: entity.prof_principal_id,
-    groupes: entity.lienGroupes
-      ? entity.lienGroupes.map(g => ({
-          id: g.groupe_id,
-          nom: g.groupeEntity?.nom || '',
-          id_lien: g.id,
-        }))
-      : [],
+     groupes: entity.lienGroupes
+      ?.map(lg => new LienGroupe_VM(
+         lg.groupe_id ?? 0,
+         lg.groupeEntity?.nom ?? '',
+         Number(lg.id),
+      ))
+      ?? [],  // ← fallback ici
     professeursCours: entity.professeursCours
       ? entity.professeursCours.map(p => ({ 
           cours_id: entity.id,
@@ -209,12 +209,8 @@ async getGroupesForCours(cours_id: number): Promise<LienGroupe_VM[]> {
       'groupe.nom AS nom',
     ])
     .getRawMany();
-
-  return liens.map(lien => ({
-    id_lien: lien.id_lien,
-    id: lien.id,
-    nom: lien.nom,
-  }));
+ 
+  return liens.map(lien => new LienGroupe_VM(lien.id, lien.nom, lien.id_lien));
 }
 
 

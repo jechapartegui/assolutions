@@ -1,10 +1,15 @@
 {
   "name": "assolutions-back",
   "scripts": {
-  "typeorm": "typeorm-ts-node-commonjs --dataSource ./src/data-source.ts",
-  "migration:generate": "npm run typeorm migration:generate",
-  "migration:run": "npm run typeorm migration:run"
-},
+   "prebuild": "rimraf dist",
+    "build": "nest build",
+    "start": "node dist/apps/assolutions-back/src/main.js",
+   "start:dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register --project tsconfig.app.json src/main.ts",
+
+    "typeorm": "typeorm-ts-node-commonjs --dataSource ./src/data-source.ts",
+    "migration:generate": "npm run typeorm migration:generate",
+    "migration:run": "npm run typeorm migration:run"
+  },
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -12,5 +17,9 @@
     "pg": "^8.16.3",
     "typeorm": "^0.3.25",
     "typeorm-naming-strategies": "^4.1.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.7",
+    "tsconfig-paths": "^4.2.0"
   }
 }

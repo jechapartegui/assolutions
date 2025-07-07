@@ -1,4 +1,4 @@
-import { ItemContact } from "./member.interface";
+import { ItemContact } from "./personne.interface";
 
 export interface inscription_seance {
     id: number;

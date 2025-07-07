@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "../..",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared/src/**/*.ts"
+  ],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

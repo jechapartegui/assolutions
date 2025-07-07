@@ -4,6 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { json, urlencoded } from 'express';
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import { join } from 'path';
+import { DataSource } from 'typeorm';
 
 @Catch()
 class GlobalExceptionLogger implements ExceptionFilter {
@@ -14,6 +16,11 @@ class GlobalExceptionLogger implements ExceptionFilter {
 
 
 async function bootstrap() {
+  console.log(
+  'Entity glob pattern now:',
+  join(__dirname, 'entities', '*.entity.js')
+);
+
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
@@ -56,7 +63,13 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new GlobalExceptionLogger());
-
+// -- NOUVEAU SNIPPET POUR DEBUG ENTITY LOADING --
+const dataSource = app.get(DataSource);
+console.log(dataSource);
+console.log('🔍 Loaded entities:');
+dataSource.entityMetadatas.forEach(meta =>
+  console.log(`  • ${meta.name} → table: ${meta.tableName}`)
+);
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/api`);

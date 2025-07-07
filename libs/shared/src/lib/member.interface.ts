@@ -1,5 +1,5 @@
-import { Adresse } from "./adresse.interface";
 import { LienGroupe_VM } from "./groupe.interface";
+import { PersonneVM } from "./personne.interface";
 
 export class AdherentVM extends PersonneVM{
   

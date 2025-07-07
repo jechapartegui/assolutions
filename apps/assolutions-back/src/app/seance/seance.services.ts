@@ -398,11 +398,14 @@ function toSeanceVM(seance: Seance): SeanceVM {
     })) ?? [],
     lieu_nom: seance.lieu?.nom ?? '',
     cours_nom: seance.coursEntity?.nom ?? '',
-     groupes: seance.lienGroupes?.map(lg => ({
-  id_lien: lg.id,
-  id: lg.groupe_id ?? 0,
-  nom: lg.groupeEntity?.nom ?? '',
-})) ?? [],
+     groupes: seance.lienGroupes
+      ?.map(lg => new LienGroupe_VM(
+         lg.groupe_id ?? 0,
+         lg.groupeEntity?.nom ?? '',
+         Number(lg.id),
+      ))
+      ?? [],  // ← fallback ici
+
   };
 }
 

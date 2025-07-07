@@ -10,10 +10,9 @@ import { GroupeService } from '../groupe/groupe.service';
 import { AdherentSeance } from '@shared/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
-import { ItemList, KeyValuePair } from '@shared/src';
+import { AdherentVM, ItemList, KeyValuePair } from '@shared/src';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Compte } from '../bdd/compte';
-import { AdherentVM } from '@shared/src/lib/member.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 
 @Injectable()
