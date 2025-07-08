@@ -4,7 +4,7 @@ import { In, Repository } from "typeorm";
 import { InscriptionSeance } from "../bdd/inscription-seance";
 import { SeanceService } from "../seance/seance.services";
 import { MemberService } from "../member/member.services";
-import { AdherentVM } from "@shared/src/lib/member.interface";
+import { Adherent_VM } from "@shared/src/lib/member.interface";
 import { full_inscription_seance, inscription_seance } from "@shared/src/lib/inscription_seance.interface";
 
 @Injectable()
@@ -120,7 +120,7 @@ async Delete(id: number) {
     };
     return lieu;
   }
-    private toISSFull(piss: InscriptionSeance, pAdh:AdherentVM): full_inscription_seance {
+    private toISSFull(piss: InscriptionSeance, pAdh:Adherent_VM): full_inscription_seance {
     let lieu: full_inscription_seance = {
       id: piss.id,
       rider_id:piss.rider_id,

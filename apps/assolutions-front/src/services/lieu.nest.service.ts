@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { LieuVM } from '@shared/src/lib/lieu.interface';
+import { Lieu_VM } from '@shared/src/lib/lieu.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 
 @Injectable({
@@ -14,7 +14,7 @@ export class LieuNestService {
   constructor(public global: GlobalService) {
   }
 
-  public Get(id:number): Promise<LieuVM> {
+  public Get(id:number): Promise<Lieu_VM> {
     this.url = 'api/lieu/get/' + id;
     //  this.url = this.url + "login.php";
    
@@ -30,7 +30,7 @@ export class LieuNestService {
         return Promise.reject(message);
       });
   }
-  public GetAll(): Promise<LieuVM[]> {
+  public GetAll(): Promise<Lieu_VM[]> {
     this.url = 'api/lieu/getall';
     //  this.url = this.url + "login.php";
    
@@ -59,7 +59,7 @@ export class LieuNestService {
       });
   }
 
-  public Add(l:LieuVM): Promise<number> {
+  public Add(l:Lieu_VM): Promise<number> {
   this.url = 'api/lieu/add';
 
   return this.global.PUT(this.url, l)
@@ -71,7 +71,7 @@ export class LieuNestService {
       return Promise.reject(error);
     });
 }
-public Update(l:LieuVM): Promise<boolean> {
+public Update(l:Lieu_VM): Promise<boolean> {
   this.url = 'api/lieu/update';
 
   return this.global.PUT(this.url, l)

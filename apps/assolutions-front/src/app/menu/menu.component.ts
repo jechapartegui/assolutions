@@ -13,7 +13,7 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
 import { AdherentService } from '../../services/adherent.service';
-import {  CoursVM, LieuVM, ProfesseurVM } from '@shared/src';
+import {  CoursVM, Lieu_VM, ProfesseurVM } from '@shared/src';
 import { AdherentMenu } from '../../class/adherent-menu';
 
 @Component({
@@ -26,7 +26,7 @@ export class MenuComponent implements OnInit {
   action: string;
   Riders: AdherentMenu[];
   listeprof: ProfesseurVM[];
-  listelieu: LieuVM[];
+  listelieu: Lieu_VM[];
   btn_adherent: boolean = false;
   btn_admin: boolean = false;
   btn_prof: boolean = false;

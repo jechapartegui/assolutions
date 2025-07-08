@@ -1,4 +1,4 @@
-export class SaisonVM{
+export class Saison_VM{
     id:number;
     nom:string;
     active:boolean;

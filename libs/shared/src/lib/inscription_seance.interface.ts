@@ -1,6 +1,6 @@
 import { ItemContact } from "./personne.interface";
 
-export interface inscription_seance {
+export interface InscriptionSeance_VM {
     id: number;
      rider_id: number;
      seance_id: number;
@@ -10,7 +10,7 @@ export interface inscription_seance {
 }
 
 
-export interface full_inscription_seance {
+export interface FullInscriptionSeance_VM {
 
     id: number;
     rider_id: number;

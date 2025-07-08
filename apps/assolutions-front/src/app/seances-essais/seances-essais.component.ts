@@ -6,14 +6,14 @@ import { InscriptionSeanceService } from '../../services/inscription-seance.serv
 import { MailService } from '../../services/mail.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SeancesService } from '../../services/seance.service';
-import { AdherentVM, ItemContact } from '@shared/src/lib/member.interface';
+import { Adherent_VM, ItemContact } from '@shared/src/lib/member.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { GlobalService } from '../../services/global.services';
 import { SeanceVM } from '@shared/src/lib/seance.interface';
 import { ProfesseurVM } from '@shared/src/lib/prof.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
-import { compteVM } from '@shared/src';
+import { Compte_VM } from '@shared/src';
 
 @Component({
   selector: 'app-seances-essais',
@@ -24,7 +24,7 @@ export class SeancesEssaisComponent implements OnInit {
   public date_debut: string;
   public DateDeb: Date;
   public DateFin: Date;
-  public thisEssai: AdherentVM = null;
+  public thisEssai: Adherent_VM = null;
   public ListeSeance: SeanceVM[] = []
   public days: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   public listeprof: ProfesseurVM[];
@@ -156,7 +156,7 @@ export class SeancesEssaisComponent implements OnInit {
     }
     if (window.confirm(libelle)) {
       this.thisSeance = seance;
-       let adh = new AdherentVM();
+       let adh = new Adherent_VM();
       this.thisEssai = adh;
       this.essai = true;
     }
@@ -194,7 +194,7 @@ export class SeancesEssaisComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Essayer une séance`;
     this.thisEssai.login = this.thisEssai.contact.filter(x => x.Type=="EMAIL")[0].Value;
-    let co = new compteVM();
+    let co = new Compte_VM();
 co.id =this.thisEssai.compte;
 
     this.rider_serv.Essayer(this.thisEssai, this.thisSeance.seance_id, this.project_id, co).then((ID) => {

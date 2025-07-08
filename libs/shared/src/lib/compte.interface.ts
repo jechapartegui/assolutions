@@ -1,4 +1,4 @@
-export class compteVM {
+export class Compte_VM {
     id: number;
     nom: string;
     email: string;

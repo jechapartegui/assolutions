@@ -17,9 +17,9 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
-import { AdherentExport, AdherentVM } from '@shared/src/lib/member.interface';
+import { AdherentExport, Adherent_VM } from '@shared/src/lib/member.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { SaisonVM } from '@shared/src/lib/saison.interface';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 import { LienGroupe_VM } from '@shared/src';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 
@@ -41,17 +41,17 @@ export class AdherentComponent implements OnInit {
   public dropdownActive = false;
 
   // === Données de l’adhérent ===
-  public thisAdherent: AdherentVM = null;
+  public thisAdherent: Adherent_VM = null;
   public photoAdherent: string | null = null;
   public histo_adherent: string;
-  public liste_adherents_VM: AdherentVM[] = [];
+  public liste_adherents_VM: Adherent_VM[] = [];
 
   // === Groupes et saisons ===
   public liste_groupe: KeyValuePair[] = [];
   public liste_groupe_filter: KeyValuePair[];
   public titre_groupe = $localize`Groupe de l'adhérent`;
-  public liste_saison: SaisonVM[] = [];
-  public active_saison: SaisonVM;
+  public liste_saison: Saison_VM[] = [];
+  public active_saison: Saison_VM;
 
   // === Filtres / tris ===
   public filters: FilterAdherent = new FilterAdherent();
@@ -79,8 +79,8 @@ export class AdherentComponent implements OnInit {
 
   // === Inscription / adhésion ===
   public afficher_inscription = false;
-  public adherent_inscription: AdherentVM;
-  public saison_inscription: SaisonVM;
+  public adherent_inscription: Adherent_VM;
+  public saison_inscription: Saison_VM;
   public paiement_adhesion: boolean;
   public type_inscription: boolean;
 
@@ -155,7 +155,7 @@ export class AdherentComponent implements OnInit {
           }
           if (this.context == 'ECRITURE' || this.context == 'LECTURE') {
             if (this.id == 0 && this.context == 'ECRITURE') {
-              this.thisAdherent = new AdherentVM();
+              this.thisAdherent = new Adherent_VM();
               this.loading = false;
             }
             if (this.id > 0) {
@@ -230,7 +230,7 @@ export class AdherentComponent implements OnInit {
         return;
       });
   }
-  calculateAge(dateNaissance: string): number {
+  calculateAge(dateNaissance: Date): number {
     const today = new Date();
     const birthDate = new Date(dateNaissance);
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -280,21 +280,21 @@ valid_contact_urgence(isValid: boolean): void {
 
 
   Create() {
-    this.thisAdherent = new AdherentVM();
+    this.thisAdherent = new Adherent_VM();
     this.context = 'ECRITURE';
     this.id = 0;
   }
-  Edit(adh: AdherentVM) {
+  Edit(adh: Adherent_VM) {
     this.context = 'ECRITURE';
     this.id = adh.id;
     this.ChargerAdherent();
   }
-  Read(adh: AdherentVM) {
+  Read(adh: Adherent_VM) {
     this.context = 'LECTURE';
     this.id = adh.id;
     this.ChargerAdherent();
   }
-  Register(adh: AdherentVM, saison_id: number, paiement: boolean) {
+  Register(adh: Adherent_VM, saison_id: number, paiement: boolean) {
     this.afficher_inscription = true;
     this.adherent_inscription = adh;
     this.saison_inscription = this.liste_saison.find((x) => x.id == saison_id);
@@ -325,10 +325,10 @@ valid_contact_urgence(isValid: boolean): void {
             i.id = id;
             i.rider_id = adh.id;
             i.saison_id = saison_id;
-            if (!adh.adhesion) {
-              adh.adhesion = [];
+            if (!adh.inscriptionsSaison) {
+              adh.inscriptionsSaison = [];
             }
-            adh.adhesion.push(i);
+            adh.inscriptionsSaison.push(i);
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           })
@@ -415,7 +415,7 @@ valid_contact_urgence(isValid: boolean): void {
   RemoveRegister(saison_id: number) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer une inscription`;
-    let u = this.thisAdherent.adhesion.find((x) => x.saison_id == saison_id);
+    let u = this.thisAdherent.inscriptionsSaison.find((x) => x.saison_id == saison_id);
     if (u) {
       let confirm = window.confirm(
         $localize`Voulez-vous supprimer l'inscription ?`
@@ -427,7 +427,7 @@ valid_contact_urgence(isValid: boolean): void {
             if (retour) {
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
-              this.thisAdherent.adhesion = this.thisAdherent.adhesion.filter(
+              this.thisAdherent.inscriptionsSaison = this.thisAdherent.inscriptionsSaison.filter(
                 (x) => x.saison_id !== saison_id
               );
             } else {
@@ -513,13 +513,13 @@ valid_contact_urgence(isValid: boolean): void {
     }
   }
 
-  Delete(adh: AdherentVM) {
+  Delete(adh: Adherent_VM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer l'adhérent`;
     let confirm = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
     if (confirm) {
-      if (adh.adhesion) {
-        adh.adhesion.forEach((adhesion) => {
+      if (adh.inscriptionsSaison) {
+        adh.inscriptionsSaison.forEach((adhesion) => {
           this.inscription_saison_serv.Delete(adhesion.id);
         });
       }
@@ -716,14 +716,14 @@ PreSave() {
       NomPhoneUrgence: 'Contact téléphone si urgence',
       Inscrit: 'Inscrit',
     };
-    let list: AdherentVM[] = this.getFilteredAdherents();
+    let list: Adherent_VM[] = this.getFilteredAdherents();
     this.excelService.exportAsExcelFile(
       list.map((x) => new AdherentExport(x)),
       'liste_adherent',
       headers
     );
   }
-  getFilteredAdherents(): AdherentVM[] {
+  getFilteredAdherents(): Adherent_VM[] {
     return this.liste_adherents_VM.filter((adherent) => {
       return (
         (!this.filters.filter_nom ||
@@ -749,7 +749,7 @@ PreSave() {
   }
 
 
-  StatutMAJ(ad: AdherentVM) {
+  StatutMAJ(ad: Adherent_VM) {
     let n = this.liste_adherents_VM.find((x) => x.id == ad.id);
     if (n) {
       return true;
@@ -765,7 +765,7 @@ PreSave() {
   }
 
   isRegistredSaison(saison_id: number) {
-    let u = this.thisAdherent.adhesion.find((x) => x.saison_id == saison_id);
+    let u = this.thisAdherent.inscriptionsSaison.find((x) => x.saison_id == saison_id);
     if (u) {
       return true;
     } else {

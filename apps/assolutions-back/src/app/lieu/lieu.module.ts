@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Lieu } from '../bdd/lieu';
 import { LieuController } from './lieu.controller';
 import { LieuService } from './lieu.services';
+import { LocationService } from '../../crud/location.service';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
-    Lieu
     ]),
   ],
-  providers: [LieuService],
+  providers: [LieuService, LocationService],
   controllers: [LieuController],
   exports: [LieuService], // 👈 ajoute ça
 })

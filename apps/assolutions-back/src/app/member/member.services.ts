@@ -10,7 +10,7 @@ import { GroupeService } from '../groupe/groupe.service';
 import { AdherentSeance } from '@shared/src/lib/seance.interface';
 import { ProfesseurSaison } from '../bdd/prof-saison';
 import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
-import { AdherentVM, ItemList, KeyValuePair } from '@shared/src';
+import { Adherent_VM, ItemList, KeyValuePair } from '@shared/src';
 import { LienGroupe } from '../bdd/lien-groupe';
 import { Compte } from '../bdd/compte';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
@@ -41,7 +41,7 @@ export class MemberService {
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
-    return toAdherentVM(pAdh);
+    return toAdherent_VM(pAdh);
   }
   async GetGestionnaire(compte: number, project_id: number): Promise<boolean> {
     const temp_adh = await this.GetAdherentProject(compte, project_id);
@@ -173,7 +173,7 @@ export class MemberService {
   async AdherentSaisons(
     adherents: Adherent[],
     saison_id: number
-  ): Promise<AdherentVM[]> {
+  ): Promise<Adherent_VM[]> {
     const liste_adherent: Adherent[] = [];
 
     for (const ad of adherents) {
@@ -191,7 +191,7 @@ export class MemberService {
     }
 
     return liste_adherent.map((plieu) => {
-      return toAdherentVM(plieu);
+      return toAdherent_VM(plieu);
     });
   }
 
@@ -256,7 +256,7 @@ export class MemberService {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
     //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return toAdherentVM(pAdh);
+    return toAdherent_VM(pAdh);
 
   }
  async GetAll(saison_id: number, project_id: number) {
@@ -385,7 +385,7 @@ async GetAllAdherent(saison_id: number, project_id: number) {
 }
 
   
-    async Add(s: AdherentVM, project_id :number) : Promise<number> {
+    async Add(s: Adherent_VM, project_id :number) : Promise<number> {
     if (!s) {
       throw new BadRequestException('INVALID_MEMBER');
     }
@@ -398,7 +398,7 @@ async GetAllAdherent(saison_id: number, project_id: number) {
     await this.adherentProjetRepo.save(adh_project);
     return saved.id;
   }
-  async Update(s: AdherentVM, project_id :number) {
+  async Update(s: Adherent_VM, project_id :number) {
     if (!s) {
       throw new BadRequestException('INVALID_MEMBER');
     }
@@ -431,7 +431,7 @@ async GetAllAdherent(saison_id: number, project_id: number) {
     };
   }
 }
-export function toAdherentEntity(obj: AdherentVM): Adherent {
+export function toAdherentEntity(obj: Adherent_VM): Adherent {
   const entity = new Adherent();
   entity.id = obj.id;
   entity.nom = obj.nom;
@@ -448,8 +448,8 @@ export function toAdherentEntity(obj: AdherentVM): Adherent {
 
 }
 
-export function toAdherentVM(obj: Adherent): AdherentVM {
-  const adh = new AdherentVM();
+export function toAdherent_VM(obj: Adherent): Adherent_VM {
+  const adh = new Adherent_VM();
   adh.id = obj.id;
   adh.nom = obj.nom;
   adh.prenom = obj.prenom;

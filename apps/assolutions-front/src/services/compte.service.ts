@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.preprod';
-import { compteVM } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,14 +12,14 @@ export class CompteService {
   constructor(public global: GlobalService) {
   }
 
-  public GetAll(): Promise<compteVM[]> {
+  public GetAll(): Promise<Compte_VM[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
    this.url = 'api/compte/getall';
     //  this.url = this.url + "login.php";
    
 
     return this.global.GET(this.url)
-      .then((response: compteVM[]) => {
+      .then((response: Compte_VM[]) => {
         return response;
       })
       .catch(error => {
@@ -28,7 +28,7 @@ export class CompteService {
       });
   }
 
-  public getAccount(id: number): Promise<compteVM> {
+  public getAccount(id: number): Promise<Compte_VM> {
     this.url = 'api/compte/get/'  + id;
     //  this.url = this.url + "login.php";
    
@@ -41,7 +41,7 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
-  public getAccountLogin(login: string): Promise<compteVM> {
+  public getAccountLogin(login: string): Promise<Compte_VM> {
      this.url = 'api/compte/get_login/'  + login;
     //  this.url = this.url + "login.php";
    
@@ -120,7 +120,7 @@ export class CompteService {
 
 
 
-  public CheckLogin(login: string, psw: string): Promise<compteVM> {
+  public CheckLogin(login: string, psw: string): Promise<Compte_VM> {
      this.url = 'api/compte/activate_account';
     //  this.url = this.url + "login.php";
     const body = {
@@ -130,7 +130,7 @@ export class CompteService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: compteVM) => {
+      .then((response: Compte_VM) => {
         return response;
       })
       .catch(error => {
@@ -139,7 +139,7 @@ export class CompteService {
       });
   }
 
-  public Add(compte: compteVM): Promise<number> {
+  public Add(compte: Compte_VM): Promise<number> {
      this.url = 'api/compte/add';
 
     return this.global.POST(this.url, compte)

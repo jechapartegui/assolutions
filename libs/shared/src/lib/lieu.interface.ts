@@ -1,7 +1,7 @@
-export class LieuVM {
+import { Adresse } from "./adresse.interface";
+
+export class Lieu_VM {
     id: number;
     nom: string;
-    adresse: string;
-    code_postal: string;
-    ville: string;
+    adresse: Adresse;
 }

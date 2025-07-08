@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { project_login } from '../services/login.nest.service';
-import { compteVM, Groupe_VM, LieuVM, SaisonVM } from '@shared/src';
+import { Compte_VM, Groupe_VM, Lieu_VM, SaisonVM } from '@shared/src';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 
 
@@ -93,11 +93,11 @@ export class Projet {
   }
 
 
-  private compte: compteVM;
-  public get Compte(): compteVM {
+  private compte: Compte_VM;
+  public get Compte(): Compte_VM {
     return this.compte;
   }
-  public set Compte(value: compteVM) {
+  public set Compte(value: Compte_VM) {
     this.compte = value;
   }
 
@@ -230,11 +230,11 @@ export class Projet {
     return this.saisons;
   }
   
-  lieux:LieuVM[];
-  set Lieux  (value: LieuVM[]) {
+  lieux:Lieu_VM[];
+  set Lieux  (value: Lieu_VM[]) {
     this.lieux = value;
   }
-  get Lieux(): LieuVM[] {
+  get Lieux(): Lieu_VM[] {
     return this.lieux;
   }
 

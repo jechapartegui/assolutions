@@ -1,7 +1,7 @@
-import { AdherentVM } from "@shared/src";
+import { Adherent_VM } from "@shared/src";
 import { InscriptionSeance } from "./inscription";
 
-export class AdherentMenu extends AdherentVM {
+export class AdherentMenu extends Adherent_VM {
   public sort_nom = "NO";
   public sort_cours = "NO";
   public sort_date = "NO";

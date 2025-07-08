@@ -1,14 +1,14 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterAdherent } from '../app/adherent/adherent.component';
-import { AdherentVM } from '@shared/src';
+import { Adherent_VM } from '@shared/src';
 
 @Pipe({
   name: 'multifiltersAdherent',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersAdherentPipe implements PipeTransform {
-  transform(items: AdherentVM[], filters: FilterAdherent): AdherentVM[] {
+  transform(items: Adherent_VM[], filters: FilterAdherent): Adherent_VM[] {
     if (!items) return [];
     if (!filters) return items;
 

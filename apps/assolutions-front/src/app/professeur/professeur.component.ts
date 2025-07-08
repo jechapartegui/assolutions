@@ -7,7 +7,7 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
-import { AdherentVM, ProfesseurVM, ProfSaisonVM, SaisonVM } from '@shared/src';
+import { Adherent_VM, ProfesseurVM, ProfSaisonVM, SaisonVM } from '@shared/src';
 
 @Component({
   selector: 'app-professeur',
@@ -27,7 +27,7 @@ throw new Error('Method not implemented.');
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   @Input() public id: number;
   public thisProf: ProfesseurVM = null;
-  public thisAdherent: AdherentVM = null;
+  public thisAdherent: Adherent_VM = null;
   public inscrits: number = null;
   public afficher_filtre: boolean = false;
     public histo_prof: string;
@@ -36,7 +36,7 @@ throw new Error('Method not implemented.');
     showScrollToTop: boolean = false;
   public liste_saison: SaisonVM[] = [];
   public active_saison: SaisonVM;
-  public liste_adherents_VM: AdherentVM[] = [];
+  public liste_adherents_VM: Adherent_VM[] = [];
   public sort_nom = "NO";
   public sort_date = "NO";
   public sort_sexe = "NO";

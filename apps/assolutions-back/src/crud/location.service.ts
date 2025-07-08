@@ -17,8 +17,18 @@ export class LocationService {
     return item;
   }
 
-  async getAll(): Promise<Location[]> {
-    return this.repo.find();
+  async getAll(projectId:number, ispublic:boolean): Promise<Location[]> {
+    if (ispublic) {
+    return this.repo.find({
+      where: [
+        { projectId },    // projet propriétaire
+        { isPublic: true }, // ou bien public === true
+      ],
+    });
+  }
+    return this.repo.find({
+      where: { projectId},
+    });
   }
 
   async create(data: Partial<Location>): Promise<Location> {

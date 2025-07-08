@@ -1,11 +1,15 @@
 import { LienGroupe_VM } from "./groupe.interface";
-import { PersonneVM } from "./personne.interface";
+import { InscriptionSaison_VM } from "./inscription_saison.interface";
+import { InscriptionSeance_VM } from "./inscription_seance.interface";
+import { Personne_VM } from "./personne.interface";
 
-export class AdherentVM extends PersonneVM{
+export class Adherent_VM extends Personne_VM{
   
     inscrit:boolean;
     groupes:LienGroupe_VM[] = [];
-    adhesion:any[]= [];
+    inscriptionsSaison:InscriptionSaison_VM[]= [];
+    inscriptionsSeance:InscriptionSeance_VM[]=[];
+    photo:any;
 }
 
 export class AdherentExport {
@@ -32,7 +36,7 @@ export class AdherentExport {
   Inscrit: boolean;
 
   // Unique constructeur avec un paramètre optionnel
-  constructor(a?: AdherentVM) {
+  constructor(a?: Adherent_VM) {
     if (a) {
       this.safeAssign(() => this.ID = a.id);
       this.safeAssign(() => this.Nom = a.nom);

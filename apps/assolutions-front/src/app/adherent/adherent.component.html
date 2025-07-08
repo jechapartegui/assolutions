@@ -209,12 +209,12 @@
                           <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"
                             ><i class="fab fa-twitter-square"></i
                           ></span>
-                          <span>&nbsp;{{ adherent.ContactPrefere }}</span>
+                          <span>&nbsp;{{ adherent.contact_prevenir }}</span>
                         </td>
                         <td>
-                          <i *ngIf="!adherent.Inscrit" class="fas fa-times"></i>
+                          <i *ngIf="!adherent.inscrit" class="fas fa-times"></i>
                           <i
-                            *ngIf="adherent.Inscrit"
+                            *ngIf="adherent.inscrit"
                             class="fas fa-check has-text-success"
                           ></i>
                         </td>
@@ -229,8 +229,8 @@
                             ></btn>
                             <btn
                               *ngIf="
-                                !adherent.Inscrit &&
-                                adherent.CompteID > 0
+                                !adherent.inscrit &&
+                                adherent.compte > 0
                               "
                               i18n-title
                               title="Inscrire"
@@ -867,11 +867,11 @@
               <article class="media">
                 <div class="media-content">
                   <span class="title" (click)="Edit(adherent)"
-                    ><strong>{{ adherent.Libelle }}</strong></span
+                    ><strong>{{ adherent.libelle }}</strong></span
                   >
                   <div>
-                    {{ adherent.DDN | date : "dd/MM/yyyy" }}&nbsp;{{
-                      calculateAge(adherent.DDN)
+                    {{ adherent.date_naissance | date : "dd/MM/yyyy" }}&nbsp;{{
+                      calculateAge(adherent.date_naissance)
                     }}
                   </div>
                 </div>
@@ -906,7 +906,7 @@
         <!-- Bloc Adresse -->
         <div class="column is-full-tablet is-half-desktop">
 
-                          <app-address [thisAdresse]="thisAdherent.Adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
+                          <app-address [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
 (valid)="valid_adherent($event)"></app-address>
         </div>
         

@@ -1,6 +1,6 @@
 import { Adresse } from "./adresse.interface";
 
-export class PersonneVM {
+export class Personne_VM {
      id:number =0;
      nom:string = "";
      prenom:string = "";
