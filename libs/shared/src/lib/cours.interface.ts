@@ -1,6 +1,6 @@
 import { LienGroupe_VM } from "./groupe.interface";
 
-export class CoursVM {
+export class Cours_VM {
   id: number;
   nom: string;
   jour_semaine: string;
