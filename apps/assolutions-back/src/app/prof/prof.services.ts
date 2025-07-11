@@ -1,96 +1,84 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { In } from 'typeorm';
-import { Adherent } from "../bdd/riders";
-import { Professeur } from "../bdd/professeur";
-import { ProfesseurVM, ProfVM } from "@shared/src";
-import { SeanceProfesseur } from "../bdd/seance_professeur";
-import { ProfesseurSaison } from "../bdd/prof-saison";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ProfessorService } from "../../crud/professor.service";
+import { SessionProfessorService } from "../../crud/seanceprofesseur.service";
+import { SessionProfessor } from "../../entities/seance-professeur.entity";
+import { Professor } from "../../entities/professeur.entity";
+import { Professeur_VM } from "@shared/src";
+import { ProfessorContract } from "../../entities/contrat_prof.entity";
+import { ProfessorContractService } from "../../crud/professorcontract.service";
 
 @Injectable()
 export class ProfService {
-  constructor(
-    @InjectRepository(Adherent)
-    private readonly AdherentRepo: Repository<Adherent>,
-    @InjectRepository(Professeur)
-    private readonly ProfesseurRepo: Repository<Professeur>,
-    @InjectRepository(SeanceProfesseur)
-    private readonly SeanceProfesseurRepo: Repository<SeanceProfesseur>,
-    @InjectRepository(ProfesseurSaison)
-    private readonly ProfesseurSaisonRepo: Repository<ProfesseurSaison>,
+  constructor(private profserv:ProfessorService, private profseanceserv:SessionProfessorService, private contractprofservice:ProfessorContractService
   ) {}
   async Get(id: number) {
-    const adh = await this.AdherentRepo.findOne({ where: { id } });
-    if (!adh) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
-      const prof = await this.ProfesseurRepo.findOne({ where: { id } });
-    if (!prof) {
-      throw new UnauthorizedException('NO_PROF_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    const xd: ProfesseurVM = this.toprofesseur(adh, prof);
-    return xd;
+       const pIS = await this.profserv.get(id);
+          if (!pIS) {
+            throw new UnauthorizedException('PROFESSOR_NOT_FOUND');
+          }
+          //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+          return to_Professeur_VM(pIS);
   }
 
    async GetProfSeance(seance_id: number)  {
-    const profs = await this.SeanceProfesseurRepo.find({ where: { seance_id } });
-    if (!profs) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
-      const prof_rider = await this.AdherentRepo.find({
-                where: {
-                  id: In(profs.map((prof) => prof.professeur_id)),
-                },
-              });
-    if (!prof_rider) {
-      throw new UnauthorizedException('NO_PROF_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return prof_rider.map(adh => this.toprof(adh));
+    const profseance : SessionProfessor[] = await this.profseanceserv.getAllSeance(seance_id);
+  return profseance.map(sp =>
+      to_Professeur_VM(sp.professeur.professor)  
+    );
   }
   async GetProfSaison(saison_id: number)  {
-    const profs = await this.ProfesseurSaisonRepo.find({ where: { saison_id } });
-    if (!profs) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
-      const prof_rider = await this.AdherentRepo.find({
-                where: {
-                  id: In(profs.map((prof) => prof.rider_id)),
-                },
-              });
-    if (!prof_rider) {
-      throw new UnauthorizedException('NO_PROF_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return prof_rider.map(adh => this.toprof(adh));
+   const contrat_prof:ProfessorContract[] = await this.contractprofservice.getAllSaison(saison_id)
+    return contrat_prof.map(sp =>
+      to_Professeur_VM(sp.professor)  
+    );
   }
 
-  private toprof(adh: Adherent): ProfVM {
-    let p: ProfVM = {
-      id: adh.id,
-      nom: adh.nom,
-      prenom: adh.prenom,
-      surnom: adh.surnom,
-    };
-    return p;
-  }
+    async add(s: Professeur_VM):Promise<number> {
+       if (!s) {
+         throw new BadRequestException('INVALID_PROFESSOR');
+       }
+       const objet_base = to_Professor(s);    
+       const objet_insere = await this.profseanceserv.create(objet_base);
+       return objet_insere.id;
+     }
+     async update(s: Professeur_VM) {
+         if (!s) {
+         throw new BadRequestException('INVALID_PROFESSOR');
+       }
+       const objet_base = to_Professor(s);     
+        await this.profseanceserv.update(objet_base.id, objet_base);
+     
+     }
+     
+     async delete(id: number):Promise<boolean> {
+        try{
+       await this.profseanceserv.delete(id);
+       return true;
+        } catch{
+         return false;
+        }
+     }  
+ }
 
-  private toprofesseur(adh: Adherent, pprof: Professeur): ProfesseurVM {
-    let p: ProfesseurVM = {
-      id: adh.id,
-      nom: adh.nom,
-      prenom: adh.prenom,
-      surnom: adh.surnom,
-      taux: pprof.taux,
-      statut: pprof.statut,
-      num_tva: pprof.num_tva,
-      num_siren: pprof.num_siren,
-      iban: pprof.iban,
-      info: pprof.info
-    };
-    return p;
-  }
-  
+export function to_Professeur_VM(entity:Professor) : Professeur_VM{
+  const vm = new Professeur_VM();
+  vm.person = to_PersonneLight(entity.person);
+  vm.iban = entity.iban;
+  vm.info = entity.info;
+  vm.num_siren = entity.sirenNumber;
+  vm.num_tva = entity.vatNumber;
+  vm.statut = entity.status;
+  vm.taux = entity.hourlyRate;
+  return vm;
+}
+export function to_Professor(vm:Professeur_VM) : Professor{
+  const entity = new Professor();
+  entity.iban =vm.iban;
+  entity.info = vm.info;
+  entity.id = vm.person.id;
+  entity.hourlyRate = vm.taux;
+  entity.sirenNumber = vm.num_siren;
+  entity.status = vm.statut;
+  entity.vatNumber = vm.num_tva
+  return entity;
 }

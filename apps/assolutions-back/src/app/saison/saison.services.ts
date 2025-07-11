@@ -1,9 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Saison } from "../bdd/saison";
-import { SaisonVM } from "@shared/src/lib/saison.interface";
-import { KeyValuePair } from "@shared/src/lib/autres.interface";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Saison_VM } from "@shared/src/lib/saison.interface";
+import { SeasonService } from "../../crud/season.service";
+import { Season } from "../../entities/saison.entity";
 
 @Injectable()
 //   this.url = 'api/inscription_seance/get/' + id;
@@ -14,102 +12,95 @@ import { KeyValuePair } from "@shared/src/lib/autres.interface";
 //     this.url = 'api/inscription_seance/update';
 //  this.url = 'api/inscription_seance/delete/' + id;
 export class SaisonService {
-  constructor(
-    @InjectRepository(Saison)
-    private readonly SaisonRepo: Repository<Saison>
+  constructor(private saisonserv:SeasonService
   ) {}
 
   async Get(id: number) {
-    const sS = await this.SaisonRepo.findOne({ where: { id } });
-    if (!sS) {
-      throw new UnauthorizedException('NO_SEASON_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return this.to_saison(sS);
-
+       const pIS = await this.saisonserv.get(id);
+         if (!pIS) {
+           throw new UnauthorizedException('SEASON_NOT_FOUND');
+         }
+         //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+         return toSaison_VM(pIS);
+  }
+  async GetSaisonActive(id: number) {
+        const pIS = await this.saisonserv.getActive(id);
+         if (!pIS) {
+           throw new UnauthorizedException('SEASON_NOT_FOUND');
+         }
+         //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+         return toSaison_VM(pIS);
   }
 
    async GetAll(project_id:number) {
-    const pISSs = await this.SaisonRepo.find({ where: { project_id } });
-    if (!pISSs) {
-      throw new UnauthorizedException('NO_SEASON_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-       return pISSs.map((plieu) => {
-      return this.to_saison(plieu);
-    });
+     const pISSs = await this.saisonserv.getAll(project_id);
+       if (!pISSs) {
+            return [];
+           }
+           return pISSs.map((pISS) => {
+             return toSaison_VM(pISS);
+           });
 
   }
   async GetAllLight(project_id:number) {
-    const pISSs = await this.SaisonRepo.find({ where: { project_id } });
-    if (!pISSs) {
-      throw new UnauthorizedException('NO_SEASON_FOUND');
+       const pISSs = await this.saisonserv.getAll(project_id);
+       if (!pISSs) {
+            return [];
+           }
+           return pISSs.map((pISS) => {
+           return {
+    key: pISS.id,
+    value: pISS.name
+  };
+           });
+
+
+  }
+
+   async add(s: Saison_VM, project_id :number):Promise<number> {
+      if (!s) {
+        throw new BadRequestException('INVALID_LOCATION');
+      }
+      const objet_base = toSeason(s, project_id);    
+      const objet_insere = await this.saisonserv.create(objet_base);
+      return objet_insere.id;
     }
- return pISSs.map((plieu): KeyValuePair => {
-  return {
-    key: plieu.id,
-    value: plieu.nom
-  };
-});
-
-
-  }
-
-  async Add(s: SaisonVM, project_id :number) {
-  if (!s) {
-    throw new BadRequestException('INVALID_SEASON');
-  }
-  const objet_base = this.toSaison(s, project_id);
-
-  const newISS = this.SaisonRepo.create(objet_base);
-  const saved = await this.SaisonRepo.save(newISS);
-  return this.to_saison(saved).id;
-}
-async Update(s: SaisonVM, project_id :number) {
-  if (!s) {
-    throw new BadRequestException('INVALID_SEASON');
-  }
-  const objet_base = this.toSaison(s, project_id);
-
-  const existing = await this.SaisonRepo.findOne({ where: { id: s.id } });
-  if (!existing) {
-    throw new NotFoundException('SEASON_NOT_FOUND');
-  }
-
-  const updated = await this.SaisonRepo.save({ ...existing, ...objet_base });
-  return this.to_saison(updated);
+    async update(s: Saison_VM, project_id :number) {
+        if (!s) {
+        throw new BadRequestException('INVALID_LOCATION');
+      }
+      const objet_base = toSeason(s, project_id);    
+       await this.saisonserv.update(objet_base.id, objet_base);
+    
+    }
+    
+    async delete(id: number):Promise<boolean> {
+       try{
+      await this.saisonserv.delete(id);
+      return true;
+       } catch{
+        return false;
+       }
+    }  
 }
 
-async Delete(id: number) {
-  const toDelete = await this.SaisonRepo.findOne({ where: { id } });
-  if (!toDelete) {
-    throw new NotFoundException('SEASON_NOT_FOUND');
-  }
-
-  await this.SaisonRepo.remove(toDelete);
-  return { success: true };
+export function toSeason(data:Saison_VM, project_id:number) : Season{
+  const obj = new Season();
+  obj.id = data.id;
+  obj.name = data.nom;
+  obj.projectId = project_id;
+  obj.startDate = data.date_debut;
+  obj.endDate = data.date_fin;
+  obj.isActive = data.active;
+  return obj;
 }
 
-
-toSaison(data: SaisonVM, project_id: number): Saison {
-  const s = new Saison();
-  s.id = data.id;
-  s.nom = data.nom;
-  s.active = data.active;
-  s.date_debut = data.date_debut;
-  s.date_fin = data.date_fin;
-  s.project_id = project_id;
-  return s;
-}
-to_saison(entity: Saison): SaisonVM {
-  return {
-    id: entity.id,
-    nom: entity.nom,
-    active: entity.active,
-    date_debut: entity.date_debut,
-    date_fin: entity.date_fin
-  };
-}
-
-  
+export function toSaison_VM(entity:Season) : Saison_VM{
+ const obj = new Saison_VM();
+ obj.active = entity.isActive;
+ obj.date_debut  = entity.startDate;
+ obj.date_fin = entity.endDate;
+ obj.id = entity.id;
+ obj.nom = entity.name;
+ return obj;
 }

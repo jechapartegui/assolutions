@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { InscriptionSeanceService } from './inscription_seance.services';
-import type { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
+import { InscriptionSeance_VM } from '@shared/src/lib/inscription_seance.interface';
 
 //   this.url = 'api/inscription_seance/get/' + id;
 //  this.url = 'api/inscription_seance/get_full/' + id;
@@ -31,12 +31,12 @@ async GetAllRiderSaison(@Param('rider_id') rider_id: number, @Param('saison_id')
 }
 
 @Put('add')
-async Add(@Body() inscription: inscription_seance) {
+async Add(@Body() inscription: InscriptionSeance_VM) {
   return this.inscription_seance_serv.Add(inscription);
 }
 
 @Put('update')
-async Update(@Body() inscription: inscription_seance) {
+async Update(@Body() inscription: InscriptionSeance_VM) {
   return this.inscription_seance_serv.Update(inscription);
 }
 

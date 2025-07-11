@@ -1,17 +1,12 @@
-export class ProfVM {
-    id: number;
-    nom: string;
-    prenom: string;
-    surnom: string;
-}
 
-export class ProfesseurVM extends ProfVM {
-    taux: number;
-    statut: string;
-    num_tva: string;
-    num_siren: number;
-    iban: string;
-    info: string;
+export class Professeur_VM  {
+    person : PersonneLight_VM;
+    taux: number| undefined;
+    statut: string| undefined;
+    num_tva: string| undefined;
+    num_siren: number| undefined;
+    iban: string | undefined;
+    info: string| undefined;
 }
 
 export class ProfSaisonVM {

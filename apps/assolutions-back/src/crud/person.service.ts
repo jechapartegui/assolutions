@@ -20,6 +20,7 @@ export class PersonService {
   async getAll(): Promise<Person[]> {
     return this.repo.find();
   }
+   
 
   async create(data: Partial<Person>): Promise<Person> {
     try {

@@ -15,7 +15,7 @@ export enum SeanceStatus {
 }
 
 @Entity({ name: 'inscription_seance' })
-export class InscriptionSeance {
+export class RegistrationSession {
   @PrimaryGeneratedColumn()
   id: number;
 

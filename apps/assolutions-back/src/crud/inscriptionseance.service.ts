@@ -2,26 +2,40 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
-import { InscriptionSeance } from '../entities/inscription-seance.entity';
+import { RegistrationSession } from '../entities/inscription-seance.entity';
 
 @Injectable()
-export class InscriptionSeanceService {
+export class RegistrationSessionService {
   constructor(
-    @InjectRepository(InscriptionSeance)
-    private readonly repo: Repository<InscriptionSeance>,
+    @InjectRepository(RegistrationSession)
+    private readonly repo: Repository<RegistrationSession>,
   ) {}
 
-  async get(id: number): Promise<InscriptionSeance> {
+  async get(id: number): Promise<RegistrationSession> {
     const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('INSCRIPTIONSEANCE_NOT_FOUND');
+    if (!item) throw new NotFoundException('REGISTRATION_SESSION_NOT_FOUND');
     return item;
   }
 
-  async getAll(): Promise<InscriptionSeance[]> {
+  async getAll(): Promise<RegistrationSession[]> {
     return this.repo.find();
   }
+    async getAllSeance(seanceId:number): Promise<RegistrationSession[]> {
+    return this.repo.find({ where: { seanceId } });
+  }
+    async getAllRiderSaison(personId:number,seasonId:number ): Promise<RegistrationSession[]> {
+  return this.repo.find({
+    relations: ['seance'],            // charge la relation
+    where: {
+      personId,              // ton champ personne_id
+      seance: {
+        seasonId            // la propriété de l’entité Session
+      }
+    }
+  });
+}
 
-  async create(data: Partial<InscriptionSeance>): Promise<InscriptionSeance> {
+  async create(data: Partial<RegistrationSession>): Promise<RegistrationSession> {
     try {
       const created = this.repo.create(data);
       return await this.repo.save(created);
@@ -31,7 +45,7 @@ export class InscriptionSeanceService {
     }
   }
 
-  async update(id: number, data: Partial<InscriptionSeance>): Promise<InscriptionSeance> {
+  async update(id: number, data: Partial<RegistrationSession>): Promise<RegistrationSession> {
     await this.get(id);
     try {
       await this.repo.update({ id }, data);

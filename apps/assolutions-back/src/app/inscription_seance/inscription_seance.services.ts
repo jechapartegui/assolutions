@@ -1,180 +1,147 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
-import { InscriptionSeance } from "../bdd/inscription-seance";
-import { SeanceService } from "../seance/seance.services";
-import { MemberService } from "../member/member.services";
-import { Adherent_VM } from "@shared/src/lib/member.interface";
-import { full_inscription_seance, inscription_seance } from "@shared/src/lib/inscription_seance.interface";
+import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs/common";
+import { RegistrationSessionService } from "../../crud/inscriptionseance.service";
+import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from "@shared/src/lib/inscription_seance.interface";
+import { InscriptionStatus, RegistrationSession, SeanceStatus } from "../../entities/inscription-seance.entity";
 
 @Injectable()
-//   this.url = 'api/inscription_seance/get/' + id;
-//  this.url = 'api/inscription_seance/get_full/' + id;
-// this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;
-//  this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
-//   this.url = 'api/inscription_seance/add';
-//     this.url = 'api/inscription_seance/update';
-//  this.url = 'api/inscription_seance/delete/' + id;
 export class InscriptionSeanceService {
   constructor(
-    @InjectRepository(InscriptionSeance)
-    private readonly InscriptionSeanceRepo: Repository<InscriptionSeance>,
-    private seance_serv :SeanceService,
-    private member_serv: MemberService
+    private inscriptionseanceserv:RegistrationSessionService
   ) {}
 
   async Get(id: number) {
-    const pISS = await this.InscriptionSeanceRepo.findOne({ where: { id } });
-    if (!pISS) {
-      throw new UnauthorizedException('NO_REGISTRATION_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return this.toISS(pISS);
+     const pIS = await this.inscriptionseanceserv.get(id);
+       if (!pIS) {
+         throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
+       }
+       //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+       return to_InscriptionSeances_VM(pIS);
 
   }
    async GetFull(id: number) {
-    const pISS = await this.InscriptionSeanceRepo.findOne({ where: { id } });
+    const pISS = await this.inscriptionseanceserv.get(id);
     if (!pISS) {
-      throw new UnauthorizedException('NO_REGISTRATION_FOUND');
+      throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
     }
-       const pAdh = await this.member_serv.GetMyInfo(pISS.rider_id);
-    if (!pAdh) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return this.toISSFull(pISS, pAdh);
+   
+    return to_FullInscriptionSeance_VM(pISS);
 
   }
    async GetAllRiderSaison(rider_id: number, saison_id:number) {
-    const seance_ids = (await this.seance_serv.GetSeanceSaison(saison_id)).map(x => x.seance_id);
-    const pISSs = await this.InscriptionSeanceRepo.find({ where: { seance_id: In(seance_ids), rider_id } });
+    const pISSs = await this.inscriptionseanceserv.getAllRiderSaison(rider_id, saison_id);
     if (!pISSs) {
-      throw new UnauthorizedException('NO_REGISTRATION_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-      return pISSs.map((plieu) => {
-      return this.toISS(plieu);
-    });
+         return [];
+        }
+        return pISSs.map((pISS) => {
+          return to_InscriptionSeances_VM(pISS);
+        });
 
   }
    async GetAllSeance(seance_id:number) {
-    const pISSs = await this.InscriptionSeanceRepo.find({ where: { seance_id } });
+    const pISSs = await this.inscriptionseanceserv.getAllSeance(seance_id);
     if (!pISSs) {
-      throw new UnauthorizedException('NO_REGISTRATION_FOUND');
-    }
-    //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-       return pISSs.map((plieu) => {
-      return this.toISS(plieu);
-    });
+         return [];
+        }
+        return pISSs.map((pISS) => {
+          return to_InscriptionSeances_VM(pISS);
+        });
 
   }
 
-  async Add(inscription: inscription_seance) {
-  if (!inscription) {
-    throw new BadRequestException('INVALID_REGISTRATION');
-  }
-  const objet_base = this.fromISS(inscription);
-
-  const newISS = this.InscriptionSeanceRepo.create(objet_base);
-  const saved = await this.InscriptionSeanceRepo.save(newISS);
-  return this.toISS(saved).id;
+  async Add(inscription: InscriptionSeance_VM) {
+    if (!inscription) {
+         throw new BadRequestException('INVALID_REGISTRATION_SESSION');
+       }
+       const objet_base = toRegistrationSession(inscription);
+     
+       const objet_insere = await this.inscriptionseanceserv.create(objet_base);
+       return objet_insere.id;
 }
-async Update(inscription: inscription_seance) {
-  if (!inscription || !inscription.id) {
-    throw new BadRequestException('INVALID_REGISTRATION_ID');
-  }
-
-  const existing = await this.InscriptionSeanceRepo.findOne({ where: { id: inscription.id } });
-  if (!existing) {
-    throw new NotFoundException('REGISTRATION_NOT_FOUND');
-  }
-  const objet_base = this.fromISS(inscription);
-
-  const updated = await this.InscriptionSeanceRepo.save({ ...existing, ...objet_base });
-  return this.toISS(updated);
+async Update(inscription: InscriptionSeance_VM) {
+  if (!inscription) {
+         throw new BadRequestException('INVALID_REGISTRATION_SESSION');
+       }
+    const objet_base = toRegistrationSession(inscription);
+await this.inscriptionseanceserv.update(objet_base.id, objet_base);
 }
 
 async Delete(id: number) {
-  const toDelete = await this.InscriptionSeanceRepo.findOne({ where: { id } });
-  if (!toDelete) {
-    throw new NotFoundException('REGISTRATION_NOT_FOUND');
-  }
-
-  await this.InscriptionSeanceRepo.remove(toDelete);
-  return { success: true };
+   try{
+    await this.inscriptionseanceserv.delete(id);
+    return true;
+     } catch{
+      return false;
+     }
 }
 
 
-
-
-
-  private toISS(piss: InscriptionSeance): inscription_seance {
-    let lieu: inscription_seance = {
-      id: piss.id,
-      rider_id:piss.rider_id,
-           seance_id: piss.seance_id,
-           date_inscription: piss.date_inscription,
-           statut_inscription: piss.statut_inscription || undefined,
-           statut_seance: piss.statut_seance || undefined,
-      
-    };
-    return lieu;
-  }
-    private toISSFull(piss: InscriptionSeance, pAdh:Adherent_VM): full_inscription_seance {
-    let lieu: full_inscription_seance = {
-      id: piss.id,
-      rider_id:piss.rider_id,
-           seance_id: piss.seance_id,
-           date_inscription: piss.date_inscription,
-           statut_inscription: piss.statut_inscription || undefined,
-           statut_seance: piss.statut_seance || undefined,
-           nom : pAdh.nom,
-          prenom : pAdh.prenom,
-          surnom : pAdh.surnom,
-          contacts: pAdh.contact,
-          contacts_prevenir : pAdh.contact_prevenir      
-    };
-    return lieu;
-  }
-private fromISS(pIns: inscription_seance): InscriptionSeance {
-  const entity = new InscriptionSeance();
-  entity.id = pIns.id;
-  entity.rider_id = pIns.rider_id;
-  entity.seance_id = pIns.seance_id;
-  entity.date_inscription = pIns.date_inscription;
-
-  // En supposant que tes enums sont des strings dans la base
-  // Mappage enum inverse sécurisé
-  entity.statut_inscription = this.fromStatutPresence(pIns.statut_inscription) || undefined;
-  entity.statut_seance = this.fromStatutPresenceSeance(pIns.statut_seance)|| undefined;
-
-  return entity;
-}
 
  
-private fromStatutPresence(statut?: string): "présent" | "absent" | "convoqué" | "essai" | undefined {
-  switch (statut) {
-    case "présent":
-      return "présent";
-    case "absent":
-      return "absent";
-    case "essai":
-      return "essai";
-    case "convoqué":
-      return "convoqué";
-    default:
-      return undefined;
+
+}
+export function to_InscriptionSeances_VM(obj:RegistrationSession): InscriptionSeance_VM{
+  const item = new InscriptionSeance_VM();
+  item.date_inscription=obj.dateInscription;
+  item.id = obj.id;
+  item.person = toPersonneLight_VM(obj.person);
+  item.seance_id = obj.seanceId;
+  item.statut_inscription = toInscriptionStatusVM(obj.statutInscription);
+  item.statut_seance = toSeanceStatusVM(obj.statutSeance);
+  return item;
+}
+export function to_FullInscriptionSeance_VM(obj:RegistrationSession): FullInscriptionSeance_VM{
+  const item = new FullInscriptionSeance_VM();
+  item.date_inscription=obj.dateInscription;
+  item.id = obj.id;
+  item.person = toPersonne_VM(obj.person);
+  item.seance_id = obj.seanceId;
+  item.statut_inscription = toInscriptionStatusVM(obj.statutInscription);
+  item.statut_seance = toSeanceStatusVM(obj.statutSeance);
+  return item;
+}
+
+export function toRegistrationSession(data:InscriptionSeance_VM) : RegistrationSession{
+ const entity = new RegistrationSession();
+ entity.dateInscription = data.date_inscription;
+ entity.id = data.id ?? 0;
+ entity.personId = data.person.id;
+ entity.seanceId = data.seance_id;
+ entity.statutInscription = toInscriptionStatusEntity(data.statut_inscription);
+ entity.statutSeance = toSeanceStatusEntity( data.statut_seance);
+ return entity;
+}
+
+export function toInscriptionStatusVM(s?: InscriptionStatus): InscriptionStatus_VM | undefined {
+  switch (s) {
+    case InscriptionStatus.PRESENT:  return InscriptionStatus_VM.PRESENT;
+    case InscriptionStatus.ABSENT:   return InscriptionStatus_VM.ABSENT;
+    case InscriptionStatus.CONVOQUE: return InscriptionStatus_VM.CONVOQUE;
+    case InscriptionStatus.ESSAI:    return InscriptionStatus_VM.ESSAI;
+    default:                         return undefined;
   }
 }
-  private fromStatutPresenceSeance(statut?: string): "présent" | "absent" | undefined {
-  switch (statut) {
-    case "présent":
-      return "présent";
-    case "absent":
-      return "absent";
-    default:
-      return undefined;
+
+export function toInscriptionStatusEntity(s?: InscriptionStatus_VM): InscriptionStatus | undefined {
+  switch (s) {
+    case InscriptionStatus_VM.PRESENT:  return InscriptionStatus.PRESENT;
+    case InscriptionStatus_VM.ABSENT:   return InscriptionStatus.ABSENT;
+    case InscriptionStatus_VM.CONVOQUE: return InscriptionStatus.CONVOQUE;
+    case InscriptionStatus_VM.ESSAI:    return InscriptionStatus.ESSAI;
+    default:                            return undefined;
   }
 }
-  
+export function toSeanceStatusVM(s?: SeanceStatus): SeanceStatus_VM | undefined {
+  switch (s) {
+    case SeanceStatus.PRESENT: return SeanceStatus_VM.PRESENT;
+    case SeanceStatus.ABSENT:  return SeanceStatus_VM.ABSENT;
+    default:                   return undefined;
+  }
+}
+
+export function toSeanceStatusEntity(s?: SeanceStatus_VM): SeanceStatus | undefined {
+  switch (s) {
+    case SeanceStatus_VM.PRESENT: return SeanceStatus.PRESENT;
+    case SeanceStatus_VM.ABSENT:  return SeanceStatus.ABSENT;
+    default:                      return undefined;
+  }
 }

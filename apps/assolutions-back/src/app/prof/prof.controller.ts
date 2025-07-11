@@ -1,6 +1,7 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { ProfService } from './prof.services';
+import { Professeur_VM } from '@shared/src';
 
 // src/auth/auth.controller.ts
 @Controller('prof')
@@ -22,6 +23,23 @@ export class ProfController {
   @Get('get_prof_saison/:saison_id')
 async GetProfSaison(@Param('saison_id') saison_id : number ) {
     return this.prof_serv.GetProfSaison(saison_id);
+  }
+
+  @Put('add')
+  async Add(@Body() s: Professeur_VM) {
+    return this.prof_serv.add(s);
+  }
+  
+  @Put('update')
+  async Update(@Body() s: Professeur_VM) {
+    return this.prof_serv.update(s);
+  }
+  
+  
+  @UseGuards(PasswordGuard)
+  @Delete('delete/:id')
+  async Delete(@Param('id') id: number) {
+    return this.prof_serv.delete(id);
   }
 
 }

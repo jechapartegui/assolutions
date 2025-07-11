@@ -7,7 +7,7 @@ import { Session } from './seance.entity';
 import { ProfessorContract } from './contrat_prof.entity';
 
 @Entity('seance_professeur')
-export class SeanceProfesseur {
+export class SessionProfessor {
   @PrimaryGeneratedColumn()
   id: number;  // Primary key, auto-generated:contentReference[oaicite:0]{index=0}
 

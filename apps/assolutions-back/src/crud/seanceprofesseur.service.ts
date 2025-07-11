@@ -2,26 +2,30 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
-import { SeanceProfesseur } from '../entities/seance-professeur.entity';
+import { SessionProfessor } from '../entities/seance-professeur.entity';
 
 @Injectable()
-export class SeanceProfesseurService {
+export class SessionProfessorService {
   constructor(
-    @InjectRepository(SeanceProfesseur)
-    private readonly repo: Repository<SeanceProfesseur>,
+    @InjectRepository(SessionProfessor)
+    private readonly repo: Repository<SessionProfessor>,
   ) {}
 
-  async get(id: number): Promise<SeanceProfesseur> {
+  async get(id: number): Promise<SessionProfessor> {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('SEANCEPROFESSEUR_NOT_FOUND');
     return item;
   }
 
-  async getAll(): Promise<SeanceProfesseur[]> {
+    async getAllSeance(seanceId:number): Promise<SessionProfessor[]> {
+    return this.repo.find({ where: { seanceId } });
+  }
+
+  async getAll(): Promise<SessionProfessor[]> {
     return this.repo.find();
   }
 
-  async create(data: Partial<SeanceProfesseur>): Promise<SeanceProfesseur> {
+  async create(data: Partial<SessionProfessor>): Promise<SessionProfessor> {
     try {
       const created = this.repo.create(data);
       return await this.repo.save(created);
@@ -31,7 +35,7 @@ export class SeanceProfesseurService {
     }
   }
 
-  async update(id: number, data: Partial<SeanceProfesseur>): Promise<SeanceProfesseur> {
+  async update(id: number, data: Partial<SessionProfessor>): Promise<SessionProfessor> {
     await this.get(id);
     try {
       await this.repo.update({ id }, data);

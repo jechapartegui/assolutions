@@ -16,9 +16,14 @@ export class SeasonService {
     if (!item) throw new NotFoundException('SEASON_NOT_FOUND');
     return item;
   }
+    async getActive(projectId:number): Promise<Season> {
+    const item = await this.repo.findOne({ where: { projectId, isActive:true } });
+    if (!item) throw new NotFoundException('SEASON_NOT_FOUND');
+    return item;
+  }
 
-  async getAll(): Promise<Season[]> {
-    return this.repo.find();
+  async getAll(projectId:number): Promise<Season[]> {
+    return this.repo.find({ where: { projectId } });
   }
 
   async create(data: Partial<Season>): Promise<Season> {

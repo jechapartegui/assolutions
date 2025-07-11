@@ -1,29 +1,33 @@
-import { ItemContact } from "./personne.interface";
 
-export interface InscriptionSeance_VM {
+export class InscriptionSeance_VM {
     id: number;
-     rider_id: number;
+     person: PersonneLight_VM;
      seance_id: number;
      date_inscription: Date;
-     statut_inscription: string | undefined;
-     statut_seance: string | undefined;
+     statut_inscription: InscriptionStatus_VM | undefined;
+     statut_seance: SeanceStatus_VM | undefined;
 }
 
 
-export interface FullInscriptionSeance_VM {
+export class FullInscriptionSeance_VM {
 
     id: number;
-    rider_id: number;
+    person: Personne_VM;
     seance_id: number;
     date_inscription: Date;
-    statut_inscription: string | undefined;
-    statut_seance: string | undefined;
-    nom: string;
-    prenom: string;
-    surnom: string;
-    contacts: ItemContact[];
-    contacts_prevenir: ItemContact[];
+    statut_inscription: InscriptionStatus_VM | undefined;
+    statut_seance: SeanceStatus_VM | undefined;
+}
 
+export enum InscriptionStatus_VM {
+  PRESENT = 'présent',
+  ABSENT = 'absent',
+  CONVOQUE = 'convoqué',
+  ESSAI = 'essai',
+}
 
+export enum SeanceStatus_VM {
+  PRESENT = 'présent',
+  ABSENT = 'absent',
 }
 
