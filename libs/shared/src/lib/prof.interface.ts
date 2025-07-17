@@ -1,3 +1,4 @@
+import { PersonneLight_VM } from "./personne.interface";
 
 export class Professeur_VM  {
     person : PersonneLight_VM;

@@ -46,4 +46,16 @@ export class LinkGroupService {
     await this.get(id);
     await this.repo.delete({ id });
   }
+  async getGroupsForObject(
+    objectType: 'cours' | 'séance' | 'rider',
+    objectId: number
+  ): Promise<LinkGroup[]> {
+    const links = await this.repo.find({
+      where: { objectType, objectId }
+    });
+
+    return links;
+  }
 }
+
+

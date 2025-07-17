@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Person } from './personne.entity';
+import { ProfessorContract } from './contrat_prof.entity';
 
 /**
  * Spécialisation de Person pour les professeurs.
@@ -40,9 +41,12 @@ export class Professor {
   @Column({ type: 'text', nullable: true })
   info?: string;
 
-  @CreateDateColumn({ type: 'timestamp with time zone', name: 'date_creation' })
+    @CreateDateColumn({ type: 'timestamp with time zone', name: 'date_creation' })
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'date_maj' })
   updatedAt: Date;
+
+  @OneToMany(() => ProfessorContract, contract => contract.professor)
+contracts: ProfessorContract[];
 }

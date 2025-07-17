@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.services';
+import { Compte_VM } from '@shared/src';
 
 // src/auth/auth.controller.ts
 @Controller('auth')
@@ -7,14 +8,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('prelogin')
-  async preLogin(@Body('email') email: string) {
+  async preLogin(@Body('email') email: string) : Promise<boolean> {
     return this.authService.prelogin(email);
   }
 
   @Post('login')
   async login(
     @Body() { email, password }: { email: string; password: string }
-  ) {
+  ) : Promise<Compte_VM> {
     return this.authService.validatepassword(email, password);
   }
 

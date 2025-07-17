@@ -2,9 +2,9 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 import { Season } from "./saison.entity";
 import { Location } from "./lieu.entity";
 import { Project } from "./projet.entity";
-import { LinkGroup } from "./lien_groupe.entity";
 import { CourseProfessor } from "./cours_professeur.entity";
 import { Session } from "./seance.entity";
+import { LinkGroup } from "./lien_groupe.entity";
 
 @Entity({ name: 'cours' })
 export class Course {
@@ -57,17 +57,18 @@ export class Course {
   @Column({ type: 'boolean', default: false, name: 'afficher_present' })
   showAttendance: boolean;
 
-  @OneToMany(() => CourseProfessor, cp => cp.course)
+  @OneToMany(() => CourseProfessor, cp => cp.course, {
+  cascade: ['remove'],          // <-- permet à `remove()` de supprimer les orphelins
+})
   professors: CourseProfessor[];
-
-  @OneToMany(() => LinkGroup, lg => lg.objectId)
-  groups: LinkGroup[];
-
+  
   @CreateDateColumn({ name: 'date_creation', type: 'timestamp with time zone' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'date_maj', type: 'timestamp with time zone' })
   updatedAt: Date;
+
+ groups?: LinkGroup[];
 
     @OneToMany(() => Session, s => s.course, { cascade: true })
   sessions?: Session[];

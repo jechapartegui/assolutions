@@ -16,6 +16,7 @@ import { GroupeModule } from './groupe/groupe.module';
 import { DocumentModule } from './document/document.module';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { join } from 'path';
+import { InscriptionSaisonModule } from './inscription_saison/inscription_saison.module';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ TypeOrmModule.forRoot({
   namingStrategy: new SnakeNamingStrategy(),
   logging: ['schema'],
 }),
-    AuthModule, MemberModule, SeanceModule, ProjectModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule
+    AuthModule, MemberModule, SeanceModule, ProjectModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule, InscriptionSaisonModule
   ],  providers: [
     {
       provide: APP_GUARD,

@@ -1,15 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { KeyValuePair } from "@shared/src/lib/autres.interface";
+import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs/common";
 import { LienGroupe_VM } from "@shared/src/lib/groupe.interface";
-import { Cours_VM, CoursProfesseurVM } from "@shared/src/lib/cours.interface";
+import { Cours_VM} from "@shared/src/lib/cours.interface";
 import { Course } from "../../entities/cours.entity";
 import { CourseService } from "../../crud/course.service";
+import { toPersonneLight_VM } from "../member/member.services";
 
 @Injectable()
 export class CoursService {
   constructor(private coursserv:CourseService) {}
 
-  async Get(id: number) {
+  async Get(id: number) : Promise<Cours_VM> {
     const pcours = await this.coursserv.get(id);
        if (!pcours) {
          throw new UnauthorizedException('COURSE_NOT_FOUND');
@@ -18,106 +18,51 @@ export class CoursService {
        return toCours_VM(pcours);
 
   }
-async GetAll(projectId: number, seasonId :number, dateDebut:Date, dateFin:Date) {
-  const coursList = await this.CoursRepo.find({ where: { saison_id } });
+async GetAll(seasonId :number) : Promise<Cours_VM[]> {
+
+  const coursList = await this.coursserv.getAll(seasonId);
   if (!coursList) {
-    throw new UnauthorizedException('NO_ITEM_FOUND');
+    return [];
   }
+  return coursList.map(x => toCours_VM(x));
 
-  const results = await Promise.all(
-    coursList.map(async (s) => {
-      const result = this.to_cours(s);
-      result.groupes = await this.getGroupesForCours(s.id);
-      return result;
-    })
-  );
-
-  return results;
 }
 
   async GetAllLight(saison_id:number) {
-    const pISSs = await this.CoursRepo.find({ where: { saison_id } });
-    if (!pISSs) {
-      throw new UnauthorizedException('NO_ITEM_FOUND');
-    }
- return pISSs.map((plieu): KeyValuePair => {
+
+ return this.GetAll(saison_id).then((res : Cours_VM[]) => res.map(n => {
   return {
-    key: plieu.id,
-    value: plieu.nom
+    key: n.id,
+    value: n.nom
   };
-});
+ })) 
 
 
   }
 
-  async Add(s: CoursVM, project_id: number) {
+  async Add(s: Cours_VM, project_id: number) {
   if (!s) {
     throw new BadRequestException('INVALID_ITEM');
   }
 
-  const objet_base = this.toCours(s, project_id);
-  const newISS = this.CoursRepo.create(objet_base);
-  const saved = await this.CoursRepo.save(newISS);
-    await this.updateGroupesForCours(saved.id, s.groupes);
-  // 🔁 Ajouter les liaisons professeurs
-  await this.updateCoursProfesseurs(saved.id, s.professeursCours);
-
-  return saved.id;
+  const objet_base = toCourse(s, project_id);
+  return this.coursserv.create(objet_base);
 }
 
-async Update(s: CoursVM, project_id: number) {
+async Update(s: Cours_VM, project_id: number) {
   if (!s) {
     throw new BadRequestException('INVALID_ITEM');
   }
 
-  const objet_base = this.toCours(s, project_id);
-  const existing = await this.CoursRepo.findOne({ where: { id: s.id } });
-
-  if (!existing) {
-    throw new NotFoundException('ITEM_NOT_FOUND');
-  }
-
-  const updated = await this.CoursRepo.save({ ...existing, ...objet_base });
-
-  // 🔁 Mettre à jour les liaisons professeurs
-    await this.updateGroupesForCours(updated.id, s.groupes);
-  await this.updateCoursProfesseurs(updated.id, s.professeursCours);
-
-  return true;
+  const objet_base = toCourse(s, project_id);
+  return this.coursserv.update(objet_base.id, objet_base);
 }
 
-private async updateCoursProfesseurs(cours_id: number, profs: CoursProfesseurVM[]) {
-  // Supprimer les liaisons existantes
-  await this.CoursProfRepo.delete({ cours_id });
-
-  // Recréer les liaisons à partir des id
-  const newLiaisons = profs.map(kvp => {
-    const cp = new CoursProfesseur();
-    cp.cours_id = cours_id;
-    cp.prof_id = Number(kvp.prof_id);
-    return cp;
-  });
-
-  await this.CoursProfRepo.save(newLiaisons);
-}
 
 
 async Delete(id: number) {
-  const toDelete = await this.CoursRepo.findOne({ where: { id } });
-  await this.CoursProfRepo.delete({ cours_id :id});
-  await this.LienGroupeRepo.delete({ objet_type: 'cours', objet_id: id });
-
-  if (!toDelete) {
-    throw new NotFoundException('ITEM_NOT_FOUND');
-  }
-
-  await this.CoursRepo.remove(toDelete);
-  return { success: true };
+return await this.coursserv.delete(id);
 }
-
-
-
-
 }
 
 export function toCours_VM(course: Course): Cours_VM {
@@ -149,20 +94,14 @@ export function toCours_VM(course: Course): Cours_VM {
     // Professeurs liés
     professeursCours: (course.professors ?? []).map(cp => ({
       id:           cp.id,
-      cours_id:     cp.courseId,
-      professeur_id: cp.professorId,
-      minutes:      cp.minutes ?? null,
-      taux_horaire: cp.rate ?? null,
-      minutes_payees: cp.paidMinutes,
-      statut:       cp.status,
-      info:         cp.info ?? '',
-      nom:          cp.professor?.person?.lastName  ?? '',
-      prenom:       cp.professor?.person?.firstName ?? '',
-    } as CoursProfesseurVM)),
+      personne:     toPersonneLight_VM(cp.contract.professor.person),
+      type_remuneration: cp.contract.remunerationType,
+      type_contrat:cp.contract.contractType
+    } )),
 
     // Groupes liés
     groupes: (course.groups ?? []).map(lg =>
-      new LienGroupe_VM(lg.groupId, lg.id, lg.group?.name ?? '')
+      new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.objectId)
     ),
   };
 }

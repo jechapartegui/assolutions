@@ -1,39 +1,22 @@
 import { LienGroupe_VM } from "./groupe.interface";
-import { ProfVM } from "./prof.interface";
+import { Personne_VM, PersonneLight_VM } from "./personne.interface";
 
-export interface MesSeances {
-    id: number;
-    nom: string;
-    date: Date;
-    heureDebut: string;
-    heureFin: string;
-    duree: number;
-    lieu: string;
-    lieuId: number;
-    typeSeance: 'ENTRAINEMENT' | 'MATCH' | 'SORTIE' | 'EVENEMENT';
-    coursId?: number;       // Peut être null -> rendu optionnel
-    cours?: string;         // Peut être null -> rendu optionnel
-    statut: 'prévue' | 'réalisée' | 'annulée';
-    professeur: Array<ProfVM>;  // tableau de [id, nom]
+
+export interface MesSeances_VM {
+    seance:Seance_VM
     statutInscription?: 'présent' | 'absent' | 'convoqué' | 'essai'; // Peut être null -> optionnel
     statutPrésence?: 'présent' | 'absent'; // Peut être null -> optionnel
     inscription_id?: number; // Peut être null -> optionnel
   }
   
-  export interface AdherentSeance {
-    id: number;
-    nom: string;
-    prenom: string;
-    surnom: string;
-    dateNaissance: Date;
-    age: number;
-    sexe: boolean; // 0 = femme, 1 = homme
-    mes_seances: MesSeances[];
+  export interface AdherentSeance_VM {
+    personne:Personne_VM
+    mes_seances: MesSeances_VM[];
   }
 
 // shared/models/seance.dto.ts
 
-export class SeanceVM {
+export class Seance_VM {
   seance_id: number;
   saison_id: number;
   cours: number;
@@ -61,7 +44,7 @@ export class SeanceVM {
   cours_nom?: string; // Nom du cours, optionnel
 
   // Les entités de lien
-  seanceProfesseurs: SeanceProfesseurVM[];
+  seanceProfesseurs: PersonneLight_VM[];
 
   groupes: LienGroupe_VM[];
 }
@@ -71,15 +54,3 @@ export enum StatutSeance{
 }
 
 
-export class SeanceProfesseurVM {
-  id: number;
-  seance_id: number;
-  professeur_id: number;
-  minutes: number;
-  taux_horaire: number ;
-  minutes_payees: number;
-  statut: number; // 0 = à payer, 1 = payé, 2 = en attente
-  info: string ;
-  prenom:string;
-  nom:string;
-}

@@ -1,9 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Season } from './saison.entity';
 import { Person } from './personne.entity';
+import { LinkGroup } from './lien_groupe.entity';
 
 @Entity({ name: 'inscription_saison' })
-export class InscriptionSaison {
+export class RegistrationSeason {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,6 +21,8 @@ export class InscriptionSaison {
   @ManyToOne(() => Person, person => person.inscriptions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'personne_id' })
   person: Person;
+
+ groups?: LinkGroup[];
 
   @Column({ name: 'date_inscription', type: 'timestamp with time zone', default: () => 'NOW()' })
   dateInscription: Date;

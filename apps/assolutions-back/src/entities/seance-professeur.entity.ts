@@ -18,11 +18,11 @@ export class SessionProfessor {
   @JoinColumn({ name: 'seance_id' })
   session: Session;  // Relation to Seance entity:contentReference[oaicite:1]{index=1}
 
-  @Column({ name: 'professeur_id' })
-  professeurId: number;  // Foreign key column (relation to Professeur)
+  @Column({ name: 'professeurcontract_id' })
+  professeurContractId: number;  // Foreign key column (relation to Professeur)
 
   @ManyToOne(() => ProfessorContract, prof => prof.seanceProfesseurs, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'professeur_id' })
+  @JoinColumn({ name: 'professeurcontract_id' })
   professeur: ProfessorContract;  // Relation to Professeur entity:contentReference[oaicite:2]{index=2}
 
   @Column({ type: 'varchar', length: 50 })

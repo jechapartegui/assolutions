@@ -23,19 +23,19 @@ export class GroupeController {
     @Put('add')
     async Add(@Body() body: { saison_id: number; gr: KeyValuePair }) {
       const { saison_id, gr } = body;
-      return this.groupe_serv.Add(gr, saison_id);
+      return this.groupe_serv.add(gr, saison_id);
     }
 
 @Put('update')
 async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
   const { saison_id, gr } = body;
-  return this.groupe_serv.Update(gr, saison_id);
+  return this.groupe_serv.update(gr, saison_id);
 }
 
         @UseGuards(PasswordGuard)
     @Delete('delete/:id')
     async Delete(@Param('id') id: number) {
-      return this.groupe_serv.Delete(id);
+      return this.groupe_serv.delete(id);
     }
 
      @Put('addlien')
@@ -45,13 +45,11 @@ async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
     }
 
         @UseGuards(PasswordGuard)
-@Delete('deletelien/:id_objet/:type_objet/:id_groupe')
+@Delete('deletelien/:id')
 async DeleteLien(
-  @Param('id_objet') id_objet: number,
-  @Param('type_objet') type_objet: string,
-  @Param('id_groupe') id_groupe: number,
+  @Param('id') id: number,
 ) {
-  return this.groupe_serv.DeleteLien(id_objet, type_objet, id_groupe);
+  return this.groupe_serv.DeleteLien(id);
 }
 
 }

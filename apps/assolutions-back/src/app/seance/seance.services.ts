@@ -1,37 +1,27 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Seance } from '../bdd/seance';
-import { Between, In } from 'typeorm';
-import { LienGroupe } from '../bdd/lien-groupe';
-import { MesSeances, SeanceProfesseurVM, SeanceVM } from '@shared/src/lib/seance.interface';
-import { InscriptionSeance } from '../bdd/inscription-seance';
-import { ProfService } from '../prof/prof.services';
-import { SeanceProfesseur } from '../bdd/seance_professeur';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
+import { MesSeances_VM, Seance_VM } from '@shared/src/lib/seance.interface';
+import { SessionService } from '../../crud/session.service';
+import { RegistrationSessionService } from '../../crud/inscriptionseance.service';
+import { Session } from '../../entities/seance.entity';
+import { toPersonneLight_VM } from '../member/member.services';
+import { LinkGroupService } from '../../crud/linkgroup.service';
 
 @Injectable()
 export class SeanceService {
-  constructor(
-    @InjectRepository(Seance)
-    private readonly seanceRepo: Repository<Seance>,
-    @InjectRepository(SeanceProfesseur)
-    private readonly SeanceProfesseurRepo: Repository<SeanceProfesseur>,
-    @InjectRepository(LienGroupe)
-    private readonly lienGrouperepo: Repository<LienGroupe>,
-    @InjectRepository(InscriptionSeance)
-    private readonly inscriptionseancerepo: Repository<InscriptionSeance>,
-    private profservice:ProfService
+  constructor(private seanceserv:SessionService, private inscriptionseance_serv:RegistrationSessionService, private liengroup_serv:LinkGroupService
   ) // @InjectRepository(Projet)
   // private readonly projetRepo: Repository<Projet>,
   {}
 
-  async GetSeanceSaison(saison_id:number): Promise<Seance[]>{
-    return this.seanceRepo.find({
-       where: {
-        saison_id: saison_id
-       } 
-    })
+  async GetSeanceSaison(saison_id:number): Promise<Seance_VM[]>{
+     const seances = await this.seanceserv.getAllSeason(saison_id);
+        if (!seances) {
+         return [];
+        }
+        return seances.map((seance) => {
+          return to_Seance_VM(seance);
+        });
   }
 
   async MySeance(
@@ -39,80 +29,56 @@ export class SeanceService {
     age: number,
     saison_id: number,
     groupe_id: number[],
-    date_debut: Date = new Date(),
-    date_fin: Date
-  ): Promise<MesSeances[]> {
-    const dateDebut = startOfDay(date_debut);
-    const dateFin = endOfDay(date_fin);
+  ): Promise<MesSeances_VM[]> {
 
-    const seances = await this.seanceRepo.find({
-      where: {
-        saison_id: saison_id,
-        date_seance: Between(dateDebut, dateFin),
-      },
-    });
+    const seances = await this.GetSeanceSaison(saison_id);
 
     if (!seances || seances.length === 0) {
       throw new UnauthorizedException('NO_SESSION_FOUND');
     }
 
-    const filteredSeances: MesSeances[] = [];
+    const filteredSeances: MesSeances_VM[] = [];
 
-    for (const seance of seances) {
-      const maSeance: MesSeances = {
-        id: seance.seance_id,
-        nom: seance.libelle,
-        date: new Date(seance.date_seance),
-        heureDebut: seance.heure_debut,
-        heureFin: calculerHeureFin(seance.heure_debut, seance.duree_seance),
-        duree: seance.duree_seance,
-        inscription_id: undefined,
-        lieu: '', // sera enrichi plus tard
-        lieuId: seance.lieu_id,
-        typeSeance: seance.type_seance,
-        coursId: seance.cours ?? undefined,
-        cours: '', // sera enrichi plus tard
-        statut: seance.statut,
-        statutInscription: undefined,
-        professeur: [],
-      };
+    for (const _seance of seances) {
+      const maSeance: MesSeances_VM = {
+        seance : _seance,
+        statutPrésence : undefined,
+        statutInscription : undefined,
+        inscription_id :0};
+       
       //check si présence signalée...
-      const ins = await this.inscriptionseancerepo.findOne({
-        where: {
-          seance_id: seance.seance_id,
-          rider_id: adhrent_id,
-        },
-      });
+      
+      const ins = await this.inscriptionseance_serv.getRiderSeance(adhrent_id, _seance.seance_id);
       if (ins) {
         maSeance.inscription_id = ins.id;
-        maSeance.statutInscription = ins!.statut_inscription;
-         maSeance.professeur = await  this.profservice.GetProfSeance(seance.seance_id);
+        maSeance.statutInscription = ins!.statutInscription;        
         filteredSeances.push(maSeance);
       } else {
         let ajout: boolean = true;
         // filter age
-        if (seance.est_limite_age_minimum && age < seance.age_minimum!) {
+        if (_seance.est_limite_age_minimum && age < _seance.age_minimum!) {
           ajout = false;
         }
-        if (seance.est_limite_age_maximum && age > seance.age_maximum!) {
+        if (_seance.est_limite_age_maximum && age > _seance.age_maximum!) {
           ajout = false;
         }
 
         //filter groupe
-
-        const liens = await this.lienGrouperepo.find({
-          where: {
-            objet_id: seance.seance_id,
-            groupe_id: In(groupe_id),
-            objet_type: 'seance',
-          },
-        });
-
-        if (liens.length == 0) {
+     
+        if (_seance.groupes.length == 0) {
           ajout = false;
+        } else {
+         let gr_commun = false;
+         _seance.groupes.map(x => x.id).forEach(idgs =>{
+          if(groupe_id.includes(idgs)){
+            gr_commun = true;
+          }
+         })
+         if(!gr_commun){
+          ajout = false;
+         }
         }
         if(ajout==true) {
-         maSeance.professeur = await  this.profservice.GetProfSeance(seance.seance_id);
           filteredSeances.push(maSeance);
         }
       }
@@ -127,54 +93,29 @@ export class SeanceService {
 
   async MySeanceProf(
     adhrent_id: number,
-    saison_id: number,
-    date_debut: Date = new Date(),
-    date_fin: Date
-  ): Promise<MesSeances[]> {
-    const dateDebut = startOfDay(date_debut);
-    const dateFin = endOfDay(date_fin);
-
-    const seances = await this.seanceRepo.find({
-      where: {
-        saison_id: saison_id,
-        date_seance: Between(dateDebut, dateFin),
-      },
-    });
+    saison_id: number
+  ): Promise<MesSeances_VM[]> {
+    let filteredSeances:MesSeances_VM[] = [];
+    const seances = await this.seanceserv.getAllSeason(saison_id);
 
     if (!seances || seances.length === 0) {
       throw new UnauthorizedException('NO_SESSION_FOUND');
     }
+    seances.forEach((_session) =>{
+      const idprof = _session.seanceProfesseurs.map(x => x.professeur.professorId);
+      if(idprof.includes(adhrent_id)){
+        const myss:MesSeances_VM ={
+          seance : to_Seance_VM(_session),
+          statutInscription :undefined,
+          inscription_id :0,
+          statutPrésence : undefined
+        }
+filteredSeances.push(myss);
+      }
 
-    const profseance = await  this.SeanceProfesseurRepo.find({
-      where: {  
-        professeur_id: adhrent_id,
-        seance_id: In(seances.map(s => s.seance_id)),
-      },
-    });
-   const seancesFiltrees = seances.filter((s) => profseance.some((p) => p.seance_id === s.seance_id));
+    })
 
-    const filteredSeances: MesSeances[] = [];
-
-    for (const seance of seancesFiltrees) {
-      const maSeance: MesSeances = {
-        id: seance.seance_id,
-        nom: seance.libelle,
-        date: new Date(seance.date_seance),
-        heureDebut: seance.heure_debut,
-        heureFin: calculerHeureFin(seance.heure_debut, seance.duree_seance),
-        duree: seance.duree_seance,
-        lieu: '', // sera enrichi plus tard
-        lieuId: seance.lieu_id,
-        typeSeance: seance.type_seance,
-        coursId: seance.cours ?? undefined,
-        cours: '', // sera enrichi plus tard
-        statut: seance.statut,
-        statutInscription: undefined,
-        professeur: [],
-      };
-
-      filteredSeances.push(maSeance);
-    }
+   
 
     if (filteredSeances.length === 0) {
       throw new UnauthorizedException('NO_SESSION_FOUND');
@@ -182,261 +123,107 @@ export class SeanceService {
 
     return filteredSeances;
   }
-  async GetAll(saison_id: number): Promise<SeanceVM[]> {
-    const seances = await this.seanceRepo.find({
-      where: {
-        saison_id: saison_id,
-      },
-      relations: [
-      'lieu',
-      'cours',
-      'professeursSeance',
-      'professeursSeance.personne',
-      ],
-      order: {
-        date_seance: 'ASC',
-        heure_debut: 'ASC',
-      },
-    });
 
-  if (seances.length === 0) return [];
-  const seanceIds = seances.map(s => s.seance_id);
-
-  const lienGroupes = await this.lienGrouperepo.find({
-    where: {
-      objet_type: 'seance',
-      objet_id: In(seanceIds),
-    },
-    relations: ['groupe'],
-  });
-
-  // Grouper les lienGroupes par séance
-  const groupesParSeance = new Map<number, LienGroupe[]>();
-  for (const lg of lienGroupes) {
-    const list = groupesParSeance.get(lg.objet_id) ?? [];
-    list.push(lg);
-    groupesParSeance.set(lg.objet_id, list);
+  async GetAll(saison_id: number): Promise<Seance_VM[]> {
+  const seanceListe = await this.seanceserv.getAllSeason(saison_id);
+  if (!seanceListe) {
+    return [];
+  }
+  return seanceListe.map(x => to_Seance_VM(x));
   }
 
-  // Attacher les groupes à chaque séance
-  for (const seance of seances) {
-    seance.lienGroupes = groupesParSeance.get(seance.seance_id) ?? [];
+ async GetByDate(
+  saison_id: number,
+  date_debut?: string,
+  date_fin?: string
+): Promise<Seance_VM[]> {
+  const dateDebut = date_debut ? startOfDay(new Date(date_debut)) : null;
+  const dateFin = date_fin ? endOfDay(new Date(date_fin)) : null;
+
+  if (!dateDebut && !dateFin) {
+    throw new NotFoundException('NO_DATE');
   }
 
-  return seances.map(toSeanceVM);
+  if ((dateDebut && isNaN(dateDebut.getTime())) || (dateFin && isNaN(dateFin.getTime()))) {
+    throw new NotFoundException('INVALID_DATE');
   }
 
-  async GetByDate(
-    saison_id: number,
-    date_debut: string,
-    date_fin: string
-  ): Promise<SeanceVM[]> {
-    const dateDebut = startOfDay(new Date(date_debut));
-    const dateFin = endOfDay(new Date(date_fin));
-    const seances = await this.seanceRepo.find({
-      where: {
-        saison_id: saison_id,
-        date_seance: Between(dateDebut, dateFin),
-      },
-      relations: [
-      'lieu',
-      'cours',
-      'professeursSeance',
-      'professeursSeance.personne',
-      ],
-      order: {
-        date_seance: 'ASC',
-        heure_debut: 'ASC',
-      }
-    });
+  let seances = await this.GetAll(saison_id);
 
-  if (seances.length === 0) return [];
-  const seanceIds = seances.map(s => s.seance_id);
-
-  const lienGroupes = await this.lienGrouperepo.find({
-    where: {
-      objet_type: 'seance',
-      objet_id: In(seanceIds),
-    },
-    relations: ['groupe'],
-  });
-
-  // Grouper les lienGroupes par séance
-  const groupesParSeance = new Map<number, LienGroupe[]>();
-  for (const lg of lienGroupes) {
-    const list = groupesParSeance.get(lg.objet_id) ?? [];
-    list.push(lg);
-    groupesParSeance.set(lg.objet_id, list);
+  if (dateDebut) {
+    seances = seances.filter(seance => new Date(seance.date_seance) >= dateDebut);
   }
 
-  // Attacher les groupes à chaque séance
-  for (const seance of seances) {
-    seance.lienGroupes = groupesParSeance.get(seance.seance_id) ?? [];
+  if (dateFin) {
+    seances = seances.filter(seance => new Date(seance.date_seance) <= dateFin);
   }
 
-  return seances.map(toSeanceVM);
-  }
-  async Get(id: number): Promise<SeanceVM> {
-    const seance = await this.seanceRepo.findOne({
-      where: { seance_id: id },
-      relations: ['lieu', 'cours', 'professeursSeance', 'professeursSeance.personne'],
-    });
-     if (!seance) throw new NotFoundException('Séance non trouvée');
+  return seances;
+}
 
-  const lienGroupes = await this.lienGrouperepo.find({
-    where: { objet_type: 'seance', objet_id: seance.seance_id },
-    relations: ['groupe'],
-  });
 
-  // On attache les liens à la séance
-    seance.lienGroupes = lienGroupes;
-    return toSeanceVM(seance);
+  async Get(id: number): Promise<Seance_VM> {
+    const seance = await this.seanceserv.get(id);
+    if(!seance){
+         throw new UnauthorizedException('SESSION_NOT_FOUND');
+    }
+    return to_Seance_VM(seance);
   }
-  async Add(projectId: number, seance: SeanceVM): Promise<SeanceVM> {
-    const entity = toSeanceEntity(seance, projectId);
-    const savedSeance = await this.seanceRepo.save(entity);
-    await this.updateGroupesForSeance(savedSeance.seance_id, seance.groupes);
-    return toSeanceVM(savedSeance);
-  }
+  
   async AddRange(
-    projectId: number,
-    seance: SeanceVM,
+    seance: Seance_VM,
     date_debut_serie: Date,
     date_fin_serie: Date,
     jour_semaine: string
-  ): Promise<SeanceVM[]> {
+  ): Promise<Seance_VM[]> {
     const startDate = startOfDay(date_debut_serie);
     const endDate = endOfDay(date_fin_serie);
-    const seances: SeanceVM[] = [];
+    const seances: Seance_VM[] = [];
     
     let currentDate = new Date(startDate);
     while (currentDate <= endDate) {
       if (currentDate.toLocaleString('fr-FR', { weekday: 'long' }) === jour_semaine) {
         const newSeance = { ...seance, date: new Date(currentDate) };
+       const sss = await this.Add(newSeance);
+        newSeance.seance_id = sss.id;
+        newSeance.groupes.forEach(async (lig) =>{
+          await this.liengroup_serv.create(lig);
+        })
         seances.push(newSeance);
       }
       currentDate.setDate(currentDate.getDate() + 1);
     }
-
-    const entities = seances.map(s => toSeanceEntity(s, projectId));
-    const savedSeances = await this.seanceRepo.save(entities);
- for (let i = 0; i < savedSeances.length; i++) {
-  const saved = savedSeances[i];
-  const original = seances[i];
-  await this.updateGroupesForSeance(saved.seance_id, original.groupes);
-  await this.updateProfForSeance(saved.seance_id, original.seanceProfesseurs);
-}
-
-return savedSeances.map(toSeanceVM);
+return seances;
   }
 
-  async Update(projectId: number, seance: SeanceVM): Promise<SeanceVM> {
-    const entity = toSeanceEntity(seance, projectId);
-    const updatedSeance = await this.seanceRepo.save(entity);
-    await this.updateGroupesForSeance(updatedSeance.seance_id, seance.groupes);
-    await this.updateProfForSeance(updatedSeance.seance_id, seance.seanceProfesseurs);
-    return toSeanceVM(updatedSeance);
+ async Add(s: Seance_VM) {
+  if (!s) {
+    throw new BadRequestException('INVALID_ITEM');
   }
 
-  async Delete(id: number): Promise<void> {
-    const seance = await this.seanceRepo.findOne({ where: { seance_id: id } });
-    if (!seance) {
-      throw new UnauthorizedException('SEANCE_NOT_FOUND');
-    }
-    await this.seanceRepo.delete({ seance_id: id });
-    await this.updateGroupesForSeance(id, []);
-    await this.updateProfForSeance(id, []);
+  const objet_base = toSession(s);
+  return this.seanceserv.create(objet_base);
+}
+
+async Update(s: Seance_VM) {
+  if (!s) {
+    throw new BadRequestException('INVALID_ITEM');
   }
 
-private async updateGroupesForSeance(seance_id: number, groupes: LienGroupe_VM[]) {
-  await this.lienGrouperepo.delete({ objet_type: 'séance', objet_id: seance_id });
-
-  const nouveauxLiens = groupes.map(vm => {
-    const lien = new LienGroupe();
-    lien.objet_type = 'séance';
-    lien.objet_id = seance_id;
-    lien.groupe_id = vm.id;
-    return lien;
-  });
-
-  await this.lienGrouperepo.save(nouveauxLiens);
+  const objet_base = toSession(s);
+  return this.seanceserv.update(objet_base.id, objet_base);
 }
 
-private async updateProfForSeance(seance_id: number, sp: SeanceProfesseurVM[]) {
-  await this.SeanceProfesseurRepo.delete({  seance_id });
 
-  const nouveauxLiens = sp.map(vm => {
-    const lien = new SeanceProfesseur();
-    lien.professeur_id = vm.professeur_id;
-    lien.seance_id = seance_id;
-    lien.minutes = vm.minutes;
-    lien.minutes_payees = vm.minutes_payees ?? null;
-    lien.taux_horaire = vm.taux_horaire ?? null;
-    lien.statut = vm.statut;
-    lien.info = vm.info ?? '';
-    return lien;
-  });
 
-  await this.SeanceProfesseurRepo.save(nouveauxLiens);
+async Delete(id: number) {
+return await this.seanceserv.delete(id);
 }
 }
 
-function toSeanceVM(seance: Seance): SeanceVM {
-  return {
-    ...seance,
-     seanceProfesseurs: seance.professeursSeance?.map(sp => ({
-      seance_id: sp.seance_id,
-      id: sp.id,
-      professeur_id: sp.professeur_id,
-      minutes: sp.minutes ?? null,
-      taux_horaire: sp.taux_horaire ?? null,
-      minutes_payees: sp.minutes_payees,
-      statut: sp.statut,
-      info: sp.info ?? '',
-      nom: sp.personne?.nom ?? '',
-      prenom: sp.personne?.prenom ?? '',
-    })) ?? [],
-    lieu_nom: seance.lieu?.nom ?? '',
-    cours_nom: seance.coursEntity?.nom ?? '',
-     groupes: seance.lienGroupes
-      ?.map(lg => new LienGroupe_VM(
-         lg.groupe_id ?? 0,
-         lg.groupeEntity?.nom ?? '',
-         Number(lg.id),
-      ))
-      ?? [],  // ← fallback ici
 
-  };
-}
 
-export function toSeanceEntity(obj: SeanceVM, saison_id: number): Seance {
-  const entity = new Seance();
 
-  entity.seance_id = obj.seance_id ?? 0; // Assurez-vous que l'ID est défini, sinon utilisez 0
-  entity.saison_id = saison_id;
-  entity.cours = obj.cours ?? 0;
-  entity.libelle = obj.libelle;
-  entity.type_seance = obj.type_seance;
-  entity.date_seance = new Date(obj.date_seance);
-  entity.heure_debut = obj.heure_debut;
-  entity.duree_seance = obj.duree_seance;
-  entity.lieu_id = obj.lieu_id;
-  entity.statut = obj.statut;
-  entity.age_minimum = obj.age_minimum ?? null;
-  entity.age_maximum = obj.age_maximum ?? null;
-  entity.place_maximum = obj.place_maximum ?? null;
-  entity.essai_possible = !!obj.essai_possible;
-  entity.nb_essai_possible = obj.nb_essai_possible ?? null;
-  entity.info_seance = obj.info_seance ?? '';
-  entity.convocation_nominative = !!obj.convocation_nominative;
-  entity.afficher_present = !!obj.afficher_present;
-  entity.rdv = obj.rdv ?? '';
-  entity.est_limite_age_minimum = obj.est_limite_age_minimum !== undefined;
-  entity.est_limite_age_maximum = obj.est_limite_age_maximum !== undefined;
-  entity.est_place_maximum = obj.est_place_maximum !== undefined;
-
-  return entity;
-}
 
 // src/utils/date.utils.ts
 
@@ -452,7 +239,7 @@ export function endOfDay(date: Date): Date {
   return d;
 }
 
-function calculerHeureFin(heureDebut: string, dureeMinutes: number): string {
+export function calculerHeureFin(heureDebut: string, dureeMinutes: number): string {
   const [hours, minutes] = heureDebut.split(':').map(Number);
   const debut = new Date();
   debut.setHours(hours, minutes, 0, 0);
@@ -465,4 +252,66 @@ function calculerHeureFin(heureDebut: string, dureeMinutes: number): string {
   const minute = debut.getMinutes().toString().padStart(2, '0');
 
   return `${heure}:${minute}`;
+}
+
+export function to_Seance_VM(entity: Session): Seance_VM {
+  const vm = new Seance_VM();
+
+  vm.seance_id = entity.id;
+  vm.saison_id = entity.seasonId;
+  vm.cours = entity.courseId ?? 0;
+  vm.libelle = entity.label ?? '';
+  vm.type_seance = entity.type;
+  vm.date_seance = new Date(entity.date?.toISOString().split('T')[0] ?? ''); // au format YYYY-MM-DD
+  vm.heure_debut = entity.startTime;
+  vm.duree_seance = entity.duration;
+  vm.lieu_id = entity.locationId;
+  vm.statut = entity.status;
+  vm.age_minimum = entity.minAge ?? null;
+  vm.age_maximum = entity.maxAge ?? null;
+  vm.place_maximum = entity.maxPlaces ?? null;
+  vm.essai_possible = entity.trialAllowed;
+  vm.nb_essai_possible = entity.trialCount ?? null;
+  vm.info_seance = entity.info ?? '';
+  vm.convocation_nominative = entity.nominativeCall;
+  vm.afficher_present = entity.showAttendance;
+  vm.rdv = entity.appointment ?? '';
+  vm.seanceProfesseurs = entity.seanceProfesseurs.map(x => toPersonneLight_VM(x.professeur.professor.person))  
+  vm.est_limite_age_minimum = entity.limitMinAge ? true : false;
+  vm.est_limite_age_maximum = entity.limitMaxAge ? true : false;
+  vm.est_place_maximum = entity.limitPlaces ? true : false;
+  vm.groupes= (entity.groups ?? []).map(lg =>
+      new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.objectId)
+    );
+  return vm;
+}
+
+
+export function toSession(vm: Seance_VM): Session {
+  const entity = new Session();
+
+  entity.id = vm.seance_id ?? 0; // Assurez-vous que l'ID est défini, sinon utilisez 0
+  entity.seasonId = vm.saison_id;
+  entity.courseId = vm.cours ?? 0;
+  entity.label = vm.libelle;
+  entity.type = vm.type_seance;
+  entity.date = new Date(vm.date_seance);
+  entity.startTime = vm.heure_debut;
+  entity.duration = vm.duree_seance;
+  entity.locationId = vm.lieu_id;
+  entity.status = vm.statut;
+  entity.minAge = vm.age_minimum ?? undefined;
+  entity.maxAge = vm.age_maximum ?? undefined;
+  entity.maxPlaces = vm.place_maximum ?? undefined;
+  entity.trialAllowed = !!vm.essai_possible;
+  entity.trialCount = vm.nb_essai_possible ?? undefined;
+  entity.info = vm.info_seance ?? '';
+  entity.nominativeCall = !!vm.convocation_nominative;
+  entity.showAttendance = !!vm.afficher_present;
+  entity.appointment = vm.rdv ?? '';
+  entity.limitMinAge = vm.est_limite_age_minimum !== undefined;
+  entity.limitMaxAge = vm.est_limite_age_maximum !== undefined;
+  entity.limitPlaces = vm.est_place_maximum !== undefined;
+
+  return entity;
 }

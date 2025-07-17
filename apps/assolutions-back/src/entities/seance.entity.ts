@@ -11,9 +11,9 @@ import {
 import { Location } from './lieu.entity';
 import { Course } from './cours.entity';
 import { Season } from './saison.entity';
+import {  SessionProfessor } from './seance-professeur.entity';
+import {  RegistrationSession } from './inscription-seance.entity';
 import { LinkGroup } from './lien_groupe.entity';
-import { SeanceProfesseur } from './seance-professeur.entity';
-import { InscriptionSeance } from './inscription-seance.entity';
 
 /**
  * Représente une séance (cours ou événement) dans une saison.
@@ -119,19 +119,16 @@ export class Session {
   limitPlaces: boolean;
 
   /** Professeurs assignés */
-  @OneToMany(() => SeanceProfesseur, (sp) => sp.session)
-  seanceProfesseurs: SeanceProfesseur[];
+  @OneToMany(() => SessionProfessor, (sp) => sp.session)
+  seanceProfesseurs: SessionProfessor[];
 
-  /** Groupes liés */
-  @OneToMany(() => LinkGroup, (lg) => lg.objectId)
-  groups: LinkGroup[];
-
-          @OneToMany(() => InscriptionSeance, insc => insc.person)
-      inscriptionsPersonne?: InscriptionSeance[];
+          @OneToMany(() => RegistrationSession, insc => insc.person)
+      inscriptionsPersonne?: RegistrationSession[];
 
   @CreateDateColumn({ type: 'timestamp with time zone', name: 'date_creation' })
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'date_maj' })
   updatedAt: Date;
+   groups?: LinkGroup[];
 }

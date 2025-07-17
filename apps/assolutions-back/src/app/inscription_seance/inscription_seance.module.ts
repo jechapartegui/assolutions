@@ -11,7 +11,7 @@ import { RegistrationSessionService } from '../../crud/inscriptionseance.service
     TypeOrmModule.forFeature([
     ]),
   ],
-  providers: [RegistrationSessionService],
+  providers: [RegistrationSessionService, InscriptionSeanceService],
   controllers: [InscriptionSeanceController],
   exports: [InscriptionSeanceService], // 👈 ajoute ça
 })

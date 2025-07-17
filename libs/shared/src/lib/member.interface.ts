@@ -1,4 +1,3 @@
-import { LienGroupe_VM } from "./groupe.interface";
 import { InscriptionSaison_VM } from "./inscription_saison.interface";
 import { InscriptionSeance_VM } from "./inscription_seance.interface";
 import { Personne_VM } from "./personne.interface";
@@ -6,7 +5,6 @@ import { Personne_VM } from "./personne.interface";
 export class Adherent_VM extends Personne_VM{
   
     inscrit:boolean;
-    groupes:LienGroupe_VM[] = [];
     inscriptionsSaison:InscriptionSaison_VM[]= [];
     inscriptionsSeance:InscriptionSeance_VM[]=[];
     photo:any;

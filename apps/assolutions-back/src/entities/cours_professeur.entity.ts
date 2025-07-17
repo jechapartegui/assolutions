@@ -8,7 +8,10 @@ export class CourseProfessor {
 
   @Column({ name: 'cours_id' })
   courseId: number;
-  @ManyToOne(() => Course, course => course.professors)
+@ManyToOne(() => Course, course => course.professors, {
+  onDelete: 'CASCADE',           // <-- ajoute cette option
+  createForeignKeyConstraints: true
+})
   @JoinColumn({ name: 'cours_id' })
   course: Course;
 

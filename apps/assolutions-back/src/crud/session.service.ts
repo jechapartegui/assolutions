@@ -3,23 +3,41 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Session } from '../entities/seance.entity';
+import { LinkGroupService } from './linkgroup.service';
 
 @Injectable()
 export class SessionService {
   constructor(
     @InjectRepository(Session)
-    private readonly repo: Repository<Session>,
+    private readonly repo: Repository<Session>, private linkgroup_serv:LinkGroupService
   ) {}
 
   async get(id: number): Promise<Session> {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('SESSION_NOT_FOUND');
+      item.groups = await this.linkgroup_serv.getGroupsForObject('séance', id);
     return item;
   }
 
   async getAll(): Promise<Session[]> {
-    return this.repo.find();
+    const seances = await this.repo.find();
+     return Promise.all(
+      seances.map(async seance => {
+        seance.groups = await this.linkgroup_serv.getGroupsForObject('séance', seance.id);
+        return seance;
+      })
+    );
   }
+    async getAllSeason(seasonId:number): Promise<Session[]> {
+     const seances = await  this.repo.find({ where: { seasonId } });
+     return Promise.all(
+      seances.map(async seance => {
+        seance.groups = await this.linkgroup_serv.getGroupsForObject('séance', seance.id);
+        return seance;
+      })
+    );
+  }
+
 
   async create(data: Partial<Session>): Promise<Session> {
     try {

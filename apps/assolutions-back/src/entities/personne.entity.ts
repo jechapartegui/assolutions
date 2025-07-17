@@ -1,8 +1,8 @@
 import { ItemContact } from "@shared/src/lib/personne.interface";
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { Account } from "./compte.entity";
-import { InscriptionSaison } from "./inscription-saison.entity";
-import { InscriptionSeance } from "./inscription-seance.entity";
+import { RegistrationSeason } from "./inscription-saison.entity";
+import { RegistrationSession } from "./inscription-seance.entity";
 
 @Entity({ name: 'personne' })
 export class Person {
@@ -41,11 +41,11 @@ export class Person {
   @Column({ type: 'jsonb', nullable: true, name: 'contacts_prevenir' })
   emergencyContacts?: ItemContact[];
 
-    @OneToMany(() => InscriptionSaison, insc => insc.saison)
-    inscriptions?: InscriptionSaison[];
+    @OneToMany(() => RegistrationSeason, insc => insc.saison)
+    inscriptions?: RegistrationSeason[];
 
-        @OneToMany(() => InscriptionSeance, insc => insc.seance)
-    inscriptionsSeance?: InscriptionSeance[];
+        @OneToMany(() => RegistrationSession, insc => insc.seance)
+    inscriptionsSeance?: RegistrationSession[];
 
   @CreateDateColumn({ type: 'timestamp with time zone', name: 'date_creation' })
   createdAt: Date;

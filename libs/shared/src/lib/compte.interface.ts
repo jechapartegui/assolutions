@@ -1,3 +1,5 @@
+import { Adherent_VM } from "./member.interface";
+
 export class Compte_VM {
     id: number;
     nom: string;
@@ -5,9 +7,10 @@ export class Compte_VM {
     password: string;
     actif: boolean;
     mail_actif: boolean;
-    derniere_connexion: Date;
+    derniere_connexion: Date | null;
     echec_connexion: number;
     mail_ko: boolean;
+    adherents: Adherent_VM[] = [];
   }
 
   export class ProjetLogin {
@@ -19,15 +22,12 @@ export class Compte_VM {
     login: string;
   }
 
-  export type AuthResult = {
-    type: 'compte' | 'admin';
-    user: any;
-  };
+  
 
   export type ProjetView = {
     id: number;
     nom: string;
     adherent: boolean;
     prof: boolean;
-    gestionnaire: boolean;
+    essai:boolean;
   };

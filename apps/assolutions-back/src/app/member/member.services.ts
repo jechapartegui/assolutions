@@ -1,91 +1,58 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { Adherent } from '../bdd/riders';
-import { AdherentProjet } from '../bdd/member_project';
-import { ProjectService } from '../project/project.service';
-import { InscriptionSaison } from '../bdd/inscription-saison';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AdherentSeance_VM } from '@shared/src/lib/seance.interface';
+import { Adherent_VM } from '@shared/src';
+import { Person } from '../../entities/personne.entity';
+import { Personne_VM, PersonneLight_VM } from '@shared/src/lib/personne.interface';
+import { PersonService } from '../../crud/person.service';
+import { RegistrationSeasonService } from '../../crud/inscriptionsaison.service';
+import { RegistrationSessionService } from '../../crud/inscriptionseance.service';
+import { RegistrationSeason } from '../../entities/inscription-saison.entity';
+import { RegistrationSession } from '../../entities/inscription-seance.entity';
+import { to_InscriptionSeances_VM } from '../inscription_seance/inscription_seance.services';
+import { toInscriptionSaison_VM } from '../inscription_saison/inscription_saison.services';
+import { SeasonService } from '../../crud/season.service';
 import { SeanceService } from '../seance/seance.services';
-import { GroupeService } from '../groupe/groupe.service';
-import { AdherentSeance } from '@shared/src/lib/seance.interface';
-import { ProfesseurSaison } from '../bdd/prof-saison';
-import { GestionnaireProjet } from '../bdd/gestionnaire_projet';
-import { Adherent_VM, ItemList, KeyValuePair } from '@shared/src';
-import { LienGroupe } from '../bdd/lien-groupe';
-import { Compte } from '../bdd/compte';
-import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
+import { ProfessorContractService } from '../../crud/professorcontract.service';
 
 @Injectable()
 export class MemberService {
-  constructor(
-    @InjectRepository(InscriptionSaison)
-    private readonly inscriptionsaisonRepo: Repository<InscriptionSaison>,
-    @InjectRepository(LienGroupe)
-    private readonly LienGroupeRepo: Repository<LienGroupe>,
-    @InjectRepository(Adherent)
-    private readonly adherentRepo: Repository<Adherent>,
-    @InjectRepository(AdherentProjet)
-    private readonly adherentProjetRepo: Repository<AdherentProjet>,
-    @InjectRepository(ProfesseurSaison)
-    private readonly ProfesseurSaisonRepo: Repository<ProfesseurSaison>,
-    @InjectRepository(GestionnaireProjet)
-    private readonly GestionnaireProjetRepo: Repository<GestionnaireProjet>,
-    @InjectRepository(Compte)
-    private readonly CompteRepo: Repository<Compte>,
-    private projectService: ProjectService,
-    private seanceService: SeanceService,
-    private groupeservice: GroupeService
+  constructor(private seanceService:SeanceService,  private personserivce:PersonService, private profcontratserv:ProfessorContractService, private inscriptionsaisonservice:RegistrationSeasonService, private inscriptionseanceservice:RegistrationSessionService, private saison_serv:SeasonService
   ) {}
-  async GetMyInfo(id: number) {
-    const pAdh = await this.adherentRepo.findOne({ where: { id } });
+  async GetMyInfo(id: number, project_id: number) {
+    const saison_active = (await this.saison_serv.getActive(project_id)).id;
+    const pAdh = await this.personserivce.get(id);
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
-    return toAdherent_VM(pAdh);
+    const iseason = await this.inscriptionsaisonservice.getPersonRegistrations(id, project_id);
+    const iseance = await this.inscriptionseanceservice.getAllRiderSaison(id, saison_active);
+    return toAdherent_VM(pAdh, iseason, iseance);
   }
-  async GetGestionnaire(compte: number, project_id: number): Promise<boolean> {
-    const temp_adh = await this.GetAdherentProject(compte, project_id);
-    const gestionnaire = await this.Gestionnaire(temp_adh, project_id);
-    if(gestionnaire && gestionnaire.length > 0) {
-      return true;
-    }
-    return false;
-  }
-  async GetMySeance(compte: number, project_id: number): Promise<AdherentSeance[]> {
-    const temp_adh = await this.GetAdherentProject(compte, project_id);
+
+  async GetMySeance(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
+    const saison_active = (await this.saison_serv.getActive(project_id)).id
   
-    const saison_active = await this.projectService.getActiveSaion(project_id);
     if (!saison_active) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
+    const adhrents_saison = await this.GetAdherentProject(compte, saison_active);
   
-    const adhrents = await this.AdherentSaisons(temp_adh, saison_active.id);
-    if (!adhrents || adhrents.length === 0 ) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
+
+    const retour: AdherentSeance_VM[] = [];
   
-    const retour: AdherentSeance[] = [];
-  
-    for (const ad of adhrents) {
+    for (const ad of adhrents_saison) {
       const age = this.calculateAge(ad.date_naissance);
-      const groupe = await this.groupeservice.getGroupeObjet(ad.id, 'rider');
+      const groupe = ad.inscriptionsSaison[0].groupes.map(x => x.id);
       const mes_seances = await this.seanceService.MySeance(
         ad.id,
         age,
-        saison_active.id,
-        groupe.map((x) => x.groupe_id),
-        saison_active.date_debut,
-        saison_active.date_fin
+        saison_active,
+        groupe
       );
-      const adherentSeance: AdherentSeance = {
-        id: ad.id,
-        nom: ad.nom,
-        prenom: ad.prenom,
-        surnom: ad.surnom,
-        dateNaissance: ad.date_naissance,
-        age: age,
+      const adherentSeance: AdherentSeance_VM = {
+       
         mes_seances: mes_seances,
-        sexe: ad.sexe,
+        personne : ad
       };
   
       retour.push(adherentSeance);
@@ -96,69 +63,56 @@ export class MemberService {
   
     return retour;
   }
-  async GetMyProf(compte: number, project_id: number): Promise<AdherentSeance[]> {
-    const temp_adh = await this.GetAdherentProject(compte, project_id);
+  async GetMyProf(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
+    const temp_adh = await this.personserivce.getAllCompte(compte);
   
-    const saison_active = await this.projectService.getActiveSaion(project_id);
+    const saison_active = (await this.saison_serv.getActive(project_id)).id
+  
     if (!saison_active) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
   
-    const profs = await this.ProfSaison(temp_adh, saison_active.id);
+    const profs = await this.ProfSaison(temp_adh, saison_active);
     if (!profs || profs.length === 0) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
   
-    const retour: AdherentSeance[] = [];
+    const retour: AdherentSeance_VM[] = [];
   
     for (const ad of profs) {
-      const age = this.calculateAge(ad.date_naissance);
       const mes_seances = await this.seanceService.MySeanceProf(
         ad.id,
-        saison_active.id,
-        saison_active.date_debut,
-        saison_active.date_fin
+        saison_active
       );
-      const profSeance: AdherentSeance = {
-        id: ad.id,
-        nom: ad.nom,
-        prenom: ad.prenom,
-        surnom: ad.surnom,
-        dateNaissance: ad.date_naissance,
-        age: age,
-        mes_seances: mes_seances,
-        sexe: ad.sexe,
+      const profSeance: AdherentSeance_VM = {
+       personne : ad,
+        mes_seances: mes_seances
       };
   
       retour.push(profSeance);
-    }
-
-
-    
-  
+    }    
     return retour;
   }
 
-  async GetAdherentProject(
-    compte: number,
-    project_id: number
-  ): Promise<Adherent[]> {
-    const liste_adherent: Adherent[] = [];
+  async GetAdherentProject( compte: number,  saison_id: number ): Promise<Adherent_VM[]> {
+    const liste_adherent: Adherent_VM[] = [];
 
-    const _adherents = await this.adherentRepo.find({ where: { compte: compte } });
+    const _adherents = await this.personserivce.getAllCompte(compte);
 
     if (!_adherents || _adherents.length === 0) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
 
     for (const ad of _adherents) {
-      const adherentProject = await this.adherentProjetRepo.findOne({
-        where: { member_id: ad.id, project_id },
-      });
-
-      if (adherentProject) {
-        liste_adherent.push(ad);
+      try {
+      const iss = await this.inscriptionsaisonservice.getAllSeasonRider(saison_id, ad.id);
+        if(iss){
+          liste_adherent.push(toAdherent_VM(ad,[iss],[]))
+        }
+      } catch (error) {
+        
       }
+
     }
 
     if (liste_adherent.length === 0) {
@@ -171,62 +125,26 @@ export class MemberService {
  
 //fonction interne
   async AdherentSaisons(
-    adherents: Adherent[],
     saison_id: number
   ): Promise<Adherent_VM[]> {
-    const liste_adherent: Adherent[] = [];
 
-    for (const ad of adherents) {
-      const adherentProject = await this.inscriptionsaisonRepo.findOne({
-        where: { rider_id: ad.id, saison_id },
-      });
-
-      if (adherentProject) {
-        liste_adherent.push(ad);
-      }
-    }
-
-    if (liste_adherent.length === 0) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
-
-    return liste_adherent.map((plieu) => {
-      return toAdherent_VM(plieu);
-    });
+    return (await this.inscriptionsaisonservice.getAllSeason(saison_id)).map(x => toAdherent_VM(x.person, [x], []));
   }
 
-  async ProfSaison(adherents: Adherent[], saison_id: number) {
-    const liste_adherent: Adherent[] = [];
+  async ProfSaison(adherents: Person[], saison_id: number) : Promise<Personne_VM[]> {
+    const liste_adherent: Personne_VM[] = [];
+      const prof_proj = (await this.profcontratserv.getAllSaison(saison_id)).map(x => x.professorId);
 
     for (const ad of adherents) {
-      const adherentProject = await this.ProfesseurSaisonRepo.findOne({
-        where: { rider_id: ad.id, saison_id },
-      });
 
-      if (adherentProject) {
-        liste_adherent.push(ad);
+      if (prof_proj.includes(ad.id)) {
+        liste_adherent.push(toPersonne_VM(ad));
       }
     }
 
     return liste_adherent;
   }
 
-  async Gestionnaire(adherents: Adherent[], project_id: number) {
-
-    const liste_adherent: Adherent[] = [];
-
-    for (const ad of adherents) {
-      const adherentProject = await this.GestionnaireProjetRepo.findOne({
-        where: { rider_id: ad.id, project_id },
-      });
-
-      if (adherentProject) {
-        liste_adherent.push(ad);
-      }
-    }
-
-    return liste_adherent;
-  }
 
   calculateAge(dateNaissance?: Date | string): number {
     const today = new Date();
@@ -251,214 +169,101 @@ export class MemberService {
   }
 
   async Get(id: number) {
-    const pAdh= await this.adherentRepo.findOne({ where: { id } });
+     const pAdh = await this.personserivce.get(id);
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
     //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return toAdherent_VM(pAdh);
+    return toPersonne_VM(pAdh);
 
   }
- async GetAll(saison_id: number, project_id: number) {
-  const adherentProject = await this.adherentProjetRepo.find({
-    where: { project_id },
-  });
 
-  const adhPr: Adherent[] = await this.adherentRepo.find({
-    where: { id: In(adherentProject.map(x => x.member_id)) },
-  });
 
-  const liste_groupe:KeyValuePair[] = await this.groupeservice.GetAll(saison_id);
-
-  const inscr_saison:InscriptionSaison[] = await this.inscriptionsaisonRepo.find({
-    where: { rider_id: In(adherentProject.map(x => x.member_id)),
-      saison_id
-     },
-  });
-   const comptes:Compte[] = await this.CompteRepo.find({
-    where: { id: In(adhPr.map(x => x.compte)),
-      
-     },
-  });
-
-  const group: LienGroupe[] = await this.LienGroupeRepo.find({
-    where: {
-      objet_id: In(adherentProject.map(x => x.member_id)),
-      groupe_id: In(liste_groupe.map(x => x.key)),
-      objet_type: "rider"
-    },
-  });
-
-  const adhs = await this.AdherentSaisons(adhPr, saison_id);
-
-  if (!adhs) {
-    throw new UnauthorizedException('NO_USER_FOUND');
+  
+   async Add(personne: Personne_VM) {
+      if (!personne) {
+           throw new BadRequestException('INVALID_PERSON');
+         }
+         const objet_base = toPerson(personne);
+       
+         const objet_insere = await this.personserivce.create(objet_base);
+         return objet_insere.id;
   }
-
-return adhs.map((adh) => {
-  adh.groupes = group
-    .filter(x => x.objet_id === adh.id)
-    .map(x => new LienGroupe_VM(
-      x.groupe_id,
-      liste_groupe.find(y => y.key === x.groupe_id)?.value || '',
-      x.id
-    ))
-    .sort((a, b) => a.nom.localeCompare(b.nom));
- adh.adhesion = inscr_saison;
-  adh.inscrit = inscr_saison.find(x => x.rider_id === adh.id) ? true : false;
-  adh.login = comptes.find(x => x.id === adh.compte)?.login || '';
-
-  return adh;
-});
-
-}
-
-async GetAllAdherent(saison_id: number, project_id: number) {
-  const adhs = await this.GetAll(saison_id, project_id);
-  return adhs.filter(x => x.inscrit);
-}
-  
-
-  
-    async GetAllLight(project_id:number, saison_id:number):Promise<ItemList[]> {
-     const adherentProject = await this.adherentProjetRepo.find({
-    where: { project_id },
-  });
-
-  const adhPr: Adherent[] = await this.adherentRepo.find({
-    where: { id: In(adherentProject.map(x => x.member_id)) },
-  });
-
-
-
-  const adhs = await this.AdherentSaisons(adhPr, saison_id);
-
-  if (!adhs) {
-    throw new UnauthorizedException('NO_USER_FOUND');
-  }
-
-  return adhs.map((adh) => {
-    let kvp:ItemList = {
-      id:adh.id,
-      libelle:adh.prenom +  " " + adh.nom,
-      objet: 'RIDER'
-    }    
-    return kvp;
-  });
-  
-  
-    }
-
-  async GetAllAdherentLight(project_id: number, saison_id: number): Promise<ItemList[]> {
-  const adherentProject = await this.adherentProjetRepo.find({
-    where: { project_id },
-  });
-
-  const adhPr: Adherent[] = await this.adherentRepo.find({
-    where: { id: In(adherentProject.map(x => x.member_id)) },
-  });
-
-  const adhs = await this.AdherentSaisons(adhPr, saison_id);
-
-  if (!adhs) {
-    throw new UnauthorizedException('NO_USER_FOUND');
-  }
-
-  const inscr_saison: InscriptionSaison[] = await this.inscriptionsaisonRepo.find({
-    where: {
-      rider_id: In(adherentProject.map(x => x.member_id)),
-      saison_id
-    },
-  });
-
-  const riderIds = inscr_saison.map(x => x.rider_id);
-  const adh_insc = adhs.filter(x => riderIds.includes(x.id));
-
-  return adh_insc.map((adh) => {
-    const kvp: ItemList = {
-      id: adh.id,
-      libelle: `${adh.prenom} ${adh.nom}`,
-      objet: 'RIDER'
-    };
-    return kvp;
-  });
-}
-
-  
-    async Add(s: Adherent_VM, project_id :number) : Promise<number> {
-    if (!s) {
-      throw new BadRequestException('INVALID_MEMBER');
-    }
-    const objet_base = await toAdherentEntity(s);  
-    const newISS = await this.adherentRepo.create(objet_base);
-    const saved = await this.adherentRepo.save(newISS);
-    const adh_project = new AdherentProjet();
-    adh_project.member_id = saved.id;
-    adh_project.project_id = project_id;
-    await this.adherentProjetRepo.save(adh_project);
-    return saved.id;
-  }
-  async Update(s: Adherent_VM, project_id :number) {
-    if (!s) {
-      throw new BadRequestException('INVALID_MEMBER');
-    }
-     const objet_base = await toAdherentEntity(s);
-  
-    const existing = await this.adherentRepo.findOne({ where: { id: s.id } });
-    if (!existing) {
-      throw new NotFoundException('NO_MEMBER_FOUND');
-    }
-  
-    const updated = await this.adherentRepo.save({ ...existing, ...objet_base });
-    if(updated){
-      return true;
-    } else {
-      return false;
-    };
+  async Update(personne: Personne_VM) {
+     if (!personne) {
+           throw new BadRequestException('INVALID_PERSON');
+         }
+ const objet_base = toPerson(personne);
+       
+         return await this.personserivce.update(objet_base.id, objet_base);
   }
   
   async Delete(id: number) {
-    const toDelete = await this.adherentRepo.findOne({ where: { id } });
-    if (!toDelete) {
-      throw new NotFoundException('NO_MEMBER_FOUND');
-    }
-  
-    const i = await this.adherentRepo.remove(toDelete);
-   if(i){
+     try{
+      await this.personserivce.delete(id);
       return true;
-    } else {
-      return false;
-    };
+       } catch{
+        return false;
+       }
   }
 }
-export function toAdherentEntity(obj: Adherent_VM): Adherent {
-  const entity = new Adherent();
-  entity.id = obj.id;
-  entity.nom = obj.nom;
-  entity.prenom = obj.prenom;
-  entity.surnom = obj.surnom;
-  entity.date_naissance = obj.date_naissance;
-  entity.sexe = obj.sexe;
-  entity.adresse = obj.adresse ? JSON.stringify(obj.adresse) : '';
-  entity.compte = obj.compte;
-  entity.contacts = JSON.stringify(obj.contact);
-  entity.contacts_prevenir = JSON.stringify(obj.contact_prevenir);  
-  entity.date_creation = new Date();
-  return entity;
 
+export function toPersonneLight_VM(obj: Person): PersonneLight_VM {
+ const adh = new PersonneLight_VM();
+  adh.id = obj.id;
+  adh.nom = obj.lastName;
+  adh.prenom = obj.firstName;
+  adh.surnom = obj.nickname || '';
+  adh.date_naissance = new Date(obj.birthDate);
+  adh.sexe = obj.gender;
+  return adh;
+}
+export function toPersonne_VM(entity: Person): Personne_VM {
+ const vm = new Personne_VM();
+  vm.id = entity.id;
+  vm.nom = entity.lastName;
+  vm.prenom = entity.firstName;
+  vm.surnom = entity.nickname || '';
+  vm.date_naissance = new Date(entity.birthDate);
+  vm.sexe = entity.gender;
+  vm.adresse = JSON.parse(entity.address);
+  vm.compte = entity.accountId;
+  vm.contact_prevenir = entity.emergencyContacts?? [];
+  vm.contact = entity.contacts?? [];
+  vm.login = entity.account.login;  
+  return vm;
 }
 
-export function toAdherent_VM(obj: Adherent): Adherent_VM {
-  const adh = new Adherent_VM();
-  adh.id = obj.id;
-  adh.nom = obj.nom;
-  adh.prenom = obj.prenom;
-  adh.surnom = obj.surnom;
-  adh.date_naissance = obj.date_naissance;
-  adh.sexe = obj.sexe;
-  adh.adresse = JSON.parse(obj.adresse || '{}');
-  adh.compte = obj.compte;
-  adh.contact = JSON.parse(obj.contacts || '[]');
-  adh.contact_prevenir = JSON.parse(obj.contacts_prevenir || '[]');
-  return adh;
+export function toPerson(vm:Personne_VM){
+  const entity = new Person();
+  entity.id = vm.id;
+  entity.nickname = vm.surnom;
+  entity.lastName = vm.nom;
+  entity.firstName = vm.prenom;
+  entity.birthDate = vm.date_naissance.toDateString();
+  entity.accountId = vm.compte;
+  entity.address = JSON.stringify(vm.adresse);
+  entity.contacts = vm.contact;
+  entity.emergencyContacts = vm.contact_prevenir;
+  entity.gender = vm.sexe;
+  
+  return entity;
+}
+
+export function toAdherent_VM(pentity:Person, ise:RegistrationSeason[], isa:RegistrationSession[]){
+  const vm = new Adherent_VM();
+    vm.id = pentity.id;
+  vm.nom = pentity.lastName;
+  vm.prenom = pentity.firstName;
+  vm.surnom = pentity.nickname || '';
+  vm.date_naissance = new Date(pentity.birthDate);
+  vm.sexe = pentity.gender;
+  vm.adresse = JSON.parse(pentity.address);
+  vm.compte = pentity.accountId;
+  vm.contact_prevenir = pentity.emergencyContacts?? [];
+  vm.contact = pentity.contacts?? [];
+  vm.login = pentity.account.login;
+  vm.inscriptionsSaison = ise.map(x => toInscriptionSaison_VM(x));  
+  vm.inscriptionsSeance = isa.map(x => to_InscriptionSeances_VM(x));
+  return vm;
 }

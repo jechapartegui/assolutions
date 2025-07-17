@@ -16,6 +16,9 @@ export class RegistrationSessionService {
     if (!item) throw new NotFoundException('REGISTRATION_SESSION_NOT_FOUND');
     return item;
   }
+  async getRiderSeance(personId : number, seanceId: number): Promise<RegistrationSession | null> {
+    return  await this.repo.findOne({ where: { seanceId, personId } });
+  }
 
   async getAll(): Promise<RegistrationSession[]> {
     return this.repo.find();

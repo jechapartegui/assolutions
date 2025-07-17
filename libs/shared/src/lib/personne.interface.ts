@@ -1,12 +1,15 @@
 import { Adresse } from "./adresse.interface";
 
-export class Personne_VM {
+export class PersonneLight_VM {
      id:number =0;
      nom:string = "";
      prenom:string = "";
      surnom:string = "";
      date_naissance:Date = new Date();
      sexe:boolean=false;
+}
+
+export class Personne_VM extends PersonneLight_VM {
     adresse: Adresse = new Adresse();
     compte:number;
     contact:ItemContact[] = [];

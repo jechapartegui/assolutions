@@ -3,13 +3,15 @@ import { ProfessorService } from "../../crud/professor.service";
 import { SessionProfessorService } from "../../crud/seanceprofesseur.service";
 import { SessionProfessor } from "../../entities/seance-professeur.entity";
 import { Professor } from "../../entities/professeur.entity";
-import { Professeur_VM } from "@shared/src";
+import { Professeur_VM, ProjetView } from "@shared/src";
 import { ProfessorContract } from "../../entities/contrat_prof.entity";
 import { ProfessorContractService } from "../../crud/professorcontract.service";
+import { toPersonneLight_VM } from "../member/member.services";
+import { AccountService } from "../../crud/account.service";
 
 @Injectable()
 export class ProfService {
-  constructor(private profserv:ProfessorService, private profseanceserv:SessionProfessorService, private contractprofservice:ProfessorContractService
+  constructor(private profserv:ProfessorService, private profseanceserv:SessionProfessorService, private contractprofservice:ProfessorContractService, private acc_serv:AccountService
   ) {}
   async Get(id: number) {
        const pIS = await this.profserv.get(id);
@@ -31,6 +33,34 @@ export class ProfService {
     return contrat_prof.map(sp =>
       to_Professeur_VM(sp.professor)  
     );
+  }
+
+  async getProfContratActif(compte_id:number) : Promise<ProjetView[]>{
+    let retour:ProjetView[] = [];
+    const persons = await this.acc_serv.adherentCompte(compte_id);
+    
+     persons.forEach(async (person) =>{
+      let prof =  await this.profserv.get(person.id);
+      if(prof){
+       let cont =  prof.contracts.filter(x => x.season.isActive);
+       if(cont){
+        cont.forEach((_cont) =>{
+  const pv :ProjetView = {
+          id: _cont.season.projectId,
+          nom : _cont.season.project.name,
+          prof : true,
+          adherent : false,
+          essai : false
+        }
+        retour.push(pv);
+        })
+      
+       }
+      }
+     
+       });
+       return retour;
+
   }
 
     async add(s: Professeur_VM):Promise<number> {
@@ -62,7 +92,7 @@ export class ProfService {
 
 export function to_Professeur_VM(entity:Professor) : Professeur_VM{
   const vm = new Professeur_VM();
-  vm.person = to_PersonneLight(entity.person);
+  vm.person = toPersonneLight_VM(entity.person);
   vm.iban = entity.iban;
   vm.info = entity.info;
   vm.num_siren = entity.sirenNumber;

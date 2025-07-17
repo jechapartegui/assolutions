@@ -1,12 +1,17 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Group } from "./groupe.entity";
 
 @Entity({ name: 'lien_groupe' })
 export class LinkGroup {
   @PrimaryGeneratedColumn()
   id: number;
 
+
   @Column({ name: 'groupe_id' })
-  groupId: number;
+    groupId: number;
+    @ManyToOne(() => Group)
+    @JoinColumn({ name: 'groupe_id' })
+    group: Group;
 
   @Column({ name: 'object_id' })
   objectId: number;

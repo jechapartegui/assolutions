@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { SeanceService } from './seance.services';
-import { SeanceVM } from '@shared/src';
+import { Seance_VM } from '@shared/src/lib/seance.interface';
 
 // src/auth/auth.controller.ts
 @Controller('seance')
@@ -32,22 +32,22 @@ async GetByDate(
 
   @UseGuards(PasswordGuard)
   @Put('add')
-  async Add(@Headers('projectid') projectId: number, @Body() { seance }: { seance: SeanceVM }) {
-    return this.seance_serv.Add(projectId, seance);
+  async Add(@Body() { seance }: { seance: Seance_VM }) {
+    return this.seance_serv.Add(seance);
   } 
 
   @UseGuards(PasswordGuard)
   @Put('add_range')
-  async AddRange(@Headers('projectid') projectId: number, @Body() {
+  async AddRange(@Body() {
     seance, date_debut_serie, date_fin_serie, jour_semaine
-  }: { seance: SeanceVM, date_debut_serie: Date, date_fin_serie: Date, jour_semaine: string }) {
-    return this.seance_serv.AddRange(projectId, seance, date_debut_serie, date_fin_serie, jour_semaine);
+  }: { seance: Seance_VM, date_debut_serie: Date, date_fin_serie: Date, jour_semaine: string }) {
+    return this.seance_serv.AddRange(seance, date_debut_serie, date_fin_serie, jour_semaine);
   } 
 
   @UseGuards(PasswordGuard)
   @Put('update')
-  async Update(@Headers('projectid') projectId: number, @Body() { seance }: { seance: SeanceVM }) {
-    return this.seance_serv.Update(projectId, seance);
+  async Update(@Body() { seance }: { seance: Seance_VM }) {
+    return this.seance_serv.Update(seance);
   }
   @UseGuards(PasswordGuard)
 @Delete('delete/:id')

@@ -1,129 +1,104 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LienGroupe } from '../bdd/lien-groupe';
-import { Groupe } from '../bdd/groupe';
-import { KeyValuePair } from '@shared/src';
+import { BadRequestException, Injectable,  UnauthorizedException } from '@nestjs/common';
+import { KeyValuePair, LienGroupe_VM } from '@shared/src';
+import { LinkGroup } from '../../entities/lien_groupe.entity';
+import { LinkGroupService } from '../../crud/linkgroup.service';
+import { GroupService } from '../../crud/group.service';
+import { Group } from '../../entities/groupe.entity';
 
 @Injectable()
 export class GroupeService {
   constructor(
-    @InjectRepository(LienGroupe)
-    private readonly lienGrouperepo: Repository<LienGroupe>,
-    @InjectRepository(Groupe)
-    private readonly GroupeRepo: Repository<Groupe>
+  private liengroupe_serv:LinkGroupService, private groupe_serv:GroupService
   ) // @InjectRepository(Projet)
   // private readonly projetRepo: Repository<Projet>,
   {}
   async getGroupeObjet(
     id: number,
     type: 'cours' | 'séance' | 'rider'
-  ): Promise<LienGroupe[]> {
-    const groupe = await this.lienGrouperepo.find({
-      where: { objet_id: id, objet_type: type },
-    });
-    return groupe;
+  ): Promise<LienGroupe_VM[]> {
+   return (await this.liengroupe_serv.getGroupsForObject(type,id)).map(x => new LienGroupe_VM(x.id, x.group.name, x.groupId));
   }
+
   async Get(id: number): Promise<KeyValuePair> {
-    const gr = await this.GroupeRepo.findOne({
-      where: { id },
-    });
-     if (!gr) {
-        throw new BadRequestException('NO_GROUP_FOUND');
-      }
-      return {
+      const gr = await this.groupe_serv.get(id);
+        if (!gr) {
+          throw new UnauthorizedException('GROUP_NOT_FOUND');
+        }
+        //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+         return {
         key: gr.id,
-        value: gr.nom,
+        value: gr.name,
       };
+     
   }
 
 
   async GetAll(saison_id: number): Promise<KeyValuePair[]> {
-    const gr = await this.GroupeRepo.find({
-      where: { saison_id },
-    });
+    const gr =  await this.groupe_serv.getAll(saison_id);
      if (!gr) {
-        throw new BadRequestException('NO_GROUP_FOUND');
+      return [];
       }
     return gr.map((x) => { 
       return {
         key: x.id,
-        value: x.nom,
+        value: x.name,
       };
     });
   }
 
-    async Add(s: KeyValuePair, saison_id :number) {
-      if (!s) {
-        throw new BadRequestException('INVALID_GROUP');
-      }
-      const objet_base = this.toGroupe(s, saison_id);
-    
-      const newISS = this.GroupeRepo.create(objet_base);
-      const saved = await this.GroupeRepo.save(newISS);
-      return saved.id;
+async add(s: KeyValuePair, seasonId :number):Promise<number> {
+    if (!s) {
+      throw new BadRequestException('INVALID_GROUP');
     }
-    async Update(s: KeyValuePair, saison_id :number) {
-      if (!s) {
-        throw new BadRequestException('INVALID_GROUP');
-      }
-      const objet_base = this.toGroupe(s, saison_id);
-    
-      const existing = await this.GroupeRepo.findOne({ where: { id: Number(s.key) } });
-      if (!existing) {
-        throw new NotFoundException('NO_GROUP_FOUND');
-      }
-    
-      const updated = await this.GroupeRepo.save({ ...existing, ...objet_base });
-      if(updated) {
-        return true;
-      } else {
-        return false
-      }
+    const objet_base = toGroup(s, seasonId);
+  
+    const objet_insere = await this.groupe_serv.create(objet_base);
+    return objet_insere.id;
+  }
+  async update(s: KeyValuePair, seasonId :number) {
+       if (!s) {
+      throw new BadRequestException('INVALID_GROUP');
     }
-    
-    
-    async Delete(id: number) {
-      const toDelete = await this.GroupeRepo.findOne({ where: { id } });
-      if (!toDelete) {
-        throw new NotFoundException('NO_GROUP_FOUND');
-      }
-    
-      await this.GroupeRepo.remove(toDelete);
-      return { success: true };
-    }
-    async AddLien(
-      id_objet: number,
-      type_objet: string,
-      id_groupe: number
-    ): Promise<number> {
-      const newLien = this.lienGrouperepo.create({
-        objet_id: id_objet,
-        objet_type: type_objet,
-        groupe_id: id_groupe,
-      });
-      return (await this.lienGrouperepo.save(newLien)).id;
-    }
-    async DeleteLien(
-      id_objet: number,
-      type_objet: string,
-      id_groupe: number
-    ): Promise<boolean> {
-      const lien = await this.lienGrouperepo.findOne({
-        where: { objet_id: id_objet, objet_type: type_objet, groupe_id: id_groupe },
-      });
-      if (!lien) {
-        throw new NotFoundException('NO_LINK_FOUND');
-      }
-      await this.lienGrouperepo.remove(lien);
-      return true;
-    }
+    const objet_base = toGroup(s, seasonId);
+  
+     await this.groupe_serv.update(objet_base.id, objet_base);
+  
+  }
+  
+  async delete(id: number):Promise<boolean> {
+     try{
+    await this.groupe_serv.delete(id);
+    return true;
+     } catch{
+      return false;
+     }
+  }
 
-  toGroupe(gr: KeyValuePair, saison_id:number): Groupe {
-  const g = new Groupe();
-  g.id = Number(gr.key);
-  g.nom = gr.value;
-  g.saison_id = saison_id;
-  return g;
+    async AddLien( id_objet: number, type_objet: string, id_groupe: number ): Promise<number> {
+       if (!id_objet || !type_objet || !id_groupe) {
+      throw new BadRequestException('INVALID_GROUP');
+    }
+    const objet_base = new LinkGroup();
+    objet_base.objectId = id_objet;
+    objet_base.objectType = type_objet;
+    objet_base.groupId = id_groupe;
+    const objet_insere = await this.groupe_serv.create(objet_base);
+    return objet_insere.id;
+    }
+    async DeleteLien(id: number):Promise<boolean> {
+     try{
+    await this.liengroupe_serv.delete(id);
+    return true;
+     } catch{
+      return false;
+     }
+  }
 }
+
+export function toGroup(v:KeyValuePair,seasonId:number):Group{
+  const entity = new Group();
+  entity.id = Number(v.key);
+  entity.name = v.value;
+  entity.seasonId=seasonId;
+  return entity;
 }

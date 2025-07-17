@@ -3,6 +3,8 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Account } from '../entities/compte.entity';
+import { Person } from '../entities/personne.entity';
+import { ProjetView } from '@shared/src';
 
 @Injectable()
 export class AccountService {
@@ -15,6 +17,56 @@ export class AccountService {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
     return item;
+  }
+   async getLogin(login: string): Promise<Account> {
+    const item = await this.repo.findOne({ where: { login } });
+    if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    return item;
+  }
+
+  async adherentCompte(id:number) : Promise<Person[]>{
+     const item = await this.repo.findOne({ where: { id } });
+      if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    return item.persons;
+  }
+
+   async getAdhesion(id: number): Promise<ProjetView[]> {
+    let retour:ProjetView[]=[];
+    const persons = await this.adherentCompte(id);
+    persons.forEach((person) =>{
+   let person_inscrite =  person.inscriptions?.filter(y => y.saison.isActive);
+   
+   if(person_inscrite){
+    person_inscrite.forEach((p_i) =>{
+ const pv:ProjetView ={
+      id : p_i.saison.projectId,
+      nom : p_i.saison.project.name,
+      adherent : true,
+      prof : false,
+      essai : false
+    }
+    retour.push(pv);
+    })
+   
+   } else {
+    let person_essai = person.inscriptionsSeance?.filter(y => y.seance.season.isActive);
+    if(person_essai){
+    person_essai.forEach((p_e) =>{
+      const pv:ProjetView ={
+      id : p_e.seance.season.projectId,
+      nom : p_e.seance.season.project.name,
+      adherent : false,
+      essai: true,
+      prof : false
+     }
+    retour.push(pv);
+    })
+   
+   } 
+   }
+
+    })
+    return retour;
   }
 
   async getAll(): Promise<Account[]> {

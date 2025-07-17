@@ -1,4 +1,5 @@
 import { LienGroupe_VM } from "./groupe.interface";
+import { PersonneLight_VM } from "./personne.interface";
 
 export class Cours_VM {
   id: number;
@@ -24,19 +25,16 @@ export class Cours_VM {
   lieu_nom?: string;
 
   // Professeurs liés
-  professeursCours: CoursProfesseurVM[];
+  professeursCours: ContratProfesseur_VM[];
 
   // Groupes liés
   groupes: LienGroupe_VM[];
 }
 
-export class CoursProfesseurVM {
-  cours_id: number;
-  prof_id: number;
-
-  constructor(cours_id: number, prof_id: number) {
-    this.prof_id = prof_id;
-    this.cours_id = cours_id;
-  }
+export class ContratProfesseur_VM {
+  id:number;
+  personne:PersonneLight_VM;
+  type_contrat:string;
+  type_remuneration:string;
 }
 

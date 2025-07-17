@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Season } from './saison.entity';
 import { Professor } from './professeur.entity';
-import { SeanceProfesseur } from './seance-professeur.entity';
+import {  SessionProfessor } from './seance-professeur.entity';
 
 /**
  * Représente un contrat liant un professeur à une saison.
@@ -29,8 +29,8 @@ export class ProfessorContract {
   professor: Professor;
 
     /** Professeurs assignés */
-    @OneToMany(() => SeanceProfesseur, (sp) => sp.session)
-    seanceProfesseurs: SeanceProfesseur[];
+    @OneToMany(() => SessionProfessor, (sp) => sp.session)
+    seanceProfesseurs: SessionProfessor[];
 
   /** Type de contrat (e.g. annuel, CDI, CDD) */
   @Column({ length: 50, name: 'type_contrat' })
