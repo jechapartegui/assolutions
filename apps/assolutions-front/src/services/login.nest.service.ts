@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AuthResult, ProjetView, Compte_VM } from '@shared/src/lib/compte.interface';
+import { ProjetView, Compte_VM } from '@shared/src/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +30,7 @@ export class LoginNestService {
         return Promise.reject(message);
       });
   }
-  public Login(email: string, password: string): Promise<AuthResult> {
+  public Login(email: string, password: string): Promise<Compte_VM> {
     this.url = 'api/auth/login';
     //  this.url = this.url + "login.php";
     const body = {
@@ -39,7 +39,7 @@ export class LoginNestService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: AuthResult) => {
+      .then((response: Compte_VM) => {
         return response;
       })
       .catch((error: HttpErrorResponse) => {

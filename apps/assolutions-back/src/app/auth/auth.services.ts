@@ -38,6 +38,16 @@ export class AuthService {
    }
   }
 
+    async checkToken(login: string, token:string): Promise<boolean> {
+  
+    const compte = await this.compteserv.getToken(login, token);
+   if(compte){
+    return true;
+   } else {
+    return false;
+   }
+  }
+
   async validatepassword(login: string, password: string = ""): Promise<Compte_VM> {
     const compte = await this.compteserv.getLogin(login);
   
@@ -109,6 +119,17 @@ export class AuthService {
       return to_CompteVM(pcompte);
   
     }
+    async getLogin(login: string) : Promise<Compte_VM> {
+      const pcompte = await this.compteserv.getLogin(login);
+      if (!pcompte) {
+        throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
+      }
+      //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+      return to_CompteVM(pcompte);
+  
+    }
+    
+    
     async getAll(project_id: number) : Promise<Compte_VM[]> {
       let liste_compte : Compte_VM[] = [];
       const saison_active = await this.season_serv.getActive(project_id);

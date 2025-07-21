@@ -7,7 +7,7 @@ import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/src/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
 import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
-import { ItemContact } from '@shared/src';
+import { ItemContact } from '@shared/src/lib/personne.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -48,9 +48,6 @@ export class GlobalService {
   public saison_active: number = null;
   isSaisonActive$: Observable<number> = this.isSaisonActive.asObservable();
 
-  private isGestionnaire = new BehaviorSubject<boolean>(false);
-  static is_gestionnaire: boolean = false;
-  isGestionnaire$: Observable<boolean> = this.isGestionnaire.asObservable();
 
   private isProjet = new BehaviorSubject<ProjetView>(null);
   static projet: ProjetView = null;
@@ -93,11 +90,6 @@ export class GlobalService {
   updateListeProjet(_p: ProjetView[]): void {
     this.isOtherProject.next(_p);
     GlobalService.other_project = _p;
-  }
-
-  updateGestionnaire(_p: ProjetView): void {
-    this.isGestionnaire.next(_p.gestionnaire);
-    GlobalService.is_gestionnaire = _p.gestionnaire;
   }
 
   updateProjetAdmin(_p: ProjetLogin): void {

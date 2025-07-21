@@ -23,6 +23,12 @@ export class AccountService {
     if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
     return item;
   }
+     async getToken(login: string, activationToken:string): Promise<Account> {
+    const item = await this.repo.findOne({ where: { login, activationToken } });
+    if (!item) throw new NotFoundException('INCORRECT_TOKEN');
+    return item;
+  }
+
 
   async adherentCompte(id:number) : Promise<Person[]>{
      const item = await this.repo.findOne({ where: { id } });

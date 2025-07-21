@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Login_VM } from '../../class/compte';
 import { environment } from '../../environments/environment.prod';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
-import { AuthResult, ProjetView } from '@shared/src/lib/compte.interface';
+import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
+import { Login_VM } from '../../class/login_vm';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +19,9 @@ export class LoginComponent implements OnInit {
   action: string;
   projets: ProjetView[];
   projets_select: ProjetView = null;
+  context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" = "MENU" // contexte d'accès à la page
   loading: boolean;
+  libelle_titre:string = $localize`Saisissez votre email pour vous connecter`;
   psw_projet: string = null;
 
   constructor(
@@ -35,17 +37,88 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    let token: string;
-    let user: string;
+        this.action = $localize`Chargement de la page`;
     const errorService = ErrorService.instance;
     this.route.queryParams.subscribe((params) => {
+      if('context' in params){
+        try {
+          this.context = params['context'];
+        } catch (error) {
+              let o = errorService.CreateError(this.action, $localize`Erreur sur la requête`);
+              errorService.emitChange(o);
+              this.router.navigate(['/login'])
+              return;
+        }
+      }
+      switch (this.context) {
+        case "ACTIVATE":
+        case "REINIT":
+            const token = params['token'];
+            const user = params['user'];
+            if(!token){
+              let o = errorService.CreateError(this.action, $localize`Token absent sur la requête`);
+              errorService.emitChange(o);
+              this.router.navigate(['/login'])
+              return;
+            }
+             if(!user){
+              let o = errorService.CreateError(this.action, $localize`Login absent sur la requête`);
+              errorService.emitChange(o);
+              this.router.navigate(['/login'])
+              return;
+            }
+            this.compte_serv.CheckToken(user, token).then((boo) => {
+
+            if (boo) {
+              this.compte_serv.getAccountLogin(this.VM.Login).then((compte:Compte_VM) => {
+                this.VM.compte = compte;
+                this.GlobalService.updateCompte(compte);
+                if(this.context == "REINIT"){
+                  this.libelle_titre = $localize`Saisissez un nouveau mot de passe pour le compte ${this.VM.Login}`;
+                } else {
+                  this.libelle_titre = $localize`Saisissez un mot de passe pour activer le compte ${this.VM.Login}`;
+                }
+              if(this.context == "ACTIVATE"){
+                this.action = $localize`Activer le compte`;
+                this.VM.compte.actif = true;
+                this.compte_serv.Update(this.VM.compte, false).then((ok) => {
+                  if(ok){
+                    let o = errorService.OKMessage(this.action);
+                    errorService.emitChange(o);
+                    this.router.navigate(['/login']);
+                  this.GlobalService.updateCompte(this.VM.compte);
+                  } else {
+                    let o = errorService.UnknownError(this.action);
+                    errorService.emitChange(o);
+                  }
+                });                
+              } else {
+                this.action = $localize`Réinitialiser le mot de passe`;
+                    let o = errorService.OKMessage(this.action);
+                    errorService.emitChange(o);
+                    this.router.navigate(['/reinit-mdp'], {);
+
+              }
+            });
+
+            } else {
+
+              let o = errorService.CreateError(this.action, $localize`Token incorrect`);
+              errorService.emitChange(o);
+              this.router.navigate(['/login'])
+            }
+      });
+          break; 
+        case "ESSAI":
+          this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
+          break; 
+        case "SEANCE":
+          this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
+          break; 
+      }
       if ('reinit_mdp' in params) {
         this.action = $localize`Lien de réinitialisation du mot de passe`;
-        token = params['reinit_mdp'];
-        user = params['login'];
-        this.compte_serv
-          .CheckReinit(user, token)
-          .then((boo) => {
+        this.compte_serv.CheckToken(user, token).then((boo) => {
             if (boo) {
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
@@ -93,9 +166,9 @@ export class LoginComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.login_serv_nest
       .Login(this.VM.Login, this.VM.Password)
-      .then((auth_login:AuthResult) => {
+      .then((compte_vm:Compte_VM) => {
         if(auth_login.type == 'admin'){
-          GlobalService.instance.updateTypeApplication('ADMIN');
+          GlobalService.instance.updateTypeApplication('APPLI');
           GlobalService.instance.updateSelectedMenuStatus('MENU');
           GlobalService.instance.updateProjetAdmin(auth_login.user)
           this.router.navigate(['/menu-admin']);

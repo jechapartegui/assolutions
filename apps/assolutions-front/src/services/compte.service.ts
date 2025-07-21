@@ -14,7 +14,7 @@ export class CompteService {
 
   public GetAll(): Promise<Compte_VM[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-   this.url = 'api/compte/getall';
+   this.url = 'api/auth/getall';
     //  this.url = this.url + "login.php";
    
 
@@ -29,7 +29,7 @@ export class CompteService {
   }
 
   public getAccount(id: number): Promise<Compte_VM> {
-    this.url = 'api/compte/get/'  + id;
+    this.url = 'api/auth/get/'  + id;
     //  this.url = this.url + "login.php";
    
 
@@ -42,9 +42,8 @@ export class CompteService {
       });
   }
   public getAccountLogin(login: string): Promise<Compte_VM> {
-     this.url = 'api/compte/get_login/'  + login;
-    //  this.url = this.url + "login.php";
-   
+     this.url = 'api/auth/get_by_login/'  + login;
+    //  this.url = this.url + "login.php";   
 
     return this.global.GET(this.url)
       .then((response) => {
@@ -55,14 +54,11 @@ export class CompteService {
       });
   }
 
-  public UpdateMail_Active(id: number, mail_active: number): Promise<any> {
-     this.url = 'api/compte/update_mail_active';
-    //  this.url = this.url + "login.php";
-    const body = {
-      compte: id,
-      mail_active: mail_active
-    };
-    return this.global.PUT(this.url, body)
+  public checkLogin(login:string) : Promise<boolean> {
+      this.url = 'api/auth/pre_login/'  + login;
+    //  this.url = this.url + "login.php";   
+
+    return this.global.GET(this.url)
       .then((response) => {
         return response;
       })
@@ -70,99 +66,30 @@ export class CompteService {
         return Promise.reject(error);
       });
   }
-  public UpdateMail(compte: number, mail: string, password: string): Promise<boolean> {
-     this.url = 'api/compte/update_mail';
-    const body = {
-      compte: compte,
-      mail: mail,
-      password: password
-    };
 
-    return this.global.PUT(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
-  public AddOrMAJLogin(login: string, id: number): Promise<number> {
-     this.url = 'api/compte/add_or_maj_login';
+  public CheckToken(login:string, token:string) : Promise<boolean>{
+     this.url = 'api/auth/check_token';
     const body = {
       login: login,
-      id: id
-    };
-
-    return this.global.PUT(this.url, body)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
-
-
-  ActiverCompte(id: number): Promise<boolean> {
-     this.url = 'api/compte/activate_account';
-
-    return this.global.POST(this.url, id)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
-
-
-
-
-  public CheckLogin(login: string, psw: string): Promise<Compte_VM> {
-     this.url = 'api/compte/activate_account';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "check",
-      login: login,
-      psw: psw
+      token: token
     };
 
     return this.global.POST(this.url, body)
-      .then((response: Compte_VM) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
-  public Add(compte: Compte_VM): Promise<number> {
-     this.url = 'api/compte/add';
-
-    return this.global.POST(this.url, compte)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Exist(login: string): Promise<boolean> {
-     this.url = 'api/compte/exist';
-
-    return this.global.POST(this.url, login)
       .then((response: boolean) => {
         return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }
+
+
+
+
+
+
+
+
 
 
   public ExistListe(list_login: string[]): Promise<string[]> {
@@ -200,7 +127,7 @@ export class CompteService {
   }
 
   public UpdateMDP(login:string, password: string): Promise<boolean> {
-     this.url = 'api/compte/update_mdp';
+     this.url = 'api/auth/update_mdp';
     //  this.url = this.url + "login.php";
     const body = {
       login: login,
@@ -208,6 +135,46 @@ export class CompteService {
     };
 
     return this.global.PUT(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
+  public Add(compte_vm:Compte_VM): Promise<number> {
+    this.url = 'api/auth/add';
+    return this.global.PUT(this.url,compte_vm)
+      .then((response: number) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Update(compte_vm:Compte_VM, update_psw:boolean): Promise<boolean> {
+    this.url = 'api/auth/update';
+  const body = {
+      compte_vm: compte_vm,
+      update_psw:update_psw
+    };
+  
+    return this.global.PUT(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Delete(id:number): Promise<boolean> {
+    this.url = 'api/auth/delete/' + id;
+  
+    return this.global.DELETE(this.url)
       .then((response: boolean) => {
         return response;
       })
