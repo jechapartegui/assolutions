@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { Compte_VM, ProjetLogin, ProjetView } from '@shared/src/lib/compte.interface';
+import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/src/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
@@ -53,9 +53,9 @@ export class GlobalService {
   static projet: ProjetView = null;
   Projet$: Observable<ProjetView> = this.isProjet.asObservable();
 
-  private isProjetAdmin = new BehaviorSubject<ProjetLogin>(null);
-  static projetAdmin: ProjetLogin = null;
-  ProjetAdmin$: Observable<ProjetLogin> = this.isProjetAdmin.asObservable();
+  private isProf = new BehaviorSubject<boolean>(false);
+  static prof: boolean = false;
+  Prof$: Observable<boolean> = this.isProf.asObservable();
 
   private isOtherProject = new BehaviorSubject<ProjetView[]>(null);
   static other_project: ProjetView[] = null;
@@ -92,10 +92,11 @@ export class GlobalService {
     GlobalService.other_project = _p;
   }
 
-  updateProjetAdmin(_p: ProjetLogin): void {
-    this.isProjetAdmin.next(_p);
-    GlobalService.projetAdmin = _p;
+    updateProf(_p: boolean): void {
+    this.isProf.next(_p);
+    GlobalService.prof = _p;
   }
+
    
 
   public ListeSeanceProf: KeyValuePair[] = [

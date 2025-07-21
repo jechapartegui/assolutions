@@ -31,7 +31,10 @@ export class AuthService {
   async prelogin(login: string): Promise<boolean> {
   
     const compte = await this.compteserv.getLogin(login);
-   if(compte){
+    if(!compte.isActive){
+      throw new UnauthorizedException('ACCOUNT_NOT_ACTIVE');
+    }
+   if(compte.password && compte.password.length>0){
     return true;
    } else {
     return false;
@@ -54,7 +57,9 @@ export class AuthService {
     if (!compte) {
       throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
     }
-  
+   if(!compte.isActive){
+      throw new UnauthorizedException('ACCOUNT_NOT_ACTIVE');
+    }
     const storedPassword = compte.password;
   
     if (!storedPassword) {
@@ -115,6 +120,9 @@ export class AuthService {
       if (!pcompte) {
         throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
       }
+       if(!pcompte.isActive){
+      throw new UnauthorizedException('ACCOUNT_NOT_ACTIVE');
+    }
       //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
       return to_CompteVM(pcompte);
   
@@ -199,6 +207,7 @@ export function to_CompteVM(entity: Account): Compte_VM {
   vm.derniere_connexion = entity.lastLoginAt ?? null;
   vm.echec_connexion = entity.loginFailed ? 1 : 0;
   vm.mail_ko = entity.emailError;
+  vm.token = entity.activationToken ?? null;
 
   return vm;
 }
@@ -217,7 +226,7 @@ export function toAccount(vm: Compte_VM, pepper: string | null = null): Account 
   entity.lastLoginAt = vm.derniere_connexion ?? undefined;
   entity.loginFailed = vm.echec_connexion > 0;
   entity.emailError = vm.mail_ko;
-
+  entity.activationToken = vm.token ?? undefined;
   return entity;
 }
 

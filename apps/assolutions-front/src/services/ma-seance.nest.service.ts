@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AdherentSeance } from '@shared/src/lib/seance.interface';
+import { AdherentSeance_VM } from '@shared/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class MaSeanceNestService {
   constructor(public global: GlobalService) {
   }
 
-  public Get(): Promise<AdherentSeance[]> {
+  public Get(): Promise<AdherentSeance_VM[]> {
     this.url = 'api/member/my_seance';
     //  this.url = this.url + "login.php";
    
@@ -29,7 +29,7 @@ export class MaSeanceNestService {
         return Promise.reject(message);
       });
   }
-  public Prof(): Promise<AdherentSeance[]> {
+  public Prof(): Promise<AdherentSeance_VM[]> {
     this.url = 'api/member/my_prof';
     //  this.url = this.url + "login.php";
    

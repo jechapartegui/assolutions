@@ -1,15 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import { MesSeances_VM, Seance_VM } from '@shared/src/lib/seance.interface';
+import { MesSeances_VM, Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
 import { SessionService } from '../../crud/session.service';
 import { RegistrationSessionService } from '../../crud/inscriptionseance.service';
 import { Session } from '../../entities/seance.entity';
 import { toPersonneLight_VM } from '../member/member.services';
 import { LinkGroupService } from '../../crud/linkgroup.service';
+import { SessionProfessor } from '../../entities/seance-professeur.entity';
+import { SessionProfessorService } from '../../crud/seanceprofesseur.service';
 
 @Injectable()
 export class SeanceService {
-  constructor(private seanceserv:SessionService, private inscriptionseance_serv:RegistrationSessionService, private liengroup_serv:LinkGroupService
+  constructor(private seanceserv:SessionService, private sessionprof_serv:SessionProfessorService, private inscriptionseance_serv:RegistrationSessionService, private liengroup_serv:LinkGroupService
   ) // @InjectRepository(Projet)
   // private readonly projetRepo: Repository<Projet>,
   {}
@@ -219,7 +221,43 @@ async Update(s: Seance_VM) {
 async Delete(id: number) {
 return await this.seanceserv.delete(id);
 }
+  async UpdateSeanceProf(seance_id: number, liste_seance_prof: SeanceProfesseur_VM[]) {
+  if (!seance_id || !liste_seance_prof) {
+    throw new BadRequestException('INVALID_ITEM');
+  }
+  const st = await this.seanceserv.get(seance_id);
+  if (!st) {
+    //checker si c'est pas un delete :
+    const liste_prof = await this.sessionprof_serv.getAllSeance(seance_id);
+    if (liste_prof.length > 0) {
+      liste_prof.forEach(async (sp :SessionProfessor) => {
+        await this.sessionprof_serv.delete(sp.id);
+      });
+    }
+    return [];    
+  }
+  st.seanceProfesseurs.forEach(async (sp) => {
+    if (!liste_seance_prof.find(x => x.id === sp.id)) {
+      await this.sessionprof_serv.delete(sp.id);
+    }});
+  liste_seance_prof.forEach(async (x) => {
+    if (!st.seanceProfesseurs.find(sp => sp.id === x.id)) {
+      const newSp = new SessionProfessor();
+      newSp.seanceId = seance_id;
+      newSp.professeur = { professorId: x.personne.id } as any; //
+      newSp.status = x.statut;
+      newSp.minutes = x.minutes;
+      newSp.cout = x.cout;
+      newSp.info = x.info;
+      await this.sessionprof_serv.create(newSp);}
+    });
+
+  return (await this.seanceserv.get(seance_id)).seanceProfesseurs.map(w => to_SeanceProfesseur_VM(w));
 }
+}
+
+
+
 
 
 
@@ -237,21 +275,6 @@ export function endOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(23, 59, 59, 999);
   return d;
-}
-
-export function calculerHeureFin(heureDebut: string, dureeMinutes: number): string {
-  const [hours, minutes] = heureDebut.split(':').map(Number);
-  const debut = new Date();
-  debut.setHours(hours, minutes, 0, 0);
-
-  // Ajoute la durée
-  debut.setMinutes(debut.getMinutes() + dureeMinutes);
-
-  // Reformate en "HH:MM"
-  const heure = debut.getHours().toString().padStart(2, '0');
-  const minute = debut.getMinutes().toString().padStart(2, '0');
-
-  return `${heure}:${minute}`;
 }
 
 export function to_Seance_VM(entity: Session): Seance_VM {
@@ -276,7 +299,7 @@ export function to_Seance_VM(entity: Session): Seance_VM {
   vm.convocation_nominative = entity.nominativeCall;
   vm.afficher_present = entity.showAttendance;
   vm.rdv = entity.appointment ?? '';
-  vm.seanceProfesseurs = entity.seanceProfesseurs.map(x => toPersonneLight_VM(x.professeur.professor.person))  
+  vm.seanceProfesseurs = entity.seanceProfesseurs.map(x => to_SeanceProfesseur_VM(x)  );
   vm.est_limite_age_minimum = entity.limitMinAge ? true : false;
   vm.est_limite_age_maximum = entity.limitMaxAge ? true : false;
   vm.est_place_maximum = entity.limitPlaces ? true : false;
@@ -314,4 +337,16 @@ export function toSession(vm: Seance_VM): Session {
   entity.limitPlaces = vm.est_place_maximum !== undefined;
 
   return entity;
+}
+
+export function to_SeanceProfesseur_VM(entity: SessionProfessor): SeanceProfesseur_VM {
+  const vm = new SeanceProfesseur_VM();
+  vm.id = entity.id;
+  vm.seance_id = entity.seanceId;
+  vm.personne = toPersonneLight_VM(entity.professeur.professor.person);
+  vm.statut = entity.status;
+  vm.minutes = entity.minutes;
+  vm.cout = entity.cout ?? 0;
+  vm.info = entity.info ?? '';
+  return vm;
 }

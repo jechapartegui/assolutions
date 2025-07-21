@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
-import { adherent, ValidationItem } from "@shared/src";
-import { Adherent } from "apps/assolutions-front/src/class/adherent";
+import { Adherent_VM, ValidationItem } from "@shared/src";
 import { ReglesPersonne } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
@@ -10,7 +9,7 @@ import { GlobalService } from "apps/assolutions-front/src/services/global.servic
   styleUrls: ['./infoperso.component.css'],
 })
 export class InfoPersoComponent implements OnInit  {
- @Input() thisAdherent:Adherent;
+ @Input() thisAdherent:Adherent_VM;
  @Input() Regles:ReglesPersonne;
  @Input() photoBase64: string | null = null;
  save:string=null;
@@ -20,8 +19,8 @@ export class InfoPersoComponent implements OnInit  {
  public edit:boolean = false
 
 ngOnInit(): void {
-    this.save = JSON.stringify(this.thisAdherent.datasource); 
-    if(this.thisAdherent.ID <1){
+    this.save = JSON.stringify(this.thisAdherent); 
+    if(this.thisAdherent.id <1){
       this.edit = true;
     }
 }
@@ -34,8 +33,7 @@ ngOnChanges(): void {
     this.edit = false;
  }
 public Cancel(){
-    let adh:adherent = JSON.parse(this.save);
-    this.thisAdherent = new Adherent(adh);
+    this.thisAdherent =  JSON.parse(this.save);
     this.edit = false;
 }
 public rNom:ValidationItem;
@@ -47,11 +45,11 @@ public rSurnom:ValidationItem;
 
 
 public validerTout(): void {
-  this.rNom = GlobalService.instance.validerChaine(this.thisAdherent.Nom, this.Regles.Nom_min, this.Regles.Nom_max, this.Regles.Nom_obligatoire, $localize`Nom`);
-  this.rPrenom= GlobalService.instance.validerChaine(this.thisAdherent.Prenom, this.Regles.Prenom_min, this.Regles.Prenom_max, this.Regles.Prenom_obligatoire, $localize`Prénom`);
-  this.rDateNaissance = GlobalService.instance.validerDate(this.thisAdherent.DateNaissance, this.Regles.DateNaissance_min, this.Regles.DateNaissance_max, this.Regles.DateNaissance_obligatoire, $localize`Date de naissance`);
-  this.rLibelle = GlobalService.instance.validerChaine(this.thisAdherent.Surnom, this.Regles.Surnom_min, this.Regles.Surnom_max, this.Regles.Surnom_obligatoire, $localize`Libellé`);
-  this.rSurnom = GlobalService.instance.validerChaine(this.thisAdherent.Libelle, this.Regles.Libelle_min, this.Regles.Libelle_max, false, $localize`Surnom`);
+  this.rNom = GlobalService.instance.validerChaine(this.thisAdherent.nom, this.Regles.Nom_min, this.Regles.Nom_max, this.Regles.Nom_obligatoire, $localize`Nom`);
+  this.rPrenom= GlobalService.instance.validerChaine(this.thisAdherent.prenom, this.Regles.Prenom_min, this.Regles.Prenom_max, this.Regles.Prenom_obligatoire, $localize`Prénom`);
+  this.rDateNaissance = GlobalService.instance.validerDate(this.thisAdherent.date_naissance, this.Regles.DateNaissance_min, this.Regles.DateNaissance_max, this.Regles.DateNaissance_obligatoire, $localize`Date de naissance`);
+  this.rLibelle = GlobalService.instance.validerChaine(this.thisAdherent.surnom, this.Regles.Surnom_min, this.Regles.Surnom_max, this.Regles.Surnom_obligatoire, $localize`Libellé`);
+  this.rSurnom = GlobalService.instance.validerChaine(this.thisAdherent.libelle, this.Regles.Libelle_min, this.Regles.Libelle_max, false, $localize`Surnom`);
   // valide si tout est bon
   this.estValid = this.rNom.key && this.rPrenom.key && this.rLibelle.key && this.rDateNaissance.key && this.rSurnom.key;
   // 🔥 émettre vers le parent

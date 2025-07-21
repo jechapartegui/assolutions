@@ -29,13 +29,13 @@
                 <figure class="image is-80x80">
                   <img
                     class="is-rounded"
-                    [src]="personne.Photo ?? '../../assets/photo_H.png'"
-                    [alt]="'Photo de ' + personne.Nom"
+                    [src]="personne.photo ?? '../../assets/photo_H.png'"
+                    [alt]="'Photo de ' + personne.nom"
                   />
                 </figure>
               </div>
               <p class="is-size-7 has-text-weight-bold">
-                {{ personne.Nom }} {{ personne.Prenom }}
+                {{ personne.nom }} {{ personne.nom }}
               </p>
               <p
                 class="is-size-7"
@@ -52,19 +52,19 @@
                   <span class="icon has-text-success">
                     <i class="fas fa-thumbs-up has-text-success"></i>
                   </span>
-                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances | multifiltersMenu : personne.filters).OK }}</span> 
+                  <span>{{ nbSeanceInscrit(personne.MesSeances| multifiltersMenu : personne.filters).OK }}</span> 
                 </span>
                 <span class="has-text-danger mr-2">
                   <span class="icon has-text-danger">
                     <i class="fas fa-thumbs-down has-text-danger"></i>
                   </span>
-                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances| multifiltersMenu : personne.filters).KO }}</span> 
+                  <span>{{ nbSeanceInscrit(personne.MesSeances| multifiltersMenu : personne.filters).KO }}</span> 
                 </span>
                 <span class="has-text-info mr-2">
                   <span class="icon has-text-info">
                     <i class="fas fa-question has-text-info"></i>
                   </span>
-                  <span>{{ nbSeanceInscrit(personne.InscriptionSeances| multifiltersMenu : personne.filters).aucun }}</span> 
+                  <span>{{ nbSeanceInscrit(personne.MesSeances| multifiltersMenu : personne.filters).aucun }}</span> 
                 </span>
               </div>
             </div>
@@ -88,14 +88,14 @@
             }"
           >
             <p class="card-header-title">
-              {{ rider.Libelle }} 
+              {{ rider.libelle }} 
             </p>
             <button
               i18n-title
               title="Éditer"
               class="button is-small is-outlined m-1"
               type="button"
-              (click)="Voir(rider.ID)"
+              (click)="Voir(rider.id)"
             >
             <i class="fa-solid fa-user-pen"></i>
             </button>
@@ -230,51 +230,51 @@
                 <tbody>
                   <tr
                   *ngFor="
-                  let seance of rider.InscriptionSeances | multifiltersMenu : rider.filters" >                  
+                  let ms of rider.MesSeances | multifiltersMenu : rider.filters" >                  
                     <td>
                       <ng-container
                         *ngIf="
-                          seance.typeSeance === 'ENTRAINEMENT'
+                          ms.seance.type_seance === 'ENTRAINEMENT'
                         "
                       >
                       <span i18n>Cours</span>                     
                       </ng-container>
                       <ng-container
-                        *ngIf="seance.typeSeance === 'MATCH'"
+                        *ngIf="ms.seance.type_seance === 'MATCH'"
                       >
                         <span i18n>Match</span>
                       </ng-container>
                       <ng-container
                         *ngIf="
-                          seance.typeSeance === 'EVENEMENT'
+                          ms.seance.type_seance === 'EVENEMENT'
                         "
                       >
                         <span i18n>Evénement</span>
                       </ng-container>
                       <ng-container
-                        *ngIf="seance.typeSeance === 'SORTIE'"
+                        *ngIf="ms.seance.type_seance === 'SORTIE'"
                       >
                         <span i18n>Sortie</span>
                       </ng-container>
-                      &nbsp;:&nbsp;{{ seance.nom }}
+                      &nbsp;:&nbsp;{{ ms.seance.libelle }}
                     </td>
                     <td>
                       {{
-                        seance.date | date : "dd/MM/yyyy"
+                        ms.seance.date_seance | date : "dd/MM/yyyy"
                       }} 
-                      {{ seance.heureDebut }} - {{ seance.heureFin }} ({{ seance.duree | dureeHHMM }})
+                      {{ ms.seance.heure_debut }} - {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }} ({{ ms.seance.duree_seance | dureeHHMM }})
                     </td>
                     <td>
                       <div class="tags is-small"  style="max-width: 300px">
                         <ng-container
-                          *ngFor="let gr of seance.professeur"
+                          *ngFor="let gr of ms.seance.seanceProfesseurs"
                         >
-                          <span class="tag is-success" [title]="gr.prenom + ' ' + gr.nom">
-                            <ng-container *ngIf="gr.surnom && gr.surnom.length>0">
-                                {{ gr.surnom }}
+                          <span class="tag is-success" [title]="gr.personne.prenom + ' ' + gr.personne.nom">
+                            <ng-container *ngIf="gr.personne.surnom && gr.personne.surnom.length>0">
+                                {{ gr.personne.surnom }}
                             </ng-container>
-                            <ng-container *ngIf="!gr.surnom || gr.surnom.length == 0">
-                                {{ gr.prenom }}&nbsp;{{gr.nom}}
+                            <ng-container *ngIf="!gr.personne.surnom || gr.personne.surnom.length == 0">
+                                {{ gr.personne.prenom }}&nbsp;{{gr.personne.nom}}
                             </ng-container>
                            
                           </span>
@@ -283,18 +283,18 @@
                     </td>
                    <td>
   <span 
-    [title]="getadresse(seance.lieuId)"
-    (click)="copierDansPressePapier(getadresse(seance.lieuId))"
+    [title]="getadresse(ms.seance.lieu_id)"
+    (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
     style="cursor: pointer;"
   >
-    {{ seance.lieu }}
+    {{ ms.seance.lieu_nom }}
   </span>
 </td>
 
 
                     <td>
                       <ng-container
-                        *ngIf="seance.statut == 'prévue'"
+                        *ngIf="ms.seance.statut == 'prévue'"
                       >
                             <span class="fa-stack fa-lg" i18n-title title="Séance prévue" >
                               <i
@@ -303,14 +303,14 @@
                             </span>
                       </ng-container>
                       <ng-container
-                        *ngIf="seance.statut == 'réalisée'"
+                        *ngIf="ms.seance.statut == 'réalisée'"
                       >
                           <span class="icon has-text-success" i18n-title title="Séance réalisée" >
                             <i class="fa-solid fa-flag-checkered"></i>
                           </span>
                       </ng-container>
                       <ng-container
-                        *ngIf="seance.statut == 'annulée'"
+                        *ngIf="ms.seance.statut == 'annulée'"
                       >
                           <span class="icon has-text-danger"  i18n-title title="Séance annulée">
                             <i class="fa-solid fa-ban"></i>
@@ -320,18 +320,18 @@
                     <td>
                       <btn *ngIf="rider.profil == 'PROF'"
                       [type_button]="'VoirLight'"
-                      (click)="VoirMaSeance(seance)">
+                      (click)="VoirMaSeance(ms.seance)">
                     </btn>
                       <ng-container
-                        *ngIf="seance.statut == 'prévue' && rider.profil == 'ADH'"
+                        *ngIf="ms.seance.statut == 'prévue' && rider.profil == 'ADH'"
                       >                       
                       
                           <span
                             (click)="
-                               MAJInscription(rider.Libelle,rider.ID,seance, null)
+                               MAJInscription(ms, rider, null)
                             "
                             *ngIf="
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                               'présent'
                             "
                             class="icon is-large"
@@ -344,14 +344,14 @@
                           </span>
                           <span
                             (click)="
-                               MAJInscription(rider.Libelle,rider.ID,seance, true)
+                               MAJInscription(ms, rider, true)
                             "
                             *ngIf="
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                                 'absent' ||
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                                 'convoqué' ||
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                                 null
                             "
                             style="cursor: pointer"
@@ -365,10 +365,10 @@
                           </span>
                           <span
                             (click)="
-                               MAJInscription(rider.Libelle,rider.ID,seance, null)
+                               MAJInscription(ms, rider, null)
                             "
                             *ngIf="
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                               'absent'
                             "
                             class="icon is-large"
@@ -381,14 +381,14 @@
                           </span>
                           <span
                             (click)="
-                               MAJInscription(rider.Libelle,rider.ID,seance, false)
+                               MAJInscription(ms, rider, false)
                             "
                             *ngIf="
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                                 'présent' ||
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                                 'convoqué' ||
-                              seance.statutInscription ==
+                              ms.statutInscription ==
                                 null
                             "
                             style="cursor: pointer"
@@ -406,7 +406,7 @@
                   </tr>
                 </tbody>
               </table>
-            <p *ngIf="!rider.InscriptionSeances || rider.InscriptionSeances.length == 0">
+            <p *ngIf="!rider.MesSeances || rider.MesSeances.length == 0">
               Pas de séances disponible
             </p>
             <button

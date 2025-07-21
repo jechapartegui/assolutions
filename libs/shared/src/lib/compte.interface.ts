@@ -10,6 +10,7 @@ export class Compte_VM {
     derniere_connexion: Date | null;
     echec_connexion: number;
     mail_ko: boolean;
+    token: string | null;
     adherents: Adherent_VM[] = [];
   }
 

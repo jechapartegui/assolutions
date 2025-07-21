@@ -7,7 +7,7 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
-import { Adherent_VM, ProfesseurVM, ProfSaisonVM, SaisonVM } from '@shared/src';
+import { Adherent_VM, Professeur_VM, ProfSaisonVM, Saison_VM } from '@shared/src';
 
 @Component({
   selector: 'app-professeur',
@@ -22,11 +22,11 @@ ExportExcel() {
 throw new Error('Method not implemented.');
 }
   public action: string;
-  public ListeProf: ProfesseurVM[];
+  public ListeProf: Professeur_VM[];
   public loading:boolean=false;
   @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   @Input() public id: number;
-  public thisProf: ProfesseurVM = null;
+  public thisProf: Professeur_VM = null;
   public thisAdherent: Adherent_VM = null;
   public inscrits: number = null;
   public afficher_filtre: boolean = false;
@@ -34,8 +34,8 @@ throw new Error('Method not implemented.');
     @ViewChild('scrollableContent', { static: false })
     scrollableContent!: ElementRef;
     showScrollToTop: boolean = false;
-  public liste_saison: SaisonVM[] = [];
-  public active_saison: SaisonVM;
+  public liste_saison: Saison_VM[] = [];
+  public active_saison: Saison_VM;
   public liste_adherents_VM: Adherent_VM[] = [];
   public sort_nom = "NO";
   public sort_date = "NO";
@@ -169,34 +169,31 @@ throw new Error('Method not implemented.');
 
   Creer() {
     if (this.thisAdherent) {
-      this.thisProf = new ProfesseurVM();
-      this.thisProf.id = this.thisAdherent.id;
-      this.thisProf.prenom = this.thisAdherent.prenom;
-      this.thisProf.nom = this.thisAdherent.nom;
-      this.thisProf.surnom = this.thisAdherent.surnom;
+      this.thisProf = new Professeur_VM();
+      this.thisProf.person  = this.thisAdherent;
       this.context = "ECRITURE";
       this.creer = true;
       this.id = this.thisAdherent.id;
 
     }
   }
-  Edit(prof: ProfesseurVM) {
+  Edit(prof: Professeur_VM) {
     this.context = "ECRITURE";
-    this.id = prof.id;
+    this.id = prof.person.id;
     this.creer =false;
     this.ChargerProf();
   }
-  Read(prof: ProfesseurVM) {
+  Read(prof: Professeur_VM) {
     this.context = "LECTURE";
-    this.id = prof.id;
+    this.id = prof.person.id;
     this.ChargerProf();
   }
-  Register(adh: ProfesseurVM, saison_id: number, taux_horaire: number) {
+  Register(adh: Professeur_VM, saison_id: number, taux_horaire: number) {
     const errorService = ErrorService.instance;
     this.action = $localize`Déclarer en tant que professeur`;
     let pss: ProfSaisonVM = {
       saison_id: saison_id,
-      prof_id: adh.id
+      prof_id: adh.person.id
     }
 
     this.prof_serv.AddSaison(pss).then((retour) => {
@@ -214,10 +211,10 @@ throw new Error('Method not implemented.');
     })
 
   }
-  RemoveRegister(adh: ProfesseurVM, saison_id: number) {
+  RemoveRegister(adh: Professeur_VM, saison_id: number) {
        let pss: ProfSaisonVM = {
       saison_id: saison_id,
-      prof_id: adh.id
+      prof_id: adh.person.id
     }
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer un professeur sur une saison`;
@@ -236,7 +233,7 @@ throw new Error('Method not implemented.');
       errorService.emitChange(o);
     })
   }
-  isRegistred(adh: ProfesseurVM): boolean {
+  isRegistred(adh: Professeur_VM): boolean {
    return true;
   }
 
@@ -264,12 +261,12 @@ throw new Error('Method not implemented.');
 
   }
 
-  Delete(pf: ProfesseurVM) {
+  Delete(pf: Professeur_VM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer le professeur`;
     let confirm = window.confirm($localize`Voulez-vous supprimer le professeur ?`);
     if (confirm) {
-      this.prof_serv.Delete(pf.id).then((retour) => {
+      this.prof_serv.Delete(pf.person.id).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);

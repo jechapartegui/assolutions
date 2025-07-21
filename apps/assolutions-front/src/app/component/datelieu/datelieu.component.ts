@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { ValidationItem } from "@shared/src";
-import { lieu } from "@shared/src/lib/lieu.interface";
+import { Lieu_VM } from "@shared/src/lib/lieu.interface";
 import { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 import { LieuNestService } from "apps/assolutions-front/src/services/lieu.nest.service";
@@ -31,7 +31,7 @@ edit: boolean = false;
 save: string = null;
 date_min: Date = null;
 date_max: Date = null;
-public lieux : lieu[] = [];
+public lieux : Lieu_VM[] = [];
 
 constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, private dbs:GlobalService) { }
 
@@ -134,7 +134,7 @@ this.save = JSON.stringify(ddl);
       // 🔥 émettre vers le parent
       this.valid.emit(this.estValid);
     }
-    thislieu(lieu_id: number): lieu {
+    thislieu(lieu_id: number): Lieu_VM {
         return this.lieux.find(l => l.id === lieu_id);
     }
     getLieuNom(lieu_id: number): string {
@@ -143,7 +143,7 @@ this.save = JSON.stringify(ddl);
 }
 getLieuAdresse(lieu_id: number): string {
   const lieu = this.thislieu(lieu_id);
-  return lieu ? `${lieu.adresse}, ${lieu.code_postal} ${lieu.ville}` : $localize`:@@noLieu:pas de lieu trouvé`;
+  return lieu ? `${lieu.adresse.Street}, ${lieu.adresse.PostCode} ${lieu.adresse.City}` : $localize`:@@noLieu:pas de lieu trouvé`;
 }
 }
 

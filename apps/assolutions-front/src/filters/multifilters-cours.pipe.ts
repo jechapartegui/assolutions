@@ -1,13 +1,13 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterCours } from '../app/cours/cours.component';
-import { CoursVM } from '@shared/src';
+import { Cours_VM } from '@shared/src';
 @Pipe({
   name: 'multifiltersCours',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersCoursPipe implements PipeTransform {
-  transform(items: CoursVM[], filters: FilterCours): CoursVM[] {
+  transform(items: Cours_VM[], filters: FilterCours): Cours_VM[] {
     if (!items) return [];
     if (!filters) return items;
 

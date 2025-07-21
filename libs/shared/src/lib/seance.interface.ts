@@ -44,7 +44,7 @@ export class Seance_VM {
   cours_nom?: string; // Nom du cours, optionnel
 
   // Les entités de lien
-  seanceProfesseurs: PersonneLight_VM[];
+  seanceProfesseurs: SeanceProfesseur_VM[];
 
   groupes: LienGroupe_VM[];
 }
@@ -52,5 +52,30 @@ export class Seance_VM {
 export enum StatutSeance{
   prévue='prévue', réalisée= 'réalisée', annulée ='annulée'
 }
+
+export class SeanceProfesseur_VM {
+  id: number;
+  seance_id: number;
+  personne : PersonneLight_VM;
+  statut: 'prévue' | 'réalisée' | 'annulée';
+  minutes: number;
+  cout:number;
+  info: string}
+
+export function calculerHeureFin(heureDebut: string, dureeMinutes: number): string {
+  const [hours, minutes] = heureDebut.split(':').map(Number);
+  const debut = new Date();
+  debut.setHours(hours, minutes, 0, 0);
+
+  // Ajoute la durée
+  debut.setMinutes(debut.getMinutes() + dureeMinutes);
+
+  // Reformate en "HH:MM"
+  const heure = debut.getHours().toString().padStart(2, '0');
+  const minute = debut.getMinutes().toString().padStart(2, '0');
+
+  return `${heure}:${minute}`;
+}
+
 
 

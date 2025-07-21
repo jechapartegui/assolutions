@@ -14,8 +14,8 @@ export class ProfController {
   }
 
    @UseGuards(PasswordGuard)
-  @Get('get_prof_seance')
-  async GetProfSeance(@Param() { seance_id }: { seance_id: number }) {
+  @Get('get_prof_seance/:seance_id')
+  async GetProfSeance(@Param('seance_id') seance_id : number ) {
     return this.prof_serv.GetProfSeance(seance_id);
   }
 

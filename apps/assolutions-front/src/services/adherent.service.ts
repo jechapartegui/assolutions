@@ -4,7 +4,7 @@ import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
 import { Adherent_VM } from '@shared/src/lib/member.interface';
 import { Compte_VM } from '@shared/src/lib/compte.interface';
-import { SeanceVM } from '@shared/src/lib/seance.interface';
+import { Seance_VM } from '@shared/src/lib/seance.interface';
 import { ItemList, KeyValuePair } from '@shared/src';
 
 @Injectable({
@@ -42,12 +42,12 @@ export class AdherentService {
       });
   }
 
-  GetAllSeance(): Promise<SeanceVM[]> {
+  GetAllSeance(): Promise<Seance_VM[]> {
     let saison_id = this.global.saison_active;
     this.url = 'api/member/getallseance/' + saison_id;
 
     return this.global.GET(this.url)
-      .then((response: SeanceVM[]) => {
+      .then((response: Seance_VM[]) => {
 
         return response;
       })

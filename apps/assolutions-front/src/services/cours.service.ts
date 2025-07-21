@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { CoursVM } from '@shared/src/lib/cours.interface';
+import { Cours_VM } from '@shared/src/lib/cours.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
@@ -13,7 +13,7 @@ export class CoursService {
   constructor(public global: GlobalService) {
   }
 
-  public Get(id:number): Promise<CoursVM> {
+  public Get(id:number): Promise<Cours_VM> {
     this.url = 'api/cours/get/' + id;
     //  this.url = this.url + "login.php";
    
@@ -29,7 +29,7 @@ export class CoursService {
         return Promise.reject(message);
       });
   }
-  public GetAll(saison_id:number): Promise<CoursVM[]> {
+  public GetAll(saison_id:number): Promise<Cours_VM[]> {
     this.url = 'api/cours/getall/'  + saison_id;
     //  this.url = this.url + "login.php";
    
@@ -58,7 +58,7 @@ export class CoursService {
       });
   }
 
-  public Add(l:CoursVM): Promise<number> {
+  public Add(l:Cours_VM): Promise<number> {
   this.url = 'api/cours/add';
 
   return this.global.PUT(this.url, l)
@@ -70,7 +70,7 @@ export class CoursService {
       return Promise.reject(error);
     });
 }
-public Update(l:CoursVM): Promise<boolean> {
+public Update(l:Cours_VM): Promise<boolean> {
   this.url = 'api/cours/update';
 
   return this.global.PUT(this.url, l)

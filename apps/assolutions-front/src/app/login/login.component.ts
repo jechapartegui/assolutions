@@ -72,42 +72,30 @@ export class LoginComponent implements OnInit {
             if (boo) {
               this.compte_serv.getAccountLogin(this.VM.Login).then((compte:Compte_VM) => {
                 this.VM.compte = compte;
+                this.VM.compte.token = "";
+                this.VM.compte.actif = true;
                 this.GlobalService.updateCompte(compte);
                 if(this.context == "REINIT"){
-                  this.libelle_titre = $localize`Saisissez un nouveau mot de passe pour le compte ${this.VM.Login}`;
-                } else {
-                  this.libelle_titre = $localize`Saisissez un mot de passe pour activer le compte ${this.VM.Login}`;
+                    this.action = $localize`Réinitialiser le mot de passe`;
+                    let o = errorService.OKMessage(this.action);
+                    errorService.emitChange(o);
+                    this.router.navigate(['/reinit-mdp']);
+                    return;
                 }
-              if(this.context == "ACTIVATE"){
                 this.action = $localize`Activer le compte`;
-                this.VM.compte.actif = true;
-                this.compte_serv.Update(this.VM.compte, false).then((ok) => {
-                  if(ok){
                     let o = errorService.OKMessage(this.action);
                     errorService.emitChange(o);
                     this.router.navigate(['/login']);
-                  this.GlobalService.updateCompte(this.VM.compte);
-                  } else {
-                    let o = errorService.UnknownError(this.action);
-                    errorService.emitChange(o);
-                  }
-                });                
+                   }); 
+                               
               } else {
-                this.action = $localize`Réinitialiser le mot de passe`;
-                    let o = errorService.OKMessage(this.action);
-                    errorService.emitChange(o);
-                    this.router.navigate(['/reinit-mdp'], {);
+              
+                   let o = errorService.UnknownError(this.action);
+              errorService.emitChange(o);
+              this.router.navigate(['/login'])
 
               }
             });
-
-            } else {
-
-              let o = errorService.CreateError(this.action, $localize`Token incorrect`);
-              errorService.emitChange(o);
-              this.router.navigate(['/login'])
-            }
-      });
           break; 
         case "ESSAI":
           this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
@@ -115,29 +103,30 @@ export class LoginComponent implements OnInit {
         case "SEANCE":
           this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
           break; 
-      }
-      if ('reinit_mdp' in params) {
-        this.action = $localize`Lien de réinitialisation du mot de passe`;
-        this.compte_serv.CheckToken(user, token).then((boo) => {
-            if (boo) {
-              let o = errorService.OKMessage(this.action);
-              errorService.emitChange(o);
-              this.router.navigate(['/reinit-mdp'], {
-                queryParams: { login: user, token: token },
-              });
-            } else {
-              let o = errorService.UnknownError(this.action);
-              errorService.emitChange(o);
-              this.loading = false;
-            }
-          })
-          .catch((error: Error) => {
-            let o = errorService.CreateError(this.action, error.message);
-            errorService.emitChange(o);
-            this.loading = false;
-          });
-      }
+      }     
     });
+  }
+
+   validateLogin() {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    this.VM.isLoginValid = emailRegex.test(this.VM.Login);
+    this.valide();
+   
+  }
+
+  validatePassword() {
+    const hasMinLength = this.VM.Password.length >= 8;
+    const hasNumber = /\d/.test(this.VM.Password);
+    this.VM.isPasswordValid = hasMinLength && hasNumber;
+    this.valide();
+  }
+
+  valide(){
+     if (this.VM.isLoginValid && this.VM.isPasswordValid) {
+      this.VM.isValid = true;
+    } else {
+      this.VM.isValid = false;
+    }
   }
 
   async PreLogin() {
@@ -164,54 +153,38 @@ export class LoginComponent implements OnInit {
   async Login() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
-    this.login_serv_nest
-      .Login(this.VM.Login, this.VM.Password)
-      .then((compte_vm:Compte_VM) => {
-        if(auth_login.type == 'admin'){
-          GlobalService.instance.updateTypeApplication('APPLI');
-          GlobalService.instance.updateSelectedMenuStatus('MENU');
-          GlobalService.instance.updateProjetAdmin(auth_login.user)
-          this.router.navigate(['/menu-admin']);
-        } else {
-          GlobalService.instance.updateTypeApplication('APPLI');
-          GlobalService.instance.updateCompte(auth_login.user);
-        this.login_serv_nest
-          .GetProject(auth_login.user.id)
-          .then((projets : ProjetView[]) => {
-            this.projets = projets;
-            GlobalService.instance.updateListeProjet(this.projets);
-            if (this.projets.length == 1) {
-              this.projets_select = this.projets[0];
-              this.ConnectToProject();
-            } else  if (this.projets.length > 1) {
-              this.projets_select = this.projets[0];
-            } else {
-
-              let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
-              errorService.emitChange(o);
-            }
-          })
-          .catch((error: Error) => {
-            let o = errorService.CreateError(this.action, error.message);
+    this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((compte_vm:Compte_VM) => {
+          GlobalService.instance.updateCompte(compte_vm);
+          this.VM.compte = compte_vm;
+        GlobalService.instance.updateTypeApplication('APPLI');
+        GlobalService.instance.updateSelectedMenuStatus('MENU');
+        GlobalService.instance.updateLoggedin(true); 
+      this.action = $localize`Rechercher des projets`;
+        this.login_serv_nest.GetProject(compte_vm.id).then((projets : ProjetView[]) => {
+          this.projets = projets;
+          GlobalService.instance.updateListeProjet(this.projets);
+          if (this.projets.length == 1) {
+            this.projets_select = this.projets[0];
+            this.ConnectToProject();
+          } else  if (this.projets.length > 1) {
+            this.projets_select = this.projets[0];
+          } else {
+            let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
             errorService.emitChange(o);
-          });
-        }
-        GlobalService.instance.updateLoggedin(true);
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-        
-      })
-      .catch((error: Error) => {
+          }
+        }).catch((error: Error) => {
+          let o = errorService.CreateError(this.action, error.message);
+          errorService.emitChange(o);
+        });
+      }).catch((error: Error) => {
         let o = errorService.CreateError(this.action, error.message);
         errorService.emitChange(o);
-      });
+      });      
   }
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    this.login_serv_nest
-      .Logout()
-      .then((ok) => {
+    this.login_serv_nest.Logout().then((ok) => {
         if (ok) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
@@ -264,7 +237,7 @@ export class LoginComponent implements OnInit {
     if (this.projets_select) {
        
         GlobalService.instance.updateProjet(this.projets_select);
-        GlobalService.instance.updateGestionnaire(this.projets_select);
+        GlobalService.instance.updateProf(this.projets_select.prof);
          try {
           const adh = await this.proj_serv.GetActiveSaison();
           this.GlobalService.saison_active = adh;
@@ -279,7 +252,7 @@ export class LoginComponent implements OnInit {
           let o = errorService.CreateError(this.action, err.message || 'Erreur inconnue');
           errorService.emitChange(o);
           GlobalService.instance.updateProjet(null);
-          GlobalService.instance.updateGestionnaire(null);
+          GlobalService.instance.updateProf(false);
           GlobalService.instance.updateLoggedin(false);
           this.router.navigate(['/login']);
           return;

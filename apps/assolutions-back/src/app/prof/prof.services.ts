@@ -68,7 +68,7 @@ export class ProfService {
          throw new BadRequestException('INVALID_PROFESSOR');
        }
        const objet_base = to_Professor(s);    
-       const objet_insere = await this.profseanceserv.create(objet_base);
+       const objet_insere = await this.profserv.create(objet_base);
        return objet_insere.id;
      }
      async update(s: Professeur_VM) {
@@ -76,7 +76,7 @@ export class ProfService {
          throw new BadRequestException('INVALID_PROFESSOR');
        }
        const objet_base = to_Professor(s);     
-        await this.profseanceserv.update(objet_base.id, objet_base);
+        await this.profserv.update(objet_base.id, objet_base);
      
      }
      

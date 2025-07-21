@@ -5,4 +5,10 @@ export class Login_VM{
     public Login:string;
     public Password:string;
     public confirm_password:string;
+    public mdp_requis:boolean;
+    public isLoginValid:boolean;
+    public isPasswordValid:boolean;
+    public isValid:boolean;
+
+    
 }

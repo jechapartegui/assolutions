@@ -8,13 +8,13 @@ import { InscriptionSeanceService } from '../../services/inscription-seance.serv
 import { ProfesseurService } from '../../services/professeur.service';
 import { StaticClass } from '../global';
 import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
-import { AdherentSeance, MesSeances, StatutSeance } from '@shared/src/lib/seance.interface';
+import { AdherentSeance_VM, MesSeances_VM, Seance_VM, StatutSeance, calculerHeureFin } from '@shared/src/lib/seance.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
+import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { AdherentService } from '../../services/adherent.service';
-import {  CoursVM, Lieu_VM, ProfesseurVM } from '@shared/src';
 import { AdherentMenu } from '../../class/adherent-menu';
+import { Cours_VM, Lieu_VM, Professeur_VM } from '@shared/src';
+import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/src/lib/inscription_seance.interface';
 
 @Component({
   selector: 'app-menu',
@@ -25,7 +25,7 @@ export class MenuComponent implements OnInit {
 
   action: string;
   Riders: AdherentMenu[];
-  listeprof: ProfesseurVM[];
+  listeprof: Professeur_VM[];
   listelieu: Lieu_VM[];
   btn_adherent: boolean = false;
   btn_admin: boolean = false;
@@ -37,9 +37,9 @@ export class MenuComponent implements OnInit {
     scrollableContent!: ElementRef;
     showScrollToTop: boolean = false;
 
-  public liste_prof_filter: KeyValuePairAny[];
+  public liste_prof_filter: KeyValuePair[];
   public liste_lieu_filter: string[];
-  listeCours: CoursVM[] = [];
+  listeCours: Cours_VM[] = [];
 
   public g: StaticClass;
   constructor(
@@ -84,16 +84,16 @@ export class MenuComponent implements OnInit {
         const seancesAdh = await this.GetMySeance();
         const ridersAdh = seancesAdh.map((x) => {
           const rider = new AdherentMenu(x);
-          rider.profil = "ADH";
+          rider.profil = 'ADH';
           rider.filters.filter_date_avant = yesterday;
           rider.filters.filter_date_apres = nextMonth;
-         rider.InscriptionSeances.sort((a, b) => {
-  const dateA = new Date(a.date);
-  const [hA, mA] = a.heureDebut.split(':').map(Number);
+         rider.MesSeances.sort((a, b) => {
+  const dateA = new Date(a.seance.date_seance);
+  const [hA, mA] = a.seance.heure_debut.split(':').map(Number);
   dateA.setHours(hA, mA, 0, 0);
 
-  const dateB = new Date(b.date);
-  const [hB, mB] = b.heureDebut.split(':').map(Number);
+  const dateB = new Date(b.seance.date_seance);
+  const [hB, mB] = b.seance.heure_debut.split(':').map(Number);
   dateB.setHours(hB, mB, 0, 0);
 
   return dateA.getTime() - dateB.getTime();
@@ -113,13 +113,13 @@ export class MenuComponent implements OnInit {
           rider.profil = "PROF";
           rider.filters.filter_date_avant = yesterday;
           rider.filters.filter_date_apres = nextMonth;
-            rider.InscriptionSeances.sort((a, b) => {
-  const dateA = new Date(a.date);
-  const [hA, mA] = a.heureDebut.split(':').map(Number);
+            rider.MesSeances.sort((a, b) => {
+  const dateA = new Date(a.seance.date_seance);
+  const [hA, mA] = a.seance.heure_debut.split(':').map(Number);
   dateA.setHours(hA, mA, 0, 0);
 
-  const dateB = new Date(b.date);
-  const [hB, mB] = b.heureDebut.split(':').map(Number);
+  const dateB = new Date(b.seance.date_seance);
+  const [hB, mB] = b.seance.heure_debut.split(':').map(Number);
   dateB.setHours(hB, mB, 0, 0);
 
   return dateA.getTime() - dateB.getTime();
@@ -130,7 +130,7 @@ export class MenuComponent implements OnInit {
       }
   
       // Tri final
-      this.Riders.sort((a, b) => a.ID - b.ID);
+      this.Riders.sort((a, b) => a.id - b.id);
   
       // Chargement des autres données
         this.action = $localize`Récupérer la liste des professeurs`;
@@ -142,7 +142,7 @@ export class MenuComponent implements OnInit {
       }
       this.listeprof = profs;
      this.liste_prof_filter = profs.map((x) => {
-  return { key: x.id, value: `${x.prenom} ${x.nom}` };
+  return { key: x.person.id, value: `${x.person.prenom} ${x.person.nom}` };
 });
   
       this.action = $localize`Récupérer la liste des lieux`;
@@ -158,17 +158,18 @@ export class MenuComponent implements OnInit {
       this.listeCours = await this.coursservice.GetAll(this.GlobalService.saison_active);
 
       this.Riders.forEach((rider) => {
-        this.riderservice.GetPhoto(rider.ID).then((profil) => {
+        this.riderservice.GetPhoto(rider.id).then((profil) => {
           if(profil && profil.length > 0) {
             
-          rider.Photo = profil;}
+          rider.photo = profil;}
           else {
-            rider.Photo = undefined;
+            rider.photo = undefined;
           }
         });
-        rider.InscriptionSeances.forEach((seance) => {
-          seance.lieu = this.trouverLieu(seance.lieuId);
-          seance.cours = this.trouverCours(seance);
+        rider.MesSeances.forEach((ms) => {
+          if(ms.seance.lieu_id && ms.seance.lieu_id >0) ms.seance.lieu_nom = this.trouverLieu(ms.seance.lieu_id);
+          
+          if(ms.seance.cours && ms.seance.cours >0) ms.seance.cours_nom = this.trouverCours(ms.seance);
         })
         //trier
       });
@@ -211,7 +212,7 @@ export class MenuComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  async GetMySeance(): Promise<AdherentSeance[]> {
+  async GetMySeance(): Promise<AdherentSeance_VM[]> {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
   
@@ -225,7 +226,7 @@ export class MenuComponent implements OnInit {
     }
   }
 
-  async GetProfSeance(): Promise<AdherentSeance[]> {
+  async GetProfSeance(): Promise<AdherentSeance_VM[]> {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
   
@@ -251,15 +252,17 @@ copierDansPressePapier(texte: string): void {
 }
   getadresse(id:number) : string {
     let ad = this.listelieu.find(x => x.id == id) 
-    return ad!.nom + " " + ad!.adresse + " " + ad!.code_postal + " " + ad!.ville
+    return ad!.nom + " " + ad!.adresse.Street + " " + ad!.adresse.PostCode + " " + ad!.adresse.City
   }
-
-  nbSeanceInscrit(seance: MesSeances[]): {OK:number, KO:number, aucun:number} {
+calculerHeureFin(heure: string, duree: number): string {
+  return calculerHeureFin(heure, duree);
+}
+  nbSeanceInscrit(seance: MesSeances_VM[]): {OK:number, KO:number, aucun:number} {
     let OK = 0;
     let KO = 0;
     let aucun = 0;
     seance.forEach((s) => { 
-      if(s.statut == StatutSeance.prévue){
+      if(s.seance.statut == StatutSeance.prévue){
       if(s.inscription_id == null || s.inscription_id == 0) {
         aucun++;
       }
@@ -295,7 +298,7 @@ copierDansPressePapier(texte: string): void {
   Sort( sens: 'NO' | 'ASC' | 'DESC', champ: string, rider: AdherentMenu ) {
     let liste_seance_VM = this.Riders.find(
       (x) => x.id == rider.id
-    ).InscriptionSeances;
+    ).MesSeances;
     switch (champ) {
       case 'nom':
         rider.sort_nom = sens;
@@ -303,8 +306,8 @@ copierDansPressePapier(texte: string): void {
         rider.sort_lieu = 'NO';
         rider.sort_cours = 'NO';
         liste_seance_VM.sort((a, b) => {
-          const nomA = a.nom.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.nom.toUpperCase();
+          const nomA = a.seance.libelle.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.seance.libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -322,8 +325,8 @@ copierDansPressePapier(texte: string): void {
         rider.sort_lieu = 'NO';
         rider.sort_cours = sens;
         liste_seance_VM.sort((a, b) => {
-          const nomA = a.cours;
-          const nomB = b.cours;
+          const nomA = a.seance.cours_nom;
+          const nomB = b.seance.cours_nom;
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -340,8 +343,8 @@ copierDansPressePapier(texte: string): void {
         rider.sort_nom = 'NO';
         rider.sort_cours = 'NO';
         liste_seance_VM.sort((a, b) => {
-          const lieuA =a.lieu;           
-          const lieuB =b.lieu;   
+          const lieuA =a.seance.lieu_nom;           
+          const lieuB =b.seance.lieu_nom;   
 
           // Ignorer la casse lors du tri
           const lieuAUpper = lieuA.toUpperCase();
@@ -363,8 +366,8 @@ copierDansPressePapier(texte: string): void {
         rider.sort_cours = 'NO';
         rider.sort_nom = 'NO';
         liste_seance_VM.sort((a, b) => {
-          let dateA = a.date;
-          let dateB = b.date;
+          let dateA = a.seance.date_seance;
+          let dateB = b.seance.date_seance;
 
           let comparaison = 0;
           if (dateA > dateB) {
@@ -378,33 +381,33 @@ copierDansPressePapier(texte: string): void {
         break;
     }
   }
-  trouverCours(_s:MesSeances) : string{
-    if(_s.typeSeance == "ENTRAINEMENT"){
-      return this.listeCours.find(x => x.id == _s.coursId).nom || $localize`Cours non trouvé`;
-    } else if(_s.typeSeance == "MATCH"){
+  trouverCours(_s:Seance_VM) : string{
+    if(_s.type_seance == "ENTRAINEMENT"){
+      return this.listeCours.find(x => x.id == _s.cours).nom || $localize`Cours non trouvé`;
+    } else if(_s.type_seance == "MATCH"){
       return $localize`Match`;
-    } else if(_s.typeSeance == "SORTIE"){
+    } else if(_s.type_seance == "SORTIE"){
       return $localize`Sortie`;
     } else {
 return $localize`Evénement`;
     }
   }
 
-  MAJInscription(libelle : string, rider_id:number, seance: MesSeances, statut: boolean) {
+  MAJInscription(messeance : MesSeances_VM, adherentmen : AdherentMenu, statut: boolean) {
     const errorService = ErrorService.instance;
-    let oldstatut = seance.statutInscription || null;
-    let idinscription = seance.inscription_id || null;
+    let oldstatut = messeance.statutInscription || null;
+    let idinscription = messeance.inscription_id || null;
     if (statut == null && oldstatut != null && idinscription) {
       this.action =
-      libelle +
+      adherentmen.libelle +
         $localize` ne prévoit plus d'être présent à la séance ` +
-        seance.nom;
+        messeance.seance.libelle;
       this.inscriptionserv
         .Delete(idinscription)
         .then((ok) => {
           if (ok) {
-            seance.statutInscription = null;
-            seance.inscription_id = null;
+            messeance.statutInscription = null;
+            messeance.inscription_id = null;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           } else {
@@ -413,57 +416,55 @@ return $localize`Evénement`;
           }
         })
         .catch((err: HttpErrorResponse) => {
-          seance.statutInscription = oldstatut;
+          messeance.statutInscription = oldstatut;
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);
           return;
         });
       return;
     } else {
-      const uneInscription: inscription_seance = {
+      const uneInscription: InscriptionSeance_VM = {
         id: 0,
-        rider_id: rider_id,
-        seance_id: seance.id,
         date_inscription: new Date(),
-        statut_inscription: statut ? "présent" : "absent",
-        statut_seance: null
+        statut_inscription: statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT,
+        statut_seance: null,
+        rider_id: adherentmen.id,
+        seance_id: messeance.seance.seance_id
       };
       if (statut) {
-        seance.statutInscription = "présent";
         this.action = 
-        libelle +
+        adherentmen.libelle +
         $localize` prévoit d'être présent à la séance ` +
-        seance.nom;
+        messeance.seance.libelle;
       } else {
-        seance.statutInscription = "absent";
         this.action =
-        libelle +
+        adherentmen.libelle +
         $localize` ne prévoit plus d'être présent à la séance ` +
-        seance.nom;
+        messeance.seance.libelle;
       }
       if (!idinscription) {
 
         this.inscriptionserv
           .Add(uneInscription)
           .then((id) => {
-            seance.inscription_id = id;
+            messeance.inscription_id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
           })
           .catch((err: HttpErrorResponse) => {
-            seance.statutInscription = oldstatut;
+            messeance.statutInscription = oldstatut;
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
             return;
           });
       } else {
-        const update: inscription_seance = {
+        const update: InscriptionSeance_VM = {
           id: idinscription,
-          rider_id: rider_id,
-          seance_id: seance.id,
-          date_inscription: new Date(),
-          statut_inscription: statut ? "présent" : "absent",
-          statut_seance: null
+        date_inscription: new Date(),
+        statut_inscription: statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT,
+        statut_seance: null,
+        rider_id: adherentmen.id,
+        seance_id: messeance.seance.seance_id
         };
         this.inscriptionserv
           .Update(update)
@@ -477,7 +478,7 @@ return $localize`Evénement`;
             }
           })
           .catch((err: HttpErrorResponse) => {
-            seance.statutInscription = oldstatut;
+            messeance.statutInscription = oldstatut;
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
             return;
@@ -531,7 +532,7 @@ return $localize`Evénement`;
   }
   AfficherProfil(_t17: AdherentMenu) {
     for (const r of this.Riders) {
-      if (r.ID == _t17.ID && r.profil == _t17.profil) {
+      if (r.id == _t17.id && r) {
         r.afficher = !r.afficher;
       } else {
         r.afficher = false;

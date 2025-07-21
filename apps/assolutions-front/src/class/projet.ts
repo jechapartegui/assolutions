@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { project_login } from '../services/login.nest.service';
-import { Compte_VM, Groupe_VM, Lieu_VM, SaisonVM } from '@shared/src';
+import { Compte_VM, Groupe_VM, Lieu_VM, Saison_VM } from '@shared/src';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 
 
@@ -222,11 +222,11 @@ export class Projet {
   get Groupes(): Groupe_VM[] {
     return this.datasource.groupe;
   }
-  saisons:SaisonVM[];
-  set Saisons  (value: SaisonVM[]) {
+  saisons:Saison_VM[];
+  set Saisons  (value: Saison_VM[]) {
     this.saisons = value;
   }
-  get Saisons(): SaisonVM[] {
+  get Saisons(): Saison_VM[] {
     return this.saisons;
   }
   

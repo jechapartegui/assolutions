@@ -13,10 +13,10 @@ import { SeancesService } from '../../services/seance.service';
 import { SeanceprofService } from '../../services/seanceprof.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { CoursVM } from '@shared/src/lib/cours.interface';
-import { SeanceProfesseurVM, SeanceVM, StatutSeance } from '@shared/src/lib/seance.interface';
+import { Cours_VM } from '@shared/src/lib/cours.interface';
+import {  Seance_VM, SeanceProfesseur_VM, StatutSeance } from '@shared/src/lib/seance.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import { ProfesseurVM, SaisonVM } from '@shared/src';
+import {  Professeur_VM, Saison_VM } from '@shared/src';
 
 
 @Component({
@@ -36,19 +36,19 @@ export class SeanceComponent implements OnInit {
   public selected_sort_sens: any;
   public afficher_tri: boolean = false;
   public histo_seance: string;
-  listeprof: ProfesseurVM[];
+  listeprof: Professeur_VM[];
   listelieu: KeyValuePair[];
-  prof_dispo: ProfesseurVM[];
+  prof_dispo: KeyValuePair[];
   est_prof: boolean = false;
   est_admin: boolean = false;
   manage_prof: boolean = false;
   titre_groupe: string = $localize`Liste des groupes de la séance`;
-  listeCours: CoursVM[] = [];
+  listeCours: Cours_VM[] = [];
   editMode = false;
   editMode_serie: boolean = false;
 
-  list_seance_VM: SeanceVM[] = [];
-  editSeance: SeanceVM | null = null;
+  list_seance_VM: Seance_VM[] = [];
+  editSeance: Seance_VM | null = null;
 
   all_seance: boolean = false;
   jour_semaine: string = '';
@@ -68,10 +68,10 @@ export class SeanceComponent implements OnInit {
   public season_id: number;
 
   public liste_groupe_filter: KeyValuePair[];
-  public liste_prof_filter: KeyValuePairAny[];
+  public liste_prof_filter: KeyValuePair[];
   public liste_lieu_filter: string[];
-  public liste_saison: SaisonVM[] = [];
-  public active_saison: SaisonVM;
+  public liste_saison: Saison_VM[] = [];
+  public active_saison: Saison_VM;
   public showText: boolean = false;
   public action: string = '';
   public listeStatuts: StatutSeance[];
@@ -130,8 +130,8 @@ export class SeanceComponent implements OnInit {
                 return;
               }
               this.listeprof = profs;
-              this.liste_prof_filter = this.listeprof.map((x) => {
-                return { key: x.id, value: x.prenom + ' ' + x.nom };
+              this.liste_prof_filter = profs.map((x) => {
+                return { key: x.person.id, value: x.person.prenom + ' ' + x.person.nom };
               });
               this.lieuserv
                 .GetAllLight()
@@ -266,13 +266,13 @@ export class SeanceComponent implements OnInit {
     return false;
   }
 
-  Edit(seance: SeanceVM): void {
+  Edit(seance: Seance_VM): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
     this.seancesservice
       .Get(seance.seance_id)
       .then((ss) => {
-        this.editSeance = new SeanceVM();
+        this.editSeance = new Seance_VM();
         if (this.editSeance.cours) {
           this.coursselectionne = true;
         } else {
@@ -311,19 +311,18 @@ export class SeanceComponent implements OnInit {
       newValue.groupes.forEach((el) => {
         this.editSeance.groupes.push(el);
       });
+
       this.editSeance.seanceProfesseurs = [];
-      let pr = new SeanceProfesseurVM();
-      pr.professeur_id = newValue.prof_principal_id;
-      pr.prenom = this.listeprof.filter(
-        (x) => x.id == pr.professeur_id
-      )[0].prenom;
-      pr.nom = this.listeprof.filter((x) => x.id == pr.professeur_id)[0].nom;
-      pr.taux_horaire = this.listeprof.filter(
-        (x) => x.id == pr.professeur_id
-      )[0].taux;
-      pr.minutes = newValue.duree;
-      pr.statut = 0;
-      this.editSeance.seanceProfesseurs.push(pr);
+      newValue.professeursCours.forEach((el) => {
+        let stp = new SeanceProfesseur_VM();
+        stp.personne = el.personne;
+        stp.id = 0;
+        stp.cout = this.listeprof.find(x => x.person.id == el.personne.id).taux;
+        stp.minutes = newValue.duree;
+        stp.statut = StatutSeance.prévue;
+        this.editSeance.seanceProfesseurs.push(stp);
+      });
+      this.editSeance.statut = StatutSeance.prévue;     
       this.editSeance.lieu_id = newValue.lieu_id;
       this.jour_semaine = newValue.jour_semaine;
     } else {
@@ -333,7 +332,7 @@ export class SeanceComponent implements OnInit {
   }
 
   Creer(serie: boolean = false): void {
-    this.editSeance = new SeanceVM();
+    this.editSeance = new Seance_VM();
     this.coursselectionne = false;
     this.editMode_serie = serie;
     this.editSeance.date_seance = new Date();
@@ -346,7 +345,7 @@ export class SeanceComponent implements OnInit {
     this.router.navigate(['/ma-seance'], { queryParams: { id: id } });
   }
 
-  VoirMaSeance(seance: SeanceVM = null) {
+  VoirMaSeance(seance: Seance_VM = null) {
     if (this.checkModification()) {
       let confirm = window.confirm(
         $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
@@ -505,12 +504,12 @@ export class SeanceComponent implements OnInit {
     // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
     // que vous pouvez stocker dans une variable
     const indexToUpdate = this.listeprof.findIndex(
-      (prof) => prof.id === profId
+      (prof) => prof.person.id === profId
     );
 
     if (indexToUpdate !== -1) {
       // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-      return this.listeprof[indexToUpdate].nom;
+      return this.listeprof[indexToUpdate].person.prenom + ' ' + this.listeprof[indexToUpdate].person.nom;
     } else {
       return $localize`Professeur non trouvé`;
     }
@@ -530,7 +529,7 @@ export class SeanceComponent implements OnInit {
     }
   }
 
-  Delete(seance: SeanceVM): void {
+  Delete(seance: Seance_VM): void {
     const errorService = ErrorService.instance;
 
     let confirmation = window.confirm(
@@ -543,9 +542,7 @@ export class SeanceComponent implements OnInit {
           .Delete(seance.seance_id)
           .then((result) => {
             if (result) {
-              seance.seanceProfesseurs.forEach((sp) => {
-                this.spservice.Delete(sp.id);
-              });
+                this.spservice.Update(seance.seance_id, []);              
               this.UpdateListeSeance();
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
@@ -561,7 +558,7 @@ export class SeanceComponent implements OnInit {
       }
     }
   }
-  onProfUpdated(updatedProfs: SeanceProfesseurVM[]) {
+  onProfUpdated(updatedProfs: SeanceProfesseur_VM[]) {
     this.editSeance.seanceProfesseurs = updatedProfs;
     // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
   }
@@ -587,10 +584,7 @@ export class SeanceComponent implements OnInit {
             .then((seances) => {
               if (seances.length > 0) {
                 seances.forEach((id_s) => {
-                  this.editSeance.seanceProfesseurs.forEach((prof: SeanceProfesseurVM) => {
-                    prof.seance_id = id_s;
-                    this.spservice.Add(prof);
-                  });
+                  this.spservice.Update(id_s, this.editSeance.seanceProfesseurs);
                   this.editSeance.groupes.forEach((gr: LienGroupe_VM) => {
                     this.grServ.AddLien(Number(gr.id), 'séance', id_s);
                   });
@@ -618,10 +612,7 @@ export class SeanceComponent implements OnInit {
             .then((id) => {
               if (id > 0) {
                 this.editSeance.seance_id   = id;
-                this.editSeance.seanceProfesseurs.forEach((ss) => {
-                  ss.seance_id = id;
-                  this.spservice.Add(ss);
-                });
+                  this.spservice.Update(id, this.editSeance.seanceProfesseurs);
                 this.editSeance.groupes.forEach((gr: LienGroupe_VM) => {
                   this.grServ.AddLien(Number(gr.id), 'séance', id);
                 });
@@ -663,10 +654,10 @@ export class SeanceComponent implements OnInit {
     }
   }
 
-  public GetSeanceID(id: number): Promise<SeanceVM | null> {
+  public GetSeanceID(id: number): Promise<Seance_VM | null> {
     return this.seancesservice
       .Get(id)
-      .then((c: SeanceVM) => {
+      .then((c: Seance_VM) => {
         return c; // Retourne la valeur du cours récupéré
       })
       .catch(() => {
@@ -801,7 +792,7 @@ export class SeanceComponent implements OnInit {
         break;
     }
   }
-  trouverCours(_s:SeanceVM) : string{
+  trouverCours(_s:Seance_VM) : string{
     if(_s.type_seance == "ENTRAINEMENT"){
       return this.listeCours.find(x => x.id == _s.cours).nom || $localize`Cours non trouvé`;
     } else if(_s.type_seance == "MATCH"){
@@ -846,10 +837,10 @@ return $localize`Evénement`;
       InfoSeance: 'Informations de la séance',
       MailAnnulation: "Mail d'annulation",
     };
-    let list: SeanceVM[] = this.getFilteredSeances();
+    let list: Seance_VM[] = this.getFilteredSeances();
     this.excelService.exportAsExcelFile(list, 'liste_seance', headers);
   }
-  getFilteredSeances(): SeanceVM[] {
+  getFilteredSeances(): Seance_VM[] {
     return this.list_seance_VM.filter((seance) => {
       return (
         (!this.filters.filter_nom ||
@@ -876,7 +867,7 @@ return $localize`Evénement`;
           )) &&
         (!this.filters.filter_prof ||
           seance.seanceProfesseurs.find((x) =>
-            x.nom
+            x.personne.nom
               .toLowerCase()
               .includes(this.filters.filter_prof.toLowerCase())
           ))

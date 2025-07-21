@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import {  InscriptionSeance } from '../class/inscription';
-import { SeanceVM } from '@shared/src/lib/seance.interface';
+import { Seance_VM } from '@shared/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SeancesService {
   static instance: SeancesService;
-  static get ListeSeance(): SeanceVM[] {
+  static get ListeSeance(): Seance_VM[] {
     return SeancesService.Seances;
   }
 
@@ -19,9 +19,9 @@ export class SeancesService {
 
   url = environment.maseance;
 
-  static Seances: SeanceVM[];
+  static Seances: Seance_VM[];
 
-  public Update(seance: SeanceVM): Promise<boolean> {
+  public Update(seance: Seance_VM): Promise<boolean> {
     this.url = environment.maseance + "api/seance/update"; 
     //  this.url = this.url + "login.php";
     const body = {
@@ -55,7 +55,7 @@ export class SeancesService {
 
 
 
-  public Add(seance: SeanceVM): Promise<number> {
+  public Add(seance: Seance_VM): Promise<number> {
     this.url = environment.maseance + "api/seance/add/"
     //  this.url = this.url + "login.php";
     const body = {
@@ -71,7 +71,7 @@ export class SeancesService {
         return Promise.reject(error);
       });
   }
-  public AddRange(seance: SeanceVM, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
+  public AddRange(seance: Seance_VM, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
     this.url = environment.maseance + "api/seance/add_range/"
     //  this.url = this.url + "login.php";
     const body = {
@@ -92,10 +92,10 @@ export class SeancesService {
   }
 
 
-  public GetSeances(): Promise<SeanceVM[]> {
+  public GetSeances(): Promise<Seance_VM[]> {
     this.url = environment.maseance + "api/seance/getall/" + this.global.saison_active;
     return this.global.GET(this.url)
-      .then((response: SeanceVM[]) => {
+      .then((response: Seance_VM[]) => {
         return response;
       })
       .catch(error => {
@@ -104,12 +104,12 @@ export class SeancesService {
       });
   }
 
-  public GetPlageDate(date_debut:string, date_fin:string): Promise<SeanceVM[]> {
+  public GetPlageDate(date_debut:string, date_fin:string): Promise<Seance_VM[]> {
     this.url = environment.maseance + "api/seance/getbydate/" + this.global.saison_active + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
-      .then((response: SeanceVM[]) => {
+      .then((response: Seance_VM[]) => {
         SeancesService.Seances = response;
         return response;
       })
@@ -119,12 +119,12 @@ export class SeancesService {
   }
  
 
-  public Get(id: number): Promise<SeanceVM> {
+  public Get(id: number): Promise<Seance_VM> {
     this.url = environment.maseance + "api/seance/get/" + id; 
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
-      .then((response: SeanceVM) => {
+      .then((response: Seance_VM) => {
         return response;
       })
       .catch(error => {

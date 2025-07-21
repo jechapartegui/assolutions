@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { full_inscription_seance, inscription_seance } from '@shared/src/lib/inscription_seance.interface'
+import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/src/lib/inscription_seance.interface'
 
 @Injectable({
   providedIn: 'root'
@@ -10,13 +10,13 @@ export class InscriptionSeanceService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
  }
- public Get(id:number): Promise<inscription_seance> {
+ public Get(id:number): Promise<InscriptionSeance_VM> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
   this.url = 'api/inscription_seance/get/' + id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
-    .then((response: inscription_seance) => {
+    .then((response: InscriptionSeance_VM) => {
       return response;
     })
     .catch(error => {
@@ -24,14 +24,14 @@ export class InscriptionSeanceService {
       return Promise.reject(error);
     });
 }
-public GetFull(id:number): Promise<full_inscription_seance> {
+public GetFull(id:number): Promise<FullInscriptionSeance_VM> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
  this.url = 'api/inscription_seance/get_full/' + id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
 
-    .then((response: full_inscription_seance) => {
+    .then((response: FullInscriptionSeance_VM) => {
       return response;
     })
     .catch(error => {
@@ -40,14 +40,14 @@ public GetFull(id:number): Promise<full_inscription_seance> {
     });
 }
  
-public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<inscription_seance[]> {
+public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<InscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
 this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;
 
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
-    .then((response: inscription_seance[]) => {
+    .then((response: InscriptionSeance_VM[]) => {
       return response;
     })
     .catch(error => {
@@ -70,7 +70,7 @@ public GetAllSeance(seance_id:number): Promise<any> {
     });
 }
 
-public Add(inscription:inscription_seance): Promise<number> {
+public Add(inscription:InscriptionSeance_VM): Promise<number> {
   this.url = 'api/inscription_seance/add';
 
   return this.global.PUT(this.url, inscription)
@@ -82,7 +82,7 @@ public Add(inscription:inscription_seance): Promise<number> {
       return Promise.reject(error);
     });
 }
-public Update(inscription:inscription_seance): Promise<boolean> {
+public Update(inscription:InscriptionSeance_VM): Promise<boolean> {
     this.url = 'api/inscription_seance/update';
 
   return this.global.PUT(this.url, inscription)

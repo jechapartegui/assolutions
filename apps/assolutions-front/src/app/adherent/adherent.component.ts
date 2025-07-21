@@ -9,7 +9,6 @@ import {
 import { fluxfinancier } from '../../class/fluxfinancier';
 import { operation } from '../../class/operation';
 import { AdherentService } from '../../services/adherent.service';
-import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
@@ -22,6 +21,7 @@ import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
 import { LienGroupe_VM } from '@shared/src';
 import { Adresse } from '@shared/src/lib/adresse.interface';
+import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
 
 @Component({
   selector: 'app-adherent',
@@ -103,8 +103,7 @@ export class AdherentComponent implements OnInit {
     private saisonserv: SaisonService,
     private ridersService: AdherentService,
     private grServ: GroupeService,
-    private route: ActivatedRoute,
-    private compte_serv: CompteService
+    private route: ActivatedRoute
   ) {}
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -145,7 +144,7 @@ export class AdherentComponent implements OnInit {
           if (this.context == 'LISTE') {
             if (
               GlobalService.menu === 'APPLI' &&
-              GlobalService.is_gestionnaire === false
+              GlobalService.prof === false
             ) {
               this.loading = false;
               this.router.navigate(['/menu']);
@@ -192,7 +191,7 @@ export class AdherentComponent implements OnInit {
     }
   }
   onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
-    this.thisAdherent.groupes = updatedGroupes;
+    this.thisAdherent.inscriptionsSaison[0].groupes = updatedGroupes;
   }
 
   UpdateListeAdherents() {
@@ -321,7 +320,7 @@ valid_contact_urgence(isValid: boolean): void {
         this.inscription_saison_serv
           .Add(saison_id, adh.id)
           .then((id) => {
-            let i = new Adhesion();
+            let i = new InscriptionSaison_VM();
             i.id = id;
             i.rider_id = adh.id;
             i.saison_id = saison_id;
@@ -500,12 +499,12 @@ valid_contact_urgence(isValid: boolean): void {
 
     if (
       GlobalService.menu == 'APPLI' &&
-      GlobalService.is_gestionnaire == false
+      GlobalService.prof == false
     ) {
       return;
     } else if (
       GlobalService.menu == 'APPLI' &&
-      GlobalService.is_gestionnaire == true
+      GlobalService.prof == true
     ) {
       return;
     } else if (GlobalService.menu == 'ADMIN') {
@@ -523,9 +522,9 @@ valid_contact_urgence(isValid: boolean): void {
           this.inscription_saison_serv.Delete(adhesion.id);
         });
       }
-      if (adh.groupes) {
-        adh.groupes.forEach((gr) => {
-          this.grServ.DeleteLien(adh.id, "rider",Number(gr.key));
+      if (adh.inscriptionsSaison[0]) {
+        adh.inscriptionsSaison[0].groupes.forEach((gr) => {
+          this.grServ.DeleteLien(adh.id, "rider",Number(gr.id));
         });
       }
       this.ridersService
@@ -737,7 +736,7 @@ PreSave() {
         (!this.filters.filter_sexe ||
           adherent.sexe === this.filters.filter_sexe) &&
         (!this.filters.filter_groupe ||
-          adherent.groupes.find((x) =>
+          adherent.inscriptionsSaison[0].groupes.find((x) =>
             x.nom
               .toLowerCase()
               .includes(this.filters.filter_groupe.toLowerCase())
@@ -774,20 +773,7 @@ PreSave() {
   }
 
   Rattacher(val: string) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Rattacher le compte`;
-    this.compte_serv
-      .AddOrMAJLogin(val, this.thisAdherent.id)
-      .then((id) => {
-        this.thisAdherent.compte = id;
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-        this.ChargerAdherent();
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
+
   }
   DemanderRattachement(val: string) {
     const errorService = ErrorService.instance;

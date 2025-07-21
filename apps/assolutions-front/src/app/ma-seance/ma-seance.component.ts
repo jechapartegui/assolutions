@@ -2,11 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InscriptionMaSeance } from '../../class/inscription';
-import { seance, StatutSeance } from '../../class/seance';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
-import { inscription_seance } from '@shared/src/lib/inscription_seance.interface';
+import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/src/lib/inscription_seance.interface';
+import { Seance_VM, StatutSeance } from '@shared/src';
 @Component({
   selector: 'app-ma-seance',
   templateUrl: './ma-seance.component.html',
@@ -21,7 +21,7 @@ export class MaSeanceComponent implements OnInit {
     display_absent:boolean = true;
     add_adh_seance:boolean = false;
     display_present:boolean = true;
-  thisSeance: seance;
+  thisSeance: Seance_VM;
   afficher_admin: boolean = false;
   Autres: InscriptionMaSeance[] = [];
   Inscrits: InscriptionMaSeance[] = [];
@@ -153,7 +153,7 @@ export class MaSeanceComponent implements OnInit {
     let oldstatut = inscription.StatutSeance;
     let libelleseab = this.thisSeance.libelle;
     if (statut == true) {
-      inscription.StatutSeance = "présent";
+      inscription.StatutSeance = StatutSeance.;
       this.action = inscription.Libelle + $localize` est présent à la séance ` + libelleseab;
     } else if (statut == false) {
       inscription.StatutSeance = "absent";
@@ -176,7 +176,7 @@ export class MaSeanceComponent implements OnInit {
         return;
       })
     } else {
-      this.inscriptionserv.Update(inscription.datasource).then((retour) => {
+      this.inscriptionserv.Update(inscription).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
@@ -245,9 +245,9 @@ AjouterAdherentsHorsGroupe() {
 
     this.action = $localize`Convoquer ` + this.adherent_to.Libelle;
     this.adherent_to.SeanceID = this.thisSeance.seance_id;
-    this.adherent_to.StatutInscription = "convoqué";
+    this.adherent_to.StatutInscription = InscriptionStatus_VM.CONVOQUE;
     this.adherent_to.StatutSeance = null;
-      const conv: inscription_seance = {
+      const conv: InscriptionSeance_VM = {
               id: 0,
               rider_id: this.adherent_to.RiderID,
               seance_id: this.adherent_to.SeanceID,

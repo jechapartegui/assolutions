@@ -1,14 +1,14 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterSeance } from '../app/seance/seance.component';
-import { SeanceVM } from '@shared/src';
+import { Seance_VM } from '@shared/src';
 
 @Pipe({
   name: 'multifiltersSeance',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersSeancePipe implements PipeTransform {
-  transform(items: SeanceVM[], filters: FilterSeance): SeanceVM[] {
+  transform(items: Seance_VM[], filters: FilterSeance): Seance_VM[] {
     if (!items) return [];
     if (!filters) return items;
 
@@ -36,7 +36,7 @@ export class MultifiltersSeancePipe implements PipeTransform {
           )) && 
           (!filters.filter_prof ||
             item.seanceProfesseurs.some((x) =>
-             (x.nom).toLowerCase().includes(
+             (x.personne.nom).toLowerCase().includes(
                 filters.filter_prof?.toLowerCase() ?? ''
               )
             )) &&

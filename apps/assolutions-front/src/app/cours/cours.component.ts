@@ -5,8 +5,6 @@ import { Component,
   ViewChild, } from '@angular/core';
 import { Router } from '@angular/router';
 import { jour_semaine } from '../global';
-import { professeur } from '../../class/professeur';
-import { Saison } from '../../class/saison';
 import { AdherentService } from '../../services/adherent.service';
 import { CoursService } from '../../services/cours.service';
 import { ErrorService } from '../../services/error.service';
@@ -17,7 +15,7 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { CoursVM } from '@shared/src';
+import { Cours_VM, Professeur_VM, Saison_VM } from '@shared/src';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 
 @Component({
@@ -29,17 +27,17 @@ export class CoursComponent implements OnInit {
   // cours.component.ts
   constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuNestService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService, private excelService:ExcelService, private dbs:GlobalService) { }
-  listeprof: professeur[];
+  listeprof: Professeur_VM[];
   listelieu: KeyValuePair[];
 
-  listeCours: CoursVM[] = [];
-  editCours: CoursVM | null = null;
+  listeCours: Cours_VM[] = [];
+  editCours: Cours_VM | null = null;
   current_groupe_id: number;
   groupe_dispo: KeyValuePair[] = [];
   liste_groupe: KeyValuePair[] = [];
   
-  public liste_saison: Saison[] = [];
-  public active_saison: Saison;
+  public liste_saison: Saison_VM[] = [];
+  public active_saison: Saison_VM;
 
   
   @ViewChild('scrollableContent', { static: false })
@@ -99,7 +97,7 @@ export class CoursComponent implements OnInit {
                   this.loading = false;
                   return;
                 }
-                this.liste_saison = sa.map((x) => new Saison(x));
+                this.liste_saison = sa;
                 this.active_saison = this.liste_saison.filter(
                   (x) => x.active == true
                 )[0];
@@ -124,7 +122,7 @@ export class CoursComponent implements OnInit {
             return;
           }
           this.listeprof = profs;
-          this.liste_prof_filter = this.listeprof.map((x) => { return { key: x.id, value: x.prenom + ' ' + x.nom } });
+          this.liste_prof_filter = this.listeprof.map((x) => { return { key: x.person.id, value: x.person.prenom + ' ' + x.person.nom } });
           this.lieuserv.GetAllLight().then((lieux) => {
             if (lieux.length == 0) {
               let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
@@ -226,11 +224,11 @@ export class CoursComponent implements OnInit {
   trouverProfesseur(profId: number): any {
     // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
     // que vous pouvez stocker dans une variable
-    const indexToUpdate = this.listeprof.findIndex(prof => prof.id === profId);
+    const indexToUpdate = this.listeprof.findIndex(prof => prof.person.id === profId);
 
     if (indexToUpdate !== -1) {
       // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-      return this.listeprof[indexToUpdate].prenom + " " + this.listeprof[indexToUpdate].nom;
+      return this.listeprof[indexToUpdate].person.prenom + " " + this.listeprof[indexToUpdate].person.nom;
     } else {
       return $localize`Professeur non trouvé`;
     }
@@ -247,11 +245,11 @@ export class CoursComponent implements OnInit {
       return $localize`Lieu non trouvé`;
     }
   }
-  Edit(c: CoursVM): void {
+  Edit(c: Cours_VM): void {
     this.editCours = c;
   }
 
-  Delete(c: CoursVM): void {
+  Delete(c: Cours_VM): void {
     const errorService = ErrorService.instance;
 
     let confirmation = window.confirm($localize`Voulez-vous supprimer ce cours ? Cette action est définitive. `);
@@ -276,7 +274,7 @@ export class CoursComponent implements OnInit {
   }
 
   Create(): void {
-    this.editCours = new CoursVM();
+    this.editCours = new Cours_VM();
   }
    public is_valid_datelieu: boolean = false;
 
@@ -289,7 +287,7 @@ valid_Caracteristique(isValid: boolean): void {
   this.is_valid_caracteristique = isValid;
 }
 
-  Save(cours: CoursVM) {
+  Save(cours: Cours_VM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un cours`;
     if (cours) {
@@ -334,9 +332,9 @@ valid_Caracteristique(isValid: boolean): void {
     }
   }
 
-  public GetCoursID(id: number): Promise<CoursVM | null> {
+  public GetCoursID(id: number): Promise<Cours_VM | null> {
     return this.coursservice.Get(id)
-      .then((c: CoursVM) => {
+      .then((c: Cours_VM) => {
         return c; // Retourne la valeur du cours récupéré
       })
       .catch(() => {
@@ -454,10 +452,10 @@ valid_Caracteristique(isValid: boolean): void {
         AfficherPresent: 'Afficher présent',
         EssaiPossible: 'Essai possible',
       };
-      let list: CoursVM[] = this.getFilteredCours();
+      let list: Cours_VM[] = this.getFilteredCours();
       this.excelService.exportAsExcelFile(list, 'liste_cours', headers);
     }
-    getFilteredCours(): CoursVM[] {
+    getFilteredCours(): Cours_VM[] {
       return this.listeCours.filter((item) => {
         return (
           (!this.filters.filter_nom ||

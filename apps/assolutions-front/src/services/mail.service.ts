@@ -3,7 +3,7 @@ import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { MailData } from '../class/mail';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { Adherent_VM, SeanceVM } from '@shared/src';
+import { Adherent_VM, Seance_VM } from '@shared/src';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +29,7 @@ export class MailService {
       return Promise.reject(error);
     });
 }
-public EnvoiMailEssai(essai:Adherent_VM, seance:SeanceVM, mail:string, id:number, project_id:number): Promise<boolean> {
+public EnvoiMailEssai(essai:Adherent_VM, seance:Seance_VM, mail:string, id:number, project_id:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";
   const body = {

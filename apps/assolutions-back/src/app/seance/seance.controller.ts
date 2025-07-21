@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { SeanceService } from './seance.services';
-import { Seance_VM } from '@shared/src/lib/seance.interface';
+import { Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
 
 // src/auth/auth.controller.ts
 @Controller('seance')
@@ -53,6 +53,12 @@ async GetByDate(
 @Delete('delete/:id')
   async Delete(@Param('id') id: number) {
     return this.seance_serv.Delete(id);
+  }
+
+  @UseGuards(PasswordGuard)
+  @Post('update_seance_prof')
+  async UpdateSeanceProf(@Body() { seance_id, liste_seance_prof }: { seance_id: number, liste_seance_prof: SeanceProfesseur_VM[] }) {
+    return this.seance_serv.UpdateSeanceProf(seance_id, liste_seance_prof);
   }
 
 

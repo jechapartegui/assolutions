@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { ProfesseurVM, ProfSaisonVM } from '@shared/src';
+import { Professeur_VM, ProfSaisonVM } from '@shared/src';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ export class ProfesseurService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id: number): Promise<ProfesseurVM> {
+  public Get(id: number): Promise<Professeur_VM> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/professeur_manage.php';
     //  this.url = this.url + "login.php";
@@ -20,7 +20,7 @@ export class ProfesseurService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: ProfesseurVM) => {
+      .then((response: Professeur_VM) => {
 
         return response;
       })
@@ -29,7 +29,7 @@ export class ProfesseurService {
         return Promise.reject(error);
       });
   }
-  public Add(professeur: ProfesseurVM): Promise<boolean> {
+  public Add(professeur: Professeur_VM): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/professeur_manage.php';
     //  this.url = this.url + "login.php";
@@ -67,7 +67,7 @@ export class ProfesseurService {
         return Promise.reject(error);
       });
   }
-  public Update(professeur: ProfesseurVM): Promise<boolean> {
+  public Update(professeur: Professeur_VM): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
     this.url = environment.maseance + 'maseance/professeur_manage.php';
     //  this.url = this.url + "login.php";
@@ -86,14 +86,14 @@ export class ProfesseurService {
         return Promise.reject(error);
       });
   }
-  public GetProf(): Promise<ProfesseurVM[]> {
+  public GetProf(): Promise<Professeur_VM[]> {
     let saison_id= this.global.saison_active;
   this.url = 'api/prof/get_prof_saison/' + saison_id;
     //  this.url = this.url + "login.php";
    
 
     return this.global.GET(this.url)
-      .then((response: ProfesseurVM[]) => {
+      .then((response: Professeur_VM[]) => {
         return response;
       })
       .catch(error => {
@@ -101,14 +101,14 @@ export class ProfesseurService {
         return Promise.reject(error);
       });
   }
-  public GetProfAll(): Promise<ProfesseurVM[]> {
+  public GetProfAll(): Promise<Professeur_VM[]> {
     this.url = environment.maseance + "maseance/professeur_manage.php";
     const body = {
       command: "get_all",
     };
 
     return this.global.POST(this.url, body)
-      .then((response: ProfesseurVM[]) => {
+      .then((response: Professeur_VM[]) => {
         return response;
       })
       .catch(error => {

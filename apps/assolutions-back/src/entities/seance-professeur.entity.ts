@@ -25,8 +25,14 @@ export class SessionProfessor {
   @JoinColumn({ name: 'professeurcontract_id' })
   professeur: ProfessorContract;  // Relation to Professeur entity:contentReference[oaicite:2]{index=2}
 
-  @Column({ type: 'varchar', length: 50 })
-  statut: string;  // e.g. "prévu", "réalisé", "annulé"
+  /** Statut */
+  @Column({
+    type: 'enum',
+    enum: ['prévue', 'réalisée', 'annulée'],
+    name: 'statut',
+    default: 'prévue',
+  })
+  status: 'prévue' | 'réalisée' | 'annulée';
 
   @Column({ type: 'int' })
   minutes: number;  // Duration of professor's intervention

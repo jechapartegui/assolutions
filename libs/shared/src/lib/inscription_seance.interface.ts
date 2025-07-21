@@ -1,7 +1,8 @@
+import { Personne_VM } from "./personne.interface";
 
 export class InscriptionSeance_VM {
     id: number;
-     person: PersonneLight_VM;
+     rider_id: number;
      seance_id: number;
      date_inscription: Date;
      statut_inscription: InscriptionStatus_VM | undefined;

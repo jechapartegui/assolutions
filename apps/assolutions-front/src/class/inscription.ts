@@ -1,73 +1,51 @@
-import { ItemContact } from "@shared/src/lib/member.interface";
-import { full_inscription_seance, inscription_seance } from "@shared/src/lib/inscription_seance.interface";
-import { SeanceVM } from "@shared/src";
+import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from "@shared/src/lib/inscription_seance.interface";
+import { Seance_VM, } from "@shared/src";
+import { ItemContact } from "@shared/src/lib/personne.interface";
 
 
 
 export class InscriptionMaSeance {
-      public datasource: full_inscription_seance;
-      constructor(is: full_inscription_seance) {
+      public datasource: FullInscriptionSeance_VM;
+      constructor(is: FullInscriptionSeance_VM) {
             this.datasource = is;
-            this.SetLibelle(this);
-            this.Contacts = this.datasource.contacts;
-            this.ContactsUrgence = this.datasource.contacts_prevenir;
+            this.Libelle = is.person.libelle;
+            this.Prenom = is.person.prenom;
+            this.Surnom = is.person.surnom;
+            this.Nom = is.person.nom;
+            this.ID = is.id;
+            this.SeanceID = is.seance_id;
+            this.RiderID = is.person.id;
+            this.Contacts = is.person.contact;
+            this.ContactsUrgence = is.person.contact_prevenir;
             const foundContact = this.Contacts.find(x => x.Pref === true);
             this.ContactPrefere = foundContact ? foundContact.Value : $localize`Non saisi`;
             this.ContactPrefereType = foundContact ? foundContact.Type : null;
 
       }
       public isVisible:boolean = false;
-      public get StatutInscription(): string {
+      public get StatutInscription(): InscriptionStatus_VM {
             return this.datasource.statut_inscription;
       }
-      public set StatutInscription(v: string) {
+      public set StatutInscription(v: InscriptionStatus_VM) {
             this.datasource.statut_inscription = v;
       }
-      public get StatutSeance(): string {
+      public get StatutSeance(): SeanceStatus_VM {
             return this.datasource.statut_seance;
       }
-      public set StatutSeance(v: string) {
+      public set StatutSeance(v: SeanceStatus_VM) {
             this.datasource.statut_seance = v;
       }
       
-      public get RiderID(): number {
-            return this.datasource.rider_id;
-      }
-      public set RiderID(v: number) {
-            this.datasource.rider_id = v;
-      }
-      public get SeanceID(): number {
-            return this.datasource.seance_id;
-      }
-      public set SeanceID(v: number) {
-            this.datasource.seance_id = v;
-      }
-      public get ID(): number {
-            return this.datasource.id;
-      }
-      public set ID(v: number) {
-            this.datasource.id = v;
-      }
-      public set Nom(v: string) {
-            this.datasource.nom = v;
-            this.SetLibelle(this);
-      }
+      public RiderID: number;
+      public SeanceID: number;
+      public ID: number;
+      public Nom:string;
 
-      public get Prenom(): string {
-            return this.datasource.prenom;
-      }
-      public set Prenom(v: string) {
-            this.datasource.prenom = v;
-            this.SetLibelle(this);
-      }
+      public Prenom:string;
 
-      public get Surnom(): string {
-            return this.datasource.surnom;
-      }
-      public set Surnom(v: string) {
-            this.datasource.surnom = v;
-            this.SetLibelle(this);
-      }
+      public Surnom:string;
+
+      public libelle:string;
 
 
       private _ContactPrefere: string;
@@ -98,35 +76,15 @@ export class InscriptionMaSeance {
       public Libelle: string;
 
 
-      public SetLibelle(adh: InscriptionMaSeance) {
-            let t = adh.datasource;
-            this.Libelle = "";
-            if (t.prenom && t.prenom.length > 0) {
-                  this.Libelle = t.prenom;
-            }
-            if (t.nom && t.nom.length > 0) {
-                  if (this.Libelle && this.Libelle.length > 0) {
-                        this.Libelle = this.Libelle + " " + t.nom;
-                  } else {
-                        this.Libelle = t.nom;
-                  }
-            }
-            if (t.surnom && t.surnom.length > 0) {
-                  if (this.Libelle && this.Libelle.length > 0) {
-                        this.Libelle = this.Libelle + " " + t.surnom;
-                  } else {
-                        this.Libelle = t.surnom;
-                  }
-            }
-      }
+
 }
 
 
 export class InscriptionSeance {
-      public thisSeance: SeanceVM;
-      public thisInscription: inscription_seance;
+      public thisSeance: Seance_VM;
+      public thisInscription: InscriptionSeance_VM;
 
-      public constructor(seance: SeanceVM, inscription: inscription_seance, rider_id: number) {
+      public constructor(seance: Seance_VM, inscription: InscriptionSeance_VM, rider_id: number) {
             this.thisSeance = seance;
 
             if (inscription) {
