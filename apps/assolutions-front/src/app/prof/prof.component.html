@@ -7,7 +7,7 @@
         <div class="tags">
             <ng-container *ngFor="let niv of Profs">
                 <span class="tag is-success">
-                    {{niv.prenom}}&nbsp;{{niv.nom}}
+                    {{niv.personne.prenom}}&nbsp;{{niv.personne.nom}}
                     <button class="delete is-small" (click)="RemoveProf(niv)"></button>
                 </span>
             </ng-container>
@@ -18,7 +18,7 @@
         <div class="select">
             <select style="font-size: smaller;" id="professeurs" [(ngModel)]="current_prof_key">
                 <ng-container *ngFor="let ni of prof_dispo;let first = first	">
-                    <option [value]="ni.id">{{ ni.prenom }}&nbsp;{{ ni.nom }}</option>
+                    <option [value]="ni.person.id">{{ ni.person.prenom }}&nbsp;{{ ni.person.nom }}</option>
                 </ng-container>
             </select>
         </div>
@@ -40,15 +40,13 @@
             <th i18n>Nom</th>
             <th i18n>Durée</th>
             <th i18n>€/H</th>
-            <th></th>
         </thead>
         <tbody>
             <ng-container *ngFor="let niv of Profs">
                 <tr>
-                    <td><span class="limited-width">{{niv.prenom}}&nbsp;{{niv.nom}}</span></td>
+                    <td><span class="limited-width">{{niv.personne.prenom}}&nbsp;{{niv.personne.nom}}</span></td>
                     <td><input class="limit50" [(ngModel)]="niv.minutes"></td>                    
-                    <td><input class="limit50" [(ngModel)]="niv.taux_horaire"></td>
-                    <td><button (click)="Update(niv)"><i class="fas fa-save"></i></button></td>
+                    <td><input class="limit50" [(ngModel)]="niv.cout"></td>
                 </tr>
             </ng-container>
         </tbody>

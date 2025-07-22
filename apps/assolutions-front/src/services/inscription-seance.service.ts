@@ -55,9 +55,23 @@ this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}
       return Promise.reject(error);
     });
 }
-public GetAllSeance(seance_id:number): Promise<any> {
+public GetAllSeance(seance_id:number): Promise<InscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
  this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
+  //  this.url = this.url + "login.php";
+
+  return this.global.GET(this.url)
+    .then((response: any) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+public GetAllSeanceFull(seance_id:number): Promise<FullInscriptionSeance_VM[]> {
+  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
+ this.url = 'api/inscription_seance/get_all_seance_full/' + seance_id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)

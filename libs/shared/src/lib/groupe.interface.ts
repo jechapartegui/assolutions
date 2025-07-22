@@ -14,6 +14,7 @@ export class Groupe_VM {
   id: number;
   nom: string;
   saison_id: number;
+  display: boolean = false; // Pour l'affichage dans la liste
   // Lien vers les groupes
   groupes?: LienGroupe_VM[];
 

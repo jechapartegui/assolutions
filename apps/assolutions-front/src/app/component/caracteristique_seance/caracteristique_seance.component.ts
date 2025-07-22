@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { ValidationItem } from "@shared/src/lib/autres.interface";
-import { ReglesSeance } from "apps/assolutions-front/src/class/regles";
+import type { ReglesSeance } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
 @Component({

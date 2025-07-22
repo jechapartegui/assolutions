@@ -1,8 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Adherent } from '../../class/adherent';
 import { MailData } from '../../class/mail';
-import { seance } from '../../class/seance';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
@@ -11,6 +9,7 @@ import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
+import { Adherent_VM, Seance_VM } from '@shared/src';
 
 @Component({
   selector: 'app-envoi-mail',
@@ -34,11 +33,11 @@ export class EnvoiMailComponent implements OnInit {
   action: string;
   liste_groupe: KeyValuePair[];
   groupe_selectionne: number;
-  liste_adherent: Adherent[];
-  ListeUserSelectionne: Adherent[] = [];
-  adherent_selectionne: Adherent;
-  seance_periode: seance[];
-  seance_selectionnee: seance;
+  liste_adherent: Adherent_VM[];
+  ListeUserSelectionne: Adherent_VM[] = [];
+  adherent_selectionne: Adherent_VM;
+  seance_periode: Seance_VM[];
+  seance_selectionnee: Seance_VM;
   liste_mail: MailData[];
   selected_mail: MailData;
   mail_selectionne: MailData;
@@ -92,7 +91,7 @@ export class EnvoiMailComponent implements OnInit {
     this.adh_serv
       .GetAdherentAdhesion(this.GlobalService.saison_active)
       .then((list) => {
-        this.liste_adherent = list.map((w) => new Adherent(w));
+        this.liste_adherent = list;
         this.gr_serv
           .GetAll()
           .then((lg) => {
@@ -124,7 +123,7 @@ export class EnvoiMailComponent implements OnInit {
   AddUsers() {
     this.ListeUserSelectionne = [];
     this.liste_adherent.forEach((e) => {
-      let te = this.ListeUserSelectionne.find((x) => x.ID == e.ID);
+      let te = this.ListeUserSelectionne.find((x) => x.id == e.id);
       if (!te) {
         this.ListeUserSelectionne.push(e);
       }
@@ -136,7 +135,7 @@ export class EnvoiMailComponent implements OnInit {
       this.ListeUserSelectionne= [];
     }
     if(this.groupe_selectionne){
-      let list = this.liste_adherent.filter(x => x.Groupes.map(x => x.key).includes(this.groupe_selectionne));
+      let list = this.liste_adherent.filter(x => x.inscriptionsSaison[0].groupes.map(x => x.id).includes(this.groupe_selectionne));
       this.ListeUserSelectionne.push(...list);
     }
   }
@@ -169,7 +168,7 @@ export class EnvoiMailComponent implements OnInit {
                 this.typemail,
                 this.mail_a_generer.content,
                 this.mail_a_generer.subject,
-                this.ListeUserSelectionne.map((x) => x.ID),
+                this.ListeUserSelectionne.map((x) => x.id),
                 this.params
               )
               .then((liste_mail) => {
@@ -192,9 +191,9 @@ export class EnvoiMailComponent implements OnInit {
       });
   }
 
-  RemoveUser(user: Adherent) {
+  RemoveUser(user: Adherent_VM) {
     this.ListeUserSelectionne = this.ListeUserSelectionne.filter(
-      (x) => x.ID !== user.ID
+      (x) => x.id !== user.id
     );
   }
   GenererVue() {
@@ -205,7 +204,7 @@ export class EnvoiMailComponent implements OnInit {
         this.typemail,
         this.mail_a_generer.content,
         this.mail_a_generer.subject,
-        this.ListeUserSelectionne.map((x) => x.ID),
+        this.ListeUserSelectionne.map((x) => x.id),
         this.params
       )
       .then((liste_mail) => {
@@ -283,13 +282,13 @@ export class EnvoiMailComponent implements OnInit {
     console.log(this.adherent_selectionne);
     if (
       !this.ListeUserSelectionne.find(
-        (x) => x.ID == this.adherent_selectionne.ID
+        (x) => x.id == this.adherent_selectionne.id
       )
     ) {
       this.ListeUserSelectionne.push(this.adherent_selectionne);
     }
   }
-  calculateAge(dateNaissance: string): number {
+calculateAge(dateNaissance: Date): number {
     const today = new Date();
     const birthDate = new Date(dateNaissance);
     let age = today.getFullYear() - birthDate.getFullYear();

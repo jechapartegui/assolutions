@@ -1,12 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adresse } from '../../class/address';
-import { Lieu } from '../../class/lieu';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { lieu } from '@shared/src/lib/lieu.interface';
+import { Lieu_VM } from '@shared/src/lib/lieu.interface';
+import { Adresse } from '@shared/src/lib/adresse.interface';
 
 @Component({
   selector: 'app-lieu',
@@ -15,10 +14,10 @@ import { lieu } from '@shared/src/lib/lieu.interface';
 })
 export class LieuComponent implements OnInit {
   valid_address: boolean;
-  editLieu: Lieu;
+  editLieu: Lieu_VM;
   editMode: boolean = false;
   action: string = "";
-  liste_lieu: Lieu[] = [];
+  liste_lieu: Lieu_VM[] = [];
   sort_nom: string;
   constructor(public router: Router, public lieu_serv: LieuNestService) { }
 
@@ -39,7 +38,7 @@ export class LieuComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les lieux`;
     this.lieu_serv.GetAll().then((lieu) => {
-      this.liste_lieu = lieu.map(x => new Lieu(x));
+      this.liste_lieu = lieu;
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
@@ -51,26 +50,18 @@ export class LieuComponent implements OnInit {
     this.valid_address = isValid;
   }
   onAdresseChange(data: Adresse) {
-    this.editLieu.Adresse = data;
-    this.editLieu.datasource.adresse = JSON.stringify(data);
+    this.editLieu.adresse = data;
   }
   Creer(): void {
-    let c:lieu = {
-      id:0,
-      nom:"",
-      adresse:"",
-      code_postal:"",
-      ville:""
-    };
-    this.editLieu = new Lieu(c);
+    this.editLieu = new Lieu_VM();
     this.editMode = true;
   }
 
   Refresh(){
     const errorService = ErrorService.instance;
     this.action = $localize`Rafraichir le lieu`;
-    this.lieu_serv.Get(this.editLieu.ID).then((c)=>{
-      this.editLieu = new Lieu(c);
+    this.lieu_serv.Get(this.editLieu.id).then((c)=>{
+      this.editLieu = c;
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
      }).catch((err: HttpErrorResponse) => {
@@ -80,15 +71,15 @@ export class LieuComponent implements OnInit {
       })
   }
 
-  Save(lieu: Lieu) {
+  Save(lieu: Lieu_VM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un lieu`;
     if (lieu) {
-      if (lieu.ID == 0) {
+      if (lieu.id == 0) {
 
-        this.lieu_serv.Add(lieu.datasource).then((id) => {
+        this.lieu_serv.Add(lieu).then((id) => {
           if (id > 0) {
-            this.editLieu.ID = id;
+            this.editLieu.id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
             this.UpdateListeLieu();
@@ -103,7 +94,7 @@ export class LieuComponent implements OnInit {
         });
       }
       else {
-        this.lieu_serv.Update(lieu.datasource).then((ok) => {
+        this.lieu_serv.Update(lieu).then((ok) => {
 
           this.action = $localize`Mettre à jour un lieu`;
           if (ok) {
@@ -141,8 +132,8 @@ export class LieuComponent implements OnInit {
       case "nom":
         this.sort_nom = sens;      
         this.liste_lieu.sort((a, b) => {
-          const nomA = a.Nom.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.Nom.toUpperCase();
+          const nomA = a.nom.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.nom.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -158,25 +149,25 @@ export class LieuComponent implements OnInit {
 
 
   }
-  Edit(lieu: Lieu): void {
+  Edit(lieu: Lieu_VM): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
-    this.lieu_serv.Get(lieu.ID).then((ss) => {
-      this.editLieu = new Lieu(ss);
+    this.lieu_serv.Get(lieu.id).then((ss) => {
+      this.editLieu =ss;
       this.editMode = true;
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
     })
   }
-  Delete(lieu: Lieu): void {
+  Delete(lieu: Lieu_VM): void {
     const errorService = ErrorService.instance;
 
     let confirmation = window.confirm($localize`Voulez-vous supprimer ce lieu ? Cela risque d'affecté le chargement des séances/cours dans ce lieu ?. `);
     if (confirmation) {
       this.action = $localize`Supprimer un lieu`;
       if (lieu) {
-        this.lieu_serv.Delete(lieu.ID).then((result) => {
+        this.lieu_serv.Delete(lieu.id).then((result) => {
           if (result) {           
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);

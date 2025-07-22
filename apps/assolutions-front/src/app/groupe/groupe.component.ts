@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Adherent } from '../../class/adherent';
-import { Groupe } from '../../class/groupe';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
-import { KeyValuePair } from '@shared/src';
+import { Adherent_VM, Groupe_VM, KeyValuePair } from '@shared/src';
 
 @Component({
   selector: 'app-groupe',
@@ -18,11 +16,11 @@ export class GroupeComponent implements OnInit {
   afficher_creer_groupe: boolean = false;
   filter_libelle: string = "";
   nom_groupe: string = "";
-  liste_adherent: Adherent[];
-  adherent_to: Adherent;
+  liste_adherent: Adherent_VM[];
+  adherent_to: Adherent_VM;
   groupe_to: KeyValuePair = null;
   groupe_to_delete: KeyValuePair = null;
-  liste_groupe: Groupe[];
+  liste_groupe: Groupe_VM[];
   action: string = "";
   saison_id: number = null;
 
@@ -40,15 +38,9 @@ export class GroupeComponent implements OnInit {
       // Chargez la liste des cours
 
       this.groupeserv.GetAll(this.dbs.saison_active).then((result) => {
-        this.liste_groupe = result.map(x => {
-  const g = new Groupe();
-  g.id = Number(x.key);
-  g.nom = x.value;
-  g.display = false;
-  return g;
-});
+        this.liste_groupe = result.map(g => new Groupe_VM(Number(g.key), g.value, this.dbs.saison_active));
         this.adhserv.GetAdherentAdhesion(this.dbs.saison_active).then((riders) => {
-          this.liste_adherent = riders.map(x => new Adherent(x));
+          this.liste_adherent = riders;
         }).catch((error) => {
           let n = errorService.CreateError("Chargement", error);
           errorService.emitChange(n);
@@ -68,22 +60,22 @@ export class GroupeComponent implements OnInit {
     let errorService = ErrorService.instance;
     this.action = $localize`Ajout d'une personne au groupe`;
     try {
-      let Ad = this.liste_adherent.find(x => x.ID == this.adherent_to.ID);
-      if (Ad.Groupes.find(x => x.key == this.groupe_to.key)) {
+      let Ad = this.liste_adherent.find(x => x.id == this.adherent_to.id);
+      if (Ad.inscriptionsSaison[0].groupes.find(x => x.id == this.groupe_to.key)) {
         let o = errorService.Create(this.action, $localize`Cet adhérent est déjà présent dans le groupe`, "Warning");
         errorService.emitChange(o);
       } else {
         this.action = $localize`Ajout de `;
-        this.action += Ad.Libelle;
+        this.action += Ad.libelle;
         this.action += $localize` au groupe `;
         this.action += this.groupe_to.value;
        
         let errorService = ErrorService.instance;
-        this.groupeserv.AddLien(Ad.ID, 'rider', Number(this.groupe_to.key)).then((id) => {
+        this.groupeserv.AddLien(Ad.id, 'rider', Number(this.groupe_to.key)).then((id) => {
           if (id) {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-            Ad.Groupes.push({key: Number(this.groupe_to.key), value: this.groupe_to.value});
+            Ad.inscriptionsSaison[0].groupes.push({id: Number(this.groupe_to.key), nom: this.groupe_to.value, id_lien : 0});
           } else {
             let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
@@ -116,10 +108,7 @@ export class GroupeComponent implements OnInit {
       this.groupeserv.Add(    g   
       ).then((id) => {
         g.key = id;
-        const newGroupe = new Groupe();
-        newGroupe.id = id;
-        newGroupe.nom = this.nom_groupe;
-        newGroupe.display = false;
+        const newGroupe = new Groupe_VM(id,this.nom_groupe, this.dbs.saison_active);
         this.liste_groupe.push(newGroupe);
         let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
@@ -137,19 +126,19 @@ export class GroupeComponent implements OnInit {
       if (confirm) {
         let list = this.liste_adherent.filter(rider => this.isGroupe(Number(this.groupe_to_delete.key), rider));
         list.forEach((rider) => {
-          let groupe = rider.Groupes.find(x => x.key == this.groupe_to_delete.key);
+          let groupe = rider.inscriptionsSaison[0].groupes.find(x => x.id == this.groupe_to_delete.key);
           if(groupe){
-            this.groupeserv.DeleteLien(rider.ID, "rider", Number(this.groupe_to_delete.key)).then((retour) => {
+            this.groupeserv.DeleteLien(rider.id, "rider", Number(this.groupe_to_delete.key)).then((retour) => {
               if(retour){
-                rider.Groupes = rider.Groupes.filter(e => e.key !== groupe.key);
+                rider.inscriptionsSaison[0].groupes = rider.inscriptionsSaison[0].groupes.filter(e => e.id !== groupe.id);
               }
               else {
-                let o = errorService.CreateError(this.action, $localize`Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);
+                let o = errorService.CreateError(this.action, $localize`Echec de la suppression du lien groupe pour l'adhérent ` + rider.libelle + $localize` Annulation de l'opération`);
                 errorService.emitChange(o);
                 return;  
               }
             }).catch((error) => {
-              let o = errorService.CreateError(this.action, error + $localize` : Echec de la suppression du lien groupe pour l'adhérent ` + rider.Libelle + $localize` Annulation de l'opération`);
+              let o = errorService.CreateError(this.action, error + $localize` : Echec de la suppression du lien groupe pour l'adhérent ` + rider.libelle + $localize` Annulation de l'opération`);
               errorService.emitChange(o);
               return;
             })
@@ -187,8 +176,8 @@ export class GroupeComponent implements OnInit {
       })
     }
   }
-  public isGroupe(id_groupe: number, rider: Adherent): boolean {
-    let u = rider.Groupes.filter(x => x.key == id_groupe);
+  public isGroupe(id_groupe: number, rider: Adherent_VM): boolean {
+    let u = rider.inscriptionsSaison[0].groupes.filter(x => x.id == id_groupe);
     if (u) {
       if (u.length > 0) {
         return true;
@@ -208,12 +197,12 @@ export class GroupeComponent implements OnInit {
     }
   }
 
-  DeleteLien(groupe : Groupe, rider:Adherent) {
+  DeleteLien(groupe : Groupe_VM, rider:Adherent_VM) {
     let errorService = ErrorService.instance;
-    this.action = $localize`Suppression du groupe ` + groupe.nom +  $localize` de ` + rider.Libelle;
-    this.groupeserv.DeleteLien(rider.ID, "rider", groupe.id).then((retour) => {
+    this.action = $localize`Suppression du groupe ` + groupe.nom +  $localize` de ` + rider.libelle;
+    this.groupeserv.DeleteLien(rider.id, "rider", groupe.id).then((retour) => {
       if(retour){
-        rider.Groupes = rider.Groupes.filter(e => e.key !== groupe.id);
+        rider.inscriptionsSaison[0].groupes = rider.inscriptionsSaison[0].groupes.filter(e => e.id !== groupe.id);
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       }

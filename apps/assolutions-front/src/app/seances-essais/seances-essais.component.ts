@@ -6,14 +6,15 @@ import { InscriptionSeanceService } from '../../services/inscription-seance.serv
 import { MailService } from '../../services/mail.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SeancesService } from '../../services/seance.service';
-import { Adherent_VM, ItemContact } from '@shared/src/lib/member.interface';
+import { Adherent_VM} from '@shared/src/lib/member.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { GlobalService } from '../../services/global.services';
-import { SeanceVM } from '@shared/src/lib/seance.interface';
-import { ProfesseurVM } from '@shared/src/lib/prof.interface';
+import { Seance_VM } from '@shared/src/lib/seance.interface';
+import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 import { Compte_VM } from '@shared/src';
+import { ItemContact } from '@shared/src/lib/personne.interface';
 
 @Component({
   selector: 'app-seances-essais',
@@ -25,12 +26,12 @@ export class SeancesEssaisComponent implements OnInit {
   public DateDeb: Date;
   public DateFin: Date;
   public thisEssai: Adherent_VM = null;
-  public ListeSeance: SeanceVM[] = []
+  public ListeSeance: Seance_VM[] = []
   public days: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-  public listeprof: ProfesseurVM[];
+  public listeprof: Professeur_VM[];
   public listelieu: KeyValuePair[];
   public project_id: number;
-  public thisSeance: SeanceVM = null;
+  public thisSeance: Seance_VM = null;
   public valid_mail: boolean = false;
   public valid_tel: boolean = false;
   public valid_address: boolean = false;
@@ -146,7 +147,7 @@ export class SeancesEssaisComponent implements OnInit {
     // Mettre à jour le texte affiché
     this.generateSeanceText();
   }
-  Essayer(seance: SeanceVM) {
+  Essayer(seance: Seance_VM) {
     let libelle: string = $localize`Avant de saisir votre essai, êtes-vous sûr de bien être éligible à la séance ? `;
     if (seance.est_limite_age_minimum) {
       libelle += "\n" + $localize`Age minimum : ` + seance.age_minimum + " " + $localize`ans`;

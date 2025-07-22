@@ -1,7 +1,7 @@
 import {  Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
-import { ItemContact } from '@shared/src/lib/member.interface';
-import { ReglesContact } from '../../class/regles';
+import type { ReglesContact } from '../../class/regles';
 import { ValidationItem } from '@shared/src';
+import { ItemContact } from '@shared/src/lib/personne.interface';
 
 @Component({
   selector: 'app-contact-item',

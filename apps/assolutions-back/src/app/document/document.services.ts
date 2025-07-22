@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Document } from '../bdd/document';
+import { Document } from '../../entities/document.entity';
 const { fileTypeFromBuffer } = require('file-type');
 
 
@@ -14,23 +14,23 @@ export class DocumentService {
 
   async GetPhotoAsBase64(id: number): Promise<string> {
     const existing = await this.DocumentRepo.findOne({
-      where: { objet_type: 'member', objet_id: id, typedoc: 'photo' }
+      where: { objetType: 'member', objetId: id, typedoc: 'photo' }
     });
 
-    if (!existing || !existing.document) {
+    if (!existing || !existing.fileData) {
       return ''; // ou undefined
     }
 
-    const fileType = await fileTypeFromBuffer(existing.document);
+    const fileType = await fileTypeFromBuffer(existing.fileData);
     const mime = fileType?.mime || 'image/png';
 
-    const base64 = existing.document.toString('base64');
+    const base64 = existing.fileData.toString('base64');
     return `data:${mime};base64,${base64}`;
   }
 
   async ModifyPhoto(id: number, base64?: string): Promise<string> {
     const existing = await this.DocumentRepo.findOne({
-      where: { objet_type: 'member', objet_id: id, typedoc: 'photo' }
+      where: { objetType: 'member', objetId: id, typedoc: 'photo' }
     });
 
     if (!base64) {
@@ -48,16 +48,17 @@ export class DocumentService {
     const buffer = Buffer.from(matches[2], 'base64');
 
     if (existing) {
-      existing.document = buffer;
+      existing.fileData = buffer;
       existing.mimetype = mime;
       await this.DocumentRepo.save(existing);
     } else {
       const doc = this.DocumentRepo.create({
-        objet_type: 'member',
-        objet_id: id,
+        objetType: 'member',
+        objetId: id,
         typedoc: 'photo',
-        document: buffer,
-        mimetype: mime
+        fileData: buffer,
+        mimetype: mime,
+
       });
       await this.DocumentRepo.save(doc);
     }

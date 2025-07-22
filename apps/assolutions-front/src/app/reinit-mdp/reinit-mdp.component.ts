@@ -91,16 +91,7 @@ export class ReinitMdpComponent implements OnInit {
     
   }
   ConfirmMDP(){
-    const errorService = ErrorService.instance;
-    this.action = $localize`Rattachement par mot de passe`;
-    this.compte_serv.CheckLogin(this.Login, this.Password).then((cpt) =>{
-      if(cpt){
-        this.rattacher.emit();
-      }
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-    });
+   
   }
   DemanderRattachement(){
     this.demanderRattachement.emit();

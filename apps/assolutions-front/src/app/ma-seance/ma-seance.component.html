@@ -26,10 +26,8 @@
               </h6>
               <span *ngIf="display_personne">
                 <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="!potentiel.StatutSeance">
-                    <ng-container
-                      *ngIf="potentiel.StatutInscription === 'présent'"
-                    >
+                  <ng-container *ngIf="!potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_inscription === 'présent'" >
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
@@ -66,7 +64,7 @@
                             </li>
                           </ul>
                           <span class="nom_personne">{{
-                            potentiel.Libelle
+                            potentiel.person.libelle
                           }}</span>
                           <span [title]="contact_urgence_nom(potentiel)">{{
                             contact_urgence(potentiel)
@@ -94,10 +92,8 @@
                   </ng-container>
                 </ng-container>
                 <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="!potentiel.StatutSeance">
-                    <ng-container
-                      *ngIf="potentiel.StatutInscription === 'essai'"
-                    >
+                  <ng-container *ngIf="!potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_inscription === 'essai'"  >
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
@@ -132,7 +128,7 @@
                             </li>
                           </ul>
                           <span class="nom_personne">{{
-                            potentiel.Libelle
+                            potentiel.person.libelle
                           }}</span>
                           <span [title]="contact_urgence_nom(potentiel)">{{
                             contact_urgence(potentiel)
@@ -160,10 +156,8 @@
                   </ng-container>
                 </ng-container>
                 <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="!potentiel.StatutSeance">
-                    <ng-container
-                      *ngIf="potentiel.StatutInscription === 'convoqué'"
-                    >
+                  <ng-container *ngIf="!potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_inscription === 'convoqué'" >
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
@@ -200,7 +194,7 @@
                             </li>
                           </ul>
                           <span class="nom_personne">{{
-                            potentiel.Libelle
+                            potentiel.person.libelle
                           }}</span>
                           <span [title]="contact_urgence_nom(potentiel)">{{
                             contact_urgence(potentiel)
@@ -228,10 +222,8 @@
                   </ng-container>
                 </ng-container>
                 <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="!potentiel.StatutSeance">
-                    <ng-container
-                      *ngIf="potentiel.StatutInscription === 'absent'"
-                    >
+                  <ng-container *ngIf="!potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_inscription === 'absent'" >
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
@@ -268,7 +260,7 @@
                             </li>
                           </ul>
                           <span class="nom_personne">{{
-                            potentiel.Libelle
+                            potentiel.person.libelle
                           }}</span>
                           <span [title]="contact_urgence_nom(potentiel)">{{
                             contact_urgence(potentiel)
@@ -296,8 +288,8 @@
                   </ng-container>
                 </ng-container>
                 <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="!potentiel.StatutSeance">
-                    <ng-container *ngIf="potentiel.StatutInscription === null">
+                  <ng-container *ngIf="!potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_inscription === null">
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
@@ -332,7 +324,7 @@
                             </li>
                           </ul>
                           <span class="nom_personne">{{
-                            potentiel.Libelle
+                            potentiel.person.libelle
                           }}</span>
                           <span [title]="contact_urgence_nom(potentiel)">{{
                             contact_urgence(potentiel)
@@ -376,38 +368,38 @@
               </h6>
               <span *ngIf="display_present">
                 <ng-container *ngFor="let potentiel of Presents">
-                  <ng-container *ngIf="potentiel.StatutSeance">
-                    <ng-container *ngIf="potentiel.StatutSeance === 'présent'">
+                  <ng-container *ngIf="potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_seance === 'présent'">
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
                             <span class="fa-stack fa-sm">
                               <i
-                                *ngIf="potentiel.StatutInscription == 'présent'"
+                                *ngIf="potentiel.statut_inscription == 'présent'"
                                 class="fas fa-stack-2x fa-thumbs-up"
                               ></i>
                               <i
-                                *ngIf="potentiel.StatutInscription == 'absent'"
+                                *ngIf="potentiel.statut_inscription == 'absent'"
                                 class="fas fa-stack-2x fa-thumbs-down"
                               ></i>
                               <i
-                                *ngIf="potentiel.StatutInscription == 'essai'"
+                                *ngIf="potentiel.statut_inscription == 'essai'"
                                 class="fas fa-stack-2x fa-question"
                               ></i>
                               <i
                                 *ngIf="
-                                  potentiel.StatutInscription == 'convoqué'
+                                  potentiel.statut_inscription == 'convoqué'
                                 "
                                 class="fas fa-stack-2x fa-hand-point-up"
                               ></i>
                               <i
-                                *ngIf="potentiel.StatutInscription == null"
+                                *ngIf="potentiel.statut_inscription == null"
                                 class="fas fa-stack-2x fa-ellipsis-h"
                               ></i>
                             </span>
                           </span>
                           <span class="nom_personne">{{
-                            potentiel.Libelle
+                            potentiel.person.libelle
                           }}</span>
                           <span [title]="contact_urgence_nom(potentiel)">{{
                             contact_urgence(potentiel)
@@ -452,36 +444,36 @@
               </h6>
               <span *ngIf="display_absent">
               <ng-container *ngFor="let potentiel of Absents">
-                <ng-container *ngIf="potentiel.StatutSeance">
-                  <ng-container *ngIf="potentiel.StatutSeance === 'absent'">
+                <ng-container *ngIf="potentiel.statut_seance">
+                  <ng-container *ngIf="potentiel.statut_seance === 'absent'">
                     <div class="ligne">
                       <span class="partie1">
                         <span class="icon is-medium">
                           <span class="fa-stack fa-sm">
                             <i
-                              *ngIf="potentiel.StatutInscription == 'présent'"
+                              *ngIf="potentiel.statut_inscription == 'présent'"
                               class="fas fa-stack-2x fa-thumbs-up"
                             ></i>
                             <i
-                              *ngIf="potentiel.StatutInscription == 'absent'"
+                              *ngIf="potentiel.statut_inscription == 'absent'"
                               class="fas fa-stack-2x fa-thumbs-down"
                             ></i>
                             <i
-                              *ngIf="potentiel.StatutInscription == 'essai'"
+                              *ngIf="potentiel.statut_inscription == 'essai'"
                               class="fas fa-stack-2x fa-question"
                             ></i>
                             <i
-                              *ngIf="potentiel.StatutInscription == 'convoqué'"
+                              *ngIf="potentiel.statut_inscription == 'convoqué'"
                               class="fas fa-stack-2x fa-hand-point-up"
                             ></i>
                             <i
-                              *ngIf="potentiel.StatutInscription == null"
+                              *ngIf="potentiel.statut_inscription == null"
                               class="fas fa-stack-2x fa-ellipsis-h"
                             ></i>
                           </span>
                         </span>
                         <span class="nom_personne">{{
-                          potentiel.Libelle
+                          potentiel.person.libelle
                         }}</span>
                         <span [title]="contact_urgence_nom(potentiel)">{{
                           contact_urgence(potentiel)
@@ -547,7 +539,7 @@
                               <!-- Options pour les professeurs -->
                               <ng-container *ngFor="let add of Autres">
                                 <option [ngValue]="add">
-                                  {{ add.Libelle }}
+                                  {{ add.libelle }}
                                 </option>
                               </ng-container>
                             </select>
@@ -592,7 +584,7 @@
                   <!-- Options pour les professeurs -->
                   <ng-container *ngFor="let add of Autres">
                     <option [ngValue]="add">
-                      {{ add.Libelle }}
+                      {{ add.libelle }}
                     </option>
                   </ng-container>
                 </select>
@@ -625,9 +617,9 @@
     </h6>
     <span *ngIf="display_personne">
       <ng-container *ngFor="let potentiel of All">
-        <ng-container *ngIf="!potentiel.StatutSeance">
+        <ng-container *ngIf="!potentiel.statut_seance">
           <ng-container
-            *ngIf="potentiel.StatutInscription === 'présent'"
+            *ngIf="potentiel.statut_inscription === 'présent'"
           >
             <div class="ligne">
               <span class="partie1">
@@ -665,7 +657,7 @@
                   </li>
                 </ul>
                 <span class="nom_personne">{{
-                  potentiel.Libelle
+                  potentiel.person.libelle
                 }}</span>
                 <span [title]="contact_urgence_nom(potentiel)">{{
                   contact_urgence(potentiel)
@@ -693,9 +685,9 @@
         </ng-container>
       </ng-container>
       <ng-container *ngFor="let potentiel of All">
-        <ng-container *ngIf="!potentiel.StatutSeance">
+        <ng-container *ngIf="!potentiel.statut_seance">
           <ng-container
-            *ngIf="potentiel.StatutInscription === 'essai'"
+            *ngIf="potentiel.statut_inscription === 'essai'"
           >
             <div class="ligne">
               <span class="partie1">
@@ -731,7 +723,7 @@
                   </li>
                 </ul>
                 <span class="nom_personne">{{
-                  potentiel.Libelle
+                  potentiel.person.libelle
                 }}</span>
                 <span [title]="contact_urgence_nom(potentiel)">{{
                   contact_urgence(potentiel)
@@ -759,9 +751,9 @@
         </ng-container>
       </ng-container>
       <ng-container *ngFor="let potentiel of All">
-        <ng-container *ngIf="!potentiel.StatutSeance">
+        <ng-container *ngIf="!potentiel.statut_seance">
           <ng-container
-            *ngIf="potentiel.StatutInscription === 'convoqué'"
+            *ngIf="potentiel.statut_inscription === 'convoqué'"
           >
             <div class="ligne">
               <span class="partie1">
@@ -799,7 +791,7 @@
                   </li>
                 </ul>
                 <span class="nom_personne">{{
-                  potentiel.Libelle
+                  potentiel.person.libelle
                 }}</span>
                 <span [title]="contact_urgence_nom(potentiel)">{{
                   contact_urgence(potentiel)
@@ -827,9 +819,9 @@
         </ng-container>
       </ng-container>
       <ng-container *ngFor="let potentiel of All">
-        <ng-container *ngIf="!potentiel.StatutSeance">
+        <ng-container *ngIf="!potentiel.statut_seance">
           <ng-container
-            *ngIf="potentiel.StatutInscription === 'absent'"
+            *ngIf="potentiel.statut_inscription === 'absent'"
           >
             <div class="ligne">
               <span class="partie1">
@@ -867,7 +859,7 @@
                   </li>
                 </ul>
                 <span class="nom_personne">{{
-                  potentiel.Libelle
+                  potentiel.person.libelle
                 }}</span>
                 <span [title]="contact_urgence_nom(potentiel)">{{
                   contact_urgence(potentiel)
@@ -895,8 +887,8 @@
         </ng-container>
       </ng-container>
       <ng-container *ngFor="let potentiel of All">
-        <ng-container *ngIf="!potentiel.StatutSeance">
-          <ng-container *ngIf="potentiel.StatutInscription === null">
+        <ng-container *ngIf="!potentiel.statut_seance">
+          <ng-container *ngIf="potentiel.statut_inscription === null">
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
@@ -931,7 +923,7 @@
                   </li>
                 </ul>
                 <span class="nom_personne">{{
-                  potentiel.Libelle
+                  potentiel.person.libelle
                 }}</span>
                 <span [title]="contact_urgence_nom(potentiel)">{{
                   contact_urgence(potentiel)
@@ -975,38 +967,38 @@
     </h6>
     <span *ngIf="display_present">
       <ng-container *ngFor="let potentiel of Presents">
-        <ng-container *ngIf="potentiel.StatutSeance">
-          <ng-container *ngIf="potentiel.StatutSeance === 'présent'">
+        <ng-container *ngIf="potentiel.statut_seance">
+          <ng-container *ngIf="potentiel.statut_seance === 'présent'">
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
                   <span class="fa-stack fa-sm">
                     <i
-                      *ngIf="potentiel.StatutInscription == 'présent'"
+                      *ngIf="potentiel.statut_inscription == 'présent'"
                       class="fas fa-stack-2x fa-thumbs-up"
                     ></i>
                     <i
-                      *ngIf="potentiel.StatutInscription == 'absent'"
+                      *ngIf="potentiel.statut_inscription == 'absent'"
                       class="fas fa-stack-2x fa-thumbs-down"
                     ></i>
                     <i
-                      *ngIf="potentiel.StatutInscription == 'essai'"
+                      *ngIf="potentiel.statut_inscription == 'essai'"
                       class="fas fa-stack-2x fa-question"
                     ></i>
                     <i
                       *ngIf="
-                        potentiel.StatutInscription == 'convoqué'
+                        potentiel.statut_inscription == 'convoqué'
                       "
                       class="fas fa-stack-2x fa-hand-point-up"
                     ></i>
                     <i
-                      *ngIf="potentiel.StatutInscription == null"
+                      *ngIf="potentiel.statut_inscription == null"
                       class="fas fa-stack-2x fa-ellipsis-h"
                     ></i>
                   </span>
                 </span>
                 <span class="nom_personne">{{
-                  potentiel.Libelle
+                  potentiel.person.libelle
                 }}</span>
                 <span [title]="contact_urgence_nom(potentiel)">{{
                   contact_urgence(potentiel)
@@ -1051,36 +1043,36 @@
     </h6>
     <span *ngIf="display_absent">
     <ng-container *ngFor="let potentiel of Absents">
-      <ng-container *ngIf="potentiel.StatutSeance">
-        <ng-container *ngIf="potentiel.StatutSeance === 'absent'">
+      <ng-container *ngIf="potentiel.statut_seance">
+        <ng-container *ngIf="potentiel.statut_seance === 'absent'">
           <div class="ligne">
             <span class="partie1">
               <span class="icon is-medium">
                 <span class="fa-stack fa-sm">
                   <i
-                    *ngIf="potentiel.StatutInscription == 'présent'"
+                    *ngIf="potentiel.statut_inscription == 'présent'"
                     class="fas fa-stack-2x fa-thumbs-up"
                   ></i>
                   <i
-                    *ngIf="potentiel.StatutInscription == 'absent'"
+                    *ngIf="potentiel.statut_inscription == 'absent'"
                     class="fas fa-stack-2x fa-thumbs-down"
                   ></i>
                   <i
-                    *ngIf="potentiel.StatutInscription == 'essai'"
+                    *ngIf="potentiel.statut_inscription == 'essai'"
                     class="fas fa-stack-2x fa-question"
                   ></i>
                   <i
-                    *ngIf="potentiel.StatutInscription == 'convoqué'"
+                    *ngIf="potentiel.statut_inscription == 'convoqué'"
                     class="fas fa-stack-2x fa-hand-point-up"
                   ></i>
                   <i
-                    *ngIf="potentiel.StatutInscription == null"
+                    *ngIf="potentiel.statut_inscription == null"
                     class="fas fa-stack-2x fa-ellipsis-h"
                   ></i>
                 </span>
               </span>
               <span class="nom_personne">{{
-                potentiel.Libelle
+                potentiel.person.libelle
               }}</span>
               <span [title]="contact_urgence_nom(potentiel)">{{
                 contact_urgence(potentiel)
@@ -1230,8 +1222,8 @@
           }}&nbsp;<span i18n>personnes</span>)
         </h6>
         <ng-container *ngFor="let potentiel of All">
-          <ng-container *ngIf="!potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutInscription === 'présent'">
+          <ng-container *ngIf="!potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_inscription === 'présent'">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
@@ -1267,7 +1259,7 @@
                       <i class="fas fa-ellipsis-h"></i> Non défini
                     </li>
                   </ul>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>
@@ -1294,8 +1286,8 @@
           </ng-container>
         </ng-container>
         <ng-container *ngFor="let potentiel of All">
-          <ng-container *ngIf="!potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutInscription === 'essai'">
+          <ng-container *ngIf="!potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_inscription === 'essai'">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
@@ -1329,7 +1321,7 @@
                       <i class="fas fa-ellipsis-h"></i> Non défini
                     </li>
                   </ul>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>
@@ -1356,8 +1348,8 @@
           </ng-container>
         </ng-container>
         <ng-container *ngFor="let potentiel of All">
-          <ng-container *ngIf="!potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutInscription === 'convoqué'">
+          <ng-container *ngIf="!potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_inscription === 'convoqué'">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
@@ -1393,7 +1385,7 @@
                       <i class="fas fa-ellipsis-h"></i> Non défini
                     </li>
                   </ul>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>
@@ -1420,8 +1412,8 @@
           </ng-container>
         </ng-container>
         <ng-container *ngFor="let potentiel of All">
-          <ng-container *ngIf="!potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutInscription === 'absent'">
+          <ng-container *ngIf="!potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_inscription === 'absent'">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
@@ -1457,7 +1449,7 @@
                       <i class="fas fa-ellipsis-h"></i> Non défini
                     </li>
                   </ul>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>
@@ -1484,8 +1476,8 @@
           </ng-container>
         </ng-container>
         <ng-container *ngFor="let potentiel of All">
-          <ng-container *ngIf="!potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutInscription === null">
+          <ng-container *ngIf="!potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_inscription === null">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
@@ -1519,7 +1511,7 @@
                       <i class="fas fa-ellipsis-h"></i> Non défini
                     </li>
                   </ul>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>
@@ -1551,35 +1543,35 @@
           >)
         </h6>
         <ng-container *ngFor="let potentiel of Presents">
-          <ng-container *ngIf="potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutSeance === 'présent'">
+          <ng-container *ngIf="potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_seance === 'présent'">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
                     <span class="fa-stack fa-sm">
                       <i
-                        *ngIf="potentiel.StatutInscription == 'présent'"
+                        *ngIf="potentiel.statut_inscription == 'présent'"
                         class="fas fa-stack-2x fa-thumbs-up"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == 'absent'"
+                        *ngIf="potentiel.statut_inscription == 'absent'"
                         class="fas fa-stack-2x fa-thumbs-down"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == 'essai'"
+                        *ngIf="potentiel.statut_inscription == 'essai'"
                         class="fas fa-stack-2x fa-question"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == 'convoqué'"
+                        *ngIf="potentiel.statut_inscription == 'convoqué'"
                         class="fas fa-stack-2x fa-hand-point-up"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == null"
+                        *ngIf="potentiel.statut_inscription == null"
                         class="fas fa-stack-2x fa-ellipsis-h"
                       ></i>
                     </span>
                   </span>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>
@@ -1611,35 +1603,35 @@
           >)
         </h6>
         <ng-container *ngFor="let potentiel of Absents">
-          <ng-container *ngIf="potentiel.StatutSeance">
-            <ng-container *ngIf="potentiel.StatutSeance === 'absent'">
+          <ng-container *ngIf="potentiel.statut_seance">
+            <ng-container *ngIf="potentiel.statut_seance === 'absent'">
               <div class="ligne">
                 <span class="partie1">
                   <span class="icon is-medium">
                     <span class="fa-stack fa-sm">
                       <i
-                        *ngIf="potentiel.StatutInscription == 'présent'"
+                        *ngIf="potentiel.statut_inscription == 'présent'"
                         class="fas fa-stack-2x fa-thumbs-up"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == 'absent'"
+                        *ngIf="potentiel.statut_inscription == 'absent'"
                         class="fas fa-stack-2x fa-thumbs-down"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == 'essai'"
+                        *ngIf="potentiel.statut_inscription == 'essai'"
                         class="fas fa-stack-2x fa-question"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == 'convoqué'"
+                        *ngIf="potentiel.statut_inscription == 'convoqué'"
                         class="fas fa-stack-2x fa-hand-point-up"
                       ></i>
                       <i
-                        *ngIf="potentiel.StatutInscription == null"
+                        *ngIf="potentiel.statut_inscription == null"
                         class="fas fa-stack-2x fa-ellipsis-h"
                       ></i>
                     </span>
                   </span>
-                  <span class="nom_personne">{{ potentiel.Libelle }}</span>
+                  <span class="nom_personne">{{ potentiel.person.libelle }}</span>
                   <span [title]="contact_urgence_nom(potentiel)">{{
                     contact_urgence(potentiel)
                   }}</span>

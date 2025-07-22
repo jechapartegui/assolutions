@@ -57,7 +57,7 @@ if (groupe) {
     if (this.id_source > 0) {
       this.gr_serv.DeleteLien(this.id_source, this.objet_source,Number(item.key)).then((ok) => {
         if (ok) {
-          this.Groupes = this.Groupes.filter(e => Number(e.key) !== Number(item.key));
+          this.Groupes = this.Groupes.filter(e => Number(e.id) !== Number(item.key));
           this.MAJListeGroupe();
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);

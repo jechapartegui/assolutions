@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CompteBancaire } from '../../class/comptebancaire';
 import { FluxFinancier, fluxfinancier } from '../../class/fluxfinancier';
 import { operation, Operation } from '../../class/operation';
-import { saison } from '../../class/saison';
 import { stock, Stock } from '../../class/stock';
 import { AddInfoService } from '../../services/addinfo.service';
 import { ComptabiliteService } from '../../services/comptabilite.service';
@@ -14,6 +13,7 @@ import { operationService } from '../../services/operation.service';
 import { SaisonService } from '../../services/saison.service';
 import { StockService } from '../../services/stock.service';
 import { ClassComptable, ObjetAppli, TypeStock, StaticClass } from '../global';
+import { Saison_VM } from '@shared/src';
 
 @Component({
   selector: 'app-comptabilite',
@@ -31,7 +31,7 @@ export class ComptabiliteComponent implements OnInit {
   filter_sens_operation_ff: boolean = null;
   filter_sens_ff: boolean = null;
   saison_id: number;
-  saisons: saison[];
+  saisons: Saison_VM[];
   FluxFinanciers: FluxFinancier[];
   editFluxFlinancier: FluxFinancier;
   ClassesComptable: ClassComptable[];

@@ -273,7 +273,7 @@
             >
               <ng-container *ngFor="let pr of liste_adherent">
                 <option [ngValue]="pr">
-                  {{ pr.Libelle }}&nbsp;{{ calculateAge(pr.DDN) }}
+                  {{ pr.libelle }}&nbsp;{{ calculateAge(pr.date_naissance) }}
                 </option>
               </ng-container>
             </select>
@@ -294,7 +294,7 @@
         <div class="tags are-large">
           <ng-container *ngFor="let user of ListeUserSelectionne">
             <span class="tag is-warning is-medium">
-              {{ user.Libelle }}
+              {{ user.libelle }}
               <button
                 (click)="RemoveUser(user)"
                 class="delete is-small"

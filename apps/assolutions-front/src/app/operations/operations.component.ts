@@ -11,7 +11,7 @@ import { ErrorService } from '../../services/error.service';
 import { operationService } from '../../services/operation.service';
 import { SaisonService } from '../../services/saison.service';
 import { StaticClass } from '../global';
-import { SaisonVM } from '@shared/src';
+import { Saison_VM } from '@shared/src';
 
 @Component({
   selector: 'app-operations',
@@ -32,7 +32,7 @@ export class OperationsComponent implements OnInit {
   ClassesComptable: { numero: number; libelle: string }[];
   Comptes: CompteBancaire[];
   saison_id: number;
-  saisons: SaisonVM[];
+  saisons: Saison_VM[];
   sort_libelle: string = 'NO';
   sort_date: string = 'NO';
   sort_sens: string = 'NO';

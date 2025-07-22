@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { ValidationItem } from "@shared/src";
 import { Lieu_VM } from "@shared/src/lib/lieu.interface";
-import { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
+import type { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 import { LieuNestService } from "apps/assolutions-front/src/services/lieu.nest.service";
 import { SaisonService } from "apps/assolutions-front/src/services/saison.service";

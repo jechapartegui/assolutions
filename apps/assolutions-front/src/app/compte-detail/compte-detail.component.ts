@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { compte } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/src/lib/compte.interface';
 @Component({
   selector: 'app-compte-detail',
   templateUrl: './compte-detail.component.html',
@@ -17,7 +17,7 @@ export class CompteDetailComponent implements OnInit {
   
   login_valide: string;
   action: string = "";
-  thisCompte: compte;
+  thisCompte: Compte_VM;
   valid_login = false;
   baseUrl:string;
 
@@ -33,7 +33,7 @@ export class CompteDetailComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le profil`;
     if (this.compte_id && this.compte_id > 0) {
-      this.compte_serv.getAccount(this.compte_id).then((compte: compte) => {
+      this.compte_serv.getAccount(this.compte_id).then((compte: Compte_VM) => {
         this.thisCompte = compte;
         this.context = "VUE";
       }).catch((err: HttpErrorResponse) => {
@@ -50,33 +50,20 @@ export class CompteDetailComponent implements OnInit {
     }
   }
   CopierToken(){
-    const errorService = ErrorService.instance;
-    this.action = $localize`Copier le token`;
-    this.compte_serv.getToken(this.thisCompte.id, 1).then((token) =>{
-      let url = this.baseUrl + "/login?username=" + this.thisCompte.email + "&token_connexion=" + token + "&droit=1;";
-      navigator.clipboard.writeText(url).then(() => {
-        alert($localize`Texte copié dans le presse-papier !`);
-      }).catch(err => {
-        alert($localize`Échec de la copie du texte : ` + err);
-      });
-    }).catch((err: HttpErrorResponse) => {
-      let o = errorService.CreateError(this.action, err.message);
-      errorService.emitChange(o);
-    })
-    return;
+   
      
   }
 
   Valid() {
     const errorService = ErrorService.instance;
     this.action = $localize`Validation du Login`;
-    this.compte_serv.Exist(this.thisCompte.email).then((boo) => {
+    this.compte_serv.checkLogin(this.thisCompte.email).then((boo) => {
       this.valid_login = boo;
       if (boo) {
         let o = errorService.OKMessage(this.action + $localize` : Login déjà utilisé`);
         errorService.emitChange(o);
         this.login_valide = this.thisCompte.email;
-        this.compte_serv.getAccountLogin(this.login_valide).then((compte: compte) => {
+        this.compte_serv.getAccountLogin(this.login_valide).then((compte: Compte_VM) => {
           this.login = compte.email;
           this.thisCompte = compte;
           if(this.thisCompte.password){
@@ -113,17 +100,6 @@ export class CompteDetailComponent implements OnInit {
   }
 
   CreerMDP(val:string[]){
-    this.action = $localize`Créer un compte avec mot de passe`;
-    const errorService = ErrorService.instance;
-    let login:string = val[0];
-    let psw:string = val[1];
-    this.compte_serv.AddCompteMDP(login,psw).then((id) =>{
-      this.thisCompte.id = id;
-      this.changeRattacher.emit(login);
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-      errorService.emitChange(o);
-    });
   }
 
 }

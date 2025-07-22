@@ -25,9 +25,8 @@
       "dom"
     ]
   },
-  "include": [
-    "src/**/*.ts",
-    "../../libs/**/*.ts"
+  "include": [    "src/**/*.ts",
+ "../../libs/shared/src/**/*.ts" 
 , "../assolutions-back/src/app/guards/password.ts"  ],
   "angularCompilerOptions": {
     "enableIvy": true,

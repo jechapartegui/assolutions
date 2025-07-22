@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Adresse } from '../../class/address';
-import { ReglesAdresse } from '../../class/regles';
+import type { ReglesAdresse } from '../../class/regles';
 import { ValidationItem } from '@shared/src/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
+import { Adresse } from '@shared/src/lib/adresse.interface';
 
 @Component({
   selector: 'app-address',

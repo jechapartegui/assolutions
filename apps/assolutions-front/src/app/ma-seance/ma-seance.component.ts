@@ -1,12 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InscriptionMaSeance } from '../../class/inscription';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
-import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/src/lib/inscription_seance.interface';
-import { Seance_VM, StatutSeance } from '@shared/src';
+import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from '@shared/src/lib/inscription_seance.interface';
+import { Adherent_VM, Seance_VM, StatutSeance } from '@shared/src';
 @Component({
   selector: 'app-ma-seance',
   templateUrl: './ma-seance.component.html',
@@ -23,13 +22,13 @@ export class MaSeanceComponent implements OnInit {
     display_present:boolean = true;
   thisSeance: Seance_VM;
   afficher_admin: boolean = false;
-  Autres: InscriptionMaSeance[] = [];
-  Inscrits: InscriptionMaSeance[] = [];
-  Potentiels: InscriptionMaSeance[] = [];
-  All: InscriptionMaSeance[] = [];
-  Absents: InscriptionMaSeance[] = [];
-  Presents: InscriptionMaSeance[] = [];
-  adherent_to: InscriptionMaSeance;
+  Autres: Adherent_VM[] = [];
+  Inscrits: FullInscriptionSeance_VM[] = [];
+  Potentiels: FullInscriptionSeance_VM[] = [];
+  All: FullInscriptionSeance_VM[] = [];
+  Absents: FullInscriptionSeance_VM[] = [];
+  Presents: FullInscriptionSeance_VM[] = [];
+  adherent_to: FullInscriptionSeance_VM;
   action: string;
   seanceText: string;
   constructor( private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
@@ -128,13 +127,12 @@ export class MaSeanceComponent implements OnInit {
   Load() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
-    this.inscriptionserv.GetAllSeance(this.id).then((res) => {
-      this.Autres = res.autres.map(x => new InscriptionMaSeance(x));
-      this.Inscrits = res.inscrits.map(x => new InscriptionMaSeance(x));
-      this.Potentiels = res.potentiels.map(x => new InscriptionMaSeance(x));
-      this.All = this.Inscrits.concat(this.Potentiels);
-      this.Absents = res.absents.map(x => new InscriptionMaSeance(x));
-      this.Presents = res.presents.map(x => new InscriptionMaSeance(x));
+    this.inscriptionserv.GetAllSeanceFull(this.id).then((res) => {
+      this.Inscrits = res.filter(x => x.statut_seance == null && x.statut_inscription == InscriptionStatus_VM.PRESENT);
+      this.Potentiels = res.filter(x => x.statut_seance == null && x.statut_inscription == null);
+      this.All =  res.filter(x => x.statut_seance == null);
+      this.Absents = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT);
+      this.Presents = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT);
     }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
@@ -147,30 +145,30 @@ export class MaSeanceComponent implements OnInit {
     this.seanceText = ` ${dateDebStr}`;
   }
 
-  MAJInscription(inscription: InscriptionMaSeance, statut: boolean) {
+  MAJInscription(inscription: FullInscriptionSeance_VM, statut: boolean) {
 
     const errorService = ErrorService.instance;
-    let oldstatut = inscription.StatutSeance;
+    let oldstatut = inscription.statut_seance;
     let libelleseab = this.thisSeance.libelle;
     if (statut == true) {
-      inscription.StatutSeance = StatutSeance.;
-      this.action = inscription.Libelle + $localize` est présent à la séance ` + libelleseab;
+      inscription.statut_inscription = InscriptionStatus_VM.PRESENT;
+      this.action = inscription.person.libelle + $localize` est présent à la séance ` + libelleseab;
     } else if (statut == false) {
-      inscription.StatutSeance = "absent";
-      this.action = inscription.Libelle + $localize` est absent à la séance ` + libelleseab;
+      inscription.statut_inscription = InscriptionStatus_VM.ABSENT;
+      this.action = inscription.person.libelle + $localize` est absent à la séance ` + libelleseab;
     } else if (statut == null) {
-      inscription.StatutSeance = null;
+      inscription.statut_seance = null;
     }
-    if (inscription.ID == 0) {
+    if (inscription.id == 0) {
 
-      this.inscriptionserv.Add(inscription.datasource).then((id) => {
-        inscription.ID = id;
+      this.inscriptionserv.Add(inscription).then((id) => {
+        inscription.id = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
         this.Load();
 
       }).catch((err: HttpErrorResponse) => {
-        inscription.StatutSeance = oldstatut
+        inscription.statut_seance = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
@@ -182,13 +180,13 @@ export class MaSeanceComponent implements OnInit {
           errorService.emitChange(o);
           this.Load();
         } else {
-          inscription.StatutSeance = oldstatut
+          inscription.statut_seance = oldstatut
           let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 
       }).catch((err: HttpErrorResponse) => {
-        inscription.StatutSeance = oldstatut
+        inscription.statut_seance = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
@@ -196,41 +194,41 @@ export class MaSeanceComponent implements OnInit {
     }
   }
 
-  contact_urgence(ins: InscriptionMaSeance): string {
+  contact_urgence(ins: FullInscriptionSeance_VM): string {
     let phone = "";
-    if (ins.ContactsUrgence.length> 0) {
-      if (ins.ContactsUrgence.find(x => x.Type == "PHONE")) {
-        phone = ins.ContactsUrgence.find(x => x.Type == "PHONE").Value
+    if (ins.person.contact_prevenir.length> 0) {
+      if (ins.person.contact_prevenir.find(x => x.Type == "PHONE")) {
+        phone = ins.person.contact_prevenir.find(x => x.Type == "PHONE").Value
         return phone;
       } else {
-        phone = ins.ContactsUrgence[0].Value;
+        phone = ins.person.contact_prevenir[0].Value;
       }
     }
-    if (ins.Contacts.find(x => x.Type == "PHONE")) {
-      phone = ins.Contacts.find(x => x.Type == "PHONE").Value
+    if (ins.person.contact.find(x => x.Type == "PHONE")) {
+      phone = ins.person.contact.find(x => x.Type == "PHONE").Value
       return phone;
     }
     if(phone.length>0){
       return phone;
     }
-    if (ins.Contacts.length > 0) {
-      return ins.Contacts[0].Value;
+    if (ins.person.contact.length > 0) {
+      return ins.person.contact[0].Value;
     } else {
       return "";
     }
   }
-contact_urgence_nom(ins: InscriptionMaSeance): string {
+contact_urgence_nom(ins: FullInscriptionSeance_VM): string {
   let phone = "";
-    if (ins.ContactsUrgence.length> 0) {
-      if (ins.ContactsUrgence.find(x => x.Type == "PHONE")) {
-        phone = ins.ContactsUrgence.find(x => x.Type == "PHONE").Notes
+    if (ins.person.contact_prevenir.length> 0) {
+      if (ins.person.contact_prevenir.find(x => x.Type == "PHONE")) {
+        phone = ins.person.contact_prevenir.find(x => x.Type == "PHONE").Notes
         return phone;
       } else {
-        phone = ins.ContactsUrgence[0].Notes;
+        phone = ins.person.contact_prevenir[0].Notes;
       }
     }
-    if (ins.Contacts.find(x => x.Type == "PHONE")) {
-      phone = ins.Contacts.find(x => x.Type == "PHONE").Notes
+    if (ins.person.contact.find(x => x.Type == "PHONE")) {
+      phone = ins.person.contact.find(x => x.Type == "PHONE").Notes
       return phone;
     }
     if(phone.length>0){
@@ -243,24 +241,23 @@ AjouterAdherentsHorsGroupe() {
   const errorService = ErrorService.instance;
   if (this.adherent_to) {
 
-    this.action = $localize`Convoquer ` + this.adherent_to.Libelle;
-    this.adherent_to.SeanceID = this.thisSeance.seance_id;
-    this.adherent_to.StatutInscription = InscriptionStatus_VM.CONVOQUE;
-    this.adherent_to.StatutSeance = null;
+    this.action = $localize`Convoquer ` + this.adherent_to.person.libelle;
+    this.adherent_to.seance_id = this.thisSeance.seance_id;
+    this.adherent_to.statut_inscription = InscriptionStatus_VM.CONVOQUE;
+    this.adherent_to.statut_seance = null;
       const conv: InscriptionSeance_VM = {
               id: 0,
-              rider_id: this.adherent_to.RiderID,
-              seance_id: this.adherent_to.SeanceID,
+              rider_id: this.adherent_to.person.id,
+              seance_id: this.adherent_to.seance_id,
               date_inscription: new Date(),
-              statut_inscription: this.adherent_to.StatutInscription,
+              statut_inscription: this.adherent_to.statut_inscription,
               statut_seance: null
             };
     this.inscriptionserv.Add(conv).then((id) => {
-      this.adherent_to.ID = id;
+      this.adherent_to.id = id;
       this.inscriptionserv.GetFull(id).then((ins) => {
-        let inscription = new InscriptionMaSeance(ins);
-        this.All.push(inscription);
-        this.Autres = this.Autres.filter(x => x.RiderID !== inscription.RiderID);
+        this.All.push(ins);
+        this.Autres = this.Autres.filter(x => x.id !== ins.rider_id);
         this.adherent_to = null;
       });
       let o = errorService.OKMessage(this.action);
@@ -275,9 +272,9 @@ AjouterAdherentsHorsGroupe() {
 
 }
 
-GetNbPersonne(liste: InscriptionMaSeance[]): boolean {
+GetNbPersonne(liste: FullInscriptionSeance_VM[]): boolean {
   if (this.thisSeance.est_place_maximum) {
-    let ct = liste.filter(x => x.StatutSeance == "présent").length;
+    let ct = liste.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).length;
     if (ct >= this.thisSeance.place_maximum) {
       return false;
     } else {
@@ -292,16 +289,18 @@ ChangerStatut(statut: string) {
   switch (statut) {
     case 'réalisée':
       this.action = $localize`Terminer la séance`;
-
+      this.thisSeance.statut = StatutSeance.réalisée;
       break;
     case 'prévue':
       this.action = $localize`Planifier la séance`;
+      this.thisSeance.statut = StatutSeance.prévue;
       break;
     case 'annulée':
       this.action = $localize`Annuler la séance`;
+      this.thisSeance.statut = StatutSeance.annulée;
       break;
   }
-  this.seanceserv.MAJStatutSeance(this.thisSeance.seance_id, statut).then((retour) => {
+  this.seanceserv.Update(this.thisSeance).then((retour) => {
     if (retour) {
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);

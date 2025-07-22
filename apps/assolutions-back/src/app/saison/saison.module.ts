@@ -4,12 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SaisonController } from './saison.controller';
 import { SaisonService } from './saison.services';
 import { SeasonService } from '../../crud/season.service';
+import { Season } from '../../entities/saison.entity';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
-    
+    Season
     ]),
   ],
   providers: [SaisonService, SeasonService],

@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { compte } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/src/lib/compte.interface';
 
 @Component({
   selector: 'app-compte',
@@ -22,9 +22,9 @@ export class CompteComponent implements OnInit {
 
   sort_login: string;
   sort_actif: string;
-  thisCompte: compte;
+  thisCompte: Compte_VM;
 
-  ListeCompte: compte[];
+  ListeCompte: Compte_VM[];
   action: string;
   context: "LISTE" | "ECRITURE" = "LISTE";
   afficher_filtre: boolean = false;
@@ -48,7 +48,6 @@ export class CompteComponent implements OnInit {
 
       this.cpteserv.GetAll().then((cpt) => {
         this.ListeCompte = cpt;
-        console.log("ici");
       }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError("Chargement", error);
         errorService.emitChange(n);
@@ -101,7 +100,7 @@ export class CompteComponent implements OnInit {
     var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
     return re.test(text);
   }
-  Edit(cpt: compte) {
+  Edit(cpt: Compte_VM) {
     throw new Error('Method not implemented.');
   }
   Delete(_t115: any) {

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs
 import { RegistrationSessionService } from "../../crud/inscriptionseance.service";
 import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from "@shared/src/lib/inscription_seance.interface";
 import { InscriptionStatus, RegistrationSession, SeanceStatus } from "../../entities/inscription-seance.entity";
-import { toPersonne_VM, toPersonneLight_VM } from "../member/member.services";
+import { toPersonne_VM } from "../member/member.services";
 
 @Injectable()
 export class InscriptionSeanceService {
@@ -38,13 +38,23 @@ export class InscriptionSeanceService {
         });
 
   }
-   async GetAllSeance(seance_id:number) {
+   async GetAllSeance(seance_id:number) : Promise<InscriptionSeance_VM[]> {
     const pISSs = await this.inscriptionseanceserv.getAllSeance(seance_id);
     if (!pISSs) {
          return [];
         }
         return pISSs.map((pISS) => {
           return to_InscriptionSeances_VM(pISS);
+        });
+
+  }
+   async GetAllSeanceFull(seance_id:number) : Promise<FullInscriptionSeance_VM[]> {
+    const pISSs = await this.inscriptionseanceserv.getAllSeance(seance_id);
+    if (!pISSs) {
+         return [];
+        }
+        return pISSs.map((pISS) => {
+          return to_FullInscriptionSeance_VM(pISS);
         });
 
   }
@@ -84,7 +94,7 @@ export function to_InscriptionSeances_VM(obj:RegistrationSession): InscriptionSe
   const item = new InscriptionSeance_VM();
   item.date_inscription=obj.dateInscription;
   item.id = obj.id;
-  item.person = toPersonneLight_VM(obj.person);
+  item.rider_id = obj.person.id;
   item.seance_id = obj.seanceId;
   item.statut_inscription = toInscriptionStatusVM(obj.statutInscription);
   item.statut_seance = toSeanceStatusVM(obj.statutSeance);
@@ -105,7 +115,7 @@ export function toRegistrationSession(data:InscriptionSeance_VM) : RegistrationS
  const entity = new RegistrationSession();
  entity.dateInscription = data.date_inscription;
  entity.id = data.id ?? 0;
- entity.personId = data.person.id;
+ entity.personId = data.rider_id;
  entity.seanceId = data.seance_id;
  entity.statutInscription = toInscriptionStatusEntity(data.statut_inscription);
  entity.statutSeance = toSeanceStatusEntity( data.statut_seance);

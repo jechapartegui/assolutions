@@ -5,7 +5,7 @@ import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { SaisonService } from '../../services/saison.service';
-import { SaisonVM } from '@shared/src';
+import { Saison_VM } from '@shared/src';
 
 @Component({
   selector: 'app-saison',
@@ -27,16 +27,16 @@ export class SaisonComponent {
     est_prof: boolean = false;
     est_admin: boolean = false;
     manage_prof: boolean = false;
-    liste_saison: SaisonVM[] = []; // Initialisez la liste des séances (vous pouvez la charger à partir d'une API, par exemple)
+    liste_saison: Saison_VM[] = []; // Initialisez la liste des séances (vous pouvez la charger à partir d'une API, par exemple)
     editMode = false;
-    editSaison: SaisonVM | null = null;
+    editSaison: Saison_VM | null = null;
   
   
     public sort_nom = 'NO';
     public sort_date_debut = 'NO';
     public sort_date_fin = 'NO';
 
-    public active_saison: SaisonVM;
+    public active_saison: Saison_VM;
     public action: string = '';
   
     constructor(
@@ -71,7 +71,7 @@ export class SaisonComponent {
     }
 
   
-    Edit(saison: SaisonVM): void {
+    Edit(saison: Saison_VM): void {
       const errorService = ErrorService.instance;
       this.action = $localize`Charger la saison`;
       this.saisonserv
@@ -90,11 +90,11 @@ export class SaisonComponent {
    
   
     Creer(): void {    
-    this.editSaison = new SaisonVM();
+    this.editSaison = new Saison_VM();
     this.histo_saison = JSON.stringify(this.editSaison);
       this.editMode = true;
     }
-    Copier(saison:SaisonVM): void {    
+    Copier(saison:Saison_VM): void {    
       this.histo_saison = JSON.stringify(saison);
       let ss = JSON.parse(this.histo_saison);
         this.editSaison = ss
@@ -153,7 +153,7 @@ export class SaisonComponent {
     }
   
   
-    Delete(saison: SaisonVM): void {
+    Delete(saison: Saison_VM): void {
       const errorService = ErrorService.instance;
   
       let confirmation = window.confirm(
@@ -231,7 +231,7 @@ export class SaisonComponent {
       }
     }
 
-    Active(saison: SaisonVM): void {
+    Active(saison: Saison_VM): void {
       const errorService = ErrorService.instance;
       this.action = $localize`Activer une saison`;
       this.liste_saison.forEach((s) => {
@@ -377,10 +377,10 @@ export class SaisonComponent {
         date_fin: 'Date de fin',
         active: 'Saison active ?',
       };
-      let list: SaisonVM[] = this.getFilteredSaisons();
+      let list: Saison_VM[] = this.getFilteredSaisons();
       this.excelService.exportAsExcelFile(list, 'liste_saison', headers);
     }
-    getFilteredSaisons(): SaisonVM[] {
+    getFilteredSaisons(): Saison_VM[] {
       return this.liste_saison.filter((saison) => {
         return (
           (!this.filters.filter_nom ||

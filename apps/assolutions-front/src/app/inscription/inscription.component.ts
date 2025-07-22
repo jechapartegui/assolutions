@@ -1,10 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Adherent } from '../../class/adherent';
-import { Saison } from '../../class/saison';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
+import { Adherent_VM, Saison_VM } from '@shared/src';
 
 
 @Component({
@@ -13,11 +12,11 @@ import { SaisonService } from '../../services/saison.service';
   styleUrls: ['./inscription.component.css'],
 })
 export class InscriptionComponent implements OnInit {
-  @Input() thisAdherent: Adherent;
+  @Input() thisAdherent: Adherent_VM;
   @Input() thisSaison: number;
     @Output() Fermer = new EventEmitter<boolean>();
   inclurePaiement: boolean = true;
-  public saisons: Saison[] = [];
+  public saisons: Saison_VM[] = [];
   public action: string;
 
   constructor(private saisonService: SaisonService, public inscription:InscriptionSaisonService) {}
@@ -28,7 +27,7 @@ export class InscriptionComponent implements OnInit {
     this.saisonService
       .GetAll()
       .then((saison) => {
-        this.saisons = saison.map((s) => new Saison(s));
+        this.saisons = saison;
       })
       .catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
@@ -43,7 +42,7 @@ export class InscriptionComponent implements OnInit {
   Adherer() {
     const errorService = ErrorService.instance;
     this.action = $localize`Adhérer`;
-    this.inscription.Add(this.thisSaison,this.thisAdherent.ID).then((result) => {  
+    this.inscription.Add(this.thisSaison,this.thisAdherent.id).then((result) => {  
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
       this.close(true);

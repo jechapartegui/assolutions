@@ -10,14 +10,10 @@ export class InscriptionSeance_VM {
 }
 
 
-export class FullInscriptionSeance_VM {
+export class FullInscriptionSeance_VM extends InscriptionSeance_VM {
 
-    id: number;
     person: Personne_VM;
-    seance_id: number;
-    date_inscription: Date;
-    statut_inscription: InscriptionStatus_VM | undefined;
-    statut_seance: SeanceStatus_VM | undefined;
+    isVisible:boolean = true; 
 }
 
 export enum InscriptionStatus_VM {
