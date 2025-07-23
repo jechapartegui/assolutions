@@ -1,9 +1,10 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterAdherent } from '../app/adherent/adherent.component';
-import { Adherent_VM } from '@shared/src';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
 
 @Pipe({
+  standalone: false,
   name: 'multifiltersAdherent',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })

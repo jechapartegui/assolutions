@@ -1,10 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
-import { KeyValuePair, LienGroupe_VM } from '@shared/src';
+import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
+import { KeyValuePair } from '@shared/src/lib/autres.interface';
 
 
 @Component({
+  standalone: false,
   selector: 'app-groupe-detail',
   templateUrl: './groupe-detail.component.html',
   styleUrls: ['./groupe-detail.component.css']

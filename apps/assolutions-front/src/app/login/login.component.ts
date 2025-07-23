@@ -10,6 +10,7 @@ import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
 
 @Component({
+  standalone: false,
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],

@@ -4,9 +4,12 @@ import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
-import { Adherent_VM, Groupe_VM, KeyValuePair } from '@shared/src';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { KeyValuePair } from '@shared/src/lib/autres.interface';
+import { Groupe_VM } from '@shared/src/lib/groupe.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-groupe',
   templateUrl: './groupe.component.html',
   styleUrls: ['./groupe.component.css']

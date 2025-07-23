@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { Professeur_VM, ProfSaisonVM } from '@shared/src';
+import { Professeur_VM, ProfSaisonVM } from '@shared/src/lib/prof.interface';
 
 @Injectable({
   providedIn: 'root'

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CompteService } from '../../services/compte.service';
-import { Compte_VM } from '@shared/src';
+import { Compte_VM } from '@shared/src/lib/compte.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-administrateurs',
   templateUrl: './administrateurs.component.html',
   styleUrls: ['./administrateurs.component.css'],

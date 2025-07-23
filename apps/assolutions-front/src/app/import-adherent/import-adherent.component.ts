@@ -9,10 +9,12 @@ import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
-import { Adherent_VM, AdherentExport, Saison_VM } from '@shared/src';
 import { Adresse } from '@shared/src/lib/adresse.interface';
+import { Adherent_VM, AdherentExport } from '@shared/src/lib/member.interface';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-import-adherent',
   templateUrl: './import-adherent.component.html',
   styleUrls: ['./import-adherent.component.css'],

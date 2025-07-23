@@ -3,6 +3,7 @@ import { FilterMenu } from '../app/menu/menu.component';
 import { MesSeances_VM } from '@shared/src/lib/seance.interface';
 
 @Pipe({
+  standalone: false,
   name: 'multifiltersMenu',
   pure: false // Le pipe sera recalculé lorsque les filtres changent
 })

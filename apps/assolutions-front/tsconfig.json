@@ -25,9 +25,13 @@
       "dom"
     ]
   },
-  "include": [    "src/**/*.ts",
- "../../libs/shared/src/**/*.ts" 
-, "../assolutions-back/src/app/guards/password.ts"  ],
+   "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ],
   "angularCompilerOptions": {
     "enableIvy": true,
     "enableI18nLegacyMessageIdFormat": false,

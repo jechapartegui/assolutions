@@ -1,9 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
-import { Adherent_VM, ValidationItem } from "@shared/src";
+import { ValidationItem } from "@shared/src/lib/autres.interface";
+import { Adherent_VM } from "@shared/src/lib/member.interface";
 import type { ReglesPersonne } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
 @Component({
+  standalone: false,
   selector: 'infoperso',
   templateUrl: './infoperso.component.html',
   styleUrls: ['./infoperso.component.css'],

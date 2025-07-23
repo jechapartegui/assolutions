@@ -4,6 +4,7 @@ import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 
 @Component({
+  standalone: false,
   selector: 'app-reinit-mdp',
   templateUrl: './reinit-mdp.component.html',
   styleUrls: ['./reinit-mdp.component.css']

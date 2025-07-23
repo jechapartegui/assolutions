@@ -1,5 +1,5 @@
 import {  InscriptionSeance_VM } from "@shared/src/lib/inscription_seance.interface";
-import { Seance_VM, } from "@shared/src";
+import { Seance_VM, } from "@shared/src/lib/seance.interface";
 
 
 

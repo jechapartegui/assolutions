@@ -3,6 +3,7 @@ import { FilterStock } from '../app/stock/stock.component';
 import { Stock } from '../class/stock';
 
 @Pipe({
+  standalone: false,
   name: 'multifiltersStock',
 })
 @Injectable({

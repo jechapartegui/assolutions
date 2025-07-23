@@ -13,9 +13,10 @@ import { operationService } from '../../services/operation.service';
 import { SaisonService } from '../../services/saison.service';
 import { StockService } from '../../services/stock.service';
 import { ClassComptable, ObjetAppli, TypeStock, StaticClass } from '../global';
-import { Saison_VM } from '@shared/src';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-comptabilite',
   templateUrl: './comptabilite.component.html',
   styleUrls: ['./comptabilite.component.css'],

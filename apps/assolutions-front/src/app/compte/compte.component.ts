@@ -7,6 +7,7 @@ import { GlobalService } from '../../services/global.services';
 import { Compte_VM } from '@shared/src/lib/compte.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-compte',
   templateUrl: './compte.component.html',
   styleUrls: ['./compte.component.css']

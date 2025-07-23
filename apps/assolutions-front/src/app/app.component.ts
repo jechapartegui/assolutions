@@ -8,6 +8,7 @@ import { GlobalService } from '../services/global.services';
 import { Router } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

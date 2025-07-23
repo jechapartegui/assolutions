@@ -5,8 +5,10 @@ import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
 import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from '@shared/src/lib/inscription_seance.interface';
-import { Adherent_VM, Seance_VM, StatutSeance } from '@shared/src';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { Seance_VM, StatutSeance } from '@shared/src/lib/seance.interface';
 @Component({
+  standalone: false,
   selector: 'app-ma-seance',
   templateUrl: './ma-seance.component.html',
   styleUrls: ['./ma-seance.component.css']

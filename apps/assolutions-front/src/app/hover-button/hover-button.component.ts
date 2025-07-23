@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'hover-button',
   templateUrl: './hover-button.component.html',
   styleUrls: ['./hover-button.component.css']

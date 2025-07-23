@@ -5,6 +5,7 @@ import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-prof',
   templateUrl: './prof.component.html',
   styleUrls: ['./prof.component.css']

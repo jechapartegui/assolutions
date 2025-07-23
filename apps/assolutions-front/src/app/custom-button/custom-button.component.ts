@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'btn',
   templateUrl: './custom-button.component.html',
   styleUrls: ['./custom-button.component.css']

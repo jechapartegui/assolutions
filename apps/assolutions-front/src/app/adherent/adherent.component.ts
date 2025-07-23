@@ -19,11 +19,12 @@ import { SaisonService } from '../../services/saison.service';
 import { AdherentExport, Adherent_VM } from '@shared/src/lib/member.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
-import { LienGroupe_VM } from '@shared/src';
+import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-adherent',
   templateUrl: './adherent.component.html',
   styleUrls: ['./adherent.component.css'],

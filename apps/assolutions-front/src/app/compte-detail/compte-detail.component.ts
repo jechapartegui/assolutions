@@ -5,6 +5,7 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { Compte_VM } from '@shared/src/lib/compte.interface';
 @Component({
+  standalone: false,
   selector: 'app-compte-detail',
   templateUrl: './compte-detail.component.html',
   styleUrls: ['./compte-detail.component.css']

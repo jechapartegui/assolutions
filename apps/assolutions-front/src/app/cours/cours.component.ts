@@ -15,10 +15,13 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { Cours_VM, Professeur_VM, Saison_VM } from '@shared/src';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
+import { Professeur_VM } from '@shared/src/lib/prof.interface';
+import { Cours_VM } from '@shared/src/lib/cours.interface';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-cours',
   templateUrl: './cours.component.html',
   styleUrls: ['./cours.component.css']

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
-import { ValidationItem } from "@shared/src";
+import { ValidationItem } from "@shared/src/lib/autres.interface";
 import { Lieu_VM } from "@shared/src/lib/lieu.interface";
 import type { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
@@ -7,6 +7,7 @@ import { LieuNestService } from "apps/assolutions-front/src/services/lieu.nest.s
 import { SaisonService } from "apps/assolutions-front/src/services/saison.service";
 
 @Component({
+  standalone: false,
   selector: 'datelieu',
   templateUrl: './datelieu.component.html',
   styleUrls: ['./datelieu.component.css'],

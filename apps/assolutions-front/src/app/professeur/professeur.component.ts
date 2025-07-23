@@ -7,9 +7,12 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
-import { Adherent_VM, Professeur_VM, ProfSaisonVM, Saison_VM } from '@shared/src';
+import { Professeur_VM, ProfSaisonVM } from '@shared/src/lib/prof.interface';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-professeur',
   templateUrl: './professeur.component.html',
   styleUrls: ['./professeur.component.css']

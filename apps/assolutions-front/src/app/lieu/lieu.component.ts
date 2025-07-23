@@ -8,6 +8,7 @@ import { Lieu_VM } from '@shared/src/lib/lieu.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-lieu',
   templateUrl: './lieu.component.html',
   styleUrls: ['./lieu.component.css']

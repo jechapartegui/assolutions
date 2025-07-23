@@ -4,6 +4,7 @@ import type { ReglesSeance } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
 @Component({
+  standalone: false,
   selector: 'caracteristique-seance',
   templateUrl: './caracteristique_seance.component.html',
   styleUrls: ['./caracteristique_seance.component.css'],

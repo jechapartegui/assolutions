@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-tableau-de-bord',
   templateUrl: './tableau-de-bord.component.html',
   styleUrls: ['./tableau-de-bord.component.css']

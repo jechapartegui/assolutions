@@ -1,8 +1,9 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterCours } from '../app/cours/cours.component';
-import { Cours_VM } from '@shared/src';
+import { Cours_VM } from '@shared/src/lib/cours.interface';
 @Pipe({
+  standalone: false,
   name: 'multifiltersCours',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })

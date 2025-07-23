@@ -1,17 +1,17 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": false,
     "emitDeclarationOnly": false,
-    "outDir": "./out-tsc/app",           // là où tes .js seront mis
+    "outDir": "./out-tsc/app",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["@angular/localize"]
+    "types": ["@angular/localize"],
+    "baseUrl": "../../"
   },
   "include": [
     "src/**/*.ts",
- "../../libs/shared/src/**/*.ts"   // si tu accèdes à des libs locales partagées
+    "../../libs/shared/src/**/*.ts"      // visible dans l'IDE, mais pas compilé en propre
   ],
   "references": [
     {

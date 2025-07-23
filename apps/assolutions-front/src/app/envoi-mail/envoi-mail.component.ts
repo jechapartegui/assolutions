@@ -9,9 +9,11 @@ import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
-import { Adherent_VM, Seance_VM } from '@shared/src';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
+import {  Seance_VM } from '@shared/src/lib/seance.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-envoi-mail',
   templateUrl: './envoi-mail.component.html',
   styleUrls: ['./envoi-mail.component.css'],

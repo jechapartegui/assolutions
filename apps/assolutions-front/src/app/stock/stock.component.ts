@@ -11,6 +11,7 @@ import { StockService } from '../../services/stock.service';
 import { ObjetAppli, TypeStock, TypeTransaction, StaticClass } from '../global';
 
 @Component({
+  standalone: false,
   selector: 'app-stock',
   templateUrl: './stock.component.html',
   styleUrls: ['./stock.component.css'],

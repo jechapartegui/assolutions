@@ -13,10 +13,11 @@ import { GlobalService } from '../../services/global.services';
 import { Seance_VM } from '@shared/src/lib/seance.interface';
 import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
-import { Compte_VM } from '@shared/src';
+import { Compte_VM } from '@shared/src/lib/compte.interface';
 import { ItemContact } from '@shared/src/lib/personne.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-seances-essais',
   templateUrl: './seances-essais.component.html',
   styleUrls: ['./seances-essais.component.css']

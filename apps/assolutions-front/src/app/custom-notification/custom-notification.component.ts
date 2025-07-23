@@ -9,6 +9,7 @@ export class notification {
   timeLeft: number = 0;
 }
 @Component({
+  standalone: false,
   selector: 'notif_jecha',
   templateUrl: './custom-notification.component.html',
   styleUrls: ['./custom-notification.component.scss'],

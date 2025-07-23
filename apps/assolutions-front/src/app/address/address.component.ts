@@ -5,6 +5,7 @@ import { GlobalService } from '../../services/global.services';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-address',
   templateUrl: './address.component.html',
   styleUrls: ['./address.component.css']

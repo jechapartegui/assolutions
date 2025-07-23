@@ -1,7 +1,10 @@
 import { Subject } from 'rxjs';
 import { project_login } from '../services/login.nest.service';
-import { Compte_VM, Groupe_VM, Lieu_VM, Saison_VM } from '@shared/src';
 import { Adresse } from '@shared/src/lib/adresse.interface';
+import { Groupe_VM } from '@shared/src/lib/groupe.interface';
+import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Lieu_VM } from '@shared/src/lib/lieu.interface';
 
 
 export class projet {

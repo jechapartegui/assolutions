@@ -3,10 +3,12 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
-import { Adherent_VM, Saison_VM } from '@shared/src';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
 
 
 @Component({
+  standalone: false,
   selector: 'app-inscription',
   templateUrl: './inscription.component.html',
   styleUrls: ['./inscription.component.css'],

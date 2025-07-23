@@ -6,6 +6,7 @@ import { CompteBancaireService } from '../../services/compte-bancaire.service';
 import { ErrorService } from '../../services/error.service';
 
 @Component({
+  standalone: false,
   selector: 'app-compte-bancaire',
   templateUrl: './compte-bancaire.component.html',
   styleUrls: ['./compte-bancaire.component.css']

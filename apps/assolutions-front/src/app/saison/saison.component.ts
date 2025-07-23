@@ -5,9 +5,10 @@ import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { SaisonService } from '../../services/saison.service';
-import { Saison_VM } from '@shared/src';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-saison',
   templateUrl: './saison.component.html',
   styleUrls: ['./saison.component.css']

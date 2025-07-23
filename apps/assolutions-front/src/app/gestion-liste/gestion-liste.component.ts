@@ -5,6 +5,7 @@ import { AddInfoService } from '../../services/addinfo.service';
 import { ErrorService } from '../../services/error.service';
 
 @Component({
+  standalone: false,
   selector: 'app-gestion-liste',
   templateUrl: './gestion-liste.component.html',
   styleUrls: ['./gestion-liste.component.css'],

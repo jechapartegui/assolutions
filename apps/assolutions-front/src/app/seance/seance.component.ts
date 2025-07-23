@@ -16,10 +16,12 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { Cours_VM } from '@shared/src/lib/cours.interface';
 import {  Seance_VM, SeanceProfesseur_VM, StatutSeance } from '@shared/src/lib/seance.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import {  Professeur_VM, Saison_VM } from '@shared/src';
+import { Professeur_VM } from '@shared/src/lib/prof.interface';
+import { Saison_VM } from '@shared/src/lib/saison.interface';
 
 
 @Component({
+  standalone: false,
   selector: 'app-seance',
   templateUrl: './seance.component.html',
   styleUrls: ['./seance.component.css'],

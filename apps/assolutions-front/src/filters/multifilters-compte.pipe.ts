@@ -3,6 +3,7 @@ import { FilterCompte } from '../app/compte/compte.component';
 import {  Compte_VM } from '@shared/src/lib/compte.interface';
 
 @Pipe({
+  standalone: false,
   name: 'multifiltersCompte',
 })
 @Injectable({

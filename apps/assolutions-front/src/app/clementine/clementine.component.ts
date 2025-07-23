@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-clementine',
   templateUrl: './clementine.component.html',
   styleUrls: ['./clementine.component.css']

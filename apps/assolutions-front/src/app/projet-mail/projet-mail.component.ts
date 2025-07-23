@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-projet-mail',
   templateUrl: './projet-mail.component.html',
   styleUrls: ['./projet-mail.component.css']

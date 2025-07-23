@@ -1,8 +1,9 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { FilterAdherent } from '../app/adherent/adherent.component';
-import { Professeur_VM } from '@shared/src';
+import { Professeur_VM } from '@shared/src/lib/prof.interface';
 
 @Pipe({
+  standalone: false,
   name: 'multifiltersProf',
 })
 @Injectable({

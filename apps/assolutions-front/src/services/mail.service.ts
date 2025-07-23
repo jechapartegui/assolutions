@@ -3,7 +3,8 @@ import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { MailData } from '../class/mail';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { Adherent_VM, Seance_VM } from '@shared/src';
+import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { Seance_VM } from '@shared/src/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'

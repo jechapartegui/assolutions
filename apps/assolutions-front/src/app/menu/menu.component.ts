@@ -13,10 +13,13 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { AdherentService } from '../../services/adherent.service';
 import { AdherentMenu } from '../../class/adherent-menu';
-import { Cours_VM, Lieu_VM, Professeur_VM } from '@shared/src';
 import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/src/lib/inscription_seance.interface';
+import { Professeur_VM } from '@shared/src/lib/prof.interface';
+import { Lieu_VM } from '@shared/src/lib/lieu.interface';
+import { Cours_VM } from '@shared/src/lib/cours.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css'],

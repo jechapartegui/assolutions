@@ -1,9 +1,10 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterSeance } from '../app/seance/seance.component';
-import { Seance_VM } from '@shared/src';
+import { Seance_VM } from '@shared/src/lib/seance.interface';
 
 @Pipe({
+  standalone: false,
   name: 'multifiltersSeance',
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
