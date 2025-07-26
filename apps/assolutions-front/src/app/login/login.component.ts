@@ -123,11 +123,16 @@ export class LoginComponent implements OnInit {
   }
 
   valide(){
-     if (this.VM.isLoginValid && this.VM.isPasswordValid) {
+    if(this.VM.mdp_requis){
+if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       this.VM.isValid = true;
     } else {
       this.VM.isValid = false;
     }
+    } else {
+      this.VM.isValid = this.VM.isLoginValid;
+    }
+     
   }
 
   async PreLogin() {

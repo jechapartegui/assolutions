@@ -25,7 +25,7 @@ export class AuthController {
   }
 
 
-  @Get('prelogin')
+  @Get('prelogin/:login')
   async preLogin(@Param('login') login: string) : Promise<boolean> {
     return this.authService.prelogin(login);
   }

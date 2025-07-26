@@ -159,7 +159,7 @@ throw new Error('Method not implemented.');
     });
 
   }
-  calculateAge(dateNaissance: string): number {
+  calculateAge(dateNaissance: Date): number {
     const today = new Date();
     const birthDate = new Date(dateNaissance);
     let age = today.getFullYear() - birthDate.getFullYear();

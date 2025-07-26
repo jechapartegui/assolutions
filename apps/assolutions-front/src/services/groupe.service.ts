@@ -120,9 +120,9 @@ public AddLien(
     });
 }
 
-public DeleteLien(id_objet: number, type_objet: string, id_groupe: number): Promise<boolean> {
+public DeleteLien(id_lien: number): Promise<boolean> {
   // encodeURIComponent protège contre les '/' ou caractères spéciaux dans type_objet
-  const url = `api/groupe/deletelien/${id_objet}/${encodeURIComponent(type_objet)}/${id_groupe}`;
+  const url = `api/groupe/deletelien/${id_lien}`;
 
   return this.global.DELETE(url)
     .then((response: boolean) => response)

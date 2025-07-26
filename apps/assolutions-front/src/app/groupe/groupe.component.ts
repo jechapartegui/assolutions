@@ -131,7 +131,7 @@ export class GroupeComponent implements OnInit {
         list.forEach((rider) => {
           let groupe = rider.inscriptionsSaison[0].groupes.find(x => x.id == this.groupe_to_delete.key);
           if(groupe){
-            this.groupeserv.DeleteLien(rider.id, "rider", Number(this.groupe_to_delete.key)).then((retour) => {
+            this.groupeserv.DeleteLien(groupe.id_lien).then((retour) => {
               if(retour){
                 rider.inscriptionsSaison[0].groupes = rider.inscriptionsSaison[0].groupes.filter(e => e.id !== groupe.id);
               }
@@ -203,7 +203,7 @@ export class GroupeComponent implements OnInit {
   DeleteLien(groupe : Groupe_VM, rider:Adherent_VM) {
     let errorService = ErrorService.instance;
     this.action = $localize`Suppression du groupe ` + groupe.nom +  $localize` de ` + rider.libelle;
-    this.groupeserv.DeleteLien(rider.id, "rider", groupe.id).then((retour) => {
+    this.groupeserv.DeleteLien(rider.inscriptionsSaison[0].groupes.find(x => x.id == groupe.id).id_lien).then((retour) => {
       if(retour){
         rider.inscriptionsSaison[0].groupes = rider.inscriptionsSaison[0].groupes.filter(e => e.id !== groupe.id);
         let o = errorService.OKMessage(this.action);

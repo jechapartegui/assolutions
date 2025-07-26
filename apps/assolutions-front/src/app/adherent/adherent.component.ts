@@ -525,7 +525,7 @@ valid_contact_urgence(isValid: boolean): void {
       }
       if (adh.inscriptionsSaison[0]) {
         adh.inscriptionsSaison[0].groupes.forEach((gr) => {
-          this.grServ.DeleteLien(adh.id, "rider",Number(gr.id));
+          this.grServ.DeleteLien(gr.id_lien);
         });
       }
       this.ridersService

@@ -179,24 +179,24 @@
               <input
                 type="number"
                 min="0"
-                [(ngModel)]="a.ID"
+                [(ngModel)]="a.id"
                 class="input is-small"
               />
             </td>
             <td>
               <input
                 type="text"
-                [(ngModel)]="a.Prenom"
+                [(ngModel)]="a.prenom"
                 class="input is-small"
               />
             </td>
             <td>
-              <input type="text" [(ngModel)]="a.Nom" class="input is-small" />
+              <input type="text" [(ngModel)]="a.nom" class="input is-small" />
             </td>
             <td>
               <input
                 type="text"
-                [(ngModel)]="a.Surnom"
+                [(ngModel)]="a.surnom"
                 class="input is-small"
               />
             </td>
@@ -208,7 +208,7 @@
                 name="date_naissance"
                 i18n-placeholder
                 placeholder="Date de naissance"
-                [(ngModel)]="a.DDN"
+                [(ngModel)]="a.date_naissance"
               />
             </td>
             <td>
@@ -217,11 +217,11 @@
                   type="button"
                   style="font-size: small"
                   [class]="
-                    a.Sexe == true
+                    a.sexe == true
                       ? 'button is-small is-link is-active'
                       : 'button is-small is-active'
                   "
-                  (click)="a.Sexe == true ? (a.Sexe = false) : (a.Sexe = true)"
+                  (click)="a.sexe == true ? (a.sexe = false) : (a.sexe = true)"
                 >
                   <i class="fa-solid fa-mars has-text-info"></i>
                 </button>
@@ -229,11 +229,11 @@
                   type="button"
                   style="font-size: small"
                   [class]="
-                    a.Sexe == false
+                    a.sexe == false
                       ? 'button is-small is-link is-active'
                       : 'button is-small is-active'
                   "
-                  (click)="a.Sexe == true ? (a.Sexe = false) : (a.Sexe = true)"
+                  (click)="a.sexe == true ? (a.sexe = false) : (a.sexe = true)"
                 >
                   <i class="fa-solid fa-venus has-text-danger"></i>
                 </button>
@@ -247,11 +247,11 @@
                 name="login"
                 i18n-placeholder
                 placeholder="Login"
-                [(ngModel)]="a.Login"
+                [(ngModel)]="a.login"
               />
             </td>
             <td>
-              <span style="display: flex;flex-direction: row;gap: 0px;margin:0px" *ngFor="let c of a.Contacts">
+              <span style="display: flex;flex-direction: row;gap: 0px;margin:0px" *ngFor="let c of a.contact">
                 <span *ngIf="c.Type == 'EMAIL'"><i class="fas fa-at"></i></span>
                 <span *ngIf="c.Type == 'PHONE'"
                   ><i class="fas fa-phone"></i
@@ -275,7 +275,7 @@
                 name="adr"
                 i18n-placeholder
                 placeholder="Adresse"
-                [(ngModel)]="a.Adresse.Street"
+                [(ngModel)]="a.adresse.Street"
               />
               <input
                 class="input is-small"
@@ -284,7 +284,7 @@
                 name="cp"
                 i18n-placeholder
                 placeholder="Code postal"
-                [(ngModel)]="a.Adresse.PostCode"
+                [(ngModel)]="a.adresse.PostCode"
               />
               <input
                 class="input is-small"
@@ -293,7 +293,7 @@
                 name="Ville"
                 i18n-placeholder
                 placeholder="Ville"
-                [(ngModel)]="a.Adresse.City"
+                [(ngModel)]="a.adresse.City"
               />
             </td>
             <td>
@@ -302,12 +302,12 @@
                   type="button"
                   style="font-size: small"
                   [class]="
-                    a.Inscrit == true
+                    a.inscrit == true
                       ? 'button is-small is-link is-active'
                       : 'button is-small is-active'
                   "
                   (click)="
-                    a.Inscrit == true ? (a.Inscrit = false) : (a.Inscrit = true)
+                    a.inscrit == true ? (a.inscrit = false) : (a.inscrit = true)
                   "
                 >
                   <i class="fas fa-check-circle"></i>
@@ -316,12 +316,12 @@
                   type="button"
                   style="font-size: small"
                   [class]="
-                    a.Inscrit == false
+                    a.inscrit == false
                       ? 'button is-small is-link is-active'
                       : 'button is-small is-active'
                   "
                   (click)="
-                    a.Inscrit == true ? (a.Inscrit = false) : (a.Inscrit = true)
+                    a.inscrit == true ? (a.inscrit = false) : (a.inscrit = true)
                   "
                 >
                   <i class="fas fa-times-circle"></i>
@@ -377,29 +377,29 @@
           <ng-container *ngFor="let a of ListeCompare">
             <tr >
               <td class="limited-column">
-                <label>{{a.Cible.ID}}</label>
+                <label>{{a.Cible.id}}</label>
               </td>
               <td>
-                <label >{{a.Cible.Prenom}}</label>
+                <label >{{a.Cible.prenom}}</label>
               </td>
               <td>
-                <label >{{a.Cible.Nom}}</label>
+                <label >{{a.Cible.nom}}</label>
               </td>
               <td>
-                <label >{{a.Cible.Surnom}}</label>
+                <label >{{a.Cible.surnom}}</label>
               </td>
               <td>
-                <label >{{a.Cible.DDN | date: "dd/MM/yyyy"}}</label>
+                <label >{{a.Cible.date_naissance | date: "dd/MM/yyyy"}}</label>
               </td>
               <td>              
-                    <i *ngIf="a.Cible.Sexe" class="fa-solid fa-mars has-text-info"></i>              
-                    <i *ngIf="!a.Cible.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+                    <i *ngIf="a.Cible.sexe" class="fa-solid fa-mars has-text-info"></i>              
+                    <i *ngIf="!a.Cible.sexe" class="fa-solid fa-venus has-text-danger"></i>
               </td>
               <td>
-                <label [class]="!IsEmail(a.Cible.Login) ? 'label_gras' : ''">{{a.Cible.Login}}</label>
+                <label [class]="!IsEmail(a.Cible.login) ? 'label_gras' : ''">{{a.Cible.login}}</label>
               </td>
               <td>
-                <span style="display: flex;flex-direction: row;gap: 0px;margin:0px" *ngFor="let c of a.Cible.Contacts">
+                <span style="display: flex;flex-direction: row;gap: 0px;margin:0px" *ngFor="let c of a.Cible.contact">
                   <span *ngIf="c.Type == 'EMAIL'"><i class="fas fa-at"></i></span>
                   <span *ngIf="c.Type == 'PHONE'"
                     ><i class="fas fa-phone"></i
@@ -408,14 +408,14 @@
                 </span>
               </td>
               <td>
-                <label>{{a.Cible.Adresse.Street}}</label>
-                <label>{{a.Cible.Adresse.PostCode}}</label>
-                <label>{{a.Cible.Adresse.City}}</label>
+                <label>{{a.Cible.adresse.Street}}</label>
+                <label>{{a.Cible.adresse.PostCode}}</label>
+                <label>{{a.Cible.adresse.City}}</label>
                 
               </td>
               <td>
-                <i *ngIf="a.Cible.Inscrit" class="fas fa-check-circle"></i>
-                <i *ngIf="!a.Cible.Inscrit" class="fas fa-times-circle"></i>
+                <i *ngIf="a.Cible.inscrit" class="fas fa-check-circle"></i>
+                <i *ngIf="!a.Cible.inscrit" class="fas fa-times-circle"></i>
 
                
               </td>

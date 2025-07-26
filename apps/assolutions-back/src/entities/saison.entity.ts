@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Project } from './projet.entity';
 import {  RegistrationSeason } from './inscription-saison.entity';
+import { ProfessorContract } from './contrat_prof.entity';
 
 /**
  * Représente une saison liée à un projet.
@@ -28,6 +29,9 @@ export class Season {
 
   @OneToMany(() => RegistrationSeason, insc => insc.saison)
   inscriptions?: RegistrationSeason[];
+
+  @OneToMany(() => ProfessorContract, cp => cp.saison)
+  contracts?: ProfessorContract[];
 
   /** Date de début de la saison */
   @Column({ type: 'date', name: 'date_debut' })

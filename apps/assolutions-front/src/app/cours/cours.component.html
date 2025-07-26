@@ -146,48 +146,48 @@
                         "
                       >
                         <td>
-                          {{ cours.Nom }}
+                          {{ cours.nom }}
                         </td>
                         <td>
-                          <ng-container *ngIf="cours.JourSemaine == 'lundi'">
+                          <ng-container *ngIf="cours.jour_semaine == 'lundi'">
                             <span style="cursor: pointer" i18n>Lundi</span>
                           </ng-container>
-                          <ng-container *ngIf="cours.JourSemaine == 'mardi'">
+                          <ng-container *ngIf="cours.jour_semaine == 'mardi'">
                             <span style="cursor: pointer" i18n>Mardi</span>
                           </ng-container>
-                          <ng-container *ngIf="cours.JourSemaine == 'mercredi'">
+                          <ng-container *ngIf="cours.jour_semaine == 'mercredi'">
                             <span style="cursor: pointer" i18n>Mercredi</span>
                           </ng-container>
-                          <ng-container *ngIf="cours.JourSemaine == 'jeudi'">
+                          <ng-container *ngIf="cours.jour_semaine == 'jeudi'">
                             <span style="cursor: pointer" i18n>Jeudi</span>
                           </ng-container>
-                          <ng-container *ngIf="cours.JourSemaine == 'vendredi'">
+                          <ng-container *ngIf="cours.jour_semaine == 'vendredi'">
                             <span style="cursor: pointer" i18n>Vendredi</span>
                           </ng-container>
-                          <ng-container *ngIf="cours.JourSemaine == 'samedi'">
+                          <ng-container *ngIf="cours.jour_semaine == 'samedi'">
                             <span style="cursor: pointer" i18n>Samedi</span>
                           </ng-container>
-                          <ng-container *ngIf="cours.JourSemaine == 'dimanche'">
+                          <ng-container *ngIf="cours.jour_semaine == 'dimanche'">
                             <span style="cursor: pointer" i18n>Dimanche</span>
                           </ng-container>
                         </td>
                         <td>
-                          {{ cours.Heure }}
+                          {{ cours.heure }}
                         </td>
                         <td>
-                          {{ cours.Duree }}
+                          {{ cours.duree }}
                         </td>
                         <td>
-                          {{ trouverProfesseur(cours.ProfPrincipalId) }}
+                          {{ trouverProfesseur(cours.prof_principal_id) }}
                         </td>
                         <td>
-                          {{ trouverLieu(cours.LieuId) }}
+                          {{ trouverLieu(cours.lieu_id) }}
                         </td>
                         <td>
                           <div class="tags is-small">
-                            <ng-container *ngFor="let gr of cours.Groupes">
+                            <ng-container *ngFor="let gr of cours.groupes">
                               <span class="tag is-success">
-                                {{ gr.value }}
+                                {{ gr.nom }}
                               </span>
                             </ng-container>
                           </div>
@@ -752,13 +752,13 @@
                 <div class="media-content">
                   <span class="title" (click)="Edit(cours)"
                     ><strong
-                      >{{ cours.Nom }}&nbsp;{{ cours.JourSemaine }}</strong
+                      >{{ cours.nom }}&nbsp;{{ cours.jour_semaine }}</strong
                     ></span
                   >
                   <div>
-                    {{ cours.Heure }} ({{ cours.Duree }}
+                    {{ cours.heure }} ({{ cours.duree }}
                     <span i18n>&nbsp;min</span>)
-                    {{ trouverLieu(cours.LieuId) }}
+                    {{ trouverLieu(cours.lieu_id) }}
                   </div>
                 </div>
               </article>

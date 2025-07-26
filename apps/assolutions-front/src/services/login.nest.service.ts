@@ -13,13 +13,11 @@ export class LoginNestService {
   constructor(public global: GlobalService) {
   }
   public PreLogin(username: string){
-    this.url = 'api/auth/prelogin';
+    this.url = 'api/auth/prelogin/'+username;
     //  this.url = this.url + "login.php";
-    const body = {
-      email: username,
-    };
+    
 
-    return this.global.POST(this.url, body)
+    return this.global.GET(this.url)
       .then((response: any) => {
         return response;
       })

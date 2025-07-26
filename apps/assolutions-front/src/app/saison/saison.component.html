@@ -143,9 +143,6 @@
                       </span>
                     </th>
                     <th>
-                      <span i18n>Adhésions</span>
-                    </th>
-                    <th>
                       <span i18n>Action</span>
                     </th>
                   </tr>
@@ -170,15 +167,6 @@
                         *ngIf="saison.active"
                         class="fas fa-check is-danger"
                       ></i>
-                    </td>
-                    <td>
-                      <div class="tags is-small">
-                        <ng-container *ngFor="let adh of saison.Type_Adhesion">
-                          <span class="tag is-success">
-                            {{ adh.libelle }}
-                          </span>
-                        </ng-container>
-                      </div>
                     </td>
 
                     <td>
@@ -531,9 +519,7 @@
                   <label class="label" i18n>Nom</label>
                   <div class="control">
                     <input
-                      [class]="
-                        editSaison.valid.nom ? 'input' : 'input is-danger'
-                      "
+                      class="input"
                       type="text"
                       id="nom_rider"
                       name="nom_rider"
@@ -542,20 +528,13 @@
                       [(ngModel)]="editSaison.nom"
                     />
                   </div>
-                  <p class="help is-danger" *ngIf="!editSaison.valid.nom" i18n>
-                    Le nom de la saison doit contenir au moins 3 caractères
-                  </p>
                 </div>
                 <div class="field">
                   <label class="label" i18n>Date de début</label>
                   <div class="control">
                     <input
-                      [class]="
-                        editSaison.valid.date_debut ||
-                        editSaison.valid.ordre_date
-                          ? 'input'
-                          : 'input is-danger'
-                      "
+                     
+                      class="input"
                       type="date"
                       id="date_debut"
                       name="date_debut"
@@ -564,28 +543,15 @@
                       [(ngModel)]="editSaison.date_debut"
                     />
                   </div>
-                  <p
-                    class="help is-danger"
-                    *ngIf="!editSaison.valid.date_debut"
-                    i18n
-                  >
-                    Le date de début de la saison doit être renseignée
-                  </p>
-                  <p
-                    class="help is-danger"
-                    *ngIf="!editSaison.valid.ordre_date"
-                    i18n
-                  >
-                    Le date de début doit être inférieure à la date de fin
-                  </p>
+                  
+                 
                 </div>
                 <div class="field">
                   <label class="label" i18n>Date de fin</label>
                   <div class="control">
                     <input
-                      [class]="
-                        editSaison.valid.date_fin ? 'input' : 'input is-danger'
-                      "
+                      
+                      class="input"
                       type="date"
                       id="date_fin"
                       name="date_fin"
@@ -594,13 +560,7 @@
                       [(ngModel)]="editSaison.date_fin"
                     />
                   </div>
-                  <p
-                    class="help is-danger"
-                    *ngIf="!editSaison.valid.date_fin"
-                    i18n
-                  >
-                    Le date de fin de la saison doit être renseignée
-                  </p>
+                  
                 </div>
                 
               </div>
@@ -612,7 +572,6 @@
                 <div *ngIf="!afficher_filtre" class="buttons">
                   <btn
                     [type_button]="'SauvegarderSmall'"
-                    [disabled]="!editSaison.valid.control"
                     (click)="Save()"
                   ></btn>
 

@@ -41,13 +41,14 @@ export class ProfService {
     
      persons.forEach(async (person) =>{
       let prof =  await this.profserv.get(person.id);
+      console.warn(prof);
       if(prof){
-       let cont =  prof.contracts.filter(x => x.season.isActive);
+       let cont =  prof.contracts.filter(x => x.saison.isActive);
        if(cont){
         cont.forEach((_cont) =>{
   const pv :ProjetView = {
-          id: _cont.season.projectId,
-          nom : _cont.season.project.name,
+          id: _cont.saison.projectId,
+          nom : _cont.saison.project.name,
           prof : true,
           adherent : false,
           essai : false
@@ -92,7 +93,7 @@ export class ProfService {
 
 export function to_Professeur_VM(entity:Professor) : Professeur_VM{
   const vm = new Professeur_VM();
-  vm.person = toPersonneLight_VM(entity.person);
+  vm.person = toPersonneLight_VM(entity.persons);
   vm.iban = entity.iban;
   vm.info = entity.info;
   vm.num_siren = entity.sirenNumber;

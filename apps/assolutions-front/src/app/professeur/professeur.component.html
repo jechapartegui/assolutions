@@ -163,43 +163,25 @@
                           "
                         >
                           <td>
-                            {{ adherent.Libelle }}
+                            {{ adherent.person.prenom }}&nbsp;{{ adherent.person.nom }}
                           </td>
                           <td>
-                            {{ adherent.DDN | date : "dd/MM/yyyy" }}
-                            ({{ calculateAge(adherent.DDN) }}&nbsp;<span i18n
+                            {{ adherent.person.date_naissance| date : "dd/MM/yyyy" }}
+                            ({{ calculateAge(adherent.person.date_naissance) }}&nbsp;<span i18n
                               >ans</span
                             >)
                           </td>
                           <td>
                             <i
-                              *ngIf="adherent.Sexe"
+                              *ngIf="adherent.person.sexe"
                               class="fa-solid fa-mars has-text-info"
                             ></i>
                             <i
-                              *ngIf="!adherent.Sexe"
+                              *ngIf="!adherent.person.sexe"
                               class="fa-solid fa-venus has-text-danger"
                             ></i>
                           </td>
-                          <td>
-                            <span *ngIf="adherent.ContactPrefereType == 'EMAIL'"
-                              ><i class="fas fa-at"></i
-                            ></span>
-                            <span *ngIf="adherent.ContactPrefereType == 'PHONE'"
-                              ><i class="fas fa-phone"></i
-                            ></span>
-                            <span *ngIf="adherent.ContactPrefereType == 'INSTA'"
-                              ><i class="fab fa-instagram-square"></i
-                            ></span>
-                            <span
-                              *ngIf="adherent.ContactPrefereType == 'FACEBOOK'"
-                              ><i class="fab fa-facebook-square"></i
-                            ></span>
-                            <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"
-                              ><i class="fab fa-twitter-square"></i
-                            ></span>
-                            <span>&nbsp;{{ adherent.ContactPrefere }}</span>
-                          </td>
+                         
                           <td>
                             <i *ngIf="!isRegistred(adherent)" class="fas fa-times"></i>
                             <i
@@ -559,7 +541,7 @@
                     <h2 *ngIf="creer" class="title is-2" i18n>Créer un professeur
                     </h2>
                     <h2 *ngIf="!creer" class="title is-2" i18n>Editer un professeur</h2>
-                    <span><strong>{{thisProf.Prenom}}&nbsp;{{thisProf.Nom}}</strong></span>
+                    <span><strong>{{thisProf.person.prenom}}&nbsp;{{thisProf.person.nom}}</strong></span>
                     <div class="field">
                         <label class="label" i18n>Statut</label>
                     <div class="control">
@@ -625,7 +607,7 @@
                         style="fill:#FFB70F">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </button>
-                    <button *ngIf="thisProf.ID>0" (click)="Retour('LECTURE')"
+                    <button *ngIf="thisProf.person.id>0" (click)="Retour('LECTURE')"
                         class="button is-info is-rounded is-outlined">
                         <i class="fa-solid fa-binoculars"></i>
                     </button>
@@ -642,33 +624,31 @@
         <div class="columns is-justify-content-center">
             <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
                 <div *ngIf="thisAdherent" class="box">
-                    <h3 class="title is-3" i18n>{{thisAdherent.Libelle}}</h3>
+                    <h3 class="title is-3" i18n>{{thisAdherent.libelle}}</h3>
                     <div class="field">
                         <label class="label" i18n>Date de naissance (Age)</label>
-                        <div>{{thisAdherent.DDN | date: 'dd/MM/yyyy'
-                            }}&nbsp;({{calculateAge(thisAdherent.DDN)}}&nbsp;<span i18n>ans</span>)
-                        </div>
+                        {{ thisAdherent.date_naissance | date: 'dd/MM/yyyy' }} ( {{ calculateAge(thisAdherent.date_naissance) }} <span i18n>ans</span> )
                     </div>
                     <div class="field">
                         <label class="label" i18n>Sexe</label>
-                        <i *ngIf="thisAdherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
-                        <i *ngIf="!thisAdherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+                        <i *ngIf="thisAdherent.sexe" class="fa-solid fa-mars has-text-info"></i>
+                        <i *ngIf="!thisAdherent.sexe" class="fa-solid fa-venus has-text-danger"></i>
 
                     </div>
 
                     <div class="field">
                         <label class="label" i18n>Groupes</label>
                         <div class="tags">
-                            <ng-container *ngFor="let gr of thisAdherent.Groupes">
+                            <ng-container *ngFor="let gr of thisAdherent.inscriptionsSaison[0].groupes">
                                 <span class="tag is-success">
-                                    {{gr.value}}
+                                    {{gr.nom}}
                                 </span>
                             </ng-container>
                         </div>
                     </div>
                     <div class="field">
                         <label class="label" i18n>Contacts</label>
-                        <ng-container *ngFor="let cont of thisAdherent.Contacts">
+                        <ng-container *ngFor="let cont of thisAdherent.contact">
                             <span *ngIf="cont.Type=='EMAIL'"><i class="fas fa-at"></i></span>
                             <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
                             <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
@@ -680,7 +660,7 @@
                     </div>
                     <div class="field">
                         <label class="label" i18n>Contacts en cas d'urgence</label>
-                        <ng-container *ngFor="let cont of thisAdherent.ContactsUrgence">
+                        <ng-container *ngFor="let cont of thisAdherent.contact_prevenir">
                             <span *ngIf="cont.Type"><i class="fas fa-at"></i></span>
                             <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
                             <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
@@ -693,7 +673,7 @@
                     <div 
                         class="field">
                         <label class="label" i18n>Saisons</label>
-                        <table *ngIf="thisAdherent.Adhesions">
+                        <table *ngIf="thisAdherent.inscriptionsSaison.length > 0">
                             <thead>
                                 <th>Saison</th>
                                 <th>Prof</th>

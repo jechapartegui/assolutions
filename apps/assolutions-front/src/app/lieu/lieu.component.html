@@ -39,10 +39,10 @@
                 <tr
                   *ngFor="let lieu of liste_lieu">
                   <td>
-                    {{lieu.Nom}}
+                    {{lieu.nom}}
                   </td>
                   <td>
-                    {{lieu.Adresse.Street}}&nbsp;{{lieu.Adresse.PostCode}}&nbsp;{{lieu.Adresse.City}}                       
+                    {{lieu.adresse.Street}}&nbsp;{{lieu.adresse.PostCode}}&nbsp;{{lieu.adresse.City}}                       
                   </td>
                
                   <td>
@@ -69,9 +69,9 @@
             <div class="box">
               <article class="media">
                 <div class="media-content">
-                  <span class="title" (click)="Edit(lieu)"><strong>{{lieu.Nom}}</strong></span>
+                  <span class="title" (click)="Edit(lieu)"><strong>{{lieu.nom}}</strong></span>
                   <div>
-                    {{lieu.Adresse.Street}}&nbsp;{{lieu.Adresse.PostCode}}&nbsp;{{lieu.Adresse.City}} 
+                    {{lieu.adresse.Street}}&nbsp;{{lieu.adresse.PostCode}}&nbsp;{{lieu.adresse.City}} 
                    
                   </div>
   
@@ -88,26 +88,26 @@
       <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
         <div class="box">
   
-          <h2 *ngIf="editLieu.ID==0" class="title is-2" i18n>Créer un lieu</h2>
-          <h2 *ngIf="editLieu.ID>0" class="title is-2" i18n>Editer un lieu</h2>
+          <h2 *ngIf="editLieu.id==0" class="title is-2" i18n>Créer un lieu</h2>
+          <h2 *ngIf="editLieu.id>0" class="title is-2" i18n>Editer un lieu</h2>
                     
              
             <div class="field">
               <label class="label" i18n>Nom</label>
-              <input [class]="editLieu.Nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
-                name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="editLieu.Nom" required>
-              <p class="help is-danger" *ngIf="editLieu.Nom.length <5" i18n>Le nom du lieu doit au moins faire 5
+              <input [class]="editLieu.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
+                name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="editLieu.nom" required>
+              <p class="help is-danger" *ngIf="editLieu.nom.length <5" i18n>Le nom du lieu doit au moins faire 5
                 caractères
               </p>
             </div>
             <div class="field">
                 <label class="label" i18n>Adresse :</label>
-                <app-address [thisAdresse]="editLieu.Adresse"></app-address>
+                <app-address [thisAdresse]="editLieu.adresse"></app-address>
             </div>
         </div>
   
           <div class="buttons">
-            <button class="button is-primary is-rounded is-outlined" [disabled]="(editLieu.Nom.length < 5 || !valid_address) " type="button"
+            <button class="button is-primary is-rounded is-outlined" [disabled]="(editLieu.nom.length < 5 || !valid_address) " type="button"
               style="fill:hsl(171, 100%, 41%)" (click)="Save(editLieu)">
               <i class="fa-solid fa-floppy-disk"></i>
             </button>

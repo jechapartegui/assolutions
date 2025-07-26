@@ -12,7 +12,13 @@ export class ProfessorService {
   ) {}
 
   async get(id: number): Promise<Professor> {
-    const item = await this.repo.findOne({ where: { id } });
+    const item = await this.repo.findOne({ where: { id },
+    relations: [
+      'persons',                         // 1er niveau
+      'contracts',      // 1er niveau
+      'contracts.saison', // 2ᵉ niveau
+      'contracts.saison.project', // 3ᵉ niveau projet
+    ], });
     if (!item) throw new NotFoundException('PROFESSOR_NOT_FOUND');
     return item;
   }

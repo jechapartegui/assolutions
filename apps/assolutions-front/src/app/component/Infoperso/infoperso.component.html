@@ -1,7 +1,7 @@
     <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations personnelles</h3>
-      <ng-container *ngIf="thisAdherent.ID >0">
+      <ng-container *ngIf="thisAdherent.id >0">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
@@ -48,7 +48,7 @@
             <label class="label is-small" i18n>Nom</label>
             <div class="control">
               <input
-              [ngClass]="!rNom.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="thisAdherent.Nom"  (ngModelChange)="validerTout()">
+              [ngClass]="!rNom.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="thisAdherent.nom"  (ngModelChange)="validerTout()">
             </div>
             <p *ngIf="rNom.key" class="is-small help is-danger">{{rNom.value}}</p>
           </div>
@@ -58,7 +58,7 @@
             <div class="control">
               <input    [ngClass]="!rPrenom.key
                               ? 'input is-danger is-small'
-                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Prenom"  (ngModelChange)="validerTout()">
+                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.prenom"  (ngModelChange)="validerTout()">
             </div>
             <p *ngIf="rPrenom.key" class="is-small help is-danger">{{rPrenom.value}}</p>
           </div>
@@ -66,7 +66,7 @@
           <div class="field mb-2">
             <label class="label is-small" i18n>Date de naissance</label>
             <div class="control">
-              <input [ngClass]="!rDateNaissance.key? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.DateNaissance"  (ngModelChange)="validerTout()">
+              <input [ngClass]="!rDateNaissance.key? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.date_naissance"  (ngModelChange)="validerTout()">
             </div>
             <p *ngIf="rDateNaissance.key" class="is-small help is-danger">{{rDateNaissance.value}}</p>
           </div>
@@ -75,7 +75,7 @@
             <label class="label is-small" i18n>Sexe</label>
             <div class="control">
               <div class="select is-small">
-                <select [(ngModel)]="thisAdherent.Sexe">
+                <select [(ngModel)]="thisAdherent.sexe">
                   <option [ngValue]="true" i18n>Masculin</option>
                   <option [ngValue]="false" i18n>Féminin</option>
                 </select>
@@ -88,22 +88,22 @@
             <div class="control">
               <input    [ngClass]="!rSurnom.key
                               ? 'input is-danger is-small'
-                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.Surnom"  (ngModelChange)="validerTout()">
+                              : 'input is-small'" type="text" [(ngModel)]="thisAdherent.surnom"  (ngModelChange)="validerTout()">
             </div>
             <p *ngIf="rSurnom.key" class="is-small help is-danger">{{rSurnom.value}}</p>
           </div>
         </div>
 
         <ng-template #readPerso>
-          <p><strong i18n>Nom :</strong>&nbsp;{{ thisAdherent.Nom }}</p>
-          <p><strong i18n>Prénom :</strong>&nbsp;{{ thisAdherent.Prenom }}</p>
-          <p><strong i18n>Date de naissance :</strong>&nbsp;{{ thisAdherent.DDN | date:'dd/MM/yyyy' }}</p>
+          <p><strong i18n>Nom :</strong>&nbsp;{{ thisAdherent.nom }}</p>
+          <p><strong i18n>Prénom :</strong>&nbsp;{{ thisAdherent.prenom }}</p>
+          <p><strong i18n>Date de naissance :</strong>&nbsp;{{ thisAdherent.date_naissance | date:'dd/MM/yyyy' }}</p>
           <p >
             <strong i18n>Sexe :</strong>&nbsp;
-            <i *ngIf="thisAdherent.Sexe" class="fa-solid fa-mars has-text-info"></i>
-            <i *ngIf="!thisAdherent.Sexe" class="fa-solid fa-venus has-text-danger"></i>
+            <i *ngIf="thisAdherent.sexe" class="fa-solid fa-mars has-text-info"></i>
+            <i *ngIf="!thisAdherent.sexe" class="fa-solid fa-venus has-text-danger"></i>
           </p>
-          <p><strong i18n>Surnom :</strong> {{ thisAdherent.Surnom }}</p>
+          <p><strong i18n>Surnom :</strong> {{ thisAdherent.surnom }}</p>
         </ng-template>
       </div>
 

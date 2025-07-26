@@ -15,7 +15,7 @@ export class Professor {
   /** Relation One-to-One avec Person */
   @OneToOne(() => Person, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id' })
-  person: Person;
+  persons: Person;
 
   /** Taux horaire appliqué */
   @Column({ type: 'float', nullable: true })
@@ -47,6 +47,6 @@ export class Professor {
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'date_maj' })
   updatedAt: Date;
 
-  @OneToMany(() => ProfessorContract, contract => contract.professor)
+  @OneToMany(() => ProfessorContract, contracts => contracts.professor)
 contracts: ProfessorContract[];
 }

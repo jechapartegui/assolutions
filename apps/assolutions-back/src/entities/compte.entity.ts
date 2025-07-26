@@ -12,7 +12,7 @@ export class Account {
   login: string;
 
   /** Mot de passe hashé */
-  @Column()
+  @Column({nullable: true})
   password: string;
 
   /** Jeton d'activation après inscription */

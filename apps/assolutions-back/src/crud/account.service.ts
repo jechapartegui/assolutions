@@ -31,14 +31,25 @@ export class AccountService {
 
 
   async adherentCompte(id:number) : Promise<Person[]>{
-     const item = await this.repo.findOne({ where: { id } });
-      if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
-    return item.persons;
+       const account = await this.repo.findOne({
+    where: { id },
+    relations: [
+      'persons',                         // 1er niveau
+      'persons.inscriptions',           // 2ᵉ niveau
+      'persons.inscriptions.saison',    // 3ᵉ niveau (votre “season”)
+      'persons.inscriptions.saison.project',    // 4ᵉ niveau projet
+    ],
+  });
+  if (!account) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+  return account.persons;
   }
 
    async getAdhesion(id: number): Promise<ProjetView[]> {
     let retour:ProjetView[]=[];
     const persons = await this.adherentCompte(id);
+    if(!persons || persons.length === 0) {
+      throw new NotFoundException('NO_PERSONS_FOUND');
+    }
     persons.forEach((person) =>{
    let person_inscrite =  person.inscriptions?.filter(y => y.saison.isActive);
    

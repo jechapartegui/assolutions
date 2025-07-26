@@ -2,13 +2,13 @@
     <ng-container *ngFor="let niv of Groupes">
         <span class="fullscreen">
         <span class="tag is-success">
-            {{niv.value}}
+            {{niv.nom}}
             <button  class="delete is-small" (click)="RemoveGroupe(niv)"></button>
         </span>
         </span>
         <span class="mobile">
             <span class="tag is-success is-large">
-                {{niv.value}}
+                {{niv.nom}}
                 <button  class="delete" (click)="RemoveGroupe(niv)"></button>
             </span>
             </span>
