@@ -35,34 +35,29 @@ export class ProfService {
     );
   }
 
-  async getProfContratActif(compte_id:number) : Promise<ProjetView[]>{
-    let retour:ProjetView[] = [];
-    const persons = await this.acc_serv.adherentCompte(compte_id);
-    
-     persons.forEach(async (person) =>{
-      let prof =  await this.profserv.get(person.id);
-      console.warn(prof);
-      if(prof){
-       let cont =  prof.contracts.filter(x => x.saison.isActive);
-       if(cont){
-        cont.forEach((_cont) =>{
-  const pv :ProjetView = {
-          id: _cont.saison.projectId,
-          nom : _cont.saison.project.name,
-          prof : true,
-          adherent : false,
-          essai : false
-        }
-        retour.push(pv);
-        })
-      
-       }
-      }
-     
-       });
-       return retour;
+async getProfContratActif(compte_id: number): Promise<ProjetView[]> {
+  const retour: ProjetView[] = [];
+  const persons = await this.acc_serv.ProfCompte(compte_id);
 
+  for (const person of persons) {
+    const prof = await this.profserv.get(person.id);
+    if (!prof) continue;
+
+    const contratsActifs = prof.contracts.filter(c => c.saison.isActive);
+    for (const c of contratsActifs) {
+      retour.push({
+        id: c.saison.projectId,
+        nom: c.saison.project.name,
+        prof: true,
+        adherent: false,
+        essai: false,
+      });
+    }
   }
+
+  return retour;
+}
+
 
     async add(s: Professeur_VM):Promise<number> {
        if (!s) {
@@ -93,7 +88,7 @@ export class ProfService {
 
 export function to_Professeur_VM(entity:Professor) : Professeur_VM{
   const vm = new Professeur_VM();
-  vm.person = toPersonneLight_VM(entity.persons);
+  vm.person = toPersonneLight_VM(entity.person);
   vm.iban = entity.iban;
   vm.info = entity.info;
   vm.num_siren = entity.sirenNumber;

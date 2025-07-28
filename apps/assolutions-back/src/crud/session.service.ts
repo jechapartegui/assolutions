@@ -29,7 +29,7 @@ export class SessionService {
     );
   }
     async getAllSeason(seasonId:number): Promise<Session[]> {
-     const seances = await  this.repo.find({ where: { seasonId } });
+     const seances = await  this.repo.find({ where: { seasonId }, relations: ['course', 'location', 'seanceProfesseurs', 'seanceProfesseurs.professeur', 'seanceProfesseurs.professeur.professor', 'seanceProfesseurs.professeur.professor.person'] });
      return Promise.all(
       seances.map(async seance => {
         seance.groups = await this.linkgroup_serv.getGroupsForObject('séance', seance.id);

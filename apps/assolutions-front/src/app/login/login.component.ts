@@ -135,6 +135,22 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
      
   }
 
+  onKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      if (this.VM.mdp_requis) {
+        this.validatePassword();
+        if (this.VM.isValid) {
+          this.Login();
+        }
+      } else {
+        this.validatePassword();
+        if (this.VM.isValid) {
+        this.PreLogin();
+        }
+      }
+    }
+  }
+
   async PreLogin() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
@@ -176,14 +192,17 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
             this.projets_select = this.projets[0];
           } else {
             let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
+        GlobalService.instance.updateLoggedin(false); 
             errorService.emitChange(o);
           }
         }).catch((error: Error) => {
           let o = errorService.CreateError(this.action, error.message);
+        GlobalService.instance.updateLoggedin(false); 
           errorService.emitChange(o);
         });
       }).catch((error: Error) => {
         let o = errorService.CreateError(this.action, error.message);
+        GlobalService.instance.updateLoggedin(false); 
         errorService.emitChange(o);
       });      
   }
@@ -246,7 +265,7 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         GlobalService.instance.updateProf(this.projets_select.prof);
          try {
           const adh = await this.proj_serv.GetActiveSaison();
-          this.GlobalService.saison_active = adh;
+          this.GlobalService.saison_active = adh.id;
           
           if (!adh) {
             throw new Error($localize`Pas de saison active détectée sur le projet`);

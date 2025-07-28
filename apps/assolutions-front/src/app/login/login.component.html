@@ -10,7 +10,8 @@
           <h3 class="title is-3" i18n>Connexion</h3>
           <div class="field">
             <p class="control has-icons-left has-icons-right">
-              <input [class]="VM.isLoginValid ? 'input' : 'input is-danger'"  (ngModelChange)="validateLogin()" [(ngModel)]="VM.Login" type="email" placeholder="Email">
+              <input [class]="VM.isLoginValid ? 'input' : 'input is-danger'"  (ngModelChange)="validateLogin()" (keypress)="onKeyPress($event)" 
+  (input)="validateLogin()" [(ngModel)]="VM.Login" type="email" placeholder="Email">
               <span class="icon is-small is-left">
                 <i class="fas fa-envelope"></i>
               </span>
@@ -47,11 +48,6 @@
               </div>
             </ng-container>
           </ng-container>
-
-          <div class="field" *ngIf="!projets">
-
-          </div>
-          log{{VM.isLoginValid}} pas{{VM.isPasswordValid}} va{{VM.isValid}} 
           <div class="columns">
             <div class="column">
               <div class="field" *ngIf="!projets">

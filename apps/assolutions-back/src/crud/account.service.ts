@@ -1,7 +1,7 @@
 
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Account } from '../entities/compte.entity';
 import { Person } from '../entities/personne.entity';
 import { ProjetView } from '@shared/src';
@@ -13,14 +13,12 @@ export class AccountService {
     private readonly repo: Repository<Account>,
   ) {}
 
-  async get(id: number): Promise<Account> {
+  async get(id: number): Promise<Account | null> {
     const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
     return item;
   }
-   async getLogin(login: string): Promise<Account> {
+   async getLogin(login: string): Promise<Account | null> {
     const item = await this.repo.findOne({ where: { login } });
-    if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
     return item;
   }
      async getToken(login: string, activationToken:string): Promise<Account> {
@@ -40,16 +38,28 @@ export class AccountService {
       'persons.inscriptions.saison.project',    // 4ᵉ niveau projet
     ],
   });
-  if (!account) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+  if (!account) return [];
+  return account.persons;
+  }
+
+   async ProfCompte(id:number) : Promise<Person[]>{
+       const account = await this.repo.findOne({
+    where: { id },
+    relations: [
+      'persons',                         // 1er niveau
+      'persons.professor',        
+      'persons.professor.contracts',    // 3ᵉ niveau (votre “season”)   // 2ᵉ niveau
+      'persons.professor.contracts.saison',    // 3ᵉ niveau (votre “season”)
+      'persons.professor.contracts.saison.project',    // 4ᵉ niveau projet
+    ],
+  });
+  if (!account) return [];
   return account.persons;
   }
 
    async getAdhesion(id: number): Promise<ProjetView[]> {
     let retour:ProjetView[]=[];
     const persons = await this.adherentCompte(id);
-    if(!persons || persons.length === 0) {
-      throw new NotFoundException('NO_PERSONS_FOUND');
-    }
     persons.forEach((person) =>{
    let person_inscrite =  person.inscriptions?.filter(y => y.saison.isActive);
    
@@ -90,29 +100,22 @@ export class AccountService {
     return this.repo.find();
   }
 
-  async create(data: Partial<Account>): Promise<Account> {
-    try {
-      const created = this.repo.create(data);
-      return await this.repo.save(created);
-    } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
-      throw err;
-    }
+async create(data: Partial<Account>): Promise<Account> {
+    const entity = this.repo.create(data);
+    // si save lance QueryFailedError, on ne l’attrape pas ici
+    return this.repo.save(entity);
   }
 
   async update(id: number, data: Partial<Account>): Promise<Account> {
-    await this.get(id);
-    try {
-      await this.repo.update({ id }, data);
-    } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
-      throw err;
-    }
-    return this.get(id);
+    const entity = await this.get(id);
+    if (!entity) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    Object.assign(entity, data);
+    return this.repo.save(entity);
   }
 
   async delete(id: number): Promise<void> {
-    await this.get(id);
-    await this.repo.delete({ id });
+    const entity = await this.get(id);
+    if (!entity) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    await this.repo.remove(entity);
   }
 }

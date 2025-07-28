@@ -32,9 +32,7 @@ export class SeanceService {
     saison_id: number,
     groupe_id: number[],
   ): Promise<MesSeances_VM[]> {
-
     const seances = await this.GetSeanceSaison(saison_id);
-
     if (!seances || seances.length === 0) {
       throw new UnauthorizedException('NO_SESSION_FOUND');
     }
@@ -285,7 +283,7 @@ export function to_Seance_VM(entity: Session): Seance_VM {
   vm.cours = entity.courseId ?? 0;
   vm.libelle = entity.label ?? '';
   vm.type_seance = entity.type;
-  vm.date_seance = new Date(entity.date?.toISOString().split('T')[0] ?? ''); // au format YYYY-MM-DD
+vm.date_seance = entity.date;
   vm.heure_debut = entity.startTime;
   vm.duree_seance = entity.duration;
   vm.lieu_id = entity.locationId;
@@ -299,7 +297,11 @@ export function to_Seance_VM(entity: Session): Seance_VM {
   vm.convocation_nominative = entity.nominativeCall;
   vm.afficher_present = entity.showAttendance;
   vm.rdv = entity.appointment ?? '';
+  if(entity.seanceProfesseurs) {
   vm.seanceProfesseurs = entity.seanceProfesseurs.map(x => to_SeanceProfesseur_VM(x)  );
+  } else {
+  vm.seanceProfesseurs = [];
+  }
   vm.est_limite_age_minimum = entity.limitMinAge ? true : false;
   vm.est_limite_age_maximum = entity.limitMaxAge ? true : false;
   vm.est_place_maximum = entity.limitPlaces ? true : false;

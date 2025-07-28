@@ -13,10 +13,19 @@ import { toInscriptionSaison_VM } from '../inscription_saison/inscription_saison
 import { SeasonService } from '../../crud/season.service';
 import { SeanceService } from '../seance/seance.services';
 import { ProfessorContractService } from '../../crud/professorcontract.service';
+import { AccountService } from '../../crud/account.service';
+import { LinkGroupService } from '../../crud/linkgroup.service';
 
 @Injectable()
 export class MemberService {
-  constructor(private seanceService:SeanceService,  private personserivce:PersonService, private profcontratserv:ProfessorContractService, private inscriptionsaisonservice:RegistrationSeasonService, private inscriptionseanceservice:RegistrationSessionService, private saison_serv:SeasonService
+  constructor(private seanceService:SeanceService,  
+    private personserivce:PersonService,
+    private accountserv:AccountService,
+     private profcontratserv:ProfessorContractService, 
+     private inscriptionsaisonservice:RegistrationSeasonService, 
+     private inscriptionseanceservice:RegistrationSessionService, 
+     private saison_serv:SeasonService,
+     private linkgroup_serv: LinkGroupService
   ) {}
   async GetMyInfo(id: number, project_id: number) {
     const saison_active = (await this.saison_serv.getActive(project_id)).id;
@@ -36,7 +45,7 @@ export class MemberService {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
     const adhrents_saison = await this.GetAdherentProject(compte, saison_active);
-  
+    
 
     const retour: AdherentSeance_VM[] = [];
   
@@ -94,33 +103,37 @@ export class MemberService {
     return retour;
   }
 
-  async GetAdherentProject( compte: number,  saison_id: number ): Promise<Adherent_VM[]> {
-    const liste_adherent: Adherent_VM[] = [];
+  async GetAdherentProject(
+  compte: number,
+  saison_id: number
+): Promise<Adherent_VM[]> {
+  const liste: Adherent_VM[] = [];
+  const _ads = await this.accountserv.adherentCompte(compte);
 
-    const _adherents = await this.personserivce.getAllCompte(compte);
+  for (const ad of _ads) {
+    const iss = ad.inscriptions?.find(x => x.saisonId === saison_id);
 
-    if (!_adherents || _adherents.length === 0) {
-      throw new UnauthorizedException('NO_USER_FOUND');
+    if (!iss) continue;
+        iss.groups = await this.linkgroup_serv.getGroupsForObject('rider', iss.id);
+      
+    // On appelle toAdherent_VM sans le cacher dans un catch vide
+    try {
+      liste.push(toAdherent_VM(ad, [iss], []));
+    } catch (err) {
+      console.error(
+        `Erreur de transformation for person=${ad.id}, inscription=${iss.id}:`,
+        err
+      );
     }
-
-    for (const ad of _adherents) {
-      try {
-      const iss = await this.inscriptionsaisonservice.getAllSeasonRider(saison_id, ad.id);
-        if(iss){
-          liste_adherent.push(toAdherent_VM(ad,[iss],[]))
-        }
-      } catch (error) {
-        
-      }
-
-    }
-
-    if (liste_adherent.length === 0) {
-      throw new UnauthorizedException('NO_USER_FOUND');
-    }
-
-    return liste_adherent;
   }
+
+  if (liste.length === 0) {
+    throw new UnauthorizedException('NO_USER_FOUND');
+  }
+
+  return liste;
+}
+
 
  
 //fonction interne
@@ -230,7 +243,11 @@ export function toPersonne_VM(entity: Person): Personne_VM {
   vm.compte = entity.accountId;
   vm.contact_prevenir = entity.emergencyContacts?? [];
   vm.contact = entity.contacts?? [];
-  vm.login = entity.account.login;  
+  if(entity.account) {
+    vm.login = entity.account.login?? '';
+  } else  {
+    vm.login = '';
+    }
   return vm;
 }
 
@@ -262,7 +279,12 @@ export function toAdherent_VM(pentity:Person, ise:RegistrationSeason[], isa:Regi
   vm.compte = pentity.accountId;
   vm.contact_prevenir = pentity.emergencyContacts?? [];
   vm.contact = pentity.contacts?? [];
-  vm.login = pentity.account.login;
+  if(pentity.account) {
+  vm.login = pentity.account.login?? '';
+  } else  {
+    vm.login = '';
+  }
+    
   vm.inscriptionsSaison = ise.map(x => toInscriptionSaison_VM(x));  
   vm.inscriptionsSeance = isa.map(x => to_InscriptionSeances_VM(x));
   return vm;

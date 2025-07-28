@@ -12,10 +12,14 @@ export class ProfessorContract {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /** Clé étrangère brute */
   @Column({ name: 'saison_id', type: 'int' })
   saisonId: number;
 
-  @ManyToOne(() => Season, saison => saison.contracts, { onDelete: 'CASCADE' })
+  /** Relation Many-to-One vers Season */
+  @ManyToOne(() => Season, saison => saison.contracts, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'saison_id' })
   saison: Season;
   /** Référence vers le professeur */

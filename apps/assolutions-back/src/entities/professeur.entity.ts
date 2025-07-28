@@ -12,10 +12,11 @@ export class Professor {
   @PrimaryColumn()
   id: number;
 
-  /** Relation One-to-One avec Person */
-  @OneToOne(() => Person, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'id' })
-  persons: Person;
+ @OneToOne(() => Person, person => person.professor, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'id' })  // la FK “id” fait référence à person.id
+  person: Person;
 
   /** Taux horaire appliqué */
   @Column({ type: 'float', nullable: true })

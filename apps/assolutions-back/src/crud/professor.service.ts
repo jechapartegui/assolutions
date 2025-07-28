@@ -1,7 +1,7 @@
 
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Professor } from '../entities/professeur.entity';
 
 @Injectable()
@@ -11,15 +11,14 @@ export class ProfessorService {
     private readonly repo: Repository<Professor>,
   ) {}
 
-  async get(id: number): Promise<Professor> {
+  async get(id: number): Promise<Professor | null> {
     const item = await this.repo.findOne({ where: { id },
     relations: [
-      'persons',                         // 1er niveau
-      'contracts',      // 1er niveau
-      'contracts.saison', // 2ᵉ niveau
-      'contracts.saison.project', // 3ᵉ niveau projet
+      'person',
+      'contracts',
+      'contracts.saison',        
+      'contracts.saison.project',    
     ], });
-    if (!item) throw new NotFoundException('PROFESSOR_NOT_FOUND');
     return item;
   }
 
@@ -28,28 +27,23 @@ export class ProfessorService {
   }
 
   async create(data: Partial<Professor>): Promise<Professor> {
-    try {
-      const created = this.repo.create(data);
-      return await this.repo.save(created);
-    } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
-      throw err;
+      const entity = this.repo.create(data);
+      // si save lance QueryFailedError, on ne l’attrape pas ici
+      return this.repo.save(entity);
     }
-  }
-
-  async update(id: number, data: Partial<Professor>): Promise<Professor> {
-    await this.get(id);
-    try {
-      await this.repo.update({ id }, data);
-    } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
-      throw err;
+  
+    async update(id: number, data: Partial<Professor>): Promise<Professor> {
+      const entity = await this.get(id);
+      if (!entity) throw new NotFoundException('PROFESSOR_NOT_FOUND');
+      Object.assign(entity, data);
+      return this.repo.save(entity);
     }
-    return this.get(id);
-  }
+  
+    async delete(id: number): Promise<void> {
+      const entity = await this.get(id);
+      if (!entity) throw new NotFoundException('PROFESSOR_NOT_FOUND');
+      await this.repo.remove(entity);
+    }
 
-  async delete(id: number): Promise<void> {
-    await this.get(id);
-    await this.repo.delete({ id });
-  }
+
 }

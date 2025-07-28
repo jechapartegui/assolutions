@@ -1,7 +1,7 @@
 
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Person } from '../entities/personne.entity';
 
 @Injectable()
@@ -11,11 +11,12 @@ export class PersonService {
     private readonly repo: Repository<Person>,
   ) {}
 
-  async get(id: number): Promise<Person> {
+  async get(id: number): Promise<Person | null> {
     const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('PERSON_NOT_FOUND');
     return item;
   }
+
+  
 
   async getAll(): Promise<Person[]> {
     return this.repo.find();
@@ -25,29 +26,22 @@ export class PersonService {
   }
    
 
-  async create(data: Partial<Person>): Promise<Person> {
-    try {
-      const created = this.repo.create(data);
-      return await this.repo.save(created);
-    } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
-      throw err;
-    }
-  }
-
-  async update(id: number, data: Partial<Person>): Promise<Person> {
-    await this.get(id);
-    try {
-      await this.repo.update({ id }, data);
-    } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
-      throw err;
-    }
-    return this.get(id);
-  }
-
-  async delete(id: number): Promise<void> {
-    await this.get(id);
-    await this.repo.delete({ id });
-  }
+    async create(data: Partial<Person>): Promise<Person> {
+        const entity = this.repo.create(data);
+        // si save lance QueryFailedError, on ne l’attrape pas ici
+        return this.repo.save(entity);
+      }
+    
+      async update(id: number, data: Partial<Person>): Promise<Person> {
+        const entity = await this.get(id);
+        if (!entity) throw new NotFoundException('PERSON_NOT_FOUND');
+        Object.assign(entity, data);
+        return this.repo.save(entity);
+      }
+    
+      async delete(id: number): Promise<void> {
+        const entity = await this.get(id);
+        if (!entity) throw new NotFoundException('PERSON_NOT_FOUND');
+        await this.repo.remove(entity);
+      }
 }

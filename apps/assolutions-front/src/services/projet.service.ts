@@ -35,11 +35,11 @@ export class ProjetService {
         return Promise.reject(error);
       });
   }
-  public GetActiveSaison(): Promise<number> {
-      this.url = 'api/project/active_saison/';
+  public GetActiveSaison(): Promise<Saison_VM> {
+      this.url = 'api/saison/active_saison/';
   
     return this.global.GET(this.url)
-        .then((response: number) => {
+        .then((response: Saison_VM) => {
   
           return response;
         })

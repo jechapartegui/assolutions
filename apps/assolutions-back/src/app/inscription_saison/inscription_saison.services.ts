@@ -80,7 +80,7 @@ async Delete(id: number) {
 export function toInscriptionSaison_VM(obj:RegistrationSeason): InscriptionSaison_VM{
   const item = new InscriptionSaison_VM();
   item.id = obj.id;
-  item.groupes = obj.groups?.map(x => new LienGroupe_VM(x.id, x.group.name, x.groupId)) ?? [];
+  item.groupes = obj.groups?.map(x => new LienGroupe_VM(x.groupId, x.group.name, x.id)) ?? [];
   item.rider_id = obj.personneId;
   item.saison_id = obj.saisonId;
   item.active = obj.saison.isActive;

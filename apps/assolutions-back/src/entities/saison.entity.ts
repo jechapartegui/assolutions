@@ -29,7 +29,6 @@ export class Season {
 
   @OneToMany(() => RegistrationSeason, insc => insc.saison)
   inscriptions?: RegistrationSeason[];
-
   @OneToMany(() => ProfessorContract, cp => cp.saison)
   contracts?: ProfessorContract[];
 

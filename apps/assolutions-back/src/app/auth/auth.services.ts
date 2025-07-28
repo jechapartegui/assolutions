@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException
 } from '@nestjs/common';
 import * as crypto from 'crypto';
@@ -11,6 +12,7 @@ import { Account } from '../../entities/compte.entity';
 import { SeasonService } from '../../crud/season.service';
 import { MemberService } from '../member/member.services';
 import { ProfService } from '../prof/prof.services';
+import { QueryFailedError } from 'typeorm';
 
 
 @Injectable()
@@ -29,12 +31,15 @@ export class AuthService {
   }
 
   async prelogin(login: string): Promise<boolean> {
-  
+    //test throw
     const compte = await this.compteserv.getLogin(login);
+    if (!compte) {
+      throw new UnauthorizedException('NO_ACCOUNT_FOUND');
+    }
     if(!compte.isActive){
       throw new UnauthorizedException('ACCOUNT_NOT_ACTIVE');
     }
-   if(compte.password && compte.password.length>0){
+   if(compte.password && compte.password.length>0){ 
     return true;
    } else {
     return false;
@@ -80,6 +85,9 @@ export class AuthService {
     const adhesions:ProjetView[] = await this.compteserv.getAdhesion(compteId);
     const profs:ProjetView[] = await this.prof_serv.getProfContratActif(compteId);
     // 2. Crée une map pour fusionner les projets par ID
+    if(!adhesions && !profs) {
+      return [];
+    }
   const map = new Map<number, ProjetView>();
 
   // 3. Ajoute les projets venant des adhésions
@@ -144,7 +152,11 @@ export class AuthService {
       const adh = await this.member_serv.AdherentSaisons(saison_active.id);
       let compte_id = [...new Set(adh.map(x => x.compte))];
       compte_id.forEach(async (c_id) =>{
-let acc = to_CompteVM(await this.compteserv.get(c_id));
+         const existing = await this.compteserv.get(c_id);
+      if(!existing) {
+        throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
+      }
+let acc = to_CompteVM(existing);
 acc.adherents = adh.filter(x => x.compte == acc.id);
 liste_compte.push(acc);
       })
@@ -152,38 +164,64 @@ liste_compte.push(acc);
     }
   
     
-      async add(s: Compte_VM):Promise<number> {
-      if (!s) {
-        throw new BadRequestException('INVALID_ACCOUNT');
-      }
-      const objet_base = toAccount(s);
-    
-      const objet_insere = await this.compteserv.create(objet_base);
-      return objet_insere.id;
+   async add(vm: Compte_VM): Promise<number> {
+    if (!vm) {
+      throw new BadRequestException('INVALID_ACCOUNT');
     }
-    async update(s: Compte_VM, update_psw :boolean) {
-        if (!s) {
-        throw new BadRequestException('INVALID_ACCOUNT');
+    const toInsert = toAccount(vm);
+    try {
+      const saved = await this.compteserv.create(toInsert);
+      return saved.id;
+    } catch (err) {
+      if (err instanceof QueryFailedError) {
+        // par exemple violation de clef unique
+        throw new BadRequestException('INTEGRITY_ERROR');
       }
-        const objet_base = toAccount(s, update_psw?  this.pepper : null);
-        if(!update_psw){
-          let acc = await this.compteserv.get(s.id);
-          objet_base.password = acc.password;
-        }
-        return await this.compteserv.update(objet_base.id, objet_base);
-
+      throw err;
+    }
+  }
+  async update(vm: Compte_VM, updatePsw: boolean): Promise<number> {
+    if (!vm) {
+      throw new BadRequestException('INVALID_ACCOUNT');
+    }
+    // fusionnez l’existant si besoin
+    let base = toAccount(vm, updatePsw ? this.pepper : null);
+    if (!updatePsw) {
+      const existing = await this.compteserv.get(vm.id);
+      if(!existing) {
+        throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
       }
+      base.password = existing.password;
+    }
+    try {
+      const updated = await this.compteserv.update(base.id, base);
+      return updated.id;
+    } catch (err) {
+      if (err instanceof QueryFailedError) {
+        throw new BadRequestException('INTEGRITY_ERROR');
+      }
+      throw err;
+    }
+  }
 
     
     
-    async delete(id: number):Promise<boolean> {
-       try{
+   async delete(id: number): Promise<boolean> {
+    try {
       await this.compteserv.delete(id);
       return true;
-       } catch{
+    } catch (err) {
+      // si c’est NotFoundException, on considère false
+      if (err instanceof NotFoundException) {
         return false;
-       }
+      }
+      // ou si contrainte de FK : on peut renvoyer false aussi
+      if (err instanceof QueryFailedError) {
+        return false;
+      }
+      throw err;
     }
+  }
 
   
 }

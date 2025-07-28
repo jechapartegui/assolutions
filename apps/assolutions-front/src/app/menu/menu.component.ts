@@ -67,13 +67,14 @@ export class MenuComponent implements OnInit {
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
       this.loading = false;
-      errorService.emitChange(o);      
+      errorService.emitChange(o);  
+        GlobalService.instance.updateLoggedin(false);     
       this.router.navigate(['/login']);
       return;
     }
   
     try {
-      const today = new Date();
+      const today = new Date(2025,2,10);
       const yesterday = new Date(today);
       yesterday.setDate(today.getDate() - 1);
       const nextMonth = new Date(today);
@@ -195,6 +196,7 @@ export class MenuComponent implements OnInit {
     } else {
       GlobalService.is_logged_in = false;
       GlobalService.projet = null;
+        GlobalService.instance.updateLoggedin(false);     
       this.router.navigate(['/login']);
     }
     } finally {

@@ -20,8 +20,8 @@ export class ProfessorContractService {
   async getAll(): Promise<ProfessorContract[]> {
     return this.repo.find();
   }
-    async getAllSaison(seasonId:number): Promise<ProfessorContract[]> {
-    return this.repo.find({ where: { seasonId } });
+    async getAllSaison(saisonId:number): Promise<ProfessorContract[]> {
+    return this.repo.find({ where: { saisonId }, relations: ['professor', 'professor.person'] });
   }
 
   async create(data: Partial<ProfessorContract>): Promise<ProfessorContract> {

@@ -1,16 +1,26 @@
 import 'reflect-metadata';
-import { Logger } from '@nestjs/common';
+import { HttpException, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { json, urlencoded } from 'express';
+import { json, Response, urlencoded } from 'express';
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
 
-@Catch()
-class GlobalExceptionLogger implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
-    console.error('🌋 GLOBAL ERROR:', exception);
+@Catch(HttpException)
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+    const body = exception.getResponse();
+    response
+      .status(status)
+      .json(
+        typeof body === 'string'
+          ? { statusCode: status, message: body }
+          : body
+      );
   }
 }
 
@@ -62,7 +72,6 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api');
-  app.useGlobalFilters(new GlobalExceptionLogger());
 // -- NOUVEAU SNIPPET POUR DEBUG ENTITY LOADING --
 const dataSource = app.get(DataSource);
 console.log(dataSource);

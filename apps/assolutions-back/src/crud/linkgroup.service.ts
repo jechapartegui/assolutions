@@ -51,7 +51,7 @@ export class LinkGroupService {
     objectId: number
   ): Promise<LinkGroup[]> {
     const links = await this.repo.find({
-      where: { objectType, objectId }
+      where: { objectType, objectId }, relations: ['group'],
     });
 
     return links;

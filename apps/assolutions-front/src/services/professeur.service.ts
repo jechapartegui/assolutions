@@ -87,6 +87,7 @@ export class ProfesseurService {
       });
   }
   public GetProf(): Promise<Professeur_VM[]> {
+    console.log(this.global.saison_active);
     let saison_id= this.global.saison_active;
   this.url = 'api/prof/get_prof_saison/' + saison_id;
     //  this.url = this.url + "login.php";

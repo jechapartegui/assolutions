@@ -11,6 +11,14 @@ export class SaisonController {
   async Get(@Param('id') id: number) {
     return this.saison_serv.Get(id);
   }
+
+  
+@Get('active_saison')
+async GetActive(@Headers('projectid') projectId: number) {
+  return this.saison_serv.GetSaisonActive(projectId);
+}
+
+
   @UseGuards(PasswordGuard)
   @Get('getall')
   async GetAll(@Headers('projectid') projectId: number) {

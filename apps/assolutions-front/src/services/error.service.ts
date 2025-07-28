@@ -75,6 +75,12 @@ export class ErrorService {
   interpret_error(text: string): string {
     console.log(text);
     switch (text) {
+      case "ACCOUNT_NOT_FOUND":
+      case "Unauthorized ACCOUNT_NOT_FOUND":
+        return $localize`Compte non trouvé`;
+      case "ACCOUNT_NOT_ACTIVE":
+      case "Unauthorized ACCOUNT_NOT_ACTIVE":
+        return $localize`Compte non actif`;
       case "DELETE_FAILED":
       case "Unauthorized DELETE_FAILED":
         return $localize`Erreur lors de la suppression`;
