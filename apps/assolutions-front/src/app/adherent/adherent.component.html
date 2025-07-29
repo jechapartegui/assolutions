@@ -20,7 +20,7 @@
                   class="card-header-title"
                   *ngIf="
                     liste_adherents_VM
-                      | multifiltersAdherent : filters as filteredApplis
+                       | multifiltersAdherent : filters : active_saison.id as filteredApplis
                   "
                 >
                   <span i18n>Liste des adhérents</span>&nbsp;({{
@@ -160,7 +160,7 @@
                       <tr
                         *ngFor="
                           let adherent of liste_adherents_VM
-                            | multifiltersAdherent : filters
+                            | multifiltersAdherent : filters : active_saison.id
                         "
                       >
                         <td>
@@ -209,12 +209,12 @@
                           <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"
                             ><i class="fab fa-twitter-square"></i
                           ></span>
-                          <span>&nbsp;{{ adherent.contact_prevenir }}</span>
+                          <span  class="ml-1">{{toValueContactPref(adherent.contact)}}</span>
                         </td>
                         <td>
-                          <i *ngIf="!adherent.inscrit" class="fas fa-times"></i>
+                          <i *ngIf="isInscrtitionActive(adherent, active_saison.id) == false" class="fas fa-times"></i>
                           <i
-                            *ngIf="adherent.inscrit"
+                            *ngIf="isInscrtitionActive(adherent, active_saison.id)"
                             class="fas fa-check has-text-success"
                           ></i>
                         </td>
@@ -229,7 +229,7 @@
                             ></btn>
                             <btn
                               *ngIf="
-                                !adherent.inscrit &&
+                                !isInscrtitionActive(adherent, active_saison.id) == false &&
                                 adherent.compte > 0
                               "
                               i18n-title
@@ -244,13 +244,7 @@
                               title="Voir"
                               [type_button]="'VoirLight'"
                               (click)="Read(adherent)"
-                            ></btn>
-                            <btn
-                              i18n-title
-                              title="Editer"
-                              [type_button]="'EditerLight'"
-                              (click)="Edit(adherent)"
-                            ></btn>
+                            ></btn>                          
                           </div>
                         </td>
                       </tr>
@@ -860,13 +854,13 @@
           <ng-container
             *ngFor="
               let adherent of liste_adherents_VM
-                | multifiltersAdherent : filters
+                | multifiltersAdherent : filters : active_saison.id
             "
           >
             <div class="container-box">
               <article class="media">
                 <div class="media-content">
-                  <span class="title" (click)="Edit(adherent)"
+                  <span class="title" (click)="Read(adherent)"
                     ><strong>{{ adherent.libelle }}</strong></span
                   >
                   <div>

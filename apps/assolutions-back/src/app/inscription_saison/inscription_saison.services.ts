@@ -83,7 +83,11 @@ export function toInscriptionSaison_VM(obj:RegistrationSeason): InscriptionSaiso
   item.groupes = obj.groups?.map(x => new LienGroupe_VM(x.groupId, x.group.name, x.id)) ?? [];
   item.rider_id = obj.personneId;
   item.saison_id = obj.saisonId;
-  item.active = obj.saison.isActive;
+  if (obj.saison) {
+    item.active = obj.saison.isActive
+  } else {
+    item.active = false;
+  }
   return item;
 }
 

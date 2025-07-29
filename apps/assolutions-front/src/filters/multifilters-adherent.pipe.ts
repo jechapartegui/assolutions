@@ -9,7 +9,7 @@ import { Adherent_VM } from '@shared/src/lib/member.interface';
   pure: false, // Le pipe sera recalculé à chaque cycle de détection
 })
 export class MultifiltersAdherentPipe implements PipeTransform {
-  transform(items: Adherent_VM[], filters: FilterAdherent): Adherent_VM[] {
+  transform(items: Adherent_VM[], filters: FilterAdherent, saison_id: number): Adherent_VM[] {
     if (!items) return [];
     if (!filters) return items;
 
@@ -29,7 +29,7 @@ export class MultifiltersAdherentPipe implements PipeTransform {
             )
           )) &&
         (filters.filter_inscrit === null ||
-          item.inscrit === filters.filter_inscrit) &&
+          item.inscriptionsSaison.some( x => x.saison_id == saison_id)) &&
         (filters.filter_sexe === null || item.sexe === filters.filter_sexe)
       );
     });

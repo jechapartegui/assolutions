@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Project } from './projet.entity';
+import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
 
 export enum StorageType {
   DATABASE = 'DB',
@@ -35,16 +35,9 @@ export class Document {
   @Column({ type: 'varchar', length: 255 })
   mimetype: string;
 
-  @Column({ name: 'date_import', type: 'timestamp with time zone' })
+  @UpdateDateColumn({ name: 'date_import', type: 'timestamp with time zone' })
   dateImport: Date;
 
-/** Référence vers le projet parent */
-  @Column({ name: 'project_id' })
-  projectId: number;
-
-  @ManyToOne(() => Project, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'project_id' })
-  project: Project;
   
   @Column({ type: 'text', nullable: true })
   commentaire?: string;

@@ -94,7 +94,7 @@
               <input
               [ngClass]="!rDuree.key   ? 'input is-danger is-small'   : 'input is-small' " type="number" [(ngModel)]="duree"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rDuree.key" class="is-small "><span i18n>Heure de fin</span>&nbsp;:&nbsp;{{calculerHeureFin(heure,duree)}}</p>
+            <p *ngIf="rDuree.key" class="is-small "><span i18n>Heure de fin</span>:{{calculerHeureFin(heure,duree)}}</p>
             <p *ngIf="rDuree.key" class="is-small help is-danger">{{rDuree.value}}</p>
           </div>
         
@@ -102,10 +102,10 @@
         </div>
 
           <ng-template #readLieu>
-          <p><strong i18n>Lieu :</strong>&nbsp;{{ getLieuNom(lieu_id) }}</p>
-          <p><strong i18n>Adresse :</strong>&nbsp;{{ getLieuAdresse(lieu_id) }}</p>
+          <p><strong i18n>Lieu : </strong>{{ getLieuNom(lieu_id) }}</p>
+          <p><strong i18n>Adresse : </strong>{{ getLieuAdresse(lieu_id) }}</p>
           <ng-container *ngIf="creneau">
-          <p><strong i18n>Jour de la semaine :</strong>&nbsp;
+          <p><strong i18n>Jour de la semaine :</strong>
             <span *ngIf="jour_semaine==='lundi'" i18n>Lundi</span>
             <span *ngIf="jour_semaine==='mardi'" i18n>Mardi</span>
             <span *ngIf="jour_semaine==='mercredi'" i18n>Mercredi</span>
@@ -115,16 +115,16 @@
             <span *ngIf="jour_semaine==='dimanche'" i18n>Dimanche</span>
           </p>
           <ng-container *ngIf="serie">
-            <p><strong i18n>Date de début :</strong>&nbsp;{{ date_debut | date:'dd/MM/yyyy' }}</p>
-            <p><strong i18n>Date de fin :</strong>&nbsp;{{ date_fin | date:'dd/MM/yyyy' }}</p>
+            <p><strong i18n>Date de début : </strong>{{ date_debut | date:'dd/MM/yyyy' }}</p>
+            <p><strong i18n>Date de fin : </strong>{{ date_fin | date:'dd/MM/yyyy' }}</p>
           </ng-container>
           </ng-container>
           <ng-container *ngIf="!creneau">
-            <p><strong i18n>Date :</strong>&nbsp;{{ date | date:'dd/MM/yyyy' }}</p>
+            <p><strong i18n>Date : </strong>{{ date | date:'dd/MM/yyyy' }}</p>
           </ng-container>
-          <p><strong i18n>Heure de début :</strong>&nbsp;{{ heure | date:'HH:mm' }}</p>
-          <p><strong i18n>Durée :</strong>&nbsp;{{ duree }}&nbsp;min</p>
-          <p><strong i18n>Heure de fin :</strong>&nbsp;{{ calculerHeureFin(heure,duree) | date:'HH:mm' }}</p>
+          <p><strong i18n>Heure de début : </strong>{{ heure | date:'HH:mm' }}</p>
+          <p><strong i18n>Durée : </strong>{{ duree }}min</p>
+          <p><strong i18n>Heure de fin : </strong>{{ calculerHeureFin(heure,duree) | date:'HH:mm' }}</p>
         </ng-template>
       </div>
 

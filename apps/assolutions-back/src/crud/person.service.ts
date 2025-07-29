@@ -3,12 +3,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Person } from '../entities/personne.entity';
+import { LinkGroupService } from './linkgroup.service';
 
 @Injectable()
 export class PersonService {
   constructor(
     @InjectRepository(Person)
     private readonly repo: Repository<Person>,
+    private linkgroup_serv: LinkGroupService,
   ) {}
 
   async get(id: number): Promise<Person | null> {
@@ -18,9 +20,28 @@ export class PersonService {
 
   
 
-  async getAll(): Promise<Person[]> {
-    return this.repo.find();
+ async getAllSaison(saisonId: number): Promise<Person[]> {
+  const personnes = await this.repo.find({
+    relations: ['account', 'inscriptions', 'inscriptions.saison'],
+    where: {
+      inscriptions: {
+        saisonId: saisonId,
+      },
+    },
+  });
+
+  // Remplir les groupes pour chaque inscription de chaque personne
+  for (const personne of personnes) {
+    if(personne.inscriptions) {
+    for (const inscription of personne.inscriptions) {
+      inscription.groups = await this.linkgroup_serv.getGroupsForObject('rider', personne.id);
+    }
   }
+  }
+
+  return personnes;
+}
+
     async getAllCompte(accountId : number): Promise<Person[]> {
     return this.repo.find({ where: { accountId } });
   }

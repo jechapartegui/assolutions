@@ -19,6 +19,11 @@ async GetAllSeance(@Param('saison_id') saison_id: number) {
     return this.seance_serv.GetAll(saison_id);
   }
   @UseGuards(PasswordGuard)
+  @Get('getall_adherent/:saison_id')
+async GetAllAdherent(@Param('saison_id') saison_id: number) {
+    return this.mem_serv.GetAll(saison_id);
+  }
+  @UseGuards(PasswordGuard)
   @Get('my_seance')
   async MySeance(@Headers('projectid') projectId: number,@Headers('userid') userid: number) {
     return this.mem_serv.GetMySeance(userid, projectId);

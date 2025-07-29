@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Document } from '../../entities/document.entity';
-const { fileTypeFromBuffer } = require('file-type');
+import { Document, StorageType } from '../../entities/document.entity';
+import { fromBuffer } from 'file-type';
+
 
 
 @Injectable()
@@ -21,7 +22,7 @@ export class DocumentService {
       return ''; // ou undefined
     }
 
-    const fileType = await fileTypeFromBuffer(existing.fileData);
+    const fileType = await fromBuffer(existing.fileData);
     const mime = fileType?.mime || 'image/png';
 
     const base64 = existing.fileData.toString('base64');
@@ -58,6 +59,8 @@ export class DocumentService {
         typedoc: 'photo',
         fileData: buffer,
         mimetype: mime,
+        storageType : StorageType.DATABASE,
+        titre: 'Photo de profil',
 
       });
       await this.DocumentRepo.save(doc);

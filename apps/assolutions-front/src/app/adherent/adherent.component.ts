@@ -22,6 +22,7 @@ import { Saison_VM } from '@shared/src/lib/saison.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
+import { ItemContact } from '@shared/src/lib/personne.interface';
 
 @Component({
   standalone: false,
@@ -30,6 +31,7 @@ import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interfa
   styleUrls: ['./adherent.component.css'],
 })
 export class AdherentComponent implements OnInit {
+
   // === Inputs / ViewChild ===
   @Input() public context: 'LECTURE' | 'LISTE' | 'ECRITURE' = 'LISTE';
   @Input() public id: number;
@@ -208,7 +210,9 @@ export class AdherentComponent implements OnInit {
         this.ridersService
           .GetAdherentAdhesion(this.active_saison.id)
           .then((adh) => {
-            this.liste_adherents_VM = adh;
+            this.liste_adherents_VM = adh.map(data =>
+  Object.assign(new Adherent_VM(), data)
+);
             this.loading = false;
           })
           .catch((err: HttpErrorResponse) => {
@@ -263,7 +267,17 @@ export class AdherentComponent implements OnInit {
       return '';
     }
   }
-
+toValueContactPref(cont: ItemContact[]) {
+  if(!cont || cont.length == 0) {
+    return $localize`Aucun contact`;
+  } else {
+    if(cont.find(x => x.Pref === true)){
+    return cont.find(x => x.Pref === true)?.Value;
+    } else {
+      return cont[0].Value;
+    }
+  }
+}
 
 valid_adherent(isValid: boolean): void {
   this.adherentValide = isValid;
@@ -284,11 +298,7 @@ valid_contact_urgence(isValid: boolean): void {
     this.context = 'ECRITURE';
     this.id = 0;
   }
-  Edit(adh: Adherent_VM) {
-    this.context = 'ECRITURE';
-    this.id = adh.id;
-    this.ChargerAdherent();
-  }
+
   Read(adh: Adherent_VM) {
     this.context = 'LECTURE';
     this.id = adh.id;
@@ -461,6 +471,15 @@ valid_contact_urgence(isValid: boolean): void {
   return URL.createObjectURL(blob);
 }
 
+isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
+  if (adh.inscriptionsSaison) {
+    return adh.inscriptionsSaison.some(
+      (x) => x.saison_id == saison_id
+    );
+  } else
+    return false;
+}
+
   async ChargerAdherent() {
     this.thisAdherent = null;
     const errorService = ErrorService.instance;
@@ -480,6 +499,7 @@ valid_contact_urgence(isValid: boolean): void {
         return;
       } else {
         this.thisAdherent = adh;
+        console.log('Adhérent chargé', this.thisAdherent);
         this.ridersService.GetPhoto(this.id).then((PhotBase64) =>{
 
 

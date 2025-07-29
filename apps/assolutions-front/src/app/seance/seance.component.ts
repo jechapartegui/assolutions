@@ -927,7 +927,7 @@ export class FilterSeance {
     this.onFilterChange();
   }
 
-  private _filter_date_avant: Date | null = new Date();
+  private _filter_date_avant: Date | null = new Date(2025,2,25);
   get filter_date_avant(): Date | null {
     return this._filter_date_avant;
   }

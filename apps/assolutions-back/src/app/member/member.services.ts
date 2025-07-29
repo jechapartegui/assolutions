@@ -27,6 +27,14 @@ export class MemberService {
      private saison_serv:SeasonService,
      private linkgroup_serv: LinkGroupService
   ) {}
+
+  async GetAll(saison_id: number): Promise<Adherent_VM[]> {
+    const saison = await this.personserivce.getAllSaison(saison_id);
+    if (!saison) {
+      throw new UnauthorizedException('NO_SEASON_FOUND');
+    }
+    return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], []));
+  }
   async GetMyInfo(id: number, project_id: number) {
     const saison_active = (await this.saison_serv.getActive(project_id)).id;
     const pAdh = await this.personserivce.get(id);

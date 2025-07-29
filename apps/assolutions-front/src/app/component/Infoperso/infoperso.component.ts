@@ -25,6 +25,9 @@ ngOnInit(): void {
     if(this.thisAdherent.id <1){
       this.edit = true;
     }
+    console.log('thisAdherent.nom =', this.thisAdherent.nom);
+console.log('thisAdherent.prenom =', this.thisAdherent.prenom);
+console.log('thisAdherent.surnom =', this.thisAdherent.surnom);
 }
 ngOnChanges(): void {
  this.validerTout();

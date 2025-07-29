@@ -10,9 +10,9 @@
       <p>Chargement en cours</p>
     </ng-container>
     <ng-container *ngIf="!loading">
-      <span class="fullscreen">
-        <div class="columns">
+        <div class="columns"  *ngIf="!editCours" >
           <div class="column">
+      <span class="fullscreen">
             <div class="card">
               <header class="card-header" style="align-items: center">
                 <p
@@ -490,9 +490,9 @@
                 </div>
               </footer>
             </div>
+      </span>
           </div>
         </div>
-      </span>
 
       <span class="mobile">
         <ng-container *ngIf="afficher_filtre">
@@ -766,8 +766,7 @@
           </ng-container>
         </ng-container>
       </span>
-    </ng-container>
-<div class="columns">
+<div class="columns" *ngIf="editCours">
   <div class="column">
     <div class="card">
       <header class="card-header" style="align-items: center">
@@ -796,4 +795,5 @@
     </div>
   </div>
 </div>
+    </ng-container>
 </div>

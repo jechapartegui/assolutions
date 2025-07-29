@@ -93,17 +93,16 @@
             <p *ngIf="rSurnom.key" class="is-small help is-danger">{{rSurnom.value}}</p>
           </div>
         </div>
-
         <ng-template #readPerso>
-          <p><strong i18n>Nom :</strong>&nbsp;{{ thisAdherent.nom }}</p>
-          <p><strong i18n>Prénom :</strong>&nbsp;{{ thisAdherent.prenom }}</p>
-          <p><strong i18n>Date de naissance :</strong>&nbsp;{{ thisAdherent.date_naissance | date:'dd/MM/yyyy' }}</p>
+          <p><strong i18n>Nom&nbsp;:&nbsp;</strong>{{ thisAdherent.nom }}</p>
+          <p><strong i18n>Prénom&nbsp;:&nbsp;</strong>{{ thisAdherent.prenom }}</p>
+          <p><strong i18n>Date de naissance&nbsp;:&nbsp;</strong>{{ thisAdherent.date_naissance | date:'dd/MM/yyyy' }}</p>
           <p >
             <strong i18n>Sexe :</strong>&nbsp;
             <i *ngIf="thisAdherent.sexe" class="fa-solid fa-mars has-text-info"></i>
             <i *ngIf="!thisAdherent.sexe" class="fa-solid fa-venus has-text-danger"></i>
           </p>
-          <p><strong i18n>Surnom :</strong> {{ thisAdherent.surnom }}</p>
+          <p><strong i18n>Surnom&nbsp;:&nbsp;</strong>{{ thisAdherent.surnom }}</p>
         </ng-template>
       </div>
 
