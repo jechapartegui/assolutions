@@ -48,7 +48,7 @@
     >
       <div
         class="navbar-start"
-        *ngIf="(GlobalService.isLoggedIn$ | async) === true && (GlobalService.Projet$ | async) !== null"
+        *ngIf="(GlobalService.isLoggedIn$ | async) === true && (GlobalService.Projet$ | async) !== null && (GlobalService.Prof$ | async) === true"
       >
        
           <a

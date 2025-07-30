@@ -33,7 +33,7 @@ import { ItemContact } from '@shared/src/lib/personne.interface';
 export class AdherentComponent implements OnInit {
 
   // === Inputs / ViewChild ===
-  @Input() public context: 'LECTURE' | 'LISTE' | 'ECRITURE' = 'LISTE';
+  @Input() public context: 'ECRAN_MENU' | 'ECRAN_LISTE' = 'ECRAN_LISTE';
   @Input() public id: number;
   @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
 
@@ -138,13 +138,10 @@ export class AdherentComponent implements OnInit {
           this.route.queryParams.subscribe((params) => {
             if ('id' in params) {
               this.id = params['id'];
-              this.context = 'LECTURE';
-            }
-            if ('context' in params) {
-              this.context = params['context'];
+              this.context = 'ECRAN_MENU';
             }
           });
-          if (this.context == 'LISTE') {
+          if (this.context == 'ECRAN_LISTE') {
             if (
               GlobalService.menu === 'APPLI' &&
               GlobalService.prof === false
@@ -155,16 +152,10 @@ export class AdherentComponent implements OnInit {
               return;
             }
           }
-          if (this.context == 'ECRITURE' || this.context == 'LECTURE') {
-            if (this.id == 0 && this.context == 'ECRITURE') {
-              this.thisAdherent = new Adherent_VM();
-              this.loading = false;
-            }
             if (this.id > 0) {
               this.ChargerAdherent();
             }
-          }
-          if (this.context == 'LISTE') {
+          if (this.context == 'ECRAN_LISTE') {
             this.afficher_filtre = false;
             this.UpdateListeAdherents();
           }
@@ -295,12 +286,10 @@ valid_contact_urgence(isValid: boolean): void {
 
   Create() {
     this.thisAdherent = new Adherent_VM();
-    this.context = 'ECRITURE';
     this.id = 0;
   }
 
   Read(adh: Adherent_VM) {
-    this.context = 'LECTURE';
     this.id = adh.id;
     this.ChargerAdherent();
   }
@@ -498,12 +487,11 @@ isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
         GlobalService.selected_menu = 'MENU';
         return;
       } else {
+        this.histo_adherent = JSON.stringify(adh);
         this.thisAdherent = adh;
-        console.log('Adhérent chargé', this.thisAdherent);
+        
+        this.loading = false;
         this.ridersService.GetPhoto(this.id).then((PhotBase64) =>{
-
-
-          console.log('Photo récupérée avec succès', PhotBase64);
            this.photoAdherent =this.createBlobUrl(PhotBase64); // pour Angular
         })
       }
@@ -624,7 +612,7 @@ PreSave() {
     }
   }
 
-  Retour(lieu: 'LISTE' | 'LECTURE'): void {
+  Retour(): void {
     const ret_adh = JSON.stringify(this.thisAdherent);
     if (this.histo_adherent != ret_adh) {
       let confirm = window.confirm(
@@ -634,12 +622,12 @@ PreSave() {
         return;
       }
     }
-    if (lieu == 'LISTE') {
-      this.context = 'LISTE';
+    if (this.context == 'ECRAN_LISTE') {
+      this.thisAdherent = null;
       this.UpdateListeAdherents();
     } else {
-      this.context = 'LECTURE';
-      this.ChargerAdherent();
+      this.router.navigate(['/menu']);
+      GlobalService.selected_menu = 'MENU';
     }
   }
 

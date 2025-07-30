@@ -20,7 +20,7 @@ export class Person {
   nickname?: string;
 
   @Column({ type: 'date', name: 'date_naissance' })
-  birthDate: string;
+  birthDate: Date;
 
   @Column({ type: 'boolean', default: false })
   gender: boolean;

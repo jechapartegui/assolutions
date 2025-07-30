@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CoursService } from '../../services/cours.service';
 import { ErrorService } from '../../services/error.service';
@@ -17,6 +17,7 @@ import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/src/lib/insc
 import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Lieu_VM } from '@shared/src/lib/lieu.interface';
 import { Cours_VM } from '@shared/src/lib/cours.interface';
+import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
 
 @Component({
   standalone: false,
@@ -30,9 +31,6 @@ export class MenuComponent implements OnInit {
   Riders: AdherentMenu[];
   listeprof: Professeur_VM[];
   listelieu: Lieu_VM[];
-  btn_adherent: boolean = false;
-  btn_admin: boolean = false;
-  btn_prof: boolean = false;
 
 
     public loading: boolean = false;
@@ -46,6 +44,7 @@ export class MenuComponent implements OnInit {
 
   public g: StaticClass;
   constructor(
+    public cdr: ChangeDetectorRef,
     public GlobalService: GlobalService,
     private prof_serv: ProfesseurService,
     private router: Router,
@@ -53,7 +52,8 @@ export class MenuComponent implements OnInit {
     private lieuserv: LieuNestService,
     private coursservice: CoursService,
     public inscriptionserv: InscriptionSeanceService,
-    public riderservice:AdherentService
+    public riderservice:AdherentService,
+  private multifiltersPipe: MultifiltersMenuPipe // 👈 injecte le pipe
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -398,7 +398,12 @@ return $localize`Evénement`;
     }
   }
 
-  MAJInscription(messeance : MesSeances_VM, adherentmen : AdherentMenu, statut: boolean) {
+  private refreshRider(rider: AdherentMenu): void {
+  // On force Angular à détecter le changement en réaffectant une nouvelle référence
+  rider.MesSeances = [...rider.MesSeances];
+}
+
+  MAJInscription(messeance : MesSeances_VM, adherentmen : AdherentMenu, statut: boolean, afficher_message: boolean = true) {
     const errorService = ErrorService.instance;
     let oldstatut = messeance.statutInscription || null;
     let idinscription = messeance.inscription_id || null;
@@ -413,17 +418,19 @@ return $localize`Evénement`;
           if (ok) {
             messeance.statutInscription = null;
             messeance.inscription_id = null;
+            this.refreshRider(adherentmen); // 👈 FORCING change detection
+            this.cdr.detectChanges();
             let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
+           afficher_message ? errorService.emitChange(o) : null;
           } else {
             let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
+           afficher_message ? errorService.emitChange(o) : null;
           }
         })
         .catch((err: HttpErrorResponse) => {
           messeance.statutInscription = oldstatut;
           let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
+           afficher_message ? errorService.emitChange(o) : null;
           return;
         });
       return;
@@ -452,14 +459,19 @@ return $localize`Evénement`;
         this.inscriptionserv
           .Add(uneInscription)
           .then((id) => {
-            messeance.inscription_id = id;
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
+           messeance.inscription_id = id;
+  messeance.statutInscription = statut
+    ? InscriptionStatus_VM.PRESENT
+    : InscriptionStatus_VM.ABSENT; // 👈 ajout clé
+  this.refreshRider(adherentmen);
+  this.cdr.detectChanges();
+  let o = errorService.OKMessage(this.action);
+           afficher_message ? errorService.emitChange(o) : null;
           })
           .catch((err: HttpErrorResponse) => {
             messeance.statutInscription = oldstatut;
             let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
+           afficher_message ? errorService.emitChange(o) : null;
             return;
           });
       } else {
@@ -473,23 +485,40 @@ return $localize`Evénement`;
         };
         this.inscriptionserv
           .Update(update)
-          .then((retour) => {
-            if (retour) {
-              let o = errorService.OKMessage(this.action);
-              errorService.emitChange(o);
-            } else {
-              let o = errorService.UnknownError(this.action);
-              errorService.emitChange(o);
+          .then(() => {
+              messeance.statutInscription = statut
+    ? InscriptionStatus_VM.PRESENT
+    : InscriptionStatus_VM.ABSENT; // 👈 ajout clé
+  this.refreshRider(adherentmen);
+  this.cdr.detectChanges();
+  let o = errorService.OKMessage(this.action);
+           afficher_message ? errorService.emitChange(o) : null;
             }
-          })
+          )
           .catch((err: HttpErrorResponse) => {
             messeance.statutInscription = oldstatut;
+            this.cdr.detectChanges();
             let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
+           afficher_message ? errorService.emitChange(o) : null;
             return;
           });
       }
     }
+    this.cdr.detectChanges();
+  }
+
+  async MAJInscriptionAffichee(rider: AdherentMenu, statut: boolean) {
+     const errorService = ErrorService.instance;
+    const seancesAffichees = this.multifiltersPipe.transform(rider.MesSeances, rider.filters);
+
+  for (const ms of seancesAffichees) {
+    await this.MAJInscription(ms, rider, statut, false);
+  }
+     this.action = $localize`Mettre à jour l'inscription : ` + rider.libelle + " " + (statut ? $localize`Présent` : $localize`Absent`);
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+
+
   }
 
   Voir(id: number) {
@@ -537,7 +566,7 @@ return $localize`Evénement`;
   }
   AfficherProfil(_t17: AdherentMenu) {
     for (const r of this.Riders) {
-      if (r.id == _t17.id && r) {
+      if (r.id == _t17.id && r.profil == _t17.profil) {
         r.afficher = !r.afficher;
       } else {
         r.afficher = false;
@@ -600,7 +629,7 @@ export class FilterMenu {
     this.onFilterChange();
   }
 
-  private _filter_statut: StatutSeance | null = null;
+  private _filter_statut: StatutSeance | null = StatutSeance.prévue;
   get filter_statut(): StatutSeance | null {
     return this._filter_statut;
   }

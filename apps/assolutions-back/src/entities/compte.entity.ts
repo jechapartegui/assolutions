@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Person } from './personne.entity';
+import { Notes } from './note.entity';
 
 @Entity({ name: 'compte' })
 export class Account {
@@ -51,4 +52,6 @@ export class Account {
   @OneToMany(() => Person, person => person.account, { cascade: ['update'] })
   persons: Person[];
 
+    @OneToMany(() => Notes, note => note.User, { cascade: ['update'] })
+  notes: Notes[];
 }

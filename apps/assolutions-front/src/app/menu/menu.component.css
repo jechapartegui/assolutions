@@ -1,89 +1,166 @@
-.th{
-    display: flex;
-    flex-direction: column;
-    font-size: smaller;
-    flex-wrap: nowrap;
+/* ==========================
+   GENERAL STRUCTURE & LAYOUT
+   ========================== */
+
+.container {
+  height: calc(100vh - 52px);
 }
-.ligne{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
+
+.card {
+  max-height: calc(99vh - 300px);
+  width: 100%;
 }
-.menuligne{
-    display: flex;
-    flex-direction: row;
-    justify-content:flex-start;
-    align-items: flex-start;
+
+/* Hide full-screen-only elements on small screens */
+@media screen and (max-width: 767px) {
+  .flls {
+    display: none;
+  }
 }
-.th_filtre{
-    display: flex;
-    flex-direction: column;
-    font-size: smaller;
-    flex-wrap: nowrap;
+
+/* ======================
+   RESPONSIVE TABLE STYLING
+   ====================== */
+
+.scrollable-card-table {
+  overflow-x: auto;
 }
+
+@media screen and (max-width: 768px) {
+  table.table {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    display: block;
+  }
+  .photo-wrapper figure.image {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* ================
+   RIDERS SCROLLING
+   ================ */
+
+.riders-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  gap: 1rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rider-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: 140px;
+}
+
+@media screen and (min-width: 768px) {
+  .rider-card {
+    width: 180px;
+  }
+}
+
+/* ====================
+   MODERN CARD STYLING
+   ==================== */
+
 .modern-card {
   border: 1px solid #dbdbdb;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease;
   cursor: pointer;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  img {
-    object-fit: cover;
-    width: 80px;
-    height: 80px;
-    border: 2px solid #ccc;
-  }
-
-  p {
-    margin-bottom: 0.25rem;
-  }
-
-  .notification {
-    font-size: 0.75rem;
-    border-radius: 8px;
-  }
 }
+
+.modern-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Avoid hover animation for full-size cards */
+.card:not(.modern-card) {
+  cursor: default;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ================
+   IMAGE & PHOTO WRAPPER
+   ================ */
 
 .photo-wrapper {
   display: flex;
   justify-content: center;
 }
 
-
-  .is-primary-border {
-    border: 2px solid var(--bulma-primary, #00d1b2);
-    transition: all 0.2s;
-  }
-  .is-primary-border:hover {
-    box-shadow: 0 0 10px var(--bulma-primary, #00d1b2);
-  }
-  
-  .is-info-border {
-    border: 2px solid var(--bulma-info, #209cee);
-    transition: all 0.2s;
-  }
-  .is-info-border:hover {
-    box-shadow: 0 0 10px var(--bulma-info, #209cee);
-  }
-  
-  .container {
-    height: calc(100vh - 52px);
-  }
-  .card{
-    max-height: calc(99vh - 300px);
-    width: 100%;
-  }
-  
-@media screen and (max-width: 767px) {
-.flls{
-    display: none;
-}
+.photo-wrapper .image {
+  margin: 0 auto;
 }
 
+/* ===============
+   CARD BORDERS
+   =============== */
+
+.is-primary-border {
+  border: 2px solid var(--bulma-primary, #00d1b2);
+  transition: all 0.2s;
+}
+
+.is-primary-border:hover {
+  box-shadow: 0 0 10px var(--bulma-primary, #00d1b2);
+}
+
+.is-info-border {
+  border: 2px solid var(--bulma-info, #209cee);
+  transition: all 0.2s;
+}
+
+.is-info-border:hover {
+  box-shadow: 0 0 10px var(--bulma-info, #209cee);
+}
+
+/* =============
+   TAG & ICONS
+   ============= */
+
+.icon-type-seance {
+  margin-right: 4px;
+}
+
+/* Table header filters */
+.th, .th_filtre {
+  display: flex;
+  flex-direction: column;
+  font-size: smaller;
+  flex-wrap: nowrap;
+}
+
+.ligne {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Stats alignment fix */
+.notification span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.d-flex {
+  display: flex;
+}
+.align-items-center {
+  align-items: center;
+}
+.justify-content-space-evenly {
+  justify-content: space-evenly;
+}
+.is-flex-wrap-nowrap {
+  flex-wrap: nowrap;
+}

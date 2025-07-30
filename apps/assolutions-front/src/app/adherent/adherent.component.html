@@ -1,5 +1,4 @@
 <div class="container">
-  <ng-container *ngIf="context == 'LISTE'">
     <ng-container *ngIf="loading">
       <progress
         class="progress is-large is-info"
@@ -11,6 +10,7 @@
       <p>Chargement en cours</p>
     </ng-container>
     <ng-container *ngIf="!loading">
+       <ng-container *ngIf="!thisAdherent">
       <span class="fullscreen">
         <div class="columns">
           <div class="column">
@@ -229,9 +229,7 @@
                             ></btn>
                             <btn
                               *ngIf="
-                                !isInscrtitionActive(adherent, active_saison.id) == false &&
-                                adherent.compte > 0
-                              "
+                                !isInscrtitionActive(adherent, active_saison.id)"
                               i18n-title
                               title="Inscrire"
                               [type_button]="'InscrireLight'"
@@ -289,7 +287,7 @@
                         [type_button]="'ExporterSmall'"
                         (click)="ExportExcel()"
                       ></btn>
-                      <btn
+                      <btn  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
                         [type_button]="'ImporterSmall'"
                         (click)="GotoImport()"
                       ></btn>
@@ -299,7 +297,7 @@
                             >Saison affichée</label
                           >
                         </div>
-                        <div class="field-body">
+                        <div class="field-body"  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
                           <div class="field is-narrow">
                             <div class="control">
                               <div class="select is-fullwidth">
@@ -874,10 +872,8 @@
           </ng-container>
         </ng-container>
       </span>
-    </ng-container>
-  </ng-container>
-  
-    <ng-container *ngIf="thisAdherent">
+      </ng-container>
+          <ng-container *ngIf="thisAdherent">
 <div class="columns">
   <div class="column">
     <div class="card">
@@ -890,7 +886,8 @@
         </p>
       </header>
 
-      <div class="columns is-multiline is-variable is-4">
+      <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
+
         <!-- Bloc Infos personnelles -->
        <div class="column is-full-tablet is-half-desktop">
  <infoperso [photoBase64]="photoAdherent"  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="PreSave()" (valid)="valid_adherent($event)"></infoperso>
@@ -901,7 +898,7 @@
         <div class="column is-full-tablet is-half-desktop">
 
                           <app-address [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
-(valid)="valid_adherent($event)"></app-address>
+(valid)="valid_adresse($event)"></app-address>
         </div>
         
        <div class="column is-full-tablet is-half-desktop">
@@ -910,12 +907,50 @@
          <div class="column is-full-tablet is-half-desktop">
         <app-contact-item [Contacts]="thisAdherent.contact_prevenir" [Regles]="(GlobalService.getRegles().Contact_Pref_Adherent)" [Titre]="titre_contact_prevenir"  (ContactChange)="PreSave()" (valid)="valid_contact_urgence($event)"></app-contact-item>
         </div>
-          
+          <ng-container *ngIf="(GlobalService.Prof$ | async) === true">
+    <ng-container *ngIf="(GlobalService.Prof$ | async) === true && thisAdherent.inscriptionsSaison?.length > 0 && thisAdherent.inscriptionsSaison[0].groupes?.length > 0">
+  
+                <div class="column is-full-tablet is-half-desktop">
+                       <div class="box is-light">
+      <div class="column is-full-tablet is-half-desktop">
+    <div class="box is-light">
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+        <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Groupes</h3>
+      </div>
+
+      <div class="columns is-vcentered">
+        <ng-container *ngFor="let group of thisAdherent.inscriptionsSaison[0].groupes">
+          <div class="column is-6">
+            <div class="field">
+              <label class="label is-small">{{ group.nom }}</label>
+            </div>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>
-</div>
-
+      </div>
+                </div>
 </ng-container>
+
+          </ng-container>
+      </div>
+      <div class="card-footer">
+        <div class="columns is-mobile is-centered">
+          <div class="column is-half">
+            <btn
+              [type_button]="'RetourSmall'"
+              (click)="Retour()"
+            ></btn>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+</div>
+</ng-container>
+    </ng-container>
+  
+
  
 </div>

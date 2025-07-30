@@ -48,7 +48,9 @@ export class ContactItemComponent implements OnInit {
     }
     this.thisContact = null;
     this.EditIndex = null;
+    
     this.CheckContact();
+    this.ContactChange.emit(this.Contacts);
   }
   DontSave(){
     this.thisContact = null;
@@ -100,7 +102,7 @@ export class ContactItemComponent implements OnInit {
  this.estValid = this.rNbContactMin.key && this.rNbContactMax.key && this.rMail.key && this.rTel.key 
   // 🔥 émettre vers le parent
   this.valid.emit(this.estValid);
-    this.ContactChange.emit(this.Contacts);
+  //  this.ContactChange.emit(this.Contacts);
 
   }
   NewPref(index: number) {

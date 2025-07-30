@@ -21,19 +21,11 @@ export class AdherentMenu extends Adherent_VM {
   }
 
 
-  private _afficher_filtre: boolean;
-  public get afficher_filtre(): boolean {
-    return this._afficher_filtre;
-  }
-  public set afficher_filtre(v: boolean) {
-    this._afficher_filtre = v;
-  }
-  constructor(_adh: AdherentSeance_VM) {  
+   constructor(_adh: AdherentSeance_VM) {  
     super();
       // 1. Copier les propriétés de personne dans `this` (hérité de Personne_VM)
     Object.assign(this, _adh.personne);
     this.MesSeances = _adh.mes_seances;
-    this.afficher_filtre = false;
     this.inscrit = true;  
   }
 

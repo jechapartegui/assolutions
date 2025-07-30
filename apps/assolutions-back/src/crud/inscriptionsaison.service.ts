@@ -71,6 +71,7 @@ async getPersonRegistrations( personneId: number,
       const created = this.repo.create(data);
       return await this.repo.save(created);
     } catch (err) {
+      console.error(err);
       if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
       throw err;
     }

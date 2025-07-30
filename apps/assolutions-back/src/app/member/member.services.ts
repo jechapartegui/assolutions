@@ -265,7 +265,7 @@ export function toPerson(vm:Personne_VM){
   entity.nickname = vm.surnom;
   entity.lastName = vm.nom;
   entity.firstName = vm.prenom;
-  entity.birthDate = vm.date_naissance.toDateString();
+  entity.birthDate = vm.date_naissance;
   entity.accountId = vm.compte;
   entity.address = JSON.stringify(vm.adresse);
   entity.contacts = vm.contact;

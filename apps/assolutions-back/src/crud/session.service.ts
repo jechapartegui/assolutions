@@ -13,7 +13,7 @@ export class SessionService {
   ) {}
 
   async get(id: number): Promise<Session> {
-    const item = await this.repo.findOne({ where: { id } });
+    const item = await this.repo.findOne({ where: { id }, relations: ['course', 'location', 'seanceProfesseurs', 'seanceProfesseurs.professeur', 'seanceProfesseurs.professeur.professor', 'seanceProfesseurs.professeur.professor.person'] });
     if (!item) throw new NotFoundException('SESSION_NOT_FOUND');
       item.groups = await this.linkgroup_serv.getGroupsForObject('séance', id);
     return item;

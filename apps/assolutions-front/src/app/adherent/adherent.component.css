@@ -56,3 +56,23 @@ app-contact-item {
   display: block;
   width: 100%; /* S'assure que les composants remplissent la colonne */
 }
+
+@media screen and (max-width: 768px) {
+  .card-header-title {
+    font-size: 1rem;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+.scrollable-card-content {
+  max-height: calc(99vh - 160px); 
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-bottom: 1rem;
+}
+.scrollable-card-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+

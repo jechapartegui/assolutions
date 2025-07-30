@@ -1592,7 +1592,7 @@
                       <label class="label" for="place_maximum"
                         ><span i18n>Professeurs</span>&nbsp;
                         <button
-                          *ngIf="editSeance.seanceProfesseurs.length > 0"
+                          *ngIf="editSeance.seanceProfesseurs && editSeance.seanceProfesseurs.length > 0"
                           (click)="
                             manage_prof
                               ? (manage_prof = false)
