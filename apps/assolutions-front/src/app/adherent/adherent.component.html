@@ -291,13 +291,13 @@
                         [type_button]="'ImporterSmall'"
                         (click)="GotoImport()"
                       ></btn>
-                      <div class="field is-horizontal">
+                      <div class="field is-horizontal"  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
                         <div class="field-label is-normal is-two-quarter">
                           <label class="label" style="white-space: nowrap" i18n
                             >Saison affichée</label
                           >
                         </div>
-                        <div class="field-body"  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
+                        <div class="field-body" >
                           <div class="field is-narrow">
                             <div class="control">
                               <div class="select is-fullwidth">
@@ -941,6 +941,11 @@
             <btn
               [type_button]="'RetourSmall'"
               (click)="Retour()"
+            ></btn>
+            <btn *ngIf="thisAdherent.id < 1"
+            [disabled]="!valid_adherent || !valid_adresse || !valid_contact || !valid_contact_urgence"
+              [type_button]="'SauvegarderSmall'"
+              (click)="Save()"
             ></btn>
           </div>
         </div>

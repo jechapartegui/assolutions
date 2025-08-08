@@ -1,20 +1,23 @@
-<div class="tags">
+<div class="box is-light">
+  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+    <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>{{titre_groupe}}</h3>
+</div><div class="tags">
     <ng-container *ngFor="let niv of Groupes">
         <span class="fullscreen">
         <span class="tag is-success">
             {{niv.nom}}
-            <button  class="delete is-small" (click)="RemoveGroupe(niv)"></button>
+            <button *ngIf="edit"  class="delete is-small" (click)="RemoveGroupe(niv)"></button>
         </span>
         </span>
         <span class="mobile">
             <span class="tag is-success is-large">
                 {{niv.nom}}
-                <button  class="delete" (click)="RemoveGroupe(niv)"></button>
+                <button *ngIf="edit" class="delete" (click)="RemoveGroupe(niv)"></button>
             </span>
             </span>
     </ng-container>
 </div> 
-<ng-container *ngIf="groupe_dispo.length >0">
+<ng-container *ngIf="groupe_dispo.length >0 && edit">
     <div class="select">
         <select class="select is-small" id="groupes" [(ngModel)]="current_groupe_key">
             <ng-container *ngFor="let ni of groupe_dispo;let first = first	">
@@ -30,6 +33,7 @@
         <btn [type_button]="'CreerMobile'" [disabled]="!current_groupe_key" (click)="AjouterGroupe()"></btn>
     </span>
 </ng-container>
-<ng-container *ngIf="groupe_dispo.length == 0">
+<ng-container *ngIf="groupe_dispo.length == 0 && edit">
 <p style="font-size: smaller;" i18n>Pas de groupe disponible</p>
 </ng-container>
+</div>

@@ -8,10 +8,11 @@ import { toPersonneLight_VM } from '../member/member.services';
 import { LinkGroupService } from '../../crud/linkgroup.service';
 import { SessionProfessor } from '../../entities/seance-professeur.entity';
 import { SessionProfessorService } from '../../crud/seanceprofesseur.service';
+import { ProfessorContractService } from '../../crud/professorcontract.service';
 
 @Injectable()
 export class SeanceService {
-  constructor(private seanceserv:SessionService, private sessionprof_serv:SessionProfessorService, private inscriptionseance_serv:RegistrationSessionService, private liengroup_serv:LinkGroupService
+  constructor(private seanceserv:SessionService, private sessionprof_serv:SessionProfessorService, private inscriptionseance_serv:RegistrationSessionService, private liengroup_serv:LinkGroupService, private contractprofserv:ProfessorContractService
   ) // @InjectRepository(Projet)
   // private readonly projetRepo: Repository<Projet>,
   {}
@@ -235,19 +236,23 @@ return await this.seanceserv.delete(id);
     return [];    
   }
   st.seanceProfesseurs.forEach(async (sp) => {
-    if (!liste_seance_prof.find(x => x.id === sp.id)) {
+  if (!liste_seance_prof.find(x => x.id === sp.id)) {
       await this.sessionprof_serv.delete(sp.id);
     }});
   liste_seance_prof.forEach(async (x) => {
     if (!st.seanceProfesseurs.find(sp => sp.id === x.id)) {
+      const pc = await this.contractprofserv.getSeasonProf(st.seasonId, x.personne.id);
+      if(pc){
+
       const newSp = new SessionProfessor();
       newSp.seanceId = seance_id;
-      newSp.professeur = { professorId: x.personne.id } as any; //
+      newSp.professeurContractId =  pc.id//
       newSp.status = x.statut;
       newSp.minutes = x.minutes;
       newSp.cout = x.cout;
       newSp.info = x.info;
-      await this.sessionprof_serv.create(newSp);}
+      await this.sessionprof_serv.create(newSp);
+      }}
     });
 
   return (await this.seanceserv.get(seance_id)).seanceProfesseurs.map(w => to_SeanceProfesseur_VM(w));

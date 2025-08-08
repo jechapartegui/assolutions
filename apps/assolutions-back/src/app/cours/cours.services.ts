@@ -75,10 +75,10 @@ export function toCours_VM(course: Course): Cours_VM {
     prof_principal_id: course.mainProfessorId,
     lieu_id: course.locationId,
     saison_id: course.seasonId,
-
-    age_minimum: course.minAge,
-    age_maximum: course.maxAge,
-    place_maximum: course.maxPlaces,
+    rdv : course.appointment ?? '',
+    age_minimum: course.minAge ?? undefined,
+    age_maximum: course.maxAge?? undefined,
+    place_maximum: course.maxPlaces?? undefined,
 
     convocation_nominative: course.nominativeCall,
     afficher_present: course.showAttendance,
@@ -92,16 +92,11 @@ export function toCours_VM(course: Course): Cours_VM {
     lieu_nom: course.location?.name,
 
     // Professeurs liés
-    professeursCours: (course.professors ?? []).map(cp => ({
-      id:           cp.id,
-      personne:     toPersonneLight_VM(cp.contract.professor.person),
-      type_remuneration: cp.contract.remunerationType,
-      type_contrat:cp.contract.contractType
-    } )),
+    professeursCours: (course.professors ?? []).map(cp => ( toPersonneLight_VM(cp.contract.professor.person))),
 
     // Groupes liés
     groupes: (course.groups ?? []).map(lg =>
-      new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.objectId)
+      new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.id)
     ),
   };
 }
@@ -124,10 +119,22 @@ export function toCourse(vm: Cours_VM, projectId: number): Course {
   c.mainProfessorId  = vm.prof_principal_id;
   c.locationId       = vm.lieu_id;
   c.seasonId         = vm.saison_id;
-
-  c.minAge           = vm.age_minimum;
-  c.maxAge           = vm.age_maximum;
-  c.maxPlaces        = vm.place_maximum;
+  c.appointment   =vm.rdv;
+if(vm.est_limite_age_maximum){
+  c.maxAge           = vm.age_maximum!;
+} else {
+  c.maxAge = null;
+}
+if(vm.est_limite_age_minimum){
+  c.minAge = vm.age_minimum!;
+} else {
+  c.minAge = null
+}
+if(vm.est_place_maximum){
+  c.maxPlaces = vm.place_maximum!;
+} else {
+  c.maxPlaces = null;
+}
 
   c.nominativeCall   = vm.convocation_nominative;
   c.showAttendance   = vm.afficher_present;

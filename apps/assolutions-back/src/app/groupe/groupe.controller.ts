@@ -41,6 +41,7 @@ async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
      @Put('addlien')
     async AddLien(@Body() body: { id_objet: number; type_objet: string; id_groupe: number }) {
       const { id_objet, type_objet, id_groupe} = body;
+      console.warn('AddLien', id_objet, type_objet, id_groupe);
       return this.groupe_serv.AddLien(id_objet, type_objet, id_groupe);
     }
 

@@ -2,7 +2,7 @@ import { LienGroupe_VM } from "./groupe.interface";
 import { PersonneLight_VM } from "./personne.interface";
 
 export class Cours_VM {
-  id: number;
+  id: number = 0;
   nom: string;
   jour_semaine: string;
   heure: string;
@@ -20,15 +20,15 @@ export class Cours_VM {
   est_limite_age_minimum: boolean;
   est_limite_age_maximum: boolean;
   est_place_maximum: boolean;
-
+  rdv?:string;
   // Champs enrichis
   lieu_nom?: string;
 
   // Professeurs liés
-  professeursCours: ContratProfesseur_VM[];
+  professeursCours: PersonneLight_VM[] = [];
 
   // Groupes liés
-  groupes: LienGroupe_VM[];
+  groupes: LienGroupe_VM[] =[];
 }
 
 export class ContratProfesseur_VM {

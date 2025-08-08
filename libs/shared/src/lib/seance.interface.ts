@@ -17,7 +17,7 @@ export interface MesSeances_VM {
 // shared/models/seance.dto.ts
 
 export class Seance_VM {
-  seance_id: number;
+  seance_id: number = 0;
   saison_id: number;
   cours: number;
   libelle: string;
@@ -44,9 +44,9 @@ export class Seance_VM {
   cours_nom?: string; // Nom du cours, optionnel
 
   // Les entités de lien
-  seanceProfesseurs: SeanceProfesseur_VM[];
+  seanceProfesseurs: SeanceProfesseur_VM[] = [];
 
-  groupes: LienGroupe_VM[];
+  groupes: LienGroupe_VM[] = []; // Liste des groupes liés à la séance
 }
 
 export enum StatutSeance{

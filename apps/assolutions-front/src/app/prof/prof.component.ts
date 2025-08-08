@@ -12,13 +12,16 @@ import { Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface
 })
 export class ProfComponent implements OnInit { 
   @Input() liste_prof:Professeur_VM[]=[];
+  @Input() prof_dispo:Professeur_VM[]=[];
   @Input() manage = false;
-  @Input() thisSeance:Seance_VM;
-  @Input() Profs:SeanceProfesseur_VM[] = [];
+  @Input() prof_principal_id: number;
+  @Input() Profs:any[] = [];
+  @Input() thisSeance: Seance_VM;
+  @Input() type: "séance" | "cours";
+  @Input() titre_prof: string = $localize`Encadrants du cours`;
   current_prof_key:number;
   action:string = "";
   LVSeanceProf :KeyValuePair[];
-  @Input() prof_dispo:Professeur_VM[]=[];
   @Output() profUpdated = new EventEmitter<SeanceProfesseur_VM[]>();  // Ajout du @Output()
 
   constructor(public globserv:GlobalService){}

@@ -1,16 +1,16 @@
 <div class="container">
-  <ng-container *ngIf="!editMode">
-    <ng-container *ngIf="loading">
-      <progress
-        class="progress is-large is-info"
-        style="margin-top: 60px"
-        max="100"
-      >
-        60%
-      </progress>
-      <p>Chargement en cours</p>
-    </ng-container>
-    <ng-container *ngIf="!loading">
+  <ng-container *ngIf="loading">
+    <progress
+      class="progress is-large is-info"
+      style="margin-top: 60px"
+      max="100"
+    >
+      60%
+    </progress>
+    <p>Chargement en cours</p>
+  </ng-container>
+  <ng-container *ngIf="!loading">
+    <ng-container *ngIf="!editSeance">
       <span class="fullscreen">
         <div class="columns">
           <div class="column">
@@ -29,7 +29,6 @@
                     getActiveSaison()
                   }}
                 </p>
-              
               </header>
               <div class="card-content" #scrollableContent>
                 <table
@@ -227,23 +226,27 @@
                         <ng-container *ngIf="seance.type_seance === 'MATCH'">
                           <span i18n>Match</span>
                         </ng-container>
-                        <ng-container *ngIf="seance.type_seance === 'EVENEMENT'">
+                        <ng-container
+                          *ngIf="seance.type_seance === 'EVENEMENT'"
+                        >
                           <span i18n>Evénement</span>
                         </ng-container>
                         <ng-container *ngIf="seance.type_seance === 'SORTIE'">
                           <span i18n>Sortie</span>
                         </ng-container>
                       </td>
-                      <td>{{ seance.date_seance | date : "dd/MM/yyyy" }}</td>
+                      <td>{{ seance.date_seance | date : 'dd/MM/yyyy' }}</td>
                       <td>
                         {{ seance.heure_debut }} ({{ seance.duree_seance }}
                         <span i18n>&nbsp;min</span>)
                       </td>
                       <td class="no_mobile">
                         <div class="tags is-small">
-                          <ng-container *ngFor="let gr of seance.seanceProfesseurs">
+                          <ng-container
+                            *ngFor="let gr of seance.seanceProfesseurs"
+                          >
                             <span class="tag is-success">
-                             {{ gr.personne.prenom }} {{ gr.personne.nom }}
+                              {{ gr.personne.prenom }} {{ gr.personne.nom }}
                             </span>
                           </ng-container>
                         </div>
@@ -598,12 +601,12 @@
                             <span i18n>Date : </span>
                             <span *ngIf="filters.filter_date_avant"
                               >&nbsp;>&nbsp;{{
-                                filters.filter_date_avant | date : "dd/MM/yyyy"
+                                filters.filter_date_avant | date : 'dd/MM/yyyy'
                               }}</span
                             >
                             <span *ngIf="filters.filter_date_apres"
                               >&nbsp;<&nbsp;{{
-                                filters.filter_date_apres | date : "dd/MM/yyyy"
+                                filters.filter_date_apres | date : 'dd/MM/yyyy'
                               }}</span
                             >
                             <button
@@ -851,12 +854,12 @@
                   <span i18n>Date : </span>
                   <span *ngIf="filters.filter_date_avant"
                     >&nbsp;>&nbsp;{{
-                      filters.filter_date_avant | date : "dd/MM/yyyy"
+                      filters.filter_date_avant | date : 'dd/MM/yyyy'
                     }}</span
                   >
                   <span *ngIf="filters.filter_date_apres"
                     >&nbsp;<&nbsp;{{
-                      filters.filter_date_apres | date : "dd/MM/yyyy"
+                      filters.filter_date_apres | date : 'dd/MM/yyyy'
                     }}</span
                   >
                   <button
@@ -982,11 +985,7 @@
               [type_button]="'TrierMobile'"
               (click)="afficher_tri = true"
             ></btn>
-            <btn
-              [type_button]="'CreerMobile'"
-              (click)="Creer()"
-            ></btn>
-            
+            <btn [type_button]="'CreerMobile'" (click)="Creer()"></btn>
           </nav>
           <ng-container
             *ngFor="let seance of list_seance_VM | multifiltersSeance : filters"
@@ -997,7 +996,7 @@
                   <span class="title" (click)="Edit(seance)"
                     ><strong
                       >{{ seance.libelle }}&nbsp;{{
-                        seance.date_seance | date : "dd/MM/yyyy"
+                        seance.date_seance | date : 'dd/MM/yyyy'
                       }}</strong
                     ></span
                   >
@@ -1046,13 +1045,11 @@
         </ng-container>
       </span>
     </ng-container>
-  </ng-container>
 
-  <ng-container *ngIf="editMode">
-    <span class="fullscreen">
+    <ng-container *ngIf="editSeance">
       <div class="columns">
         <div class="column">
-          <div class="card" *ngIf="editSeance">
+          <div class="card">
             <header class="card-header" style="align-items: center">
               <p
                 class="card-header-title"
@@ -1076,54 +1073,61 @@
                 Editer une séance
               </p>
             </header>
-            <div class="card-content" #scrollableContent>
-              <div class="content">
-                <div class="field-container">
-                  <ng-container *ngIf="editSeance.seance_id == 0">
-                    <div class="field">
-                      <label class="label" i18n>Type de séance</label>
-                      <div class="select">
-                        <select id="cours" [(ngModel)]="editSeance.type_seance">
-                          <option value="ENTRAINEMENT" i18n>Cours</option>
-                          <option value="SORTIE" i18n>Sortie</option>
-                          <option value="EVENEMENT" i18n>Evenement</option>
-                          <option value="MATCH" i18n>Match</option>
-                        </select>
-                      </div>
-                      <p
-                        class="help is-danger"
-                        *ngIf="!editSeance.type_seance"
-                        i18n
+            <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3" >
+              <!-- Bloc Infos personnelles -->
+              <div class="column is-full-tablet is-half-desktop">
+                <div class="box is-light">
+                  <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n >Informations essentielles
+                  </h3>
+                  <div class="is-flex is-align-items-center">
+                    <ng-container *ngIf="editSeance.seance_id > 0">
+                      <btn
+                        *ngIf="!edit_nom"
+                        class="mx-1"
+                        [type_button]="'EditerLight'"
+                        (click)="edit_nom = true"
                       >
-                        La sélection d'un type de séance est obligatoire
-                      </p>
-                    </div>
-                    <div
-                      *ngIf="editSeance.type_seance == 'ENTRAINEMENT'"
-                      class="field"
-                    >
-                      <label class="label" i18n>Cours</label>
-                      <div class="select">
-                        <select
-                          id="cours"
-                          (ngModelChange)="onCoursSelectionChange($event)"
-                          [(ngModel)]="editSeance.cours"
-                        >
-                          <option
-                            *ngFor="let cours of listeCours"
-                            [value]="cours.id"
-                          >
-                            {{ cours.nom }}
-                          </option>
-                        </select>
-                      </div>
-                      <p class="help is-danger" *ngIf="!editSeance.cours" i18n>
-                        La sélection d'un cours est obligatoire
-                      </p>
-                    </div>
+                      </btn>
+
+                      <btn
+                        *ngIf="edit_nom"
+                        class="mx-1"
+                        [type_button]="'SauvegarderLight'"
+                        [disabled]="!rNom.key"
+                        (click)="(edit_nom = false) && autoSave()"
+                      >
+                      </btn>
+
+                      <btn
+                        *ngIf="edit_nom"
+                        class="mx-1"
+                        [type_button]="'AnnulerLight'"
+                        (click)="(edit_nom = false) && retour() "
+                      >
+                      </btn>
+                    </ng-container>
+                  </div>
+
+                <ng-container
+                  *ngIf="editSeance.seance_id > 0; else NouvelleSeance"
+                >
+                  <ng-container *ngIf="edit_nom; else affichageNom">
+                    <input
+                      class="input"
+                      [ngClass]="{ 'is-danger': !rNom.key }"
+                      [(ngModel)]="editSeance.libelle"
+                      (ngModelChange)="autoSave()"
+                    />
+                    <p *ngIf="!rNom.key" class="help is-danger is-small">
+                      {{ rNom.value }}
+                    </p>
                   </ng-container>
-                  <ng-container *ngIf="editSeance.seance_id > 0">
-                    <div *ngIf="editSeance.cours > 0" class="field">
+                  <ng-template #affichageNom>
+                    <div class="field">
+                      <label class="label" i18n>Libellé</label>
+                      <span>{{ editSeance.libelle }}</span>
+                    </div>
+                    <div class="field">
                       <label class="label" i18n>Cours</label>
                       <span>{{ GetCours(editSeance.cours) }}</span>
                     </div>
@@ -1131,1112 +1135,253 @@
                       <label class="label" i18n>Type de séance</label>
                       <span>{{ GetType(editSeance.type_seance) }}</span>
                     </div>
-                  </ng-container>
-                </div>
-                <ng-container
-                  *ngIf="
-                    (editSeance.type_seance === 'ENTRAINEMENT' &&
-                      editSeance.cours > 0) ||
-                    editSeance.type_seance != 'ENTRAINEMENT'
-                  "
-                >
-                  <div class="field-container" *ngIf="editMode_serie">
-                    <div class="field">
-                      <label class="label" i18n>Jour de la semaine</label>
-                      <div class="select">
-                        <select
-                          id="jour"
-                          [(ngModel)]="jour_semaine"
-                          placeholder="Jour"
-                        >
-                          <option [value]="'Monday'" i18n>lundi</option>
-                          <option [value]="'Tuesday'" i18n>mardi</option>
-                          <option [value]="'Wednesday'" i18n>mercredi</option>
-                          <option [value]="'Thursday'" i18n>jeudi</option>
-                          <option [value]="'Friday'" i18n>vendredi</option>
-                          <option [value]="'Saturday'" i18n>samedi</option>
-                          <option [value]="'Sunday'" i18n>dimanche</option>
-                        </select>
-                      </div>
+                  </ng-template>
+                </ng-container>
+                <ng-template #NouvelleSeance>
+                  <div class="field">
+                    <label class="label" i18n>Libellé de séance</label>
+                    <div class="control">
+                      <input
+                        class="input"
+                        [ngClass]="{ 'is-danger': !rNom.key }"
+                        [(ngModel)]="editSeance.libelle"
+                        (ngModelChange)="checkall()"
+                      />
                     </div>
-
-                    <div class="field">
-                      <label class="label" i18n
-                        >Date de début de la série</label
+                     <p *ngIf="!rNom.key" class="help is-danger is-small">
+                      {{ rNom.value }}
+                    </p>
+                  </div>
+                  <div class="field">
+                    <label class="label" i18n>Type de séance</label>
+                    <div class="select">
+                      <select id="cours" [(ngModel)]="editSeance.type_seance">
+                        <option value="ENTRAINEMENT" i18n>Cours</option>
+                        <option value="SORTIE" i18n>Sortie</option>
+                        <option value="EVENEMENT" i18n>Evenement</option>
+                        <option value="MATCH" i18n>Match</option>
+                      </select>
+                    </div>
+                    <p
+                      class="help is-danger"
+                      *ngIf="!editSeance.type_seance"
+                      i18n
+                    >
+                      La sélection d'un type de séance est obligatoire
+                    </p>
+                  </div>
+                  <div
+                    *ngIf="editSeance.type_seance == 'ENTRAINEMENT'"
+                    class="field"
+                  >
+                    <label class="label" i18n>Cours</label>
+                    <div class="select">
+                      <select
+                        id="cours"
+                        (ngModelChange)="onCoursSelectionChange($event)"
+                        [(ngModel)]="editSeance.cours"
                       >
-                      <input
-                        class="input"
-                        id="date_seance"
-                        type="date"
-                        [(ngModel)]="editSeance.date_seance"
-                      />
-                      
+                        <option
+                          *ngFor="let cours of listeCours"
+                          [value]="cours.id"
+                        >
+                          {{ cours.nom }}
+                        </option>
+                      </select>
                     </div>
-
-                    <div class="field">
-                      <label class="label" i18n>Date de fin de la série</label>
-                      <input
-                        class="input"
-                        id="date_seance"
-                        type="date"
-                        [(ngModel)]="date_fin_serie"
-                      />
-                      <p class="help is-danger" *ngIf="!date_fin_serie" i18n>
-                        La date de fin de la série doit être saisie
-                      </p>
-                    </div>
+                    <p class="help is-danger" *ngIf="!editSeance.cours" i18n>
+                      La sélection d'un cours est obligatoire
+                    </p>
+                  </div>
+                </ng-template>
+              </div>
+              </div>
+              <div class="column is-full-tablet is-half-desktop">
+                <ng-component *ngIf="editMode_serie; else unique">
+ <datelieu
+                  [creneau]="true"
+                  [duree]="editSeance.duree_seance"
+                  [heure]="editSeance.heure_debut"
+                  [jour_semaine]="jour_semaine"
+                  [serie]="editMode_serie"
+                  [date_debut]="editSeance.date_seance"
+                  [date_fin]="date_fin_serie"
+                  [rdv]="editSeance.rdv"
+                  [ID]="editSeance.seance_id"
+                  [lieu_id]="editSeance.lieu_id"
+                  [Regles]="GlobalService.getRegles().SeanceSerie_DateLieu"
+                  (datelieuChange)="SaveDateLieu($event)"
+                  (valid)="valid_DateLieu($event)"
+                ></datelieu>
+                </ng-component>
+                <ng-template #unique>
+ <datelieu
+                  [creneau]="false"
+                  [duree]="editSeance.duree_seance"
+                  [heure]="editSeance.heure_debut"
+                  [jour_semaine]="jour_semaine"
+                  [serie]="editMode_serie"
+                  [date]="editSeance.date_seance"
+                  [rdv]="editSeance.rdv"
+                  [ID]="editSeance.seance_id"
+                  [lieu_id]="editSeance.lieu_id"
+                  [Regles]="GlobalService.getRegles().Seance_DateLieu"
+                  (datelieuChange)="SaveDateLieu($event)"
+                  (valid)="valid_DateLieu($event)"
+                ></datelieu>
+                </ng-template>
+               
+              </div>
+              <div class="column is-full-tablet is-half-desktop">
+                <caracteristique-seance
+                  [essai_possible]="false"
+                  [place_limite]="editSeance.est_place_maximum"
+                  [place_limite_valeur]="editSeance.place_maximum"
+                  [age_max]="editSeance.est_limite_age_maximum"
+                  [age_min]="editSeance.est_limite_age_minimum"
+                  [age_max_valeur]="editSeance.age_maximum"
+                  [age_min_valeur]="editSeance.age_minimum"
+                  [afficher_present]="editSeance.afficher_present"
+                  [essai_possible]="editSeance.essai_possible"
+                  [ID]="editSeance.seance_id"
+                  [Regles]="GlobalService.getRegles().Seance_Parametres"
+                  (valueChange)="SaveCaracteristique($event)"
+                  (valid)="valid_Caracteristique($event)"
+                ></caracteristique-seance>
+              </div>
+              <div class="column is-full-tablet is-half-desktop">
+                <div class="box is-light">
+                  <div
+                    class="is-flex is-justify-content-space-between is-align-items-center mb-3"
+                  >
+                    <h3
+                      class="subtitle is-6 has-text-primary has-text-weight-semibold"
+                      i18n
+                    >
+                      Sélection des encadrants
+                    </h3>
+                    <ng-container *ngIf="editSeance.seance_id > 0">
+                      <btn
+                        *ngIf="!edit_prof"
+                        [type_button]="'EditerLight'"
+                        (click)="(edit_prof = true) && checkall()"
+                      ></btn>
+                      <btn
+                        *ngIf="edit_prof"
+                        [disabled]="!rProf.key"
+                        (click)="autoSave()"
+                        [type_button]="'SauvegarderLight'"
+                      >
+                      </btn>
+                      <btn
+                        *ngIf="edit_prof"
+                        (click)="edit_prof = !edit_prof"
+                        [type_button]="'AnnulerLight'"
+                      >
+                      </btn>
+                    </ng-container>
                   </div>
 
-                  <div class="field-container">
-                    <div class="field">
-                      <label class="label" i18n>Libellé</label>
-                      <input
-                        class="input"
-                        type="text"
-                        id="nom_rider"
-                        name="nom_rider"
-                        i18n-placeholder
-                        placeholder="Nom"
-                        [(ngModel)]="editSeance.libelle"
-                        required
-                      />
-                      
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n>Statut</label>
-                      <ng-container *ngIf="editSeance.seance_id < 1">
-                        <span class="tag is-info is-rounded is-light">
-                          <span class="icon has-text-info">
-                            <i class="fa-solid fa-calendar-check"></i>
-                          </span>
-                          <span i18n>Prévue</span>
+                  <ng-container *ngIf="editSeance.seanceProfesseurs.length > 0">
+                    <div class="tags">
+                      <ng-container
+                        *ngFor="let l of editSeance.seanceProfesseurs"
+                      >
+                        <span class="tag is-success">
+                          {{
+                            l.personne.prenom +
+                              '\u00A0' +
+                              (l.personne.nom || '')
+                          }}
+                          <button
+                            *ngIf="edit_prof"
+                            class="delete is-small"
+                            (click)="RemoveProf(l)"
+                          ></button>
                         </span>
                       </ng-container>
-                      <ng-container *ngIf="editSeance.seance_id > 0">
-                        <ng-container *ngIf="editSeance.statut == 'prévue'">
-                          <span class="tag is-info is-rounded is-light">
-                            <span class="icon has-text-info">
-                              <i class="fa-solid fa-calendar-check"></i> </span
-                            >&nbsp;
-                            <span i18n>Prévue</span>
-                          </span>
-                          <hover-button
-                            [nomclass]="
-                              'button is-outlined is-rounded is-primary'
-                            "
-                            [nomicon]="'fa-solid fa-flag-checkered'"
-                            [libelle]="'Terminer la séance'"
-                            (click)="ChangerStatut('réalisée')"
-                          >
-                          </hover-button>
-                          <hover-button
-                            [nomclass]="
-                              'button is-outlined is-rounded is-danger'
-                            "
-                            [nomicon]="'fa-solid fa-ban'"
-                            [libelle]="'Annuler la séance'"
-                            (click)="ChangerStatut('annulée')"
-                          >
-                          </hover-button>
-                        </ng-container>
-                        <ng-container *ngIf="editSeance.statut == 'réalisée'">
-                          <span class="tag is-primary is-rounded is-light">
-                            <span class="icon has-text-success">
-                              <i class="fa-solid fa-flag-checkered"></i> </span
-                            >&nbsp;
-                            <span i18n>Terminée</span>
-                          </span>
-                          <hover-button
-                            [nomclass]="'button is-outlined is-rounded is-info'"
-                            [nomicon]="'fa-solid fa-calendar-check'"
-                            [libelle]="'Planifier la séance'"
-                            (click)="ChangerStatut('prévue')"
-                          >
-                          </hover-button>
-                          <hover-button
-                            [nomclass]="
-                              'button is-outlined is-rounded is-danger'
-                            "
-                            [nomicon]="'fa-solid fa-ban'"
-                            [libelle]="'Annuler la séance'"
-                            (click)="ChangerStatut('annulée')"
-                          >
-                          </hover-button>
-                        </ng-container>
-                        <ng-container *ngIf="editSeance.statut == 'annulée'">
-                          <span class="tag is-danger is-rounded is-light">
-                            <span class="icon has-text-danger">
-                              <i class="fa-solid fa-ban"></i> </span
-                            >&nbsp;
-                            <span i18n>Annulée</span>
-                          </span>
-                          <hover-button
-                            [nomclass]="'button is-outlined is-rounded is-info'"
-                            [nomicon]="'fa-solid fa-calendar-check'"
-                            [libelle]="'Planifier la séance'"
-                            (click)="ChangerStatut('prévue')"
-                          >
-                          </hover-button>
-                          <hover-button
-                            [nomclass]="
-                              'button is-outlined is-rounded is-primary'
-                            "
-                            [nomicon]="'fa-solid fa-flag-checkered'"
-                            [libelle]="'Terminer la séance'"
-                            (click)="ChangerStatut('réalisée')"
-                          >
-                          </hover-button>
-                        </ng-container>
-                      </ng-container>
                     </div>
-                  </div>
-                  <div class="field-container">
-                    <ng-container *ngIf="!editMode_serie">
-                      <div class="field">
-                        <label class="label" i18n>Date de la séance</label>
-                        <span
-                          class="title_label"
-                          *ngIf="editSeance.cours && editSeance.seance_id == 0"
-                          >&nbsp;({{ jour_semaine }})</span
-                        >
-                        <input
-                          class="input"
-                          id="date_seance"
-                          type="date"
-                          [(ngModel)]="editSeance.date_seance"
-                        />
-                        
-                      </div>
-                    </ng-container>
-                    <div class="field">
-                      <label class="label" i18n>Heure de début :</label>
-                      <input
-                        matInput
-                        class="input"
-                        id="heure_debut"
-                        type="time"
-                        [(ngModel)]="editSeance.heure_debut"
-                      />
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n>Durée de la séance</label>
-                      <input
-                        class="input"
-                        id="duree_seance"
-                        type="number"
-                        [(ngModel)]="editSeance.duree_seance"
-                      />
-                  
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n>Lieu</label>
+                  </ng-container>
+
+                  <ng-container
+                    *ngIf="editSeance.seanceProfesseurs?.length === 0"
+                  >
+                    <span i18n>Aucun encadrant sélectionné</span>
+                    <p *ngIf="!rProf.key" class="is-small help is-danger">{{rProf.value}}</p>
+                  </ng-container>
+                  <ng-container *ngIf="edit_prof">
+                    <h6 class="title is-6" i18n>Encadrants disponibles</h6>
+                    <ng-container *ngIf="prof_dispo.length > 0">
                       <div class="select">
                         <select
-                          class="form-control"
-                          id="lieu"
-                          [(ngModel)]="editSeance.lieu_id"
-                          placeholder="Lieu"
+                          style="font-size: smaller"
+                          id="professeurs"
+                          [(ngModel)]="current_prof_id"
                         >
-                          <option
-                            *ngFor="let lieu of listelieu"
-                            [value]="lieu.key"
+                          <ng-container
+                            *ngFor="let ni of prof_dispo; let first = first"
                           >
-                            {{ lieu.value }}
-                          </option>
+                            <option [value]="ni.person.id">
+                              {{
+                                (ni.person.prenom || '') +
+                                  '\u00A0' +
+                                  (ni.person.nom || '')
+                              }}
+                            </option>
+                          </ng-container>
                         </select>
-                        
                       </div>
-                    </div>
-                  </div>
-                  <div class="field-container">
-                    <div class="field">
-                      <label class="label" i18n for="place_maximum"
-                        >Age minimum ? :</label
+                      <button
+                        type="button"
+                        [disabled]="!current_prof_id"
+                        (click)="AjouterProf()"
+                        class="button is-primary is-small is-rounded is-outlined"
+                        style="align-self: center; fill: hsl(171, 100%, 41%)"
                       >
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.est_limite_age_minimum == true
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.est_limite_age_minimum == true
-                              ? (editSeance.est_limite_age_minimum = false)
-                              : (editSeance.est_limite_age_minimum = true)
-                          "
-                        >
-                          <span i18n>Age minimum requis</span>
-                        </button>
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.est_limite_age_minimum == false
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.est_limite_age_minimum == true
-                              ? (editSeance.est_limite_age_minimum = false)
-                              : (editSeance.est_limite_age_minimum = true)
-                          "
-                        >
-                          <span i18n>Pas de limite</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      *ngIf="editSeance.est_limite_age_minimum == true"
-                      class="field field-jecha"
-                    >
-                      <label class="label" i18n for="age_minimum"
-                        >Age minimum :</label
-                      >
-                      <input
-                        class="input"
-                        min="1"
-                        max="99"
-                        matInput
-                        type="number"
-                        id="age_minimum"
-                        [(ngModel)]="editSeance.age_minimum"
-                        i18n-placeholder
-                        placeholder="Age requis"
-                      />
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n for="place_maximum"
-                        >Age maximum ? :</label
-                      >
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.est_limite_age_maximum == true
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.est_limite_age_maximum == true
-                              ? (editSeance.est_limite_age_maximum = false)
-                              : (editSeance.est_limite_age_maximum = true)
-                          "
-                        >
-                          <span i18n>Age maximum</span>
-                        </button>
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.est_limite_age_maximum == false
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.est_limite_age_maximum == true
-                              ? (editSeance.est_limite_age_maximum = false)
-                              : (editSeance.est_limite_age_maximum = true)
-                          "
-                        >
-                          <span i18n>Pas de limite</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="field" *ngIf="editSeance.est_limite_age_maximum == true">
-                      <label class="label" i18n for="age_maximum"
-                        >Age maximum :</label
-                      >
-                      <input
-                        class="input"
-                        min="1"
-                        max="99"
-                        matInput
-                        type="number"
-                        id="age_maximum"
-                        [(ngModel)]="editSeance.age_maximum"
-                        placeholder="Age maximum"
-                      />
-                    </div>
-                  </div>
-                  <div class="field-container">
-                    <div class="field">
-                      <label class="label" i18n for="place_maximum"
-                        >Place limitée ? :</label
-                      >
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.est_place_maximum == true
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.est_place_maximum == true
-                              ? (editSeance.est_place_maximum = false)
-                              : (editSeance.est_place_maximum = true)
-                          "
-                        >
-                          <span i18n>Places limitées</span>
-                        </button>
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.est_place_maximum == false
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.est_place_maximum == true
-                              ? (editSeance.est_place_maximum = false)
-                              : (editSeance.est_place_maximum = true)
-                          "
-                        >
-                          <span i18n>Places illimitées</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      class="field"
-                      *ngIf="editSeance.est_place_maximum == true"
-                    >
-                      <label class="label" i18n for="place_maximum"
-                        >Place maximum :</label
-                      >
-                      <input
-                        class="input"
-                        type="number"
-                        id="place_maximum"
-                        min="1"
-                        max="999"
-                        [(ngModel)]="editSeance.place_maximum"
-                      />
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n for="place_maximum"
-                        >Convocation nominative ? :</label
-                      >
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.convocation_nominative == true
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.convocation_nominative == true
-                              ? (editSeance.convocation_nominative = false)
-                              : (editSeance.convocation_nominative = true)
-                          "
-                        >
-                          <span i18n>Convocation nominative</span>
-                        </button>
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.convocation_nominative == false
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.convocation_nominative == true
-                              ? (editSeance.convocation_nominative = false)
-                              : (editSeance.convocation_nominative = true)
-                          "
-                        >
-                          <span i18n>Groupe entier convoqué</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n for="place_maximum"
-                        >Essai possible ? :</label
-                      >
-                      <div class="buttons has-addons">
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.essai_possible == true
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.essai_possible == true
-                              ? (editSeance.essai_possible = false)
-                              : (editSeance.essai_possible = true)
-                          "
-                        >
-                          <span i18n>Essai possible</span>
-                        </button>
-                        <button
-                          type="button"
-                          [class]="
-                            editSeance.essai_possible == false
-                              ? 'button is-link is-active'
-                              : 'button is-active'
-                          "
-                          (click)="
-                            editSeance.essai_possible == true
-                              ? (editSeance.essai_possible = false)
-                              : (editSeance.essai_possible = true)
-                          "
-                        >
-                          <span i18n>Pas d'essai</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="field-container">
-                    <div class="field">
-                      <label class="label" for="place_maximum"
-                        ><span i18n>Professeurs</span>&nbsp;
-                        <button
-                          *ngIf="editSeance.seanceProfesseurs && editSeance.seanceProfesseurs.length > 0"
-                          (click)="
-                            manage_prof
-                              ? (manage_prof = false)
-                              : (manage_prof = true)
-                          "
-                        >
-                          <i class="fas fa-cog"></i></button
-                      ></label>
+                        <svg width="20" height="20">
+                          <use xlink:href=".\assets\liste.svg#plus"></use>
+                        </svg>
+                      </button>
+                    </ng-container>
+                    <ng-container *ngIf="listeprof.length == 0">
+                      <span i18n>Aucun encadrant disponible</span>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </div>
 
-                      <app-prof
-                        (profUpdated)="onProfUpdated($event)"
-                        [liste_prof]="listeprof"
-                        [thisSeance]="editSeance"
-                        [manage]="manage_prof"
-                        [Profs]="editSeance.seanceProfesseurs"
-                      ></app-prof>
-                    </div>
-
-                    <div class="field"   *ngIf="editSeance.convocation_nominative == false">
-                      <label class="label" i18n for="place_maximum"
-                        >Groupes :</label
-                      >
-                      <app-groupe-detail
-                        (groupesUpdated)="onGroupesUpdated($event)"
-                        [id_source]="editSeance.seance_id"
-                        [objet_source]="'séance'"
-                      
-                        [title]="titre_groupe"
-                        [Groupes]="editSeance.groupes"
-                        [liste_groupe]="liste_groupe"
-                      ></app-groupe-detail>
-                    </div>
-                    <div class="field">
-                      <label class="label" i18n for="place_maximum"
-                        >Info séance :
-                      </label>
-                      <textarea
-                        class="textarea"
-                        [(ngModel)]="editSeance.info_seance"
-                      ></textarea>
-                    </div>
-                  </div>
-                </ng-container>
+              <!-- Bloc Adresse -->
+              <div class="column is-full-tablet is-half-desktop">
+                <app-groupe-detail
+                  (groupesUpdated)="onGroupesUpdated($event)"
+                  [id_source]="editSeance.seance_id"
+                  [objet_source]="'cours'"
+                  [edit]="true"
+                  [title]="titre_groupe"
+                  [Groupes]="editSeance.groupes"
+                  [liste_groupe]="liste_groupe"
+                ></app-groupe-detail>
               </div>
             </div>
-            <footer class="card-footer">
-              <div class="columns">
-                <div class="column">
-                  <div class="buttons">
+
+            <div class="card-footer">
+              <div class="columns is-mobile is-centered">
+                <div class="column is-half">
+                  <div class="buttons" style="flex-wrap: nowrap">
+                    <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
                     <btn
+                      *ngIf="editSeance.seance_id < 1"
+                      [disabled]="!is_valid"
                       [type_button]="'SauvegarderSmall'"
                       (click)="Save()"
                     ></btn>
-                    <btn
-                      [type_button]="'VoirSmall'"
-                      (click)="VoirMaSeance()"
-                      *ngIf="editSeance.seance_id > 0"
-                    ></btn>
-                    <btn
-                      [type_button]="'ReloadSmall'"
-                      (click)="Refresh()"
-                    ></btn>
-                    <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
                   </div>
                 </div>
               </div>
-            </footer>
+            </div>
           </div>
         </div>
       </div>
-    </span>
-    <span class="mobile">
-      <nav class="navbar is-fixed-top">
-        <btn
-          [type_button]="'SauvegarderMobile'"
-          (click)="Save()"
-        ></btn>
-        <btn
-          [type_button]="'VoirMobile'"
-          (click)="VoirMaSeance(editSeance)"
-          *ngIf="editSeance.seance_id > 0"
-        ></btn>
-        <btn [type_button]="'ReloadMobile'" *ngIf="editSeance.seance_id > 0" (click)="Refresh()"></btn>
-        <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
-      </nav>
-      <div class="container-box">
-        <div class="field-container">
-          <ng-container *ngIf="editSeance.seance_id == 0">
-            <div class="field">
-              <label class="label" i18n>Type de séance</label>
-              <div class="select">
-                <select id="cours" [(ngModel)]="editSeance.type_seance">
-                  <option value="ENTRAINEMENT" i18n>Cours</option>
-                  <option value="SORTIE" i18n>Sortie</option>
-                  <option value="EVENEMENT" i18n>Evenement</option>
-                  <option value="MATCH" i18n>Match</option>
-                </select>
-              </div>
-              <p
-                class="help is-danger"
-                *ngIf="!editSeance.type_seance"
-                i18n
-              >
-                La sélection d'un type de séance est obligatoire
-              </p>
-            </div>
-            <div
-              *ngIf="editSeance.type_seance == 'ENTRAINEMENT'"
-              class="field"
-            >
-              <label class="label" i18n>Cours</label>
-              <div class="select">
-                <select
-                  id="cours"
-                  (ngModelChange)="onCoursSelectionChange($event)"
-                  [(ngModel)]="editSeance.cours"
-                >
-                  <option
-                    *ngFor="let cours of listeCours"
-                    [value]="cours.id"
-                  >
-                    {{ cours.nom }}
-                  </option>
-                </select>
-              </div>
-              <p class="help is-danger" *ngIf="!editSeance.cours" i18n>
-                La sélection d'un cours est obligatoire
-              </p>
-            </div>
-          </ng-container>
-          <ng-container *ngIf="editSeance.seance_id > 0">
-            <div *ngIf="editSeance.cours > 0" class="field">
-              <label class="label" i18n>Cours</label>
-              <span>{{ GetCours(editSeance.cours) }}</span>
-            </div>
-            <div class="field">
-              <label class="label" i18n>Type de séance</label>
-              <span>{{ GetType(editSeance.type_seance) }}</span>
-            </div>
-          </ng-container>
-        </div>
-        <ng-container
-          *ngIf="
-            (editSeance.type_seance === 'ENTRAINEMENT' &&
-              editSeance.cours > 0) ||
-            editSeance.type_seance != 'ENTRAINEMENT'
-          "
-        >
-          <div class="field-container" *ngIf="editMode_serie">
-            <div class="field">
-              <label class="label" i18n>Jour de la semaine</label>
-              <div class="select">
-                <select
-                  id="jour"
-                  [(ngModel)]="jour_semaine"
-                  placeholder="Jour"
-                >
-                  <option [value]="'Monday'" i18n>lundi</option>
-                  <option [value]="'Tuesday'" i18n>mardi</option>
-                  <option [value]="'Wednesday'" i18n>mercredi</option>
-                  <option [value]="'Thursday'" i18n>jeudi</option>
-                  <option [value]="'Friday'" i18n>vendredi</option>
-                  <option [value]="'Saturday'" i18n>samedi</option>
-                  <option [value]="'Sunday'" i18n>dimanche</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label" i18n
-                >Date de début de la série</label
-              >
-              <input
-                class="input"
-                id="date_seance"
-                type="date"
-                [(ngModel)]="editSeance.date_seance"
-              />
-             
-            </div>
-
-            <div class="field">
-              <label class="label" i18n>Date de fin de la série</label>
-              <input
-                class="input"
-                id="date_seance"
-                type="date"
-                [(ngModel)]="date_fin_serie"
-              />
-              <p class="help is-danger" *ngIf="!date_fin_serie" i18n>
-                La date de fin de la série doit être saisie
-              </p>
-            </div>
-          </div>
-
-          <div class="field-container">
-            <div class="field">
-              <label class="label" i18n>Libellé</label>
-              <input
-                class="input"
-                type="text"
-                id="nom_rider"
-                name="nom_rider"
-                i18n-placeholder
-                placeholder="Nom"
-                [(ngModel)]="editSeance.libelle"
-                required
-              />
-              
-            </div>
-            <div class="field">
-              <label class="label" i18n>Statut</label>
-              <ng-container *ngIf="editSeance.seance_id < 1">
-                <span class="tag is-info is-rounded is-light">
-                  <span class="icon has-text-info">
-                    <i class="fa-solid fa-calendar-check"></i>
-                  </span>
-                  <span i18n>Prévue</span>
-                </span>
-              </ng-container>
-              <ng-container *ngIf="editSeance.seance_id > 0">
-                <ng-container *ngIf="editSeance.statut == 'prévue'">
-                  <span class="tag is-info is-rounded is-light">
-                    <span class="icon has-text-info">
-                      <i class="fa-solid fa-calendar-check"></i> </span
-                    >&nbsp;
-                    <span i18n>Prévue</span>
-                  </span>
-                  <hover-button
-                    [nomclass]="
-                      'button is-outlined is-rounded is-primary'
-                    "
-                    [nomicon]="'fa-solid fa-flag-checkered'"
-                    [libelle]="'Terminer la séance'"
-                    (click)="ChangerStatut('réalisée')"
-                  >
-                  </hover-button>
-                  <hover-button
-                    [nomclass]="
-                      'button is-outlined is-rounded is-danger'
-                    "
-                    [nomicon]="'fa-solid fa-ban'"
-                    [libelle]="'Annuler la séance'"
-                    (click)="ChangerStatut('annulée')"
-                  >
-                  </hover-button>
-                </ng-container>
-                <ng-container *ngIf="editSeance.statut == 'réalisée'">
-                  <span class="tag is-primary is-rounded is-light">
-                    <span class="icon has-text-success">
-                      <i class="fa-solid fa-flag-checkered"></i> </span
-                    >&nbsp;
-                    <span i18n>Terminée</span>
-                  </span>
-                  <hover-button
-                    [nomclass]="'button is-outlined is-rounded is-info'"
-                    [nomicon]="'fa-solid fa-calendar-check'"
-                    [libelle]="'Planifier la séance'"
-                    (click)="ChangerStatut('prévue')"
-                  >
-                  </hover-button>
-                  <hover-button
-                    [nomclass]="
-                      'button is-outlined is-rounded is-danger'
-                    "
-                    [nomicon]="'fa-solid fa-ban'"
-                    [libelle]="'Annuler la séance'"
-                    (click)="ChangerStatut('annulée')"
-                  >
-                  </hover-button>
-                </ng-container>
-                <ng-container *ngIf="editSeance.statut == 'annulée'">
-                  <span class="tag is-danger is-rounded is-light">
-                    <span class="icon has-text-danger">
-                      <i class="fa-solid fa-ban"></i> </span
-                    >&nbsp;
-                    <span i18n>Annulée</span>
-                  </span>
-                  <hover-button
-                    [nomclass]="'button is-outlined is-rounded is-info'"
-                    [nomicon]="'fa-solid fa-calendar-check'"
-                    [libelle]="'Planifier la séance'"
-                    (click)="ChangerStatut('prévue')"
-                  >
-                  </hover-button>
-                  <hover-button
-                    [nomclass]="
-                      'button is-outlined is-rounded is-primary'
-                    "
-                    [nomicon]="'fa-solid fa-flag-checkered'"
-                    [libelle]="'Terminer la séance'"
-                    (click)="ChangerStatut('réalisée')"
-                  >
-                  </hover-button>
-                </ng-container>
-              </ng-container>
-            </div>
-          </div>
-          <div class="field-container">
-            <ng-container *ngIf="!editMode_serie">
-              <div class="field">
-                <label class="label" i18n>Date de la séance</label>
-                <span
-                  class="title_label"
-                  *ngIf="editSeance.cours && editSeance.seance_id == 0"
-                  >&nbsp;({{ jour_semaine }})</span
-                >
-                <input
-                  class="input"
-                  id="date_seance"
-                  type="date"
-                  [(ngModel)]="editSeance.date_seance"
-                />
-                
-              </div>
-            </ng-container>
-            <div class="field">
-              <label class="label" i18n>Heure de début :</label>
-              <input
-                matInput
-                class="input"
-                id="heure_debut"
-                type="time"
-                [(ngModel)]="editSeance.heure_debut"
-              />
-            </div>
-            <div class="field">
-              <label class="label" i18n>Durée de la séance</label>
-              <input
-                class="input"
-                id="duree_seance"
-                type="number"
-                [(ngModel)]="editSeance.duree_seance"
-              />
-            </div>
-            <div class="field">
-              <label class="label" i18n>Lieu</label>
-              <div class="select">
-                <select
-                  class="form-control"
-                  id="lieu"
-                  [(ngModel)]="editSeance.lieu_id"
-                  placeholder="Lieu"
-                >
-                  <option
-                    *ngFor="let lieu of listelieu"
-                    [value]="lieu.key"
-                  >
-                    {{ lieu.value }}
-                  </option>
-                </select>
-              
-              </div>
-            </div>
-          </div>
-          <div class="field-container">
-            <div class="field">
-              <label class="label" i18n for="place_maximum"
-                >Age minimum ? :</label
-              >
-              <div class="buttons has-addons">
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.est_limite_age_minimum == true
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.est_limite_age_minimum == true
-                      ? (editSeance.est_limite_age_minimum = false)
-                      : (editSeance.est_limite_age_minimum = true)
-                  "
-                >
-                  <span i18n>Age minimum requis</span>
-                </button>
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.est_limite_age_minimum == false
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.est_limite_age_minimum == true
-                      ? (editSeance.est_limite_age_minimum = false)
-                      : (editSeance.est_limite_age_minimum = true)
-                  "
-                >
-                  <span i18n>Pas de limite</span>
-                </button>
-              </div>
-            </div>
-            <div
-              *ngIf="editSeance.est_limite_age_minimum == true"
-              class="field field-jecha"
-            >
-              <label class="label" i18n for="age_minimum"
-                >Age minimum :</label
-              >
-              <input
-                class="input"
-                min="1"
-                max="99"
-                matInput
-                type="number"
-                id="age_minimum"
-                [(ngModel)]="editSeance.est_limite_age_minimum"
-                i18n-placeholder
-                placeholder="Age requis"
-              />
-            </div>
-            <div class="field">
-              <label class="label" i18n for="place_maximum"
-                >Age maximum ? :</label
-              >
-              <div class="buttons has-addons">
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.est_limite_age_maximum == true
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.est_limite_age_maximum == true
-                      ? (editSeance.est_limite_age_maximum = false)
-                      : (editSeance.est_limite_age_maximum = true)
-                  "
-                >
-                  <span i18n>Age maximum</span>
-                </button>
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.est_limite_age_maximum == false
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.est_limite_age_maximum == true
-                      ? (editSeance.est_limite_age_maximum = false)
-                      : (editSeance.est_limite_age_maximum = true)
-                  "
-                >
-                  <span i18n>Pas de limite</span>
-                </button>
-              </div>
-            </div>
-            <div class="field" *ngIf="editSeance.est_limite_age_maximum == true">
-              <label class="label" i18n for="age_maximum"
-                >Age maximum :</label
-              >
-              <input
-                class="input"
-                min="1"
-                max="99"
-                matInput
-                type="number"
-                id="age_maximum"
-                [(ngModel)]="editSeance.age_maximum"
-                placeholder="Age maximum"
-              />
-            </div>
-          </div>
-          <div class="field-container">
-            <div class="field">
-              <label class="label" i18n for="place_maximum"
-                >Place limitée ? :</label
-              >
-              <div class="buttons has-addons">
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.est_place_maximum == true
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.est_place_maximum == true
-                      ? (editSeance.est_place_maximum = false)
-                      : (editSeance.est_place_maximum = true)
-                  "
-                >
-                  <span i18n>Places limitées</span>
-                </button>
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.est_place_maximum == false
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.est_place_maximum == true
-                      ? (editSeance.est_place_maximum = false)
-                      : (editSeance.est_place_maximum = true)
-                  "
-                >
-                  <span i18n>Places illimitées</span>
-                </button>
-              </div>
-            </div>
-            <div
-              class="field"
-              *ngIf="editSeance.est_place_maximum == true"
-            >
-              <label class="label" i18n for="place_maximum"
-                >Place maximum :</label
-              >
-              <input
-                class="input"
-                type="number"
-                id="place_maximum"
-                min="1"
-                max="999"
-                [(ngModel)]="editSeance.place_maximum"
-              />
-            </div>
-            <div class="field">
-              <label class="label" i18n for="place_maximum"
-                >Convocation nominative ? :</label
-              >
-              <div class="buttons has-addons">
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.convocation_nominative == true
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.convocation_nominative == true
-                      ? (editSeance.convocation_nominative = false)
-                      : (editSeance.convocation_nominative = true)
-                  "
-                >
-                  <span i18n>Convocation nominative</span>
-                </button>
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.convocation_nominative == false
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.convocation_nominative == true
-                      ? (editSeance.convocation_nominative = false)
-                      : (editSeance.convocation_nominative = true)
-                  "
-                >
-                  <span i18n>Groupe entier convoqué</span>
-                </button>
-              </div>
-            </div>
-            <div class="field">
-              <label class="label" i18n for="place_maximum"
-                >Essai possible ? :</label
-              >
-              <div class="buttons has-addons">
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.essai_possible == true
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.essai_possible == true
-                      ? (editSeance.essai_possible = false)
-                      : (editSeance.essai_possible = true)
-                  "
-                >
-                  <span i18n>Essai possible</span>
-                </button>
-                <button
-                  type="button"
-                  [class]="
-                    editSeance.essai_possible == false
-                      ? 'button is-link is-active'
-                      : 'button is-active'
-                  "
-                  (click)="
-                    editSeance.essai_possible == true
-                      ? (editSeance.essai_possible = false)
-                      : (editSeance.essai_possible = true)
-                  "
-                >
-                  <span i18n>Pas d'essai</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="field-container">
-            <div class="field">
-              <label class="label" for="place_maximum"
-                ><span i18n>Professeurs</span>&nbsp;
-                <button
-                  *ngIf="editSeance.seanceProfesseurs.length > 0"
-                  (click)="
-                    manage_prof
-                      ? (manage_prof = false)
-                      : (manage_prof = true)
-                  "
-                >
-                  <i class="fas fa-cog"></i></button
-              ></label>
-
-              <app-prof
-                (profUpdated)="onProfUpdated($event)"
-                [liste_prof]="listeprof"
-                [thisSeance]="editSeance"
-                [manage]="manage_prof"
-                [Profs]="editSeance.seanceProfesseurs"
-              ></app-prof>
-            </div>
-
-            <div class="field" 
-            *ngIf="editSeance.convocation_nominative == false">
-              <label class="label" i18n for="place_maximum"
-                >Groupes :</label
-              >
-              <app-groupe-detail
-                (groupesUpdated)="onGroupesUpdated($event)"
-                [id_source]="editSeance.seance_id"
-                [objet_source]="'séance'"
-                [title]="titre_groupe"
-                [Groupes]="editSeance.groupes"
-                [liste_groupe]="liste_groupe"
-              ></app-groupe-detail>
-            </div>
-            <div class="field">
-              <label class="label" i18n for="place_maximum"
-                >Info séance :
-              </label>
-              <textarea
-                class="textarea"
-                [(ngModel)]="editSeance.info_seance"
-              ></textarea>
-            </div>
-          </div>
-        </ng-container>
-      </div>
-    </span>
+    </ng-container>
   </ng-container>
 </div>

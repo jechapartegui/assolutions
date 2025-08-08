@@ -14,11 +14,14 @@ import { GroupeService } from '../../services/groupe.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/src/lib/autres.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Cours_VM } from '@shared/src/lib/cours.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { donnee_date_lieu } from '../component/datelieu/datelieu.component';
+import { caracteristique } from '../component/caracteristique_seance/caracteristique_seance.component';
+import { PersonneLight_VM } from '@shared/src/lib/personne.interface';
 
 @Component({
   standalone: false,
@@ -30,14 +33,18 @@ export class CoursComponent implements OnInit {
   // cours.component.ts
   constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuNestService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
     private grServ: GroupeService, private excelService:ExcelService, private dbs:GlobalService) { }
-  listeprof: Professeur_VM[];
   listelieu: KeyValuePair[];
-
+    titre_groupe: string = $localize`Groupes du cours`;
   listeCours: Cours_VM[] = [];
   editCours: Cours_VM | null = null;
   current_groupe_id: number;
+  current_prof_id: number;
+   prof_dispo: Professeur_VM[];
   groupe_dispo: KeyValuePair[] = [];
   liste_groupe: KeyValuePair[] = [];
+  liste_prof: Professeur_VM[];
+  is_valid:boolean = false;
+  save:string= "";
   
   public liste_saison: Saison_VM[] = [];
   public active_saison: Saison_VM;
@@ -62,6 +69,8 @@ export class CoursComponent implements OnInit {
   action: string = "";
   liste_jour_semaine = Object.keys(jour_semaine).map(key => jour_semaine[key]);
   afficher_menu_admin: boolean = false;
+  edit_prof:boolean = false;
+  edit_nom:boolean = false;
 
   public GlobalService = GlobalService.instance;
     public filters: FilterCours = new FilterCours();  
@@ -71,6 +80,8 @@ export class CoursComponent implements OnInit {
     public afficher_tri: boolean = false;
       public loading: boolean = false;
       public afficher_filtre: boolean = false;
+      rNom:ValidationItem ={key:true, value:''};
+      rProf:ValidationItem ={key:false, value:$localize`Un professeur responsable est nécessaire pour le cours`};
     
 
   ngOnInit(): void {
@@ -78,8 +89,6 @@ export class CoursComponent implements OnInit {
     this.action = $localize`Charger les cours`;
     this.loading = true;
     if (GlobalService.is_logged_in) {
-
-
       this.saisonserv
               .GetAll()
               .then((sa) => {
@@ -124,8 +133,8 @@ export class CoursComponent implements OnInit {
             this.router.navigate(['/adherent']);
             return;
           }
-          this.listeprof = profs;
-          this.liste_prof_filter = this.listeprof.map((x) => { return { key: x.person.id, value: x.person.prenom + ' ' + x.person.nom } });
+          this.liste_prof = profs;
+          this.liste_prof_filter = this.liste_prof.map((x) => { return { key: x.person.id, value: x.person.prenom + ' ' + x.person.nom } });
           this.lieuserv.GetAllLight().then((lieux) => {
             if (lieux.length == 0) {
               let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
@@ -213,6 +222,7 @@ export class CoursComponent implements OnInit {
     this.action = $localize`Rafraichir le cours`;
     this.coursservice.Get(this.editCours.id).then((c)=>{
       this.editCours = c;
+      this.save = JSON.stringify(c);
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
      }).catch((err: HttpErrorResponse) => {
@@ -227,11 +237,11 @@ export class CoursComponent implements OnInit {
   trouverProfesseur(profId: number): any {
     // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
     // que vous pouvez stocker dans une variable
-    const indexToUpdate = this.listeprof.findIndex(prof => prof.person.id === profId);
+    const indexToUpdate = this.liste_prof.findIndex(prof => prof.person.id === profId);
 
     if (indexToUpdate !== -1) {
       // Remplacer l'élément à l'index trouvé par la nouvelle valeur
-      return this.listeprof[indexToUpdate].person.prenom + " " + this.listeprof[indexToUpdate].person.nom;
+      return this.liste_prof[indexToUpdate].person.prenom + " " + this.liste_prof[indexToUpdate].person.nom;
     } else {
       return $localize`Professeur non trouvé`;
     }
@@ -250,6 +260,9 @@ export class CoursComponent implements OnInit {
   }
   Edit(c: Cours_VM): void {
     this.editCours = c;
+    this.edit_nom = false;
+    this.edit_prof = false;
+      this.save = JSON.stringify(c);
   }
 
   Delete(c: Cours_VM): void {
@@ -278,28 +291,115 @@ export class CoursComponent implements OnInit {
 
   Create(): void {
     this.editCours = new Cours_VM();
+    this.edit_prof = true;
+      this.save = JSON.stringify(this.editCours);
+    
   }
    public is_valid_datelieu: boolean = false;
 
 valid_DateLieu(isValid: boolean): void {
   this.is_valid_datelieu = isValid;
+  this.checkall();
+}
+
+
+checkall(){
+  this.rNom.key = true;
+  this.rProf.key = true;
+   if(this.editCours.prof_principal_id>0){
+    this.rProf.key = true;
+    this.rProf.value = "";
+  } else {
+    this.rProf.key = false;
+    this.rProf.value = $localize`Un professeur responsable est nécessaire pour le cours`;
+  }
+  if(!this.editCours.nom){
+    this.rNom.key = false;
+    this.rNom.value = $localize`Un nom doit être saisi`
+    this.is_valid = false;
+    return;
+  }
+  if(this.editCours.nom.length <4){
+    this.rNom.key = false;
+    this.rNom.value = $localize`Le nom doit faire au moins 4 caractères`
+    this.is_valid = false;
+    return;
+  }
+  console.log("is_valid_caracteristique", this.is_valid_caracteristique, "this.is_valid_datelieu", this.is_valid_datelieu, "this.is_valid_prof", this.rProf.key)
+  if(this.is_valid_caracteristique && this.is_valid_datelieu && this.rProf.key && this.rNom.key){
+    this.is_valid = true;
+  } else {
+    this.is_valid = false;
+  }
 }
    public is_valid_caracteristique: boolean = false;
 
 valid_Caracteristique(isValid: boolean): void {
   this.is_valid_caracteristique = isValid;
+  this.checkall();
 }
 
-  Save(cours: Cours_VM) {
+SaveDateLieu(donnee_date_lieu :donnee_date_lieu){
+  if (this.editCours) {
+    this.editCours.lieu_id = donnee_date_lieu.lieu_id;
+    this.editCours.heure = donnee_date_lieu.heure;
+    this.editCours.jour_semaine = donnee_date_lieu.jour_semaine;
+    this.editCours.duree = donnee_date_lieu.duree;
+  }
+   this.checkall();
+  if(this.is_valid){
+  this.Save();
+  }
+}
+
+autoSave(){
+  this.checkall();
+  if(this.is_valid){
+  this.Save();
+  }
+}
+retour(){
+  this.editCours = JSON.parse(this.save)
+}
+
+SaveCaracteristique(caracteristique :caracteristique){
+  if(this.editCours){
+    this.editCours.est_limite_age_minimum = caracteristique.age_min;
+    this.editCours.age_minimum = caracteristique.age_min_valeur;
+    this.editCours.est_limite_age_maximum = caracteristique.age_max;
+    this.editCours.age_maximum = caracteristique.age_max_valeur;
+    this.editCours.est_place_maximum = caracteristique.place_limite;
+    this.editCours.place_maximum = caracteristique.place_limite_valeur;
+  }
+   this.checkall();
+  if(this.is_valid){
+  this.Save();
+  }
+}
+  Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un cours`;
-    if (cours) {
-      if (cours.id == 0) {
+    if(!this.is_valid){
+         let o = errorService.CreateError(this.action,$localize`Erreur sur les données`);
+            errorService.emitChange(o);
+            return;
+    }
+    if (this.editCours) {
+      if (this.editCours.id == 0) {
 
-        this.coursservice.Add(cours).then((id) => {
+        this.coursservice.Add(this.editCours).then((id) => {
           if (id > 0) {
             this.editCours.id = id;
+            this.editCours.professeursCours.forEach(async (prof) =>{
+              await this.coursservice.AddCoursProf(id, prof.id);
+            })
+            this.editCours.groupes.forEach(async (gr)=>{
+              await this.grServ.AddLien(id, "cours", gr.id);
+            })
+            //on attend bien que la boucle foreach soit finie pour afficher ?
             let o = errorService.OKMessage(this.action);
+            this.edit_nom = false;
+            this.edit_prof = false;
             errorService.emitChange(o);
             this.UpdateListeCours();
           } else {
@@ -313,7 +413,7 @@ valid_Caracteristique(isValid: boolean): void {
         });
       }
       else {
-        this.coursservice.Update(cours).then((ok) => {
+        this.coursservice.Update(this.editCours).then((ok) => {
 
           this.action = $localize`Mettre à jour un cours`;
           if (ok) {
@@ -346,12 +446,19 @@ valid_Caracteristique(isValid: boolean): void {
   }
 
   Retour(): void {
-
-    let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
+   let temp_editcours = JSON.stringify(this.editCours);
+   if(temp_editcours === this.save){
+    
+      this.editCours = null;
+      this.UpdateListeCours();
+   } else {
+ let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
     if (confirm) {
       this.editCours = null;
       this.UpdateListeCours();
     }
+   }
+   
   }
 
 
@@ -518,6 +625,41 @@ valid_Caracteristique(isValid: boolean): void {
       behavior: 'smooth', // Défilement fluide
     });
   }
+
+    async AjouterProf() {
+      this.action = $localize`Ajouter un professeur au cours`;
+      const indexToUpdate = this.liste_prof.find(cc => cc.person.id === +this.current_prof_id);
+        if(this.editCours.id>0){
+          await this.coursservice.AddCoursProf(this.editCours.id, indexToUpdate.person.id);
+        }   
+        this.editCours.professeursCours.push(indexToUpdate.person);
+        
+        this.current_prof_id = null;
+        this.MAJListeProf();
+    
+        
+    }
+    
+    async RemoveProf(item) {
+      this.action = $localize`Supprimer un professeur de la liste`;    
+      if(this.editCours.id>0){
+          await this.coursservice.DeleteCoursProf(this.editCours.id,item.professeur_id);
+        }   
+        this.editCours.professeursCours = this.editCours.professeursCours.filter(e => e.id !== item.professeur_id);
+        this.MAJListeProf();
+     
+        
+    }
+    MAJListeProf() {
+      this.prof_dispo = this.liste_prof;
+      this.editCours.professeursCours.forEach((element: PersonneLight_VM) => {
+        let element_to_remove = this.liste_prof.find(e => e.person.id == element.id);
+        if (element_to_remove) {
+          this.prof_dispo = this.prof_dispo.filter(e => e.person.id !== element_to_remove.person.id);
+        }
+      });
+    }
+
 }
 
 export class FilterCours {

@@ -17,6 +17,6 @@ import { LinkGroup } from "../../entities/lien_groupe.entity";
   ],
   providers: [GroupeService, GroupService, LinkGroupService],
   controllers: [GroupeController],
-  exports: [GroupeService], // 👈 ajoute ça
+  exports: [GroupeService, LinkGroupService], // 👈 ajoute ça
 })
 export class GroupeModule {}

@@ -12,16 +12,50 @@ export class CourseProfessorService {
   ) {}
 
   async get(id: number): Promise<CourseProfessor> {
-    const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('COURSEPROFESSOR_NOT_FOUND');
+    const item = await this.repo.findOne({ where: { id },
+    relations: [
+      'contract',                         // 1er niveau
+      'contract.professor',           // 2ᵉ niveau
+      'contract.professor.person',    // 3ᵉ niveau (votre “season”)
+    ] });
+    if (!item) throw new NotFoundException('COURSE_PROFESSOR_NOT_FOUND');
     return item;
   }
 
-  async getAll(): Promise<CourseProfessor[]> {
-    return this.repo.find();
+ async getBy(courseId: number, professorId: number): Promise<CourseProfessor> {
+  const item = await this.repo.findOne({
+    where: {
+      courseId,
+      contract: {
+        professorId,
+      },
+    },
+    relations: [
+      'contract',
+      'contract.professor',
+      'contract.professor.person',
+    ],
+  });
+
+  if (!item) {
+    throw new NotFoundException('COURSE_PROFESSOR_NOT_FOUND');
+  }
+
+  return item;
+}
+
+
+  async getAll(courseId:number): Promise<CourseProfessor[]> {
+    return this.repo.find({ where: { courseId },
+    relations: [
+      'contract',                         // 1er niveau
+      'contract.professor',           // 2ᵉ niveau
+      'contract.professor.person',    // 3ᵉ niveau (votre “season”)
+    ], });
   }
 
   async create(data: Partial<CourseProfessor>): Promise<CourseProfessor> {
+
     try {
       const created = this.repo.create(data);
       return await this.repo.save(created);

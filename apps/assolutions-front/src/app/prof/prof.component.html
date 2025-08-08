@@ -1,8 +1,7 @@
-<div class="all-small" *ngIf="!manage">
-    <h6 class="title is-6" i18n>Encadrants du cours</h6>
-<ng-container *ngIf="Profs?.length === 0">
-  <span i18n>Aucun encadrant sélectionné</span>
-</ng-container>
+<div class="box is-light">
+  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+    <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold">{{titre_prof}}</h3>
+</div>
 
 <ng-container *ngIf="Profs?.length > 0">
   <div class="tags">
@@ -13,6 +12,10 @@
       </span>
     </ng-container>
   </div>
+</ng-container>
+
+<ng-container *ngIf="Profs?.length === 0">
+  <span i18n>Aucun encadrant sélectionné</span>
 </ng-container>
 
     <h6 class="title is-6" i18n>Encadrants disponibles</h6>

@@ -21,9 +21,11 @@ export class DateLieuComponent implements OnInit  {
 @Input() date_fin: Date = null; // pour les créneaux, date de fin
 @Input() serie:boolean = false; // si true, on est dans une série de créneaux
 @Input() heure: string;
+@Input() rdv:string;
 @Input() jour_semaine: string;
 @Input() creneau: boolean = false; // si true, au lieu de choisir une date, on choisit un créneau
 @Input() Regles: ReglesDateLieu;
+@Input() readonly:boolean=false;
 @Input() title:string  =$localize`Date de la séance`;
 @Output() datelieuChange = new EventEmitter<donnee_date_lieu>();
  estValid:boolean;
@@ -37,7 +39,9 @@ public lieux : Lieu_VM[] = [];
 constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, private dbs:GlobalService) { }
 
     async ngOnInit(): Promise<void> {
+      console.log(this.Regles);
 let ddl: donnee_date_lieu = {
+ 
     date: this.date,
     lieu_id: this.lieu_id,
     duree: this.duree,
@@ -45,6 +49,7 @@ let ddl: donnee_date_lieu = {
     jour_semaine: this.jour_semaine,
     date_debut: this.date_debut,
     date_fin: this.date_fin,
+    rdv:this.rdv,
 };
 this.save = JSON.stringify(ddl);
         await this.lieuService.GetAll().then((lieux) => {
@@ -59,6 +64,10 @@ this.save = JSON.stringify(ddl);
             this.date_min = this.Regles.date_min;
             this.date_max = this.Regles.date_max;
         }
+        if(this.ID == 0){
+            this.edit = true;
+        }
+        this.validerTout();
     }
 
     ngOnChanges(): void {
@@ -66,8 +75,20 @@ this.save = JSON.stringify(ddl);
     }
     
      public Save(){
-        this.datelieuChange.emit();
+        let ddl: donnee_date_lieu = {
+    date: this.date,
+    lieu_id: this.lieu_id,
+    duree: this.duree,
+    heure: this.heure,
+    jour_semaine: this.jour_semaine,
+    date_debut: this.date_debut,
+    date_fin: this.date_fin,
+    rdv:this.rdv
+};
+        if(this.estValid){
+        this.datelieuChange.emit(ddl);
         this.edit = false;
+        }
      }
     public Cancel(){
         let adh:donnee_date_lieu = JSON.parse(this.save);
@@ -78,7 +99,7 @@ this.save = JSON.stringify(ddl);
         this.date = adh.date;
         this.date_debut = adh.date_debut;
         this.date_fin = adh.date_fin;      
-
+        this.rdv = adh.rdv
         this.edit = false;
     }
     public rDate:ValidationItem;
@@ -89,7 +110,10 @@ this.save = JSON.stringify(ddl);
     public rDuree:ValidationItem;
     public rLieu:ValidationItem;
     
-    calculerHeureFin(heureDebut: string, dureeMinutes: number): string {
+    calculerHeureFin(heureDebut: string = null, dureeMinutes: number = null): string {
+        if(!heureDebut || !dureeMinutes) {
+            return $localize`pas d'heure de début spécifiée`;
+        }
   const [hours, minutes] = heureDebut.split(':').map(Number);
   const debut = new Date();
   debut.setHours(hours, minutes, 0, 0);
@@ -108,14 +132,14 @@ this.save = JSON.stringify(ddl);
    
       if(this.creneau){
         if(this.Regles.creneau_obligatoire){
-            if(this.jour_semaine in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']){
-                this.rCreneau = { key: true, value: "" };
-            } else {
-                this.rCreneau = { key: false, value: $localize`Le créneau doit être un jour de la semaine` };
-            }
-            } else {
-                this.rCreneau = { key: true, value: "" };
-            }
+          if (['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].includes(this.jour_semaine)) {
+            this.rCreneau = { key: true, value: "" };
+          } else {
+            this.rCreneau = { key: false, value: $localize`Le créneau doit être un jour de la semaine` };
+          }
+        } else {
+            this.rCreneau = { key: true, value: "" };
+        }
           this.rDate = { key: true, value: "" };
         if(this.serie){
             this.rDateDebut = GlobalService.instance.validerDate(this.date_debut, this.date_min, this.date_max, true, $localize`Date de début`);
@@ -126,7 +150,11 @@ this.save = JSON.stringify(ddl);
         this.rDateDebut = { key: true, value: "" };
         this.rDateFin = { key: true, value: "" };
         this.rDate = GlobalService.instance.validerDate(this.date, this.date_min, this.date_max, this.Regles.date_obligatoire, this.title);
+
       }
+      console.log("rDate",this.rDate);
+      console.log("rDateDebut", this.rDateDebut);
+      console.log("rDateFin", this.rDateFin);
       this.rHeure = GlobalService.instance.validerHeure(this.heure, this.Regles.heure_min, this.Regles.heure_max, this.Regles.heure_obligatoire, $localize`Heure de début`);
       this.rDuree = GlobalService.instance.validerNombre(this.duree, this.Regles.duree_min, this.Regles.duree_max, this.Regles.duree_obligatoire, $localize`Durée`);
       this.rLieu = GlobalService.instance.validerSaisie(this.lieu_id, this.Regles.lieu_obligatoire, $localize`Lieu`);
@@ -156,4 +184,5 @@ export type donnee_date_lieu = {
     jour_semaine: string;
     date_debut: Date;
     date_fin: Date;
+    rdv:string;
 }

@@ -11,13 +11,15 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { SeancesService } from '../../services/seance.service';
 import { SeanceprofService } from '../../services/seanceprof.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/src/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { Cours_VM } from '@shared/src/lib/cours.interface';
 import {  Seance_VM, SeanceProfesseur_VM, StatutSeance } from '@shared/src/lib/seance.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
+import type { donnee_date_lieu } from '../component/datelieu/datelieu.component';
+import type { caracteristique } from '../component/caracteristique_seance/caracteristique_seance.component';
 
 
 @Component({
@@ -40,17 +42,20 @@ export class SeanceComponent implements OnInit {
   public histo_seance: string;
   listeprof: Professeur_VM[];
   listelieu: KeyValuePair[];
-  prof_dispo: KeyValuePair[];
+  current_prof_id: number;
+  prof_dispo: Professeur_VM[];
   est_prof: boolean = false;
   est_admin: boolean = false;
   manage_prof: boolean = false;
   titre_groupe: string = $localize`Liste des groupes de la séance`;
   listeCours: Cours_VM[] = [];
-  editMode = false;
   editMode_serie: boolean = false;
+        rNom:ValidationItem ={key:true, value:''};
+        rProf:ValidationItem ={key:false, value:$localize`Un professeur responsable est nécessaire pour le cours`};
 
   list_seance_VM: Seance_VM[] = [];
   editSeance: Seance_VM | null = null;
+  is_valid:boolean = false;
 
   all_seance: boolean = false;
   jour_semaine: string = '';
@@ -77,6 +82,8 @@ export class SeanceComponent implements OnInit {
   public showText: boolean = false;
   public action: string = '';
   public listeStatuts: StatutSeance[];
+  edit_prof:boolean = false;
+  edit_nom:boolean = false;
 
   constructor(
     public GlobalService: GlobalService,
@@ -274,14 +281,14 @@ export class SeanceComponent implements OnInit {
     this.seancesservice
       .Get(seance.seance_id)
       .then((ss) => {
-        this.editSeance = new Seance_VM();
+        this.editSeance = ss
+        this.MAJListeProf();
         if (this.editSeance.cours) {
           this.coursselectionne = true;
         } else {
           this.coursselectionne = false;
         }
         this.histo_seance = JSON.stringify(this.editSeance);
-        this.editMode = true;
       })
       .catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
@@ -307,6 +314,7 @@ export class SeanceComponent implements OnInit {
       this.editSeance.est_place_maximum = newValue.est_place_maximum;
       this.editSeance.place_maximum = newValue.place_maximum;
       this.editSeance.essai_possible = false;
+      this.editSeance.rdv = newValue.rdv;
       this.editSeance.afficher_present = newValue.afficher_present;
       this.editSeance.date_seance = null;
       this.editSeance.groupes = [];
@@ -317,9 +325,9 @@ export class SeanceComponent implements OnInit {
       this.editSeance.seanceProfesseurs = [];
       newValue.professeursCours.forEach((el) => {
         let stp = new SeanceProfesseur_VM();
-        stp.personne = el.personne;
+        stp.personne = el;
         stp.id = 0;
-        stp.cout = this.listeprof.find(x => x.person.id == el.personne.id).taux;
+        stp.cout = this.listeprof.find(x => x.person.id == el.id).taux;
         stp.minutes = newValue.duree;
         stp.statut = StatutSeance.prévue;
         this.editSeance.seanceProfesseurs.push(stp);
@@ -335,12 +343,97 @@ export class SeanceComponent implements OnInit {
 
   Creer(serie: boolean = false): void {
     this.editSeance = new Seance_VM();
+        this.MAJListeProf();
     this.coursselectionne = false;
     this.editMode_serie = serie;
     this.editSeance.date_seance = new Date();
     this.date_fin_serie = new Date();
+      this.edit_prof = true;
     this.histo_seance = JSON.stringify(this.editSeance);
-    this.editMode = true;
+  }
+  
+  
+     public is_valid_datelieu: boolean = false;
+  
+  valid_DateLieu(isValid: boolean): void {
+    this.is_valid_datelieu = isValid;
+    this.checkall();
+  }
+  
+  
+  checkall(){
+    this.rNom.key = true;
+    this.rProf.key = true;
+     if(this.editSeance.seanceProfesseurs.length>0){
+      this.rProf.key = true;
+      this.rProf.value = "";
+    } else {
+      this.rProf.key = false;
+      this.rProf.value = $localize`Un encadrant est nécessaire pour le cours`;
+    }
+    if(!this.editSeance.libelle){
+      this.rNom.key = false;
+      this.rNom.value = $localize`Un nom doit être saisi`
+      this.is_valid = false;
+      return;
+    }
+    if(this.editSeance.libelle.length <4){
+      this.rNom.key = false;
+      this.rNom.value = $localize`Le nom doit faire au moins 4 caractères`
+      this.is_valid = false;
+      return;
+    }
+     if(this.is_valid_caracteristique && this.is_valid_datelieu && this.rProf.key && this.rNom.key){
+      this.is_valid = true;
+    } else {
+      this.is_valid = false;
+    }
+  }
+     public is_valid_caracteristique: boolean = false;
+  
+  valid_Caracteristique(isValid: boolean): void {
+    this.is_valid_caracteristique = isValid;
+    this.checkall();
+  }
+  
+  SaveDateLieu(donnee_date_lieu :donnee_date_lieu){
+    if (this.editSeance) {
+      this.editSeance.lieu_id = donnee_date_lieu.lieu_id;
+      this.editSeance.heure_debut = donnee_date_lieu.heure;
+      this.jour_semaine = donnee_date_lieu.jour_semaine;
+      this.editSeance.duree_seance = donnee_date_lieu.duree;
+      this.editSeance.date_seance = donnee_date_lieu.date
+    }
+     this.checkall();
+    if(this.is_valid){
+    this.Save();
+    }
+  }
+  
+  autoSave(){
+    this.checkall();
+    if(this.is_valid){
+    this.Save();
+    }
+  }
+  retour(){
+    this.editSeance = JSON.parse(this.histo_seance)
+  }
+  
+  SaveCaracteristique(caracteristique :caracteristique){
+    if(this.editSeance){
+      this.editSeance.est_limite_age_minimum = caracteristique.age_min;
+      this.editSeance.age_minimum = caracteristique.age_min_valeur;
+      this.editSeance.est_limite_age_maximum = caracteristique.age_max;
+      this.editSeance.age_maximum = caracteristique.age_max_valeur;
+      this.editSeance.est_place_maximum = caracteristique.place_limite;
+      this.editSeance.place_maximum = caracteristique.place_limite_valeur;
+      this.editSeance.essai_possible = caracteristique.essai_possible;
+    }
+     this.checkall();
+    if(this.is_valid){
+    this.Save();
+    }
   }
 
   VoirMaSeanceByID(id:number){
@@ -544,7 +637,8 @@ export class SeanceComponent implements OnInit {
           .Delete(seance.seance_id)
           .then((result) => {
             if (result) {
-                this.spservice.Update(seance.seance_id, []);              
+                this.spservice.Update(seance.seance_id, []);  
+                this.editSeance = null;            
               this.UpdateListeSeance();
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
@@ -593,7 +687,6 @@ export class SeanceComponent implements OnInit {
                 });
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
-                this.editMode = false;
                 this.editSeance = null;
                 this.UpdateListeSeance();
               } else {
@@ -701,7 +794,6 @@ export class SeanceComponent implements OnInit {
         return;
       }
     }
-    this.editMode = false;
     this.editSeance = null;
     this.UpdateListeSeance();
   }
@@ -915,6 +1007,47 @@ return $localize`Evénement`;
       behavior: 'smooth', // Défilement fluide
     });
   }
+     async AjouterProf() {
+        this.action = $localize`Ajouter un professeur à la séance`;
+        const indexToUpdate = this.listeprof.find(cc => cc.person.id === +this.current_prof_id);
+          const seanceprof = new SeanceProfesseur_VM();
+          seanceprof.personne =  indexToUpdate.person;
+          seanceprof.seance_id = this.editSeance.seance_id;
+          seanceprof.minutes = this.editSeance.duree_seance;
+          seanceprof.statut = this.editSeance.statut;
+          //cout = durée * tx horaire : contrat
+          this.editSeance.seanceProfesseurs.push(seanceprof);
+          if(this.editSeance.seance_id>0){
+            await this.spservice.Update(this.editSeance.seance_id, this.editSeance.seanceProfesseurs);
+          }   
+          
+          this.current_prof_id = null;
+          this.MAJListeProf();
+      
+          
+      }
+      
+      async RemoveProf(item : SeanceProfesseur_VM) {
+        this.action = $localize`Supprimer un professeur de la liste`;      
+        this.editSeance.seanceProfesseurs = this.editSeance.seanceProfesseurs.filter(e => e.id !== item.id);
+     
+        if(this.editSeance.seance_id>0){
+            await this.spservice.Update(this.editSeance.seance_id, this.editSeance.seanceProfesseurs);
+          }   
+             this.MAJListeProf();
+       
+          
+      }
+      MAJListeProf() {
+        this.prof_dispo = this.listeprof;
+        this.editSeance.seanceProfesseurs.forEach((element: SeanceProfesseur_VM) => {
+          let element_to_remove = this.listeprof.find(e => e.person.id == element.personne.id);
+          if (element_to_remove) {
+            this.prof_dispo = this.prof_dispo.filter(e => e.person.id !== element_to_remove.person.id);
+          }
+        });
+        this.checkall();
+      }
 }
 
 export class FilterSeance {

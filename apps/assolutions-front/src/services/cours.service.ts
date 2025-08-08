@@ -4,6 +4,7 @@ import { GlobalService } from './global.services';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { Cours_VM } from '@shared/src/lib/cours.interface';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PersonneLight_VM } from '@shared/src/lib/personne.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -72,7 +73,6 @@ export class CoursService {
 }
 public Update(l:Cours_VM): Promise<boolean> {
   this.url = 'api/cours/update';
-
   return this.global.PUT(this.url, l)
     .then((response: boolean) => {
       return response;
@@ -94,4 +94,66 @@ public Delete(id:number): Promise<boolean> {
       return Promise.reject(error);
     });
 }
+
+public GetCoursProf(id:number) : Promise<PersonneLight_VM>{
+  this.url = 'api/cours_prof/get/' + id;
+   
+
+    return this.global.GET(this.url)
+      .then((response: PersonneLight_VM) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+}
+
+public GetCoursProf_Cours(cours_id:number): Promise<PersonneLight_VM[]>{
+    this.url = 'api/cours_prof/getall/' + cours_id;
+   
+
+    return this.global.GET(this.url)
+      .then((response: PersonneLight_VM[]) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+}
+
+public AddCoursProf(cours_id:number, person_id:number): Promise<number>{
+   this.url = 'api/cours_prof/add';
+  let body = {
+    cours_id:cours_id,
+    person_id:person_id
+  }
+  return this.global.PUT(this.url, body)
+    .then((response: number) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+
+public DeleteCoursProf(cours_id:number, person_id:number): Promise<boolean>{
+   this.url = 'api/cours/delete/' + cours_id + '/' + person_id;
+
+  return this.global.DELETE(this.url)
+    .then((response: boolean) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+
 }

@@ -39,9 +39,9 @@ export class Course {
   location: Location;
 
   @Column({ nullable: true, name: 'age_minimum', type: 'int' })
-  minAge?: number;
+  minAge: number | null;
   @Column({ nullable: true, name: 'age_maximum', type: 'int' })
-  maxAge?: number;
+  maxAge: number | null;
 
   @Column({ name: 'saison_id' })
   seasonId: number;
@@ -50,7 +50,11 @@ export class Course {
   season: Season;
 
   @Column({ nullable: true, name: 'place_maximum', type: 'int' })
-  maxPlaces?: number;
+  maxPlaces: number | null;;
+
+ /** Rendez-vous */
+  @Column({ length: 255, nullable: true })
+  appointment?: string;
 
   @Column({ type: 'boolean', default: false, name: 'convocation_nominative' })
   nominativeCall: boolean;

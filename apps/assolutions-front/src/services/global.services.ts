@@ -428,7 +428,6 @@ public validerHeure(
     };
 
     const valeurMinutes = toMinutes(valeur);
-
     if (min && valeurMinutes < toMinutes(min)) {
       return {
         key: false,

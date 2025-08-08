@@ -17,8 +17,10 @@ export class CaracSeanceComponent  {
 @Input() place_limite: boolean = false;
 @Input() place_limite_valeur: number = -1;
 @Input() essai_possible: boolean = false;
+@Input() afficher_present: boolean = false;
 @Input() ID: number = 0; // ID de la séance
-@Input() vis_essai_possible: boolean = false; // si true, on affiche le bouton "essai" dans la liste des caractéristiques
+@Input() vis_essai_possible: boolean = false; 
+@Input() vis_afficher_present:boolean = false;// si true, on affiche le bouton "essai" dans la liste des caractéristiques
 @Input() Regles: ReglesSeance;
 @Output() valueChange = new EventEmitter<caracteristique>();
 @Output() valid = new EventEmitter<boolean>();
@@ -28,6 +30,8 @@ public estValid: boolean = false;
 
 constructor() { }
 async ngOnInit(): Promise<void> {
+this.vis_afficher_present = this.Regles.vis_afficher_present;
+this.vis_essai_possible = this.Regles.vis_essai_possible;
 let ddl: caracteristique = {
     age_min: this.age_min,
     age_min_valeur: this.age_min_valeur,
@@ -36,11 +40,15 @@ let ddl: caracteristique = {
     place_limite: this.place_limite,
     place_limite_valeur: this.place_limite_valeur,
     essai_possible: this.essai_possible,
-    vis_essai_possible: this.vis_essai_possible   
-  
+    vis_essai_possible: this.Regles.vis_essai_possible,   
+    vis_afficher_present:this.Regles.vis_afficher_present,
+    afficher_present:this.afficher_present 
+    
 };
 this.save = JSON.stringify(ddl);
-
+if(this.ID == 0) {
+  this.edit = true;
+}
     }
 
     ngOnChanges(): void {
@@ -55,6 +63,9 @@ this.save = JSON.stringify(ddl);
   this.place_limite = ddl.place_limite;
   this.place_limite_valeur = ddl.place_limite_valeur;
   this.essai_possible = ddl.essai_possible;
+  this.afficher_present = ddl.afficher_present;
+  this.vis_afficher_present = ddl.vis_afficher_present;
+  this.vis_essai_possible = ddl.vis_essai_possible;
   this.edit = false;
   this.validerTout();
 }
@@ -68,13 +79,17 @@ public Save(): void {
     place_limite: this.place_limite,
     place_limite_valeur: this.place_limite_valeur,
     essai_possible: this.essai_possible,
-    vis_essai_possible: this.vis_essai_possible
+    vis_essai_possible: this.vis_essai_possible,
+    afficher_present: this.afficher_present,
+    vis_afficher_present: this.vis_afficher_present
   };
 
   this.save = JSON.stringify(current);
-  this.valueChange.emit(current);
   this.edit = false;
   this.validerTout();
+  if(this.estValid){  
+  this.valueChange.emit(current);
+  }
 }
 
 
@@ -93,11 +108,12 @@ public Save(): void {
       // valide si tout est bon
       this.estValid = this.rAgeMin.key && this.rAgeMax.key && this.rPlaceLimite.key ; 
       // 🔥 émettre vers le parent
+      console.log(this);
       this.valid.emit(this.estValid);
     }
   
 }
-export interface caracteristique {
+export type caracteristique = {
   age_min: boolean;
   age_min_valeur: number;
   age_max: boolean;
@@ -106,4 +122,6 @@ export interface caracteristique {
   place_limite_valeur: number;
   essai_possible: boolean;
   vis_essai_possible: boolean; // si true, on affiche le bouton "essai" dans la liste des caractéristiques
+  afficher_present: boolean;
+  vis_afficher_present: boolean; // si true, on affiche le bouton "essai" dans la liste des caractéristiques
 }

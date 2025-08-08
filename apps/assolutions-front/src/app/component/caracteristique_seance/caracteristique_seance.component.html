@@ -22,8 +22,9 @@
             <span i18n>Âge minimum requis</span>
           </label>
           <div class="control mt-1" *ngIf="age_min">
-            <input type="number" class="input is-small" [(ngModel)]="age_min_valeur" (ngModelChange)="validerTout()" min="0" />
+            <input type="number" [ngClass]="!rAgeMin.key   ? 'input is-danger is-small'   : 'input is-small' " [(ngModel)]="age_min_valeur" (ngModelChange)="validerTout()" min="0" />
           </div>
+            <p *ngIf="!rAgeMin.key" class="is-small help is-danger">{{rAgeMin.value}}</p>
         </div>
 
         <!-- Âge maximum -->
@@ -33,8 +34,9 @@
             <span i18n>Âge maximum autorisé</span>
           </label>
           <div class="control mt-1" *ngIf="age_max">
-            <input type="number" class="input is-small" [(ngModel)]="age_max_valeur" (ngModelChange)="validerTout()" min="0" />
+            <input type="number" [ngClass]="!rAgeMax.key   ? 'input is-danger is-small'   : 'input is-small' " [(ngModel)]="age_max_valeur" (ngModelChange)="validerTout()" min="0" />
           </div>
+            <p *ngIf="!rAgeMax.key" class="is-small help is-danger">{{rAgeMax.value}}</p>
         </div>
 
         <!-- Limite de places -->
@@ -44,15 +46,23 @@
             <span i18n>Limiter le nombre de places</span>
           </label>
           <div class="control mt-1" *ngIf="place_limite">
-            <input type="number" class="input is-small" [(ngModel)]="place_limite_valeur" (ngModelChange)="validerTout()" min="1" />
+            <input type="number"  [ngClass]="!rPlaceLimite.key   ? 'input is-danger is-small'   : 'input is-small' " [(ngModel)]="place_limite_valeur" (ngModelChange)="validerTout()" min="1" />
           </div>
-        </div>
+            <p *ngIf="!rPlaceLimite.key" class="is-small help is-danger">{{rPlaceLimite.value}}</p>
+            </div>
 
         <!-- Essai possible -->
-        <div class="field mb-2">
+        <div *ngIf="vis_essai_possible" class="field mb-2">
           <label class="checkbox is-small">
             <input type="checkbox" [(ngModel)]="essai_possible" (ngModelChange)="validerTout()">
             <span i18n>Essai possible</span>
+          </label>
+        </div>
+         <!-- Essai possible -->
+        <div *ngIf="vis_afficher_present" class="field mb-2">
+          <label class="checkbox is-small">
+            <input type="checkbox" [(ngModel)]="afficher_present" (ngModelChange)="validerTout()">
+            <span i18n>Afficher présent</span>
           </label>
         </div>
 
@@ -60,11 +70,16 @@
 
       <!-- 🟢 Lecture seule -->
       <ng-template #readMode>
-        <p *ngIf="age_min"><strong i18n>Âge minimum :</strong> {{ age_min_valeur }} ans</p>
-        <p *ngIf="age_max"><strong i18n>Âge maximum :</strong> {{ age_max_valeur }} ans</p>
-        <p *ngIf="place_limite"><strong i18n>Places disponibles :</strong> {{ place_limite_valeur }}</p>
-        <p *ngIf="essai_possible"><strong i18n>Essai possible :</strong> <span i18n>Oui</span></p>
-        <p *ngIf="!essai_possible"><strong i18n>Essai possible :</strong> <span i18n>Non</span></p>
+        <p *ngIf="age_min"><strong i18n>Âge minimum : </strong>{{ age_min_valeur }} ans</p>
+        <p *ngIf="age_max"><strong i18n>Âge maximum : </strong>{{ age_max_valeur }} ans</p>
+        <p *ngIf="place_limite"><strong i18n>Places disponibles : </strong>{{ place_limite_valeur }}</p>
+        <ng-container *ngIf="vis_essai_possible">
+        <p *ngIf="essai_possible"><strong i18n>Essai possible : </strong><span i18n>Oui</span></p>
+        <p *ngIf="!essai_possible"><strong i18n>Essai possible : </strong><span i18n>Non</span></p>
+        </ng-container>   <ng-container *ngIf="vis_afficher_present">
+        <p *ngIf="afficher_present"><strong i18n>Afficher présent : </strong><span i18n>Oui</span></p>
+        <p *ngIf="!afficher_present"><strong i18n>Afficher présent : </strong><span i18n>Non</span></p>
+        </ng-container>
       </ng-template>
     </div>
   </div>

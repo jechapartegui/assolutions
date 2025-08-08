@@ -771,29 +771,177 @@
     <div class="card">
       <header class="card-header" style="align-items: center">
         <p class="card-header-title subtitle is-6">
-          <span *ngIf="editCours.id < 1" i18n>Nouveau cours</span>
+          <span *ngIf="editCours.id < 1">
+           <input [ngClass]="!rNom.key   ? 'input is-danger'   : 'input' " [(ngModel)]="editCours.nom" (ngModelChange)="autoSave()">
+           <p *ngIf="!rNom.key" class="is-small help is-danger">{{rNom.value}}</p>
+          </span>
           <span *ngIf="editCours.id > 0">
             <span i18n>Editer</span> : {{ editCours.nom }} 
           </span>
         </p>
       </header>
-
-      <div class="columns is-multiline is-variable is-4">
+      
+      <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
         <!-- Bloc Infos personnelles -->
+
        <div class="column is-full-tablet is-half-desktop">
- <datelieu [creneau]="true" [duree]="editCours.duree" [heure]="editCours.heure" [jour_semaine]="editCours.jour_semaine" [ID]="editCours.id" [lieu_id]="editCours.lieu_id" [Regles]="(GlobalService.getRegles().Cours_DateLieu)" (datelieuChange)="Save(editCours)" (valid)="valid_DateLieu($event)"></datelieu>
-<caracteristique-seance [essai_possible]="false" [place_limite]="editCours.est_place_maximum" [place_limite_valeur]="editCours.place_maximum" [age_max]="editCours.est_limite_age_maximum" [age_min]="editCours.est_limite_age_minimum" [age_max_valeur]="editCours.age_maximum" [age_min_valeur]="editCours.age_minimum" [ID]="editCours.id"  [Regles]="(GlobalService.getRegles().Cours_Parametres)"  (caracteristiqueChange)="Save(editCours)" (valid)="valid_Caracteristique($event)"></caracteristique-seance>
+  <div class="is-flex is-align-items-center is-flex-wrap-wrap is-justify-content-space-between">
+
+    <!-- Bloc Input ou Lecture -->
+    <div class="is-flex-grow-1 mr-2">
+      <ng-container *ngIf="edit_nom; else affichageNom">
+        <input 
+          class="input" 
+          [ngClass]="{ 'is-danger': !rNom.key }" 
+          [(ngModel)]="editCours.nom"
+          (blur)="autoSave()"
+       >
+        <p *ngIf="!rNom.key" class="help is-danger is-small">{{ rNom.value }}</p>
+      </ng-container>
+
+      <ng-template #affichageNom>
+        <p>{{ editCours.nom }}</p>
+        <p *ngIf="!rNom.key" class="help is-danger is-small">{{ rNom.value }}</p>
+      </ng-template>
+    </div>
+
+    <!-- Boutons -->
+    <div class="is-flex is-align-items-center">
+      <ng-container *ngIf="editCours.id > 0">
+        <btn 
+          *ngIf="!edit_nom" 
+          class="mx-1"
+          [type_button]="'EditerLight'" 
+          (click)="edit_nom = true">
+        </btn>
+
+        <btn 
+          *ngIf="edit_nom" 
+          class="mx-1"
+          [type_button]="'SauvegarderLight'" 
+          [disabled]="!rNom.key" 
+          (click)="edit_nom = false && autoSave()">
+        </btn>
+
+        <btn 
+          *ngIf="edit_nom" 
+          class="mx-1"
+          [type_button]="'AnnulerLight'" 
+          (click)="retour()">
+        </btn>
+      </ng-container>
+    </div>
+
+  </div>
+
+ <datelieu [creneau]="true" [duree]="editCours.duree" [heure]="editCours.heure" [rdv]="editCours.rdv" [jour_semaine]="editCours.jour_semaine" [ID]="editCours.id" [lieu_id]="editCours.lieu_id" [Regles]="(GlobalService.getRegles().Cours_DateLieu)" (datelieuChange)="SaveDateLieu($event)" (valid)="valid_DateLieu($event)"></datelieu>
+</div><div class="column is-full-tablet is-half-desktop"><caracteristique-seance [essai_possible]="false" [place_limite]="editCours.est_place_maximum" [place_limite_valeur]="editCours.place_maximum" [age_max]="editCours.est_limite_age_maximum" [age_min]="editCours.est_limite_age_minimum" [age_max_valeur]="editCours.age_maximum" [age_min_valeur]="editCours.age_minimum" [ID]="editCours.id"  [Regles]="(GlobalService.getRegles().Cours_Parametres)"  (valueChange)="SaveCaracteristique($event)" (valid)="valid_Caracteristique($event)"></caracteristique-seance>
+</div>
+<div class="column is-full-tablet is-half-desktop">
+  <div class="box is-light">
+  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+    <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Sélection des encadrants</h3>
+       <ng-container *ngIf="editCours.id>0">
+      <btn *ngIf="!edit_prof"
+        [type_button]="'EditerLight'" 
+        (click)="(edit_prof =true) && checkall()" 
+      ></btn>
+      <btn *ngIf="edit_prof" [disabled]="!rProf.key" (click)="autoSave()"
+        [type_button]="'SauvegarderLight'">
+      </btn> <btn *ngIf="edit_prof" (click)="edit_prof = !edit_prof"
+        [type_button]="'AnnulerLight'">
+      </btn>
+      </ng-container>
+</div>
+<p *ngIf="!edit_prof"><strong i18n>Encadrant principal : </strong>{{ trouverProfesseur(editCours.prof_principal_id) }}</p>
+<div class="field" *ngIf="edit_prof">
+            <label class="label is-small" i18n>Encadrant principal</label>
+
+            <div class="control">
+              <div  [ngClass]="!rProf.key   ? 'select is-danger is-small'   : 'select is-small' ">
+                <select [(ngModel)]="editCours.prof_principal_id" (ngModelChange)="checkall()">
+                  <option *ngFor="let l of editCours.professeursCours" [ngValue]="l.id">{{ (l.prenom || '') + '\u00A0' + (l.nom || '') }}</option>
+                </select>
+              </div>
+            <p *ngIf="!rProf.key" class="is-small help is-danger">{{rProf.value}}</p>
+            </div>
+</div>
+
+<ng-container *ngIf="editCours.professeursCours.length > 0">
+  <div class="tags">
+    <ng-container *ngFor="let l of editCours.professeursCours">
+      <span class="tag is-success">
+        {{ (l.prenom || '') + '\u00A0' + (l.nom || '') }}
+        <button *ngIf="edit_prof" class="delete is-small" (click)="RemoveProf(l)"></button>
+      </span>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="editCours.professeursCours?.length === 0">
+  <span i18n>Aucun encadrant sélectionné</span>
+</ng-container>
+<ng-container *ngIf="edit_prof">
+    <h6 class="title is-6" i18n>Encadrants disponibles</h6>
+    <ng-container *ngIf="liste_prof.length >0" >
+        <div class="select">
+            <select style="font-size: smaller;" id="professeurs" [(ngModel)]="current_prof_id">
+                <ng-container *ngFor="let ni of liste_prof;let first = first	">
+                    <option [value]="ni.person.id">{{ (ni.person.prenom || '') + '\u00A0' + (ni.person.nom || '') }}</option>
+                </ng-container>
+            </select>
+        </div>
+        <button type="button" [disabled]="!current_prof_id" (click)="AjouterProf()"
+            class="button is-primary is-small is-rounded is-outlined"
+            style="align-self: center; ;fill:hsl(171, 100%, 41%)">
+            <svg width="20" height="20">
+                <use xlink:href=".\assets\liste.svg#plus"></use>
+            </svg>
+        </button>
+    </ng-container>
+    <ng-container *ngIf="liste_prof.length == 0">
+        <span i18n>Aucun encadrant disponible</span>
+    </ng-container>
+    </ng-container>
+</div>
 </div>
 
 
         <!-- Bloc Adresse -->
         <div class="column is-full-tablet is-half-desktop">
-
+                                <app-groupe-detail
+                        (groupesUpdated)="onGroupesUpdated($event)"
+                        [id_source]="editCours.id"
+                        [objet_source]="'cours'"
+                        [edit]="true"
+                      
+                        [title]="titre_groupe"
+                        [Groupes]="editCours.groupes"
+                        [liste_groupe]="liste_groupe"
+                      ></app-groupe-detail>
                         
         </div>
       </div>
+      
+      <div class="card-footer">
+        <div class="columns is-mobile is-centered">
+          <div class="column is-half">
+             <div class="buttons" style="flex-wrap: nowrap">
+            <btn
+              [type_button]="'RetourSmall'"
+              (click)="Retour()"
+            ></btn>
+            <btn *ngIf="editCours.id < 1"
+            [disabled]="!is_valid"
+              [type_button]="'SauvegarderSmall'"
+              (click)="Save()"
+            ></btn>
+            </div>
+          </div>
+        </div>
+    </div>
     </div>
   </div>
-</div>
+  </div>
     </ng-container>
 </div>

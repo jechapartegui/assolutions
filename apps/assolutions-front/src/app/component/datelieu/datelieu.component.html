@@ -1,7 +1,7 @@
     <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Date et lieu</h3>
-      <ng-container *ngIf="ID>0">
+      <ng-container *ngIf="ID>0 && !readonly">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
@@ -22,14 +22,14 @@
           <div class="field mb-2">
             <label class="label is-small" i18n>Lieu</label>
             <div class="control">
-              <div class="select is-small"  [ngClass]="!rLieu.key   ? 'select is-danger is-small'   : 'select is-small' ">
+              <div  [ngClass]="!rLieu.key   ? 'select is-danger is-small'   : 'select is-small' ">
                 <select [(ngModel)]="lieu_id" (ngModelChange)="validerTout()">
                   <option [ngValue]="0" i18n>Aucun</option>
                   <option *ngFor="let l of lieux" [ngValue]="l.id">{{l.nom}}</option>
                 </select>
               </div>
             </div>
-            <p *ngIf="rLieu.key" class="is-small help is-danger">{{rLieu.value}}</p>
+            <p *ngIf="!rLieu.key" class="is-small help is-danger">{{rLieu.value}}</p>
           </div>
 
          
@@ -37,14 +37,14 @@
             <label class="label is-small" i18n>Date</label>
             <div class="control">
               <input
-              [ngClass]="!rDate.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="date"  (ngModelChange)="validerTout()">
+              [ngClass]="!rDate.key   ? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="date"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rDate.key" class="is-small help is-danger">{{rDate.value}}</p>
+            <p *ngIf="!rDate.key" class="is-small help is-danger">{{rDate.value}}</p>
           </div>
           <div class="field mb-2" *ngIf="creneau">
             <label class="label is-small" i18n>Jour de la semaine</label>
             <div class="control">
-            <div class="select is-small"  [ngClass]="!rCreneau.key   ? 'select is-danger is-small'   : 'select is-small' ">
+            <div [ngClass]="!rCreneau.key ? 'select is-danger is-small'   : 'select is-small' ">
                 <select [(ngModel)]="jour_semaine" (ngModelChange)="validerTout()" >
                   <option [ngValue]="'lundi'" i18n>Lundi</option>
                   <option [ngValue]="'mardi'" i18n>Mardi</option>
@@ -56,37 +56,38 @@
                 </select>
               </div>
             </div>
-            <p *ngIf="rCreneau.key" class="is-small help is-danger">{{rDate.value}}</p>
+            <p *ngIf="!rCreneau.key" class="is-small help is-danger">{{rCreneau.value}}</p>
           </div>
            <div class="field mb-2" *ngIf="creneau && serie">
             <label class="label is-small" i18n>Date de début</label>
             <div class="control">
               <input
-              [ngClass]="!rDateDebut.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="date"  (ngModelChange)="validerTout()">
+              [ngClass]="!rDateDebut.key   ? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="date_debut"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rDateDebut.key" class="is-small help is-danger">{{rDateDebut.value}}</p>
+            <p *ngIf="!rDateDebut.key" class="is-small help is-danger">{{rDateDebut.value}}</p>
           </div>
           
            <div class="field mb-2" *ngIf="creneau && serie">
-            <label class="label is-small" i18n>Date de début</label>
+            <label class="label is-small" i18n>Date de Fin</label>
             <div class="control">
               <input
-              [ngClass]="!rDateFin.key   ? 'input is-danger is-small'   : 'input is-small' " type="text" [(ngModel)]="date"  (ngModelChange)="validerTout()">
+              [ngClass]="!rDateFin.key   ? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="date_fin"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rDateFin.key" class="is-small help is-danger">{{rDateFin.value}}</p>
+            <p *ngIf="!rDateFin.key" class="is-small help is-danger">{{rDateFin.value}}</p>
           </div>
            <div class="field mb-2" >
             <label class="label is-small" i18n>Heure de début</label>
             <div class="control">
           <input
                         matInput
-                        class="input"
+                        [ngClass]="!rHeure.key   ? 'input is-danger is-small'   : 'input is-small' "
                         id="heure_debut"
                         type="time"
                         [(ngModel)]="heure"
+                        (ngModelChange)="validerTout()"
                       />
                       </div>
-                           <p *ngIf="rHeure.key" class="is-small help is-danger">{{rHeure.value}}</p>
+                           <p *ngIf="!rHeure.key" class="is-small help is-danger">{{rHeure.value}}</p>
           </div>
             <div class="field mb-2" >
             <label class="label is-small" i18n>Durée en minutes</label>
@@ -94,9 +95,16 @@
               <input
               [ngClass]="!rDuree.key   ? 'input is-danger is-small'   : 'input is-small' " type="number" [(ngModel)]="duree"  (ngModelChange)="validerTout()">
             </div>
-            <p *ngIf="rDuree.key" class="is-small "><span i18n>Heure de fin</span>:{{calculerHeureFin(heure,duree)}}</p>
-            <p *ngIf="rDuree.key" class="is-small help is-danger">{{rDuree.value}}</p>
+            <p *ngIf="rDuree.key" class="is-small "><span i18n>Heure de fin : </span>{{calculerHeureFin(heure,duree)}}</p>
+            <p *ngIf="!rDuree.key" class="is-small help is-danger">{{rDuree.value}}</p>
           </div>
+          
+            <div class="field mb-2" >
+            <label class="label is-small" i18n>Rendez-vous</label>
+            <div class="control">
+              <input class="input is-small"  type="text" [(ngModel)]="rdv"  (ngModelChange)="validerTout()">
+            </div>
+                     </div>
         
          
         </div>
@@ -122,9 +130,9 @@
           <ng-container *ngIf="!creneau">
             <p><strong i18n>Date : </strong>{{ date | date:'dd/MM/yyyy' }}</p>
           </ng-container>
-          <p><strong i18n>Heure de début : </strong>{{ heure | date:'HH:mm' }}</p>
+          <p><strong i18n>Heure de début : </strong>{{ heure }}</p>
           <p><strong i18n>Durée : </strong>{{ duree }}min</p>
-          <p><strong i18n>Heure de fin : </strong>{{ calculerHeureFin(heure,duree) | date:'HH:mm' }}</p>
+          <p><strong i18n>Heure de fin : </strong>{{ calculerHeureFin(heure,duree) }}</p>
         </ng-template>
       </div>
 

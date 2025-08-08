@@ -20,6 +20,8 @@ export class GroupeDetailComponent {
   @Input() groupe_dispo: KeyValuePair[] = [];
   @Output() groupesUpdated = new EventEmitter<LienGroupe_VM[]>();  // Ajout du @Output()
   public action: string = "";
+  titre_groupe: string = $localize`Groupes`;
+  @Input() edit: boolean = true; // Si true, on peut ajouter/supprimer des groupes
   constructor(public gr_serv: GroupeService) { }
 
   ngOnInit(): void {

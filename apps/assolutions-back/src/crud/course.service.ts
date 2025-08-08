@@ -14,7 +14,13 @@ export class CourseService {
   ) {}
 
   async get(id: number): Promise<Course> {
-    const item = await this.repo.findOne({ where: { id } });
+    const item = await this.repo.findOne({ where: { id },
+    relations: [
+      'professors',
+      'professors.contract',                         // 1er niveau
+      'professors.contract.professor',           // 2ᵉ niveau
+      'professors.contract.professor.person',    // 3ᵉ niveau (votre “season”)
+    ]});
     if (!item) throw new NotFoundException('COURSE_NOT_FOUND');
      // on va chercher tous les LinkGroup qui matche notre cours   
     item.groups = await this.linkgroup_serv.getGroupsForObject('cours', id);
@@ -22,7 +28,13 @@ export class CourseService {
   }
 
    async getAll(seasonId:number): Promise<Course[]> {
-    let courses = await this.repo.find({ where: {seasonId}});
+    let courses = await this.repo.find({ where: {seasonId},
+    relations: [
+      'professors',
+      'professors.contract',                         // 1er niveau
+      'professors.contract.professor',           // 2ᵉ niveau
+      'professors.contract.professor.person',    // 3ᵉ niveau (votre “season”)
+    ]});
     // pour chaque cours, on va chercher ses liens “cours”
     return Promise.all(
       courses.map(async course => {
@@ -42,8 +54,8 @@ export class CourseService {
   }
 
   async update(id: number, data: Partial<Course>): Promise<Course> {
-    await this.get(id);
     try {
+      console.log(data);
       await this.repo.update({ id }, data);
     } catch (err) {
       if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');

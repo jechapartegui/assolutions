@@ -140,6 +140,7 @@ export const REGLES_PAR_DEFAUT: ReglesFormulaire = {
     place_limite: false,
     place_limite_valeur_min: -1,
     place_limite_valeur_max: -1,
+    vis_afficher_present:false,
     vis_essai_possible: true, // si true, on affiche le bouton "essai" dans la liste des caractéristiques
   },
   Seance_Parametres: {
@@ -152,6 +153,7 @@ export const REGLES_PAR_DEFAUT: ReglesFormulaire = {
     place_limite: false,
     place_limite_valeur_min: -1,
     place_limite_valeur_max: -1,
-    vis_essai_possible: true, // si true, on affiche le bouton "essai" dans la liste des caractéristiques
+    vis_essai_possible: true,
+    vis_afficher_present:true, // si true, on affiche le bouton "essai" dans la liste des caractéristiques
   },
 };

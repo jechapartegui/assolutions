@@ -81,4 +81,5 @@ export  interface ReglesSeance {
   place_limite_valeur_min: number;
   place_limite_valeur_max: number;
   vis_essai_possible: boolean; // si true, on affiche le bouton "essai" dans la liste des caractéristiques
+  vis_afficher_present: boolean; // si true, on affiche le bouton "essai" dans la liste des caractéristiques
 }

@@ -82,7 +82,7 @@ async add(s: KeyValuePair, seasonId :number):Promise<number> {
     objet_base.objectId = id_objet;
     objet_base.objectType = type_objet;
     objet_base.groupId = id_groupe;
-    const objet_insere = await this.groupe_serv.create(objet_base);
+    const objet_insere = await this.liengroupe_serv.create(objet_base);
     return objet_insere.id;
     }
     async DeleteLien(id: number):Promise<boolean> {
