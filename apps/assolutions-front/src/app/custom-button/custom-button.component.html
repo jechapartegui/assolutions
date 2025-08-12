@@ -19,11 +19,11 @@
         <i class="fas fa-2x fa-floppy-disk"></i>
     </button>
     <!--RETOUR-->
-    <button class="button is-danger is-outlined" *ngSwitchCase="'Retour'">
+    <button class="button is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'Retour'">
         <span i18n>Retour</span>     
         <i class="fas fa-chevron-left"></i>
     </button>
-    <button class="button is-small is-danger is-outlined" *ngSwitchCase="'RetourSmall'">
+    <button class="button is-small is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'RetourSmall'">
         <span i18n>Retour</span>
         <i class="fas fa-chevron-left"></i>
     </button>
@@ -46,77 +46,77 @@
     </button>
 
     <!--EDITER-->
-    <button class="button is-info is-outlined" *ngSwitchCase="'Editer'">
+    <button class="button is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'Editer'">
         <span i18n>Editer</span>     
         <i class="fa-solid fa-pen-to-square"></i>
     </button>
-    <button class="button is-small is-info is-outlined" *ngSwitchCase="'EditerSmall'">
+    <button class="button is-small is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'EditerSmall'">
         <span i18n>Editer</span>
         <i class="fa-solid fa-pen-to-square"></i>
     </button>
-    <button class="button is-info is-outlined" *ngSwitchCase="'EditerLight'" i18n>
+    <button class="button is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'EditerLight'" i18n>
         <i class="fa-solid fa-pen-to-square"></i>
     </button>
-    <button class="button is-small is-info is-outlined" *ngSwitchCase="'EditerSmallLight'">
+    <button class="button is-small is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'EditerSmallLight'">
         <i class="fa-solid fa-pen-to-square"></i>
     </button>
-    <button class="button  is-info is-outlined" *ngSwitchCase="'EditerMobile'">
+    <button class="button  is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'EditerMobile'">
         <i class="fas fa-2x fa-pen-to-square"></i>
     </button>
 
         <!--ANNULER-->
-        <button class="button is-danger is-outlined" *ngSwitchCase="'Annuler'">
+        <button class="button is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'Annuler'">
             <span i18n>Annuler</span>     
             <i class="fa-solid fa-ban"></i>
         </button>
-        <button class="button is-small is-danger is-outlined" *ngSwitchCase="'AnnulerSmall'">
+        <button class="button is-small is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'AnnulerSmall'">
             <span i18n>Annuler</span>
             <i class="fa-solid fa-ban"></i>
         </button>
-        <button class="button is-danger is-outlined" *ngSwitchCase="'AnnulerLight'">
+        <button class="button is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'AnnulerLight'">
             <i class="fa-solid fa-ban"></i>
         </button>
-        <button class="button is-small is-danger is-outlined" *ngSwitchCase="'AnnulerSmallLight'">
+        <button class="button is-small is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'AnnulerSmallLight'">
             <i class="fa-solid fa-ban"></i>
         </button>
-        <button class="button  is-danger is-outlined" *ngSwitchCase="'AnnulerMobile'">
+        <button class="button  is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'AnnulerMobile'">
             <i class="fas fa-2x fa-ban"></i>
         </button>
 <!-- SUPPRIMER-->
-<button class="button is-danger is-outlined" *ngSwitchCase="'Supprimer'" >
+<button class="button is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'Supprimer'" >
     <span i18n>Supprimer</span>     
     <i class="fa-solid fa-trash-can"></i>
 </button>
-<button class="button is-danger is-small is-outlined" *ngSwitchCase="'SupprimerSmall'" >
+<button class="button is-danger is-small is-outlined" [disabled]="disabled" *ngSwitchCase="'SupprimerSmall'" >
     <span i18n>Supprimer</span>     
     <i class="fa-solid fa-trash-can"></i>
 </button>
-<button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerLight'" >
+<button class="button is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'SupprimerLight'" >
     <i class="fa-solid fa-trash-can"></i>
 </button>
-<button class="button is-danger is-small is-outlined" *ngSwitchCase="'SupprimerSmallLight'" >
+<button class="button is-danger is-small is-outlined" [disabled]="disabled" *ngSwitchCase="'SupprimerSmallLight'" >
     <i class="fa-solid fa-trash-can"></i>
 </button>
-<button class="button is-danger is-outlined" *ngSwitchCase="'SupprimerMobile'" >
+<button class="button is-danger is-outlined" [disabled]="disabled" *ngSwitchCase="'SupprimerMobile'" >
     <i class="fas fa-2x  fa-trash-can"></i>
 </button>
         <!--VOIR-->
 
-    <button class="button is-info is-outlined" *ngSwitchCase="'Voir'">
+    <button class="button is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'Voir'">
         <span i18n>Voir</span>
         <i class="fa-solid fa-binoculars"></i>
     </button>
-    <button class="button is-small is-info is-outlined" *ngSwitchCase="'VoirSmall'">
-        <span i18n>Voir</span>
+    <button class="button is-small is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'VoirSmall'">
+        <span i18n>Voir présences</span>
         <i class="fa-solid fa-binoculars"></i>
     </button>
-    <button class="button is-info is-outlined" *ngSwitchCase="'VoirLight'">
+    <button class="button is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'VoirLight'">
         <i class="fa-solid fa-binoculars"></i>
     </button>
-    <button class="button is-small is-info is-outlined" *ngSwitchCase="'VoirSmallLight'">
+    <button class="button is-small is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'VoirSmallLight'">
         <i class="fa-solid fa-binoculars"></i>
     </button>
-    <button class="button  is-info is-outlined" *ngSwitchCase="'VoirMobile'">
+    <button class="button  is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'VoirMobile'">
         <i class="fas fa-2x fa-binoculars"></i>
     </button>
     <!--RELOAD-->
@@ -139,21 +139,21 @@
         <i class="fas fa-2x fa-arrows-rotate"></i>
     </button>
     <!--FILTER-->
-    <button class="button is-info is-outlined" *ngSwitchCase="'Filtrer'">
+    <button class="button is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'Filtrer'">
         <span i18n>Filtrer</span>
         <i class="fa-solid fa-filter"></i>
     </button>
-    <button class="button is-small is-info is-outlined" *ngSwitchCase="'FiltrerSmall'">
+    <button class="button is-small is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'FiltrerSmall'">
         <span i18n>Filtrer</span>
         <i class="fa-solid fa-filter"></i>
     </button>
-    <button class="button is-info is-outlined" *ngSwitchCase="'FiltrerLight'">
+    <button class="button is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'FiltrerLight'">
         <i class="fa-solid fa-filter"></i>
     </button>
-    <button class="button is-small is-info is-outlined" *ngSwitchCase="'FiltrerSmallLight'">
+    <button class="button is-small is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'FiltrerSmallLight'">
         <i class="fa-solid fa-filter"></i>
     </button>
-    <button class="button  is-info is-outlined" *ngSwitchCase="'FiltrerMobile'">
+    <button class="button  is-info is-outlined" [disabled]="disabled" *ngSwitchCase="'FiltrerMobile'">
         <i class="fas fa-2x fa-filter"></i>
     </button>
      <!--VENDRE-->
@@ -319,47 +319,47 @@
         <span i18n>Importer</span>
         <i class="fas fa-file-import" ></i>
     </button>
-    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ImporterSmall'">
+    <button class="button is-small is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'ImporterSmall'">
         <span i18n>Importer</span>
         <i class="fas fa-file-import" ></i>
     </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'ImporterLight'">
+    <button class="button is-primary is-outlined"  [disabled]="disabled" *ngSwitchCase="'ImporterLight'">
         <i class="fas fa-file-import" ></i>
     </button>
-    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'ImporterSmallLight'">
+    <button class="button is-small is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'ImporterSmallLight'">
         <i class="fas fa-file-import" ></i>
     </button>
 <!-- Fin de la déclinaison-->
 
 <!-- CREER-->
-<button  class="card-header-icon is-primary" *ngSwitchCase="'CreerCard'">
+<button  class="card-header-icon is-primary"  [disabled]="disabled" *ngSwitchCase="'CreerCard'">
     <span class="icon">
       <i class="fa-solid fa-plus"></i>
     </span>
   </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'Creer'" >
+    <button class="button is-primary is-outlined"  [disabled]="disabled" *ngSwitchCase="'Creer'" >
         <span i18n>Créer</span>
         <i class="fa-solid fa-plus"></i>
     </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'Ajouter'" >
+    <button class="button is-primary is-outlined" [disabled]="disabled"  *ngSwitchCase="'Ajouter'" >
         <span i18n>Ajouter</span>
         <i class="fa-solid fa-plus"></i>
     </button>
-    <button class="button is-primary is-small is-outlined" *ngSwitchCase="'CreerSmall'" >
+    <button class="button is-primary is-small is-outlined"  [disabled]="disabled" *ngSwitchCase="'CreerSmall'" >
         <span i18n>Créer</span>
         <i class="fa-solid fa-plus"></i>
     </button>
-    <button class="button is-primary is-small is-outlined" *ngSwitchCase="'AjouterSmall'" >
+    <button class="button is-primary is-small is-outlined"  [disabled]="disabled" *ngSwitchCase="'AjouterSmall'" >
         <span i18n>Ajouter</span>
         <i class="fa-solid fa-plus"></i>
     </button>
-    <button class="button is-primary is-outlined" *ngSwitchCase="'CreerLight'">
+    <button class="button is-primary is-outlined"  [disabled]="disabled" *ngSwitchCase="'CreerLight'">
         <i class="fa-solid fa-plus"></i>
     </button>
-    <button class="button is-small is-primary is-outlined" *ngSwitchCase="'CreerSmallLight'">
+    <button class="button is-small is-primary is-outlined" [disabled]="disabled" *ngSwitchCase="'CreerSmallLight'">
         <i class="fa-solid fa-plus"></i>
     </button>
-    <button class="button  is-primary is-outlined" *ngSwitchCase="'CreerMobile'">
+    <button class="button  is-primary is-outlined"  [disabled]="disabled" *ngSwitchCase="'CreerMobile'">
         <i class="fas fa-2x fa-plus"></i>
     </button>
 
@@ -373,6 +373,14 @@
 <button class="button is-primary is-small is-outlined" *ngSwitchCase="'TerminerSeancesSmall'">
     <span i18n>Terminer les séances</span>
       <i class="fa-solid fa-flag-checkered"></i>
+  </button>
+<button class="button is-info is-small is-outlined" *ngSwitchCase="'TerminerSeanceSmall'">
+    <span i18n>Terminer</span>
+      <i class="fa-solid fa-flag-checkered"></i>
+  </button>
+<button class="button is-primary is-small is-outlined" *ngSwitchCase="'PlanifierSmall'">
+    <span i18n>Planifier</span>
+      <i class="fa-solid fa-calendar-check"></i>
   </button>
 
   <!-- TOUT ACCEPTER-->

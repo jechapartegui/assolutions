@@ -272,15 +272,11 @@ export class CoursComponent implements OnInit {
     if (confirmation) {
       this.action = $localize`Supprimer un cours`;
       if (c) {
-        this.coursservice.Delete(c.id).then((result) => {
-          if (result) {
+        this.coursservice.Delete(c.id).then(() => {
             this.UpdateListeCours();
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
+        
         }).catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);
@@ -291,6 +287,7 @@ export class CoursComponent implements OnInit {
 
   Create(): void {
     this.editCours = new Cours_VM();
+    this.editCours.saison_id = this.active_saison.id;
     this.edit_prof = true;
       this.save = JSON.stringify(this.editCours);
     
@@ -325,7 +322,6 @@ checkall(){
     this.is_valid = false;
     return;
   }
-  console.log("is_valid_caracteristique", this.is_valid_caracteristique, "this.is_valid_datelieu", this.is_valid_datelieu, "this.is_valid_prof", this.rProf.key)
   if(this.is_valid_caracteristique && this.is_valid_datelieu && this.rProf.key && this.rNom.key){
     this.is_valid = true;
   } else {
@@ -347,7 +343,7 @@ SaveDateLieu(donnee_date_lieu :donnee_date_lieu){
     this.editCours.duree = donnee_date_lieu.duree;
   }
    this.checkall();
-  if(this.is_valid){
+    if(this.is_valid && this.editCours.id > 0){
   this.Save();
   }
 }
@@ -370,9 +366,11 @@ SaveCaracteristique(caracteristique :caracteristique){
     this.editCours.age_maximum = caracteristique.age_max_valeur;
     this.editCours.est_place_maximum = caracteristique.place_limite;
     this.editCours.place_maximum = caracteristique.place_limite_valeur;
+    this.editCours.afficher_present = caracteristique.afficher_present;
+    this.editCours.essai_possible = caracteristique.essai_possible;
   }
    this.checkall();
-  if(this.is_valid){
+  if(this.is_valid && this.editCours.id > 0){
   this.Save();
   }
 }
@@ -387,14 +385,14 @@ SaveCaracteristique(caracteristique :caracteristique){
     if (this.editCours) {
       if (this.editCours.id == 0) {
 
-        this.coursservice.Add(this.editCours).then((id) => {
-          if (id > 0) {
-            this.editCours.id = id;
+        this.coursservice.Add(this.editCours).then((retour) => {
+          if (retour.id > 0) {
+            this.editCours.id = retour.id;
             this.editCours.professeursCours.forEach(async (prof) =>{
-              await this.coursservice.AddCoursProf(id, prof.id);
+              await this.coursservice.AddCoursProf(retour.id, prof.id);
             })
             this.editCours.groupes.forEach(async (gr)=>{
-              await this.grServ.AddLien(id, "cours", gr.id);
+              await this.grServ.AddLien(retour.id, "cours", gr.id);
             })
             //on attend bien que la boucle foreach soit finie pour afficher ?
             let o = errorService.OKMessage(this.action);
@@ -643,9 +641,12 @@ SaveCaracteristique(caracteristique :caracteristique){
     async RemoveProf(item) {
       this.action = $localize`Supprimer un professeur de la liste`;    
       if(this.editCours.id>0){
-          await this.coursservice.DeleteCoursProf(this.editCours.id,item.professeur_id);
+          await this.coursservice.DeleteCoursProf(this.editCours.id,item.id);
         }   
-        this.editCours.professeursCours = this.editCours.professeursCours.filter(e => e.id !== item.professeur_id);
+        this.editCours.professeursCours = this.editCours.professeursCours.filter(e => e.id !== item.id);
+        if(this.editCours.prof_principal_id == item.id){
+          this.editCours.prof_principal_id = null;
+        }
         this.MAJListeProf();
      
         

@@ -398,15 +398,25 @@ public validerDate(
     return { key:false, value:`${label} obligatoire` };
   }
 
-  if (valeur) {
-    if (min && valeur < min) {
-     return { key:false, value:`${label} trop ancienne (min : ${min.toLocaleDateString()})` };
-    }
+ if (valeur) {
+  const formatDate = (d: Date) =>
+    `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
-    if (max && valeur > max) {
-    return { key:false, value:`${label} trop récente (max : ${max.toLocaleDateString()})` };
-    }
+  if (min && new Date(valeur) < new Date(min)) {
+    return {
+      key: false,
+      value: `${label} trop ancienne (min : ${formatDate(new Date(min))})`
+    };
   }
+
+  if (max && new Date(valeur) > new Date(max)) {
+    return {
+      key: false,
+      value: `${label} trop récente (max : ${formatDate(new Date(max))})`
+    };
+  }
+}
+
 
   return { key:true,value:null};
 }

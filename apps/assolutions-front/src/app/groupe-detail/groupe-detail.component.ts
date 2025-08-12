@@ -16,7 +16,7 @@ export class GroupeDetailComponent {
   @Input() id_source: number;
   @Input() objet_source: string;
   @Input() Groupes: LienGroupe_VM[];
-  current_groupe_key: number;
+  current_groupe_key: number = 0;
   @Input() groupe_dispo: KeyValuePair[] = [];
   @Output() groupesUpdated = new EventEmitter<LienGroupe_VM[]>();  // Ajout du @Output()
   public action: string = "";

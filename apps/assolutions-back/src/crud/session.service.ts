@@ -44,6 +44,7 @@ export class SessionService {
       const created = this.repo.create(data);
       return await this.repo.save(created);
     } catch (err) {
+      console.warn(err);
       if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
       throw err;
     }

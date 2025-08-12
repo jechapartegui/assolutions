@@ -87,7 +87,7 @@ export function toCours_VM(course: Course): Cours_VM {
     est_limite_age_minimum: course.minAge != null,
     est_limite_age_maximum: course.maxAge != null,
     est_place_maximum:    course.maxPlaces != null,
-
+    essai_possible: course.trialAllowed,
     // Champ enrichi
     lieu_nom: course.location?.name,
 
@@ -120,6 +120,7 @@ export function toCourse(vm: Cours_VM, projectId: number): Course {
   c.locationId       = vm.lieu_id;
   c.seasonId         = vm.saison_id;
   c.appointment   =vm.rdv;
+  c.trialAllowed = vm.essai_possible;
 if(vm.est_limite_age_maximum){
   c.maxAge           = vm.age_maximum!;
 } else {

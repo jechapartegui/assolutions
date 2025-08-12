@@ -520,6 +520,9 @@ return $localize`Evénement`;
 
 
   }
+  GotoSeance(id : number){
+    this.router.navigate(['/seance'], { queryParams: { id: id } });
+  }
 
   Voir(id: number) {
     this.router.navigate(['/adherent'], { queryParams: { id: id } });

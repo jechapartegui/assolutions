@@ -58,7 +58,7 @@ export class CoursProfService {
   }
   
   async delete(cours_id: number, person_id:number):Promise<boolean> {
-     if (!cours_id || person_id) {
+     if (!cours_id || !person_id) {
       throw new BadRequestException('INVALID_COURSE_PROFESSOR');
     }
     const foundobjet =  this.courseprof_serv.getBy(cours_id, person_id);

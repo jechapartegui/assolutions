@@ -53,7 +53,7 @@
               <div class="field" *ngIf="!projets">
                 <p class="control" style="display: flex; flex-direction: column; gap: 2px;">
                  
-                  
+                  {{(GlobalService.isLoggedIn$ | async)}}
                   <button *ngIf="(GlobalService.isLoggedIn$ | async) != true" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
                     (click)="PreLogin()" i18n>
                     Se connecter

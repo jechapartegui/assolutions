@@ -835,7 +835,7 @@
   </div>
 
  <datelieu [creneau]="true" [duree]="editCours.duree" [heure]="editCours.heure" [rdv]="editCours.rdv" [jour_semaine]="editCours.jour_semaine" [ID]="editCours.id" [lieu_id]="editCours.lieu_id" [Regles]="(GlobalService.getRegles().Cours_DateLieu)" (datelieuChange)="SaveDateLieu($event)" (valid)="valid_DateLieu($event)"></datelieu>
-</div><div class="column is-full-tablet is-half-desktop"><caracteristique-seance [essai_possible]="false" [place_limite]="editCours.est_place_maximum" [place_limite_valeur]="editCours.place_maximum" [age_max]="editCours.est_limite_age_maximum" [age_min]="editCours.est_limite_age_minimum" [age_max_valeur]="editCours.age_maximum" [age_min_valeur]="editCours.age_minimum" [ID]="editCours.id"  [Regles]="(GlobalService.getRegles().Cours_Parametres)"  (valueChange)="SaveCaracteristique($event)" (valid)="valid_Caracteristique($event)"></caracteristique-seance>
+</div><div class="column is-full-tablet is-half-desktop"><caracteristique-seance [essai_possible]="false" [essai_possible]="editCours.essai_possible" [place_limite]="editCours.est_place_maximum" [place_limite_valeur]="editCours.place_maximum" [age_max]="editCours.est_limite_age_maximum" [age_min]="editCours.est_limite_age_minimum" [age_max_valeur]="editCours.age_maximum" [age_min_valeur]="editCours.age_minimum" [ID]="editCours.id"  [Regles]="(GlobalService.getRegles().Cours_Parametres)"  (valueChange)="SaveCaracteristique($event)" (valid)="valid_Caracteristique($event)"></caracteristique-seance>
 </div>
 <div class="column is-full-tablet is-half-desktop">
   <div class="box is-light">

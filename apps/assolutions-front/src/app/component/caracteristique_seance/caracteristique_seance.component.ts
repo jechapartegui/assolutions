@@ -20,6 +20,7 @@ export class CaracSeanceComponent  {
 @Input() afficher_present: boolean = false;
 @Input() ID: number = 0; // ID de la séance
 @Input() vis_essai_possible: boolean = false; 
+@Input() readonly:boolean=false;
 @Input() vis_afficher_present:boolean = false;// si true, on affiche le bouton "essai" dans la liste des caractéristiques
 @Input() Regles: ReglesSeance;
 @Output() valueChange = new EventEmitter<caracteristique>();
@@ -92,6 +93,22 @@ public Save(): void {
   }
 }
 
+public SaveNew(): void {
+  const current: caracteristique = {
+    age_min: this.age_min,
+    age_min_valeur: this.age_min_valeur,
+    age_max: this.age_max,
+    age_max_valeur: this.age_max_valeur,
+    place_limite: this.place_limite,
+    place_limite_valeur: this.place_limite_valeur,
+    essai_possible: this.essai_possible,
+    vis_essai_possible: this.vis_essai_possible,
+    afficher_present: this.afficher_present,
+    vis_afficher_present: this.vis_afficher_present
+  };
+
+  this.valueChange.emit(current);
+}
 
 
     public rAgeMin:ValidationItem;
@@ -108,8 +125,10 @@ public Save(): void {
       // valide si tout est bon
       this.estValid = this.rAgeMin.key && this.rAgeMax.key && this.rPlaceLimite.key ; 
       // 🔥 émettre vers le parent
-      console.log(this);
       this.valid.emit(this.estValid);
+      if(this.estValid && this.ID < 1){
+        this.SaveNew();
+      }
     }
   
 }

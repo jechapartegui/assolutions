@@ -55,7 +55,7 @@ export class SeancesService {
 
 
 
-  public Add(seance: Seance_VM): Promise<number> {
+  public Add(seance: Seance_VM): Promise<Seance_VM> {
       this.url =  "api/seance/add/"
     //  this.url = this.url + "login.php";
     const body = {
@@ -63,7 +63,7 @@ export class SeancesService {
     };
 
     return this.global.PUT(this.url, body)
-      .then((response: number) => {
+      .then((response: Seance_VM) => {
         return response;
       })
       .catch(error => {

@@ -1,7 +1,7 @@
 <div class="box is-light">
   <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
     <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Caractéristiques</h3>
-    <ng-container *ngIf="ID > 0">
+ <ng-container *ngIf="ID>0 && !readonly">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit">

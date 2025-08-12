@@ -26,11 +26,11 @@
         </select>
     </div>
     <span class="fullscreen">
-        <btn [type_button]="'CreerSmallLight'" [disabled]="!current_groupe_key" (click)="AjouterGroupe()"></btn>
+        <btn [type_button]="'CreerSmallLight'" [disabled]="current_groupe_key === 0" (click)="AjouterGroupe()"></btn>
 
     </span>
     <span class="mobile">
-        <btn [type_button]="'CreerMobile'" [disabled]="!current_groupe_key" (click)="AjouterGroupe()"></btn>
+        <btn [type_button]="'CreerMobile'" [disabled]="current_groupe_key === 0" (click)="AjouterGroupe()"></btn>
     </span>
 </ng-container>
 <ng-container *ngIf="groupe_dispo.length == 0 && edit">

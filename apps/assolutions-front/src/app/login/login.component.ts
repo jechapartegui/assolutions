@@ -211,22 +211,18 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    this.login_serv_nest.Logout().then((ok) => {
+    const ok =  this.login_serv_nest.Logout();
         if (ok) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-          this.projets = null;
           this.router.navigate(['/login']);
+          this.projets =  null;
+          this.projets_select = null;
         } else {
           let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
-      })
-      .catch((error: Error) => {
-        let o = errorService.CreateError(this.action, error.message);
-        errorService.emitChange(o);
-        this.loading = false;
-      });
+    
   }
 
 

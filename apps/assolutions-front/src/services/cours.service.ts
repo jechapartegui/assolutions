@@ -59,11 +59,11 @@ export class CoursService {
       });
   }
 
-  public Add(l:Cours_VM): Promise<number> {
+  public Add(l:Cours_VM): Promise<Cours_VM> {
   this.url = 'api/cours/add';
 
   return this.global.PUT(this.url, l)
-    .then((response: number) => {
+    .then((response: Cours_VM) => {
       return response;
     })
     .catch(error => {
@@ -82,12 +82,12 @@ public Update(l:Cours_VM): Promise<boolean> {
       return Promise.reject(error);
     });
 }
-public Delete(id:number): Promise<boolean> {
+public Delete(id:number) {
   this.url = 'api/cours/delete/' + id;
 
   return this.global.DELETE(this.url)
-    .then((response: boolean) => {
-      return response;
+    .then(() => {
+      return;
     })
     .catch(error => {
       // Gestion de l'erreur
@@ -144,7 +144,7 @@ public AddCoursProf(cours_id:number, person_id:number): Promise<number>{
 }
 
 public DeleteCoursProf(cours_id:number, person_id:number): Promise<boolean>{
-   this.url = 'api/cours/delete/' + cours_id + '/' + person_id;
+   this.url = 'api/cours_prof/delete/' + cours_id + '/' + person_id;
 
   return this.global.DELETE(this.url)
     .then((response: boolean) => {

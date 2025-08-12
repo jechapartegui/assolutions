@@ -69,46 +69,21 @@ export class LoginNestService {
 
 
 
-  public Logout(): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/login.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      logout: true,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        GlobalService.is_logged_in = false;
+  public Logout(): boolean {
+    try {
+       GlobalService.is_logged_in = false;
         GlobalService.instance.updateTypeApplication(null);
         GlobalService.instance.updateProjet(null);
         GlobalService.instance.updateSelectedMenuStatus(null);
         GlobalService.instance.updateLoggedin(false);
         GlobalService.instance.updateCompte(null);
-        return response;
-      })
-      .catch(error => {
-        GlobalService.instance.updateLoggedin(false);
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
+        return true;
+    } catch (error) {
+          GlobalService.instance.updateLoggedin(false);
+          return false;
+    }   
   }
 
-  public RenvoiToken(username):Promise<boolean>{
-    this.url = environment.maseance + "maseance/login.php";
-    const body = {
-      command: "renvoi_token",
-      username: username
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        console.log(response);
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
   public ReinitMDP(username):Promise<boolean>{
     this.url = environment.maseance + "maseance/login.php";
     const body = {

@@ -9,6 +9,7 @@ import { LinkGroupService } from '../../crud/linkgroup.service';
 import { SessionProfessor } from '../../entities/seance-professeur.entity';
 import { SessionProfessorService } from '../../crud/seanceprofesseur.service';
 import { ProfessorContractService } from '../../crud/professorcontract.service';
+import { LinkGroup } from '../../entities/lien_groupe.entity';
 
 @Injectable()
 export class SeanceService {
@@ -171,31 +172,72 @@ filteredSeances.push(myss);
     return to_Seance_VM(seance);
   }
   
-  async AddRange(
-    seance: Seance_VM,
-    date_debut_serie: Date,
-    date_fin_serie: Date,
-    jour_semaine: string
-  ): Promise<Seance_VM[]> {
-    const startDate = startOfDay(date_debut_serie);
-    const endDate = endOfDay(date_fin_serie);
-    const seances: Seance_VM[] = [];
-    
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      if (currentDate.toLocaleString('fr-FR', { weekday: 'long' }) === jour_semaine) {
-        const newSeance = { ...seance, date: new Date(currentDate) };
-       const sss = await this.Add(newSeance);
-        newSeance.seance_id = sss.id;
-        newSeance.groupes.forEach(async (lig) =>{
-          await this.liengroup_serv.create(lig);
-        })
-        seances.push(newSeance);
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-return seances;
+// helpers natifs
+parseYMDToLocalDate(input: string | Date): Date {
+  if (input instanceof Date) {
+    // normalise à minuit local
+    return new Date(input.getFullYear(), input.getMonth(), input.getDate(), 0, 0, 0, 0);
   }
+  // attend "YYYY-MM-DD"
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input.trim());
+  if (!m) throw new Error('Format de date invalide, attendu YYYY-MM-DD');
+  const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+  return new Date(y, mo, d, 0, 0, 0, 0); // minuit local, évite UTC
+}
+
+startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+}
+
+endOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+}
+
+ normalizeFR(s: string): string {
+  return (s || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+DOW_FR: Record<string, number> = {
+  dimanche: 0, lundi: 1, mardi: 2, mercredi: 3, jeudi: 4, vendredi: 5, samedi: 6,
+};
+// ---- ta méthode adaptée ----
+async AddRange(
+  seance: Seance_VM,
+  date_debut_serie: string | Date,   // reçoit "2025-08-01" ou Date
+  date_fin_serie: string | Date,     // reçoit "2025-08-31" ou Date
+  jour_semaine: string               // "lundi"
+): Promise<Seance_VM[]> {
+  const startDate = startOfDay(this.parseYMDToLocalDate(date_debut_serie));
+  const endDate   = endOfDay(this.parseYMDToLocalDate(date_fin_serie));
+
+  const targetDow = this.DOW_FR[this.normalizeFR(jour_semaine)];
+  if (targetDow === undefined) throw new Error('jour_semaine invalide');
+
+  const seances: Seance_VM[] = [];
+
+  for (let currentDate = new Date(startDate); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+    if (currentDate.getDay() === targetDow) {
+      const newSeance: Seance_VM = { ...seance, date_seance: new Date(currentDate) }; // Date JS native
+      const saved = await this.Add(newSeance);
+      newSeance.seance_id = saved.seance_id;
+
+      if (newSeance.groupes?.length) {
+        for (const lig of newSeance.groupes) {
+          const lig_g = new LinkGroup();
+          lig_g.groupId = lig.id;
+          lig_g.objectId = saved.seance_id;
+          lig_g.objectType = "séance";
+          await this.liengroup_serv.create(lig_g);
+        }
+      }
+      if (newSeance.seanceProfesseurs?.length) {
+        await this.UpdateSeanceProf(newSeance.seance_id, newSeance.seanceProfesseurs);
+      }
+      seances.push(newSeance);
+    }
+  }
+
+  return seances;
+}
 
  async Add(s: Seance_VM) {
   if (!s) {
@@ -203,7 +245,8 @@ return seances;
   }
 
   const objet_base = toSession(s);
-  return this.seanceserv.create(objet_base);
+  const entity = await this.seanceserv.create(objet_base);
+  return to_Seance_VM(entity);
 }
 
 async Update(s: Seance_VM) {
@@ -212,7 +255,8 @@ async Update(s: Seance_VM) {
   }
 
   const objet_base = toSession(s);
-  return this.seanceserv.update(objet_base.id, objet_base);
+  const entity = await this.seanceserv.update(objet_base.id, objet_base);
+  return to_Seance_VM(entity);
 }
 
 
@@ -246,7 +290,7 @@ return await this.seanceserv.delete(id);
 
       const newSp = new SessionProfessor();
       newSp.seanceId = seance_id;
-      newSp.professeurContractId =  pc.id//
+      newSp.professeurContractId = pc.id;//
       newSp.status = x.statut;
       newSp.minutes = x.minutes;
       newSp.cout = x.cout;
@@ -322,7 +366,7 @@ export function toSession(vm: Seance_VM): Session {
 
   entity.id = vm.seance_id ?? 0; // Assurez-vous que l'ID est défini, sinon utilisez 0
   entity.seasonId = vm.saison_id;
-  entity.courseId = vm.cours ?? 0;
+  entity.courseId = vm.cours && vm.cours !== 0 ? vm.cours : undefined;
   entity.label = vm.libelle;
   entity.type = vm.type_seance;
   entity.date = new Date(vm.date_seance);

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AdherentService } from '../../services/adherent.service';
 import { CoursService } from '../../services/cours.service';
 import { ErrorService } from '../../services/error.service';
@@ -59,6 +59,7 @@ export class SeanceComponent implements OnInit {
 
   all_seance: boolean = false;
   jour_semaine: string = '';
+  date_debut_serie: Date;
   date_fin_serie: Date;
   current_prof: number;
   filter_statut: string = 'prévue';
@@ -84,6 +85,7 @@ export class SeanceComponent implements OnInit {
   public listeStatuts: StatutSeance[];
   edit_prof:boolean = false;
   edit_nom:boolean = false;
+  public readonly = false;
 
   constructor(
     public GlobalService: GlobalService,
@@ -96,13 +98,25 @@ export class SeanceComponent implements OnInit {
     public ridersService: AdherentService,
     private router: Router,
     private saisonserv: SaisonService,
-    private grServ: GroupeService
+    private grServ: GroupeService,
+        private route: ActivatedRoute
   ) {}
 
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.loading = true;
-    this.action = $localize`Charger les cours`;
+    this.route.queryParams.subscribe(async (params) => {
+  if ('id' in params) {
+    let id = params['id'];
+    this.action = $localize`Charger la séance`;
+    const thisseance = await this.seancesservice.Get(id);
+    this.editSeance = thisseance;
+    this.readonly = true;
+    let o = errorService.OKMessage(this.action);
+    errorService.emitChange(o);
+  }
+});
+    this.action = $localize`Charger les séances`;
     if (GlobalService.is_logged_in) {
       if (GlobalService.menu === 'ADMIN') {
         this.router.navigate(['/menu']);
@@ -282,6 +296,8 @@ export class SeanceComponent implements OnInit {
       .Get(seance.seance_id)
       .then((ss) => {
         this.editSeance = ss
+        this.edit_nom = false;
+        this.edit_prof = false;
         this.MAJListeProf();
         if (this.editSeance.cours) {
           this.coursselectionne = true;
@@ -298,10 +314,12 @@ export class SeanceComponent implements OnInit {
   onCoursSelectionChange(cours_id: any): void {
     //  console.log('Nouvelle valeur sélectionnée :', newValue);
     if (!isNaN(cours_id)) {
-      const indexToUpdate = this.listeCours.findIndex(
-        (cc) => cc.id === cours_id
+      console.log(this.listeCours);
+      console.log(cours_id);
+      const newValue = this.listeCours.find(
+        (cc) => Number(cc.id) === Number(cours_id)
       );
-      const newValue = this.listeCours[indexToUpdate];
+      console.log(newValue);
       this.coursselectionne = true;
       this.editSeance.duree_seance = newValue.duree;
       this.editSeance.age_minimum = newValue.age_minimum;
@@ -309,6 +327,7 @@ export class SeanceComponent implements OnInit {
       this.editSeance.est_limite_age_maximum = newValue.est_limite_age_maximum;
       this.editSeance.est_limite_age_minimum = newValue.est_limite_age_minimum;
       this.editSeance.libelle = newValue.nom;
+      this.editSeance.saison_id = newValue.saison_id;
       this.editSeance.heure_debut = newValue.heure;
       this.editSeance.convocation_nominative = newValue.convocation_nominative;
       this.editSeance.est_place_maximum = newValue.est_place_maximum;
@@ -342,12 +361,15 @@ export class SeanceComponent implements OnInit {
   }
 
   Creer(serie: boolean = false): void {
-    this.editSeance = new Seance_VM();
+    let ss = new Seance_VM();
+    
+    this.editSeance = ss;
+    this.editSeance.saison_id = this.active_saison.id;
         this.MAJListeProf();
     this.coursselectionne = false;
     this.editMode_serie = serie;
-    this.editSeance.date_seance = new Date();
-    this.date_fin_serie = new Date();
+    this.date_debut_serie = null
+    this.date_fin_serie = null;
       this.edit_prof = true;
     this.histo_seance = JSON.stringify(this.editSeance);
   }
@@ -402,16 +424,32 @@ export class SeanceComponent implements OnInit {
       this.editSeance.heure_debut = donnee_date_lieu.heure;
       this.jour_semaine = donnee_date_lieu.jour_semaine;
       this.editSeance.duree_seance = donnee_date_lieu.duree;
-      this.editSeance.date_seance = donnee_date_lieu.date
+      this.editSeance.rdv = donnee_date_lieu.rdv;
+        this.editSeance.date_seance = donnee_date_lieu.date;
+      if(this.editMode_serie){
+        this.date_fin_serie = donnee_date_lieu.date_fin;
+        this.date_debut_serie = donnee_date_lieu.date_debut;
+      }
     }
      this.checkall();
+    if(this.is_valid && this.editSeance.seance_id > 0){
+    this.Save();
+    }
+  }
+
+  SaveNom(){
+    this.edit_nom = false;
+    this.checkall();
+    console.log(this.is_valid);
     if(this.is_valid){
     this.Save();
     }
+
   }
   
   autoSave(){
     this.checkall();
+    console.log(this.is_valid);
     if(this.is_valid){
     this.Save();
     }
@@ -429,9 +467,10 @@ export class SeanceComponent implements OnInit {
       this.editSeance.est_place_maximum = caracteristique.place_limite;
       this.editSeance.place_maximum = caracteristique.place_limite_valeur;
       this.editSeance.essai_possible = caracteristique.essai_possible;
+      this.editSeance.afficher_present = caracteristique.afficher_present;
     }
      this.checkall();
-    if(this.is_valid){
+    if(this.is_valid && this.editSeance.seance_id > 0){
     this.Save();
     }
   }
@@ -441,7 +480,7 @@ export class SeanceComponent implements OnInit {
   }
 
   VoirMaSeance(seance: Seance_VM = null) {
-    if (this.checkModification()) {
+    if (this.checkModification() && !this.readonly) {
       let confirm = window.confirm(
         $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
       );
@@ -673,7 +712,7 @@ export class SeanceComponent implements OnInit {
           this.seancesservice
             .AddRange(
               this.editSeance,
-              this.editSeance.date_seance,
+              this.date_debut_serie,
               this.date_fin_serie,
               this.jour_semaine
             )
@@ -704,13 +743,15 @@ export class SeanceComponent implements OnInit {
         } else {
           this.seancesservice
             .Add(this.editSeance)
-            .then((id) => {
-              if (id > 0) {
-                this.editSeance.seance_id   = id;
-                  this.spservice.Update(id, this.editSeance.seanceProfesseurs);
+            .then((retour) => {
+              if (retour.seance_id > 0) {
+                this.editSeance.seance_id   = retour.seance_id;
+                  this.spservice.Update(Number(retour.seance_id), this.editSeance.seanceProfesseurs);
                 this.editSeance.groupes.forEach((gr: LienGroupe_VM) => {
-                  this.grServ.AddLien(Number(gr.id), 'séance', id);
+                  this.grServ.AddLien(Number(retour.seance_id), 'séance', Number(gr.id));
                 });
+                this.edit_nom = false;
+                this.edit_prof = false;
                 this.histo_seance = JSON.stringify(this.editSeance);
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
@@ -785,7 +826,10 @@ export class SeanceComponent implements OnInit {
       });
   }
 
-  Retour(): void {
+  RetourListe(): void {
+    if(!GlobalService.prof){
+        this.router.navigate(['/menu']);
+    }
    if (this.checkModification()) {
       let confirm = window.confirm(
         $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
@@ -1029,7 +1073,7 @@ return $localize`Evénement`;
       
       async RemoveProf(item : SeanceProfesseur_VM) {
         this.action = $localize`Supprimer un professeur de la liste`;      
-        this.editSeance.seanceProfesseurs = this.editSeance.seanceProfesseurs.filter(e => e.id !== item.id);
+        this.editSeance.seanceProfesseurs = this.editSeance.seanceProfesseurs.filter(e => e.personne.id !== item.personne.id);
      
         if(this.editSeance.seance_id>0){
             await this.spservice.Update(this.editSeance.seance_id, this.editSeance.seanceProfesseurs);

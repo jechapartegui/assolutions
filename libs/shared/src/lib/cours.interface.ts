@@ -5,22 +5,23 @@ export class Cours_VM {
   id: number = 0;
   nom: string;
   jour_semaine: string;
-  heure: string;
-  duree: number;
-  prof_principal_id: number;
-  lieu_id: number;
-  saison_id: number;
+  heure: string= "11:00";
+  duree: number = 0;
+  prof_principal_id: number= 0;
+  lieu_id: number= 0;
+  saison_id: number= 0;
 
   age_minimum?: number;
   age_maximum?: number;
   place_maximum?: number;
+  essai_possible:boolean =false;
 
-  convocation_nominative: boolean;
-  afficher_present: boolean;
-  est_limite_age_minimum: boolean;
-  est_limite_age_maximum: boolean;
-  est_place_maximum: boolean;
-  rdv?:string;
+  convocation_nominative: boolean=false;
+  afficher_present: boolean=false;
+  est_limite_age_minimum: boolean=false;
+  est_limite_age_maximum: boolean=false;
+  est_place_maximum: boolean=false;
+  rdv?:string = "";
   // Champs enrichis
   lieu_nom?: string;
 

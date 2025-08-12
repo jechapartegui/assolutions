@@ -48,6 +48,8 @@ export class Course {
   @ManyToOne(() => Season)
   @JoinColumn({ name: 'saison_id' })
   season: Season;
+  @Column({ type: 'boolean', name: 'essai_possible', default: false })
+  trialAllowed: boolean;
 
   @Column({ nullable: true, name: 'place_maximum', type: 'int' })
   maxPlaces: number | null;;

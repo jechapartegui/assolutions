@@ -39,7 +39,7 @@ public lieux : Lieu_VM[] = [];
 constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, private dbs:GlobalService) { }
 
     async ngOnInit(): Promise<void> {
-      console.log(this.Regles);
+      
 let ddl: donnee_date_lieu = {
  
     date: this.date,
@@ -89,6 +89,20 @@ this.save = JSON.stringify(ddl);
         this.datelieuChange.emit(ddl);
         this.edit = false;
         }
+     }
+          public SaveNew(){
+        let ddl: donnee_date_lieu = {
+    date: this.date,
+    lieu_id: this.lieu_id,
+    duree: this.duree,
+    heure: this.heure,
+    jour_semaine: this.jour_semaine,
+    date_debut: this.date_debut,
+    date_fin: this.date_fin,
+    rdv:this.rdv
+};
+      
+        this.datelieuChange.emit(ddl);
      }
     public Cancel(){
         let adh:donnee_date_lieu = JSON.parse(this.save);
@@ -152,9 +166,6 @@ this.save = JSON.stringify(ddl);
         this.rDate = GlobalService.instance.validerDate(this.date, this.date_min, this.date_max, this.Regles.date_obligatoire, this.title);
 
       }
-      console.log("rDate",this.rDate);
-      console.log("rDateDebut", this.rDateDebut);
-      console.log("rDateFin", this.rDateFin);
       this.rHeure = GlobalService.instance.validerHeure(this.heure, this.Regles.heure_min, this.Regles.heure_max, this.Regles.heure_obligatoire, $localize`Heure de début`);
       this.rDuree = GlobalService.instance.validerNombre(this.duree, this.Regles.duree_min, this.Regles.duree_max, this.Regles.duree_obligatoire, $localize`Durée`);
       this.rLieu = GlobalService.instance.validerSaisie(this.lieu_id, this.Regles.lieu_obligatoire, $localize`Lieu`);
@@ -162,6 +173,9 @@ this.save = JSON.stringify(ddl);
       this.estValid = this.rDate.key && this.rCreneau.key && this.rHeure.key && this.rDuree.key && this.rLieu.key && (this.serie ? (this.rDateDebut.key && this.rDateFin.key) : true); 
       // 🔥 émettre vers le parent
       this.valid.emit(this.estValid);
+       if(this.estValid && this.ID < 1){
+        this.SaveNew();
+      }
     }
     thislieu(lieu_id: number): Lieu_VM {
         return this.lieux.find(l => l.id === lieu_id);
