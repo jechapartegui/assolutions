@@ -61,6 +61,12 @@ import { DureeHHMMPipe } from '../pipe/duree.pipe';
 import { InfoPersoComponent } from './component/Infoperso/infoperso.component';
 import { DateLieuComponent } from './component/datelieu/datelieu.component';
 import { CaracSeanceComponent } from './component/caracteristique_seance/caracteristique_seance.component';
+import { WeekCalendarComponent } from './public/week-calendrar.component';
+import { CoursPage } from './public/course-page-public.component';
+import { SeancesPage } from './public/seance-page-public.component';
+import { SeanceListComponent } from './public/seance-list-public.component';
+import { CourseListPublicComponent } from './public/course-list-public.component';
+import { OrEmptyPipe } from '../filters/orempty.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -71,8 +77,8 @@ import { CaracSeanceComponent } from './component/caracteristique_seance/caracte
     CoursComponent,
     SeanceComponent,
     ComptabiliteComponent, InfoPersoComponent,
-    ProfComponent,RangePipe,
-    NotifJechaComponent,  AdministrateursComponent,
+    ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,
+    NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,
     ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
@@ -83,6 +89,7 @@ import { CaracSeanceComponent } from './component/caracteristique_seance/caracte
     HttpClientModule,
     FormsModule,
     AppRoutingModule,
+    DatePipe, 
     // Ajoutez ici l'un des modules d'animations selon vos besoins
     BrowserAnimationsModule
   ],

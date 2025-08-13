@@ -2,10 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
-import { GlobalService } from '../../services/global.services';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { Lieu_VM } from '@shared/src/lib/lieu.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -20,13 +20,14 @@ export class LieuComponent implements OnInit {
   action: string = "";
   liste_lieu: Lieu_VM[] = [];
   sort_nom: string;
-  constructor(public router: Router, public lieu_serv: LieuNestService) { }
+  constructor(public router: Router, public lieu_serv: LieuNestService, public store:AppStore) { }
 
   ngOnInit(): void {
-    if (GlobalService.is_logged_in) {
+    if (this.store.isLoggedIn) {
 
-      if ((GlobalService.menu === "APPLI")) {
+      if ((this.store.appli() === "APPLI")) {
         this.router.navigate(['/menu']);
+        this.store.updateSelectedMenu("MENU");
         return;
       }
       this.UpdateListeLieu();

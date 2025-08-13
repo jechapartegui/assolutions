@@ -6,13 +6,14 @@ import { Adherent_VM } from '@shared/src/lib/member.interface';
 import { Compte_VM } from '@shared/src/lib/compte.interface';
 import { Seance_VM } from '@shared/src/lib/seance.interface';
 import { ItemList, KeyValuePair } from '@shared/src/lib/autres.interface';
+import { AppStore } from '../app/app.store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdherentService {
 
-  constructor(public global: GlobalService) {
+  constructor(public global: GlobalService, public store:AppStore) {
   }
   url = environment.maseance;
   public Get(id: number): Promise<Adherent_VM> {
@@ -43,7 +44,7 @@ export class AdherentService {
   }
 
   GetAllSeance(): Promise<Seance_VM[]> {
-    let saison_id = this.global.saison_active;
+    let saison_id = this.store.saison_active().id;
     this.url = 'api/member/getallseance/' + saison_id;
 
     return this.global.GET(this.url)

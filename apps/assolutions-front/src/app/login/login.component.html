@@ -8,6 +8,7 @@
       <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
         <div class="box">
           <h3 class="title is-3" i18n>Connexion</h3>
+          <h6 class="subtitle is-6">{{libelle_titre}}</h6>
           <div class="field">
             <p class="control has-icons-left has-icons-right">
               <input [class]="VM.isLoginValid ? 'input' : 'input is-danger'"  (ngModelChange)="validateLogin()" (keypress)="onKeyPress($event)" 
@@ -51,19 +52,21 @@
           <div class="columns">
             <div class="column">
               <div class="field" *ngIf="!projets">
-                <p class="control" style="display: flex; flex-direction: column; gap: 2px;">
-                 
-                  {{(GlobalService.isLoggedIn$ | async)}}
-                  <button *ngIf="(GlobalService.isLoggedIn$ | async) != true" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
-                    (click)="PreLogin()" i18n>
+                <p class="control" style="display: flex; flex-direction: column; gap: 2px;">                 
+                  <button *ngIf="(!store.isLoggedIn())" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                    (click)="PreLogin()  && !VM.creer_compte" i18n>
                     Se connecter
                   </button>
-                  <button *ngIf="VM.mdp_requis && (GlobalService.isLoggedIn$ | async) != true" [disabled]="!VM.isValid" class="button is-success is-outlined is-rounded"
-                    (click)="Login()" i18n>
+                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                    (click)="PreLogin()" i18n>
+                    Créer un compte
+                  </button>
+                  <button *ngIf="VM.mdp_requis && !store.isLoggedIn()" [disabled]="!VM.isValid" class="button is-success is-outlined is-rounded"
+                    (click)="Login()  && !VM.creer_compte" i18n>
                     Valider le mot de passe
                   </button>
                 
-                  <a *ngIf="VM.isLoginValid"  (click)="ReinitMDP()" i18n
+                  <a *ngIf="VM.isLoginValid && !VM.creer_compte"  (click)="ReinitMDP()" i18n
                   >Reinitialiser le mot de passe</a>
                 </p>
               </div>

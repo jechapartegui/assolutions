@@ -195,7 +195,7 @@
                                 i18n-title
                                 title="Supprimer"
                                 [type_button]="'SupprimerLight'"
-                                *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+                                *ngIf="store.appli() === 'ADMIN'"
                                 (click)="Delete(adherent)"
                               ></btn>
                               <btn
@@ -686,7 +686,7 @@
                                         <i *ngIf="!isRegistredSaison(ss.id)" class="fas fa-times "></i>
                                         <i *ngIf="isRegistredSaison(ss.id)" class="fas fa-check has-text-success"></i>
                                     </td>
-                                    <td *ngIf="(GlobalService.Menu$| async) === 'ADMIN'">
+                                    <td *ngIf="store.appli() === 'ADMIN'">
                                         <hover-button *ngIf="!isRegistredSaison(ss.id)"
                                             [nomclass]="'button  is-rounded is-primary is-outlined' "
                                             [nomicon]="'fas fa-signature'" [libelle]="libelle_inscription"

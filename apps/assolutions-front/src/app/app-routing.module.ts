@@ -28,6 +28,8 @@ import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
 import { ClementineComponent } from './clementine/clementine.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
+import { CoursPage } from './public/course-page-public.component';
+import { SeancesPage } from './public/seance-page-public.component';
 
 
 
@@ -61,7 +63,9 @@ const routes: Routes = [
   { path: 'import-adherent', component: ImportAdherentComponent },
   { path: 'gestion-liste', component: GestionListeComponent },
   { path: 'operations', component: OperationsComponent },
-  { path: 'clementine', component: ClementineComponent },
+  { path: 'clementine', component: ClementineComponent }, 
+  { path: 'liste-cours-public', component: CoursPage },
+  { path: 'liste-seances-public', component: SeancesPage },
   {path:'menu-admin',component:MenuAdminComponent},
   {path:'tdb',component:TableauDeBordComponent},
 

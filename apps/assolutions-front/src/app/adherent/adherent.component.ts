@@ -23,6 +23,7 @@ import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
 import { ItemContact } from '@shared/src/lib/personne.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -106,13 +107,14 @@ export class AdherentComponent implements OnInit {
     private saisonserv: SaisonService,
     private ridersService: AdherentService,
     private grServ: GroupeService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public store:AppStore
   ) {}
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
     this.loading = true;
-    if (GlobalService.is_logged_in) {
+    if (this.store.isLoggedIn) {
       this.saisonserv
         .GetAll()
         .then((sa) => {
@@ -123,11 +125,13 @@ export class AdherentComponent implements OnInit {
               $localize`Il faut au moins une saison pour créer un cours`
             );
             errorService.emitChange(o);
-            if (GlobalService.menu === 'ADMIN') {
+            if (this.store.appli() === 'ADMIN') {
               this.router.navigate(['/saison']);
+              this.store.updateSelectedMenu("SAISON");
             } else {
               this.router.navigate(['/menu']);
-              GlobalService.selected_menu = 'MENU';
+              this.store.updateSelectedMenu("MENU");
+
             }
             return;
           }
@@ -143,12 +147,12 @@ export class AdherentComponent implements OnInit {
           });
           if (this.context == 'ECRAN_LISTE') {
             if (
-              GlobalService.menu === 'APPLI' &&
-              GlobalService.prof === false
+              this.store.appli() === 'APPLI' &&
+              this.store.isProf() === false
             ) {
               this.loading = false;
               this.router.navigate(['/menu']);
-              GlobalService.selected_menu = 'MENU';
+              this.store.updateSelectedMenu("MENU");
               return;
             }
           }
@@ -171,7 +175,7 @@ export class AdherentComponent implements OnInit {
           );
           errorService.emitChange(o);
           this.router.navigate(['/menu']);
-          GlobalService.selected_menu = 'MENU';
+              this.store.updateSelectedMenu("MENU");
           return;
         });
     } else {
@@ -221,7 +225,7 @@ export class AdherentComponent implements OnInit {
         );
         errorService.emitChange(o);
         this.router.navigate(['/groupe']);
-        GlobalService.selected_menu = 'GROUPE';
+              this.store.updateSelectedMenu("GROUPE");
         return;
       });
   }
@@ -484,7 +488,7 @@ isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
         );
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
-        GlobalService.selected_menu = 'MENU';
+              this.store.updateSelectedMenu("MENU");
         return;
       } else {
         this.histo_adherent = JSON.stringify(adh);
@@ -503,20 +507,19 @@ isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
       );
       errorService.emitChange(o);
       this.router.navigate(['/menu']);
-      GlobalService.selected_menu = 'MENU';
+              this.store.updateSelectedMenu("MENU");
     }
 
     if (
-      GlobalService.menu == 'APPLI' &&
-      GlobalService.prof == false
+      this.store.appli() == 'APPLI' &&
+      this.store.isProf() == false
     ) {
       return;
     } else if (
-      GlobalService.menu == 'APPLI' &&
-      GlobalService.prof == true
+      this.store.appli() == 'APPLI' && this.store.isProf()
     ) {
       return;
-    } else if (GlobalService.menu == 'ADMIN') {
+    } else if (this.store.appli() == 'ADMIN') {
       return;
     }
   }
@@ -627,7 +630,7 @@ PreSave() {
       this.UpdateListeAdherents();
     } else {
       this.router.navigate(['/menu']);
-      GlobalService.selected_menu = 'MENU';
+      this.store.updateSelectedMenu("MENU");
     }
   }
 

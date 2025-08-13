@@ -6,6 +6,7 @@ import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { SaisonService } from '../../services/saison.service';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -42,6 +43,7 @@ export class SaisonComponent {
   
     constructor(
       public GlobalService: GlobalService,
+      public store:AppStore,
       private excelService: ExcelService,
       private router: Router,
       private saisonserv: SaisonService
@@ -51,9 +53,10 @@ export class SaisonComponent {
       const errorService = ErrorService.instance;
       this.loading = true;
       this.action = $localize`Charger les séances`;
-      if (GlobalService.is_logged_in) {
-        if (GlobalService.menu === 'APPLI') {
+      if (this.store.isLoggedIn) {
+        if (this.store.appli() === 'APPLI') {
           this.router.navigate(['/menu']);
+            this.store.updateSelectedMenu("MENU");
           this.loading = false;
           return;
         }

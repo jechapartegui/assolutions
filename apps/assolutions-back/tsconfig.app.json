@@ -12,7 +12,7 @@
   "include": [
     "src/**/*.ts",
     "../../libs/shared/src/**/*.ts"      // visible dans l'IDE, mais pas compilé en propre
-  ],
+, "../assolutions-front/src/app/app.store.ts"  ],
   "references": [
     {
       "path": "../../libs/shared/tsconfig.lib.json"

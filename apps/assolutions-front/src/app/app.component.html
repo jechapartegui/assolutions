@@ -6,7 +6,7 @@
     <div class="navbar-brand">
       <a
         class="navbar-item"
-        (click)="GlobalService.updateSelectedMenuStatus('MENU')"
+        (click)="store.updateSelectedMenu('MENU')"
         [routerLink]="['/menu']"
         ><svg
           width="57"
@@ -48,16 +48,16 @@
     >
       <div
         class="navbar-start"
-        *ngIf="(GlobalService.isLoggedIn$ | async) === true && (GlobalService.Projet$ | async) !== null && (GlobalService.Prof$ | async) === true"
+        *ngIf="store.isLoggedIn() && store.hasProjet() && store.isProf()"
       >
        
           <a
             [class]="
-              (GlobalService.SelectedMenu$ | async) === 'ADHERENT'
+              store.selectedMenu() === 'ADHERENT'
                 ? 'navbar-item is-selected'
                 : 'navbar-item'
             "
-            (click)="GlobalService.updateSelectedMenuStatus('ADHERENT')"
+            (click)="store.updateSelectedMenu('ADHERENT')"
             [routerLink]="['/adherent']"
             i18n
           >
@@ -66,11 +66,11 @@
 
           <a
             [class]="
-              (GlobalService.SelectedMenu$ | async) === 'COURS'
+             store.selectedMenu()=== 'COURS'
                 ? 'navbar-item is-selected'
                 : 'navbar-item'
             "
-            (click)="GlobalService.updateSelectedMenuStatus('COURS')"
+            (click)="store.updateSelectedMenu('COURS')"
             [routerLink]="['/cours']"
             i18n
           >
@@ -78,11 +78,11 @@
           </a>
           <a
             [class]="
-              (GlobalService.SelectedMenu$ | async) === 'SEANCE'
+             store.selectedMenu()=== 'SEANCE'
                 ? 'navbar-item is-selected'
                 : 'navbar-item'
             "
-            (click)="GlobalService.updateSelectedMenuStatus('SEANCE')"
+            (click)="store.updateSelectedMenu('SEANCE')"
             [routerLink]="['/seance']"
             i18n
           >
@@ -90,17 +90,17 @@
           </a>
           <a
             [class]="
-              (GlobalService.SelectedMenu$ | async) === 'GROUPE'
+             store.selectedMenu()=== 'GROUPE'
                 ? 'navbar-item is-selected'
                 : 'navbar-item'
             "
-            (click)="GlobalService.updateSelectedMenuStatus('GROUPE')"
+            (click)="store.updateSelectedMenu('GROUPE')"
             [routerLink]="['/groupe']"
             i18n
           >
             Groupes
           </a>
-          <ng-container *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
+          <ng-container *ngIf="store.appli() === 'ADMIN'">
             
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link"> Gestion </a>
@@ -108,11 +108,11 @@
               <!-- Other navbar items -->
               <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'COMPTA'
+                 store.selectedMenu()=== 'COMPTA'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('COMPTA')"
+                (click)="store.updateSelectedMenu('COMPTA')"
                 [routerLink]="['/comptabilite']"
                 [queryParams]="{ context: 'COMPTA' }"
                 i18n
@@ -121,11 +121,11 @@
               </a>
               <a
               [class]="
-                (GlobalService.SelectedMenu$ | async) === 'TRANSACTION'
+               store.selectedMenu()=== 'TRANSACTION'
                   ? 'navbar-item is-selected'
                   : 'navbar-item'
               "
-              (click)="GlobalService.updateSelectedMenuStatus('TRANSACTION')"
+              (click)="store.updateSelectedMenu('TRANSACTION')"
               [routerLink]="['/operations']"
               [queryParams]="{ context: 'LISTE' }"
               i18n
@@ -134,11 +134,11 @@
             </a>
               <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'FACTURE'
+                 store.selectedMenu()=== 'FACTURE'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('FACTURE')"
+                (click)="store.updateSelectedMenu('FACTURE')"
                 [routerLink]="['/projet-mail']"
                 i18n
               >
@@ -146,11 +146,11 @@
               </a>
               <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'STOCK'
+                 store.selectedMenu()=== 'STOCK'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('STOCK')"
+                (click)="store.updateSelectedMenu('STOCK')"
                 [routerLink]="['/stock']"
                 i18n
               >
@@ -158,11 +158,11 @@
               </a>
               <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'ENVOIMAIL'
+                 store.selectedMenu()=== 'ENVOIMAIL'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('ENVOIMAIL')"
+                (click)="store.updateSelectedMenu('ENVOIMAIL')"
                 [routerLink]="['/envoi-mail']"
                 i18n
               >
@@ -170,11 +170,11 @@
               </a>
               <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'TDB'
+                 store.selectedMenu()=== 'TDB'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('TDB')"
+                (click)="store.updateSelectedMenu('TDB')"
                 [routerLink]="['/tableau-de-bord']"
                 i18n
               >
@@ -189,11 +189,11 @@
                 <!-- Other navbar items -->
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'LIEU'
+                   store.selectedMenu()=== 'LIEU'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('LIEU')"
+                  (click)="store.updateSelectedMenu('LIEU')"
                   [routerLink]="['/lieu']"
                   i18n
                 >
@@ -201,11 +201,11 @@
                 </a>
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'SAISON'
+                   store.selectedMenu()=== 'SAISON'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('SAISON')"
+                  (click)="store.updateSelectedMenu('SAISON')"
                   [routerLink]="['/saison']"
                   i18n
                 >
@@ -214,11 +214,11 @@
                
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'CB'
+                   store.selectedMenu()=== 'CB'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('CB')"
+                  (click)="store.updateSelectedMenu('CB')"
                   [routerLink]="['/compte-bancaire']"
                   i18n
                 >
@@ -226,11 +226,11 @@
                 </a>
                 <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'LISTE_VALEUR'
+                 store.selectedMenu()=== 'LISTE_VALEUR'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('LISTE_VALEUR')"
+                (click)="store.updateSelectedMenu('LISTE_VALEUR')"
                 [routerLink]="['/gestion-liste']"
                 i18n
               >
@@ -244,11 +244,11 @@
                 <!-- Other navbar items -->
                 <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'PROF'
+                 store.selectedMenu()=== 'PROF'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="GlobalService.updateSelectedMenuStatus('PROF')"
+                (click)="store.updateSelectedMenu('PROF')"
                 [routerLink]="['/professeur']"
                 i18n
               >
@@ -256,12 +256,12 @@
               </a>
               <a
                 [class]="
-                  (GlobalService.SelectedMenu$ | async) === 'ADMINISTRATEUR'
+                 store.selectedMenu()=== 'ADMINISTRATEUR'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
                 (click)="
-                  GlobalService.updateSelectedMenuStatus('ADMINISTRATEUR')
+                  store.updateSelectedMenu('ADMINISTRATEUR')
                 "
                 [routerLink]="['/administrateurs']"
                 i18n
@@ -270,11 +270,11 @@
               </a>
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'PROJETINFO'
+                   store.selectedMenu()=== 'PROJETINFO'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('PROJETINFO')"
+                  (click)="store.updateSelectedMenu('PROJETINFO')"
                   [routerLink]="['/projet-info']"
                   i18n
                 >
@@ -282,11 +282,11 @@
                 </a>
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'PROJETMAIL'
+                   store.selectedMenu()=== 'PROJETMAIL'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('PROJETMAIL')"
+                  (click)="store.updateSelectedMenu('PROJETMAIL')"
                   [routerLink]="['/projet-mail']"
                   i18n
                 >
@@ -294,11 +294,11 @@
                 </a>
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'SUIVIMAIL'
+                   store.selectedMenu()=== 'SUIVIMAIL'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('SUIVIMAIL')"
+                  (click)="store.updateSelectedMenu('SUIVIMAIL')"
                   [routerLink]="['/projet-mail']"
                   i18n
                 >
@@ -306,11 +306,11 @@
                 </a>
                 <a
                   [class]="
-                    (GlobalService.SelectedMenu$ | async) === 'COMPTE'
+                   store.selectedMenu()=== 'COMPTE'
                       ? 'navbar-item is-selected'
                       : 'navbar-item'
                   "
-                  (click)="GlobalService.updateSelectedMenuStatus('COMPTE')"
+                  (click)="store.updateSelectedMenu('COMPTE')"
                   [routerLink]="['/compte']"
                   i18n
                 >
@@ -320,7 +320,7 @@
             </div>
           </ng-container>
       </div>
-      <div class="navbar-end" *ngIf="(GlobalService.Projet$ | async) != null">
+      <div class="navbar-end" *ngIf="store.hasProjet() == true">
         <div class="navbar-item">
           <div class="buttons">
             <a
@@ -359,16 +359,16 @@
   <router-outlet></router-outlet>
   <span class="mobile">
     <footer class="footer" 
-    style="width:  -webkit-fill-available;" *ngIf="(GlobalService.isLoggedIn$ | async) === true">
+    style="width:  -webkit-fill-available;" *ngIf="store.isLoggedIn">
     <div class="tabs is-toggle is-fullwidth">
       <ul>
         <li>
           <a [class]="
-          (GlobalService.SelectedMenu$ | async) === 'MENU'
+         store.selectedMenu()=== 'MENU'
             ? 'navbar-item is-selected'
             : 'navbar-item'
         "
-        (click)="GlobalService.updateSelectedMenuStatus('MENU')"
+        (click)="store.updateSelectedMenu('MENU')"
         [routerLink]="['/menu']">
             <span class="icon is-large"
               ><svg
@@ -393,11 +393,11 @@
 
         <li>
           <a [class]="
-          (GlobalService.SelectedMenu$ | async) === 'ADHERENT'
+         store.selectedMenu()=== 'ADHERENT'
             ? 'navbar-item is-selected'
             : 'navbar-item'
         "
-        (click)="GlobalService.updateSelectedMenuStatus('ADHERENT')"
+        (click)="store.updateSelectedMenu('ADHERENT')"
         [routerLink]="['/adherent']">
             <span class="icon is-large"
               ><i class="fas fa-2x fa-users"></i></span>
@@ -406,11 +406,11 @@
         </li>
         <li>
           <a [class]="
-          (GlobalService.SelectedMenu$ | async) === 'SEANCE'
+         store.selectedMenu()=== 'SEANCE'
             ? 'navbar-item is-selected'
             : 'navbar-item'
         "
-        (click)="GlobalService.updateSelectedMenuStatus('SEANCE')"
+        (click)="store.updateSelectedMenu('SEANCE')"
         [routerLink]="['/seance']">
             <span class="icon is-large"
               ><i class="fas fa-2x fa-clipboard-list"></i></span>
@@ -419,11 +419,11 @@
         </li>
         <li>
           <a [class]="
-          (GlobalService.SelectedMenu$ | async) === 'COURS'
+         store.selectedMenu()=== 'COURS'
             ? 'navbar-item is-selected'
             : 'navbar-item'
         "
-        (click)="GlobalService.updateSelectedMenuStatus('COURS')"
+        (click)="store.updateSelectedMenu('COURS')"
         [routerLink]="['/cours']">
             <span class="icon is-large"
               ><i class="fas fa-2x fa-chalkboard-teacher"></i></span>
@@ -432,11 +432,11 @@
         </li>
         <li>
           <a [class]="
-          (GlobalService.SelectedMenu$ | async) === 'GROUPE'
+         store.selectedMenu()=== 'GROUPE'
             ? 'navbar-item is-selected'
             : 'navbar-item'
         "
-        (click)="GlobalService.updateSelectedMenuStatus('GROUPE')"
+        (click)="store.updateSelectedMenu('GROUPE')"
         [routerLink]="['/groupe']">
             <span class="icon is-large"
               ><i class="fas fa-2x fa-layer-group"></i></span>

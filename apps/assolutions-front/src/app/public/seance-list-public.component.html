@@ -1,0 +1,33 @@
+<table class="table is-fullwidth is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>Date</th><th>Heure</th><th>Libellé</th><th>Type</th><th>Lieu</th><th>Statut</th><th>Places</th><th>Essai</th><th>RDV</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let s of items">
+      <td>{{ s.date_seance | date:'EEE dd/MM' }}</td>
+     <td><ng-container *ngIf="s.heure_debut as start">
+    {{ start }}
+    <ng-container *ngIf="s.duree_seance !== null && s.duree_seance !== undefined">
+      –{{ end(start, s.duree_seance) }}
+    </ng-container>
+  </ng-container></td> 
+      <td>{{ s.libelle || s.cours_nom }}</td>
+      <td>{{ GetType(s.type_seance) }}</td>
+      <td>{{ s.lieu_nom }}</td>
+      <td>
+        <span *ngIf="s.statut==='annulée'">❌ annulée</span>
+        <span *ngIf="s.statut==='prévue'">⏳ prévue</span>
+        <span *ngIf="s.statut==='réalisée'">✔ réalisée</span>
+      </td>
+      <td>{{ s.place_maximum ?? '—' }}</td>
+      <td><ng-container *ngIf="s.essai_possible">
+        <button class="button is-info is-rounded is-small is-outlined" (click)="Essayer(s.seance_id)">
+          Faire un essai
+        </button>
+      </ng-container></td>
+      <td>{{ s.rdv }}</td>
+    </tr>
+  </tbody>
+</table>

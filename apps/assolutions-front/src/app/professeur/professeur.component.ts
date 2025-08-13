@@ -10,6 +10,7 @@ import { SaisonService } from '../../services/saison.service';
 import { Professeur_VM, ProfSaisonVM } from '@shared/src/lib/prof.interface';
 import { Adherent_VM } from '@shared/src/lib/member.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -56,7 +57,7 @@ throw new Error('Method not implemented.');
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
 
-  constructor(private prof_serv: ProfesseurService, private router: Router, public GlobalService: GlobalService, private saisonserv: SaisonService, private ridersService: AdherentService, private route: ActivatedRoute) {
+  constructor(public store:AppStore, private prof_serv: ProfesseurService, private router: Router, public GlobalService: GlobalService, private saisonserv: SaisonService, private ridersService: AdherentService, private route: ActivatedRoute) {
 
   }
 
@@ -65,8 +66,8 @@ throw new Error('Method not implemented.');
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les professeurs`;
     this.loading = true;
-    if (GlobalService.is_logged_in) {
-      if ((GlobalService.menu === "APPLI")) {
+    if (this.store.isLoggedIn) {
+      if ((this.store.appli() === "APPLI")) {
         this.router.navigate(['/menu']);
         this.loading = false;
         return;
@@ -77,13 +78,13 @@ throw new Error('Method not implemented.');
         if (sa.length == 0) {
           let o = errorService.CreateError($localize`Récupérer les saisons`, $localize`Il faut au moins une saison pour créer un cours`);
           errorService.emitChange(o);
-          if (GlobalService.menu === "ADMIN") {
+          if (this.store.appli() === "ADMIN") {
             this.router.navigate(['/saison']);
             this.loading = false;
 
           } else {
             this.router.navigate(['/menu']);
-            GlobalService.selected_menu = "MENU";
+            this.store.updateSelectedMenu("MENU");
             this.loading = false;
           }
           return;
@@ -123,7 +124,7 @@ throw new Error('Method not implemented.');
         let o = errorService.CreateError($localize`récupérer les saisons`, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
-        GlobalService.selected_menu = "MENU";
+            this.store.updateSelectedMenu("MENU");
         return;
       })
 
@@ -144,7 +145,7 @@ throw new Error('Method not implemented.');
       this.ListeProf = cpt;
      
       this.action = $localize`Récupérer les adhérents`;
-      this.ridersService.GetAdherentAdhesion(this.GlobalService.saison_active).then((adhs) => {
+      this.ridersService.GetAdherentAdhesion(this.store.saison_active().id).then((adhs) => {
         this.liste_adherents_VM = adhs;
         this.loading = false;
       }).catch((error: HttpErrorResponse) => {
@@ -257,7 +258,7 @@ throw new Error('Method not implemented.');
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
-        GlobalService.selected_menu = "MENU";
+            this.store.updateSelectedMenu("MENU");
         this.loading = false;
         return;
       })

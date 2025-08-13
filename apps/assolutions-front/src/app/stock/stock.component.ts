@@ -9,6 +9,7 @@ import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { StockService } from '../../services/stock.service';
 import { ObjetAppli, TypeStock, TypeTransaction, StaticClass } from '../global';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -49,7 +50,7 @@ export class StockComponent implements OnInit {
   public action: string = '';
 
   constructor(
-    public GlobalService: GlobalService,
+    public GlobalService: GlobalService, public store:AppStore,
     private router: Router,
     private stockservice: StockService,
     public SC: StaticClass,
@@ -62,10 +63,11 @@ export class StockComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les stocks`;
     this.loading = true;
-    if (GlobalService.is_logged_in) {
-      if (GlobalService.menu === 'APPLI') {
+    if (this.store.isLoggedIn) {
+      if (this.store.appli() === 'APPLI') {
         this.loading = false;
         this.router.navigate(['/menu']);
+            this.store.updateSelectedMenu("MENU");
         return;
       }
       // Chargez la liste des cours

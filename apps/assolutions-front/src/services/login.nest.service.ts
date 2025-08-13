@@ -69,20 +69,7 @@ export class LoginNestService {
 
 
 
-  public Logout(): boolean {
-    try {
-       GlobalService.is_logged_in = false;
-        GlobalService.instance.updateTypeApplication(null);
-        GlobalService.instance.updateProjet(null);
-        GlobalService.instance.updateSelectedMenuStatus(null);
-        GlobalService.instance.updateLoggedin(false);
-        GlobalService.instance.updateCompte(null);
-        return true;
-    } catch (error) {
-          GlobalService.instance.updateLoggedin(false);
-          return false;
-    }   
-  }
+
 
   public ReinitMDP(username):Promise<boolean>{
     this.url = environment.maseance + "maseance/login.php";

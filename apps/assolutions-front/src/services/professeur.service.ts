@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { Professeur_VM, ProfSaisonVM } from '@shared/src/lib/prof.interface';
+import { AppStore } from '../app/app.store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfesseurService {
-  constructor(public global: GlobalService) {
+  constructor(public global: GlobalService, public store:AppStore) {
   }
   url = environment.maseance;
   public Get(id: number): Promise<Professeur_VM> {
@@ -87,8 +88,7 @@ export class ProfesseurService {
       });
   }
   public GetProf(): Promise<Professeur_VM[]> {
-    console.log(this.global.saison_active);
-    let saison_id= this.global.saison_active;
+    let saison_id= this.store.saison_active().id;
   this.url = 'api/prof/get_prof_saison/' + saison_id;
     //  this.url = this.url + "login.php";
    

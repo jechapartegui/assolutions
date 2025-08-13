@@ -6,6 +6,7 @@ import { CompteService } from '../services/compte.service';
 import { ErrorService } from '../services/error.service';
 import { GlobalService } from '../services/global.services';
 import { Router } from '@angular/router';
+import { AppStore } from './app.store';
 
 @Component({
   standalone: false,
@@ -25,7 +26,8 @@ export class AppComponent {
     public erroservice: ErrorService,
     public compte_serv:CompteService,
     public globals: StaticClass,
-    public router:Router
+    public router:Router,
+    public store:AppStore
   ) {
     this.g = globals;
     erroservice.changeEmitted$.subscribe((data) => {

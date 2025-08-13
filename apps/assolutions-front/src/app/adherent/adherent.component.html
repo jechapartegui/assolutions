@@ -224,7 +224,7 @@
                               i18n-title
                               title="Supprimer"
                               [type_button]="'SupprimerLight'"
-                              *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+                              *ngIf="store.appli() === 'ADMIN'"
                               (click)="Delete(adherent)"
                             ></btn>
                             <btn
@@ -271,7 +271,7 @@
                   <div class="column">
                     <div *ngIf="!afficher_filtre" class="buttons">
                       <btn
-                        *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+                        *ngIf="store.appli() === 'ADMIN'"
                         [type_button]="'CreerSmall'"
                         (click)="Create()"
                       ></btn>
@@ -287,11 +287,11 @@
                         [type_button]="'ExporterSmall'"
                         (click)="ExportExcel()"
                       ></btn>
-                      <btn  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+                      <btn  *ngIf="store.appli()  === 'ADMIN'"
                         [type_button]="'ImporterSmall'"
                         (click)="GotoImport()"
                       ></btn>
-                      <div class="field is-horizontal"  *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'">
+                      <div class="field is-horizontal"  *ngIf="store.appli()  === 'ADMIN'">
                         <div class="field-label is-normal is-two-quarter">
                           <label class="label" style="white-space: nowrap" i18n
                             >Saison affichée</label
@@ -844,7 +844,7 @@
               (click)="afficher_tri = true"
             ></btn>
             <btn
-              *ngIf="(GlobalService.Menu$ | async) === 'ADMIN'"
+              *ngIf="store.appli()  === 'ADMIN'"
               [type_button]="'CreerMobile'"
               (click)="Create()"
             ></btn>
@@ -907,8 +907,8 @@
          <div class="column is-full-tablet is-half-desktop">
         <app-contact-item [Contacts]="thisAdherent.contact_prevenir" [Regles]="(GlobalService.getRegles().Contact_Pref_Adherent)" [Titre]="titre_contact_prevenir"  (ContactChange)="PreSave()" (valid)="valid_contact_urgence($event)"></app-contact-item>
         </div>
-          <ng-container *ngIf="(GlobalService.Prof$ | async) === true">
-    <ng-container *ngIf="(GlobalService.Prof$ | async) === true && thisAdherent.inscriptionsSaison?.length > 0 && thisAdherent.inscriptionsSaison[0].groupes?.length > 0">
+          <ng-container *ngIf="store.isProf()">
+    <ng-container *ngIf="store.isProf() && thisAdherent.inscriptionsSaison?.length > 0 && thisAdherent.inscriptionsSaison[0].groupes?.length > 0">
   
                 <div class="column is-full-tablet is-half-desktop">
                        <div class="box is-light">

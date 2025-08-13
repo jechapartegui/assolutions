@@ -1,0 +1,19 @@
+/* src/app/components/week-calendar/week-calendar.component.scss */
+.week-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  gap: .5rem;
+}
+.hour-col { position: relative; }
+.hour { height: 64px; font-size: .85rem; color: #666; text-align: right; padding-right: .25rem; }
+.day-col { display: grid; grid-template-rows: auto 1fr; }
+.day-header { text-transform: capitalize; font-weight: 600; }
+.day-body { position: relative; border: 1px solid #eee; border-radius: .5rem; padding: .25rem; min-height: calc(64px *  (22 - 8)); }
+.slot { position: relative; height: 64px; border-top: 1px dashed #eee; }
+.event { position: absolute; left: .35rem; right: .35rem; border-radius: .5rem; padding: .35rem .5rem; box-shadow: 0 1px 3px rgba(0,0,0,.12); background: #f5f5ff; border: 1px solid #d9d9ff; }
+.ev-time { font-size: .8rem; color: #555; }
+.ev-title { font-weight: 600; }
+
+@media (max-width: 768px) {
+  .week-grid { grid-template-columns: 40px 1fr; overflow-x: auto; }
+}

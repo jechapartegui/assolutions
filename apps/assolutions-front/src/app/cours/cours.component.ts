@@ -22,6 +22,7 @@ import { Saison_VM } from '@shared/src/lib/saison.interface';
 import { donnee_date_lieu } from '../component/datelieu/datelieu.component';
 import { caracteristique } from '../component/caracteristique_seance/caracteristique_seance.component';
 import { PersonneLight_VM } from '@shared/src/lib/personne.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -32,7 +33,7 @@ import { PersonneLight_VM } from '@shared/src/lib/personne.interface';
 export class CoursComponent implements OnInit {
   // cours.component.ts
   constructor(private prof_serv:ProfesseurService, private coursservice: CoursService, private lieuserv: LieuNestService, public ridersService: AdherentService, private router: Router, private saisonserv: SaisonService,
-    private grServ: GroupeService, private excelService:ExcelService, private dbs:GlobalService) { }
+    private grServ: GroupeService, private excelService:ExcelService, public store:AppStore) { }
   listelieu: KeyValuePair[];
     titre_groupe: string = $localize`Groupes du cours`;
   listeCours: Cours_VM[] = [];
@@ -88,7 +89,7 @@ export class CoursComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les cours`;
     this.loading = true;
-    if (GlobalService.is_logged_in) {
+    if (this.store.isLoggedIn) {
       this.saisonserv
               .GetAll()
               .then((sa) => {
@@ -100,11 +101,12 @@ export class CoursComponent implements OnInit {
                   );
                   errorService.emitChange(o);
                   if (
-                    GlobalService.menu === 'ADMIN'                  ) {
+                    this.store.appli() === 'ADMIN'                  ) {
                     this.router.navigate(['/saison']);
+                    this.store.updateSelectedMenu("SAISON");
                   } else {
                     this.router.navigate(['/menu']);
-                    GlobalService.selected_menu = 'MENU';
+                    this.store.updateSelectedMenu("MENU");
                   }
                   this.loading = false;
                   return;
@@ -140,8 +142,9 @@ export class CoursComponent implements OnInit {
               let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
               errorService.emitChange(o);
               this.loading = false;
-              if (GlobalService.menu === "ADMIN") {
+              if (this.store.appli() === "ADMIN") {
                 this.router.navigate(['/lieu']);
+                    this.store.updateSelectedMenu("LIEU");
 
               }
               return;
@@ -204,7 +207,7 @@ export class CoursComponent implements OnInit {
         return;
       })
     } else {
-      this.coursservice.GetAll(this.dbs.saison_active).then((c) => {
+      this.coursservice.GetAll(this.store.saison_active().id).then((c) => {
         this.listeCours = c;
         this.loading = false;
       }).catch((err: HttpErrorResponse) => {

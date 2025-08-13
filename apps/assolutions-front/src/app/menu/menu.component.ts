@@ -18,6 +18,7 @@ import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Lieu_VM } from '@shared/src/lib/lieu.interface';
 import { Cours_VM } from '@shared/src/lib/cours.interface';
 import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -47,6 +48,7 @@ export class MenuComponent implements OnInit {
     public cdr: ChangeDetectorRef,
     public GlobalService: GlobalService,
     private prof_serv: ProfesseurService,
+    public store:AppStore,
     private router: Router,
     private ma_seance_serv:MaSeanceNestService,
     private lieuserv: LieuNestService,
@@ -61,14 +63,14 @@ export class MenuComponent implements OnInit {
     this.action = $localize`Charger le menu`;
     this.loading = true;
   
-    if (!GlobalService.is_logged_in) {
+    if (!this.store.isLoggedIn) {
       const o = errorService.CreateError(
         this.action,
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
       this.loading = false;
       errorService.emitChange(o);  
-        GlobalService.instance.updateLoggedin(false);     
+        this.store.logout();
       this.router.navigate(['/login']);
       return;
     }
@@ -83,7 +85,7 @@ export class MenuComponent implements OnInit {
       this.Riders = [];
   
       // Partie adhérent
-      if (GlobalService.projet.adherent) {
+      if (this.store.projet().adherent) {
         this.action = $localize`Récupérer les adhérents`;
         const seancesAdh = await this.GetMySeance();
         const ridersAdh = seancesAdh.map((x) => {
@@ -109,7 +111,7 @@ export class MenuComponent implements OnInit {
       }
   
       // Partie prof
-      if (GlobalService.projet.prof) {
+      if (this.store.projet().prof) {
         this.action = $localize`Récupérer les professeurs`;
         const seancesProf = await this.GetProfSeance();
         const ridersProf = seancesProf.map((x) => {
@@ -159,7 +161,7 @@ export class MenuComponent implements OnInit {
       this.listelieu = lieux;
       this.liste_lieu_filter = lieux.map((x) => x.nom);
   
-      this.listeCours = await this.coursservice.GetAll(this.GlobalService.saison_active);
+      this.listeCours = await this.coursservice.GetAll(this.store.saison_active().id);
 
       this.Riders.forEach((rider) => {
         this.riderservice.GetPhoto(rider.id).then((profil) => {
@@ -186,17 +188,16 @@ export class MenuComponent implements OnInit {
           : err;
   
       errorService.emitChange(o);
-      if(GlobalService.menu === 'ADMIN'){
+      if(this.store.appli() === 'ADMIN'){
         
       if (o.message.includes('professeur')) {
         this.router.navigate(['/adherent']);
-      } else if (o.message.includes('lieu') && GlobalService.menu === 'ADMIN') {
+      } else if (o.message.includes('lieu') && this.store.appli() === 'ADMIN') {
         this.router.navigate(['/lieu']);
+        this.store.updateSelectedMenu("LIEU");
       }
     } else {
-      GlobalService.is_logged_in = false;
-      GlobalService.projet = null;
-        GlobalService.instance.updateLoggedin(false);     
+     this.store.logout();
       this.router.navigate(['/login']);
     }
     } finally {

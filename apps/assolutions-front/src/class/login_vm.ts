@@ -9,6 +9,7 @@ export class Login_VM{
     public isLoginValid:boolean;
     public isPasswordValid:boolean;
     public isValid:boolean;
+    public creer_compte:boolean = false;
 
     
 }

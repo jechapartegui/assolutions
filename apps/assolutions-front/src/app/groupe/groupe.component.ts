@@ -7,6 +7,7 @@ import { GroupeService } from '../../services/groupe.service';
 import { Adherent_VM } from '@shared/src/lib/member.interface';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { Groupe_VM } from '@shared/src/lib/groupe.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -27,22 +28,23 @@ export class GroupeComponent implements OnInit {
   action: string = "";
   saison_id: number = null;
 
-  constructor(private groupeserv: GroupeService, private adhserv: AdherentService, private router: Router, public dbs:GlobalService) { }
+  constructor(private groupeserv: GroupeService, private adhserv: AdherentService, private router: Router, public dbs:GlobalService, public store:AppStore) { }
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les groupes`;
-    if (GlobalService.is_logged_in) {
+    if (this.store.isLoggedIn) {
 
-      if (GlobalService.menu === "APPLI") {
+      if (this.store.appli() === "APPLI") {
         this.router.navigate(['/menu']);
+        this.store.updateSelectedMenu("MENU")
         return;
       }
       // Chargez la liste des cours
 
-      this.groupeserv.GetAll(this.dbs.saison_active).then((result) => {
-        this.liste_groupe = result.map(g => new Groupe_VM(Number(g.key), g.value, this.dbs.saison_active));
-        this.adhserv.GetAdherentAdhesion(this.dbs.saison_active).then((riders) => {
+      this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {
+        this.liste_groupe = result.map(g => new Groupe_VM(Number(g.key), g.value, this.store.saison_active().id));
+        this.adhserv.GetAdherentAdhesion(this.store.saison_active().id).then((riders) => {
           this.liste_adherent = riders;
         }).catch((error) => {
           let n = errorService.CreateError("Chargement", error);
@@ -111,7 +113,7 @@ export class GroupeComponent implements OnInit {
       this.groupeserv.Add(    g   
       ).then((id) => {
         g.key = id;
-        const newGroupe = new Groupe_VM(id,this.nom_groupe, this.dbs.saison_active);
+        const newGroupe = new Groupe_VM(id,this.nom_groupe, this.store.saison_active().id);
         this.liste_groupe.push(newGroupe);
         let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);

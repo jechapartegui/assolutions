@@ -1,28 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, firstValueFrom, timeout } from 'rxjs';
+import {  catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
-import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
 import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/src/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
 import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
 import { ItemContact } from '@shared/src/lib/personne.interface';
+import { AppStore } from '../app/app.store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GlobalService {
   static instance: GlobalService;
-  private isSelectedMenu = new BehaviorSubject<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU" | "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION" | "LISTE_VALEUR">("MENU");
-  static selected_menu: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION" | "LISTE_VALEUR"= "MENU";
-
-  SelectedMenu$: Observable<"ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL" | "ADMINISTRATEUR"| "TDB"| "TRANSACTION"| "LISTE_VALEUR"> = this.isSelectedMenu.asObservable();
-
-
-  private isCompte = new BehaviorSubject<Compte_VM>(null);
-  static compte: Compte_VM = null;
-  Compte$: Observable<Compte_VM> = this.isCompte.asObservable();
+ 
 
    private regles: ReglesFormulaire = REGLES_PAR_DEFAUT;
 
@@ -36,67 +28,13 @@ export class GlobalService {
   }
 
 
-  private isMenu = new BehaviorSubject<"APPLI" | "ADMIN">(null);
-  static menu: "APPLI" | "ADMIN" = null;
-  Menu$: Observable<"APPLI" | "ADMIN"> = this.isMenu.asObservable();
-
-  private isLoggedIn = new BehaviorSubject<boolean>(false);
-  static is_logged_in: boolean = false;
-  isLoggedIn$: Observable<boolean> = this.isLoggedIn.asObservable();
-
-  private isSaisonActive = new BehaviorSubject<number>(null);
-  public saison_active: number = null;
-  isSaisonActive$: Observable<number> = this.isSaisonActive.asObservable();
-
-
-  private isProjet = new BehaviorSubject<ProjetView>(null);
-  static projet: ProjetView = null;
-  Projet$: Observable<ProjetView> = this.isProjet.asObservable();
-
-  private isProf = new BehaviorSubject<boolean>(false);
-  static prof: boolean = false;
-  Prof$: Observable<boolean> = this.isProf.asObservable();
-
-  private isOtherProject = new BehaviorSubject<ProjetView[]>(null);
-  static other_project: ProjetView[] = null;
-  OtherProject$: Observable<ProjetView[]> = this.isOtherProject.asObservable();
-
+ 
   thisLanguage: "FR" | "EN";
-  constructor(private http: HttpClient, private datepipe: DatePipe) {
+  constructor(private http: HttpClient, private datepipe: DatePipe, public store:AppStore) {
     GlobalService.instance = this;
+    
   }
-  updateTypeApplication(men: "APPLI" | "ADMIN"): void {
-    this.isMenu.next(men);
-    GlobalService.menu = men;
-  }
-  updateSelectedMenuStatus(selected: "ADHERENT" | "COURS" | "SEANCE" | "GROUPE" | "SAISON" | "LIEU" | "MENU"| "COMPTE"| "PROF"| "STOCK"| "SUIVIMAIL"| "PROJETINFO"| "PROJETMAIL"| "COMPTA"| "STOCK"| "CB" | "FACTURE"| "ENVOIMAIL"| "ADMINISTRATEUR"| "TDB"| "TRANSACTION"| "LISTE_VALEUR"): void {
-    this.isSelectedMenu.next(selected);
-    GlobalService.selected_menu = selected;
-  }
-  updateCompte(_c: Compte_VM): void {
-    this.isCompte.next(_c);
-    GlobalService.compte = _c;
-    this.isLoggedIn.next(true);
-    GlobalService.is_logged_in = true;
-  }
-  updateLoggedin(b: boolean): void {
-    this.isLoggedIn.next(b);
-    GlobalService.is_logged_in = b;
-  }
-  updateProjet(_p: ProjetView): void {
-    this.isProjet.next(_p);
-    GlobalService.projet = _p;
-  }
-  updateListeProjet(_p: ProjetView[]): void {
-    this.isOtherProject.next(_p);
-    GlobalService.other_project = _p;
-  }
-
-    updateProf(_p: boolean): void {
-    this.isProf.next(_p);
-    GlobalService.prof = _p;
-  }
-
+  
    
 
   public ListeSeanceProf: KeyValuePair[] = [
@@ -117,12 +55,13 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
     let project_id: string = "-1";
     const timeoutMilliseconds = 50000;
 
-    if (GlobalService.compte) {
-      _varid = GlobalService.compte.id.toString();
-    }
-    if (GlobalService.projet) {
-      project_id = GlobalService.projet.id.toString();
-    }
+    if (this.store.compte()) {
+  _varid = this.store.compte()!.id.toString();
+}
+
+if (this.store.projet()) {
+  project_id = this.store.projet()!.id.toString();
+}
 
     const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
     const headers = new HttpHeaders()
@@ -171,12 +110,13 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
       let _varid: string = "0";
       let project_id: string = "-1";
       const timeoutMilliseconds = 50000;
-      if (GlobalService.compte) {
-        _varid = GlobalService.compte.id.toString();
-      }
-      if (GlobalService.projet) {
-        project_id = GlobalService.projet.id.toString();
-      }
+    if (this.store.compte()) {
+  _varid = this.store.compte()!.id.toString();
+}
+
+if (this.store.projet()) {
+  project_id = this.store.projet()!.id.toString();
+}
 
       const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
       const headers = new HttpHeaders()
@@ -216,12 +156,13 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
       let _varid: string = "0";
       let project_id: string = "-1";
       const timeoutMilliseconds = 50000;
-      if (GlobalService.compte) {
-        _varid = GlobalService.compte.id.toString();
-      }
-      if (GlobalService.projet) {
-        project_id = GlobalService.projet.id.toString();
-      }
+     if (this.store.compte()) {
+  _varid = this.store.compte()!.id.toString();
+}
+
+if (this.store.projet()) {
+  project_id = this.store.projet()!.id.toString();
+}
 
       const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
       const headers = new HttpHeaders()
@@ -263,12 +204,13 @@ public async DELETE(url: string): Promise<any> {
       let _varid: string = "0";
       let project_id: string = "-1";
       const timeoutMilliseconds = 50000;
-      if (GlobalService.compte) {
-        _varid = GlobalService.compte.id.toString();
-      }
-      if (GlobalService.projet) {
-        project_id = GlobalService.projet.id.toString();
-      }
+     if (this.store.compte()) {
+  _varid = this.store.compte()!.id.toString();
+}
+
+if (this.store.projet()) {
+  project_id = this.store.projet()!.id.toString();
+}
 
       const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
       const headers = new HttpHeaders()

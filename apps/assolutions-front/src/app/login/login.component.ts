@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { CompteService } from '../../services/compte.service';
@@ -8,6 +8,7 @@ import { LoginNestService } from '../../services/login.nest.service';
 import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -20,7 +21,8 @@ export class LoginComponent implements OnInit {
   action: string;
   projets: ProjetView[];
   projets_select: ProjetView = null;
-  context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" = "MENU" // contexte d'accès à la page
+  @Output() essai = new EventEmitter<Compte_VM>();
+  @Input() context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" = "MENU" // contexte d'accès à la page
   loading: boolean;
   libelle_titre:string = $localize`Saisissez votre email pour vous connecter`;
   psw_projet: string = null;
@@ -31,7 +33,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     public GlobalService: GlobalService,
-    private proj_serv:ProjetService
+    private proj_serv:ProjetService, 
+    public store: AppStore
   ) {
     this.VM.Login = environment.defaultlogin;
     this.VM.Password = environment.defaultpassword;
@@ -75,7 +78,7 @@ export class LoginComponent implements OnInit {
                 this.VM.compte = compte;
                 this.VM.compte.token = "";
                 this.VM.compte.actif = true;
-                this.GlobalService.updateCompte(compte);
+                this.store.login(compte);
                 if(this.context == "REINIT"){
                     this.action = $localize`Réinitialiser le mot de passe`;
                     let o = errorService.OKMessage(this.action);
@@ -113,6 +116,7 @@ export class LoginComponent implements OnInit {
    validateLogin() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     this.VM.isLoginValid = emailRegex.test(this.VM.Login);
+    this.VM.creer_compte = false;
     this.valide();
    
   }
@@ -169,8 +173,12 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         // Exemple : this.LoginEtape2(email, password)
       })
       .catch((error: string) => {
+          if(this.context == "ESSAI"){
+          this.VM.creer_compte = true;
+        } else {
         let o = errorService.CreateError(this.action, error);
         errorService.emitChange(o);
+        }
       });
   }
 
@@ -178,15 +186,17 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
     this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((compte_vm:Compte_VM) => {
-          GlobalService.instance.updateCompte(compte_vm);
+          this.store.login(compte_vm);
+          if(this.context == "ESSAI"){
+            this.essai.emit(compte_vm);
+          }
           this.VM.compte = compte_vm;
-        GlobalService.instance.updateTypeApplication('APPLI');
-        GlobalService.instance.updateSelectedMenuStatus('MENU');
-        GlobalService.instance.updateLoggedin(true); 
+        this.store.updateappli('APPLI');
+        this.store.updateSelectedMenu('MENU');
       this.action = $localize`Rechercher des projets`;
         this.login_serv_nest.GetProject(compte_vm.id).then((projets : ProjetView[]) => {
           this.projets = projets;
-          GlobalService.instance.updateListeProjet(this.projets);
+          this.store.updateListeProjet(this.projets);
           if (this.projets.length == 1) {
             this.projets_select = this.projets[0];
             this.ConnectToProject();
@@ -194,34 +204,32 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
             this.projets_select = this.projets[0];
           } else {
             let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
-        GlobalService.instance.updateLoggedin(false); 
+            this.store.logout();
             errorService.emitChange(o);
           }
         }).catch((error: Error) => {
           let o = errorService.CreateError(this.action, error.message);
-        GlobalService.instance.updateLoggedin(false); 
+            this.store.logout();
           errorService.emitChange(o);
         });
       }).catch((error: Error) => {
+        if(this.context == "ESSAI"){
+          this.VM.creer_compte = true;
+        } else {
         let o = errorService.CreateError(this.action, error.message);
-        GlobalService.instance.updateLoggedin(false); 
+            this.store.logout();
         errorService.emitChange(o);
+
+        }
       });      
   }
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    const ok =  this.login_serv_nest.Logout();
-        if (ok) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-          this.router.navigate(['/login']);
-          this.projets =  null;
-          this.projets_select = null;
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
+    this.store.logout();
+    let o = errorService.OKMessage(this.action);
+    errorService.emitChange(o);
+    this.router.navigate(['/login']);
     
   }
 
@@ -259,11 +267,10 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
 
     if (this.projets_select) {
        
-        GlobalService.instance.updateProjet(this.projets_select);
-        GlobalService.instance.updateProf(this.projets_select.prof);
+        this.store.updateProjet(this.projets_select);
          try {
           const adh = await this.proj_serv.GetActiveSaison();
-          this.GlobalService.saison_active = adh.id;
+          this.store.updateSaisonActive(adh);
           
           if (!adh) {
             throw new Error($localize`Pas de saison active détectée sur le projet`);
@@ -274,13 +281,11 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
           this.loading = false;
           let o = errorService.CreateError(this.action, err.message || 'Erreur inconnue');
           errorService.emitChange(o);
-          GlobalService.instance.updateProjet(null);
-          GlobalService.instance.updateProf(false);
-          GlobalService.instance.updateLoggedin(false);
+          this.store.logout();
           this.router.navigate(['/login']);
           return;
         }
-        GlobalService.instance.updateSelectedMenuStatus('MENU');
+        this.store.updateSelectedMenu('MENU');
         this.router.navigate(['/menu']);
       this.loading = false;
     } else {

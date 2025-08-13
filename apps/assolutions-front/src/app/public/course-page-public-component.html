@@ -1,0 +1,18 @@
+<section class="section">
+  <div class="container">
+    <h1 class="title">Cours (modèle figé)</h1>
+
+    <div class="buttons has-addons is-right">
+      <button class="button" [class.is-link]="view()==='calendar'" (click)="view.set('calendar')">🗓 Calendrier</button>
+      <button class="button" [class.is-link]="view()==='list'" (click)="view.set('list')">☰ Liste</button>
+    </div>
+
+    <app-week-calendar *ngIf="view()==='calendar'"
+      [referenceDate]="referenceDate()"
+      [events]="events()"
+      [showNav]="false"
+    ></app-week-calendar>
+
+    <app-course-list-public *ngIf="view()==='list'" [items]="cours"></app-course-list-public>
+  </div>
+</section>

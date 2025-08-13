@@ -3,8 +3,8 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
-import { GlobalService } from '../../services/global.services';
 import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -32,7 +32,7 @@ export class CompteComponent implements OnInit {
   selected_filter:string;
 
     // Récupère l'URL actuelle sans les chemins et paramètres supplémentaires
-  constructor(private cpteserv: CompteService, private router: Router) {
+  constructor(private cpteserv: CompteService, private router: Router, public store :AppStore) {
     
     this.baseUrl = `${window.location.protocol}//${window.location.hostname}`;
    }
@@ -40,9 +40,9 @@ export class CompteComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les comptes`;
 
-    if (GlobalService.is_logged_in) {
+    if (this.store.isLoggedIn) {
 
-      if ((GlobalService.menu === "APPLI")) {
+      if ((this.store.appli() === "APPLI")) {
         this.router.navigate(['/menu']);
         return;
       }

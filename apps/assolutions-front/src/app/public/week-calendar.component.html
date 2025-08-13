@@ -1,0 +1,34 @@
+<!-- src/app/components/week-calendar/week-calendar.component.html -->
+<div class="controls is-flex is-justify-content-space-between is-align-items-center mb-2" *ngIf="showNav">
+  <div>
+    <button class="button" (click)="prevWeek.emit()">⟵ Semaine</button>
+    <button class="button ml-1" (click)="todayWeek.emit()">Aujourd'hui</button>
+    <button class="button ml-1" (click)="nextWeek.emit()">Semaine ⟶</button>
+  </div>
+  <div class="is-size-6 has-text-weight-semibold">
+    {{ days()[0].date | date:'dd/MM' }} – {{ days()[6].date | date:'dd/MM/yyyy' }}
+  </div>
+</div>
+
+<div class="week-grid">
+  <div class="hour-col">
+    <div class="hour" *ngFor="let h of hours()">{{ h }}h</div>
+  </div>
+
+  <div class="day-col" *ngFor="let d of days()">
+    <div class="day-header">{{ d.label }}</div>
+    <div class="day-body">
+      <div class="slot" *ngFor="let h of hours()"></div>
+      <ng-container *ngIf="grouped().get(d.iso) as evs">
+        <div class="event" *ngFor="let ev of evs"
+             [style.top.%]="topPct(ev.start)"
+             [style.height.%]="heightPct(ev.start, ev.end)"
+            
+        >
+          <div class="ev-time">{{ ev.start }}–{{ ev.end }}</div>
+          <div class="ev-title">{{ ev.title }}</div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

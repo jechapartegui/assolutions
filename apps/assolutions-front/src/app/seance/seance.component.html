@@ -1388,7 +1388,7 @@
               </div>
 
               <!-- Bloc Adresse -->
-              <div *ngIf="(GlobalService.isLoggedIn$ | async) === true && (GlobalService.Projet$ | async) !== null && (GlobalService.Prof$ | async) === true" class="column is-full-tablet is-half-desktop">
+              <div  *ngIf="store.isLoggedIn && store.hasProjet && store.isProf" class="column is-full-tablet is-half-desktop">
                 <app-groupe-detail
                   (groupesUpdated)="onGroupesUpdated($event)"
                   [id_source]="editSeance.seance_id"
@@ -1419,7 +1419,7 @@
                     </ng-container>
                     <ng-template #prof>                      
                      <btn
-                     *ngIf="(GlobalService.isLoggedIn$ | async) === true && (GlobalService.Projet$ | async) !== null && (GlobalService.Prof$ | async) === true"
+                     *ngIf="store.isLoggedIn && store.hasProjet && store.isProf"
                     [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
                     ></btn>

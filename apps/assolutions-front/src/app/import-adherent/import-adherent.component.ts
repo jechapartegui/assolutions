@@ -6,12 +6,12 @@ import { AdherentService } from '../../services/adherent.service';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
-import { GlobalService } from '../../services/global.services';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 import { Adherent_VM, AdherentExport } from '@shared/src/lib/member.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -26,7 +26,8 @@ export class ImportAdherentComponent implements OnInit {
     public saisonserv: SaisonService,
     public compte_serv: CompteService,
     public inscr_saison:InscriptionSaisonService,
-    public router: Router
+    public router: Router,
+    public store:AppStore
   ) {
     this.objectKeys(this.headers).forEach((key) => {
       this.columnCounts[key] = 1;
@@ -72,8 +73,9 @@ export class ImportAdherentComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    if (GlobalService.menu !== 'ADMIN') {
+    if (this.store.appli() !== 'ADMIN') {
       this.router.navigate(['/menu']);
+      this.store.updateSelectedMenu("MENU");
     }
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les saisons`;
@@ -86,11 +88,11 @@ export class ImportAdherentComponent implements OnInit {
             $localize`Il faut au moins une saison pour créer un cours`
           );
           errorService.emitChange(o);
-          if (GlobalService.menu === 'APPLI') {
+          if (this.store.appli() === 'APPLI') {
             this.router.navigate(['/saison']);
           } else {
             this.router.navigate(['/menu']);
-            GlobalService.selected_menu = 'MENU';
+      this.store.updateSelectedMenu("MENU");
           }
           return;
         }
@@ -106,7 +108,7 @@ export class ImportAdherentComponent implements OnInit {
         );
         errorService.emitChange(o);
         this.router.navigate(['/menu']);
-        GlobalService.selected_menu = 'MENU';
+      this.store.updateSelectedMenu("MENU");
         return;
       });
   }

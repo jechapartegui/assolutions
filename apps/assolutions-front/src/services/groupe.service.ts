@@ -3,13 +3,14 @@ import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { KeyValuePair } from '@shared/src/lib/autres.interface';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppStore } from '../app/app.store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GroupeService {
   url = environment.maseance;
-  constructor(public global: GlobalService) {
+  constructor(public global: GlobalService, public store:AppStore) {
   }
 
   public Get(id:number): Promise<KeyValuePair> {
@@ -30,7 +31,7 @@ export class GroupeService {
   }
   public GetAll(saison_id:number =0): Promise<KeyValuePair[]> {
     if(saison_id ===0){
-    saison_id = this.global.saison_active
+    saison_id = this.store.saison_active().id
   }
     this.url = 'api/groupe/getall/'  + saison_id;
     
@@ -53,7 +54,7 @@ export class GroupeService {
   public Add(gr:KeyValuePair, saison_id:number =0): Promise<number> {
   this.url = 'api/groupe/add';
   if(saison_id ===0){
-    saison_id = this.global.saison_active
+    saison_id = this.store.saison_active().id
   }
  const l = {
     saison_id: saison_id,
@@ -71,7 +72,7 @@ export class GroupeService {
 public Update(gr:KeyValuePair, saison_id:number =0): Promise<boolean> {
   this.url = 'api/groupe/update';
 if(saison_id ===0){
-    saison_id = this.global.saison_active
+    saison_id = this.store.saison_active().id
   }
  const l = {
     saison_id: saison_id,

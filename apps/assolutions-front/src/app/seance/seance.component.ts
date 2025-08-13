@@ -20,6 +20,7 @@ import { Professeur_VM } from '@shared/src/lib/prof.interface';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
 import type { donnee_date_lieu } from '../component/datelieu/datelieu.component';
 import type { caracteristique } from '../component/caracteristique_seance/caracteristique_seance.component';
+import { AppStore } from '../app.store';
 
 
 @Component({
@@ -99,7 +100,8 @@ export class SeanceComponent implements OnInit {
     private router: Router,
     private saisonserv: SaisonService,
     private grServ: GroupeService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        public store:AppStore
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -117,12 +119,7 @@ export class SeanceComponent implements OnInit {
   }
 });
     this.action = $localize`Charger les séances`;
-    if (GlobalService.is_logged_in) {
-      if (GlobalService.menu === 'ADMIN') {
-        this.router.navigate(['/menu']);
-        this.loading = false;
-        return;
-      }
+    if (this.store.isLoggedIn) {    
       // Chargez la liste des cours
       this.grServ
         .GetAll()
@@ -166,8 +163,9 @@ export class SeanceComponent implements OnInit {
                     );
                     errorService.emitChange(o);
                     this.loading = false;
-                    if (GlobalService.menu === 'ADMIN') {
+                    if (this.store.appli() === 'ADMIN') {
                       this.router.navigate(['/lieu']);
+            this.store.updateSelectedMenu("LIEU");
                     }
                     return;
                   }
@@ -183,8 +181,9 @@ export class SeanceComponent implements OnInit {
                         );
                         errorService.emitChange(o);
                         this.loading = false;
-                        if (GlobalService.menu === 'ADMIN') {
+                        if (this.store.appli() === 'ADMIN') {
                           this.router.navigate(['/saison']);
+                          this.store.updateSelectedMenu("SAISON");
                         }
                         return;
                       }
@@ -267,7 +266,7 @@ export class SeanceComponent implements OnInit {
   GetCours(cours) {
     return this.listeCours.find((x) => x.id == cours).nom;
   }
-  GetType(type) {
+ GetType(type) {
     switch (type) {
       case 'ENTRAINEMENT':
         return $localize`Entraînement`;
@@ -827,8 +826,9 @@ export class SeanceComponent implements OnInit {
   }
 
   RetourListe(): void {
-    if(!GlobalService.prof){
+    if(this.store.isProf){
         this.router.navigate(['/menu']);
+            this.store.updateSelectedMenu("MENU");
     }
    if (this.checkModification()) {
       let confirm = window.confirm(

@@ -5,6 +5,7 @@ import type { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 import { LieuNestService } from "apps/assolutions-front/src/services/lieu.nest.service";
 import { SaisonService } from "apps/assolutions-front/src/services/saison.service";
+import { AppStore } from "../../app.store";
 
 @Component({
   standalone: false,
@@ -36,7 +37,7 @@ date_min: Date = null;
 date_max: Date = null;
 public lieux : Lieu_VM[] = [];
 
-constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, private dbs:GlobalService) { }
+constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, public store:AppStore) { }
 
     async ngOnInit(): Promise<void> {
       
@@ -56,7 +57,7 @@ this.save = JSON.stringify(ddl);
             this.lieux = lieux;
         });
         if(this.Regles.date_dans_saison){
-            await this.saison_serv.Get(this.dbs.saison_active).then((saison) => {
+            await this.saison_serv.Get(this.store.saison_active().id).then((saison) => {
                 this.date_min = saison.date_debut;
                 this.date_max = saison.date_fin;
             })

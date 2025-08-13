@@ -11,6 +11,7 @@ import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface'
 import { GlobalService } from '../../services/global.services';
 import { Adherent_VM } from '@shared/src/lib/member.interface';
 import {  Seance_VM } from '@shared/src/lib/seance.interface';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -54,7 +55,7 @@ export class EnvoiMailComponent implements OnInit {
     public seance_serv: SeancesService,
     public mail_serv: MailService,
     public proj_serv: ProjetService,
-    public GlobalService:GlobalService
+    public GlobalService:GlobalService, public store:AppStore
   ) {}
 
   ngOnInit(): void {}
@@ -91,7 +92,7 @@ export class EnvoiMailComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'audience`;    
     this.adh_serv
-      .GetAdherentAdhesion(this.GlobalService.saison_active)
+      .GetAdherentAdhesion(this.store.saison_active().id)
       .then((list) => {
         this.liste_adherent = list;
         this.gr_serv

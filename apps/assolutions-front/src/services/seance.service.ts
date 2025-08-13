@@ -3,6 +3,7 @@ import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import {  InscriptionSeance } from '../class/inscription';
 import { Seance_VM } from '@shared/src/lib/seance.interface';
+import { AppStore } from '../app/app.store';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class SeancesService {
     return SeancesService.Seances;
   }
 
-  constructor(public global: GlobalService) {
+  constructor(public global: GlobalService, public store :AppStore) {
     SeancesService.instance = this;
   }
 
@@ -91,9 +92,21 @@ export class SeancesService {
       });
   }
 
+  public GetSeancePublic(projet:number): Promise<Seance_VM[]> {
+     this.url =  "api/seance/getall/" + projet;
+    return this.global.GET(this.url)
+      .then((response: Seance_VM[]) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+
 
   public GetSeances(): Promise<Seance_VM[]> {
-     this.url =  "api/seance/getall/" + this.global.saison_active;
+     this.url =  "api/seance/getall/" + this.store.saison_active().id;
     return this.global.GET(this.url)
       .then((response: Seance_VM[]) => {
         return response;
@@ -105,7 +118,7 @@ export class SeancesService {
   }
 
   public GetPlageDate(date_debut:string, date_fin:string): Promise<Seance_VM[]> {
-    this.url =  "api/seance/getbydate/" + this.global.saison_active + "/" + date_debut + "/" + date_fin;
+    this.url =  "api/seance/getbydate/" + this.store.saison_active().id + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
