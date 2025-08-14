@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Adhesion,
@@ -22,7 +22,7 @@ import { Saison_VM } from '@shared/src/lib/saison.interface';
 import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
 import { Adresse } from '@shared/src/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
-import { ItemContact } from '@shared/src/lib/personne.interface';
+import { ItemContact, Personne_VM } from '@shared/src/lib/personne.interface';
 import { AppStore } from '../app.store';
 
 @Component({
@@ -34,8 +34,10 @@ import { AppStore } from '../app.store';
 export class AdherentComponent implements OnInit {
 
   // === Inputs / ViewChild ===
-  @Input() public context: 'ECRAN_MENU' | 'ECRAN_LISTE' = 'ECRAN_LISTE';
+  @Input() public context: 'ECRAN_MENU' | 'ECRAN_LISTE' | 'ESSAI' = 'ECRAN_LISTE';
   @Input() public id: number;
+  @Input() public Personne:Personne_VM | null = null;
+  @Output() essai = new EventEmitter<Personne_VM | null>;
   @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
 
   // === États généraux ===
@@ -113,7 +115,22 @@ export class AdherentComponent implements OnInit {
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
+    if(this.context == 'ESSAI'){
+      if(this.Personne) {
+this.thisAdherent = Object.assign(new Adherent_VM(), this.Personne);
+this.thisAdherent.inscrit = false;
+this.thisAdherent.inscriptionsSaison = [];
+this.thisAdherent.inscriptionsSeance = [];
+
+      }else {
+        
+      this.thisAdherent = new Adherent_VM();
+      this.id = 0;
+      }
+      return;
+    }
     this.loading = true;
+
     if (this.store.isLoggedIn) {
       this.saisonserv
         .GetAll()
@@ -581,6 +598,10 @@ PreSave() {
   Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder l'adhérent`;
+    if(this.context == "ESSAI"){
+      this.essai.emit(this.thisAdherent);
+      return;
+    }
     if (this.thisAdherent.id == 0) {
       this.ridersService
         .Add(this.thisAdherent)
@@ -628,6 +649,9 @@ PreSave() {
     if (this.context == 'ECRAN_LISTE') {
       this.thisAdherent = null;
       this.UpdateListeAdherents();
+    } else  if (this.context == 'ESSAI') {
+      this.thisAdherent = null;
+      this.essai.emit(null);
     } else {
       this.router.navigate(['/menu']);
       this.store.updateSelectedMenu("MENU");

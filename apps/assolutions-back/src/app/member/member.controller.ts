@@ -23,6 +23,12 @@ async GetAllSeance(@Param('saison_id') saison_id: number) {
 async GetAllAdherent(@Param('saison_id') saison_id: number) {
     return this.mem_serv.GetAll(saison_id);
   }
+  
+  @UseGuards(PasswordGuard)
+  @Get('get_all_ever_account/:compte_id')
+async GetAllEver(@Param('compte_id') compte_id: number) {
+    return this.mem_serv.GetAllEver(compte_id);
+  }
   @UseGuards(PasswordGuard)
   @Get('my_seance')
   async MySeance(@Headers('projectid') projectId: number,@Headers('userid') userid: number) {

@@ -35,6 +35,13 @@ export class MemberService {
     }
     return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], []));
   }
+  async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
+    const saison = await this.personserivce.getAllCompte(compte_id);
+    if (!saison) {
+      throw new UnauthorizedException('NO_SEASON_FOUND');
+    }
+    return saison.map(x => toPersonne_VM(x));
+  }
   async GetMyInfo(id: number, project_id: number) {
     const saison_active = (await this.saison_serv.getActive(project_id)).id;
     const pAdh = await this.personserivce.get(id);

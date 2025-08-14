@@ -7,6 +7,7 @@ import { Compte_VM } from '@shared/src/lib/compte.interface';
 import { Seance_VM } from '@shared/src/lib/seance.interface';
 import { ItemList, KeyValuePair } from '@shared/src/lib/autres.interface';
 import { AppStore } from '../app/app.store';
+import { Personne_VM } from '@shared/src/lib/personne.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +35,18 @@ export class AdherentService {
         this.url = 'api/document/get_photo_user/' + id;
    return this.global.GET(this.url, 'text')
       .then((response: string) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  GetAllPersonne(compte_id:number): Promise<Personne_VM[]>{
+      this.url = 'api/member/get_all_ever_account/' + compte_id;
+    return this.global.GET(this.url)
+      .then((response: Personne_VM[]) => {
 
         return response;
       })

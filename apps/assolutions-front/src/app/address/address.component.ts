@@ -13,7 +13,7 @@ import { Adresse } from '@shared/src/lib/adresse.interface';
 export class AddressComponent  implements OnInit  {
  @Input() thisAdresse:Adresse;
 @Input() Regles:ReglesAdresse;
-@Input() newAdresse:boolean = false;
+@Input() id:number;
 @Input() title:string = $localize`Adresse`;
  save:string=null;
  estValid:boolean;
@@ -59,6 +59,7 @@ public CheckAdresse(): void {
 
   // valide si tout est bon
   // 🔥 émettre vers le parent
+  console.log(this);
   this.valid.emit(this.estValid);
 }
 }

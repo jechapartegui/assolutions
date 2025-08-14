@@ -897,7 +897,7 @@
         <!-- Bloc Adresse -->
         <div class="column is-full-tablet is-half-desktop">
 
-                          <app-address [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
+                          <app-address [id]="thisAdherent.id" [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
 (valid)="valid_adresse($event)"></app-address>
         </div>
         

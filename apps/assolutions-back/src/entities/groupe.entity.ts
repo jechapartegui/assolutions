@@ -13,6 +13,14 @@ export class Group {
   @Column({ length: 100, name: 'nom' })
   name: string;
 
+  /** Nom du groupe */
+  @Column({ length: 250, name: 'whatsapp' , nullable: true })
+  whatsapp: string;
+
+  /** Nom du groupe */
+  @Column({  name: 'visible' , nullable: true })
+  visible: boolean;
+
   /** Référence vers la saison */
   @Column({ name: 'saison_id' })
   seasonId: number;

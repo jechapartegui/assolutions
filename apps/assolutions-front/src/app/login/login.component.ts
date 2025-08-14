@@ -174,12 +174,44 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       })
       .catch((error: string) => {
           if(this.context == "ESSAI"){
-          this.VM.creer_compte = true;
+          this.PreCreerCompte();
         } else {
         let o = errorService.CreateError(this.action, error);
         errorService.emitChange(o);
         }
       });
+  }
+
+  PreCreerCompte(){
+    this.action = $localize`Se connecter`;
+    const errorService = ErrorService.instance;
+      this.VM.creer_compte = true;
+      this.VM.mdp_requis = true;
+      let o = errorService.Create(this.action, $localize`Aucun compte trouvé, vous pouvez procéder à la création d'un compte`, "Warning");
+      errorService.emitChange(o);
+
+  }
+  CreerCompte(mdp:boolean){
+    let message = $localize`Voulez-vous confirmer la création d'un compte sans mot de passe ?`
+    if(mdp){
+message = $localize`Voulez-vous confirmer la création d'un compte avec mot de passe ?`
+    }
+    let co = window.confirm(message);
+    if(co){
+      let newCompte = new Compte_VM();
+      newCompte.actif = false;
+      newCompte.mail_actif = false;
+      newCompte.email = this.VM.Login;
+      if(mdp){
+      newCompte.password = this.VM.Password;
+      } else {
+        newCompte.password = null;
+      }
+      newCompte.echec_connexion = 0;
+      this.essai.emit(newCompte);
+    } else {
+      this.VM.creer_compte = false;
+    }
   }
 
   async Login() {
@@ -214,7 +246,7 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         });
       }).catch((error: Error) => {
         if(this.context == "ESSAI"){
-          this.VM.creer_compte = true;
+          this.PreCreerCompte();
         } else {
         let o = errorService.CreateError(this.action, error.message);
             this.store.logout();

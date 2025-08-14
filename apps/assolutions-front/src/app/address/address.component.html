@@ -1,7 +1,7 @@
     <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold">{{title}}</h3>
-<ng-container *ngIf="!newAdresse">
+<ng-container *ngIf="id>0">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
@@ -14,7 +14,7 @@
       </ng-container>
     </div>
 
-    <div *ngIf="edit; else readAdresse">
+    <div *ngIf="edit || id ==0; else readAdresse">
       <p *ngIf="rLibelle && rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
               <div class="field">
                 <label class="label" i18n>Voie</label>

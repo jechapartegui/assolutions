@@ -50,10 +50,11 @@ public validerTout(): void {
   this.rNom = GlobalService.instance.validerChaine(this.thisAdherent.nom, this.Regles.Nom_min, this.Regles.Nom_max, this.Regles.Nom_obligatoire, $localize`Nom`);
   this.rPrenom= GlobalService.instance.validerChaine(this.thisAdherent.prenom, this.Regles.Prenom_min, this.Regles.Prenom_max, this.Regles.Prenom_obligatoire, $localize`Prénom`);
   this.rDateNaissance = GlobalService.instance.validerDate(this.thisAdherent.date_naissance, this.Regles.DateNaissance_min, this.Regles.DateNaissance_max, this.Regles.DateNaissance_obligatoire, $localize`Date de naissance`);
-  this.rLibelle = GlobalService.instance.validerChaine(this.thisAdherent.surnom, this.Regles.Surnom_min, this.Regles.Surnom_max, this.Regles.Surnom_obligatoire, $localize`Libellé`);
-  this.rSurnom = GlobalService.instance.validerChaine(this.thisAdherent.libelle, this.Regles.Libelle_min, this.Regles.Libelle_max, false, $localize`Surnom`);
+  this.rSurnom = GlobalService.instance.validerChaine(this.thisAdherent.surnom, this.Regles.Surnom_min, this.Regles.Surnom_max, this.Regles.Surnom_obligatoire, $localize`Surnom`);
+  this.rLibelle = GlobalService.instance.validerChaine(this.thisAdherent.libelle, this.Regles.Libelle_min, this.Regles.Libelle_max, false, $localize`Libellé (prénom + nom + surnom)`);
   // valide si tout est bon
   this.estValid = this.rNom.key && this.rPrenom.key && this.rLibelle.key && this.rDateNaissance.key && this.rSurnom.key;
+  console.log(this.estValid);
   // 🔥 émettre vers le parent
   this.valid.emit(this.estValid);
 }
