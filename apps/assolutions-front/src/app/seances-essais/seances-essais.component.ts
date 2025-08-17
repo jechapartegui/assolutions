@@ -20,7 +20,7 @@ export class SeancesEssaisComponent implements OnInit {
   public action:string;
   public Account:Compte_VM;
   public ListePersonne:Personne_VM[] = [];
-  public Personne:Personne_VM = null;
+  public personne:Personne_VM = null;
   public edit_personne:boolean = false;
   constructor(public GlobalServices:GlobalService, public route: ActivatedRoute, public sean_serv: SeancesService, public rider_serv: AdherentService, public compteserv:CompteService) {
 
@@ -44,11 +44,13 @@ export class SeancesEssaisComponent implements OnInit {
 
     } else {
      this.ListePersonne = await this.rider_serv.GetAllPersonne(cvm.id);
-      console.log(this.ListePersonne);
     }
     }
 
   }
+ test(sel: Personne_VM | null) {
+  console.log('Sélection :', sel);
+}
   Valider(){
     let c = window.confirm($localize`Confirmez-vous l'inscription à la séance d'essai ` );
     if(c){
@@ -56,12 +58,11 @@ export class SeancesEssaisComponent implements OnInit {
     }
   }
   addPersonne(personne:Personne_VM){
-    console.log(personne);
-    if(this.Personne){
-      this.Personne = personne;
+    if(this.personne){
+      this.personne = personne;
     } else {
     this.ListePersonne.push(personne);
-    this.Personne = personne;
+    this.personne = personne;
     }
     this.edit_personne = false;
   }

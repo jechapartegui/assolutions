@@ -75,6 +75,8 @@ export class ErrorService {
   interpret_error(text: string): string {
     console.log(text);
     switch (text) {
+       case "NO_SESSION_FOUND":
+        return $localize`Pas de séances trouvées`;
       case "NO_ACCOUNT_FOUND":
       case "ACCOUNT_NOT_FOUND":
       case "Unauthorized ACCOUNT_NOT_FOUND":

@@ -24,6 +24,8 @@ import { Adresse } from '@shared/src/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
 import { ItemContact, Personne_VM } from '@shared/src/lib/personne.interface';
 import { AppStore } from '../app.store';
+import { Compte_VM } from '@shared/src';
+import { CompteService } from '../../services/compte.service';
 
 @Component({
   standalone: false,
@@ -45,12 +47,16 @@ export class AdherentComponent implements OnInit {
   public action = '';
   public showScrollToTop = false;
   public dropdownActive = false;
+  public select_account:boolean = false;
 
   // === Données de l’adhérent ===
   public thisAdherent: Adherent_VM = null;
+  public thisAccount: Compte_VM = null;
   public photoAdherent: string | null = null;
   public histo_adherent: string;
   public liste_adherents_VM: Adherent_VM[] = [];
+  public ListePersonne:Personne_VM[] = [];
+  public personne:Personne_VM = null;
 
   // === Groupes et saisons ===
   public liste_groupe: KeyValuePair[] = [];
@@ -108,6 +114,7 @@ export class AdherentComponent implements OnInit {
     private router: Router,
     private saisonserv: SaisonService,
     private ridersService: AdherentService,
+    private compteserv:CompteService,
     private grServ: GroupeService,
     private route: ActivatedRoute,
     public store:AppStore
@@ -305,59 +312,68 @@ valid_contact_urgence(isValid: boolean): void {
 }
 
 
-  Create() {
-    this.thisAdherent = new Adherent_VM();
-    this.id = 0;
+  async Create(compte_VM:Compte_VM) {
+    this.thisAccount  = compte_VM;
+    // nouveau compte -- ancien compte
+     if(this.thisAccount.id > 0){
+    // nouvelle personne -- selection possible
+      this.ListePersonne = await this.ridersService.GetAllPersonne(this.thisAccount.id);
+      if(this.ListePersonne.length == 0){
+        this.thisAdherent = new Adherent_VM();
+        this.id = 0;
+        this.thisAdherent.compte = this.thisAccount.id;
+        this.select_account = false;
+      }
+    } else {
+        this.id = 0;
+        this.thisAccount = compte_VM;
+        this.select_account = false;
+    }   
   }
+
+  CreatePersonneCompte(){
+     this.thisAdherent = new Adherent_VM();
+        this.id = 0;
+        this.thisAdherent.compte = this.thisAccount.id;
+        this.select_account = false;
+  }
+  async SelectPersonne(){
+  this.thisAdherent = await this.ridersService.Get(this.personne.id);
+  this.select_account = false;
+}
+
+Inscrire(){
+  this.action = $localize`Inscrire la personne`;
+    const errorService = ErrorService.instance;
+    const iss = new InscriptionSaison_VM();
+    iss.rider_id = this.thisAdherent.id;
+    iss.active = true;
+    iss.saison_id = this.store.saison_active().id;
+    this.inscription_saison_serv.Add(iss).then((id) =>{
+      if(id){
+ this.ridersService.Get(this.thisAdherent.id).then((adh) =>{
+          this.thisAdherent = adh;
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+        })
+      } else {
+       
+          let o = errorService.UnknownError(this.action);
+          errorService.emitChange(o);
+      }
+    })   .catch((err: HttpErrorResponse) => {
+            let o = errorService.CreateError(this.action, err.message);
+            errorService.emitChange(o);
+            return;
+          });
+
+}
+
+  
 
   Read(adh: Adherent_VM) {
     this.id = adh.id;
     this.ChargerAdherent();
-  }
-  Register(adh: Adherent_VM, saison_id: number, paiement: boolean) {
-    this.afficher_inscription = true;
-    this.adherent_inscription = adh;
-    this.saison_inscription = this.liste_saison.find((x) => x.id == saison_id);
-    if (paiement) {
-      this.type_inscription = true;
-    } else {
-      this.type_inscription = false;
-    }
-    const errorService = ErrorService.instance;
-    this.action = $localize`Effectuer une inscription`;
-
-    if (paiement) {
-      let confirm = window.confirm(
-        $localize`Voulez-vous basculer sur l'écran d'inscription avec paiement ?`
-      );
-      if (confirm) {
-        this.router.navigate(['/inscription']);
-      }
-    } else {
-      let confirm = window.confirm(
-        $localize`Voulez-vous faire l'inscription sans enregistrer le paiement ?`
-      );
-      if (confirm) {
-        this.inscription_saison_serv
-          .Add(saison_id, adh.id)
-          .then((id) => {
-            let i = new InscriptionSaison_VM();
-            i.id = id;
-            i.rider_id = adh.id;
-            i.saison_id = saison_id;
-            if (!adh.inscriptionsSaison) {
-              adh.inscriptionsSaison = [];
-            }
-            adh.inscriptionsSaison.push(i);
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
-      }
-    }
   }
   CreerPaiement(
     adh: Adhesion,
@@ -432,39 +448,6 @@ valid_contact_urgence(isValid: boolean): void {
     }
   }
 
-  RemoveRegister(saison_id: number) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Supprimer une inscription`;
-    let u = this.thisAdherent.inscriptionsSaison.find((x) => x.saison_id == saison_id);
-    if (u) {
-      let confirm = window.confirm(
-        $localize`Voulez-vous supprimer l'inscription ?`
-      );
-      if (confirm) {
-        this.inscription_saison_serv
-          .Delete(u.id)
-          .then((retour) => {
-            if (retour) {
-              let o = errorService.OKMessage(this.action);
-              errorService.emitChange(o);
-              this.thisAdherent.inscriptionsSaison = this.thisAdherent.inscriptionsSaison.filter(
-                (x) => x.saison_id !== saison_id
-              );
-            } else {
-              let o = errorService.UnknownError(this.action);
-              errorService.emitChange(o);
-            }
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
-      }
-    } else {
-      let o = errorService.UnknownError(this.action);
-      errorService.emitChange(o);
-    }
-  }
 
   getSaison(id: number): string {
     return this.liste_saison.filter((x) => x.id == id)[0].nom;
@@ -581,32 +564,50 @@ isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
 
 onPhotoSelectedFromChild(base64Photo: string): void {
   this.photoAdherent = base64Photo; // utile si tu veux que ça déclenche un Save() aussi
+  if(this.id > 0 ){
     this.ridersService.UpdatePhoto(this.thisAdherent.id, base64Photo).then((test) =>{
       console.log('Photo mise à jour avec succès', test);
     }).catch((error) => {
       console.error('Erreur lors de la mise à jour de la photo', error);
 
     }); // ✅ Appel de ta méthode avec un objet
-}
-
-PreSave() {
-  if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide) {
-    this.Save();
   }
 }
 
-  Save() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Sauvegarder l'adhérent`;
+PreSave() {
+  console.log(this.adherentValide, this.AdresseValide, this.ContactValide,this.ContactUrgenceValide );
+  if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide) {
     if(this.context == "ESSAI"){
       this.essai.emit(this.thisAdherent);
       return;
     }
+    this.Save();
+  }
+}
+
+  async Save() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Sauvegarder l'adhérent`;
     if (this.thisAdherent.id == 0) {
+      if(!this.thisAccount){
+          let o = errorService.CreateError(this.action, $localize`Aucun compte sélectionné`);
+          errorService.emitChange(o);
+          return;
+      } else {
+        if(this.thisAccount.id == 0) {
+          await   this.compteserv.Add(this.thisAccount).then((id) =>{
+            this.thisAccount.id = id;
+          this.thisAdherent.compte = id; }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
+          }
+        }
       this.ridersService
         .Add(this.thisAdherent)
         .then((id) => {
           this.thisAdherent.id = id;
+          this.ridersService.UpdatePhoto(this.thisAdherent.id, this.photoAdherent)
           this.id = id;
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);

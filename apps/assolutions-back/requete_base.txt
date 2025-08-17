@@ -29,3 +29,10 @@ ALTER TABLE `professeur_saison`
 'ajouter mimetype string
 ALTER TABLE `seance` ADD `nb_essai_possible` INT(10) NULL ;
   ALTER TABLE `seance` DROP `notes`;
+
+
+SELECT setval(
+  pg_get_serial_sequence('groupes', 'id'), -- table, colonne id
+  COALESCE((SELECT MAX(id) FROM groupes), 0) + 1,
+  false
+);

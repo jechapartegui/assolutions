@@ -57,6 +57,10 @@
                     (click)="PreLogin()  && !VM.creer_compte" i18n>
                     Se connecter
                   </button>
+                   <button *ngIf="(store.isLoggedIn()) && !VM.creer_compte && context == 'CREATE'" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                    (click)="PreLogin()  && !VM.creer_compte" i18n>
+                    Selectionner ce compte
+                  </button>
                    <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
                     (click)="CreerCompte(true)" i18n>
                     Créer un compte avec mot de passe

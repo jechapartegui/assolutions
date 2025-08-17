@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit {
   projets: ProjetView[];
   projets_select: ProjetView = null;
   @Output() essai = new EventEmitter<Compte_VM>();
-  @Input() context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" = "MENU" // contexte d'accès à la page
+  @Input() context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" | "CREATE" = "MENU" // contexte d'accès à la page
   loading: boolean;
   libelle_titre:string = $localize`Saisissez votre email pour vous connecter`;
   psw_projet: string = null;
@@ -104,6 +104,9 @@ export class LoginComponent implements OnInit {
         case "ESSAI":
           this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
           break; 
+        case "CREATE":
+          this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter ou créer un compte`;
+          break; 
         case "SEANCE":
           this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
           break; 
@@ -173,7 +176,7 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         // Exemple : this.LoginEtape2(email, password)
       })
       .catch((error: string) => {
-          if(this.context == "ESSAI"){
+          if(this.context == "ESSAI" || this.context == "CREATE"){
           this.PreCreerCompte();
         } else {
         let o = errorService.CreateError(this.action, error);
@@ -219,8 +222,9 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     const errorService = ErrorService.instance;
     this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((compte_vm:Compte_VM) => {
           this.store.login(compte_vm);
-          if(this.context == "ESSAI"){
+          if(this.context == "ESSAI" || this.context == "CREATE"){
             this.essai.emit(compte_vm);
+            return;
           }
           this.VM.compte = compte_vm;
         this.store.updateappli('APPLI');
@@ -245,7 +249,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
           errorService.emitChange(o);
         });
       }).catch((error: Error) => {
-        if(this.context == "ESSAI"){
+        if(this.context == "ESSAI" || this.context == "CREATE"){
           this.PreCreerCompte();
         } else {
         let o = errorService.CreateError(this.action, error.message);

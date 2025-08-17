@@ -23,14 +23,14 @@ export const REGLES_PAR_DEFAUT: ReglesFormulaire = {
   Adresse_Adherent: {
     Street_min: -1,
     Street_max: -1,
-    Street_obligatoire: false,
+    Street_obligatoire: true,
     PostCode_min: 4,
     PostCode_max: -1,
-    PostCode_obligatoire: false,
+    PostCode_obligatoire: true,
     City_min: -1,
     City_max: -1,
-    City_obligatoire: false,
-    Adresse_obligatoire: false
+    City_obligatoire: true,
+    Adresse_obligatoire: true
   },
   InfoPerso_Essai: {
     Nom_min: 1,

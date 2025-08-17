@@ -1,89 +1,88 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { Adhesion } from '../class/adhesion';
+import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InscriptionSaisonService {
-  url = environment.maseance;
-  constructor(public global: GlobalService) {
- }
-
- public GetAllByRider(rider_id:number): Promise<Adhesion[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionsaison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_rider",
-    rider_id:rider_id
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: Adhesion[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-public GetAllBySaison(saison_id:number): Promise<Adhesion[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/inscriptionsaison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_saison",
-    saison_id:saison_id
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: Adhesion[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-
-
-
-public Add(saison_id:number, rider_id:number): Promise<number> {
-  this.url = environment.maseance + 'maseance/inscriptionsaison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"add",
-    saison_id:saison_id,
-    rider_id:rider_id
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: number) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-
-public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/inscriptionsaison_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"delete",
-    id:id,
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
+   url = environment.maseance;
+    constructor(public global: GlobalService) {
+    }
+  
+    public Get(id:number): Promise<InscriptionSaison_VM> {
+      this.url = 'api/inscription_saison/get/' + id;
+      //  this.url = this.url + "login.php";
+     
+  
+      return this.global.GET(this.url)
+        .then((response: InscriptionSaison_VM) => {
+          return response;
+        })
+        .catch((error: HttpErrorResponse) => {
+          console.error('Erreur brute', error);
+          const message = error?.message || 'Erreur inconnue';
+          console.error(message);        // Gestion de l'erreur
+          return Promise.reject(message);
+        });
+    }
+    public GetAllSaison(saison:number): Promise<InscriptionSaison_VM[]> {
+      this.url = 'api/inscription_saison/getall_saison/' + saison;
+      //  this.url = this.url + "login.php";
+     
+  
+      return this.global.GET(this.url)
+        .then((response: InscriptionSaison_VM[]) => {
+          return response;
+        })
+        .catch((error: HttpErrorResponse) => {
+          console.error('Erreur brute', error);
+          const message = error?.message || 'Erreur inconnue';
+          console.error(message);        // Gestion de l'erreur
+          return Promise.reject(message);
+        });
+    }
+     public GetAllRider(rider:number): Promise<InscriptionSaison_VM[]> {
+      this.url = 'api/inscription_saison/getall_rider/' + rider;
+      //  this.url = this.url + "login.php";
+     
+  
+      return this.global.GET(this.url)
+        .then((response: InscriptionSaison_VM[]) => {
+          return response;
+        })
+        .catch((error: HttpErrorResponse) => {
+          console.error('Erreur brute', error);
+          const message = error?.message || 'Erreur inconnue';
+          console.error(message);        // Gestion de l'erreur
+          return Promise.reject(message);
+        });
+    }
+  
+    public Add(l:InscriptionSaison_VM): Promise<InscriptionSaison_VM> {
+    this.url = 'api/inscription_saison/add';
+  
+    return this.global.PUT(this.url, l)
+      .then((response: InscriptionSaison_VM) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
+  public Delete(id:number) {
+    this.url = 'api/inscription_saison/delete/' + id;
+  
+    return this.global.DELETE(this.url)
+      .then(() => {
+        return;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
 }

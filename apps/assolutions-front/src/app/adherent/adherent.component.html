@@ -10,6 +10,36 @@
       <p>Chargement en cours</p>
     </ng-container>
     <ng-container *ngIf="!loading">
+      <ng-container *ngIf="select_account; else PasSelectAccount">
+        <ng-container *ngIf="ListePersonne && ListePersonne.length>0; else PasPersonne">
+          <div>
+           <label class="label" i18n>Sélection de la personne</label>
+<div class="select">
+  <select
+    id="cours"
+    [(ngModel)]="personne"               
+  >
+    <option [ngValue]="null" i18n>— Sélectionner —</option>
+    <option *ngFor="let p of ListePersonne" [ngValue]="p">
+      {{ p.prenom }} {{ p.nom }} {{ p.date_naissance | date:'dd/MM/yyyy' }}
+    </option>
+  </select>
+</div>
+
+<p class="help is-danger" *ngIf="!personne" i18n>
+  La sélection d'une personne est obligatoire.
+</p>
+
+                  </div>
+                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="CreatePersonneCompte()" i18n>Créer une personne pour ce compte</button>
+                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="SelectPersonne()" i18n>Sélectionner la personne</button>
+
+        </ng-container>
+        <ng-template #PasPersonne>
+        <app-login  [context]="'CREATE'" (essai)="Create($event)"></app-login>
+        </ng-template>
+      </ng-container>
+      <ng-template #PasSelectAccount>
        <ng-container *ngIf="!thisAdherent">
       <span class="fullscreen">
         <div class="columns">
@@ -227,16 +257,7 @@
                               *ngIf="store.appli() === 'ADMIN'"
                               (click)="Delete(adherent)"
                             ></btn>
-                            <btn
-                              *ngIf="
-                                !isInscrtitionActive(adherent, active_saison.id)"
-                              i18n-title
-                              title="Inscrire"
-                              [type_button]="'InscrireLight'"
-                              (click)="
-                                Register(adherent, active_saison.id, false)
-                              "
-                            ></btn>
+                           
                             <btn
                               i18n-title
                               title="Voir"
@@ -270,10 +291,9 @@
                 <div class="columns">
                   <div class="column">
                     <div *ngIf="!afficher_filtre" class="buttons">
-                      <btn
-                        *ngIf="store.appli() === 'ADMIN'"
+                      <btn 
                         [type_button]="'CreerSmall'"
-                        (click)="Create()"
+                        (click)="select_account = true;"
                       ></btn>
                       <btn
                         [type_button]="'FiltrerSmall'"
@@ -321,6 +341,7 @@
                     </div>
 
                     <div class="buttons" *ngIf="afficher_filtre">
+          
                       <btn
                         (click)="
                           afficher_filtre = false; selected_filter = null
@@ -846,7 +867,7 @@
             <btn
               *ngIf="store.appli()  === 'ADMIN'"
               [type_button]="'CreerMobile'"
-              (click)="Create()"
+              (click)="select_account = true"
             ></btn>
           </nav>
           <ng-container
@@ -890,14 +911,18 @@
 
         <!-- Bloc Infos personnelles -->
        <div class="column is-full-tablet is-half-desktop">
- <infoperso [photoBase64]="photoAdherent"  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="PreSave()" (valid)="valid_adherent($event)"></infoperso>
-</div>
+ <infoperso *ngIf="context != 'ESSAI'" [photoBase64]="photoAdherent"  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Adherent)" (InfoPersoChange)="PreSave()" (valid)="valid_adherent($event)"></infoperso>
+<infoperso *ngIf="context == 'ESSAI'" [photoBase64]="photoAdherent"  (photoSelected)="onPhotoSelectedFromChild($event)" [thisAdherent]="thisAdherent" [Regles]="(GlobalService.getRegles().InfoPerso_Essai)" (InfoPersoChange)="PreSave()" (valid)="valid_adherent($event)"></infoperso>
+
+  </div>
 
 
         <!-- Bloc Adresse -->
         <div class="column is-full-tablet is-half-desktop">
 
-                          <app-address [id]="thisAdherent.id" [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
+<app-address  *ngIf="context != 'ESSAI'" [id]="thisAdherent.id" [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Adherent)" (InfoAdresseChange)="SaveAdresse($event)"
+(valid)="valid_adresse($event)"></app-address>
+<app-address  *ngIf="context == 'ESSAI'" [id]="thisAdherent.id" [thisAdresse]="thisAdherent.adresse" [Regles]="(GlobalService.getRegles().Adresse_Essai)" (InfoAdresseChange)="SaveAdresse($event)"
 (valid)="valid_adresse($event)"></app-address>
         </div>
         
@@ -934,26 +959,24 @@
 </ng-container>
 
           </ng-container>
-      </div>
-      <div class="card-footer">
-        <div class="columns is-mobile is-centered">
-          <div class="column is-half">
-            <btn
-              [type_button]="'RetourSmall'"
-              (click)="Retour()"
-            ></btn>
-            <btn *ngIf="thisAdherent.id < 1"
-            [disabled]="!valid_adherent || !valid_adresse || !valid_contact || !valid_contact_urgence"
-              [type_button]="'SauvegarderSmall'"
-              (click)="Save()"
-            ></btn>
-          </div>
-        </div>
+      </div><div class="card-footer">
+  <div class="card-footer-item">
+    <div class="buttons">
+      <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
+      <btn *ngIf="!thisAdherent.inscrit && thisAdherent.id>0" [type_button]="'InscrireSmall'" (click)="Inscrire()"></btn>
+      <btn *ngIf="thisAdherent.id < 1"
+           [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"
+           [type_button]="'SauvegarderSmall'"
+           (click)="Save()"></btn>
     </div>
+  </div>
+</div>
   </div>
 </div>
 </div>
 </ng-container>
+      </ng-template>
+
     </ng-container>
   
 

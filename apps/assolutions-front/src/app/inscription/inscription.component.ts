@@ -5,6 +5,8 @@ import { InscriptionSaisonService } from '../../services/inscription-saison.serv
 import { SaisonService } from '../../services/saison.service';
 import { Saison_VM } from '@shared/src/lib/saison.interface';
 import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
+import { AppStore } from '../app.store';
 
 
 @Component({
@@ -21,7 +23,7 @@ export class InscriptionComponent implements OnInit {
   public saisons: Saison_VM[] = [];
   public action: string;
 
-  constructor(private saisonService: SaisonService, public inscription:InscriptionSaisonService) {}
+  constructor(private saisonService: SaisonService, public inscription:InscriptionSaisonService, public store:AppStore) {}
 
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -44,7 +46,11 @@ export class InscriptionComponent implements OnInit {
   Adherer() {
     const errorService = ErrorService.instance;
     this.action = $localize`Adhérer`;
-    this.inscription.Add(this.thisSaison,this.thisAdherent.id).then((result) => {  
+     const iss = new InscriptionSaison_VM();
+        iss.rider_id = this.thisAdherent.id;
+        iss.active = true;
+        iss.saison_id = this.store.saison_active().id;
+    this.inscription.Add(iss).then((result) => {  
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
       this.close(true);

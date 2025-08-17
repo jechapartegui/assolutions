@@ -38,14 +38,14 @@ export class SeancesService {
       });
   }
   
-  public Delete(id: number): Promise<boolean> {
-      this.url =  "api/seance/get/" + id; 
+  public Delete(id: number) {
+      this.url =  "api/seance/delete/" + id; 
     //  this.url = this.url + "login.php";
     
 
     return this.global.DELETE(this.url)
-      .then((response: boolean) => {
-        return response;
+      .then(() => {
+        return;
       })
       .catch(error => {
         // Gestion de l'erreur

@@ -35,7 +35,7 @@ export class GroupeComponent implements OnInit {
     this.action = $localize`Charger les groupes`;
     if (this.store.isLoggedIn) {
 
-      if (this.store.appli() === "APPLI") {
+      if (this.store.appli() === "ADMIN") {
         this.router.navigate(['/menu']);
         this.store.updateSelectedMenu("MENU")
         return;
@@ -43,7 +43,10 @@ export class GroupeComponent implements OnInit {
       // Chargez la liste des cours
 
       this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {
+        console.log("ici");
+
         this.liste_groupe = result.map(g => new Groupe_VM(Number(g.key), g.value, this.store.saison_active().id));
+        console.log("làa");
         this.adhserv.GetAdherentAdhesion(this.store.saison_active().id).then((riders) => {
           this.liste_adherent = riders;
         }).catch((error) => {

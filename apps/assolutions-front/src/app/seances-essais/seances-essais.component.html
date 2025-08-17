@@ -4,28 +4,35 @@
     </ng-container>
     <ng-container *ngSwitchCase="'personne'">
         <ng-container *ngIf="edit_personne; else noedit">
-            <app-adherent [context]="'ESSAI'" [Personne]="Personne" (essai)="addPersonne($event)"></app-adherent>
+            <app-adherent [context]="'ESSAI'" [Personne]="personne" (essai)="addPersonne($event)"></app-adherent>
         </ng-container>
         <ng-template #noedit>
-                <button class="button is-outlined is-rounded is-primary" (click)="edit_personne = true; Personne = null" i18n>Créer une nouvelle personne</button>
+                <button class="button is-outlined is-rounded is-primary" (click)="edit_personne = true; personne = null" i18n>Créer une nouvelle personne</button>
                   <div
                    *ngIf="Account.id>0"
                     class="field"
                   >
-                    <label class="label" i18n>Sélection de la personne</label>
-                    <div class="select">
-                      <select id="cours" [(ngModel)]="Personne" >
-                        <option *ngFor="let cours of ListePersonne" [value]="cours" >
-                          {{ cours.prenom }} {{ cours.nom }} {{ cours.date_naissance | date : "dd/MM/yyyy" }}
-                        </option>
-                      </select>
-                    </div>
-                    <p class="help is-danger" *ngIf="!Personne" i18n>
-                      La sélection d'une personne est obligatoire.
-                    </p>
+                   <label class="label" i18n>Sélection de la personne</label>
+<div class="select">
+  <select
+    id="cours"
+    [(ngModel)]="personne"             
+    (ngModelChange)="test($event)"      
+  >
+    <option [ngValue]="null" i18n>— Sélectionner —</option>
+    <option *ngFor="let p of ListePersonne" [ngValue]="p">
+      {{ p.prenom }} {{ p.nom }} {{ p.date_naissance | date:'dd/MM/yyyy' }}
+    </option>
+  </select>
+</div>
+
+<p class="help is-danger" *ngIf="!personne" i18n>
+  La sélection d'une personne est obligatoire.
+</p>
+
                   </div>
-                <button *ngIf="Personne" class="button is-outlined is-rounded is-primary" (click)="edit_personne = true" i18n>Modifier la personne</button>
-                <button *ngIf="Personne" class="button is-outlined is-rounded is-primary" (click)="Valider()" i18n>Valider l'essai</button>
+                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="edit_personne = true" i18n>Modifier la personne</button>
+                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="Valider()" i18n>Valider l'essai</button>
 
         </ng-template>
     </ng-container>

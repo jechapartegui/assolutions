@@ -4,6 +4,12 @@
       <btn *ngIf="!thisContact" [type_button]="'CreerLight'" (click)="Add()"></btn>
         </div>
 
+      <div class="mb-2">
+    <p *ngIf="!rNbContactMax.key" class="is-small help is-danger">{{rNbContactMax.value}}</p>
+    <p *ngIf="!rNbContactMin.key" class="is-small help is-danger">{{rNbContactMin.value}}</p>
+    <p *ngIf="!rMail.key"         class="is-small help is-danger">{{rMail.value}}</p>
+    <p *ngIf="!rTel.key"          class="is-small help is-danger">{{rTel.value}}</p>
+  </div>
     <div class="columns is-vcentered">
 <div class="container">
     <div *ngIf="thisContact" class="table" style=" font-size:small; width: 100%;padding: 0px;">

@@ -47,8 +47,12 @@ export class AppComponent {
   }
 
   LogOut() {
+    const errorService = ErrorService.instance;
     this.action = $localize`Se déconnecter`;
-  
+    this.store.logout();
+    this.router.navigate(['/login']);
+              let o = errorService.OKMessage(this.action);
+              errorService.emitChange(o);
   }
 
   MDP() {

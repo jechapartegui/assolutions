@@ -65,8 +65,25 @@ export class CourseService {
     return this.get(id);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.get(id);
-    await this.repo.delete({ id });
+async delete(id: number): Promise<void> {
+  // Vérifie que le cours existe
+  const cours = await this.repo.findOne({
+    where: { id },
+    relations: ['sessions'], // <-- charge la relation
+  });
+
+  if (!cours) {
+    throw new NotFoundException(`Cours ${id} introuvable`);
   }
+
+  // Vérifie s'il y a des séances liées
+  if (cours.sessions && cours.sessions.length > 0) {
+    throw new BadRequestException(
+      `Impossible de supprimer le cours ${id} car il est lié à ${cours.sessions.length} séance(s)`
+    );
+  }
+
+  await this.repo.delete(id);
+}
+
 }

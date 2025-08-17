@@ -673,17 +673,13 @@ export class SeanceComponent implements OnInit {
       if (seance) {
         this.seancesservice
           .Delete(seance.seance_id)
-          .then((result) => {
-            if (result) {
+          .then(() => {
                 this.spservice.Update(seance.seance_id, []);  
                 this.editSeance = null;            
               this.UpdateListeSeance();
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
-            } else {
-              let o = errorService.UnknownError(this.action);
-              errorService.emitChange(o);
-            }
+          
           })
           .catch((err: HttpErrorResponse) => {
             let o = errorService.CreateError(this.action, err.message);
