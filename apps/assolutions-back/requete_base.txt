@@ -36,3 +36,5 @@ SELECT setval(
   COALESCE((SELECT MAX(id) FROM groupes), 0) + 1,
   false
 );
+
+mot de passe appli : emyy djxe qudl fxkg
