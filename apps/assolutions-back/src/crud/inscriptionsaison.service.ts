@@ -21,7 +21,7 @@ export class RegistrationSeasonService {
 
 async getPersonRegistrations( personneId: number,
   projectId: number): Promise<RegistrationSeason[]> {
-    let courses = await this.repo.find({ relations: ['season'],   // pour pouvoir filtrer sur season.projectId
+    let courses = await this.repo.find({ relations: ['saison'],   // pour pouvoir filtrer sur season.projectId
     where: {
       personneId,
       saison: {

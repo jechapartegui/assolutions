@@ -23,11 +23,11 @@ export class Group {
 
   /** Référence vers la saison */
   @Column({ name: 'saison_id' })
-  seasonId: number;
+  saisonId: number;
 
   @ManyToOne(() => Season, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saison_id' })
-  season: Season;
+  saison: Season;
 
   /** Date de création automatique */
   @CreateDateColumn({ type: 'timestamp with time zone', name: 'date_creation' })

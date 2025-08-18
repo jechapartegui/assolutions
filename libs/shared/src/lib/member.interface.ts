@@ -4,7 +4,7 @@ import { Personne_VM } from "./personne.interface";
 
 export class Adherent_VM extends Personne_VM{
   
-    inscrit:boolean;
+    inscrit:boolean = false;
     inscriptionsSaison:InscriptionSaison_VM[]= [];
     inscriptionsSeance:InscriptionSeance_VM[]=[];
     photo:any;

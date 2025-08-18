@@ -50,12 +50,12 @@ export class AuthController {
   }
 
     @Put('add')
-    async Add(compte_vm: Compte_VM) {
+  async Add(@Body() compte_vm: Compte_VM) {
       return this.authService.add(compte_vm);
     }
     
     @Put('update')
-    async Update(compte_vm: Compte_VM, update_psw:boolean) {
+    async Update(@Body() compte_vm: Compte_VM, update_psw:boolean) {
       return this.authService.update(compte_vm, update_psw);
     }
     

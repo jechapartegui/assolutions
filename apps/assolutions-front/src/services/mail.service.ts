@@ -5,31 +5,31 @@ import { MailData } from '../class/mail';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
 import { Adherent_VM } from '@shared/src/lib/member.interface';
 import { Seance_VM } from '@shared/src/lib/seance.interface';
+import { MailInput } from '@shared/src/lib/mail-input.interface';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MailService {
+
   url = environment.maseance;
   constructor(public global: GlobalService) {
- }
- public Test(): Promise<boolean> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"test"
-  };
+  }
+  public Mail(email: MailInput): Promise<any> {
+    this.url = 'api/mail/mail';
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
+    return this.global.POST(this.url, email)
+      .then((response: any) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
 public EnvoiMailEssai(essai:Adherent_VM, seance:Seance_VM, mail:string, id:number, project_id:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";

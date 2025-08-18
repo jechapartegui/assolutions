@@ -25,7 +25,7 @@ export class PersonService {
     relations: ['account', 'inscriptions', 'inscriptions.saison'],
     where: {
       inscriptions: {
-        saisonId: saisonId,
+        saisonId,
       },
     },
   });
@@ -34,7 +34,7 @@ export class PersonService {
   for (const personne of personnes) {
     if(personne.inscriptions) {
     for (const inscription of personne.inscriptions) {
-      inscription.groups = await this.linkgroup_serv.getGroupsForObject('rider', personne.id);
+      inscription.groups = await this.linkgroup_serv.getGroupsForObject('rider', personne.id, saisonId);
     }
   }
   }

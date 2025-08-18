@@ -69,6 +69,14 @@
                     (click)="CreerCompte(false)" i18n>
                     Créer un compte sans mot de passe
                   </button>
+                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                    (click)="CreerCompte(true)" i18n>
+                    Créer un compte avec mot de passe
+                  </button>
+                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                    (click)="CreerCompte(false)" i18n>
+                    Créer un compte sans mot de passe
+                  </button>
                   <button *ngIf="VM.mdp_requis && !store.isLoggedIn()  && !VM.creer_compte " [disabled]="!VM.isValid" class="button is-success is-outlined is-rounded"
                     (click)="Login()  && !VM.creer_compte" i18n>
                     Valider le mot de passe
@@ -96,5 +104,4 @@
       </div>
     </div>
   </ng-container>
-
 </div>

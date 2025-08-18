@@ -33,6 +33,7 @@ export class MemberService {
     if (!saison) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
+    console.warn(saison[0].inscriptions);
     return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], []));
   }
   async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
@@ -196,14 +197,25 @@ export class MemberService {
     return age;
   }
 
-  async Get(id: number) {
+  async Get(id: number, project_id:number): Promise<Adherent_VM> {
      const pAdh = await this.personserivce.get(id);
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
     //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
-    return toPersonne_VM(pAdh);
-
+    const PersonneVM =  toPersonne_VM(pAdh);
+    const registrations = await this.inscriptionsaisonservice.getPersonRegistrations(PersonneVM.id, project_id);
+    const adh :Adherent_VM = Object.assign(new Adherent_VM(), PersonneVM);
+    if(registrations){
+      adh.inscriptionsSaison = registrations.map((t)=> toInscriptionSaison_VM(t));
+ if(registrations.find(x => x.saison.isActive)){
+      adh.inscrit = true;
+      adh.inscriptionsSeance = (await this.inscriptionseanceservice.getAllRiderSaison(PersonneVM.id,registrations.find(x => x.saison.isActive)!.id )).map((r) => to_InscriptionSeances_VM(r));
+    }
+    }
+   
+    return adh;
+    
   }
 
 

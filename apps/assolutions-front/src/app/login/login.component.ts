@@ -9,6 +9,7 @@ import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
 import { AppStore } from '../app.store';
+import { MailService } from '../../services/mail.service';
 
 @Component({
   standalone: false,
@@ -34,7 +35,8 @@ export class LoginComponent implements OnInit {
     private route: ActivatedRoute,
     public GlobalService: GlobalService,
     private proj_serv:ProjetService, 
-    public store: AppStore
+    public store: AppStore,
+    public mailserv:MailService
   ) {
     this.VM.Login = environment.defaultlogin;
     this.VM.Password = environment.defaultpassword;
@@ -176,12 +178,22 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         // Exemple : this.LoginEtape2(email, password)
       })
       .catch((error: string) => {
-          if(this.context == "ESSAI" || this.context == "CREATE"){
+        if(error == "ACCOUNT_NOT_ACTIVE"){
+        let c = window.confirm($localize`Compte inactif : voulez-vous renvoyer un mail d'activation ?`);
+        if(c){
+          
+        }
+        let o = errorService.Create(this.action, errorService.interpret_error(error), "Warning");
+        errorService.emitChange(o);
+        } else {
+ if(this.context == "ESSAI" || this.context == "CREATE"){
           this.PreCreerCompte();
         } else {
         let o = errorService.CreateError(this.action, error);
         errorService.emitChange(o);
         }
+        }
+         
       });
   }
 
@@ -333,4 +345,6 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
       this.loading = false;
     }
   }
+
+ 
 }

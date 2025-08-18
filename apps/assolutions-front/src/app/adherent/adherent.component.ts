@@ -213,7 +213,7 @@ this.thisAdherent.inscriptionsSeance = [];
     }
   }
   onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
-    this.thisAdherent.inscriptionsSaison[0].groupes = updatedGroupes;
+    this.thisAdherent.inscriptionsSaison.find(x => x.active).groupes = updatedGroupes;
   }
 
   UpdateListeAdherents() {
@@ -323,11 +323,19 @@ valid_contact_urgence(isValid: boolean): void {
         this.id = 0;
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
+      } else {
+        this.ListePersonne = this.ListePersonne.filter(y => !this.liste_adherents_VM.map(x => x.id).includes(y.id));
+          if(this.ListePersonne.length == 0){
+        this.id = 0;
+        this.thisAdherent.compte = this.thisAccount.id;
+        this.select_account = false;
+        this.thisAdherent = new Adherent_VM();
+      }
       }
     } else {
         this.id = 0;
-        this.thisAccount = compte_VM;
         this.select_account = false;
+        this.thisAdherent = new Adherent_VM();
     }   
   }
 
@@ -336,10 +344,22 @@ valid_contact_urgence(isValid: boolean): void {
         this.id = 0;
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
+        this.ListePersonne = null;
+        this.personne = null;
   }
   async SelectPersonne(){
   this.thisAdherent = await this.ridersService.Get(this.personne.id);
   this.select_account = false;
+        this.ListePersonne = null;
+        this.personne = null;
+}
+
+retourListePersonne(){
+  this.select_account = false;
+        this.ListePersonne = null;
+        this.personne = null;
+     this.thisAdherent = null;
+      this.UpdateListeAdherents();
 }
 
 Inscrire(){
@@ -575,12 +595,12 @@ onPhotoSelectedFromChild(base64Photo: string): void {
 }
 
 PreSave() {
-  console.log(this.adherentValide, this.AdresseValide, this.ContactValide,this.ContactUrgenceValide );
   if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide) {
-    if(this.context == "ESSAI"){
+    if(this.context == "ESSAI" || this.thisAdherent.id == 0){
       this.essai.emit(this.thisAdherent);
       return;
     }
+    
     this.Save();
   }
 }
@@ -867,12 +887,20 @@ PreSave() {
   }
 
   handleAction(action: string) {
-    console.log(`Action exécutée : ${action}`);
     this.dropdownActive = false;
+  }
+  CurrentActiveInscriptionGroupe(adh:Adherent_VM): LienGroupe_VM[]{
+    if(!adh.inscriptionsSaison || adh.inscriptionsSaison.length == 0){
+      return [];
+    }
+    if(adh.inscriptionsSaison.find(x => x.active == true)){
+      return adh.inscriptionsSaison.find(x => x.active == true).groupes;
+    } else {
+      return [];
+    }
   }
 
   Fermer(avecreload: boolean = false) {
-    console.log(avecreload);
     this.afficher_inscription = false;
     if (avecreload) {
       this.loading = true;

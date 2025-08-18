@@ -26,13 +26,16 @@ import { SessionService } from '../../crud/session.service';
 import { Session } from '../../entities/seance.entity';
 import { Person } from '../../entities/personne.entity';
 import { ProfessorContract } from '../../entities/contrat_prof.entity';
+import { MailerService } from '../mail/mailer.service';
+import { MailAccount } from '../../entities/mail-account.entity';
+import { MailRecord } from '../../entities/mail-record.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Account, RegistrationSeason, LinkGroup, Season, RegistrationSession, Professor, SessionProfessor, Session, Person,ProfessorContract]), // ✅ indispensable
+    TypeOrmModule.forFeature([Account,MailAccount,MailRecord,  RegistrationSeason, LinkGroup, Season, RegistrationSession, Professor, SessionProfessor, Session, Person,ProfessorContract]), // ✅ indispensable
   ],
-  providers: [AuthService, SessionService,ProfessorService, AccountService, RegistrationSeasonService, SessionProfessorService, RegistrationSessionService, SeasonService, MemberService, ProfService, LinkGroupService, SeanceService, PersonService, ProfessorContractService],
+  providers: [AuthService, MailerService, SessionService,ProfessorService, AccountService, RegistrationSeasonService, SessionProfessorService, RegistrationSessionService, SeasonService, MemberService, ProfService, LinkGroupService, SeanceService, PersonService, ProfessorContractService],
   controllers: [AuthController],
     exports: [AuthService], // 👈 ajoute ça
 })

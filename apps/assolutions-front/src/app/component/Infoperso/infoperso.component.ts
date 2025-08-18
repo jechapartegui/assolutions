@@ -54,7 +54,6 @@ public validerTout(): void {
   this.rLibelle = GlobalService.instance.validerChaine(this.thisAdherent.libelle, this.Regles.Libelle_min, this.Regles.Libelle_max, false, $localize`Libellé (prénom + nom + surnom)`);
   // valide si tout est bon
   this.estValid = this.rNom.key && this.rPrenom.key && this.rLibelle.key && this.rDateNaissance.key && this.rSurnom.key;
-  console.log(this.estValid);
   // 🔥 émettre vers le parent
   this.valid.emit(this.estValid);
 }

@@ -59,8 +59,12 @@ export class ContactItemComponent implements OnInit {
   }
   Add() {
     this.EditIndex = -1;
+    let stype = 'EMAIL';
+    if(this.Contacts.filter(x => x.Type == 'EMAIL').length > 0  && this.Contacts.filter(x => x.Type == 'PHONE').length == 0){
+      stype = 'PHONE';
+    }
     this.thisContact = {
-    Type: 'EMAIL',
+    Type: stype,
     Value: '',
     Notes: '',
     Pref: false

@@ -19,8 +19,8 @@ export class GroupService {
 
 
 
-  async getAll(seasonId :number): Promise<Group[]> {
-    return this.repo.find({where:{seasonId}});
+  async getAll(saisonId :number): Promise<Group[]> {
+    return this.repo.find({where:{saisonId}});
   }
 
   async create(data: Partial<Group>): Promise<Group> {

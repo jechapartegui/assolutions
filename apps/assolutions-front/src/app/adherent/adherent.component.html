@@ -31,12 +31,14 @@
 </p>
 
                   </div>
-                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="CreatePersonneCompte()" i18n>Créer une personne pour ce compte</button>
-                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="SelectPersonne()" i18n>Sélectionner la personne</button>
+                 <btn [type_button]="'RetourSmall'" *ngIf="ListePersonne"  (click)="retourListePersonne()" i18n></btn>
+                <button *ngIf="ListePersonne" class="button is-outlined is-primary is-small" (click)="CreatePersonneCompte()" i18n>Créer une personne pour ce compte</button>
+                <button *ngIf="personne" class="button is-outlined is-primary is-small" (click)="SelectPersonne()" i18n>Sélectionner la personne</button>
 
         </ng-container>
         <ng-template #PasPersonne>
         <app-login  [context]="'CREATE'" (essai)="Create($event)"></app-login>
+                 <btn [type_button]="'RetourSmall'" *ngIf="ListePersonne"  (click)="retourListePersonne()" i18n></btn>
         </ng-template>
       </ng-container>
       <ng-template #PasSelectAccount>
@@ -215,7 +217,7 @@
 
                         <td>
                           <div class="tags">
-                            <ng-container *ngFor="let gr of adherent.inscriptionsSaison[0].groupes">
+                            <ng-container *ngFor="let gr of CurrentActiveInscriptionGroupe(adherent)">
                               <span class="tag is-success">
                                 {{ gr.nom }}
                               </span>
@@ -937,14 +939,13 @@
   
                 <div class="column is-full-tablet is-half-desktop">
                        <div class="box is-light">
-      <div class="column is-full-tablet is-half-desktop">
-    <div class="box is-light">
+  
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
         <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Groupes</h3>
       </div>
 
       <div class="columns is-vcentered">
-        <ng-container *ngFor="let group of thisAdherent.inscriptionsSaison[0].groupes">
+        <ng-container *ngFor="let group of CurrentActiveInscriptionGroupe(thisAdherent)">
           <div class="column is-6">
             <div class="field">
               <label class="label is-small">{{ group.nom }}</label>
@@ -953,8 +954,6 @@
         </ng-container>
       </div>
     </div>
-  </div>
-      </div>
                 </div>
 </ng-container>
 

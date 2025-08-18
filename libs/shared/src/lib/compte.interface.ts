@@ -1,11 +1,11 @@
 import { Adherent_VM } from "./member.interface";
 
 export class Compte_VM {
-    id: number;
+    id: number = 0;
     nom: string;
     email: string;
-    password: string;
-    actif: boolean;
+    password: string| null;
+    actif: boolean = false;
     mail_actif: boolean;
     derniere_connexion: Date | null;
     echec_connexion: number;

@@ -13,6 +13,7 @@ import { SeasonService } from '../../crud/season.service';
 import { MemberService } from '../member/member.services';
 import { ProfService } from '../prof/prof.services';
 import { QueryFailedError } from 'typeorm';
+import { MailerService } from '../mail/mailer.service';
 
 
 @Injectable()
@@ -26,6 +27,7 @@ export class AuthService {
     private prof_serv:ProfService,
     private season_serv:SeasonService,
     private member_serv:MemberService,
+    public mailer:MailerService
   ) {
     this.pepper = this.configService.get<string>('PEPPER') ?? '';
   }
@@ -168,9 +170,10 @@ liste_compte.push(acc);
     if (!vm) {
       throw new BadRequestException('INVALID_ACCOUNT');
     }
-    const toInsert = toAccount(vm);
+    let base = toAccount(vm, vm.password ? this.pepper : null);
     try {
-      const saved = await this.compteserv.create(toInsert);
+      const saved = await this.compteserv.create(base);
+      this.notifierAdherent("jechapartegui@gmail.com", "ca marche");
       return saved.id;
     } catch (err) {
       if (err instanceof QueryFailedError) {
@@ -204,7 +207,14 @@ liste_compte.push(acc);
     }
   }
 
-    
+ async notifierAdherent(adresse: string, contenuHtml: string) {
+    await this.mailer.queue(1,{
+      to: adresse,
+      subject: 'Confirmation d’inscription',
+      html: contenuHtml,
+      text: 'Votre inscription est bien enregistrée.',
+    });
+  }    
     
    async delete(id: number): Promise<boolean> {
     try {
@@ -257,7 +267,7 @@ export function toAccount(vm: Compte_VM, pepper: string | null = null): Account 
   entity.id = vm.id;
   entity.login = vm.email ?? vm.nom; // login basé sur email
   if(pepper){
-  entity.password = hashPasswordWithPepper(vm.password, pepper); // ATTENTION : doit être hashé avant l'enregistrement
+  entity.password = hashPasswordWithPepper(vm.password!, pepper); // ATTENTION : doit être hashé avant l'enregistrement
   }
   entity.isActive = vm.actif;
   entity.isEmailActive = vm.mail_actif;

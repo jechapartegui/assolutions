@@ -59,7 +59,6 @@ public CheckAdresse(): void {
 
   // valide si tout est bon
   // 🔥 émettre vers le parent
-  console.log(this);
   this.valid.emit(this.estValid);
 }
 }

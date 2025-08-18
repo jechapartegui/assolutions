@@ -47,16 +47,32 @@ export class LinkGroupService {
     await this.get(id);
     await this.repo.delete({ id });
   }
-  async getGroupsForObject(
-    objectType: 'cours' | 'séance' | 'rider',
-    objectId: number
-  ): Promise<LinkGroup[]> {
+async getGroupsForObject(
+  objectType: 'cours' | 'séance' | 'rider',
+  objectId: number,
+  saisonId: number | null = null
+): Promise<LinkGroup[]> {
+  // si pas de filtre saison → simple
+  if (saisonId === null || saisonId === undefined) {
     const links = await this.repo.find({
-      where: { objectType, objectId }, relations: ['group'],
+      where: { objectType, objectId },
+      relations: ['group'],
     });
-
     return links;
   }
+
+  // avec filtre saison → filtre via la relation
+  const links = await this.repo.find({
+    where: {
+      objectType,
+      objectId,
+      group: { saisonId },
+    },
+    relations: ['group'],
+  });
+  return links;
+}
+
 }
 
 

@@ -42,8 +42,8 @@ async GetAllEver(@Param('compte_id') compte_id: number) {
 
    @UseGuards(PasswordGuard)
       @Get('get/:id')
-    async Get(@Param() { id }: { id: number }) {
-      return this.mem_serv.Get(id);
+    async Get(@Headers('projectid') projectId: number,@Param() { id }: { id: number }) {
+      return this.mem_serv.Get(id, projectId);
     }
   
     
