@@ -42,6 +42,13 @@ async GetAllSeanceFull(@Param('seance_id') seance_id: number) : Promise<FullInsc
   return this.inscription_seance_serv.GetAllSeanceFull(seance_id);
 }
 
+  @UseGuards(PasswordGuard)
+@Get('faire_essai/')
+async FaireEssai(@Body() { personId, sessionId }: { personId: number; sessionId: number }
+  ) : Promise<boolean> {
+  return this.inscription_seance_serv.FaireEssai(personId, sessionId);
+}
+
 @Put('add')
 async Add(@Body() inscription: InscriptionSeance_VM) {
   return this.inscription_seance_serv.Add(inscription);

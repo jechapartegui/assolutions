@@ -13,5 +13,9 @@ export class MailRecord {
 
      @Column({ type: 'varchar', length:200 })
   to!: string;
+     @Column({ type: 'varchar', length:200 })
+  subject!: string;
+     @Column({ type: 'int', nullable:true })
+  projectId: number | null;
 
 }

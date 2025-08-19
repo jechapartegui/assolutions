@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProjectController } from './project.controller';
-import { ProjectService } from './project.service';
+import { ProjetController } from './project.controller';
+import { Project } from '../../entities/projet.entity';
+import { ProjetService } from './project.service';
+import { ProjectService } from '../../crud/project.service';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([]), // ✅ indispensable
+    TypeOrmModule.forFeature([Project]), // ✅ indispensable
   ],
-  providers: [ProjectService],
-  controllers: [ProjectController],
-  exports: [ProjectService], // 👈 ajoute ça
+  providers: [ProjectService, ProjetService],
+  controllers: [ProjetController],
+  exports: [ProjetService], // 👈 ajoute ça
 })
-export class ProjectModule {}
+export class ProjetModule {}

@@ -39,6 +39,23 @@ public GetFull(id:number): Promise<FullInscriptionSeance_VM> {
       return Promise.reject(error);
     });
 }
+
+public FaireEssai(personId:number, sessionId:number): Promise<boolean> {
+ this.url = 'api/inscription_seance/faire_essai';
+const body = {
+  personId :personId,
+  sessionId:sessionId
+ }
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+  }
  
 public GetAllRiderSaison(rider_id:number, saison_id:number): Promise<InscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT

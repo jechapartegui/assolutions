@@ -10,6 +10,7 @@ import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
 import { AppStore } from '../app.store';
 import { MailService } from '../../services/mail.service';
+import { MailInput } from '@shared/src/lib/mail-input.interface';
 
 @Component({
   standalone: false,
@@ -344,6 +345,15 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
       errorService.emitChange(o);
       this.loading = false;
     }
+  }
+
+  async TestMail(){
+    const MI = new MailInput();
+    MI.to = "jechapartegui@gmail.com";
+    MI.subject = "Test Assolutions";
+    MI.from = "US Ivry Roller";
+    MI.html = "Test ✅"
+    await this.mailserv.Mail(MI);
   }
 
  

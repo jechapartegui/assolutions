@@ -208,12 +208,7 @@ liste_compte.push(acc);
   }
 
  async notifierAdherent(adresse: string, contenuHtml: string) {
-    await this.mailer.queue(1,{
-      to: adresse,
-      subject: 'Confirmation d’inscription',
-      html: contenuHtml,
-      text: 'Votre inscription est bien enregistrée.',
-    });
+
   }    
     
    async delete(id: number): Promise<boolean> {

@@ -3,12 +3,9 @@ import nodemailer, { Transporter } from 'nodemailer';
 import Bottleneck from 'bottleneck';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MailAccount } from '../../entities/mail-account.entity';
 import { MailInput } from '@shared/src/lib/mail-input.interface';
 import { MailRecord } from '../../entities/mail-record.entity';
-// Si tu chiffrages le mot de passe, décommente la ligne suivante:
-// import { decryptSecret } from '../../utils/crypto.util';
-
+import { ProjetService } from '../project/project.service';
 
 type Cached = {
   hash: string;
@@ -16,42 +13,89 @@ type Cached = {
   limiter: Bottleneck;
 };
 
+type SmtpCfg = {
+  host: string;
+  port: number;
+  secure: boolean;           // true => 465 TLS, false => 587 STARTTLS
+  user: string;
+  pass: string;
+  maxPerMinute: number;
+  defaultFromEmail: string;  // fallback si pas de from passé
+  defaultFromName?: string;  // fallback
+};
+
 @Injectable()
 export class MailerService {
+  
   private readonly logger = new Logger(MailerService.name);
-  private cache = new Map<number, Cached>();
+  private cache: Cached | null = null; // une seule boîte => un seul cache
 
   constructor(
-    @InjectRepository(MailAccount)
-    private readonly repo: Repository<MailAccount>,
     @InjectRepository(MailRecord)
-    private readonly reporecord:Repository<MailRecord>
+    private readonly reporecord: Repository<MailRecord>, private readonly projetserv:ProjetService
   ) {}
 
-  // Construit un hash simple de conf pour invalider le cache si la conf change
-  private confHash(acc: MailAccount) {
+  async Mail(project_id:number, MI:MailInput){
+    let email = "assolutions.club@gmail.com";
+    let name = "AsSolutions";
+    if(project_id && project_id >0){
+      const projet = await this.projetserv.get(project_id);
+      email = projet.login;
+      name = projet.name;
+
+    }
+    this.queue(MI, email, name, project_id)
+  }
+
+  // ----- CONFIG -----
+  private getCfg(): SmtpCfg {
+    const secureEnv = (process.env.SMTP_SECURE ?? 'false').toString().trim().toLowerCase();
+    const secure = secureEnv === 'true' || secureEnv === '1' || secureEnv === 'yes';
+
+    const host = process.env.SMTP_HOST ?? 'smtp.gmail.com';
+    const port = Number(process.env.SMTP_PORT ?? (secure ? 465 : 587));
+    const user = process.env.SMTP_USER ?? '';
+    const pass = process.env.SMTP_PASS ?? '';
+    const maxPerMinute = Number(process.env.MAIL_MAX_PER_MINUTE ?? 30);
+
+    if (!user || !pass) {
+      throw new Error('SMTP_USER / SMTP_PASS manquants (utilise un mot de passe d’application Gmail)');
+    }
+
+    return {
+      host,
+      port,
+      secure,
+      user,
+      pass,
+      maxPerMinute,
+      defaultFromEmail: process.env.MAIL_FROM_EMAIL ?? user,
+      defaultFromName: process.env.MAIL_FROM_NAME ?? undefined,
+    };
+  }
+
+  private confHash(cfg: SmtpCfg) {
     const s = [
-      acc.host,
-      acc.port,
-      acc.secure ? '1' : '0',
-      acc.username,
-      acc.password_enc,           // si tu chiffrages: le hash changera en cas de nouveau secret
-      acc.from_email,
-      acc.from_name ?? '',
-      String(acc.max_per_minute ?? 30),
+      cfg.host,
+      cfg.port,
+      cfg.secure ? '1' : '0',
+      cfg.user,
+      // ne logge jamais cfg.pass !
+      cfg.maxPerMinute,
+      cfg.defaultFromEmail,
+      cfg.defaultFromName ?? '',
     ].join('|');
     return Buffer.from(s).toString('base64');
   }
 
-  private build(acc: MailAccount): Cached {
+  private build(cfg: SmtpCfg): Cached {
     const transporter = nodemailer.createTransport({
-      host: acc.host ?? 'smtp.gmail.com',
-      port: Number(acc.port ?? 587),
-      secure: !!acc.secure, // <-- booléen correct (false => 587 STARTTLS)
+      host: cfg.host,
+      port: cfg.port,
+      secure: cfg.secure, // false = 587 STARTTLS, true = 465 TLS
       auth: {
-        user: acc.username,
-        // Si password_enc est chiffré: pass: decryptSecret(acc.password_enc),
-        pass: acc.password_enc,
+        user: cfg.user,
+        pass: cfg.pass,
       },
       pool: true,
       maxConnections: 3,
@@ -59,38 +103,43 @@ export class MailerService {
       tls: { ciphers: 'TLSv1.2' },
     });
 
-    const perMinute = Number(acc.max_per_minute ?? 30);
-    const minTime = Math.ceil(60_000 / Math.max(1, perMinute));
+    const minTime = Math.ceil(60_000 / Math.max(1, cfg.maxPerMinute));
     const limiter = new Bottleneck({ minTime, maxConcurrent: 1 });
 
-    return { hash: this.confHash(acc), transporter, limiter };
+    return { hash: this.confHash(cfg), transporter, limiter };
   }
 
-  private async getCached(accountId: number): Promise<{ acc: MailAccount; cached: Cached }> {
-    const acc = await this.repo.findOne({ where: { id: accountId } });
-    if (!acc) {
-      throw new Error(`MailAccount #${accountId} introuvable`);
+  private getCached(): Cached {
+    const cfg = this.getCfg();
+    const hash = this.confHash(cfg);
+
+    if (!this.cache || this.cache.hash !== hash) {
+      this.logger.debug(`(Re)construction du transport SMTP: host=${cfg.host} port=${cfg.port} secure=${cfg.secure} user=${cfg.user}`);
+      this.cache = this.build(cfg);
     }
-    const hash = this.confHash(acc);
-    let cached = this.cache.get(accountId);
-    if (!cached || cached.hash !== hash) {
-      cached = this.build(acc);
-      this.cache.set(accountId, cached);
-    }
-    return { acc, cached };
+    return this.cache;
   }
 
-  /** Envoi immédiat (par compte) */
-  async sendNow(accountId: number, input: MailInput) {
-    const { acc, cached } = await this.getCached(accountId);
-  console.warn(input);
-    const from =
+  // ----- ENVOI -----
+
+  /**
+   * Envoi immédiat
+   * @param input contenu du mail (to, subject, html/text, attachments…)
+   * @param email email de l’expéditeur affiché (ex: "no-reply@monclub.fr") — si vide, fallback .env
+   * @param name  nom de l’expéditeur affiché (ex: "US Ivry Roller") — si vide, fallback .env
+   */
+  async sendNow(input: MailInput, email: string, name: string, projectId:number | null) {
+    const cfg = this.getCfg();
+    const { transporter } = this.getCached();
+
+    const fromDisplay =
       input.from ??
-      (acc.from_name ? `${acc.from_name} <${acc.from_email}>` : acc.from_email) ??
-      acc.username;
+      (name && email ? `${name} <${email}>`
+       : cfg.defaultFromName ? `${cfg.defaultFromName} <${cfg.defaultFromEmail}>`
+       : cfg.defaultFromEmail);
 
-    const info = await cached.transporter.sendMail({
-      from,
+    const info = await transporter.sendMail({
+      from: fromDisplay,
       to: input.to,
       subject: input.subject,
       text: input.text,
@@ -99,28 +148,36 @@ export class MailerService {
       attachments: input.attachments,
     });
 
-    this.logger.log(`Mail envoyé (account #${accountId}) : ${info.messageId}`);
+    this.logger.log(`Mail envoyé : ${info.messageId}`);
+
+    // Log minimal en BDD
     const rec = new MailRecord();
     rec.record = info.messageId;
-    rec.to = input.to.toString();
-    await this.reporecord.create(rec);
+    rec.to = Array.isArray(input.to) ? input.to.join(',') : input.to;
+    rec.projectId = projectId;
+    rec.subject = input.subject ?? null as any; // adapte selon ton entity
+    await this.reporecord.save(rec);
+
     return info;
   }
 
-  /** Envoi via file d’attente (limite par minute + retry) */
-  async queue(accountId: number = 1, input: MailInput) {
-    const { cached } = await this.getCached(accountId);
+  /**
+   * Envoi via file d’attente (limite/min + retry)
+   * @param input idem sendNow
+   * @param email expéditeur (affiché)
+   * @param name  nom expéditeur (affiché)
+   */
+  async queue(input: MailInput, email = 'assolutions.club@gmail.com', name = 'AsSolutions', projectId:number | null =null) {
+    const { limiter } = this.getCached();
 
-    return cached.limiter.schedule(async () => {
+    return limiter.schedule(async () => {
       let attempt = 0;
       while (attempt < 3) {
         try {
-          return await this.sendNow(accountId, input);
+          return await this.sendNow(input, email, name, projectId);
         } catch (e: any) {
           attempt++;
-          this.logger.warn(
-            `Échec envoi acc#${accountId} (tentative ${attempt}) : ${e?.message ?? e}`,
-          );
+          this.logger.warn(`Échec envoi (tentative ${attempt}) : ${e?.message ?? e}`);
           await new Promise((r) => setTimeout(r, attempt * attempt * 1000));
         }
       }

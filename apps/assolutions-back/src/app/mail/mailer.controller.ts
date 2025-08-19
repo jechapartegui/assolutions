@@ -10,14 +10,7 @@ export class MailerController {
   /** POST /mail/test  { to, subject, html?, text? } */
 @UseGuards(PasswordGuard)
   @Post('mail')
-  async test(@Headers('projectid') projectId: number, @Body() body: MailInput) {
-    if(projectId == -1){projectId = 1}
-    const info = await this.mailer.queue(projectId,{
-      to: body.to,
-      subject: body.subject ?? 'Test envoi local',
-      text: body.text ?? 'Ceci est un test (texte).',
-      html: body.html ?? '<p><strong>Ceci est un test</strong> (HTML)</p>',
-    });
-    return { ok: true, messageId: info.messageId };
+  async Mail(@Headers('projectid') projectId: number, @Body() body: MailInput) {
+    this.mailer.Mail(projectId, body)
   }
 }

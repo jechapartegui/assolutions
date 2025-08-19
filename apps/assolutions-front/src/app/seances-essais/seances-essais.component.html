@@ -9,15 +9,14 @@
         <ng-template #noedit>
                 <button class="button is-outlined is-rounded is-primary" (click)="edit_personne = true; personne = null" i18n>Créer une nouvelle personne</button>
                   <div
-                   *ngIf="Account.id>0"
+                   *ngIf="thisAccount.id>0"
                     class="field"
                   >
                    <label class="label" i18n>Sélection de la personne</label>
 <div class="select">
   <select
     id="cours"
-    [(ngModel)]="personne"             
-    (ngModelChange)="test($event)"      
+    [(ngModel)]="personne"               
   >
     <option [ngValue]="null" i18n>— Sélectionner —</option>
     <option *ngFor="let p of ListePersonne" [ngValue]="p">

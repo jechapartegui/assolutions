@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MemberController } from './member.controller';
 import { MemberService } from './member.services';
-import { ProjectService } from '../project/project.service';
+import { ProjetService } from '../project/project.service';
 import { SeanceService } from '../seance/seance.services';
 import { ProfService } from '../prof/prof.services';
 import { GroupeService } from '../groupe/groupe.service';
@@ -29,16 +29,18 @@ import { ProfessorContract } from '../../entities/contrat_prof.entity';
 import { RegistrationSeason } from '../../entities/inscription-saison.entity';
 import { RegistrationSession } from '../../entities/inscription-seance.entity';
 import { Season } from '../../entities/saison.entity';
+import { ProjectService } from '../../crud/project.service';
+import { Project } from '../../entities/projet.entity';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
 Session, Person, LinkGroup, SessionProfessor, Group, Professor, Account, ProfessorContract,
-Season, RegistrationSession, RegistrationSeason,
+Season, RegistrationSession, RegistrationSeason, Project
     ]),
   ],
-  providers: [SessionService,LinkGroupService, ProfessorService, AccountService,  GroupService,  SessionProfessorService, MemberService, ProjectService, SeanceService, GroupeService, ProfService, PersonService, ProfessorContractService, RegistrationSessionService, RegistrationSeasonService, SeasonService],
+  providers: [SessionService,LinkGroupService,  ProjectService, ProfessorService, AccountService,  GroupService,  SessionProfessorService, MemberService, ProjetService, SeanceService, GroupeService, ProfService, PersonService, ProfessorContractService, RegistrationSessionService, RegistrationSeasonService, SeasonService],
   controllers: [MemberController],
   exports: [MemberService], // 👈 ajoute ça
 })

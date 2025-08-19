@@ -3,8 +3,6 @@ import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { MailData } from '../class/mail';
 import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import { Seance_VM } from '@shared/src/lib/seance.interface';
 import { MailInput } from '@shared/src/lib/mail-input.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -30,27 +28,23 @@ export class MailService {
         return Promise.reject(message);
       });
   }
-public EnvoiMailEssai(essai:Adherent_VM, seance:Seance_VM, mail:string, id:number, project_id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"mail_essai",
-    essai:essai,
-    seance:seance,
-    mail:mail,
-    id:id,
-    project_id:project_id
-  };
+public EnvoiMailEssai(personId:number, sessionId:number): Promise<any> {
+ this.url = 'api/mail/mail_essai';
+const body = {
+  personId :personId,
+  sessionId:sessionId
+ }
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
+    return this.global.POST(this.url, body)
+      .then((response: any) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
 public Envoyer(mail:MailData):Promise<boolean>{
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";

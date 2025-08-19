@@ -1,18 +1,19 @@
 import {
     Injectable
   } from '@nestjs/common';
+import { Project } from '../../entities/projet.entity';
+import { ProjectService } from '../../crud/project.service';
   
   
   @Injectable()
-  export class ProjectService {
+  export class ProjetService {
   
-    constructor(
-  
-   
-    // @InjectRepository(Projet)
-    // private readonly projetRepo: Repository<Projet>,
-    ) {
+    constructor(private projectSer:ProjectService
+       ) {
     }
+      async get(id: number) : Promise<Project> {
+        return await this.projectSer.get(id);
+      }
 
   
     

@@ -6,7 +6,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { PasswordGuard } from './guards/password.guard';
 import { MemberModule } from './member/member.module';
 import { SeanceModule } from './seance/seance.module';
-import { ProjectModule } from './project/project.module';
+import { ProjetModule } from './project/project.module';
 import { LieuModule } from './lieu/lieu.module';
 import { ProfModule } from './prof/prof.module';
 import { InscriptionSeanceModule } from './inscription_seance/inscription_seance.module';
@@ -42,7 +42,7 @@ TypeOrmModule.forRoot({
   namingStrategy: new SnakeNamingStrategy(),
   logging: ['schema'],
 }),
-    AuthModule, MemberModule, MailerModule, CoursProfModule,  SeanceModule, ProjectModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule, InscriptionSaisonModule
+    AuthModule, MemberModule, MailerModule, CoursProfModule,  SeanceModule, ProjetModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule, InscriptionSaisonModule
   ],  providers: [
     {
       provide: APP_GUARD,
