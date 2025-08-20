@@ -1,21 +1,19 @@
-/* apps/assolutions-back/tsconfig.app.json */
 {
-  "extends": "./tsconfig.json",          // étend ton tsconfig racine/commun
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": false,                  // on ne veut pas d'un projet composite ici
-    "emitDeclarationOnly": false,        // on génère du JS, pas que des .d.ts
-    "outDir": "./out-tsc/app",           // là où tes .js seront mis
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "types": ["node"]                    // typés Node (reflect-metadata, etc.)
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../../dist/libs/shared/*"]
+    },
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "declaration": false
   },
-  "include": [
-    "src/**/*.ts",
-    "../../libs/shared/src/**/*.ts"      // visible dans l'IDE, mais pas compilé en propre
-, "../assolutions-front/src/app/app.store.ts"  ],
-  "references": [
-    {
-      "path": "../../libs/shared/tsconfig.lib.json"
-    }
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["../assolutions-front/**", "../../libs/shared/**"]
 }
