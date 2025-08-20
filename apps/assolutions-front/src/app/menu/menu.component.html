@@ -807,14 +807,14 @@
                     >
                     </btn>
                   </div>
-                    <div class="field-label is-normal">
+                    <div *ngIf="rider.profil == 'ADH'" class="field-label is-normal">
                     <label class="label" style="white-space: nowrap;font-size: smaller;" i18n
                       >Action sur les séances affichées</label
                     >
                   </div>
-                        <btn
+                        <btn *ngIf="rider.profil == 'ADH'" 
                       [type_button]="'PresentLight'"
-                      (click)="MAJInscriptionAffichee(rider, true)"></btn><btn
+                      (click)="MAJInscriptionAffichee(rider, true)"></btn><btn *ngIf="rider.profil == 'ADH'" 
                       [type_button]="'AbsentLight'"
                       (click)="MAJInscriptionAffichee(rider, false)"></btn>
                 </div>

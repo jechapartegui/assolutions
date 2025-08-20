@@ -88,8 +88,8 @@ export class SeancesEssaisComponent implements OnInit {
                errorService.emitChange(o);
              });
          }
-         this.inscription_seance.FaireEssai(id_personne, this.id_seance).then(async (bool) =>{
-          if(bool){
+         this.inscription_seance.FaireEssai(id_personne, this.id_seance).then(async (id) =>{
+          if(id && id>0){
               await this.mail_serv.EnvoiMailEssai(id_personne, this.id_seance);
                let o = errorService.OKMessage(this.action);
                errorService.emitChange(o);

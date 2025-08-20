@@ -230,7 +230,7 @@ async AddRange(
         }
       }
       if (newSeance.seanceProfesseurs?.length) {
-        await this.UpdateSeanceProf(newSeance.seance_id, newSeance.seanceProfesseurs);
+        await this.UpdateSeanceProf(Number(newSeance.seance_id), newSeance.seanceProfesseurs);
       }
       seances.push(newSeance);
     }

@@ -333,6 +333,7 @@ export class SeanceComponent implements OnInit {
       this.editSeance.place_maximum = newValue.place_maximum;
       this.editSeance.essai_possible = false;
       this.editSeance.rdv = newValue.rdv;
+      this.editSeance.essai_possible = newValue.essai_possible;
       this.editSeance.afficher_present = newValue.afficher_present;
       this.editSeance.date_seance = null;
       this.editSeance.groupes = [];

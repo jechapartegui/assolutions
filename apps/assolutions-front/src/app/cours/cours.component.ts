@@ -344,6 +344,7 @@ SaveDateLieu(donnee_date_lieu :donnee_date_lieu){
     this.editCours.heure = donnee_date_lieu.heure;
     this.editCours.jour_semaine = donnee_date_lieu.jour_semaine;
     this.editCours.duree = donnee_date_lieu.duree;
+    this.editCours.rdv = donnee_date_lieu.rdv;
   }
    this.checkall();
     if(this.is_valid && this.editCours.id > 0){

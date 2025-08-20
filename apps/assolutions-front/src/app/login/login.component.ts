@@ -60,6 +60,7 @@ export class LoginComponent implements OnInit {
       switch (this.context) {
         case "ACTIVATE":
         case "REINIT":
+          console.log("passage");
             const token = params['token'];
             const user = params['user'];
             if(!token){
@@ -75,13 +76,9 @@ export class LoginComponent implements OnInit {
               return;
             }
             this.compte_serv.CheckToken(user, token).then((boo) => {
-
             if (boo) {
-              this.compte_serv.getAccountLogin(this.VM.Login).then((compte:Compte_VM) => {
+              this.compte_serv.getAccountLogin(user).then((compte:Compte_VM) => {
                 this.VM.compte = compte;
-                this.VM.compte.token = "";
-                this.VM.compte.actif = true;
-                this.store.login(compte);
                 if(this.context == "REINIT"){
                     this.action = $localize`Réinitialiser le mot de passe`;
                     let o = errorService.OKMessage(this.action);
@@ -92,17 +89,21 @@ export class LoginComponent implements OnInit {
                 this.action = $localize`Activer le compte`;
                     let o = errorService.OKMessage(this.action);
                     errorService.emitChange(o);
-                    this.router.navigate(['/login']);
+                    this.router.navigate([''], { queryParams: { context: 'MENU' } });
+                    return;
                    }); 
                                
-              } else {
-              
+              } else {              
                    let o = errorService.UnknownError(this.action);
-              errorService.emitChange(o);
-              this.router.navigate(['/login'])
+                    errorService.emitChange(o);
+                    this.router.navigate(['/login'])
 
               }
-            });
+            }).catch((error: Error) => {
+          let o = errorService.CreateError(this.action, error.message);
+            this.store.logout();
+          errorService.emitChange(o);
+        });
           break; 
         case "ESSAI":
           this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
@@ -182,7 +183,15 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         if(error == "ACCOUNT_NOT_ACTIVE"){
         let c = window.confirm($localize`Compte inactif : voulez-vous renvoyer un mail d'activation ?`);
         if(c){
-          
+          this.action = $localize`Envoi d'un mail d'activation`;
+          this.mailserv.MailActivation(this.VM.Login).then(() => {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+          }).catch((err: Error) => {
+            let o = errorService.CreateError(this.action, err.message);
+            errorService.emitChange(o);
+          });
+          return;
         }
         let o = errorService.Create(this.action, errorService.interpret_error(error), "Warning");
         errorService.emitChange(o);
@@ -265,7 +274,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
         if(this.context == "ESSAI" || this.context == "CREATE"){
           this.PreCreerCompte();
         } else {
-        let o = errorService.CreateError(this.action, error.message);
+        let o = errorService.CreateError(this.action, error);
             this.store.logout();
         errorService.emitChange(o);
 

@@ -1,34 +1,55 @@
-<!-- src/app/components/week-calendar/week-calendar.component.html -->
-<div class="controls is-flex is-justify-content-space-between is-align-items-center mb-2" *ngIf="showNav">
-  <div>
-    <button class="button" (click)="prevWeek.emit()">⟵ Semaine</button>
-    <button class="button ml-1" (click)="todayWeek.emit()">Aujourd'hui</button>
-    <button class="button ml-1" (click)="nextWeek.emit()">Semaine ⟶</button>
-  </div>
-  <div class="is-size-6 has-text-weight-semibold">
-    {{ days()[0].date | date:'dd/MM' }} – {{ days()[6].date | date:'dd/MM/yyyy' }}
-  </div>
-</div>
-
-<div class="week-grid">
-  <div class="hour-col">
-    <div class="hour" *ngFor="let h of hours()">{{ h }}h</div>
-  </div>
-
-  <div class="day-col" *ngFor="let d of days()">
-    <div class="day-header">{{ d.label }}</div>
-    <div class="day-body">
-      <div class="slot" *ngFor="let h of hours()"></div>
-      <ng-container *ngIf="grouped().get(d.iso) as evs">
-        <div class="event" *ngFor="let ev of evs"
-             [style.top.%]="topPct(ev.start)"
-             [style.height.%]="heightPct(ev.start, ev.end)"
-            
-        >
-          <div class="ev-time">{{ ev.start }}–{{ ev.end }}</div>
-          <div class="ev-title">{{ ev.title }}</div>
-        </div>
+<div class="weekcal">
+  <!-- Header (jours) -->
+  <div class="header-row">
+    <div class="time-spacer">
+      <ng-container *ngIf="showNav()">
+        <button class="nav-btn" (click)="prevWeek.emit()" title="Semaine précédente">‹</button>
+        <button class="nav-btn" (click)="todayWeek.emit()" title="Aujourd’hui">•</button>
+        <button class="nav-btn" (click)="nextWeek.emit()" title="Semaine suivante">›</button>
       </ng-container>
     </div>
+
+    <div class="day-header" *ngFor="let d of days()">
+      <div class="dow">{{ d.date| date:'EEE' }}</div>
+      <div class="dom">{{ d.date | date:'d/MM' }}</div>
+    </div>
+  </div>
+
+  <!-- Corps scrollable : rail heures + colonnes jours -->
+  <div class="scroll-body" #scroller>
+    <!-- Colonne heures -->
+    <div class="time-rail">
+      <div class="time-cell" *ngFor="let h of hours()">
+        {{ (h < 10 ? '0' + h : h) }}:00
+      </div>
+      <!-- ligne des 24h pour fermer le grid -->
+      <div class="time-cell last"></div>
+    </div>
+
+    <!-- 7 colonnes jours -->
+<div class="day-col"
+     *ngFor="let d of days(); trackBy: trackByDay">
+  <div class="hour-cell" *ngFor="let h of hours()"></div>
+  <div class="hour-cell last"></div>
+
+  <ng-container
+    *ngFor="let ev of (layoutByDay().get(d.iso) || []); trackBy: trackByEvent">
+    <div class="event-card"
+         [style.top.%]="ev.top"
+         [style.height.%]="ev.height"
+         [style.left.%]="ev.left"
+         [style.width.%]="ev.width"
+         [title]="ev.title + ' • ' + ev.start + '–' + ev.end">
+      <div class="ev-title">{{ ev.title }}</div>
+      <div class="ev-meta">
+        {{ ev.start }}–{{ ev.end }}
+        <ng-container *ngIf="ev.location"> • {{ ev.location }}</ng-container>
+      </div>
+      <div class="ev-sub" *ngIf="ev.subtitle">{{ ev.subtitle }}</div>
+    </div>
+  </ng-container>
+</div>
+
+
   </div>
 </div>

@@ -40,7 +40,7 @@ public GetFull(id:number): Promise<FullInscriptionSeance_VM> {
     });
 }
 
-public FaireEssai(personId:number, sessionId:number): Promise<boolean> {
+public FaireEssai(personId:number, sessionId:number): Promise<number> {
  this.url = 'api/inscription_seance/faire_essai';
 const body = {
   personId :personId,
@@ -48,7 +48,7 @@ const body = {
  }
 
     return this.global.POST(this.url, body)
-      .then((response: boolean) => {
+      .then((response: number) => {
         return response;
       })
     .catch(error => {

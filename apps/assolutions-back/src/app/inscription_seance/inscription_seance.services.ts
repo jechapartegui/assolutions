@@ -28,6 +28,19 @@ export class InscriptionSeanceService {
     return to_FullInscriptionSeance_VM(pISS);
 
   }
+   async FaireEssai(personId : number, sessionId: number) {
+    if (!personId || !sessionId) {
+      throw new BadRequestException('INVALID_PERSON_SESSION');
+    }
+    const regsession = new RegistrationSession();
+    regsession.dateInscription = new Date();
+    regsession.statutInscription = InscriptionStatus.ESSAI;
+    regsession.personId = personId;
+    regsession.seanceId = sessionId;
+    regsession.statutSeance = undefined;
+  const objet_insere = await this.inscriptionseanceserv.create(regsession);
+       return objet_insere.id;
+}
    async GetAllRiderSaison(rider_id: number, saison_id:number) {
     const pISSs = await this.inscriptionseanceserv.getAllRiderSaison(rider_id, saison_id);
     if (!pISSs) {

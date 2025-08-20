@@ -57,3 +57,12 @@ export function weekdayIndex(label: string): number {
   const key = (label ?? '').toString().trim().toLowerCase();
   return WD_MAP[key] ?? 0; // défaut: lundi
 }
+export function clamp(v: number, min: number, max: number) { return Math.max(min, Math.min(max, v)); }
+export function toDateLocal(src: string | Date): Date {
+  if (src instanceof Date) return new Date(src.getTime());
+  if (/^\d{4}-\d{2}-\d{2}$/.test(src)) {
+    const [y, m, d] = src.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(src);
+}

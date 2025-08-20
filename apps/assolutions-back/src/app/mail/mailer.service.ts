@@ -140,7 +140,7 @@ export class MailerService {
 
     const info = await transporter.sendMail({
       from: fromDisplay,
-      to: input.to,
+      to: this.sanitizeRecipient(input.to),  
       subject: input.subject,
       text: input.text,
       html: input.html,
@@ -167,7 +167,7 @@ export class MailerService {
    * @param email expéditeur (affiché)
    * @param name  nom expéditeur (affiché)
    */
-  async queue(input: MailInput, email = 'assolutions.club@gmail.com', name = 'AsSolutions', projectId:number | null =null) {
+  async queue(input: MailInput, email:string, name:string, projectId:number | null =null) {
     const { limiter } = this.getCached();
 
     return limiter.schedule(async () => {
@@ -184,4 +184,33 @@ export class MailerService {
       throw new Error('Échec envoi après 3 tentatives');
     });
   }
+
+  private sanitizeRecipient(to: string | string[]): string | string[] {
+  // si tu veux activer/désactiver facilement
+  const isLocal = process.env.NODE_ENV !== 'production';
+
+  if (!isLocal) return to;
+
+  const suffix = '@yopmail.com';
+
+  if (Array.isArray(to)) {
+    return to.map(t => this.rewriteAddress(t, suffix));
+  }
+  return this.rewriteAddress(to, suffix);
+}
+
+private rewriteAddress(to: string, suffix: string): string {
+  // Garde le "nom" devant <...> si fourni
+  const match = to.match(/^(.*)<(.+)>$/);
+  if (match) {
+    const name = match[1].trim();
+    const email = match[2].trim();
+    const localPart = email.split('@')[0];
+    return `${name} <${localPart}${suffix}>`;
+  } else {
+    const localPart = to.split('@')[0];
+    return `${localPart}${suffix}`;
+  }
+}
+
 }

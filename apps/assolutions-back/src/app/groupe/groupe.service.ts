@@ -99,6 +99,6 @@ export function toGroup(v:KeyValuePair,seasonId:number):Group{
   const entity = new Group();
   entity.id = Number(v.key);
   entity.name = v.value;
-  entity.seasonId=seasonId;
+  entity.saisonId=seasonId;
   return entity;
 }

@@ -8,6 +8,8 @@ export interface CalendarEvent{
    start: string;  // "HH:mm"
   end: string;    // "HH:mm"
    title: string;
+   subtitle: string;
+   location: string;
   status?: 'prevue' | 'realisee' | 'annulee'; // (principalement pour Séances)
 
 }
@@ -24,6 +26,8 @@ export function coursVmToEvents(cours: Cours_VM[], anyDateInWeek = new Date()): 
       start: c.heure,
       end: addMinutesToTime(c.heure, c.duree || 0),
       title: c.nom,
+      location: c.lieu_nom || '',
+      subtitle: c.heure + ' - ' + addMinutesToTime(c.heure, c.duree || 0),
       status:null,
     } satisfies CalendarEvent;
   });
@@ -39,6 +43,8 @@ export function seancesVmToEvents(seances: Seance_VM[]): CalendarEvent[] {
     date: formatISO(s.date_seance),
     start: s.heure_debut,
     end: addMinutesToTime(s.heure_debut, s.duree_seance || 0),
+      subtitle: s.heure_debut + ' - ' + addMinutesToTime(s.heure_debut, s.duree_seance || 0),
+      location: s.lieu_nom || '',
     title: s.libelle || s.cours_nom || 'Séance',
     status: mapStatut(s.statut)
   }));

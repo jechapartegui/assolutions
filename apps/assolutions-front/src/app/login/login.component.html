@@ -52,8 +52,8 @@
           <div class="columns">
             <div class="column">
               <div class="field" *ngIf="!projets">
-                <p class="control" style="display: flex; flex-direction: column; gap: 2px;">                 
-                  <button *ngIf="(!store.isLoggedIn()) && !VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                <p class="control" style="display: flex; flex-direction: column; gap: 2px;"> 
+                  <button *ngIf="(!store.isLoggedIn()) && !VM.creer_compte && !VM.mdp_requis" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
                     (click)="PreLogin()  && !VM.creer_compte" i18n>
                     Se connecter
                   </button>

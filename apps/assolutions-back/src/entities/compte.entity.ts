@@ -17,8 +17,8 @@ export class Account {
   password: string;
 
   /** Jeton d'activation après inscription */
-  @Column({ name: 'activation_token', nullable: true })
-  activationToken?: string;
+@Column({ name: 'activation_token', type: 'text', nullable: true, default: null })
+activationToken: string | null;   // <-- important
 
   /** Date de création du compte */
   @CreateDateColumn({ name: 'date_creation', type: 'timestamp with time zone' })

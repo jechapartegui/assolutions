@@ -114,7 +114,7 @@ export class ErrorService {
         return "Token incorrect";
       case "INCORRECT_PASSWORD":
       case "Unauthorized INCORRECT_PASSWORD":
-        return "Mot de passe incorrect";
+        return $localize`Mot de passe incorrect`;
       case "Unauthorized NO_VALUE_SET":
         return "Valeur non saisie";
       case "UPDATE_FAILED":

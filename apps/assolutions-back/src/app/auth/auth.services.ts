@@ -171,9 +171,10 @@ liste_compte.push(acc);
       throw new BadRequestException('INVALID_ACCOUNT');
     }
     let base = toAccount(vm, vm.password ? this.pepper : null);
+    base.isActive = false; // compte non actif par défaut
+    base.activationToken = crypto.randomBytes(16).toString('hex'); // génère
     try {
       const saved = await this.compteserv.create(base);
-      this.notifierAdherent("jechapartegui@gmail.com", "ca marche");
       return saved.id;
     } catch (err) {
       if (err instanceof QueryFailedError) {
@@ -269,7 +270,7 @@ export function toAccount(vm: Compte_VM, pepper: string | null = null): Account 
   entity.lastLoginAt = vm.derniere_connexion ?? undefined;
   entity.loginFailed = vm.echec_connexion > 0;
   entity.emailError = vm.mail_ko;
-  entity.activationToken = vm.token ?? undefined;
+  entity.activationToken = vm.token ?? null;
   return entity;
 }
 

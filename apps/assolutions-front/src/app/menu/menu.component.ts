@@ -62,7 +62,7 @@ export class MenuComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le menu`;
     this.loading = true;
-  
+    
     if (!this.store.isLoggedIn) {
       const o = errorService.CreateError(
         this.action,
@@ -76,7 +76,7 @@ export class MenuComponent implements OnInit {
     }
   
     try {
-      const today = new Date(2025,2,10);
+      const today = new Date();
       const yesterday = new Date(today);
       yesterday.setDate(today.getDate() - 1);
       const nextMonth = new Date(today);

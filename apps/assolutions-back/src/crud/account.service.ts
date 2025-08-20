@@ -24,7 +24,9 @@ export class AccountService {
      async getToken(login: string, activationToken:string): Promise<Account> {
     const item = await this.repo.findOne({ where: { login, activationToken } });
     if (!item) throw new NotFoundException('INCORRECT_TOKEN');
-    return item;
+  
+  await this.repo.update(item.id, { isActive: true, activationToken: null }); // écrit NULL
+  return this.repo.findOneByOrFail({ id: item.id }); // on relit pour renvoyer l'état à jour
   }
 
 

@@ -1,19 +1,127 @@
-/* src/app/components/week-calendar/week-calendar.component.scss */
-.week-grid {
-  display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
-  gap: .5rem;
+:host {
+  --hour-h: 56px;          /* hauteur d'une heure */
+  --gap: 4px;
+  --bdr: rgba(0,0,0,.1);
+  --grid: rgba(0,0,0,.06);
+  --ev-bg: #fff;
+  --ev-brd: rgba(0,0,0,.12);
+  --ev-shadow: 0 2px 6px rgba(0,0,0,.08);
+  --ev-pad: 6px;
+  --radius: 10px;
+  --header-h: 44px;
+  display: block;
 }
-.hour-col { position: relative; }
-.hour { height: 64px; font-size: .85rem; color: #666; text-align: right; padding-right: .25rem; }
-.day-col { display: grid; grid-template-rows: auto 1fr; }
-.day-header { text-transform: capitalize; font-weight: 600; }
-.day-body { position: relative; border: 1px solid #eee; border-radius: .5rem; padding: .25rem; min-height: calc(64px *  (22 - 8)); }
-.slot { position: relative; height: 64px; border-top: 1px dashed #eee; }
-.event { position: absolute; left: .35rem; right: .35rem; border-radius: .5rem; padding: .35rem .5rem; box-shadow: 0 1px 3px rgba(0,0,0,.12); background: #f5f5ff; border: 1px solid #d9d9ff; }
-.ev-time { font-size: .8rem; color: #555; }
-.ev-title { font-weight: 600; }
 
-@media (max-width: 768px) {
-  .week-grid { grid-template-columns: 40px 1fr; overflow-x: auto; }
+.weekcal {
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+/* entête jours */
+.header-row {
+  display: grid;
+  grid-template-columns: 68px repeat(7, 1fr);
+  align-items: center;
+  gap: var(--gap);
+  height: var(--header-h);
+  background: #fff;
+  border-bottom: 1px solid var(--bdr);
+  padding-inline: 6px;
+}
+
+.time-spacer { display: flex; gap: 4px; padding-left: 2px; }
+.nav-btn {
+  border: 1px solid var(--bdr);
+  background: #fff;
+  border-radius: 8px;
+  height: 28px; width: 28px; line-height: 26px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+.nav-btn:hover { background: #f3f3f3; }
+
+.day-header {
+  text-align: center;
+  .dow { font-weight: 700; font-size: .85rem; line-height: 1; }
+  .dom { font-size: .78rem; color: #666; }
+}
+
+/* corps scrollable synchronisé (heures + 7 jours) */
+.scroll-body {
+  display: grid;
+  grid-template-columns: 68px repeat(7, 1fr);
+  height: 72vh;           /* viewport de travail */
+  overflow-y: auto;
+  background: #fff;
+}
+
+/* rail heures */
+.time-rail {
+  grid-column: 1;
+  position: relative;
+}
+.time-cell {
+  height: var(--hour-h);
+  line-height: var(--hour-h);
+  text-align: right;
+  padding-right: 8px;
+  font-size: .72rem;
+  color: #7a7a7a;
+  position: relative;
+}
+.time-cell::after {
+  content: '';
+  position: absolute;
+  left: 100%;
+  right: -9999px;
+  top: calc(100% - 1px);
+  height: 1px;
+  background: var(--grid);
+}
+.time-cell.last { height: 0; }
+
+/* colonnes jours */
+.day-col {
+  position: relative;
+  height: calc(var(--hour-h) * 24);
+  border-left: 1px solid var(--bdr);
+  background:
+    linear-gradient(to bottom,
+      transparent calc(var(--hour-h) - 1px),
+      var(--grid) calc(var(--hour-h) - 1px)) 0 0 / 100% var(--hour-h) repeat-y;
+}
+.hour-cell { height: var(--hour-h); }
+.hour-cell.last { height: 0; }
+
+/* events compacts en "box" avec colonnes parallèles */
+.event-card {
+  position: absolute;
+  box-sizing: border-box;
+  padding: var(--ev-pad);
+  background: var(--ev-bg);
+  border: 1px solid var(--ev-brd);
+  border-radius: 10px;
+  box-shadow: var(--ev-shadow);
+  overflow: hidden;
+  font-size: .72rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ev-title {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+}
+.ev-meta, .ev-sub {
+  font-size: .68rem;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -100,6 +100,14 @@
 .photo-wrapper .image {
   margin: 0 auto;
 }
+/* carré 64×64 et rognage centré */
+.image.is-64x64 img {
+  width: 64px;         /* force la largeur */
+  height: 64px;        /* force la hauteur */
+  object-fit: cover;   /* rogne si besoin */
+  object-position: center; /* centre le recadrage */
+  display: block;      /* évite l’espace inline */
+}
 
 /* ===============
    CARD BORDERS

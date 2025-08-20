@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { InscriptionSeanceService } from './inscription_seance.services';
 import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/src/lib/inscription_seance.interface';
@@ -43,9 +43,9 @@ async GetAllSeanceFull(@Param('seance_id') seance_id: number) : Promise<FullInsc
 }
 
   @UseGuards(PasswordGuard)
-@Get('faire_essai/')
+@Post('faire_essai')
 async FaireEssai(@Body() { personId, sessionId }: { personId: number; sessionId: number }
-  ) : Promise<boolean> {
+  ) : Promise<number> {
   return this.inscription_seance_serv.FaireEssai(personId, sessionId);
 }
 

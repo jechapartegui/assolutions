@@ -45,6 +45,20 @@ const body = {
         return Promise.reject(message);
       });
   }
+
+  public MailActivation(login:string): Promise<any> {
+ this.url = 'api/mail/mail_activation/' + login;
+
+    return this.global.GET(this.url)
+      .then((response: any) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
 public Envoyer(mail:MailData):Promise<boolean>{
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";

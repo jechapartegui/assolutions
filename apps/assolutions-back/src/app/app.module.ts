@@ -19,6 +19,7 @@ import { join } from 'path';
 import { InscriptionSaisonModule } from './inscription_saison/inscription_saison.module';
 import { CoursProfModule } from './cours_prof/cours_prof.module';
 import { MailerModule } from './mail/mailer.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ TypeOrmModule.forRoot({
   namingStrategy: new SnakeNamingStrategy(),
   logging: ['schema'],
 }),
-    AuthModule, MemberModule, MailerModule, CoursProfModule,  SeanceModule, ProjetModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule, InscriptionSaisonModule
+    AuthModule, MemberModule, MessagesModule, MailerModule, CoursProfModule,  SeanceModule, ProjetModule, LieuModule, ProfModule, InscriptionSeanceModule, SaisonModule, CoursModule, GroupeModule, DocumentModule, InscriptionSaisonModule
   ],  providers: [
     {
       provide: APP_GUARD,
