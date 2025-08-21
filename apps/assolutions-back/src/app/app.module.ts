@@ -29,69 +29,42 @@ import { join } from 'path';
 
     // ✅ TypeORM config qui marche en dev & prod
     TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (cfg: ConfigService) => {
-        const isProd = cfg.get('NODE_ENV') === 'production';
+  useFactory: (cfg: ConfigService) => {
+    const isProd = cfg.get('NODE_ENV') === 'production';
+    const ssl = isProd ? { rejectUnauthorized: false } : false;
 
-        // Si tu fournis DATABASE_URL, on l’utilise. Sinon, on lit PGHOST/PGPORT/PGUSER...
-        const url = cfg.get<string>('DATABASE_URL');
-        const base = url
-          ? { url }
-          : {
-              host: cfg.get<string>('PGHOST', 'localhost'),
-              port: parseInt(cfg.get<string>('PGPORT') ?? '5432', 10),
-              username: cfg.get<string>('PGUSER', 'postgres'),
-              password: cfg.get<string>('PGPASSWORD', ''),
-              database: cfg.get<string>('PGDATABASE', 'postgres'),
-            };
+    return {
+      type: 'postgres',
+      url: cfg.get<string>('DATABASE_URL') || undefined,
+      host: cfg.get<string>('PGHOST'),
+      port: parseInt(cfg.get<string>('PGPORT') ?? '5432', 10),
+      username: cfg.get<string>('PGUSER'),
+      password: cfg.get<string>('PGPASSWORD'),
+      database: cfg.get<string>('PGDATABASE'),
 
-        // SSL en prod (Render) — rapide : on ne vérifie pas le CA.
-        // Si tu as le CA, remplace par: const ssl = { ca: cfg.get('PGSSL_CA') }
-        const ssl = isProd ? { rejectUnauthorized: false } : false;
+      // 🔥 Ajoute ceci :
+      entities: [
+        // dev (ts-node)
+        join(__dirname, '..', 'entities', '*.entity.ts'),
+        // prod (node sur dist)
+        join(__dirname, '..', 'entities', '*.entity.js'),
+      ],
 
-        return {
-          type: 'postgres',
-          ...base,
+      // Tu peux garder autoLoadEntities si tu veux, mais avec entities ça suffit :
+      autoLoadEntities: false,
 
-          // 👇 plus de galère de chemins: Nest charge automatiquement les @Entity
-          autoLoadEntities: true,
-
-          // Migrations (si tu en as) — fonctionne en dev et prod:
-          migrations: [join(__dirname, '..', 'migration', '*{.ts,.js}')],
-
-          namingStrategy: new SnakeNamingStrategy(),
-
-          // Dev = synchronize ON par défaut, Prod = OFF (ou force via env DB_SYNCHRONIZE=true)
-          synchronize:
-            (cfg.get('DB_SYNCHRONIZE') ?? '').toString().toLowerCase() === 'true'
-              ? true
-              : !isProd,
-
-          // SSL requis par ton provider (Render/Postgres managé)
-          ssl,
-          extra: isProd ? { ssl } : undefined,
-
-          // Logs plus verbeux en dev
-          logging: isProd ? ['error', 'warn'] : ['schema', 'error', 'warn'],
-        };
-      },
-    }),
-
-    AuthModule,
-    MemberModule,
-    MessagesModule,
-    MailerModule,
-    CoursProfModule,
-    SeanceModule,
-    ProjetModule,
-    LieuModule,
-    ProfModule,
-    InscriptionSeanceModule,
-    SaisonModule,
-    CoursModule,
-    GroupeModule,
-    DocumentModule,
-    InscriptionSaisonModule,
+      synchronize: (cfg.get('DB_SYNCHRONIZE') ?? '').toString().toLowerCase() === 'true'
+        ? true
+        : !isProd,
+      migrations: [join(__dirname, '..', 'migration', '*{.ts,.js}')],
+      namingStrategy: new SnakeNamingStrategy(),
+      ssl,
+      extra: isProd ? { ssl } : undefined,
+      logging: isProd ? ['error', 'warn'] : ['schema', 'error', 'warn'],
+    };
+  },
+  inject: [ConfigService],
+})
   ],
   providers: [
     {

@@ -8,6 +8,7 @@ export class Notes {
 
   @Column({ name: 'account_id' })
     UserId: number;
+    
     @ManyToOne(() => Account)
     @JoinColumn({ name: 'account_id' })
     User: Account;
