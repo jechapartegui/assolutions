@@ -4,9 +4,11 @@
     "prebuild": "rm -rf dist && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.node.json",
     "build": "tsc -p tsconfig.build.json",
-    "start": "cross-env TS_NODE_PROJECT=tsconfig.build.json node -r tsconfig-paths/register dist/main.js",
+
+    "start": "TS_NODE_PROJECT=tsconfig.build.json node -r tsconfig-paths/register dist/main.js",
     "start:dev": "cross-env TS_NODE_PROJECT=tsconfig.dev.json ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/main.ts"
   },
+
   "version": "0.0.1",
   "private": true,
   "engines": {
