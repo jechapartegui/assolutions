@@ -1,5 +1,5 @@
-import { Adresse } from "@shared/src/lib/adresse.interface";
-import { ItemContact } from "@shared/src/lib/personne.interface";
+import { Adresse } from "@shared/lib/adresse.interface";
+import { ItemContact } from "@shared/lib/personne.interface";
 import {
   Entity,
   PrimaryGeneratedColumn,

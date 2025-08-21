@@ -5,12 +5,12 @@ import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
-import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
+import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
 import { AppStore } from '../app.store';
 import { MailService } from '../../services/mail.service';
-import { MailInput } from '@shared/src/lib/mail-input.interface';
+import { MailInput } from '@shared/lib/mail-input.interface';
 
 @Component({
   standalone: false,

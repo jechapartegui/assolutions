@@ -1,6 +1,6 @@
 // src/app/components/course-list/course-list.component.ts
 import { Component, Input } from '@angular/core';
-import { Cours_VM } from '@shared/src/lib/cours.interface';
+import { Cours_VM } from '@shared/lib/cours.interface';
 import { addMinutesToTime } from '../utils/date.utils';
 
 @Component({ standalone:false,selector:'app-course-list-public', templateUrl:'./course-list-public.component.html' })

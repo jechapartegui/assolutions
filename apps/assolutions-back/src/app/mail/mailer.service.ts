@@ -3,7 +3,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import Bottleneck from 'bottleneck';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MailInput } from '@shared/src/lib/mail-input.interface';
+import { MailInput } from '@shared/lib/mail-input.interface';
 import { MailRecord } from '../../entities/mail-record.entity';
 import { ProjetService } from '../project/project.service';
 

@@ -1,7 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterAdherent } from '../app/adherent/adherent.component';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
 
 @Pipe({
   standalone: false,

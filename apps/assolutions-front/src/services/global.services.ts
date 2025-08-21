@@ -3,10 +3,10 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import {  catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { generatePassword } from '../class/password';
-import { KeyValuePair, ValidationItem } from '@shared/src/lib/autres.interface';
+import { KeyValuePair, ValidationItem } from '@shared/lib/autres.interface';
 import { ReglesFormulaire } from '../class/regles';
 import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
-import { ItemContact } from '@shared/src/lib/personne.interface';
+import { ItemContact } from '@shared/lib/personne.interface';
 import { AppStore } from '../app/app.store';
 
 @Injectable({

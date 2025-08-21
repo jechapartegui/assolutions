@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import type { ReglesAdresse } from '../../class/regles';
-import { ValidationItem } from '@shared/src/lib/autres.interface';
+import { ValidationItem } from '@shared/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
-import { Adresse } from '@shared/src/lib/adresse.interface';
+import { Adresse } from '@shared/lib/adresse.interface';
 
 @Component({
   standalone: false,

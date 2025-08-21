@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable,  UnauthorizedException } from '@nestjs/common';
-import { KeyValuePair, LienGroupe_VM } from '@shared/src';
 import { LinkGroup } from '../../entities/lien_groupe.entity';
 import { LinkGroupService } from '../../crud/linkgroup.service';
 import { GroupService } from '../../crud/group.service';
 import { Group } from '../../entities/groupe.entity';
+import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
 
 @Injectable()
 export class GroupeService {

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { ProfService } from './prof.services';
-import { Professeur_VM } from '@shared/src';
+import { Professeur_VM } from '@shared/lib/prof.interface';
 
 // src/auth/auth.controller.ts
 @Controller('prof')

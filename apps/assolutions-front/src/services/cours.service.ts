@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { Cours_VM } from '@shared/src/lib/cours.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
+import { Cours_VM } from '@shared/lib/cours.interface';
 import { HttpErrorResponse } from '@angular/common/http';
-import { PersonneLight_VM } from '@shared/src/lib/personne.interface';
+import { PersonneLight_VM } from '@shared/lib/personne.interface';
 
 @Injectable({
   providedIn: 'root'

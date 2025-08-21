@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs/common";
-import { LienGroupe_VM } from "@shared/src/lib/groupe.interface";
-import { Cours_VM} from "@shared/src/lib/cours.interface";
+import { LienGroupe_VM } from "@shared/lib/groupe.interface";
+import { Cours_VM} from "@shared/lib/cours.interface";
 import { Course } from "../../entities/cours.entity";
 import { CourseService } from "../../crud/course.service";
 import { toPersonneLight_VM } from "../member/member.services";

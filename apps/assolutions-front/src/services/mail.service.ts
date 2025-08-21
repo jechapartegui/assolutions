@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { MailData } from '../class/mail';
-import { KeyValuePairAny } from '@shared/src/lib/autres.interface';
-import { MailInput } from '@shared/src/lib/mail-input.interface';
+import { KeyValuePairAny } from '@shared/lib/autres.interface';
+import { MailInput } from '@shared/lib/mail-input.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({

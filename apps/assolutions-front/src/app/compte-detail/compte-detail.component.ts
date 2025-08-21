@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/lib/compte.interface';
 @Component({
   standalone: false,
   selector: 'app-compte-detail',

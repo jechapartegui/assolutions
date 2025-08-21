@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Lieu_VM } from '@shared/src/lib/lieu.interface';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
+import { Lieu_VM } from '@shared/lib/lieu.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
 
 @Injectable({
   providedIn: 'root'

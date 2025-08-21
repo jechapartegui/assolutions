@@ -13,7 +13,7 @@ import { operationService } from '../../services/operation.service';
 import { SaisonService } from '../../services/saison.service';
 import { StockService } from '../../services/stock.service';
 import { ClassComptable, ObjetAppli, TypeStock, StaticClass } from '../global';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 
 @Component({
   standalone: false,

@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
 import { AdherentImport } from '../app/import-adherent/import-adherent.component';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import { Compte_VM } from '@shared/src/lib/compte.interface';
-import { Seance_VM } from '@shared/src/lib/seance.interface';
-import { ItemList, KeyValuePair } from '@shared/src/lib/autres.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
+import { Compte_VM } from '@shared/lib/compte.interface';
+import { Seance_VM } from '@shared/lib/seance.interface';
+import { ItemList, KeyValuePair } from '@shared/lib/autres.interface';
 import { AppStore } from '../app/app.store';
-import { Personne_VM } from '@shared/src/lib/personne.interface';
+import { Personne_VM } from '@shared/lib/personne.interface';
 
 @Injectable({
   providedIn: 'root'

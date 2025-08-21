@@ -3,9 +3,9 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { SaisonService } from '../../services/saison.service';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
+import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 import { AppStore } from '../app.store';
 
 

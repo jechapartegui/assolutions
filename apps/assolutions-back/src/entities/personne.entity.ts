@@ -1,4 +1,4 @@
-import { ItemContact } from "@shared/src/lib/personne.interface";
+import { ItemContact } from "@shared/lib/personne.interface";
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from "typeorm";
 import { Account } from "./compte.entity";
 import { RegistrationSeason } from "./inscription-saison.entity";

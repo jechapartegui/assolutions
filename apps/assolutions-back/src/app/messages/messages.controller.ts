@@ -1,6 +1,6 @@
 // messages/messages.controller.ts
 import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
-import { MailInput } from '@shared/src/lib/mail-input.interface';
+import { MailInput } from '@shared/lib/mail-input.interface';
 import { MessagesService } from './messages.services';
 
 @Controller('mail')

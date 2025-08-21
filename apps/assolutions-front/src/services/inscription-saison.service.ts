@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { InscriptionSaison_VM } from '@shared/src/lib/inscription_saison.interface';
+import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({

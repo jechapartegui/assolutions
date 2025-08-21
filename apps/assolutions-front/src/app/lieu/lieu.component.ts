@@ -3,8 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { Lieu_VM } from '@shared/src/lib/lieu.interface';
-import { Adresse } from '@shared/src/lib/adresse.interface';
+import { Lieu_VM } from '@shared/lib/lieu.interface';
+import { Adresse } from '@shared/lib/adresse.interface';
 import { AppStore } from '../app.store';
 
 @Component({

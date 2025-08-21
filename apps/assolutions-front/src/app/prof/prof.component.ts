@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { GlobalService } from '../../services/global.services';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { Professeur_VM } from '@shared/src/lib/prof.interface';
-import { Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
+import { Professeur_VM } from '@shared/lib/prof.interface';
+import { Seance_VM, SeanceProfesseur_VM } from '@shared/lib/seance.interface';
 
 @Component({
   standalone: false,

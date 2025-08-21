@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CompteService } from '../../services/compte.service';
-import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/lib/compte.interface';
 
 @Component({
   standalone: false,

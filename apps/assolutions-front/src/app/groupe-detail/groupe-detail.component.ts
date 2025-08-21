@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
-import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
+import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
 
 
 @Component({

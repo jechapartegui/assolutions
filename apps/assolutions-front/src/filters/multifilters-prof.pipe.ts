@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { FilterAdherent } from '../app/adherent/adherent.component';
-import { Professeur_VM } from '@shared/src/lib/prof.interface';
+import { Professeur_VM } from '@shared/lib/prof.interface';
 
 @Pipe({
   standalone: false,

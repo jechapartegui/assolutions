@@ -14,9 +14,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "declaration": false,
-    "sourceMap": false
+    "declaration": false
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "include": ["src/**/*.ts"]
 }

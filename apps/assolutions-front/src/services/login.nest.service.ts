@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ProjetView, Compte_VM } from '@shared/src/lib/compte.interface';
+import { ProjetView, Compte_VM } from '@shared/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'

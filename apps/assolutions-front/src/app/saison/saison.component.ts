@@ -5,7 +5,7 @@ import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { SaisonService } from '../../services/saison.service';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 import { AppStore } from '../app.store';
 
 @Component({

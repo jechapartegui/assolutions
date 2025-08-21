@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AdherentSeance_VM } from '@shared/src/lib/seance.interface';
-import { Adherent_VM } from '@shared/src';
+import { AdherentSeance_VM } from '@shared/lib/seance.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
 import { Person } from '../../entities/personne.entity';
-import { Personne_VM, PersonneLight_VM } from '@shared/src/lib/personne.interface';
+import { Personne_VM, PersonneLight_VM } from '@shared/lib/personne.interface';
 import { PersonService } from '../../crud/person.service';
 import { RegistrationSeasonService } from '../../crud/inscriptionsaison.service';
 import { RegistrationSessionService } from '../../crud/inscriptionseance.service';

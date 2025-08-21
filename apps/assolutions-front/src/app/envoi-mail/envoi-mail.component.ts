@@ -7,10 +7,10 @@ import { GroupeService } from '../../services/groupe.service';
 import { MailService } from '../../services/mail.service';
 import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/src/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny } from '@shared/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import {  Seance_VM } from '@shared/src/lib/seance.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
+import {  Seance_VM } from '@shared/lib/seance.interface';
 import { AppStore } from '../app.store';
 
 @Component({

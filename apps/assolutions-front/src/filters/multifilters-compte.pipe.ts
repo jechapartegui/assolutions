@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { FilterCompte } from '../app/compte/compte.component';
-import {  Compte_VM } from '@shared/src/lib/compte.interface';
+import {  Compte_VM } from '@shared/lib/compte.interface';
 
 @Pipe({
   standalone: false,

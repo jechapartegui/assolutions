@@ -14,14 +14,14 @@ import { GroupeService } from '../../services/groupe.service';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/src/lib/autres.interface';
-import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import { Professeur_VM } from '@shared/src/lib/prof.interface';
-import { Cours_VM } from '@shared/src/lib/cours.interface';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/lib/autres.interface';
+import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { Professeur_VM } from '@shared/lib/prof.interface';
+import { Cours_VM } from '@shared/lib/cours.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 import { donnee_date_lieu } from '../component/datelieu/datelieu.component';
 import { caracteristique } from '../component/caracteristique_seance/caracteristique_seance.component';
-import { PersonneLight_VM } from '@shared/src/lib/personne.interface';
+import { PersonneLight_VM } from '@shared/lib/personne.interface';
 import { AppStore } from '../app.store';
 
 @Component({

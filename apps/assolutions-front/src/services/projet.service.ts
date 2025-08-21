@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import {  projet } from '../class/projet';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { Lieu_VM } from '@shared/src/lib/lieu.interface';
-import { Groupe_VM } from '@shared/src/lib/groupe.interface';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
+import { Lieu_VM } from '@shared/lib/lieu.interface';
+import { Groupe_VM } from '@shared/lib/groupe.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 
 @Injectable({
   providedIn: 'root'

@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Lieu_VM } from "@shared/src/lib/lieu.interface";
+import { Lieu_VM } from "@shared/lib/lieu.interface";
 import { Location } from "../../entities/lieu.entity";
-import { Adresse } from "@shared/src/lib/adresse.interface";
+import { Adresse } from "@shared/lib/adresse.interface";
 import { CourseProfessorService } from "../../crud/courseprofessor.service";
 import { toPersonneLight_VM } from "../member/member.services";
-import { PersonneLight_VM } from "@shared/src/lib/personne.interface";
+import { PersonneLight_VM } from "@shared/lib/personne.interface";
 import { CourseProfessor } from "../../entities/cours_professeur.entity";
 import { CourseService } from "../../crud/course.service";
 import { ProfessorContractService } from "../../crud/professorcontract.service";

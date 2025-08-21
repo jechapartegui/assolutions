@@ -1,7 +1,7 @@
 import {  Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import type { ReglesContact } from '../../class/regles';
-import { ItemContact } from '@shared/src/lib/personne.interface';
-import { ValidationItem } from '@shared/src/lib/autres.interface';
+import { ItemContact } from '@shared/lib/personne.interface';
+import { ValidationItem } from '@shared/lib/autres.interface';
 
 @Component({
   standalone: false,

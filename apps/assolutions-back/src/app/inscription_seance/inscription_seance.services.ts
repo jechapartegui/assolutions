@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs/common";
 import { RegistrationSessionService } from "../../crud/inscriptionseance.service";
-import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from "@shared/src/lib/inscription_seance.interface";
+import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from "@shared/lib/inscription_seance.interface";
 import { InscriptionStatus, RegistrationSession, SeanceStatus } from "../../entities/inscription-seance.entity";
 import { toPersonne_VM } from "../member/member.services";
 

@@ -1,7 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterCours } from '../app/cours/cours.component';
-import { Cours_VM } from '@shared/src/lib/cours.interface';
+import { Cours_VM } from '@shared/lib/cours.interface';
 @Pipe({
   standalone: false,
   name: 'multifiltersCours',

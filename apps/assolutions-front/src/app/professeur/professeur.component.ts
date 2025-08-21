@@ -7,9 +7,9 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
-import { Professeur_VM, ProfSaisonVM } from '@shared/src/lib/prof.interface';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Professeur_VM, ProfSaisonVM } from '@shared/lib/prof.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 import { AppStore } from '../app.store';
 
 @Component({

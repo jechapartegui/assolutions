@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Lieu_VM } from "@shared/src/lib/lieu.interface";
-import { KeyValuePair } from "@shared/src/lib/autres.interface";
+import { Lieu_VM } from "@shared/lib/lieu.interface";
+import { KeyValuePair } from "@shared/lib/autres.interface";
 import { LocationService } from "../../crud/location.service";
 import { Location } from "../../entities/lieu.entity";
-import { Adresse } from "@shared/src/lib/adresse.interface";
+import { Adresse } from "@shared/lib/adresse.interface";
 
 @Injectable()
 export class LieuService {

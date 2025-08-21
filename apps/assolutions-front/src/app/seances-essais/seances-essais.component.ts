@@ -4,12 +4,12 @@ import { AdherentService } from '../../services/adherent.service';
 // import { ErrorService } from '../../services/error.service';
 import { SeancesService } from '../../services/seance.service';
 import { GlobalService } from '../../services/global.services';
-import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/lib/compte.interface';
 import { CompteService } from '../../services/compte.service';
-import { Personne_VM } from '@shared/src/lib/personne.interface';
+import { Personne_VM } from '@shared/lib/personne.interface';
 import { ErrorService } from '../../services/error.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { MailService } from '../../services/mail.service';
 

@@ -1,7 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterSeance } from '../app/seance/seance.component';
-import { Seance_VM } from '@shared/src/lib/seance.interface';
+import { Seance_VM } from '@shared/lib/seance.interface';
 
 @Pipe({
   standalone: false,

@@ -1,7 +1,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { FilterSaison } from '../app/saison/saison.component';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 @Pipe({
   standalone: false,
   name: 'multifiltersSaison',

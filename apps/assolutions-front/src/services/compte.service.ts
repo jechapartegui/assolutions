@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.preprod';
-import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/lib/compte.interface';
 
 @Injectable({
   providedIn: 'root'

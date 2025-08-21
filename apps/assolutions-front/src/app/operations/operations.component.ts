@@ -11,7 +11,7 @@ import { ErrorService } from '../../services/error.service';
 import { operationService } from '../../services/operation.service';
 import { SaisonService } from '../../services/saison.service';
 import { StaticClass } from '../global';
-import { Saison_VM } from '@shared/src/lib/saison.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 
 @Component({
   standalone: false,

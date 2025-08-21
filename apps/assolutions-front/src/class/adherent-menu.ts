@@ -1,6 +1,6 @@
-import { AdherentSeance_VM, MesSeances_VM } from "@shared/src/lib/seance.interface";
+import { AdherentSeance_VM, MesSeances_VM } from "@shared/lib/seance.interface";
 import { FilterMenu } from "../app/menu/menu.component";
-import { Adherent_VM } from "@shared/src/lib/member.interface";
+import { Adherent_VM } from "@shared/lib/member.interface";
 
 export class AdherentMenu extends Adherent_VM {
   public sort_nom = "NO";

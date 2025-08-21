@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
-import { Compte_VM, ProjetView } from '@shared/src/lib/compte.interface';
+import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
 import { AccountService } from '../../crud/account.service';
 import { Account } from '../../entities/compte.entity';
 import { SeasonService } from '../../crud/season.service';

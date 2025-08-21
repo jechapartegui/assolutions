@@ -3,7 +3,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
-import { Compte_VM } from '@shared/src/lib/compte.interface';
+import { Compte_VM } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
 
 @Component({

@@ -8,15 +8,15 @@ import { InscriptionSeanceService } from '../../services/inscription-seance.serv
 import { ProfesseurService } from '../../services/professeur.service';
 import { StaticClass } from '../global';
 import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
-import { AdherentSeance_VM, MesSeances_VM, Seance_VM, StatutSeance, calculerHeureFin } from '@shared/src/lib/seance.interface';
+import { AdherentSeance_VM, MesSeances_VM, Seance_VM, StatutSeance, calculerHeureFin } from '@shared/lib/seance.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
 import { AdherentService } from '../../services/adherent.service';
 import { AdherentMenu } from '../../class/adherent-menu';
-import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/src/lib/inscription_seance.interface';
-import { Professeur_VM } from '@shared/src/lib/prof.interface';
-import { Lieu_VM } from '@shared/src/lib/lieu.interface';
-import { Cours_VM } from '@shared/src/lib/cours.interface';
+import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/lib/inscription_seance.interface';
+import { Professeur_VM } from '@shared/lib/prof.interface';
+import { Lieu_VM } from '@shared/lib/lieu.interface';
+import { Cours_VM } from '@shared/lib/cours.interface';
 import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
 import { AppStore } from '../app.store';
 

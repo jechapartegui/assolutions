@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { LienGroupe_VM } from '@shared/src/lib/groupe.interface';
-import { MesSeances_VM, Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
+import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { MesSeances_VM, Seance_VM, SeanceProfesseur_VM } from '@shared/lib/seance.interface';
 import { SessionService } from '../../crud/session.service';
 import { RegistrationSessionService } from '../../crud/inscriptionseance.service';
 import { Session } from '../../entities/seance.entity';

@@ -7,7 +7,7 @@ import { MailerModule } from '../mail/mailer.module';
 import { Project } from '../../entities/projet.entity';
 import { Session } from '../../entities/seance.entity';
 import { Person } from '../../entities/personne.entity';
-import { MailInput } from '@shared/src/lib/mail-input.interface';
+import { MailInput } from '@shared/lib/mail-input.interface';
 import { MailProject } from '../../entities/mail-project.entity';
 import { Account } from '../../entities/compte.entity';
 

@@ -1,4 +1,4 @@
-import { Seance_VM } from "@shared/src/lib/seance.interface";
+import { Seance_VM } from "@shared/lib/seance.interface";
 import { addMinutesToTime } from "../utils/date.utils";
 import { Component, Input } from "@angular/core";
 import { Router } from "@angular/router";

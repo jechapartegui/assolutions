@@ -3,11 +3,12 @@ import { ProfessorService } from "../../crud/professor.service";
 import { SessionProfessorService } from "../../crud/seanceprofesseur.service";
 import { SessionProfessor } from "../../entities/seance-professeur.entity";
 import { Professor } from "../../entities/professeur.entity";
-import { Professeur_VM, ProjetView } from "@shared/src";
 import { ProfessorContract } from "../../entities/contrat_prof.entity";
 import { ProfessorContractService } from "../../crud/professorcontract.service";
 import { toPersonneLight_VM } from "../member/member.services";
 import { AccountService } from "../../crud/account.service";
+import { ProjetView } from "@shared/lib/compte.interface";
+import { Professeur_VM} from "@shared/lib/prof.interface";
 
 @Injectable()
 export class ProfService {

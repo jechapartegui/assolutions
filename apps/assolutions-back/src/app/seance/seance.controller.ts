@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { SeanceService } from './seance.services';
-import { Seance_VM, SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
+import { Seance_VM, SeanceProfesseur_VM } from '@shared/lib/seance.interface';
 
 // src/auth/auth.controller.ts
 @Controller('seance')

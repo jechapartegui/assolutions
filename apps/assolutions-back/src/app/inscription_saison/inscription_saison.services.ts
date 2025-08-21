@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs/common";
-import { InscriptionSaison_VM } from "@shared/src/lib/inscription_saison.interface";
+import { InscriptionSaison_VM } from "@shared/lib/inscription_saison.interface";
 import { RegistrationSeason } from "../../entities/inscription-saison.entity";
 import { RegistrationSeasonService } from "../../crud/inscriptionsaison.service";
-import { LienGroupe_VM } from "@shared/src";
+import { LienGroupe_VM } from "@shared/lib/groupe.interface";
 
 @Injectable()
 export class InscriptionSaisonService {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { SeanceProfesseur_VM } from '@shared/src/lib/seance.interface';
+import { SeanceProfesseur_VM } from '@shared/lib/seance.interface';
 
 @Injectable({
   providedIn: 'root'

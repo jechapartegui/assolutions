@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { InscriptionSeanceService } from './inscription_seance.services';
-import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/src/lib/inscription_seance.interface';
+import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/lib/inscription_seance.interface';
 
 //   this.url = 'api/inscription_seance/get/' + id;
 //  this.url = 'api/inscription_seance/get_full/' + id;

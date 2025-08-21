@@ -1,4 +1,4 @@
-import { Compte_VM } from "@shared/src/lib/compte.interface";
+import { Compte_VM } from "@shared/lib/compte.interface";
 
 export class Login_VM{
     public compte:Compte_VM;

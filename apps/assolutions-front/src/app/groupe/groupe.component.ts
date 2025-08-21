@@ -4,9 +4,9 @@ import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { GroupeService } from '../../services/groupe.service';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import { KeyValuePair } from '@shared/src/lib/autres.interface';
-import { Groupe_VM } from '@shared/src/lib/groupe.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
+import { KeyValuePair } from '@shared/lib/autres.interface';
+import { Groupe_VM } from '@shared/lib/groupe.interface';
 import { AppStore } from '../app.store';
 
 @Component({

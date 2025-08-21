@@ -4,9 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
-import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from '@shared/src/lib/inscription_seance.interface';
-import { Adherent_VM } from '@shared/src/lib/member.interface';
-import { Seance_VM, StatutSeance } from '@shared/src/lib/seance.interface';
+import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from '@shared/lib/inscription_seance.interface';
+import { Adherent_VM } from '@shared/lib/member.interface';
+import { Seance_VM, StatutSeance } from '@shared/lib/seance.interface';
 @Component({
   standalone: false,
   selector: 'app-ma-seance',

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Saison_VM } from "@shared/src/lib/saison.interface";
+import { Saison_VM } from "@shared/lib/saison.interface";
 import { SeasonService } from "../../crud/season.service";
 import { Season } from "../../entities/saison.entity";
 

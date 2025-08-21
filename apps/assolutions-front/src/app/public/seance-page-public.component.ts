@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Seance_VM } from '@shared/src/lib/seance.interface';
+import { Seance_VM } from '@shared/lib/seance.interface';
 import { addDays, getWeekStart } from '../utils/date.utils';
 import { seancesVmToEvents } from '../../class/calendar-event';
 import { SeancesService } from '../../services/seance.service';
