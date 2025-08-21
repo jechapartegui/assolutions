@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from '../entities/compte.entity';
 import { Person } from '../entities/personne.entity';
-import { ProjetView } from '@shared/src';
+import { ProjetView } from '@shared/lib/compte.interface';
 
 @Injectable()
 export class AccountService {
