@@ -4,19 +4,20 @@
     "prebuild": "rm -rf dist && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.node.json",
     "build": "tsc -p tsconfig.build.json",
-
     "start": "cross-env TS_NODE_PROJECT=tsconfig.build.json node -r tsconfig-paths/register dist/main.js",
     "start:dev": "cross-env TS_NODE_PROJECT=tsconfig.dev.json ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/main.ts"
   },
-
   "version": "0.0.1",
   "private": true,
   "engines": {
     "node": "20.x"
   },
   "dependencies": {
+    "@nestjs/config": "^4.0.2",
     "@nestjs/typeorm": "^11.0.0",
     "bottleneck": "^2.19.5",
+    "crypto-js": "^4.2.0",
+    "file-type": "^16.5.4",
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "typeorm": "^0.3.25",
@@ -24,7 +25,12 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.7",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "@types/nodemailer": "^7.0.1",
     "cross-env": "^10.0.0",
-    "tsconfig-paths": "^4.2.0"
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2"
   }
 }
