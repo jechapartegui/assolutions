@@ -1,37 +1,24 @@
 {
-  "name": "assolutions-back",
-  "scripts": {
-    "prebuild": "rm -rf dist && npm run build:shared",
+ "scripts": {
+    "clean": "node -e \"try{require('fs').rmSync('dist',{recursive:true,force:true})}catch(e){}\"",
+    "prebuild": "npm run clean && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.node.json",
-    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -v",
     "start": "node dist/main.js",
     "start:dev": "cross-env TS_NODE_PROJECT=tsconfig.dev.json ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/main.ts"
   },
-  "version": "0.0.1",
-  "private": true,
-  "engines": {
-    "node": "20.x"
+  "devDependencies": {
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.2",
+    "@types/node": "^24.3.0",
+    "@types/express": "^5.0.3",
+    "@types/nodemailer": "^7.0.1",
+    "ts-node-dev": "^2.0.0"
   },
   "dependencies": {
-    "@nestjs/config": "^4.0.2",
-    "@nestjs/typeorm": "^11.0.0",
-    "bottleneck": "^2.19.5",
+    "@nestjs/config": "^3.2.0",
     "crypto-js": "^4.2.0",
     "file-type": "^16.5.4",
-    "nodemailer": "^7.0.5",
-    "pg": "^8.16.3",
-    "typeorm": "^0.3.25",
-    "typeorm-naming-strategies": "^4.1.0"
-  },
-  "devDependencies": {
-    "@nestjs/cli": "^11.0.7",
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.3.0",
-    "@types/nodemailer": "^7.0.1",
-    "cross-env": "^10.0.0",
-    "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.16",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.2"
+    "nodemailer": "^6.9.0"
   }
 }

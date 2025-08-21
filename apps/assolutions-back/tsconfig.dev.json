@@ -2,19 +2,22 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
+    "moduleResolution": "Node",
     "outDir": "./dist-dev",
     "rootDir": "./src",
+
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../libs/shared/src/*"]
     },
+
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false,
+
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "include": ["src/**/*.ts"]
 }
