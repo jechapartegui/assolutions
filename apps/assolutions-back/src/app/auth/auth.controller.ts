@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.services';
-import { Compte_VM } from '@shared/src';
 import { PasswordGuard } from '../guards/password.guard';
-
 // src/auth/auth.controller.ts
 @Controller('auth')
 export class AuthController {

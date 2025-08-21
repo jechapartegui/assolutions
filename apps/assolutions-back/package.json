@@ -3,9 +3,12 @@
 "scripts": {
     "prebuild": "rm -rf dist && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.node.json",
-    "build": "tsc -p tsconfig.app.json",
+    "build": "tsc -p tsconfig.build.json",
+
     "start": "node -r tsconfig-paths/register dist/main.js",
-    "start:dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register --project tsconfig.app.json src/main.ts"
+
+    "start:dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register --project tsconfig.dev.json src/main.ts",
+    "watch:shared": "tsc -w -p ../../libs/shared/tsconfig.node.json"
   },
   "version": "0.0.1",
   "private": true,
