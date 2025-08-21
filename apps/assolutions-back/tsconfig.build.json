@@ -8,7 +8,7 @@
 
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../../dist/libs/shared/*"]
+      "@shared/*": ["../../libs/shared/src/*"]
     },
 
     "experimentalDecorators": true,

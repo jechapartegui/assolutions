@@ -1,9 +1,14 @@
 {
  "scripts": {
-    "clean": "node -e \"try{require('fs').rmSync('dist',{recursive:true,force:true})}catch(e){}\"",
-    "prebuild": "npm run clean && npm run build:shared",
+ "clean": "node -e \"try{require('fs').rmSync('dist',{recursive:true,force:true})}catch(e){}\"",
+    "clean:shared:src": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('..','..','libs','shared','src');if(fs.existsSync(d)){(function w(x){for(const e of fs.readdirSync(x,{withFileTypes:true})){const f=p.join(x,e.name);if(e.isDirectory()) w(f); else if(/\\.(js|js\\.map|d\\.ts)$/.test(f)) fs.rmSync(f)}})(d)}\"",
+
+    "prebuild": "npm run clean && npm run clean:shared:src && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.node.json",
-    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -v",
+
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json -v && npm run assert:no-alias",
+    "assert:no-alias": "node -e \"const fs=require('fs'),p=require('path');let bad=[];const w=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const f=p.join(d,e.name);if(e.isDirectory())return w(f);if(f.endsWith('.js')){const s=fs.readFileSync(f,'utf8');if(s.includes('@shared/')) bad.push(f);}});w('dist');if(bad.length){console.error('Leftover @shared in:',bad);process.exit(1);}else{console.log('✔ no @shared alias left in dist');}\"",
+
     "start": "node dist/main.js",
     "start:dev": "cross-env TS_NODE_PROJECT=tsconfig.dev.json ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/main.ts"
   },
