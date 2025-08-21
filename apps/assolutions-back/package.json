@@ -1,12 +1,10 @@
 {
   "name": "assolutions-back",
- "scripts": {
+  "scripts": {
     "prebuild": "rm -rf dist && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.node.json",
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-
-    "start": "node dist/main.js", 
-
+    "start": "node dist/main.js",
     "start:dev": "cross-env TS_NODE_PROJECT=tsconfig.dev.json ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/main.ts"
   },
   "version": "0.0.1",
