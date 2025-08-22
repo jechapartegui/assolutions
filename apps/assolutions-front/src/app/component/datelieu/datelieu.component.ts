@@ -2,10 +2,10 @@ import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { ValidationItem } from "@shared/lib/autres.interface";
 import { Lieu_VM } from "@shared/lib/lieu.interface";
 import { AppStore } from "../../app.store";
-import { ReglesDateLieu } from "src/class/regles";
-import { LieuNestService } from "src/services/lieu.nest.service";
-import { SaisonService } from "src/services/saison.service";
-import { GlobalService } from "src/services/global.services";
+import { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
+import { LieuNestService } from "apps/assolutions-front/src/services/lieu.nest.service";
+import { SaisonService } from "apps/assolutions-front/src/services/saison.service";
+import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
 @Component({
   standalone: false,
