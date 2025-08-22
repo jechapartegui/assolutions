@@ -5,19 +5,16 @@
     "moduleResolution": "Node",
     "outDir": "./dist-dev",
     "rootDir": "./src",
-
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../libs/shared/src/*"]
     },
-
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false,
-
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "../../libs/shared/src/**/*.ts"]
 }

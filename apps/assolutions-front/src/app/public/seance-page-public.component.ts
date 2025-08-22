@@ -5,8 +5,9 @@ import { addDays, getWeekStart } from '../utils/date.utils';
 import { seancesVmToEvents } from '../../class/calendar-event';
 import { SeancesService } from '../../services/seance.service';
 import { AppStore } from '../app.store';
-import { ProjetView } from '@shared/src';
 import { SaisonService } from '../../services/saison.service';
+import { ProjetView } from '@shared/lib/compte.interface';
+
 
 @Component({ standalone:false, selector: 'app-seances-page', templateUrl: './seances-page-public.component.html' })
 export class SeancesPage {

@@ -21,21 +21,19 @@
   },
   "nxCloudId": "6802ccaadf2ef9206b35bfa8",
   "plugins": [
-    {
-      "plugin": "@nx/js/typescript",
-      "options": {
-        "typecheck": {
-          "targetName": "typecheck"
-        },
-        "build": {
-          "targetName": "build",
-          "configName": "tsconfig.lib.json",
-          "buildDepsName": "build-deps",
-          "watchDepsName": "watch-deps"
-        }
-      },
-      "exclude": ["libs/*"]
-    },
+{
+  "plugin": "@nx/js/typescript",
+  "options": {
+    "typecheck": { "targetName": "typecheck" },
+    "build": {
+      "targetName": "build",
+      "configName": "tsconfig.build.json",  
+      "buildDepsName": "build-deps",
+      "watchDepsName": "watch-deps"
+    }
+  },
+  "exclude": ["libs/*"]
+},
     {
       "plugin": "@nx/webpack/plugin",
       "options": {

@@ -1,9 +1,17 @@
 {
   "name": "@assolutions/source",
   "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {},
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @assolutions/back && npm run build --workspace @assolutions/front",
+    "start": "npm run start --workspace @assolutions/back",
+    "start:front": "npm run start --workspace @assolutions/front",
+    "start:dev": "npm run start:dev --workspace @assolutions/back"
+  },
   "dependencies": {
     "@angular/animations": "20.0.4",
     "@angular/common": "20.0.4",
@@ -14,11 +22,13 @@
     "@angular/platform-browser": "20.0.4",
     "@angular/platform-browser-dynamic": "20.0.4",
     "@angular/router": "20.0.4",
+
     "@nestjs/common": "^10.0.2",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.0.2",
     "@nestjs/platform-express": "^10.0.2",
     "@nestjs/typeorm": "^11.0.0",
+
     "axios": "^1.6.0",
     "bcryptjs": "^3.0.2",
     "bottleneck": "^2.19.5",
@@ -29,6 +39,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.8.0",
     "typeorm": "^0.3.25",
+    "typeorm-naming-strategies": "^4.1.0",
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
@@ -38,11 +49,13 @@
     "@angular/cli": "^20.0.3",
     "@angular/compiler-cli": "20.0.4",
     "@angular/language-service": "20.0.4",
+
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.0.2",
+
     "@nx/angular": "21.2.1",
-    "@nx/esbuild": "^21.2.1",
+    "@nx/esbuild": "21.2.1",
     "@nx/eslint": "21.2.1",
     "@nx/eslint-plugin": "21.2.1",
     "@nx/js": "21.2.1",
@@ -50,34 +63,32 @@
     "@nx/node": "21.2.1",
     "@nx/web": "21.2.1",
     "@nx/webpack": "21.2.1",
+
     "@schematics/angular": "~18.2.0",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+
     "@types/crypto-js": "^4.2.2",
     "@types/node": "~18.16.9",
     "@types/nodemailer": "^6.4.18",
-    "@typescript-eslint/utils": "^8.0.0",
+
     "angular-eslint": "^18.3.0",
     "crypto": "^1.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.1.5",
-    "nx": "20.8.0",
+    "nx": "21.2.1",
+
     "prettier": "^2.6.2",
     "rimraf": "^6.0.1",
+
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+
     "tslib": "^2.3.0",
-    "typescript": "^5.8.3",
+    "typescript": "5.8.3",
     "typescript-eslint": "^8.0.0",
     "webpack-cli": "^5.1.4"
-  },
-  "workspaces": [
-    "packages/*",
-    "assolutions-back",
-    "assolutions-front",
-    "libs",
-    "libs/*",
-    "apps/*",
-    "shared"
-  ]
+  }
 }

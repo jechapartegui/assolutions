@@ -1,8 +1,8 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { getWeekStart } from '../utils/date.utils';
 import { coursVmToEvents } from '../../class/calendar-event';
-import { Cours_VM } from '@shared/src';
 import { CoursService } from '../../services/cours.service';
+import { Cours_VM } from '@shared/lib/cours.interface';
 
 @Component({ standalone:false,selector: 'app-cours-page-public', templateUrl: './course-page-public-component.html' })
 export class CoursPage implements OnInit {

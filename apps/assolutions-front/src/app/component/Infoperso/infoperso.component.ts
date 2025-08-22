@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { ValidationItem } from "@shared/lib/autres.interface";
 import { Adherent_VM } from "@shared/lib/member.interface";
-import type { ReglesPersonne } from "apps/assolutions-front/src/class/regles";
-import { GlobalService } from "apps/assolutions-front/src/services/global.services";
+import { ReglesPersonne } from "src/class/regles";
+import { GlobalService } from "src/services/global.services";
 
 @Component({
   standalone: false,

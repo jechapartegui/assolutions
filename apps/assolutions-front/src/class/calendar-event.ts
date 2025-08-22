@@ -1,6 +1,7 @@
-import { Cours_VM, Seance_VM } from "@shared/src";
 import { addDays, getWeekStart, addMinutesToTime, formatISO, weekdayIndex } from "../app/utils/date.utils";
 
+import { Cours_VM } from '@shared/lib/cours.interface';
+import { Seance_VM } from '@shared/lib/seance.interface';
 export interface CalendarEvent{
      type : "seance" | "cours";
     id:number;

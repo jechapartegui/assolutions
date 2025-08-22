@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Compte_VM, ProjetView, Saison_VM } from '@shared/src';
+import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
+import { Saison_VM } from '@shared/lib/saison.interface';
 
 @Injectable({ providedIn: 'root' })
 export class AppStore {

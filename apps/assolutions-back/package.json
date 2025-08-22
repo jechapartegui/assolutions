@@ -1,5 +1,8 @@
 {
-"scripts": {
+  "name": "@assolutions/back",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
     "clean": "node -e \"try{require('fs').rmSync('dist',{recursive:true,force:true})}catch(e){}\"",
     "clean:shared:src": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('..','..','libs','shared','src');if(fs.existsSync(d)){(function w(x){for(const e of fs.readdirSync(x,{withFileTypes:true})){const f=p.join(x,e.name);if(e.isDirectory()) w(f); else if(/\\.(js|js\\.map|d\\.ts)$/.test(f)) fs.rmSync(f)}})(d)}\"",
 
@@ -10,34 +13,26 @@
 
     "assert:no-alias": "node -e \"const fs=require('fs'),p=require('path');let bad=[];const w=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const f=p.join(d,e.name);if(e.isDirectory())return w(f);if(f.endsWith('.js')){const s=fs.readFileSync(f,'utf8');if(s.includes('@shared/')) bad.push(f);}});w('dist');if(bad.length){console.error('Leftover @shared in:',bad);process.exit(1);}else{console.log('✔ no @shared alias left in dist');}\"",
 
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+
+    "start:dev": "ts-node-dev --respawn --transpile-only --project tsconfig.dev.json -r ./register-tsconfig-paths.cjs src/main.ts"
   },
   "dependencies": {
-    "@nestjs/common": "^10.4.0",
-    "@nestjs/core": "^10.4.0",
-    "@nestjs/platform-express": "^10.4.0",
-    "@nestjs/typeorm": "^10.0.0",
-    "@nestjs/config": "^3.2.0",
-
-    "typeorm": "^0.3.20",
-    "pg": "^8.11.3",
-    "typeorm-naming-strategies": "^4.1.0",
-
+    "@nestjs/common": "^10.0.2",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^10.0.2",
+    "@nestjs/platform-express": "^10.0.2",
+    "@nestjs/typeorm": "^11.0.0",
     "bottleneck": "^2.19.5",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-
-    "crypto-js": "^4.2.0",
     "file-type": "^16.5.4",
-    "nodemailer": "^6.9.0"
+    "mysql2": "^3.14.0",
+    "nodemailer": "^7.0.5",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.3.25",
+    "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.16",
-    "@types/node": "^20.11.30",
-    "@types/express": "^4.17.21",
-    "@types/nodemailer": "^7.0.1"
+    "rimraf": "^6.0.1"
   }
 }
-

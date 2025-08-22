@@ -24,8 +24,8 @@ import { Adresse } from '@shared/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 import { ItemContact, Personne_VM } from '@shared/lib/personne.interface';
 import { AppStore } from '../app.store';
-import { Compte_VM } from '@shared/src';
 import { CompteService } from '../../services/compte.service';
+import { Compte_VM } from '@shared/lib/compte.interface';
 
 @Component({
   standalone: false,
