@@ -1,22 +1,15 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",                             // important
-    "paths": {
-      "@shared/*": ["../../libs/shared/src/*"]  // <— on pointe sur les SOURCES
-    },
     "composite": false,
     "emitDeclarationOnly": false,
     "outDir": "./out-tsc/app",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["@angular/localize"],
+    "types": ["@angular/localize"]
   },
   "include": [
     "src/**/*.ts",
-    "../../libs/shared/src/**/*.ts"             // <— pour que l’IDE/rebuild voie les fichiers
+    "../../libs/shared/src/**/*.ts"
   ]
 }
-
-
-

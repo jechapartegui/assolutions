@@ -10,10 +10,10 @@
       "outputs": ["{options.outputPath}"],
       "options": {
         "main": "apps/assolutions-back/src/main.ts",
-        "tsConfig": "apps/assolutions-back/tsconfig.app.json",
+        "tsConfig": "apps/assolutions-back/tsconfig.build.json",
         "bundle": true,
         "platform": "node",
-        "format":  ["cjs"],
+        "format": ["cjs"],
         "outputPath": "dist/apps/assolutions-back",
         "assets": [
           {
@@ -43,4 +43,3 @@
   },
   "tags": []
 }
-
