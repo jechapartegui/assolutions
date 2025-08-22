@@ -52,6 +52,4 @@ activationToken: string | null;   // <-- important
   @OneToMany(() => Person, person => person.account, { cascade: ['update'] })
   persons: Person[];
 
-    @OneToMany(() => Notes, note => note.User, { cascade: ['update'] })
-  notes: Notes[];
 }

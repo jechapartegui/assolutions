@@ -27,44 +27,72 @@ import { join } from 'path';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
 
-    // ✅ TypeORM config qui marche en dev & prod
     TypeOrmModule.forRootAsync({
-  useFactory: (cfg: ConfigService) => {
-    const isProd = cfg.get('NODE_ENV') === 'production';
-    const ssl = isProd ? { rejectUnauthorized: false } : false;
+      inject: [ConfigService],
+      useFactory: (cfg: ConfigService) => {
+        const isProd = (cfg.get<string>('NODE_ENV') || '').toLowerCase() === 'production';
+        const useUrl = !!cfg.get<string>('DATABASE_URL');
 
-    return {
-      type: 'postgres',
-      url: cfg.get<string>('DATABASE_URL') || undefined,
-      host: cfg.get<string>('PGHOST'),
-      port: parseInt(cfg.get<string>('PGPORT') ?? '5432', 10),
-      username: cfg.get<string>('PGUSER'),
-      password: cfg.get<string>('PGPASSWORD'),
-      database: cfg.get<string>('PGDATABASE'),
+        // Synchronize: jamais en prod sauf si explicitement demandé
+        const syncEnv = (cfg.get('DB_SYNCHRONIZE') ?? '').toString().toLowerCase();
+        const synchronize = !isProd || syncEnv === 'true';
 
-      // 🔥 Ajoute ceci :
-      entities: [
-        // dev (ts-node)
-        join(__dirname, '..', 'entities', '*.entity.ts'),
-        // prod (node sur dist)
-        join(__dirname, '..', 'entities', '*.entity.js'),
-      ],
+        // SSL seulement quand nécessaire (Render/Postgres)
+        const ssl = isProd ? { rejectUnauthorized: false } : undefined;
 
-      // Tu peux garder autoLoadEntities si tu veux, mais avec entities ça suffit :
-      autoLoadEntities: false,
+        // Chemins d’entities & migrations valables en TS (dev) et JS (dist)
+        const entities = [join(__dirname, '**', '*.entity.{ts,js}')];
+        const migrations = [join(__dirname, '**', 'migration', '*.{ts,js}')];
 
-      synchronize: (cfg.get('DB_SYNCHRONIZE') ?? '').toString().toLowerCase() === 'true'
-        ? true
-        : !isProd,
-      migrations: [join(__dirname, '..', 'migration', '*{.ts,.js}')],
-      namingStrategy: new SnakeNamingStrategy(),
-      ssl,
-      extra: isProd ? { ssl } : undefined,
-      logging: isProd ? ['error', 'warn'] : ['schema', 'error', 'warn'],
-    };
-  },
-  inject: [ConfigService],
-})
+        if (useUrl) {
+          // Config via DATABASE_URL
+          return {
+            type: 'postgres' as const,
+            url: cfg.get<string>('DATABASE_URL')!,
+            ssl,
+            entities,
+            migrations,
+            autoLoadEntities: true,
+            synchronize,
+            namingStrategy: new SnakeNamingStrategy(),
+            logging: isProd ? ['error', 'warn'] : ['schema', 'error', 'warn'],
+          };
+        }
+
+        // Config via variables séparées
+        return {
+          type: 'postgres' as const,
+          host: cfg.get<string>('PGHOST'),
+          port: parseInt(cfg.get<string>('PGPORT') ?? '5432', 10),
+          username: cfg.get<string>('PGUSER'),
+          password: cfg.get<string>('PGPASSWORD'),
+          database: cfg.get<string>('PGDATABASE'),
+          ssl,
+          entities,
+          migrations,
+          autoLoadEntities: true,
+          synchronize,
+          namingStrategy: new SnakeNamingStrategy(),
+          logging: isProd ? ['error', 'warn'] : ['schema', 'error', 'warn'],
+        };
+      },
+    }),
+
+    AuthModule,
+    MemberModule,
+    MessagesModule,
+    MailerModule,
+    CoursProfModule,
+    SeanceModule,
+    ProjetModule,
+    LieuModule,
+    ProfModule,
+    InscriptionSeanceModule,
+    SaisonModule,
+    CoursModule,
+    GroupeModule,
+    DocumentModule,
+    InscriptionSaisonModule,
   ],
   providers: [
     {
