@@ -36,7 +36,7 @@ export class ProjetService {
       });
   }
   public GetActiveSaison(): Promise<Saison_VM> {
-      this.url = 'api/saison/active_saison/';
+      this.url = environment.maseance + 'api/saison/active_saison/';
   
     return this.global.GET(this.url)
         .then((response: Saison_VM) => {

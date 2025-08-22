@@ -14,7 +14,7 @@ export class CompteService {
 
   public GetAll(): Promise<Compte_VM[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-   this.url = 'api/auth/getall';
+   this.url = environment.maseance + 'api/auth/getall';
     //  this.url = this.url + "login.php";
    
 
@@ -29,7 +29,7 @@ export class CompteService {
   }
 
   public getAccount(id: number): Promise<Compte_VM> {
-    this.url = 'api/auth/get/'  + id;
+    this.url = environment.maseance + 'api/auth/get/'  + id;
     //  this.url = this.url + "login.php";
    
 
@@ -42,7 +42,7 @@ export class CompteService {
       });
   }
   public getAccountLogin(login: string): Promise<Compte_VM> {
-     this.url = 'api/auth/get_by_login/'  + login;
+     this.url = environment.maseance + 'api/auth/get_by_login/'  + login;
     //  this.url = this.url + "login.php";   
 
     return this.global.GET(this.url)
@@ -55,7 +55,7 @@ export class CompteService {
   }
 
   public checkLogin(login:string) : Promise<boolean> {
-      this.url = 'api/auth/pre_login/'  + login;
+      this.url = environment.maseance + 'api/auth/pre_login/'  + login;
     //  this.url = this.url + "login.php";   
 
     return this.global.GET(this.url)
@@ -68,7 +68,7 @@ export class CompteService {
   }
 
   public CheckToken(login:string, token:string) : Promise<boolean>{
-     this.url = 'api/auth/check_token';
+     this.url = environment.maseance + 'api/auth/check_token';
     const body = {
       login: login,
       token: token
@@ -93,7 +93,7 @@ export class CompteService {
 
 
   public ExistListe(list_login: string[]): Promise<string[]> {
-     this.url = 'api/compte/exists';
+     this.url = environment.maseance + 'api/compte/exists';
 
     return this.global.POST(this.url, list_login)
       .then((response: string[]) => {
@@ -106,7 +106,7 @@ export class CompteService {
   }
 
   public Attacher(compte_id: number, rider_id: number): Promise<boolean> {
-     this.url = 'api/compte/attacher';
+     this.url = environment.maseance + 'api/compte/attacher';
 
     const body = {
       compte_id: compte_id,
@@ -127,7 +127,7 @@ export class CompteService {
   }
 
   public UpdateMDP(login:string, password: string): Promise<boolean> {
-     this.url = 'api/auth/update_mdp';
+     this.url = environment.maseance + 'api/auth/update_mdp';
     //  this.url = this.url + "login.php";
     const body = {
       login: login,
@@ -145,7 +145,7 @@ export class CompteService {
   }
 
   public Add(compte_vm:Compte_VM): Promise<number> {
-    this.url = 'api/auth/add';
+    this.url = environment.maseance + 'api/auth/add';
     return this.global.PUT(this.url,compte_vm)
       .then((response: number) => {
         return response;
@@ -156,7 +156,7 @@ export class CompteService {
       });
   }
   public Update(compte_vm:Compte_VM, update_psw:boolean): Promise<boolean> {
-    this.url = 'api/auth/update';
+    this.url = environment.maseance + 'api/auth/update';
   const body = {
       compte_vm: compte_vm,
       update_psw:update_psw
@@ -172,7 +172,7 @@ export class CompteService {
       });
   }
   public Delete(id:number): Promise<boolean> {
-    this.url = 'api/auth/delete/' + id;
+    this.url = environment.maseance + 'api/auth/delete/' + id;
   
     return this.global.DELETE(this.url)
       .then((response: boolean) => {

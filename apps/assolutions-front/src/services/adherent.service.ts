@@ -18,7 +18,7 @@ export class AdherentService {
   }
   url = environment.maseance;
   public Get(id: number): Promise<Adherent_VM> {
-     this.url = 'api/member/get/' + id;
+     this.url = environment.maseance + 'api/member/get/' + id;
 
   return this.global.GET(this.url)
       .then((response: Adherent_VM) => {
@@ -32,7 +32,7 @@ export class AdherentService {
   }
 
   GetPhoto(id: number): Promise<string> {
-        this.url = 'api/document/get_photo_user/' + id;
+        this.url = environment.maseance + 'api/document/get_photo_user/' + id;
    return this.global.GET(this.url, 'text')
       .then((response: string) => {
 
@@ -44,7 +44,7 @@ export class AdherentService {
       });
   }
   GetAllPersonne(compte_id:number): Promise<Personne_VM[]>{
-      this.url = 'api/member/get_all_ever_account/' + compte_id;
+      this.url = environment.maseance + 'api/member/get_all_ever_account/' + compte_id;
     return this.global.GET(this.url)
       .then((response: Personne_VM[]) => {
 
@@ -58,7 +58,7 @@ export class AdherentService {
 
   GetAllSeance(): Promise<Seance_VM[]> {
     let saison_id = this.store.saison_active().id;
-    this.url = 'api/member/getallseance/' + saison_id;
+    this.url = environment.maseance + 'api/member/getallseance/' + saison_id;
 
     return this.global.GET(this.url)
       .then((response: Seance_VM[]) => {
@@ -72,7 +72,7 @@ export class AdherentService {
   }
 
 UpdatePhoto(id: number, photo: string): Promise<any> {
-    this.url = 'api/document/modify_photo_user';
+    this.url = environment.maseance + 'api/document/modify_photo_user';
     //  this.url = this.url + "login.php";  
     const body = {
       id: id, 
@@ -90,7 +90,7 @@ UpdatePhoto(id: number, photo: string): Promise<any> {
 
 
   public Add(adherent: Adherent_VM): Promise<number> {
-   this.url = 'api/member/add';
+   this.url = environment.maseance + 'api/member/add';
 
   return this.global.PUT(this.url, adherent)
       .then((response: number) => {
@@ -120,7 +120,7 @@ UpdatePhoto(id: number, photo: string): Promise<any> {
   }
   public Update(adherent: Adherent_VM): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = 'api/member/update';
+    this.url = environment.maseance + 'api/member/update';
     //  this.url = this.url + "login.php";
    
 
@@ -171,7 +171,7 @@ this.url = `api/member/getall_light/${saison_id}`;
   
   public GetAdherentAdhesion(saison_id:number): Promise<Adherent_VM[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-       this.url = 'api/member/getall_adherent/' + saison_id;
+       this.url = environment.maseance + 'api/member/getall_adherent/' + saison_id;
 
   return this.global.GET(this.url)
       .then((response: Adherent_VM[]) => {
@@ -185,7 +185,7 @@ this.url = `api/member/getall_light/${saison_id}`;
   }
     public GetAdherentAdhesionLight(saison_id:number): Promise<KeyValuePair[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-       this.url = 'api/member/getall_adherent_light/' + saison_id;
+       this.url = environment.maseance + 'api/member/getall_adherent_light/' + saison_id;
 
   return this.global.GET(this.url)
       .then((response: KeyValuePair[]) => {
@@ -198,7 +198,7 @@ this.url = `api/member/getall_light/${saison_id}`;
       });
   }
   public Essayer(essai:Adherent_VM, seance_id:number, project_id:number, _compte:Compte_VM): Promise<number> {
-    this.url = 'api/member/essayer/'
+    this.url = environment.maseance + 'api/member/essayer/'
     //  this.url = this.url + "login.php";
     const body = {
       command: "try",

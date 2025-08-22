@@ -66,7 +66,6 @@ if (this.store.projet()) {
     const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
     const headers = new HttpHeaders()
       .set('content-type', 'application/json')
-      .set('Access-Control-Allow-Origin', '*')
       .set('password', expectedPassword)
       .set('dateref', date_ref_string)
       .set('projectid', project_id)
@@ -121,7 +120,6 @@ if (this.store.projet()) {
       const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
       const headers = new HttpHeaders()
         .set('content-type', 'application/json')
-        .set('Access-Control-Allow-Origin', '*')
         .set('password', expectedPassword)
         .set('dateref', date_ref_string)
         .set('projectid', project_id)
@@ -167,7 +165,6 @@ if (this.store.projet()) {
       const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
       const headers = new HttpHeaders()
         .set('content-type', 'application/json')
-        .set('Access-Control-Allow-Origin', '*')
         .set('password', expectedPassword)
         .set('dateref', date_ref_string)
         .set('projectid', project_id)
@@ -215,7 +212,6 @@ if (this.store.projet()) {
       const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
       const headers = new HttpHeaders()
         .set('content-type', 'application/json')
-        .set('Access-Control-Allow-Origin', '*')
         .set('password', expectedPassword)
         .set('dateref', date_ref_string)
         .set('projectid', project_id)

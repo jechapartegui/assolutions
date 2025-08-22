@@ -15,7 +15,7 @@ export class LieuNestService {
   }
 
   public Get(id:number): Promise<Lieu_VM> {
-    this.url = 'api/lieu/get/' + id;
+    this.url = environment.maseance + 'api/lieu/get/' + id;
     //  this.url = this.url + "login.php";
    
 
@@ -31,7 +31,7 @@ export class LieuNestService {
       });
   }
   public GetAll(): Promise<Lieu_VM[]> {
-    this.url = 'api/lieu/getall';
+    this.url = environment.maseance + 'api/lieu/getall';
     //  this.url = this.url + "login.php";
    
 
@@ -47,7 +47,7 @@ export class LieuNestService {
       });
   }
   public GetAllLight(): Promise<KeyValuePair[]> {
-      this.url = 'api/lieu/getall_light';
+      this.url = environment.maseance + 'api/lieu/getall_light';
   
     return this.global.GET(this.url)
       .then((response: KeyValuePair[]) => {
@@ -60,7 +60,7 @@ export class LieuNestService {
   }
 
   public Add(l:Lieu_VM): Promise<number> {
-  this.url = 'api/lieu/add';
+  this.url = environment.maseance + 'api/lieu/add';
 
   return this.global.PUT(this.url, l)
     .then((response: number) => {
@@ -72,7 +72,7 @@ export class LieuNestService {
     });
 }
 public Update(l:Lieu_VM): Promise<boolean> {
-  this.url = 'api/lieu/update';
+  this.url = environment.maseance + 'api/lieu/update';
 
   return this.global.PUT(this.url, l)
     .then((response: boolean) => {
@@ -84,7 +84,7 @@ public Update(l:Lieu_VM): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = 'api/lieu/delete/' + id;
+  this.url = environment.maseance + 'api/lieu/delete/' + id;
 
   return this.global.DELETE(this.url)
     .then((response: boolean) => {

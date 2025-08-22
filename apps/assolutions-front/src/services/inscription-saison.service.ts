@@ -13,7 +13,7 @@ export class InscriptionSaisonService {
     }
   
     public Get(id:number): Promise<InscriptionSaison_VM> {
-      this.url = 'api/inscription_saison/get/' + id;
+      this.url = environment.maseance + 'api/inscription_saison/get/' + id;
       //  this.url = this.url + "login.php";
      
   
@@ -29,7 +29,7 @@ export class InscriptionSaisonService {
         });
     }
     public GetAllSaison(saison:number): Promise<InscriptionSaison_VM[]> {
-      this.url = 'api/inscription_saison/getall_saison/' + saison;
+      this.url = environment.maseance + 'api/inscription_saison/getall_saison/' + saison;
       //  this.url = this.url + "login.php";
      
   
@@ -45,7 +45,7 @@ export class InscriptionSaisonService {
         });
     }
      public GetAllRider(rider:number): Promise<InscriptionSaison_VM[]> {
-      this.url = 'api/inscription_saison/getall_rider/' + rider;
+      this.url = environment.maseance + 'api/inscription_saison/getall_rider/' + rider;
       //  this.url = this.url + "login.php";
      
   
@@ -62,7 +62,7 @@ export class InscriptionSaisonService {
     }
   
     public Add(l:InscriptionSaison_VM): Promise<InscriptionSaison_VM> {
-    this.url = 'api/inscription_saison/add';
+    this.url = environment.maseance + 'api/inscription_saison/add';
   
     return this.global.PUT(this.url, l)
       .then((response: InscriptionSaison_VM) => {
@@ -74,7 +74,7 @@ export class InscriptionSaisonService {
       });
   }
   public Delete(id:number) {
-    this.url = 'api/inscription_saison/delete/' + id;
+    this.url = environment.maseance + 'api/inscription_saison/delete/' + id;
   
     return this.global.DELETE(this.url)
       .then(() => {

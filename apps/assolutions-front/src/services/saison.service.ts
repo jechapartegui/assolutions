@@ -14,7 +14,7 @@ export class SaisonService {
  }
  public GetAll(): Promise<Saison_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = 'api/saison/getall';
+    this.url = environment.maseance + 'api/saison/getall';
 
   return this.global.GET(this.url)
     .then((response: Saison_VM[]) => {
@@ -27,7 +27,7 @@ export class SaisonService {
 }
 public Get(id:number): Promise<Saison_VM> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = 'api/saison/get/' + id;
+    this.url = environment.maseance + 'api/saison/get/' + id;
   //  this.url = this.url + "login.php";
 
 
@@ -41,7 +41,7 @@ public Get(id:number): Promise<Saison_VM> {
     });
 }
 public GetAllLight(): Promise<KeyValuePair[]> {
-    this.url = 'api/saison/getall_light';
+    this.url = environment.maseance + 'api/saison/getall_light';
 
   return this.global.GET(this.url)
     .then((response: KeyValuePair[]) => {
@@ -54,7 +54,7 @@ public GetAllLight(): Promise<KeyValuePair[]> {
 }
 
 public Add(saison:Saison_VM): Promise<number> {
-  this.url = 'api/saison/add';
+  this.url = environment.maseance + 'api/saison/add';
 
   return this.global.PUT(this.url, saison)
     .then((response: number) => {
@@ -66,7 +66,7 @@ public Add(saison:Saison_VM): Promise<number> {
     });
 }
 public Update(saison:Saison_VM): Promise<boolean> {
-  this.url = 'api/saison/update';
+  this.url = environment.maseance + 'api/saison/update';
 
   return this.global.PUT(this.url, saison)
     .then((response: boolean) => {
@@ -78,7 +78,7 @@ public Update(saison:Saison_VM): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = 'api/seance/delete/' + id;
+  this.url = environment.maseance + 'api/seance/delete/' + id;
 
   return this.global.DELETE(this.url)
     .then((response: boolean) => {

@@ -3,13 +3,13 @@ import { PasswordGuard } from '../guards/password.guard';
 import { InscriptionSaisonService } from './inscription_saison.services';
 import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 
-//   this.url = 'api/inscription_seance/get/' + id;
-//  this.url = 'api/inscription_seance/get_full/' + id;
+//   this.url = environment.maseance + 'api/inscription_seance/get/' + id;
+//  this.url = environment.maseance + 'api/inscription_seance/get_full/' + id;
 // this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;
-//  this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
-//   this.url = 'api/inscription_seance/add';
-//     this.url = 'api/inscription_seance/update';
-//  this.url = 'api/inscription_seance/delete/' + id;
+//  this.url = environment.maseance + 'api/inscription_seance/get_all_seance/' + seance_id;
+//   this.url = environment.maseance + 'api/inscription_seance/add';
+//     this.url = environment.maseance + 'api/inscription_seance/update';
+//  this.url = environment.maseance + 'api/inscription_seance/delete/' + id;
 @Controller('inscription_saison')
 export class InscriptionSaisonController {
   constructor(private readonly inscription_saison_serv: InscriptionSaisonService) {}

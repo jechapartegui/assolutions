@@ -15,7 +15,7 @@ export class MailService {
   constructor(public global: GlobalService) {
   }
   public Mail(email: MailInput): Promise<any> {
-    this.url = 'api/mail/mail';
+    this.url = environment.maseance + 'api/mail/mail';
 
     return this.global.POST(this.url, email)
       .then((response: any) => {
@@ -29,7 +29,7 @@ export class MailService {
       });
   }
 public EnvoiMailEssai(personId:number, sessionId:number): Promise<any> {
- this.url = 'api/mail/mail_essai';
+ this.url = environment.maseance + 'api/mail/mail_essai';
 const body = {
   personId :personId,
   sessionId:sessionId
@@ -47,7 +47,7 @@ const body = {
   }
 
   public MailActivation(login:string): Promise<any> {
- this.url = 'api/mail/mail_activation/' + login;
+ this.url = environment.maseance + 'api/mail/mail_activation/' + login;
 
     return this.global.GET(this.url)
       .then((response: any) => {

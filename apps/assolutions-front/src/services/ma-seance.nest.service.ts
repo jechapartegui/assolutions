@@ -14,7 +14,7 @@ export class MaSeanceNestService {
   }
 
   public Get(): Promise<AdherentSeance_VM[]> {
-    this.url = 'api/member/my_seance';
+    this.url = environment.maseance + 'api/member/my_seance';
     //  this.url = this.url + "login.php";
    
 
@@ -30,7 +30,7 @@ export class MaSeanceNestService {
       });
   }
   public Prof(): Promise<AdherentSeance_VM[]> {
-    this.url = 'api/member/my_prof';
+    this.url = environment.maseance + 'api/member/my_prof';
     //  this.url = this.url + "login.php";
    
 

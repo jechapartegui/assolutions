@@ -3,13 +3,13 @@ import { PasswordGuard } from '../guards/password.guard';
 import { InscriptionSeanceService } from './inscription_seance.services';
 import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/lib/inscription_seance.interface';
 
-//   this.url = 'api/inscription_seance/get/' + id;
-//  this.url = 'api/inscription_seance/get_full/' + id;
+//   this.url = environment.maseance + 'api/inscription_seance/get/' + id;
+//  this.url = environment.maseance + 'api/inscription_seance/get_full/' + id;
 // this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;
-//  this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
-//   this.url = 'api/inscription_seance/add';
-//     this.url = 'api/inscription_seance/update';
-//  this.url = 'api/inscription_seance/delete/' + id;
+//  this.url = environment.maseance + 'api/inscription_seance/get_all_seance/' + seance_id;
+//   this.url = environment.maseance + 'api/inscription_seance/add';
+//     this.url = environment.maseance + 'api/inscription_seance/update';
+//  this.url = environment.maseance + 'api/inscription_seance/delete/' + id;
 @Controller('inscription_seance')
 export class InscriptionSeanceController {
   constructor(private readonly inscription_seance_serv: InscriptionSeanceService) {}

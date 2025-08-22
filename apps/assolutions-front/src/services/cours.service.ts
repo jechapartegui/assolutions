@@ -15,7 +15,7 @@ export class CoursService {
   }
 
   public Get(id:number): Promise<Cours_VM> {
-    this.url = 'api/cours/get/' + id;
+    this.url = environment.maseance + 'api/cours/get/' + id;
     //  this.url = this.url + "login.php";
    
 
@@ -31,7 +31,7 @@ export class CoursService {
       });
   }
   public GetAll(saison_id:number): Promise<Cours_VM[]> {
-    this.url = 'api/cours/getall/'  + saison_id;
+    this.url = environment.maseance + 'api/cours/getall/'  + saison_id;
     //  this.url = this.url + "login.php";
    
 
@@ -47,7 +47,7 @@ export class CoursService {
       });
   }
   public GetAllLight(saison_id:number): Promise<KeyValuePair[]> {
-      this.url = 'api/cours/getall_light/'  + saison_id;
+      this.url = environment.maseance + 'api/cours/getall_light/'  + saison_id;
   
     return this.global.GET(this.url)
       .then((response: KeyValuePair[]) => {
@@ -60,7 +60,7 @@ export class CoursService {
   }
 
   public Add(l:Cours_VM): Promise<Cours_VM> {
-  this.url = 'api/cours/add';
+  this.url = environment.maseance + 'api/cours/add';
 
   return this.global.PUT(this.url, l)
     .then((response: Cours_VM) => {
@@ -72,7 +72,7 @@ export class CoursService {
     });
 }
 public Update(l:Cours_VM): Promise<boolean> {
-  this.url = 'api/cours/update';
+  this.url = environment.maseance + 'api/cours/update';
   return this.global.PUT(this.url, l)
     .then((response: boolean) => {
       return response;
@@ -83,7 +83,7 @@ public Update(l:Cours_VM): Promise<boolean> {
     });
 }
 public Delete(id:number) {
-  this.url = 'api/cours/delete/' + id;
+  this.url = environment.maseance + 'api/cours/delete/' + id;
 
   return this.global.DELETE(this.url)
     .then(() => {
@@ -96,7 +96,7 @@ public Delete(id:number) {
 }
 
 public GetCoursProf(id:number) : Promise<PersonneLight_VM>{
-  this.url = 'api/cours_prof/get/' + id;
+  this.url = environment.maseance + 'api/cours_prof/get/' + id;
    
 
     return this.global.GET(this.url)
@@ -112,7 +112,7 @@ public GetCoursProf(id:number) : Promise<PersonneLight_VM>{
 }
 
 public GetCoursProf_Cours(cours_id:number): Promise<PersonneLight_VM[]>{
-    this.url = 'api/cours_prof/getall/' + cours_id;
+    this.url = environment.maseance + 'api/cours_prof/getall/' + cours_id;
    
 
     return this.global.GET(this.url)
@@ -128,7 +128,7 @@ public GetCoursProf_Cours(cours_id:number): Promise<PersonneLight_VM[]>{
 }
 
 public AddCoursProf(cours_id:number, person_id:number): Promise<number>{
-   this.url = 'api/cours_prof/add';
+   this.url = environment.maseance + 'api/cours_prof/add';
   let body = {
     cours_id:cours_id,
     person_id:person_id
@@ -144,7 +144,7 @@ public AddCoursProf(cours_id:number, person_id:number): Promise<number>{
 }
 
 public DeleteCoursProf(cours_id:number, person_id:number): Promise<boolean>{
-   this.url = 'api/cours_prof/delete/' + cours_id + '/' + person_id;
+   this.url = environment.maseance + 'api/cours_prof/delete/' + cours_id + '/' + person_id;
 
   return this.global.DELETE(this.url)
     .then((response: boolean) => {

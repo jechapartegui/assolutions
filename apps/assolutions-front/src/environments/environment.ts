@@ -5,7 +5,7 @@
 export const environment = {
 
   production: false,
-  maseance: 'http://localhost:3000/api', // ton back local
+  maseance: '', // ton back local
   password:'jecha266',
   defaultlogin:'jechapartegui@gmail.com',
   defaultpassword:'',

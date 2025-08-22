@@ -4,13 +4,13 @@ import { SeasonService } from "../../crud/season.service";
 import { Season } from "../../entities/saison.entity";
 
 @Injectable()
-//   this.url = 'api/inscription_seance/get/' + id;
-//  this.url = 'api/inscription_seance/get_full/' + id;
+//   this.url = environment.maseance + 'api/inscription_seance/get/' + id;
+//  this.url = environment.maseance + 'api/inscription_seance/get_full/' + id;
 // this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}`;
-//  this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
-//   this.url = 'api/inscription_seance/add';
-//     this.url = 'api/inscription_seance/update';
-//  this.url = 'api/inscription_seance/delete/' + id;
+//  this.url = environment.maseance + 'api/inscription_seance/get_all_seance/' + seance_id;
+//   this.url = environment.maseance + 'api/inscription_seance/add';
+//     this.url = environment.maseance + 'api/inscription_seance/update';
+//  this.url = environment.maseance + 'api/inscription_seance/delete/' + id;
 export class SaisonService {
   constructor(private saisonserv:SeasonService
   ) {}

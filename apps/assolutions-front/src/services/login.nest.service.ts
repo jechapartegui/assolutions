@@ -13,10 +13,9 @@ export class LoginNestService {
   constructor(public global: GlobalService) {
   }
   public PreLogin(username: string){
-    this.url = 'api/auth/prelogin/'+username;
+    this.url = environment.maseance + 'api/auth/prelogin/'+username;
     //  this.url = this.url + "login.php";
     
-
     return this.global.GET(this.url)
       .then((response: any) => {
         return response;
@@ -29,7 +28,7 @@ export class LoginNestService {
       });
   }
   public Login(email: string, password: string): Promise<Compte_VM> {
-    this.url = 'api/auth/login';
+    this.url = environment.maseance + 'api/auth/login';
     //  this.url = this.url + "login.php";
     const body = {
       email: email,
@@ -49,7 +48,7 @@ export class LoginNestService {
   }
 
   public GetProject(id:number): Promise<ProjetView[]> {
-    this.url = 'api/auth/get_project/' + id;
+    this.url = environment.maseance + 'api/auth/get_project/' + id;
     //  this.url = this.url + "login.php";
    
 

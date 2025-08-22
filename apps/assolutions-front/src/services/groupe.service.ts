@@ -14,7 +14,7 @@ export class GroupeService {
   }
 
   public Get(id:number): Promise<KeyValuePair> {
-    this.url = 'api/groupe/get/' + id;
+    this.url = environment.maseance + 'api/groupe/get/' + id;
     //  this.url = this.url + "login.php";
    
 
@@ -33,7 +33,7 @@ export class GroupeService {
     if(saison_id ===0){
     saison_id = this.store.saison_active().id
   }
-    this.url = 'api/groupe/getall/'  + saison_id;
+    this.url = environment.maseance + 'api/groupe/getall/'  + saison_id;
     
     //  this.url = this.url + "login.php";
    
@@ -52,7 +52,7 @@ export class GroupeService {
  
 
   public Add(gr:KeyValuePair, saison_id:number =0): Promise<number> {
-  this.url = 'api/groupe/add';
+  this.url = environment.maseance + 'api/groupe/add';
   if(saison_id ===0){
     saison_id = this.store.saison_active().id
   }
@@ -70,7 +70,7 @@ export class GroupeService {
     });
 }
 public Update(gr:KeyValuePair, saison_id:number =0): Promise<boolean> {
-  this.url = 'api/groupe/update';
+  this.url = environment.maseance + 'api/groupe/update';
 if(saison_id ===0){
     saison_id = this.store.saison_active().id
   }
@@ -88,7 +88,7 @@ if(saison_id ===0){
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = 'api/groupe/delete/' + id;
+  this.url = environment.maseance + 'api/groupe/delete/' + id;
 
   return this.global.DELETE(this.url)
     .then((response: boolean) => {
@@ -105,7 +105,7 @@ public AddLien(
       type_objet: string,
       id_groupe: number
     ): Promise<number> {
-  this.url = 'api/groupe/addlien';
+  this.url = environment.maseance + 'api/groupe/addlien';
   const l = {
     id_objet: id_objet,
     type_objet: type_objet,

@@ -12,7 +12,7 @@ export class InscriptionSeanceService {
  }
  public Get(id:number): Promise<InscriptionSeance_VM> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = 'api/inscription_seance/get/' + id;
+  this.url = environment.maseance + 'api/inscription_seance/get/' + id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
@@ -26,7 +26,7 @@ export class InscriptionSeanceService {
 }
 public GetFull(id:number): Promise<FullInscriptionSeance_VM> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
- this.url = 'api/inscription_seance/get_full/' + id;
+ this.url = environment.maseance + 'api/inscription_seance/get_full/' + id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
@@ -41,7 +41,7 @@ public GetFull(id:number): Promise<FullInscriptionSeance_VM> {
 }
 
 public FaireEssai(personId:number, sessionId:number): Promise<number> {
- this.url = 'api/inscription_seance/faire_essai';
+ this.url = environment.maseance + 'api/inscription_seance/faire_essai';
 const body = {
   personId :personId,
   sessionId:sessionId
@@ -74,7 +74,7 @@ this.url = `api/inscription_seance/get_all_rider_saison/${rider_id}/${saison_id}
 }
 public GetAllSeance(seance_id:number): Promise<InscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
- this.url = 'api/inscription_seance/get_all_seance/' + seance_id;
+ this.url = environment.maseance + 'api/inscription_seance/get_all_seance/' + seance_id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
@@ -88,7 +88,7 @@ public GetAllSeance(seance_id:number): Promise<InscriptionSeance_VM[]> {
 }
 public GetAllSeanceFull(seance_id:number): Promise<FullInscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
- this.url = 'api/inscription_seance/get_all_seance_full/' + seance_id;
+ this.url = environment.maseance + 'api/inscription_seance/get_all_seance_full/' + seance_id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
@@ -102,7 +102,7 @@ public GetAllSeanceFull(seance_id:number): Promise<FullInscriptionSeance_VM[]> {
 }
 
 public Add(inscription:InscriptionSeance_VM): Promise<number> {
-  this.url = 'api/inscription_seance/add';
+  this.url = environment.maseance + 'api/inscription_seance/add';
 
   return this.global.PUT(this.url, inscription)
     .then((response: number) => {
@@ -114,7 +114,7 @@ public Add(inscription:InscriptionSeance_VM): Promise<number> {
     });
 }
 public Update(inscription:InscriptionSeance_VM): Promise<boolean> {
-    this.url = 'api/inscription_seance/update';
+    this.url = environment.maseance + 'api/inscription_seance/update';
 
   return this.global.PUT(this.url, inscription)
     .then((response: boolean) => {
@@ -126,7 +126,7 @@ public Update(inscription:InscriptionSeance_VM): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
- this.url = 'api/inscription_seance/delete/' + id;
+ this.url = environment.maseance + 'api/inscription_seance/delete/' + id;
 
   return this.global.DELETE(this.url)
     .then((response: boolean) => {

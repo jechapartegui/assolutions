@@ -13,7 +13,7 @@ export class SeanceprofService {
  }
  public Update(seance_id:number, liste_seance_prof : SeanceProfesseur_VM[]): Promise<SeanceProfesseur_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = 'api/seance/update_seance_prof';
+  this.url = environment.maseance + 'api/seance/update_seance_prof';
     //  this.url = this.url + "login.php";
   const body = {
     seance_id: seance_id,
