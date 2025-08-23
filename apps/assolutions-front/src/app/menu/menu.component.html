@@ -240,8 +240,8 @@
                 <tbody>
                   <tr
                   *ngFor="
-                  let ms of rider.MesSeances | multifiltersMenu : rider.filters" style="cursor: pointer;" (click)="GotoSeance(ms.seance.seance_id)" >                  
-                   <td>
+                  let ms of rider.MesSeances | multifiltersMenu : rider.filters">                  
+                   <td  style="cursor: pointer;" (click)="GotoSeance(ms.seance.seance_id)" >
                       <ng-container [ngSwitch]="ms.seance.type_seance">
                         <span *ngSwitchCase="'ENTRAINEMENT'" i18n-title title="Cours">
                           <i class="fas fa-dumbbell icon-type-seance"></i> Cours
@@ -258,7 +258,7 @@
                       </ng-container>
                       : {{ ms.seance.libelle }}
                     </td>
-                    <td>
+                    <td  style="cursor: pointer;" (click)="GotoSeance(ms.seance.seance_id)" >
                       {{
                         ms.seance.date_seance | date : "dd/MM/yyyy"
                       }} 

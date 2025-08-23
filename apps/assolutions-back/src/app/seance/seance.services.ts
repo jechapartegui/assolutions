@@ -134,6 +134,14 @@ filteredSeances.push(myss);
   return seanceListe.map(x => to_Seance_VM(x));
   }
 
+    async GetAllPublic(saison_id: number): Promise<Seance_VM[]> {
+  const seanceListe = await this.seanceserv.getAllPublic(saison_id);
+  if (!seanceListe) {
+    return [];
+  }
+  return seanceListe.map(x => to_Seance_VM(x));
+  }
+
  async GetByDate(
   saison_id: number,
   date_debut?: string,

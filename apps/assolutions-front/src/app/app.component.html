@@ -3,11 +3,11 @@
   <nav class="navbar" style=" position: sticky;
   top: 0;
   z-index: 100;" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
+    <div class="navbar-brand">   
       <a
         class="navbar-item"
-        (click)="store.updateSelectedMenu('MENU')"
-        [routerLink]="['/menu']"
+        (click)="store.isLoggedIn() ?? store.updateSelectedMenu('MENU')"
+         [routerLink]="store.isLoggedIn() ? ['/menu'] : null"
         ><svg
           width="57"
           height="38"
@@ -368,8 +368,8 @@
             ? 'navbar-item is-selected'
             : 'navbar-item'
         "
-        (click)="store.updateSelectedMenu('MENU')"
-        [routerLink]="['/menu']">
+        (click)="store.isLoggedIn() ?? store.updateSelectedMenu('MENU')"
+         [routerLink]="store.isLoggedIn() ? ['/menu'] : null">
             <span class="icon is-large"
               ><svg
               width="57"
@@ -391,7 +391,7 @@
           </a>
         </li>
 
-        <li>
+        <li *ngIf="store.isLoggedIn()">
           <a [class]="
          store.selectedMenu()=== 'ADHERENT'
             ? 'navbar-item is-selected'
@@ -404,7 +404,7 @@
             <span class="tablet">Adhérents</span>
           </a>
         </li>
-        <li>
+        <li *ngIf="store.isLoggedIn()">
           <a [class]="
          store.selectedMenu()=== 'SEANCE'
             ? 'navbar-item is-selected'
@@ -417,7 +417,7 @@
               <span class="tablet">Séances</span>
           </a>
         </li>
-        <li>
+        <li *ngIf="store.isLoggedIn()">
           <a [class]="
          store.selectedMenu()=== 'COURS'
             ? 'navbar-item is-selected'
@@ -430,7 +430,7 @@
               <span class="tablet">Cours</span>
           </a>
         </li>
-        <li>
+        <li *ngIf="store.isLoggedIn()">
           <a [class]="
          store.selectedMenu()=== 'GROUPE'
             ? 'navbar-item is-selected'

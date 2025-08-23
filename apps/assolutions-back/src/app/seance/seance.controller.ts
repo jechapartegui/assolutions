@@ -14,6 +14,12 @@ async GetAll(@Param('saison_id') saison_id: number) {
     return this.seance_serv.GetAll(saison_id);
   }
 
+    @UseGuards(PasswordGuard)
+  @Get('getall_public/:saison_id')
+async GetAllPublic(@Param('saison_id') saison_id: number) {
+    return this.seance_serv.GetAllPublic(saison_id);
+  }
+
   @UseGuards(PasswordGuard)
 @Get('getbydate/:saison_id/:date_debut/:date_fin')
 async GetByDate(

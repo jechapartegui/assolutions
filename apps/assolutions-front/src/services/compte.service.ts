@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
-import { environment } from '../environments/environment.preprod';
+import { environment } from '../environments/environment.prod';
 import { Compte_VM } from '@shared/lib/compte.interface';
 
 @Injectable({

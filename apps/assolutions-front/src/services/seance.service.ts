@@ -23,7 +23,7 @@ export class SeancesService {
   static Seances: Seance_VM[];
 
   public Update(seance: Seance_VM): Promise<boolean> {
-      this.url =  "api/seance/update"; 
+      this.url = environment.maseance +  "api/seance/update"; 
     //  this.url = this.url + "login.php";
     const body = {
       seance: seance,
@@ -39,7 +39,7 @@ export class SeancesService {
   }
   
   public Delete(id: number) {
-      this.url =  "api/seance/delete/" + id; 
+      this.url = environment.maseance +  "api/seance/delete/" + id; 
     //  this.url = this.url + "login.php";
     
 
@@ -57,7 +57,7 @@ export class SeancesService {
 
 
   public Add(seance: Seance_VM): Promise<Seance_VM> {
-      this.url =  "api/seance/add/"
+     this.url = environment.maseance +  "api/seance/add/"
     //  this.url = this.url + "login.php";
     const body = {
       seance: seance,
@@ -73,7 +73,7 @@ export class SeancesService {
       });
   }
   public AddRange(seance: Seance_VM, date_debut_serie:Date, date_fin_serie:Date, jour_semaine:string): Promise<number[]> {
-     this.url = "api/seance/add_range/"
+    this.url = environment.maseance +  "api/seance/add_range/"
     //  this.url = this.url + "login.php";
     const body = {
       seance: seance,
@@ -92,8 +92,8 @@ export class SeancesService {
       });
   }
 
-  public GetSeancePublic(projet:number): Promise<Seance_VM[]> {
-     this.url =  "api/seance/getall/" + projet;
+  public GetSeancePublic(saison:number): Promise<Seance_VM[]> {
+    this.url = environment.maseance +  "api/seance/getall_public/" + saison;
     return this.global.GET(this.url)
       .then((response: Seance_VM[]) => {
         return response;
@@ -105,8 +105,8 @@ export class SeancesService {
   }
 
 
-  public GetSeances(): Promise<Seance_VM[]> {
-     this.url =  "api/seance/getall/" + this.store.saison_active().id;
+  public GetSeances(saison:number  = this.store.saison_active().id): Promise<Seance_VM[]> {
+   this.url = environment.maseance +  "api/seance/getall/" + saison;
     return this.global.GET(this.url)
       .then((response: Seance_VM[]) => {
         return response;
@@ -118,7 +118,7 @@ export class SeancesService {
   }
 
   public GetPlageDate(date_debut:string, date_fin:string): Promise<Seance_VM[]> {
-    this.url =  "api/seance/getbydate/" + this.store.saison_active().id + "/" + date_debut + "/" + date_fin;
+    this.url = environment.maseance +  "api/seance/getbydate/" + this.store.saison_active().id + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
@@ -133,7 +133,7 @@ export class SeancesService {
  
 
   public Get(id: number): Promise<Seance_VM> {
-      this.url =  "api/seance/get/" + id; 
+    this.url = environment.maseance +  "api/seance/get/" + id; 
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)
@@ -146,7 +146,7 @@ export class SeancesService {
   }
 
   public UpdatePresence(item: InscriptionSeance): Promise<boolean> {
-      this.url = 'maseance/inscriptionseance_manage.php';
+   this.url = environment.maseance +  'maseance/inscriptionseance_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
       command: "update",
@@ -162,7 +162,7 @@ export class SeancesService {
       });
   }
   public ChargerSeance(id: number): Promise<InscriptionSeance[]> {
-      this.url = 'maseance/seance_manage.php';
+     this.url = environment.maseance +  'maseance/seance_manage.php';
     //  this.url = this.url + "login.php";
     const body = {
       command: "load_seance",

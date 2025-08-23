@@ -22,6 +22,7 @@
             </p>
           </div>
           <div *ngIf="VM.mdp_requis" class="field">
+          <h6 *ngIf="context == 'CREATE'" class="subtitle is-6" i18n>Saisir le mot de passe projet</h6>
             <p class="control has-icons-left has-icons-right">
               <input *ngIf="VM.mdp_requis" [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"   (ngModelChange)="validatePassword()" [(ngModel)]="VM.Password" type="password" placeholder="Password">
 

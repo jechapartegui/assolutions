@@ -38,6 +38,11 @@ export class SessionService {
     );
   }
 
+      async getAllPublic(seasonId:number): Promise<Session[]> {
+     return await  this.repo.find({ where: { seasonId }, relations: ['course', 'location', 'seanceProfesseurs', 'seanceProfesseurs.professeur', 'seanceProfesseurs.professeur.professor', 'seanceProfesseurs.professeur.professor.person'] });
+     
+  }
+
 
   async create(data: Partial<Session>): Promise<Session> {
     try {

@@ -600,7 +600,7 @@ PreSave() {
       this.essai.emit(this.thisAdherent);
       return;
     }
-    
+    console.log(this.context, this.thisAdherent.id);
     this.Save();
   }
 }
@@ -615,14 +615,25 @@ PreSave() {
           return;
       } else {
         if(this.thisAccount.id == 0) {
+    this.action = $localize`Ajout et envoi du mail de création de compte`;
           await   this.compteserv.Add(this.thisAccount).then((id) =>{
             this.thisAccount.id = id;
-          this.thisAdherent.compte = id; }).catch((err: HttpErrorResponse) => {
+          this.thisAdherent.compte = id;
+          this.mail_serv.MailActivation(this.thisAccount.email).then(() => {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+          }).catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);
         });
+         }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+          return;
+        });
           }
         }
+    this.action = $localize`Ajout de l'adhérent`;
       this.ridersService
         .Add(this.thisAdherent)
         .then((id) => {

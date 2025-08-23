@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
@@ -360,7 +360,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     const MI = new MailInput();
     MI.to = "jechapartegui@gmail.com";
     MI.subject = "Test Assolutions";
-    MI.from = "US Ivry Roller";
+    MI.from = "usivry.roller@gmail.com";
     MI.html = "Test ✅"
     await this.mailserv.Mail(MI);
   }
