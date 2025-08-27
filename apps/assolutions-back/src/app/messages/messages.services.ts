@@ -69,13 +69,24 @@ html    = fillTemplate(templatemail.mail_essai,  dataEssai);
 
   async MailActivation(login: string) {
     const p = await this.accountrepo.findOne({   where: { login } });
-const activationTmpl = "<h2>Activation de votre compte</h2> <p>Bonjour {{LOGIN}},</p> <p>Veuillez cliquer sur le lien ci-dessous pour activer votre compte :</p><p><a href='http://localhost:2211/login?context=ACTIVATE&user={{LOGIN}}&token={{TOKEN}}'>Activer mon compte</a></p><p>Merci,</p><p>L'équipe AsSolutions</p>";
-const dataAct = {
+      let activationTmpl = "<h2>Activation de votre compte</h2> <p>Bonjour {{LOGIN}},</p> <p>Veuillez cliquer sur le lien ci-dessous pour activer votre compte :</p><p><a href='http://localhost:2211/login?context=ACTIVATE&user={{LOGIN}}&token={{TOKEN}}'>Activer mon compte</a></p><p>Merci,</p><p>L'équipe AsSolutions</p>";
+
+  let subject = "Activation de votre compte AsSolutions";
+    if(p.isActive && p.activationToken == null) {
+activationTmpl = "<h2>Ouverture d'un compte</h2> <p>Bonjour {{LOGIN}},</p> <p>Vous avez créé un compte sur AsSolutions.</p><p>Vous pouvez vous connecter en utilisant votre adresse email comme identifiant et le mot de passe que vous avez choisi.</p><p>Merci,</p><p>L'équipe AsSolutions</p>";
+subject = "Compte AsSolutions";  
+} else {
+      if(!p.activationToken) {
+        p.activationToken = Math.random().toString(36).substring(2);
+        await this.accountrepo.save(p);
+      }
+
+    }
+    const dataAct = {
   LOGIN: p?.login ?? 'utilisateur',
   TOKEN: p?.activationToken ?? 'token non défini',
 };
 const html = fillTemplate(activationTmpl, dataAct);
-  let subject = "Activation de votre compte AsSolutions";
 
     const msg: MailInput = {
       to: p?.login || '',

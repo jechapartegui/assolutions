@@ -36,7 +36,7 @@ export class SeanceService {
   ): Promise<MesSeances_VM[]> {
     const seances = await this.GetSeanceSaison(saison_id);
     if (!seances || seances.length === 0) {
-      throw new UnauthorizedException('NO_SESSION_FOUND');
+      return [];
     }
 
     const filteredSeances: MesSeances_VM[] = [];
@@ -84,10 +84,6 @@ export class SeanceService {
           filteredSeances.push(maSeance);
         }
       }
-    }
-
-    if (filteredSeances.length === 0) {
-      throw new UnauthorizedException('NO_SESSION_FOUND');
     }
 
     return filteredSeances;

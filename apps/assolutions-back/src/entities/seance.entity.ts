@@ -122,8 +122,8 @@ export class Session {
   @OneToMany(() => SessionProfessor, (sp) => sp.session)
   seanceProfesseurs: SessionProfessor[];
 
-          @OneToMany(() => RegistrationSession, insc => insc.person)
-      inscriptionsPersonne?: RegistrationSession[];
+@OneToMany(() => RegistrationSession, (insc) => insc.seance)
+inscriptionsPersonne?: RegistrationSession[];
 
   @CreateDateColumn({ type: 'timestamp with time zone', name: 'date_creation' })
   createdAt: Date;

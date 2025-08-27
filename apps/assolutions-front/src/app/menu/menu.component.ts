@@ -85,7 +85,7 @@ export class MenuComponent implements OnInit {
       this.Riders = [];
   
       // Partie adhérent
-      if (this.store.projet().adherent) {
+      if (this.store.projet().adherent || this.store.projet().essai) {
         this.action = $localize`Récupérer les adhérents`;
         const seancesAdh = await this.GetMySeance();
         const ridersAdh = seancesAdh.map((x) => {

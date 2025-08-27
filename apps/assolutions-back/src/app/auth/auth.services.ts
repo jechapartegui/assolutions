@@ -171,8 +171,14 @@ liste_compte.push(acc);
       throw new BadRequestException('INVALID_ACCOUNT');
     }
     let base = toAccount(vm, vm.password ? this.pepper : null);
+    if(vm.password && vm.password.length < 6) {
+      base.isActive = true;
+      base.activationToken = null; // pas de token si mot de passe fourni mais trop court
+    } else {
     base.isActive = false; // compte non actif par défaut
     base.activationToken = crypto.randomBytes(16).toString('hex'); // génère
+
+    }
     try {
       const saved = await this.compteserv.create(base);
       return saved.id;

@@ -320,7 +320,7 @@
             </div>
           </ng-container>
       </div>
-      <div class="navbar-end" *ngIf="store.hasProjet() == true">
+      <div class="navbar-end" *ngIf="store.isLoggedIn() && store.hasProjet() == true">
         <div class="navbar-item">
           <div class="buttons">
             <a

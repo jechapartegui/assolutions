@@ -38,6 +38,7 @@ export class AdherentComponent implements OnInit {
   // === Inputs / ViewChild ===
   @Input() public context: 'ECRAN_MENU' | 'ECRAN_LISTE' | 'ESSAI' = 'ECRAN_LISTE';
   @Input() public id: number;
+  @Input() public login_adherent: string = '';
   @Input() public Personne:Personne_VM | null = null;
   @Output() essai = new EventEmitter<Personne_VM | null>;
   @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
@@ -97,7 +98,6 @@ export class AdherentComponent implements OnInit {
   public type_inscription: boolean;
 
   // === Données liées au compte ===
-  public login_adherent: string = '';
   public existing_login: boolean;
   public compte_to_force: boolean = false;
 
@@ -132,6 +132,9 @@ this.thisAdherent.inscriptionsSeance = [];
       }else {
         
       this.thisAdherent = new Adherent_VM();
+      if(this.login_adherent){
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.login_adherent, Notes: '', Pref: true}];
+      }
       this.id = 0;
       }
       return;
@@ -596,16 +599,16 @@ onPhotoSelectedFromChild(base64Photo: string): void {
 
 PreSave() {
   if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide) {
-    if(this.context == "ESSAI" || this.thisAdherent.id == 0){
-      this.essai.emit(this.thisAdherent);
-      return;
-    }
-    console.log(this.context, this.thisAdherent.id);
+   
     this.Save();
   }
 }
 
   async Save() {
+     if(this.context == "ESSAI" || this.thisAdherent.id == 0){
+      this.essai.emit(this.thisAdherent);
+      return;
+    }
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder l'adhérent`;
     if (this.thisAdherent.id == 0) {
@@ -622,6 +625,7 @@ PreSave() {
           this.mail_serv.MailActivation(this.thisAccount.email).then(() => {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
+            
           }).catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
           errorService.emitChange(o);

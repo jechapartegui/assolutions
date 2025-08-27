@@ -61,6 +61,8 @@ async getGroupsForObject(
     return links;
   }
 
+  
+
   // avec filtre saison → filtre via la relation
   const links = await this.repo.find({
     where: {
@@ -72,6 +74,18 @@ async getGroupsForObject(
   });
   return links;
 }
+
+async getObjectForGroups(
+  objectType: 'cours' | 'séance' | 'rider',
+  groupId: number,
+): Promise<LinkGroup[]> {
+  // si pas de filtre saison → simple
+    const links = await this.repo.find({
+      where: { objectType, groupId },
+      relations: ['group'],
+    });
+    return links;
+  }
 
 }
 

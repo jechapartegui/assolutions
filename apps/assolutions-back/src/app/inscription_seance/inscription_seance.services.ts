@@ -3,11 +3,17 @@ import { RegistrationSessionService } from "../../crud/inscriptionseance.service
 import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from "@shared/lib/inscription_seance.interface";
 import { InscriptionStatus, RegistrationSession, SeanceStatus } from "../../entities/inscription-seance.entity";
 import { toPersonne_VM } from "../member/member.services";
+import { SessionService } from "../../crud/session.service";
+import { LinkGroupService } from "../../crud/linkgroup.service";
+import { PersonService } from "../../crud/person.service";
 
 @Injectable()
 export class InscriptionSeanceService {
   constructor(
-    private inscriptionseanceserv:RegistrationSessionService
+    private inscriptionseanceserv:RegistrationSessionService,
+    private seanceserv: SessionService,
+    private linkgroup_serv: LinkGroupService,
+    private personserv:PersonService
   ) {}
 
   async Get(id: number) {
@@ -63,6 +69,28 @@ export class InscriptionSeanceService {
   }
    async GetAllSeanceFull(seance_id:number) : Promise<FullInscriptionSeance_VM[]> {
     const pISSs = await this.inscriptionseanceserv.getAllSeance(seance_id);
+    const ss = await this.seanceserv.get(seance_id);
+    ss.groups = await this.linkgroup_serv.getGroupsForObject('séance', ss.id);
+    console.log(ss.groups);
+    let list_id = [];
+    ss.groups.forEach(async (gr) =>{
+    let ridersgroup =  await this.linkgroup_serv.getObjectForGroups("rider", gr.id);
+    list_id.push(ridersgroup.map(x => x.objectId));
+    })
+    console.log(list_id);
+    list_id.forEach(async (id)=>{
+      let _p = await this.personserv.get(id);
+      //regle age
+      let rs = new RegistrationSession();
+      rs.personId = 0;
+      rs.person = _p;
+      rs.seanceId = ss.id;
+      rs.seance = ss;
+      rs.statutInscription = null;
+      rs.statutSeance = null;
+      pISSs.push(rs);
+    })
+
     if (!pISSs) {
          return [];
         }
@@ -119,6 +147,7 @@ export function to_FullInscriptionSeance_VM(obj:RegistrationSession): FullInscri
   item.id = obj.id;
   item.person = toPersonne_VM(obj.person);
   item.seance_id = obj.seanceId;
+  item.isVisible = false;
   item.statut_inscription = toInscriptionStatusVM(obj.statutInscription);
   item.statut_seance = toSeanceStatusVM(obj.statutSeance);
   return item;

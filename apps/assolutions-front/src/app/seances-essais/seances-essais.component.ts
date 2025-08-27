@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AdherentService } from '../../services/adherent.service';
 // import { ErrorService } from '../../services/error.service';
 import { SeancesService } from '../../services/seance.service';
@@ -12,6 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { MailService } from '../../services/mail.service';
+import { Seance_VM } from '@shared/index';
 
 @Component({
   standalone: false,
@@ -24,10 +25,13 @@ export class SeancesEssaisComponent implements OnInit {
   public id_seance:number;
   public action:string;
   public thisAccount:Compte_VM;
+  public thisSeance:Seance_VM
   public ListePersonne:Personne_VM[] = [];
   public personne:Personne_VM = null;
   public edit_personne:boolean = false;
-  constructor(public GlobalServices:GlobalService, public mail_serv:MailService, public inscription_seance:InscriptionSeanceService, public route: ActivatedRoute, public sean_serv: SeancesService, public rider_serv: AdherentService, public compteserv:CompteService) {
+  constructor(public GlobalServices:GlobalService, public mail_serv:MailService, 
+    public inscription_seance:InscriptionSeanceService, public route: ActivatedRoute, public router: Router,
+    public sean_serv: SeancesService, public rider_serv: AdherentService, public compteserv:CompteService) {
 
   }
   ngOnInit(): void {
@@ -35,6 +39,9 @@ export class SeancesEssaisComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if ('id' in params) {
         this.id_seance = params['id'];
+        this.sean_serv.Get(this.id_seance).then(s => {
+          this.thisSeance = s;
+        });
         this.action = $localize`Faire un essai`;
         this.context = "compte";
         return;
@@ -49,6 +56,12 @@ export class SeancesEssaisComponent implements OnInit {
 
     } else {
      this.ListePersonne = await this.rider_serv.GetAllPersonne(cvm.id);
+     if(this.ListePersonne && this.ListePersonne.length == 1){
+       this.personne = this.ListePersonne[0];
+       this.edit_personne = false;
+     } else {
+       this.personne = null;
+     }
     }
     }
 
@@ -65,14 +78,23 @@ export class SeancesEssaisComponent implements OnInit {
                return;
            } else {
              if(this.thisAccount.id == 0) {
-               await   this.compteserv.Add(this.thisAccount).then((id) =>{
+               await   this.compteserv.Add(this.thisAccount).then(async (id) =>{
                  this.thisAccount.id = id;
-               this.personne.compte = id; }).catch((err: HttpErrorResponse) => {
+               this.personne.compte = id; 
+              await this.mail_serv.MailActivation(this.thisAccount.email).then(() => {
+                let o = errorService.OKMessage(this.action);
+                errorService.emitChange(o);
+              this.router.navigate(['/login']);
+              })
+               .catch((err: HttpErrorResponse) => {
                let o = errorService.CreateError(this.action, err.message);
                errorService.emitChange(o);
              });
                }
-             }
+             ) .catch((err: HttpErrorResponse) => {
+               let o = errorService.CreateError(this.action, err.message);
+               errorService.emitChange(o);
+             });
              if(this.personne.id == 0) {
               const adh = Object.assign(new Adherent_VM(),this.personne);
           await this.rider_serv
@@ -104,13 +126,16 @@ export class SeancesEssaisComponent implements OnInit {
              });
     }
   }
-  addPersonne(personne:Personne_VM){
-    if(this.personne){
-      this.personne = personne;
-    } else {
-    this.ListePersonne.push(personne);
-    this.personne = personne;
-    }
-    this.edit_personne = false;
   }
+}
+
+isLP0():boolean{
+  return !this.ListePersonne.find(x => x.id == 0);
+}
+
+ async addPersonne(_p:Personne_VM){
+    this.personne = _p;
+    this.ListePersonne.push(_p);
+    this.edit_personne = false;
+ }
 }

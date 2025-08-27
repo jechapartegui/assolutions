@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Person } from '../entities/personne.entity';
 import { LinkGroupService } from './linkgroup.service';
+import { InscriptionStatus } from '../entities/inscription-seance.entity';
 
 @Injectable()
 export class PersonService {
@@ -41,6 +42,21 @@ export class PersonService {
 
   return personnes;
 }
+
+async getEssai(accountId: number, seasonId: number): Promise<Person[]> {
+  return this.repo
+    .createQueryBuilder('person')
+    .leftJoinAndSelect('person.account', 'account')
+    .leftJoinAndSelect('person.inscriptionsSeance', 'insc')
+    .leftJoinAndSelect('insc.seance', 'seance')
+    .where('person.accountId = :accountId', { accountId })
+    .andWhere('seance.seasonId = :seasonId', { seasonId })
+    // Si tu veux restreindre aux essais uniquement, décommente :
+    .distinct(true) // évite les doublons de person si plusieurs inscriptions matchent
+    .getMany();
+}
+
+
 
     async getAllCompte(accountId : number): Promise<Person[]> {
     return this.repo.find({ where: { accountId } });

@@ -24,7 +24,8 @@ export class RegistrationSessionService {
     return this.repo.find();
   }
     async getAllSeance(seanceId:number): Promise<RegistrationSession[]> {
-    return this.repo.find({ where: { seanceId } });
+    return this.repo.find({ 
+    relations: ['person', 'seance'],where: { seanceId } });
   }
     async getAllRiderSaison(personId:number,seasonId:number ): Promise<RegistrationSession[]> {
   return this.repo.find({

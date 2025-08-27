@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AdherentSeance_VM } from '@shared/lib/seance.interface';
+import { AdherentSeance_VM, MesSeances_VM } from '@shared/lib/seance.interface';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Person } from '../../entities/personne.entity';
 import { Personne_VM, PersonneLight_VM } from '@shared/lib/personne.interface';
@@ -11,7 +11,7 @@ import { RegistrationSession } from '../../entities/inscription-seance.entity';
 import { to_InscriptionSeances_VM } from '../inscription_seance/inscription_seance.services';
 import { toInscriptionSaison_VM } from '../inscription_saison/inscription_saison.services';
 import { SeasonService } from '../../crud/season.service';
-import { SeanceService } from '../seance/seance.services';
+import { SeanceService, to_Seance_VM } from '../seance/seance.services';
 import { ProfessorContractService } from '../../crud/professorcontract.service';
 import { AccountService } from '../../crud/account.service';
 import { LinkGroupService } from '../../crud/linkgroup.service';
@@ -33,7 +33,6 @@ export class MemberService {
     if (!saison) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
-    console.warn(saison[0].inscriptions);
     return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], []));
   }
   async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
@@ -62,7 +61,7 @@ export class MemberService {
     }
     const adhrents_saison = await this.GetAdherentProject(compte, saison_active);
     
-
+    const essai_persons = await this.EssaiProjet(compte, saison_active);
     const retour: AdherentSeance_VM[] = [];
   
     for (const ad of adhrents_saison) {
@@ -82,8 +81,12 @@ export class MemberService {
   
       retour.push(adherentSeance);
     }
+    for(const es of essai_persons) {
+      if(!retour.find(x => x.personne.id === es.personne.id)) {
 
-
+        retour.push(es);
+      }
+    }
     
   
     return retour;
@@ -144,9 +147,35 @@ export class MemberService {
   }
 
   if (liste.length === 0) {
-    throw new UnauthorizedException('NO_USER_FOUND');
+    return [];
   }
 
+  return liste;
+}
+
+async EssaiProjet(
+  compte: number,
+  saison_id: number
+): Promise<AdherentSeance_VM[]> {
+  let liste: AdherentSeance_VM[] = [];
+  const perso = await this.personserivce.getEssai(compte, saison_id);
+  for (const p of await perso) {
+    let ms = [];
+    p.inscriptionsSeance.forEach(async (ie) => {
+      let ma_se : MesSeances_VM = { 
+        seance : to_Seance_VM(ie.seance),
+        statutInscription : ie.statutInscription,
+        statutPrésence : ie.statutSeance,
+        inscription_id : ie.id
+      }
+      ms.push(ma_se);
+    });
+    const item: AdherentSeance_VM = {
+      personne: toPersonne_VM(p),
+      mes_seances:ms,
+    };
+    liste.push(item);    
+  }
   return liste;
 }
 
@@ -270,7 +299,7 @@ export function toPersonne_VM(entity: Person): Personne_VM {
   vm.compte = entity.accountId;
   vm.contact_prevenir = entity.emergencyContacts?? [];
   vm.contact = entity.contacts?? [];
-  if(entity.account) {
+ if(entity.account) {
     vm.login = entity.account.login?? '';
   } else  {
     vm.login = '';

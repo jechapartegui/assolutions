@@ -163,6 +163,13 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       }
     }
   }
+  onKeyPressMdp(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      if (this.VM.isValid) {
+        this.Login();
+      }
+    }
+  }
 
   async PreLogin() {
     this.action = $localize`Se connecter`;

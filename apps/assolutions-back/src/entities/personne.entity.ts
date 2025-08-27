@@ -45,8 +45,8 @@ export class Person {
     @OneToMany(() => RegistrationSeason, insc => insc.person)
     inscriptions?: RegistrationSeason[];
 
-        @OneToMany(() => RegistrationSession, insc => insc.seance)
-    inscriptionsSeance?: RegistrationSession[];
+    @OneToMany(() => RegistrationSession, (insc) => insc.person)
+inscriptionsSeance?: RegistrationSession[];
 
   @OneToOne(() => Professor, prof => prof.person)
   professor?: Professor;  // optionnel : la personne peut ne pas être prof

@@ -1,38 +1,124 @@
 <ng-container [ngSwitch]="context">
-    <ng-container *ngSwitchCase="'compte'">
-       <app-login (essai)="gererCompte($event)" [context]="'ESSAI'"></app-login>
-    </ng-container>
-    <ng-container *ngSwitchCase="'personne'">
-        <ng-container *ngIf="edit_personne; else noedit">
-            <app-adherent [context]="'ESSAI'" [Personne]="personne" (essai)="addPersonne($event)"></app-adherent>
-        </ng-container>
-        <ng-template #noedit>
-                <button class="button is-outlined is-rounded is-primary" (click)="edit_personne = true; personne = null" i18n>Créer une nouvelle personne</button>
-                  <div
-                   *ngIf="thisAccount.id>0"
-                    class="field"
-                  >
-                   <label class="label" i18n>Sélection de la personne</label>
-<div class="select">
-  <select
-    id="cours"
-    [(ngModel)]="personne"               
-  >
-    <option [ngValue]="null" i18n>— Sélectionner —</option>
-    <option *ngFor="let p of ListePersonne" [ngValue]="p">
-      {{ p.prenom }} {{ p.nom }} {{ p.date_naissance | date:'dd/MM/yyyy' }}
-    </option>
-  </select>
-</div>
 
-<p class="help is-danger" *ngIf="!personne" i18n>
-  La sélection d'une personne est obligatoire.
-</p>
+  <!-- Séance sélectionnée -->
+  <p *ngIf="thisSeance" class="mb-3">
+    <span class="tag is-info is-light is-medium">
+      <span i18n>Séance sélectionnée :</span>&nbsp;
+      <strong>{{ thisSeance.libelle }}</strong>&nbsp;—&nbsp;
+      {{ thisSeance.date_seance | date:'dd/MM/yyyy' }}
+    </span>
+  </p>
 
-                  </div>
-                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="edit_personne = true" i18n>Modifier la personne</button>
-                <button *ngIf="personne" class="button is-outlined is-rounded is-primary" (click)="Valider()" i18n>Valider l'essai</button>
+  <!-- === CONTEXTE COMPTE === -->
+  <ng-container *ngSwitchCase="'compte'">
+    <div class="card">
+      <div class="card-content">
+        <app-login (essai)="gererCompte($event)" [context]="'ESSAI'"></app-login>
+      </div>
+    </div>
+  </ng-container>
 
-        </ng-template>
-    </ng-container>
+  <!-- === CONTEXTE PERSONNE === -->
+  <ng-container *ngSwitchCase="'personne'">
+    <div class="card">
+      <header class="card-header">
+        <p class="card-header-title">
+          <span i18n>Gestion de la personne</span>
+        </p>
+      </header>
+
+      <div class="card-content">
+        <div class="content">
+          <p class="mb-2">
+            <span class="has-text-grey" i18n>Compte sélectionné : </span>
+            <strong>{{ thisAccount.email }}</strong>
+          </p>
+
+          <p *ngIf="personne" class="mb-4">
+            <span class="has-text-grey" i18n>Personne sélectionnée : </span>
+            <strong>{{ personne.prenom }} {{ personne.nom }} </strong>
+          </p>
+
+          <!-- Edition / Création -->
+          <ng-container *ngIf="edit_personne; else noedit">
+            <div class="box">
+              <app-adherent
+                [context]="'ESSAI'"
+                [login_adherent]="thisAccount.email"
+                [Personne]="personne"
+                (essai)="addPersonne($event)">
+              </app-adherent>
+            </div>
+          </ng-container>
+
+          <!-- Sélection d'une personne existante -->
+          <ng-template #noedit>
+            <div class="mb-4">
+              <button
+                *ngIf="isLP0()"
+                class="button is-link is-light is-rounded"
+                (click)="edit_personne = true; personne = null"
+                i18n>
+                ➕ Créer une nouvelle personne
+              </button>
+            </div>
+
+            <div
+              *ngIf="thisAccount.id > 0"
+              class="field">
+              <label class="label" i18n>Sélection de la personne</label>
+
+              <!-- Messages d'état -->
+              <p
+                *ngIf="ListePersonne && ListePersonne.length == 0"
+                class="notification is-danger is-light py-2">
+                <span class="icon-text">
+                  <span>⚠️</span>
+                  <span i18n>Aucune personne n'est rattachée à ce compte. Veuillez en créer une nouvelle.</span>
+                </span>
+              </p>
+
+              <p
+                *ngIf="ListePersonne && ListePersonne.length == 1"
+                class="notification is-success is-light py-2">
+                <span class="icon-text">
+                  <span>✅</span>
+                  <span>
+                    {{ personne.prenom }} {{ personne.nom }}
+                    {{ personne.date_naissance | date:'dd/MM/yyyy' }}
+                    <span i18n>est la seule personne rattachée à ce compte et a été sélectionnée automatiquement.</span>
+                  </span>
+                </span>
+              </p>
+
+              <!-- Select -->
+              <div *ngIf="ListePersonne && ListePersonne.length > 1" class="control">
+                <div class="select is-fullwidth">
+                  <select
+                    id="cours"
+                    [(ngModel)]="personne">
+                    <option [ngValue]="null" i18n>— Sélectionner —</option>
+                    <option *ngFor="let p of ListePersonne" [ngValue]="p">
+                      {{ p.prenom }} {{ p.nom }} {{ p.date_naissance | date:'dd/MM/yyyy' }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <p class="help is-danger mt-2" *ngIf="!personne" i18n>
+                La sélection d'une personne est obligatoire.
+              </p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Footer d’actions (optionnel mais propre) -->
+      <footer class="card-footer" *ngIf="personne">
+        <a class="card-footer-item" (click)="Valider()" i18n>Valider l'essai</a>
+        <a class="card-footer-item" *ngIf="personne && personne.id" (click)="edit_personne = true" i18n>Modifier</a>
+      </footer>
+    </div>
+  </ng-container>
+
 </ng-container>
