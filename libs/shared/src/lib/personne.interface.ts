@@ -20,22 +20,29 @@ export class Personne_VM extends PersonneLight_VM {
       const contactPrefere = this.contact.find(c => c.Pref);
       return contactPrefere ? contactPrefere.Type : '';
     }
-    get libelle(): string {
-    let parts: string[] = [];
-
-    if (this.prenom) {
-      parts.push(this.prenom);
-    }
-
-    if (this.nom) {
-      parts.push(this.nom);
-    }
-
-    if (this.surnom) {
-      parts.push(this.surnom);
-    }
-
+     get libelle(): string {
+    const parts: string[] = [];
+    if (this.prenom) parts.push(this.prenom);
+    if (this.nom)     parts.push(this.nom);
+    if (this.surnom)  parts.push(this.surnom);
     return parts.join(' ');
+  }
+
+  /** Appelle le getter sur *n'importe quel* objet (instance ou JSON plat). */
+  static callLibelle(obj: any): string {
+    const get = Object.getOwnPropertyDescriptor(Personne_VM.prototype, 'libelle')?.get;
+    return get ? get.call(obj) : '';
+  }
+
+  /** Cuit la valeur sur l'objet passé (utile pour JSON / templates). */
+  static bakeLibelle(obj: any): void {
+    const value = Personne_VM.callLibelle(obj);
+    Object.defineProperty(obj, 'libelle', {
+      value,
+      enumerable: true,
+      configurable: true,
+      writable: false
+    });
   }
   }
 

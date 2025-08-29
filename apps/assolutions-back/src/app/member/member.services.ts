@@ -33,7 +33,7 @@ export class MemberService {
     if (!saison) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
-    return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], []));
+    return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], [])).sort((a, b) => a.nom.localeCompare(b.nom));
   }
   async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
     const saison = await this.personserivce.getAllCompte(compte_id);

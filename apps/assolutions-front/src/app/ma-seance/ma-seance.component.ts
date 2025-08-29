@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
@@ -7,6 +7,9 @@ import { SeancesService } from '../../services/seance.service';
 import { FullInscriptionSeance_VM, InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from '@shared/lib/inscription_seance.interface';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Seance_VM, StatutSeance } from '@shared/lib/seance.interface';
+import { Personne_VM } from '@shared/lib/personne.interface';
+import { AppStore } from '../app.store';
+import { AdherentService } from '../../services/adherent.service';
 @Component({
   standalone: false,
   selector: 'app-ma-seance',
@@ -30,10 +33,10 @@ export class MaSeanceComponent implements OnInit {
   All: FullInscriptionSeance_VM[] = [];
   Absents: FullInscriptionSeance_VM[] = [];
   Presents: FullInscriptionSeance_VM[] = [];
-  adherent_to: FullInscriptionSeance_VM;
+  adherent_to: Adherent_VM = null;
   action: string;
   seanceText: string;
-  constructor( private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
+  constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
   ngOnInit(): void {
@@ -58,63 +61,63 @@ export class MaSeanceComponent implements OnInit {
     });
 
   }
-  setStatus(statut, inscription) {
+  setStatus(statut, inscription: FullInscriptionSeance_VM) {
     inscription.isVisible = false;
     const errorService = ErrorService.instance;
-    let oldstatut = inscription.StatutInscription;
+    let oldstatut = inscription.statut_inscription;
     let libelleseab = this.thisSeance.libelle;
     switch (statut) {
       default:
-        this.action = inscription.Libelle + $localize` a un statut inconnu pour la séance ` + libelleseab;
-        inscription.StatutInscription = null;
+        this.action = inscription.person.libelle + $localize` a un statut inconnu pour la séance ` + libelleseab;
+        inscription.statut_inscription = null;
         break;
       case 'présent':
-        this.action = inscription.Libelle + $localize` devrait être présent à la séance ` + libelleseab;
-        inscription.StatutInscription = "présent";
+        this.action = inscription.person.libelle + $localize` devrait être présent à la séance ` + libelleseab;
+        inscription.statut_inscription = InscriptionStatus_VM.PRESENT;
         break;
       case 'essai':
-        this.action = inscription.Libelle + $localize` est à l'essai pour la séance ` + libelleseab;
-        inscription.StatutInscription = "essai";
+        this.action = inscription.person.libelle + $localize` est à l'essai pour la séance ` + libelleseab;
+        inscription.statut_inscription = InscriptionStatus_VM.ESSAI;
         break;
       case 'absent':
-        this.action = inscription.Libelle + $localize` devrait être absent à la séance ` + libelleseab;
-        inscription.StatutInscription = "absent";
+        this.action = inscription.person.libelle + $localize` devrait être absent à la séance ` + libelleseab;
+        inscription.statut_inscription = InscriptionStatus_VM.ABSENT;
         break;
       case 'convoqué':
-        this.action = inscription.Libelle + $localize` devrait être présent à la séance ` + libelleseab;
-        inscription.StatutInscription = "convoqué";
+        this.action = inscription.person.libelle + $localize` devrait être présent à la séance ` + libelleseab;
+        inscription.statut_inscription = InscriptionStatus_VM.CONVOQUE;
         break;
 
     }
 
-    if (inscription.ID == 0) {
+    if (!inscription.id ||inscription.id == 0) {
 
-      this.inscriptionserv.Add(inscription.datasource).then((id) => {
-        inscription.ID = id;
+      this.inscriptionserv.Add(inscription).then((id) => {
+        inscription.id = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
         this.Load();
 
       }).catch((err: HttpErrorResponse) => {
-        inscription.StatutInscription = oldstatut
+        inscription.statut_inscription = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
       })
     } else {
-      this.inscriptionserv.Update(inscription.datasource).then((retour) => {
+      this.inscriptionserv.Update(inscription).then((retour) => {
         if (retour) {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
           this.Load();
         } else {
-          inscription.StatutInscription = oldstatut
+          inscription.statut_inscription = oldstatut
           let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         }
 
       }).catch((err: HttpErrorResponse) => {
-        inscription.StatutInscription = oldstatut
+        inscription.statut_inscription = oldstatut
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
@@ -130,11 +133,28 @@ export class MaSeanceComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
     this.inscriptionserv.GetAllSeanceFull(this.id).then((res) => {
-      this.Inscrits = res.filter(x => x.statut_seance == null && x.statut_inscription == InscriptionStatus_VM.PRESENT);
-      this.Potentiels = res.filter(x => x.statut_seance == null && x.statut_inscription == null);
-      this.All =  res.filter(x => x.statut_seance == null);
+       res.forEach(p => {
+      if (p?.person) {
+        Object.setPrototypeOf(p.person, Personne_VM.prototype);
+        // 2) (Optionnel) matérialiser la valeur pour la sérialisation / filtres ultérieurs
+        // (p.person as any).libelle = p.person.libelle;
+      }
+    });
+      this.Inscrits = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT);
+      this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription);
+      this.All =  res.filter(x => !x.statut_seance);
       this.Absents = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT);
       this.Presents = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT);
+       this.riderservice
+          .GetAdherentAdhesion(this.store.saison_active().id)
+          .then((riders) => {
+            riders.forEach(p => Personne_VM.bakeLibelle(p));
+            this.Autres = riders.filter(x => !res.find(y => y.person.id == x.id));
+          }
+          ).catch((error) => {
+            let n = errorService.CreateError("Chargement", error);
+            errorService.emitChange(n);
+          });
     }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
@@ -153,15 +173,16 @@ export class MaSeanceComponent implements OnInit {
     let oldstatut = inscription.statut_seance;
     let libelleseab = this.thisSeance.libelle;
     if (statut == true) {
-      inscription.statut_inscription = InscriptionStatus_VM.PRESENT;
+      inscription.statut_seance = SeanceStatus_VM.PRESENT;
       this.action = inscription.person.libelle + $localize` est présent à la séance ` + libelleseab;
     } else if (statut == false) {
-      inscription.statut_inscription = InscriptionStatus_VM.ABSENT;
+      inscription.statut_seance = SeanceStatus_VM.ABSENT;
       this.action = inscription.person.libelle + $localize` est absent à la séance ` + libelleseab;
     } else if (statut == null) {
       inscription.statut_seance = null;
     }
-    if (inscription.id == 0) {
+    console.log(inscription);
+    if (!inscription.id || inscription.id == 0) {
 
       this.inscriptionserv.Add(inscription).then((id) => {
         inscription.id = id;
@@ -176,16 +197,10 @@ export class MaSeanceComponent implements OnInit {
         return;
       })
     } else {
-      this.inscriptionserv.Update(inscription).then((retour) => {
-        if (retour) {
+      this.inscriptionserv.Update(inscription).then(() => {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
           this.Load();
-        } else {
-          inscription.statut_seance = oldstatut
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
 
       }).catch((err: HttpErrorResponse) => {
         inscription.statut_seance = oldstatut
@@ -243,25 +258,19 @@ AjouterAdherentsHorsGroupe() {
   const errorService = ErrorService.instance;
   if (this.adherent_to) {
 
-    this.action = $localize`Convoquer ` + this.adherent_to.person.libelle;
-    this.adherent_to.seance_id = this.thisSeance.seance_id;
-    this.adherent_to.statut_inscription = InscriptionStatus_VM.CONVOQUE;
-    this.adherent_to.statut_seance = null;
+    this.action = $localize`Convoquer ` + this.adherent_to.libelle;
       const conv: InscriptionSeance_VM = {
               id: 0,
-              rider_id: this.adherent_to.person.id,
-              seance_id: this.adherent_to.seance_id,
+              rider_id: this.adherent_to.id,
+              seance_id: this.thisSeance.seance_id,
               date_inscription: new Date(),
-              statut_inscription: this.adherent_to.statut_inscription,
+              statut_inscription: InscriptionStatus_VM.CONVOQUE,
               statut_seance: null
             };
     this.inscriptionserv.Add(conv).then((id) => {
-      this.adherent_to.id = id;
-      this.inscriptionserv.GetFull(id).then((ins) => {
-        this.All.push(ins);
-        this.Autres = this.Autres.filter(x => x.id !== ins.rider_id);
-        this.adherent_to = null;
-      });
+      conv.id = id;
+      this.Load();
+      this.adherent_to = null;
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
 
@@ -368,4 +377,37 @@ scrollToTop(): void {
     behavior: 'smooth', // Défilement fluide
   });
 }
+openMenu(potentiel: any, ev: MouseEvent) {
+    ev.stopPropagation();              // évite la fermeture immédiate
+    this.closeAllMenus();
+    potentiel.isVisible = true;
+    this.cdr.markForCheck?.();         // utile si OnPush
+  }
+
+  /** Optionnel : ferme après avoir choisi une action */
+  setStatusAndClose(status: any, potentiel: FullInscriptionSeance_VM, ev?: MouseEvent) {
+    ev?.stopPropagation();
+    this.setStatus(status, potentiel);
+    this.closeAllMenus();
+    this.cdr.markForCheck?.();
+  }
+ private closeAllMenus() {
+  console.log("close all menus");
+    // si les menus n’existent que dans All, c’est suffisant
+    this.All?.forEach(p => (p.isVisible = false));
+      this.Inscrits?.forEach(p => (p.isVisible = false));
+      this.Potentiels?.forEach(p => (p.isVisible = false));
+      this.Absents?.forEach(p => (p.isVisible = false));
+      this.Presents?.forEach(p => (p.isVisible = false));
+  }
+   @HostListener('document:click', ['$event'])
+  onDocumentClick(_: MouseEvent) {
+    this.closeAllMenus();
+  }
+
+  /** Bonus : touche Échap pour fermer */
+  @HostListener('document:keydown.escape', ['$event'])
+  onEsc(_: KeyboardEvent) {
+    this.closeAllMenus();
+  }
 }

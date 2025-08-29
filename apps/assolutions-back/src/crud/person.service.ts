@@ -30,6 +30,7 @@ export class PersonService {
       },
     },
   });
+  
 
   // Remplir les groupes pour chaque inscription de chaque personne
   for (const personne of personnes) {
@@ -39,21 +40,28 @@ export class PersonService {
     }
   }
   }
-
+  const essais = await this.getEssai(null, saisonId);
+  for (const essai of essais) {
+    if (!personnes.find(p => p.id === essai.id)) {
+      personnes.push(essai);
+    }
+  }
   return personnes;
 }
 
-async getEssai(accountId: number, seasonId: number): Promise<Person[]> {
-  return this.repo
+async getEssai(accountId: number | null, seasonId: number): Promise<Person[]> {
+  const qb = this.repo
     .createQueryBuilder('person')
     .leftJoinAndSelect('person.account', 'account')
     .leftJoinAndSelect('person.inscriptionsSeance', 'insc')
     .leftJoinAndSelect('insc.seance', 'seance')
-    .where('person.accountId = :accountId', { accountId })
-    .andWhere('seance.seasonId = :seasonId', { seasonId })
-    // Si tu veux restreindre aux essais uniquement, décommente :
-    .distinct(true) // évite les doublons de person si plusieurs inscriptions matchent
-    .getMany();
+    .where('seance.seasonId = :seasonId', { seasonId });
+
+  if (accountId) {
+    qb.andWhere('person.accountId = :accountId', { accountId });
+  }
+
+  return qb.distinct(true).getMany();
 }
 
 

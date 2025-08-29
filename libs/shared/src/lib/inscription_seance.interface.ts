@@ -1,12 +1,12 @@
 import { Personne_VM } from "./personne.interface";
 
 export class InscriptionSeance_VM {
-    id: number;
-     rider_id: number;
-     seance_id: number;
-     date_inscription: Date;
-     statut_inscription: InscriptionStatus_VM | undefined;
-     statut_seance: SeanceStatus_VM | undefined;
+   id = 0;
+  rider_id = 0;
+  seance_id = 0;
+  date_inscription: Date | null = null;
+  statut_inscription: InscriptionStatus_VM | null = null;
+  statut_seance: SeanceStatus_VM | null = null;
 }
 
 

@@ -67,38 +67,40 @@ export class InscriptionSeanceService {
         });
 
   }
-   async GetAllSeanceFull(seance_id:number) : Promise<FullInscriptionSeance_VM[]> {
-    const pISSs = await this.inscriptionseanceserv.getAllSeance(seance_id);
-    const ss = await this.seanceserv.get(seance_id);
-    ss.groups = await this.linkgroup_serv.getGroupsForObject('séance', ss.id);
-    console.log(ss.groups);
-    let list_id = [];
-    ss.groups.forEach(async (gr) =>{
-    let ridersgroup =  await this.linkgroup_serv.getObjectForGroups("rider", gr.id);
-    list_id.push(ridersgroup.map(x => x.objectId));
-    })
-    console.log(list_id);
-    list_id.forEach(async (id)=>{
-      let _p = await this.personserv.get(id);
-      //regle age
-      let rs = new RegistrationSession();
-      rs.personId = 0;
-      rs.person = _p;
-      rs.seanceId = ss.id;
-      rs.seance = ss;
-      rs.statutInscription = null;
-      rs.statutSeance = null;
-      pISSs.push(rs);
-    })
+async GetAllSeanceFull(seance_id: number): Promise<FullInscriptionSeance_VM[]> {
+  const pISSs = await this.inscriptionseanceserv.getAllSeance(seance_id);
+  const ss = await this.seanceserv.get(seance_id);
+  ss.groups = await this.linkgroup_serv.getGroupsForObject('séance', ss.id);
 
-    if (!pISSs) {
-         return [];
-        }
-        return pISSs.map((pISS) => {
-          return to_FullInscriptionSeance_VM(pISS);
-        });
-
+  const list_id: number[] = [];
+  for (const gr of ss.groups) {
+    const ridersgroup = await this.linkgroup_serv.getObjectForGroups('rider', gr.groupId);
+    list_id.push(...ridersgroup.map(x => x.objectId));
   }
+
+  // IDs uniques (au cas où)
+  const uniqueIds = [...new Set(list_id)];
+
+  for (const id of uniqueIds) {
+    const _p = await this.personserv.get(id);
+    if (!_p) continue;
+    if (pISSs.find(x => x.personId === _p.id)) continue; // déjà inscrit
+
+     // vérifier que la personne a une inscription pour la saison de la séance
+    const rs = new RegistrationSession();
+    rs.personId = _p.id ?? 0;
+    rs.person = _p;
+    rs.seanceId = ss.id;
+    rs.seance = ss;
+    rs.statutInscription = null;
+    rs.statutSeance = null;
+
+    pISSs.push(rs);
+  }
+
+  return pISSs.map(x => to_FullInscriptionSeance_VM(x));
+}
+
 
   async Add(inscription: InscriptionSeance_VM) {
     if (!inscription) {
@@ -131,21 +133,33 @@ async Delete(id: number) {
  
 
 }
-export function to_InscriptionSeances_VM(obj:RegistrationSession): InscriptionSeance_VM{
+export function to_InscriptionSeances_VM(obj: RegistrationSession): InscriptionSeance_VM {
   const item = new InscriptionSeance_VM();
-  item.date_inscription=obj.dateInscription;
-  item.id = obj.id;
-  item.rider_id = obj.person.id;
-  item.seance_id = obj.seanceId;
-  item.statut_inscription = toInscriptionStatusVM(obj.statutInscription);
-  item.statut_seance = toSeanceStatusVM(obj.statutSeance);
+
+  item.id          = obj?.id ?? 0;                         // 0 si absent
+  item.rider_id    = obj?.personId ?? 0;
+  item.seance_id   = obj?.seanceId ?? 0;
+  item.date_inscription = obj?.dateInscription ?? null;    // null si absent
+
+  item.statut_inscription =
+    obj?.statutInscription == null
+      ? null
+      : (toInscriptionStatusVM(obj.statutInscription) ?? null);
+
+  item.statut_seance =
+    obj?.statutSeance == null
+      ? null
+      : (toSeanceStatusVM(obj.statutSeance) ?? null);
+
   return item;
 }
+
 export function to_FullInscriptionSeance_VM(obj:RegistrationSession): FullInscriptionSeance_VM{
   const item = new FullInscriptionSeance_VM();
   item.date_inscription=obj.dateInscription;
   item.id = obj.id;
   item.person = toPersonne_VM(obj.person);
+  item.rider_id = obj.personId;
   item.seance_id = obj.seanceId;
   item.isVisible = false;
   item.statut_inscription = toInscriptionStatusVM(obj.statutInscription);

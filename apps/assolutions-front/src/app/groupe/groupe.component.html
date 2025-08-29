@@ -37,7 +37,7 @@
                                             <!-- Options pour les professeurs -->
                                             <ng-container
                                                 *ngFor="let adh of liste_adherent | filterLibelleNom : filter_libelle ">
-                                                <option [ngValue]="adh">{{adh.Libelle}}</option>
+                                                <option [ngValue]="adh">{{adh.prenom}} {{adh.nom }} <span *ngIf="adh.surnom.length>0">{{adh.surnom}}</span></option>
                                             </ng-container>
                                         </select>
                                     </div>

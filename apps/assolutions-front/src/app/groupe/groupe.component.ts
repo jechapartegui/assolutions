@@ -8,6 +8,7 @@ import { Adherent_VM } from '@shared/lib/member.interface';
 import { KeyValuePair } from '@shared/lib/autres.interface';
 import { Groupe_VM } from '@shared/lib/groupe.interface';
 import { AppStore } from '../app.store';
+import { Personne_VM } from '@shared/lib/personne.interface';
 
 @Component({
   standalone: false,
@@ -22,7 +23,7 @@ export class GroupeComponent implements OnInit {
   nom_groupe: string = "";
   liste_adherent: Adherent_VM[];
   adherent_to: Adherent_VM;
-  groupe_to: KeyValuePair = null;
+  groupe_to: Groupe_VM = null;
   groupe_to_delete: KeyValuePair = null;
   liste_groupe: Groupe_VM[];
   action: string = "";
@@ -43,12 +44,11 @@ export class GroupeComponent implements OnInit {
       // Chargez la liste des cours
 
       this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {
-        console.log("ici");
 
         this.liste_groupe = result.map(g => new Groupe_VM(Number(g.key), g.value, this.store.saison_active().id));
-        console.log("làa");
         this.adhserv.GetAdherentAdhesion(this.store.saison_active().id).then((riders) => {
-          this.liste_adherent = riders;
+         riders.forEach(p => Personne_VM.bakeLibelle(p));
+          this.liste_adherent = riders.filter(x => x.inscriptionsSaison && x.inscriptionsSaison.length > 0);
         }).catch((error) => {
           let n = errorService.CreateError("Chargement", error);
           errorService.emitChange(n);
@@ -69,21 +69,24 @@ export class GroupeComponent implements OnInit {
     this.action = $localize`Ajout d'une personne au groupe`;
     try {
       let Ad = this.liste_adherent.find(x => x.id == this.adherent_to.id);
-      if (Ad.inscriptionsSaison[0].groupes.find(x => x.id == this.groupe_to.key)) {
+      console.log(this.groupe_to);
+      console.log(Ad.inscriptionsSaison[0]);
+      if (Ad.inscriptionsSaison[0].groupes.find(x => x.id == this.groupe_to.id)) {
         let o = errorService.Create(this.action, $localize`Cet adhérent est déjà présent dans le groupe`, "Warning");
         errorService.emitChange(o);
       } else {
         this.action = $localize`Ajout de `;
         this.action += Ad.libelle;
         this.action += $localize` au groupe `;
-        this.action += this.groupe_to.value;
+        this.action += this.groupe_to.nom;
        
         let errorService = ErrorService.instance;
-        this.groupeserv.AddLien(Ad.id, 'rider', Number(this.groupe_to.key)).then((id) => {
+        console.log("Ajout de " + Ad.libelle + " au groupe " + this.groupe_to.nom);
+        this.groupeserv.AddLien(Ad.id, 'rider', Number(this.groupe_to.id)).then((id) => {
           if (id) {
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-            Ad.inscriptionsSaison[0].groupes.push({id: Number(this.groupe_to.key), nom: this.groupe_to.value, id_lien : 0});
+            Ad.inscriptionsSaison[0].groupes.push({id: Number(this.groupe_to.id), nom: this.groupe_to.nom, id_lien : 0});
           } else {
             let o = errorService.UnknownError(this.action);
             errorService.emitChange(o);
@@ -185,6 +188,7 @@ export class GroupeComponent implements OnInit {
     }
   }
   public isGroupe(id_groupe: number, rider: Adherent_VM): boolean {
+    if(!rider.inscriptionsSaison || rider.inscriptionsSaison.length==0) return false;
     let u = rider.inscriptionsSaison[0].groupes.filter(x => x.id == id_groupe);
     if (u) {
       if (u.length > 0) {

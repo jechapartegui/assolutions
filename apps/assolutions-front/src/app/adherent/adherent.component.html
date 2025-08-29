@@ -945,15 +945,15 @@
       </div>
 
       <div class="columns is-vcentered">
+        <div class="tags">
         <ng-container *ngFor="let group of CurrentActiveInscriptionGroupe(thisAdherent)">
-          <div class="column is-6">
-            <div class="field">
-              <label class="label is-small">{{ group.nom }}</label>
-            </div>
-          </div>
+        <span class="tag is-success">
+            {{group.nom}}
+        </span>
         </ng-container>
       </div>
     </div>
+                </div>
                 </div>
 </ng-container>
 
