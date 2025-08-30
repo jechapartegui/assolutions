@@ -283,7 +283,7 @@ export function toPersonneLight_VM(obj: Person): PersonneLight_VM {
   adh.nom = obj.lastName;
   adh.prenom = obj.firstName;
   adh.surnom = obj.nickname || '';
-  adh.date_naissance = new Date(obj.birthDate);
+  adh.date_naissance = obj.birthDate;
   adh.sexe = obj.gender;
   return adh;
 }
@@ -293,7 +293,7 @@ export function toPersonne_VM(entity: Person): Personne_VM {
   vm.nom = entity.lastName;
   vm.prenom = entity.firstName;
   vm.surnom = entity.nickname || '';
-  vm.date_naissance = new Date(entity.birthDate);
+  vm.date_naissance = entity.birthDate;
   vm.sexe = entity.gender;
   vm.adresse = JSON.parse(entity.address);
   vm.compte = entity.accountId;
@@ -313,7 +313,7 @@ export function toPerson(vm:Personne_VM){
   entity.nickname = vm.surnom;
   entity.lastName = vm.nom;
   entity.firstName = vm.prenom;
-  entity.birthDate = vm.date_naissance;
+  entity.birthDate = new Date(vm.date_naissance);
   entity.accountId = vm.compte;
   entity.address = JSON.stringify(vm.adresse);
   entity.contacts = vm.contact;

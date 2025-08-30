@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit {
   action: string;
   projets: ProjetView[];
   projets_select: ProjetView = null;
+  selectedLogin:boolean = false;
   @Output() essai = new EventEmitter<Compte_VM>();
   @Input() context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" | "CREATE" = "MENU" // contexte d'accès à la page
   loading: boolean;
@@ -128,9 +129,9 @@ export class LoginComponent implements OnInit {
    
   }
 
-  validatePassword() {
-    const hasMinLength = this.VM.Password.length >= 8;
-    const hasNumber = /\d/.test(this.VM.Password);
+  validatePassword(mdp:string) {
+    const hasMinLength = mdp.length >= 8;
+    const hasNumber = /\d/.test(mdp);
     this.VM.isPasswordValid = hasMinLength && hasNumber;
     this.valide();
   }
@@ -145,18 +146,17 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
     } else {
       this.VM.isValid = this.VM.isLoginValid;
     }
-     
   }
 
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       if (this.VM.mdp_requis) {
-        this.validatePassword();
+        this.validatePassword(this.VM.Password);
         if (this.VM.isValid) {
           this.Login();
         }
       } else {
-        this.validatePassword();
+        this.validatePassword(this.VM.Password);
         if (this.VM.isValid) {
         this.PreLogin();
         }
@@ -179,6 +179,7 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       .then((retour) => {
         if (retour) {
           this.VM.mdp_requis = true;
+          this.selectedLogin = true;
         } else {
           this.Login();
         }
@@ -219,6 +220,7 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
     const errorService = ErrorService.instance;
       this.VM.creer_compte = true;
       this.VM.mdp_requis = true;
+      this.selectedLogin = true;
       let o = errorService.Create(this.action, $localize`Aucun compte trouvé, vous pouvez procéder à la création d'un compte`, "Warning");
       errorService.emitChange(o);
 

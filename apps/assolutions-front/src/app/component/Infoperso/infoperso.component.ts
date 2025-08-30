@@ -1,3 +1,4 @@
+import { formatDate } from "@angular/common";
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { ValidationItem } from "@shared/lib/autres.interface";
 import { Adherent_VM } from "@shared/lib/member.interface";

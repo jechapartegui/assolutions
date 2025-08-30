@@ -1,5 +1,5 @@
 <div class="weekcal">
-  <!-- Header (jours) -->
+  <!-- Header -->
   <div class="header-row">
     <div class="time-spacer">
       <ng-container *ngIf="showNav()">
@@ -8,48 +8,46 @@
         <button class="nav-btn" (click)="nextWeek.emit()" title="Semaine suivante">›</button>
       </ng-container>
     </div>
-
     <div class="day-header" *ngFor="let d of days()">
-      <div class="dow">{{ d.date| date:'EEE' }}</div>
+      <div class="dow">{{ d.date | date:'EEE' }}</div>
       <div class="dom">{{ d.date | date:'d/MM' }}</div>
     </div>
   </div>
 
-  <!-- Corps scrollable : rail heures + colonnes jours -->
+  <!-- Corps -->
   <div class="scroll-body" #scroller>
-    <!-- Colonne heures -->
-    <div class="time-rail">
-      <div class="time-cell" *ngFor="let h of hours()">
-        {{ (h < 10 ? '0' + h : h) }}:00
-      </div>
-      <!-- ligne des 24h pour fermer le grid -->
+    <!-- Rail heures (fenêtre 8h) -->
+    <div class="time-rail" [style.height.px]="gridHeightPx()">
+      <div class="time-cell" *ngFor="let h of viewHours()">{{ hourLabel(h) }}</div>
       <div class="time-cell last"></div>
     </div>
 
     <!-- 7 colonnes jours -->
-<div class="day-col"
-     *ngFor="let d of days(); trackBy: trackByDay">
-  <div class="hour-cell" *ngFor="let h of hours()"></div>
-  <div class="hour-cell last"></div>
+    <div class="day-col"
+         *ngFor="let d of days(); trackBy: trackByDay"
+         [style.height.px]="gridHeightPx()">
+      <div class="hour-cell" *ngFor="let _ of viewHours()"></div>
+      <div class="hour-cell last"></div>
 
-  <ng-container
-    *ngFor="let ev of (layoutByDay().get(d.iso) || []); trackBy: trackByEvent">
-    <div class="event-card"
-         [style.top.%]="ev.top"
-         [style.height.%]="ev.height"
-         [style.left.%]="ev.left"
-         [style.width.%]="ev.width"
-         [title]="ev.title + ' • ' + ev.start + '–' + ev.end">
-      <div class="ev-title">{{ ev.title }}</div>
-      <div class="ev-meta">
-        {{ ev.start }}–{{ ev.end }}
-        <ng-container *ngIf="ev.location"> • {{ ev.location }}</ng-container>
-      </div>
-      <div class="ev-sub" *ngIf="ev.subtitle">{{ ev.subtitle }}</div>
+      <ng-container *ngFor="let ev of (layoutByDay().get(dayIso(d)) || []); trackBy: trackByEvent">
+
+
+        <div class="event-card"
+             [style.top.%]="ev.top"
+             [style.height.%]="ev.height"
+             [style.left.%]="ev.left"
+             [style.width.%]="ev.width"
+             [title]="ev.title + ' • ' + ev.start + '–' + ev.end">
+          <div class="ev-title">{{ ev.title }}</div>
+          <div class="ev-meta">
+            {{ ev.start }}–{{ ev.end }}<ng-container *ngIf="ev.location"> • {{ ev.location }}</ng-container>
+          </div>
+          <div class="ev-sub" *ngIf="ev.subtitle">{{ ev.subtitle }}</div>
+        </div>
+      </ng-container>
+
+      <!-- Indicateur "après" -->
+      <div class="more-after" *ngIf="dayHasAfter().get(d.iso)" title="Autres séances plus tard">⋯</div>
     </div>
-  </ng-container>
-</div>
-
-
   </div>
 </div>

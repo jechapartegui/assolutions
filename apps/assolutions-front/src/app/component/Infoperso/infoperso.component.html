@@ -64,13 +64,15 @@
             <p *ngIf="!rPrenom.key" class="is-small help is-danger">{{rPrenom.value}}</p>
           </div>
 
-          <div class="field mb-2">
-            <label class="label is-small" i18n>Date de naissance</label>
+<div class="field mb-2">
+ <label class="label is-small" i18n>Date</label>
             <div class="control">
-              <input [ngClass]="!rDateNaissance.key? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.date_naissance"  (ngModelChange)="validerTout()">
+              <input
+              [ngClass]="!rDateNaissance.key   ? 'input is-danger is-small'   : 'input is-small' " type="date" [(ngModel)]="thisAdherent.date_naissance"  (ngModelChange)="validerTout()">
             </div>
             <p *ngIf="!rDateNaissance.key" class="is-small help is-danger">{{rDateNaissance.value}}</p>
-          </div>
+</div>
+
 
           <div class="field mb-2">
             <label class="label is-small" i18n>Sexe</label>
@@ -103,7 +105,7 @@
             <i *ngIf="thisAdherent.sexe" class="fa-solid fa-mars has-text-info"></i>
             <i *ngIf="!thisAdherent.sexe" class="fa-solid fa-venus has-text-danger"></i>
           </p>
-          <p><strong i18n>Surnom&nbsp;:&nbsp;</strong>{{ thisAdherent.surnom }}</p>
+          <p *ngIf="thisAdherent.surnom"><strong i18n>Surnom&nbsp;:&nbsp;</strong>{{ thisAdherent.surnom }}</p>
         </ng-template>
       </div>
 

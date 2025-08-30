@@ -322,7 +322,8 @@ valid_contact_urgence(isValid: boolean): void {
     // nouvelle personne -- selection possible
       this.ListePersonne = await this.ridersService.GetAllPersonne(this.thisAccount.id);
       if(this.ListePersonne.length == 0){
-        this.thisAdherent = new Adherent_VM();
+        this.thisAdherent = new Adherent_VM();  
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];      
         this.id = 0;
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
@@ -333,12 +334,14 @@ valid_contact_urgence(isValid: boolean): void {
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
         this.thisAdherent = new Adherent_VM();
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];    
       }
       }
     } else {
         this.id = 0;
         this.select_account = false;
         this.thisAdherent = new Adherent_VM();
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];    
     }   
   }
 
@@ -514,6 +517,7 @@ isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
               this.store.updateSelectedMenu("MENU");
         return;
       } else {
+        Adherent_VM.bakeLibelle(adh);
         this.histo_adherent = JSON.stringify(adh);
         this.thisAdherent = adh;
         
@@ -598,14 +602,14 @@ onPhotoSelectedFromChild(base64Photo: string): void {
 }
 
 PreSave() {
-  if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide) {
+  if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide && this.thisAdherent.id >0) {
    
     this.Save();
   }
 }
 
   async Save() {
-     if(this.context == "ESSAI" || this.thisAdherent.id == 0){
+     if(this.context == "ESSAI"){
       this.essai.emit(this.thisAdherent);
       return;
     }
@@ -844,29 +848,7 @@ PreSave() {
     }
   }
 
-  Rattacher(val: string) {
-
-  }
-  DemanderRattachement(val: string) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`demander le rattachement du compte`;
-    this.mail_serv
-      .DemandeRattachement(val, this.thisAdherent.id)
-      .then((retour) => {
-        if (retour) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-          this.ChargerAdherent();
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-  }
+  
 
   ngAfterViewInit(): void {
     this.waitForScrollableContainer();

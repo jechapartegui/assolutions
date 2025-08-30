@@ -1,8 +1,21 @@
-.ligneinfo{
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 8px;
+:host { color-scheme: light dark; }
 
+.panel {
+  border: 1px solid var(--bdr, rgba(0,0,0,.12));
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--panel-bg, #fff);
+}
+.panel-title { font-weight: 700; font-size: 1rem; margin-bottom: .5rem; }
+
+.editor-wrap { /* évite tout clipping du composant enfant */
+  overflow: visible;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --panel-bg: #1e1f22;
+    --bdr: rgba(255,255,255,.16);
+  }
+  .notification.is-light { background: #2a2b2f; color: #ddd; }
 }

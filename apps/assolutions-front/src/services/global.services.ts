@@ -277,23 +277,27 @@ if (this.store.projet()) {
 }
 
 public validerChaine(
-  valeur: string,
+  valeur: unknown,
   min: number,
   max: number,
   obligatoire: boolean,
   label: string
 ): ValidationItem {
-  if (obligatoire && !valeur?.trim()) {
-    return { key:false, value:`${label} obligatoire` };
+  const s = (valeur ?? '').toString(); // normalise tout en string
+  const v = s.trim();
+
+  if (obligatoire && v.length === 0) {
+    return { key: false, value: `${label} obligatoire` };
   }
-  if (min > -1 && valeur?.length < min) {
-     return { key:false, value:`${label} trop court` };
+  if (min > -1 && v.length < min) {
+    return { key: false, value: `${label} trop court` };
   }
-  if (max > -1 && valeur?.length > max) {
-     return { key:false, value:`${label} trop long` };
+  if (max > -1 && v.length > max) {
+    return { key: false, value: `${label} trop long` };
   }
-  return { key:true,value:null};
+  return { key: true, value: null };
 }
+
 public validerNombre(
   valeur: number  | null,
   min: number,

@@ -86,6 +86,8 @@ export class AuthService {
     // 1. Récupère les adhérents liés au compte
     const adhesions:ProjetView[] = await this.compteserv.getAdhesion(compteId);
     const profs:ProjetView[] = await this.prof_serv.getProfContratActif(compteId);
+    console.log('Adhesions:', adhesions);
+    console.log('Profs:', profs);
     // 2. Crée une map pour fusionner les projets par ID
     if(!adhesions && !profs) {
       return [];

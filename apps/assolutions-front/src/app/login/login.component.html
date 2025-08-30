@@ -10,8 +10,8 @@
           <h3 class="title is-3" i18n>Connexion</h3>
           <h6 class="subtitle is-6">{{libelle_titre}}</h6>
           <div class="field">
-            <p class="control has-icons-left has-icons-right">
-              <input [class]="VM.isLoginValid ? 'input' : 'input is-danger'"  (ngModelChange)="validateLogin()" (keypress)="onKeyPress($event)" 
+            <p *ngIf="!selectedLogin" class="control has-icons-left has-icons-right">
+              <input  [class]="VM.isLoginValid ? 'input' : 'input is-danger'"  (ngModelChange)="validateLogin()" (keypress)="onKeyPress($event)" 
   (input)="validateLogin()" [(ngModel)]="VM.Login" type="email" placeholder="Email">
               <span class="icon is-small is-left">
                 <i class="fas fa-envelope"></i>
@@ -20,11 +20,12 @@
                 <i class="fas fa-check"></i>
               </span>
             </p>
+            <p *ngIf="selectedLogin">{{VM.Login}} <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn></p>
           </div>
           <div *ngIf="VM.mdp_requis" class="field">
-          <h6 *ngIf="context == 'CREATE'" class="subtitle is-6" i18n>Saisir le mot de passe projet</h6>
+          <h6 *ngIf="context == 'CREATE' && !VM.creer_compte" class="subtitle is-6" i18n>Saisir le mot de passe projet</h6>
             <p class="control has-icons-left has-icons-right">
-              <input *ngIf="VM.mdp_requis" [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"   (ngModelChange)="validatePassword()" [(ngModel)]="VM.Password" (keypress)="onKeyPress($event)" type="password" placeholder="Password">
+              <input *ngIf="VM.mdp_requis" [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"   (ngModelChange)="validatePassword($event)" [(ngModel)]="VM.Password" (keypress)="onKeyPress($event)" type="password" placeholder="Password">
 
               <span class="icon is-small is-left">
                 <i class="fas fa-lock"></i>
@@ -33,6 +34,9 @@
                 <i class="fas fa-check"></i>
               </span>
             </p>
+            <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
+  Le mot de passe doit contenir au moins 8 caractères et un nombre.
+</p>
           </div>
           <ng-container *ngIf="projets">
             <ng-container *ngIf="projets.length>1">
@@ -62,19 +66,19 @@
                     (click)="PreLogin()  && !VM.creer_compte" i18n>
                     Selectionner ce compte
                   </button>
-                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isPasswordValid || !VM.isLoginValid"  class="button is-success is-outlined is-rounded"
                     (click)="CreerCompte(true)" i18n>
                     Créer un compte avec mot de passe
                   </button>
-                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isLoginValid"  class="button is-success is-outlined is-rounded"
                     (click)="CreerCompte(false)" i18n>
                     Créer un compte sans mot de passe
                   </button>
-                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isPasswordValid || !VM.isLoginValid"  class="button is-success is-outlined is-rounded"
                     (click)="CreerCompte(true)" i18n>
                     Créer un compte avec mot de passe
                   </button>
-                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
+                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isLoginValid"  class="button is-success is-outlined is-rounded"
                     (click)="CreerCompte(false)" i18n>
                     Créer un compte sans mot de passe
                   </button>
@@ -105,5 +109,4 @@
       </div>
     </div>
   </ng-container>
-  <button class="button is-rounded is-primary is-outlined is-small" (click)="TestMail()">Tester mail</button>
 </div>

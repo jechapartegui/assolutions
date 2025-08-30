@@ -12,10 +12,21 @@
   display: block;
 }
 
+.more-after{
+  position: absolute;
+  bottom: 2px; left: 50%; transform: translateX(-50%);
+  font-size: 12px;
+  background: #fff; border: 1px solid var(--ev-brd);
+  border-radius: 10px; padding: 0 6px; line-height: 18px;
+  box-shadow: var(--ev-shadow);
+  opacity: .9;
+}
+
 .weekcal {
   border: 1px solid var(--bdr);
   border-radius: 14px;
   overflow: hidden;
+  overflow-x: hidden;
   background: #fafafa;
 }
 
@@ -53,8 +64,10 @@
 .scroll-body {
   display: grid;
   grid-template-columns: 68px repeat(7, 1fr);
-  height: 72vh;           /* viewport de travail */
+    max-height: 72vh;   /* limite haute */
+  height: auto;       /* s'ajuste au contenu si plus petit */
   overflow-y: auto;
+  overflow-x: hidden; /* bye le scroll horizontal */     
   background: #fff;
 }
 
@@ -86,7 +99,6 @@
 /* colonnes jours */
 .day-col {
   position: relative;
-  height: calc(var(--hour-h) * 24);
   border-left: 1px solid var(--bdr);
   background:
     linear-gradient(to bottom,

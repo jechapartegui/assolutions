@@ -46,6 +46,7 @@ public CheckAdresse(): void {
   this.rPostCode= GlobalService.instance.validerChaine(this.thisAdresse.PostCode, this.Regles.PostCode_min, this.Regles.PostCode_max, this.Regles.PostCode_obligatoire, $localize`Code postal`);
   this.rCity = GlobalService.instance.validerChaine(this.thisAdresse.City, this.Regles.City_min, this.Regles.City_max, this.Regles.City_obligatoire, $localize`Ville`);
   this.estValid = this.rStreet.key && this.rPostCode.key && this.rCity.key;
+  console.log('Adresse valide', this.estValid);
   if(!this.Regles.Adresse_obligatoire){
     if(!this.estValid){
       this.rLibelle = {key:false,value : $localize`Adresse non valide - vous pouvez laisser vide pour continuer `};

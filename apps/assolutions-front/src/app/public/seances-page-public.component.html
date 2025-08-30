@@ -2,18 +2,19 @@
   <div class="container">
     <h1 class="title">Séances</h1>
 
-    
     <div class="buttons has-addons is-right">
-      <button class="button" [class.is-link]="view()==='calendar'" (click)="view.set('calendar')">🗓 Calendrier</button>
+      <button class="button" [class.is-link]="view()==='calendar'" (click)="view.set('calendar')" [disabled]="isSmallScreen">🗓 Calendrier</button>
       <button class="button" [class.is-link]="view()==='list'" (click)="view.set('list')">☰ Liste</button>
     </div>
-    <app-week-calendar *ngIf="view()==='calendar'"
+
+    <!-- calendrier invisible en mobile -->
+    <app-week-calendar *ngIf="!isSmallScreen && view()==='calendar'"
       [referenceDate]="referenceDate()"
       [events]="events()"
       (prevWeek)="router.navigate([], { queryParams: { week: weekOffset()-1 }, queryParamsHandling:'merge' })"
       (nextWeek)="router.navigate([], { queryParams: { week: weekOffset()+1 }, queryParamsHandling:'merge' })"
-      (todayWeek)="router.navigate([], { queryParams: { week: 0 }, queryParamsHandling:'merge' })"
-    ></app-week-calendar>
+      (todayWeek)="router.navigate([], { queryParams: { week: 0 }, queryParamsHandling:'merge' })">
+    </app-week-calendar>
 
     <app-seance-list-public *ngIf="view()==='list'" [items]="seances()"></app-seance-list-public>
   </div>

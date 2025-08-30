@@ -15,6 +15,7 @@ export class SeancesPage {
   view = signal<'list'|'calendar'>('calendar');
   weekOffset = signal(0);
   projet: number = 0;
+  isSmallScreen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -32,6 +33,11 @@ export class SeancesPage {
       this.view.set((q.get('view') as any) || 'calendar');
       this.weekOffset.set(parseInt(q.get('week') || '0', 10));
     });
+     // Force mobile → "list"
+    if (typeof window !== 'undefined') {
+      this.isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+      if (this.isSmallScreen) this.view.set('list');
+    }
     const PV:ProjetView= {
       id : this.projet,
       nom:"",
@@ -40,16 +46,30 @@ export class SeancesPage {
       essai:false,
     }
     this.store.updateProjet(PV);
-    this.saisonserv.GetAll().then(saisons => {
-      this.store.updateSaisonActive(saisons.find(s => s.active));
-    this.seanceserv.GetSeancePublic(this.store.saison_active().id).then(s => {
-      const parsed = (s || []).map(x => ({
-        ...x,
-        date_seance: x.date_seance instanceof Date ? x.date_seance : new Date(x.date_seance)
-      }));
-      this.seances.set(parsed);
-    });
-    });
+// quelque part dans ton composant/service d’amorçage
+this.saisonserv.GetAll().then(saisons => {
+  this.store.updateSaisonActive(saisons.find(s => s.active));
+
+  this.seanceserv.GetSeancePublic(this.store.saison_active().id).then(s => {
+    const toDate = (x:any) => x instanceof Date ? x : new Date(x);
+
+    // "hier" à 00:00 local
+    const yesterdayStart = new Date();
+    yesterdayStart.setHours(0,0,0,0);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+
+    // Option safe fuseau: comparer par yyyy-MM-dd
+    const ymd = (d: Date) => d.toISOString().slice(0,10);
+    const ymdCut = ymd(yesterdayStart);
+
+    const parsed = (s || [])
+      .map(x => ({ ...x, date_seance: toDate(x.date_seance) }))
+      .filter(x => ymd(x.date_seance) >= ymdCut);
+
+    this.seances.set(parsed);
+  });
+});
+
   }
 
 baseMonday = computed(() => {
