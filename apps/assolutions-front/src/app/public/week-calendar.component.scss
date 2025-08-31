@@ -75,6 +75,7 @@
 .time-rail {
   grid-column: 1;
   position: relative;
+  border-right: 1px solid var(--bdr);
 }
 .time-cell {
   height: var(--hour-h);
@@ -85,15 +86,7 @@
   color: #7a7a7a;
   position: relative;
 }
-.time-cell::after {
-  content: '';
-  position: absolute;
-  left: 100%;
-  right: -9999px;
-  top: calc(100% - 1px);
-  height: 1px;
-  background: var(--grid);
-}
+
 .time-cell.last { height: 0; }
 
 /* colonnes jours */

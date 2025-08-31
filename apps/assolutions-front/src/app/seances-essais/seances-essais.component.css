@@ -1,5 +1,47 @@
 :host { color-scheme: light dark; }
 
+/* Le container des tags du haut peut s'étirer sans faire de scroll horizontal */
+.mb-3 { margin-bottom: .75rem; }
+.break {
+  overflow-wrap: anywhere;   /* casse partout si besoin */
+  word-break: break-word;
+}
+
+/* Rendre les .tag adaptatifs (Bulma met height fixe + nowrap) */
+.tag-auto {
+  height: auto;              /* pas de hauteur rigide */
+  white-space: normal;       /* autorise le retour à la ligne */
+  line-height: 1.25;         /* un peu plus respirant */
+  align-items: flex-start;   /* le contenu s’aligne en haut si multi-lignes */
+  max-width: 100%;           /* ne dépasse jamais l’écran */
+}
+
+/* Limiter la largeur des textes "forts" à l'intérieur du tag */
+.tag-auto .break {
+  display: inline-block;
+  max-width: 70vw;           /* évite que la ligne force trop large */
+}
+
+/* Mobile : resserrer un peu la taille/padding des tags medium */
+@media (max-width: 480px) {
+  .tag-auto.is-medium {
+    font-size: .85rem;
+    padding: .35em .6em;
+  }
+  .tag-auto .break {
+    max-width: 64vw;
+  }
+}
+
+/* Dark mode cohérent avec le reste de tes styles */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --panel-bg: #1e1f22;
+    --bdr: rgba(255,255,255,.16);
+  }
+  .notification.is-light { background: #2a2b2f; color: #ddd; }
+}
+
 .panel {
   border: 1px solid var(--bdr, rgba(0,0,0,.12));
   border-radius: 12px;
@@ -12,10 +54,3 @@
   overflow: visible;
 }
 
-@media (prefers-color-scheme: dark) {
-  :host {
-    --panel-bg: #1e1f22;
-    --bdr: rgba(255,255,255,.16);
-  }
-  .notification.is-light { background: #2a2b2f; color: #ddd; }
-}

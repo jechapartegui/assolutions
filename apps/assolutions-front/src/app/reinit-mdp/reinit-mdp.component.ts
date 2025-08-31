@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
+import { AppStore } from '../app.store';
 
 @Component({
   standalone: false,
@@ -10,91 +11,122 @@ import { ErrorService } from '../../services/error.service';
   styleUrls: ['./reinit-mdp.component.css']
 })
 export class ReinitMdpComponent implements OnInit {
-  @Input() Login: string;
-  @Input() Token: string;
-  @Input() context :"REINIT" | "DEFINE" | "CONFIRM" | "CREER" = "REINIT";
-  @Output() demanderRattachement = new EventEmitter();
-  @Output() CreerMDP = new EventEmitter<string[]>();
-  @Output() rattacher = new EventEmitter();
-  Password: string = "";
-  action = "";
-  ConfirmPassword: string = "";
-  constructor(public compte_serv: CompteService,  public route: ActivatedRoute, public router: Router) { }
+  loading = true;
+  error: string | null = null;
+  success: string | null = null;
 
+  subtitle = '';
+  showPwd1 = false;
+  showPwd2 = false;
+
+  vm = {
+    logged: true,
+    token: null as string | null,
+    Login: '',
+    withPassword: true, // par défaut on propose d’en mettre un
+    Password: '',
+    Confirm: '',
+    isPasswordValid: false,
+    isConfirmValid: false,
+    isValid: false
+  };
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private store: AppStore,
+    private auth: CompteService
+  ) {}
 
   ngOnInit(): void {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger la page de réinitialisation de mot de passe`;
-    this.route.queryParams.subscribe(params => {
-      if ('login' in params) {
-        this.Login = params['login'];
-        if ('token' in params) {
-          this.Token = params['token'];
-        } else{
-          let o = errorService.CreateError(this.action, $localize`Absence de token`);
-          errorService.emitChange(o);
-          this.router.navigate(['/login']);
-        }
+    // Détecter le mode
+    const token = this.route.snapshot.queryParamMap.get('token');
+    const loginFromLink = this.route.snapshot.queryParamMap.get('login');
+
+    const logged = this.store.isLoggedIn?.() ?? false;
+    if (token) {
+      this.vm.logged = false;
+      this.vm.token = token;
+      this.vm.Login = loginFromLink || ''; // si besoin, sera validé côté API
+      this.subtitle = $localize`Lien de réinitialisation`;
+    } else if (logged) {
+      this.vm.logged = true;
+      this.vm.Login = this.store.compte().email || '';
+      this.subtitle = $localize`Modification du mot de passe de votre compte`;
+    } else {
+      // ni token ni session → on redirige vers login ou on affiche une erreur
+      this.error = $localize`Lien invalide ou session expirée.`;
+    }
+
+    this.loading = false;
+    this.validate();
+  }
+
+  onKeyPress(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      if (this.vm.withPassword && this.vm.isValid) this.submitSetPassword();
+      if (!this.vm.withPassword) this.submitNoPassword();
+    }
+  }
+
+  validate(): void {
+    const pass = this.vm.Password || '';
+    const hasLen = pass.length >= 8;
+    const hasNum = /\d/.test(pass);
+    this.vm.isPasswordValid = this.vm.withPassword ? (hasLen && hasNum) : true;
+
+    this.vm.isConfirmValid = this.vm.withPassword ? (this.vm.Password === this.vm.Confirm && !!this.vm.Confirm) : true;
+    this.vm.isValid = this.vm.isPasswordValid && this.vm.isConfirmValid;
+  }
+
+  async submitSetPassword(): Promise<void> {
+    this.error = null; this.success = null;
+    if (!this.vm.isValid) return;
+
+    try {
+      if (this.vm.logged) {
+        // À implémenter côté service : change pour l'utilisateur courant
+        await this.auth.ChangeMyPassword(this.vm.Password);
       } else {
-        if (!this.Login) {
-          this.router.navigate(['/login']);
-          let o = errorService.CreateError(this.action, $localize`Absence de login`);
-          errorService.emitChange(o);
-        } else if (this.Token != "Gulfed2606") {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
+        // À implémenter côté service : reset via token
+        await this.auth.resetPasswordWithToken(this.vm.Login, this.vm.token!, this.vm.Password);
       }
-    })
-  }
-
-  Valid(password: string): boolean {
-    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z0-9!@#$%^&*(),.?":{}|<>]{8,}$/;
-
-    return passwordRegex.test(password);
-  }
-  Confirm(password: string): boolean {
-    if (password == this.Password) {
-      return true;
-    } else {
-      return false;
+      this.success = $localize`Votre mot de passe a été mis à jour.`;
+      this.vm.Password = this.vm.Confirm = '';
+      this.validate();
+      if(!this.vm.logged) {
+        // si on vient de réinitialiser via un token, on propose d'aller se logguer
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      }
+    } catch (err: any) {
+      this.error = err?.message || $localize`Une erreur est survenue pendant la mise à jour.`;
     }
   }
 
-  ValiderModificationMDP() {
-    this.action = $localize`Réinitialisation de mot de passe`;
-  }
-  
+  async submitNoPassword(): Promise<void> {
+    this.error = null; this.success = null;
 
-  DefinirMDP(){
-    const errorService = ErrorService.instance;
-    this.action = $localize`Définition du mot de passe`;
-    if(this.context == 'CREER'){
-      let param = [];
-      param.push(this.Login);
-      param.push(this.Password);
-      this.CreerMDP.emit(param);
-    } else {
-      this.compte_serv.UpdateMDP(this.Login, this.Password).then((retour) => {
-        if (retour) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-          this.router.navigate(['/menu']);
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
-      }).catch((error: Error) => {
-        let o = errorService.CreateError(this.action, error.message);
-        errorService.emitChange(o);
-      });
+    try {
+      if (this.vm.logged) {
+        // Exemple : active le "passwordless" / supprime le mdp
+        await this.auth.ChangeMyPassword(null);
+      } else {
+        await this.auth.resetPasswordWithToken(this.vm.Login, this.vm.token!, null);
+      }
+      this.success = $localize`Votre compte est configuré sans mot de passe.`;
+      this.vm.Password = this.vm.Confirm = '';
+      this.vm.withPassword = false;
+      this.validate();
+        if(!this.vm.logged) {
+        // si on vient de réinitialiser via un token, on propose d'aller se logguer
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      }
+    } catch (err: any) {
+      this.error = err?.message || $localize`Impossible de configurer le compte sans mot de passe.`;
     }
-    
-  }
-  ConfirmMDP(){
-   
-  }
-  DemanderRattachement(){
-    this.demanderRattachement.emit();
   }
 }

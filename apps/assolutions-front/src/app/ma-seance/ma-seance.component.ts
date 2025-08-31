@@ -126,7 +126,7 @@ export class MaSeanceComponent implements OnInit {
   }
 
   RetourListe(){
-    this.router.navigate(['/seance']);
+    this.router.navigate(['/seance'], { queryParams: { id: this.thisSeance.seance_id } });
   }
 
   Load() {

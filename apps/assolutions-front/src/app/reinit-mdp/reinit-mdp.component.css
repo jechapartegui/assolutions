@@ -1,1 +1,20 @@
 
+:host { color-scheme: light dark; }
+
+.box { overflow: hidden; }
+
+.pw-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (max-width: 480px) {
+  .title.is-3 { font-size: 1.6rem; }
+  .subtitle.is-6 { font-size: .9rem; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .box { background: #1e1f22; border: 1px solid rgba(255,255,255,.16); }
+}

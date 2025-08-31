@@ -336,10 +336,11 @@ export function to_Seance_VM(entity: Session): Seance_VM {
   vm.cours = entity.courseId ?? 0;
   vm.libelle = entity.label ?? '';
   vm.type_seance = entity.type;
-vm.date_seance = entity.date;
+  vm.date_seance = entity.date;
   vm.heure_debut = entity.startTime;
   vm.duree_seance = entity.duration;
   vm.lieu_id = entity.locationId;
+  vm.lieu_nom = entity.location?.name ?? null;
   vm.statut = entity.status;
   vm.age_minimum = entity.minAge ?? null;
   vm.age_maximum = entity.maxAge ?? null;

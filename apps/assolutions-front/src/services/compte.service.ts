@@ -42,7 +42,7 @@ export class CompteService {
       });
   }
   public getAccountLogin(login: string): Promise<Compte_VM> {
-     this.url = environment.maseance + 'api/auth/get_by_login/'  + login;
+     this.url = environment.maseance + 'api/auth/get_by_login/'  + login.toLowerCase();
     //  this.url = this.url + "login.php";   
 
     return this.global.GET(this.url)
@@ -54,8 +54,44 @@ export class CompteService {
       });
   }
 
+  public ChangeMyPassword(newPassword: string | null): Promise<boolean> {
+      this.url = environment.maseance + 'api/auth/change_my_password';
+      //  this.url = this.url + "login.php";
+      const body = {
+        newPassword: newPassword
+      };
+  
+      return this.global.POST(this.url, body)
+        .then((response: boolean) => {
+          return response;
+        })
+        .catch(error => {
+          // Gestion de l'erreur
+          return Promise.reject(error);
+        });
+    }
+
+    public resetPasswordWithToken(login:string, token:string, newPassword: string | null): Promise<boolean> {
+      this.url = environment.maseance + 'api/auth/reset_password_with_token';
+      //  this.url = this.url + "login.php";
+      const body = {
+        login: login.toLowerCase(),
+        token: token,
+        newPassword: newPassword
+      };  
+      return this.global.POST(this.url, body)
+        .then((response: boolean) => {
+          return response;
+        })
+        .catch(error => {
+          // Gestion de l'erreur
+          return Promise.reject(error);
+        });
+    }
+
+
   public checkLogin(login:string) : Promise<boolean> {
-      this.url = environment.maseance + 'api/auth/pre_login/'  + login;
+      this.url = environment.maseance + 'api/auth/pre_login/'  + login.toLowerCase();
     //  this.url = this.url + "login.php";   
 
     return this.global.GET(this.url)
@@ -70,7 +106,7 @@ export class CompteService {
   public CheckToken(login:string, token:string) : Promise<boolean>{
      this.url = environment.maseance + 'api/auth/check_token';
     const body = {
-      login: login,
+      login: login.toLowerCase(),
       token: token
     };
 
@@ -130,7 +166,7 @@ export class CompteService {
      this.url = environment.maseance + 'api/auth/update_mdp';
     //  this.url = this.url + "login.php";
     const body = {
-      login: login,
+      login: login.toLowerCase(),
       password:password
     };
 
@@ -145,6 +181,7 @@ export class CompteService {
   }
 
   public Add(compte_vm:Compte_VM): Promise<number> {
+    compte_vm.email = compte_vm.email.toLowerCase();
     this.url = environment.maseance + 'api/auth/add';
     return this.global.PUT(this.url,compte_vm)
       .then((response: number) => {
@@ -156,6 +193,7 @@ export class CompteService {
       });
   }
   public Update(compte_vm:Compte_VM, update_psw:boolean): Promise<boolean> {
+    compte_vm.email = compte_vm.email.toLowerCase();
     this.url = environment.maseance + 'api/auth/update';
   const body = {
       compte_vm: compte_vm,

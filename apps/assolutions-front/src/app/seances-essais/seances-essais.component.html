@@ -1,12 +1,12 @@
 <!-- seances-essais.component.html -->
 <ng-container [ngSwitch]="context">
-  <p *ngIf="thisSeance" class="mb-3">
-    <span class="tag is-info is-light is-medium">
-      <span i18n>Séance sélectionnée :</span>&nbsp;
-      <strong>{{ thisSeance.libelle }}</strong>&nbsp;—&nbsp;
-      {{ thisSeance.date_seance | date:'dd/MM/yyyy' }}
-    </span>
-  </p>
+<p *ngIf="thisSeance" class="mb-3">
+  <span class="tag is-info is-light is-medium tag-auto">
+    <span i18n>Séance sélectionnée :</span>&nbsp;
+    <strong class="break">{{ thisSeance.libelle }}</strong>&nbsp;—&nbsp;
+    {{ thisSeance.date_seance | date:'dd/MM/yyyy' }}
+  </span>
+</p>
 
   <!-- COMPTE -->
   <ng-container *ngSwitchCase="'compte'">
@@ -19,17 +19,18 @@
   <!-- PERSONNE -->
   <ng-container *ngSwitchCase="'personne'">
 
-  <p class="mb-3">
-      <span class="tag is-info is-light is-medium">
-        <span  i18n>Compte sélectionné : </span>
-        <strong>{{ thisAccount?.email }}</strong>
-      </span></p>
+<p class="mb-3">
+  <span class="tag is-info is-light is-medium tag-auto">
+    <span i18n>Compte sélectionné : </span>
+    <strong class="break">{{ thisAccount?.email }}</strong>
+  </span>
+</p>
 
-  <p *ngIf="personne" class="mb-3">
-       <span  class="tag is-info is-light is-medium">
-        <span i18n>Personne sélectionnée : </span>
-        <strong>{{ personne.prenom }} {{ personne.nom }}</strong>
-       </span>
+<p *ngIf="personne" class="mb-3">
+  <span class="tag is-info is-light is-medium tag-auto">
+    <span i18n>Personne sélectionnée : </span>
+    <strong class="break">{{ personne.prenom }} {{ personne.nom }}</strong>
+  </span>
 </p>
       <!-- Édition / Création -->
       <ng-container *ngIf="edit_personne; else noedit">

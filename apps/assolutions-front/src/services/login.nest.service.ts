@@ -13,7 +13,7 @@ export class LoginNestService {
   constructor(public global: GlobalService) {
   }
   public PreLogin(username: string){
-    this.url = environment.maseance + 'api/auth/prelogin/'+username;
+    this.url = environment.maseance + 'api/auth/prelogin/'+username.toLowerCase();
     //  this.url = this.url + "login.php";
     
     return this.global.GET(this.url)
@@ -31,7 +31,7 @@ export class LoginNestService {
     this.url = environment.maseance + 'api/auth/login';
     //  this.url = this.url + "login.php";
     const body = {
-      email: email,
+      email: email.toLowerCase(),
       password: password
     };
 
@@ -70,14 +70,11 @@ export class LoginNestService {
 
 
 
-  public ReinitMDP(username):Promise<boolean>{
-    this.url = environment.maseance + "maseance/login.php";
-    const body = {
-      command: "reinit_mdp",
-      username: username
-    };
+  public ReinitMDP(login:string):Promise<boolean>{
+    this.url = environment.maseance + "api/auth/reinit_mdp";
+  const payload = { login: login.toLowerCase() };   // <-- objet JSON
 
-    return this.global.POST(this.url, body)
+  return this.global.POST(this.url, payload)
       .then((response: boolean) => {
         return response;
       })
@@ -86,40 +83,7 @@ export class LoginNestService {
       });
   }
 
-  public CheckReinitMDP(login: string, token: string): Promise<boolean> {
-    this.url = environment.maseance + "maseance/compte_manage.php";
-    const body = {
-      command: "check_reinit",
-      login: login,
-      token: token
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
-
-  public ValidReinitMDP(login: string, password: string, token: string): Promise<boolean> {
-    this.url = environment.maseance + "maseance/compte_manage.php";
-    const body = {
-      command: "valid_reinit_mdp",
-      login: login,
-      token: token,
-      password: password
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
 }
 export class project_login {
   public id: number;

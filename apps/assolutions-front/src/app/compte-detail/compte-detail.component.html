@@ -153,31 +153,4 @@
     </div>
   </ng-container>
 </div>
-<app-reinit-mdp
-  class="imbrique"
-  [context]="'CREER'"
-  *ngIf="context == 'CREER_MDP'"
-  (CreerMDP)="CreerMDP($event)"
-  [Login]="thisCompte.email"
-  [Token]="'Gulfed2606'"
->
-</app-reinit-mdp>
-<app-reinit-mdp
-  class="imbrique"
-  [context]="'DEFINE'"
-  *ngIf="context == 'DEFINIR_MDP'"
-  [Login]="thisCompte.email"
-  [Token]="'Gulfed2606'"
->
-</app-reinit-mdp>
 
-<app-reinit-mdp
-  class="imbrique"
-  [context]="'CONFIRM'"
-  (rattacher)="Rattacher()"
-  (demanderRattachement)="DemanderRattachement()"
-  *ngIf="context == 'RATTACHER_MDP'"
-  [Login]="thisCompte.email"
-  [Token]="'Gulfed2606'"
->
-</app-reinit-mdp>

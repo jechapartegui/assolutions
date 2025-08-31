@@ -1,16 +1,28 @@
-<table class="table is-fullwidth is-striped is-hoverable">
-  <thead>
-    <tr>
-      <th>Nom</th><th>Jour</th><th>Heure</th><th>Lieu</th><th>RDV</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let c of items">
-      <td>{{ c.nom }}</td>
-      <td class="has-text-capitalized">{{ c.jour_semaine}}</td>
-      <td>{{ c.heure }}–{{ end(c.heure, c.duree)}}</td>
-      <td>{{ c.lieu_nom || c.lieu_id }}</td>
-      <td>{{ c.rdv }}</td>
-    </tr>
-  </tbody>
-</table>
+<!-- src/app/components/course-list-public/course-list-public.component.html -->
+<div class="course-list">
+  <ng-container *ngFor="let c of sorted">
+    <div class="course-item">
+      <div class="when">
+        <div class="dow" class="has-text-capitalized">{{ c.jour_semaine }}</div>
+        <div class="dom">{{ nextDate(c) | date:'dd/MM' }}</div>
+        <div class="hour">
+          {{ c.heure }}<ng-container *ngIf="c.duree != null">–{{ end(c.heure, c.duree) }}</ng-container>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="title" [title]="c.nom">
+          <strong>{{ c.nom }}</strong>
+        </div>
+        <div class="meta">
+          <span class="place">{{ c.lieu_nom || c.lieu_id }}</span>
+        </div>
+        <div class="meta thin" *ngIf="c.rdv">
+          {{ c.rdv }}
+        </div>
+      </div>
+
+      <!-- (option actions à venir) -->
+    </div>
+  </ng-container>
+</div>

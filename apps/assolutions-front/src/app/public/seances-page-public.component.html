@@ -8,13 +8,14 @@
     </div>
 
     <!-- calendrier invisible en mobile -->
-    <app-week-calendar *ngIf="!isSmallScreen && view()==='calendar'"
-      [referenceDate]="referenceDate()"
-      [events]="events()"
-      (prevWeek)="router.navigate([], { queryParams: { week: weekOffset()-1 }, queryParamsHandling:'merge' })"
-      (nextWeek)="router.navigate([], { queryParams: { week: weekOffset()+1 }, queryParamsHandling:'merge' })"
-      (todayWeek)="router.navigate([], { queryParams: { week: 0 }, queryParamsHandling:'merge' })">
-    </app-week-calendar>
+    <app-week-calendar
+  *ngIf="!isSmallScreen && view()==='calendar'"
+  [referenceDate]="referenceDate()"
+  [events]="events()"
+  [showNav]="true"
+  [showDates]="true"    
+  [showStatus]="true">  
+</app-week-calendar>
 
     <app-seance-list-public *ngIf="view()==='list'" [items]="seances()"></app-seance-list-public>
   </div>

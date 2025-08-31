@@ -2,40 +2,57 @@ import { addDays, getWeekStart, addMinutesToTime, formatISO, weekdayIndex } from
 
 import { Cours_VM } from '@shared/lib/cours.interface';
 import { Seance_VM } from '@shared/lib/seance.interface';
-export interface CalendarEvent{
-     type : "seance" | "cours";
-    id:number;
-     date: string;   // "YYYY-MM-DD"
-   start: string;  // "HH:mm"
-  end: string;    // "HH:mm"
-   title: string;
-   subtitle: string;
-   location: string;
-  status?: 'prevue' | 'realisee' | 'annulee'; // (principalement pour Séances)
+// class/calendar-event.ts
+// class/calendar-event.ts
+// ⬅ ajuster le chemin d'import selon ton arbo
 
+export interface CalendarEvent {
+  id?: number | string;
+  date: string;     // 'YYYY-MM-DD' (obligatoire pour le WeekCalendar)
+  start: string;    // 'HH:mm'
+  end: string;      // 'HH:mm'
+  title?: string;
+  subtitle?: string;   // ex: RDV / info
+  location?: string;   // ex: lieu
+  statut?: 'prévue' | 'annulée' | 'réalisée' | string; // ← conservé pour les SÉANCES
+  essai_possible?: boolean;
 }
 
-export function coursVmToEvents(cours: Cours_VM[], anyDateInWeek = new Date()): CalendarEvent[] {
-  const start = getWeekStart(anyDateInWeek);
-  return cours.map(c => {
-    const idx = weekdayIndex(c.jour_semaine);
-    const date = addDays(start, idx);
-    return {
-    type: "cours",
+
+
+/** Projette les cours (jour/heure) sur la semaine dont 'monday' est le lundi. */
+export function coursVmToEvents(cours: Cours_VM[] | null | undefined, monday: Date): CalendarEvent[] {
+  if (!cours?.length || !(monday instanceof Date)) return [];
+
+  return cours.flatMap(c => {
+    const dow = weekdayIndex(c.jour_semaine); // 0..6 (lundi=0), -1 si invalide
+    if (dow < 0) return [];
+
+    const start = (c.heure || '').trim();       // 'HH:mm'
+    if (!/^\d{1,2}:\d{2}$/.test(start)) return [];
+
+    const thatDay = addDays(new Date(monday), dow);
+    const date = formatISO(thatDay).slice(0, 10);  // 'YYYY-MM-DD'
+    const end = addMinutesToTime(start, Number(c.duree) || 0);
+
+    const ev: CalendarEvent = {
       id: c.id,
-      date: formatISO(date),
-      start: c.heure,
-      end: addMinutesToTime(c.heure, c.duree || 0),
-      title: c.nom,
-      location: c.lieu_nom || '',
-      subtitle: c.heure + ' - ' + addMinutesToTime(c.heure, c.duree || 0),
-      status:null,
-    } satisfies CalendarEvent;
+      date,
+      start: start.padStart(5, '0'),
+      end,
+      title: c.nom || '',
+      location: c.lieu_nom ?? (c.lieu_id?.toString() || ''),
+      subtitle: c.rdv || ''
+      // ⚠ ne PAS mettre 'statut' ici (les cours n'en ont pas)
+    };
+    return [ev];
   });
 }
+
+
 // Mappe les Séances sur des events; status normalisé sans "meta"
 export function seancesVmToEvents(seances: Seance_VM[]): CalendarEvent[] {
-  const mapStatut = (s: Seance_VM['statut']): CalendarEvent['status'] =>
+  const mapStatut = (s: Seance_VM['statut']): CalendarEvent['statut'] =>
     s === 'annulée' ? 'annulee' : s === 'réalisée' ? 'realisee' : 'prevue';
 
   return seances.map(s => ({
@@ -47,6 +64,7 @@ export function seancesVmToEvents(seances: Seance_VM[]): CalendarEvent[] {
       subtitle: s.heure_debut + ' - ' + addMinutesToTime(s.heure_debut, s.duree_seance || 0),
       location: s.lieu_nom || '',
     title: s.libelle || s.cours_nom || 'Séance',
+    essai_possible: s.essai_possible || false,
     status: mapStatut(s.statut)
   }));
 }

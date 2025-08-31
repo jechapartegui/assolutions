@@ -9,10 +9,12 @@ import { Person } from '../../entities/personne.entity';
 import { MailInput } from '@shared/lib/mail-input.interface';
 import { MailProject } from '../../entities/mail-project.entity';
 import { Account } from '../../entities/compte.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MessagesService {
   constructor(
+      private readonly configService: ConfigService,
     private readonly mailer: MailerService,
     @InjectRepository(Project) private readonly projectRepo: Repository<Project>,
     @InjectRepository(Session) private readonly sessionRepo: Repository<Session>,
@@ -69,7 +71,7 @@ html    = fillTemplate(templatemail.mail_essai,  dataEssai);
 
   async MailActivation(login: string) {
     const p = await this.accountrepo.findOne({   where: { login } });
-      let activationTmpl = "<h2>Activation de votre compte</h2> <p>Bonjour {{LOGIN}},</p> <p>Veuillez cliquer sur le lien ci-dessous pour activer votre compte :</p><p><a href='http://localhost:2211/login?context=ACTIVATE&user={{LOGIN}}&token={{TOKEN}}'>Activer mon compte</a></p><p>Merci,</p><p>L'équipe AsSolutions</p>";
+      let activationTmpl = `<h2>Activation de votre compte</h2> <p>Bonjour {{LOGIN}},</p> <p>Veuillez cliquer sur le lien ci-dessous pour activer votre compte :</p><p><a href='${this.configService.get<string>('FRONT_URL')}/login?context=ACTIVATE&user={{LOGIN}}&token={{TOKEN}}'>Activer mon compte</a></p><p>Merci,</p><p>L'équipe AsSolutions</p>`;
 
   let subject = "Activation de votre compte AsSolutions";
     if(p.isActive && p.activationToken == null) {

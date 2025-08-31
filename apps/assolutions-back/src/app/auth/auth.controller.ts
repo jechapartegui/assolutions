@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.services';
 import { PasswordGuard } from '../guards/password.guard';
 import { Compte_VM } from '@shared/lib/compte.interface';
@@ -43,6 +43,11 @@ export class AuthController {
     return this.authService.checkToken(login, token);
   }
 
+@Post('reinit_mdp')
+async reinit_mdp(@Body('login') login: string): Promise<boolean> {
+  if (!login) throw new BadRequestException('LOGIN_REQUIRED');
+  return this.authService.ReinitMDP(login.toLowerCase());
+}
   @Get('get_project/:id')
   async get_project(@Param('id') id: number) {    
     return this.authService.getProjects(id);
@@ -64,5 +69,18 @@ export class AuthController {
     async Delete(@Param('id') id: number) {
       return this.authService.delete(id);
     }
+
+    @UseGuards(PasswordGuard)
+    @Post('change_my_password')
+    async ChangeMyPassword(@Headers('Userid') user_id: number,@Body() { newPassword }: { newPassword: string }) {
+      return this.authService.ChangeMyPassword(user_id, newPassword);
+    }
+
+    @Post('reset_password_with_token')
+    async resetPasswordWithToken(@Body() { login, token, newPassword }: { login: string; token: string; newPassword: string }) {
+      console.warn("resetPasswordWithToken",login, token, newPassword);
+      return this.authService.resetPasswordWithToken(login, token, newPassword);
+    }
+
   
 }

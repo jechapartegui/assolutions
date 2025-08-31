@@ -14,6 +14,7 @@ import { MemberService } from '../member/member.services';
 import { ProfService } from '../prof/prof.services';
 import { QueryFailedError } from 'typeorm';
 import { MailerService } from '../mail/mailer.service';
+import { MailInput } from '@shared/lib/mail-input.interface';
 
 
 @Injectable()
@@ -167,6 +168,30 @@ liste_compte.push(acc);
       return liste_compte;
     }
   
+    async ReinitMDP(login: string) : Promise<boolean> {
+      const compte = await this.compteserv.getLogin(login);
+      if (!compte) {
+        throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
+      }
+      if(!compte.isActive){
+        throw new UnauthorizedException('ACCOUNT_NOT_ACTIVE');
+      }
+      compte.activationToken = crypto.randomBytes(16).toString('hex'); // génère
+      await this.compteserv.update(compte.id, compte);
+      let contenu = `Bonjour,<br/><br/>Vous avez demandé la réinitialisation de votre mot de passe.<br/>
+      Veuillez cliquer sur le lien ci-dessous pour définir un nouveau mot de passe :<br/><br/>
+      <a href="${this.configService.get<string>('FRONT_URL')}/reinit-mdp?login=${compte.login}&token=${compte.activationToken}">Réinitialiser mon mot de passe</a><br/><br/>
+      Si vous n'avez pas fait cette demande, vous pouvez ignorer cet email.<br/><br/>
+      Cordialement,<br/>L'équipe d'Assolutions`;
+      let MI = new MailInput();
+      MI.to = compte.login;
+      MI.subject = 'Réinitialisation de votre mot de passe';
+      MI.html = contenu;  
+
+      await this.mailer.queue(MI, "assolutions.club@gmail.com", "Assolutions");
+
+      return true;
+    }
     
    async add(vm: Compte_VM): Promise<number> {
     if (!vm) {
@@ -214,6 +239,41 @@ liste_compte.push(acc);
       }
       throw err;
     }
+  }
+
+  async ChangeMyPassword(userid:number, newPassword: string | null): Promise<boolean> {
+    const compte = await this.compteserv.get(userid);
+    if (!compte) {
+      throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    } 
+    console.log('New password:', newPassword);
+    if(newPassword){
+      compte.password = hashPasswordWithPepper(newPassword, this.pepper);
+    } else {
+      compte.password = null;
+    }
+    compte.activationToken = null; // supprime le token s’il y en avait un
+    compte.isActive = true; // active le compte s’il ne l’était pas
+    await this.compteserv.update(compte.id, compte);
+    return true;
+  }
+
+  async resetPasswordWithToken(login:string, token:string, newPassword: string | null): Promise<boolean> {
+    const compte = await this.compteserv.getToken(login, token);
+    if (!compte) {
+      throw new NotFoundException('ACCOUNT_NOT_FOUND_OR_INVALID_TOKEN');
+    } 
+    if(newPassword){
+      compte.password = hashPasswordWithPepper(newPassword, this.pepper);
+    } else {
+      compte.password = null;
+    }
+    console.log(newPassword);
+    compte.activationToken = null; // supprime le token s’il en avait un
+    compte.isActive = true; // active le compte s’il ne l’était pas
+    console.log(compte);
+    await this.compteserv.update(compte.id, compte);
+    return true;
   }
 
  async notifierAdherent(adresse: string, contenuHtml: string) {

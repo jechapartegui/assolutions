@@ -2,6 +2,7 @@
 import { Component,  Output, EventEmitter, computed, input, effect, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { getWeekStart, weekDays, timeToMinutes, addDays} from '../utils/date.utils';
 import { CalendarEvent } from '../../class/calendar-event';
+import { Router } from '@angular/router';
 function ymd(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2,'0');
@@ -22,11 +23,20 @@ type RenderEvent = CalendarEvent & {
   styleUrls: ['./week-calendar.component.scss']
 })
 export class WeekCalendarComponent implements AfterViewInit {
+  constructor(private router:Router){}
   // Inputs (signals)
-  referenceDate = input<Date>(new Date());
+ referenceDate = input<Date>(new Date());
   events        = input<CalendarEvent[]>([]);
   showNav       = input<boolean>(true);
-public dayIso(d: DayView) { return this.key10FromDate(d.date); }
+
+  // 👇 NEW: pour piloter l’affichage côté template & pages
+  showDates     = input<boolean>(true);   // masque 'd/MM' quand false (ex: Cours)
+  showStatus    = input<boolean>(true);   // masque le statut quand false
+
+
+
+  // 👇 NEW: helper public pour unifier la clé jour dans le template
+  public dayIso(d: DayView): string { return d.iso; }
   // Événements navigation
   @Output() prevWeek = new EventEmitter<void>();
   @Output() nextWeek = new EventEmitter<void>();
@@ -211,6 +221,7 @@ trackByEvent(_index: number, ev: any) {
 }
 
 
+  Essayer(id:number){ this.router.navigate(['/seances-essais'], { queryParams: { id } }); }
 
 
   // Helpers pour le template

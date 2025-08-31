@@ -57,6 +57,7 @@ export class AppComponent {
 
   MDP() {
     this.action = $localize`Modifier le mot de passe`;
+    this.router.navigate(['reinit-mdp']);
   }
   Dashboard() {
     this.action = $localize`Afficher le tableau de bord`;

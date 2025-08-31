@@ -1,5 +1,5 @@
 <div class="weekcal">
-  <!-- Header -->
+  <!-- Entête (jours) -->
   <div class="header-row">
     <div class="time-spacer">
       <ng-container *ngIf="showNav()">
@@ -8,17 +8,20 @@
         <button class="nav-btn" (click)="nextWeek.emit()" title="Semaine suivante">›</button>
       </ng-container>
     </div>
+
     <div class="day-header" *ngFor="let d of days()">
       <div class="dow">{{ d.date | date:'EEE' }}</div>
-      <div class="dom">{{ d.date | date:'d/MM' }}</div>
+      <div class="dom" *ngIf="showDates()">{{ d.date | date:'d/MM' }}</div>
     </div>
   </div>
 
-  <!-- Corps -->
+  <!-- Corps scrollable : rail heures + colonnes jours -->
   <div class="scroll-body" #scroller>
-    <!-- Rail heures (fenêtre 8h) -->
+    <!-- Rail heures -->
     <div class="time-rail" [style.height.px]="gridHeightPx()">
-      <div class="time-cell" *ngFor="let h of viewHours()">{{ hourLabel(h) }}</div>
+      <div class="time-cell" *ngFor="let h of viewHours()">
+        {{ (h < 10 ? '0' + h : h) }}:00
+      </div>
       <div class="time-cell last"></div>
     </div>
 
@@ -30,8 +33,6 @@
       <div class="hour-cell last"></div>
 
       <ng-container *ngFor="let ev of (layoutByDay().get(dayIso(d)) || []); trackBy: trackByEvent">
-
-
         <div class="event-card"
              [style.top.%]="ev.top"
              [style.height.%]="ev.height"
@@ -40,14 +41,21 @@
              [title]="ev.title + ' • ' + ev.start + '–' + ev.end">
           <div class="ev-title">{{ ev.title }}</div>
           <div class="ev-meta">
-            {{ ev.start }}–{{ ev.end }}<ng-container *ngIf="ev.location"> • {{ ev.location }}</ng-container>
+            {{ ev.start }}–{{ ev.end }}
+            <ng-container *ngIf="ev.location"> • {{ ev.location }}</ng-container>
           </div>
-          <div class="ev-sub" *ngIf="ev.subtitle">{{ ev.subtitle }}</div>
+
+          <!-- RDV/infos + statut (optionnel pour Séances) -->
+          <div class="ev-sub" *ngIf="ev.subtitle || (showStatus() && ev.statut)">
+            <ng-container *ngIf="ev.subtitle">{{ ev.subtitle }}</ng-container>
+            <ng-container *ngIf="showStatus() && ev.statut">
+              <span *ngIf="ev.subtitle"> • </span>{{ ev.statut }}
+            </ng-container>
+          </div>
         </div>
       </ng-container>
 
-      <!-- Indicateur "après" -->
-      <div class="more-after" *ngIf="dayHasAfter().get(d.iso)" title="Autres séances plus tard">⋯</div>
+      <div class="more-after" *ngIf="dayHasAfter().get(dayIso(d))" title="Autres séances plus tard">⋯</div>
     </div>
   </div>
 </div>
