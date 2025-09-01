@@ -28,66 +28,61 @@ export class SeanceService {
         });
   }
 
-  async MySeance(
-    adhrent_id: number,
-    age: number,
-    saison_id: number,
-    groupe_id: number[],
-  ): Promise<MesSeances_VM[]> {
-    const seances = await this.GetSeanceSaison(saison_id);
-    if (!seances || seances.length === 0) {
-      return [];
+async MySeance(
+  adherent_id: number,
+  age: number,
+  saison_id: number,
+  groupe_id: number[] // peut arriver en strings => on normalise
+): Promise<MesSeances_VM[]> {
+  const seances = (await this.GetSeanceSaison(saison_id)) ?? [];
+  if (!seances.length) return [];
+
+  // 1) Normalisation des types d’IDs
+  const riderGroups = new Set((groupe_id ?? []).map((v: any) => +v).filter(v => !Number.isNaN(v)));
+
+  const results: MesSeances_VM[] = [];
+
+  for (const s of seances) {
+    const item: MesSeances_VM = {
+      seance: s,
+      statutPrésence: undefined,
+      statutInscription: undefined,
+      inscription_id: 0
+    };
+
+    // 2) Déjà inscrit ? On push direct (on ne filtre pas par âge/groupe si déjà inscrit)
+    const ins = await this.inscriptionseance_serv.getRiderSeance(adherent_id, s.seance_id);
+    if (ins && typeof ins.id === 'number') {
+      item.inscription_id = ins.id ?? 0;
+      item.statutInscription = ins.statutInscription;
+      results.push(item);
+      continue;
     }
 
-    const filteredSeances: MesSeances_VM[] = [];
-
-    for (const _seance of seances) {
-      const maSeance: MesSeances_VM = {
-        seance : _seance,
-        statutPrésence : undefined,
-        statutInscription : undefined,
-        inscription_id :0};
-       
-      //check si présence signalée...
-      
-      const ins = await this.inscriptionseance_serv.getRiderSeance(adhrent_id, _seance.seance_id);
-      if (ins) {
-        maSeance.inscription_id = ins.id;
-        maSeance.statutInscription = ins!.statutInscription;        
-        filteredSeances.push(maSeance);
-      } else {
-        let ajout: boolean = true;
-        // filter age
-        if (_seance.est_limite_age_minimum && age < _seance.age_minimum!) {
-          ajout = false;
-        }
-        if (_seance.est_limite_age_maximum && age > _seance.age_maximum!) {
-          ajout = false;
-        }
-
-        //filter groupe
-     
-        if (_seance.groupes.length == 0) {
-          ajout = false;
-        } else {
-         let gr_commun = false;
-         _seance.groupes.map(x => x.id).forEach(idgs =>{
-          if(groupe_id.includes(idgs)){
-            gr_commun = true;
-          }
-         })
-         if(!gr_commun){
-          ajout = false;
-         }
-        }
-        if(ajout==true) {
-          filteredSeances.push(maSeance);
-        }
-      }
+    // 3) Filtre âge (bornes inclusives)
+    const hasMin = !!s.est_limite_age_minimum && typeof s.age_minimum === 'number';
+    const hasMax = !!s.est_limite_age_maximum && typeof s.age_maximum === 'number';
+    if ((hasMin && age < s.age_minimum!) || (hasMax && age > s.age_maximum!)) {
+      continue;
     }
 
-    return filteredSeances;
+    // 4) Filtre groupe — normalisation + intersection propre
+    const seanceGroups = (s.groupes ?? [])
+      .map((g: any) => +g.id)
+      .filter((v: number) => !Number.isNaN(v));
+
+    // Règle actuelle = exiger un groupe commun ET exclure les séances sans groupe
+    const hasCommon =
+      seanceGroups.length > 0 && seanceGroups.some((gid: number) => riderGroups.has(gid));
+
+    if (!hasCommon) continue;
+
+    results.push(item);
   }
+
+  return results;
+}
+
 
   async MySeanceProf(
     adhrent_id: number,

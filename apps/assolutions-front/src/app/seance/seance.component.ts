@@ -314,12 +314,9 @@ export class SeanceComponent implements OnInit {
   onCoursSelectionChange(cours_id: any): void {
     //  console.log('Nouvelle valeur sélectionnée :', newValue);
     if (!isNaN(cours_id)) {
-      console.log(this.listeCours);
-      console.log(cours_id);
       const newValue = this.listeCours.find(
         (cc) => Number(cc.id) === Number(cours_id)
       );
-      console.log(newValue);
       this.coursselectionne = true;
       this.editSeance.duree_seance = newValue.duree;
       this.editSeance.age_minimum = newValue.age_minimum;
@@ -441,7 +438,6 @@ export class SeanceComponent implements OnInit {
   SaveNom(){
     this.edit_nom = false;
     this.checkall();
-    console.log(this.is_valid);
     if(this.is_valid){
     this.Save();
     }

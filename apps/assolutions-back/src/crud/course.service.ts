@@ -49,7 +49,6 @@ export class CourseService {
       const created = this.repo.create(data);
       return await this.repo.save(created);
     } catch (err) {
-      console.warn(err);
       if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
       throw err;
     }
@@ -57,7 +56,6 @@ export class CourseService {
 
   async update(id: number, data: Partial<Course>): Promise<Course> {
     try {
-      console.log(data);
       await this.repo.update({ id }, data);
     } catch (err) {
       if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');

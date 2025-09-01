@@ -31,7 +31,6 @@ export class AccountService {
 
 
   async adherentCompte(id:number) : Promise<Person[]>{
-    console.warn(id);
        const account = await this.repo.findOne({
     where: { id },
     relations: [
@@ -114,10 +113,8 @@ async create(data: Partial<Account>): Promise<Account> {
 
   async update(id: number, data: Partial<Account>): Promise<Account> {
     const entity = await this.get(id);
-    console.warn("data",data);
     if (!entity) throw new NotFoundException('ACCOUNT_NOT_FOUND');
     Object.assign(entity, data);
-    console.warn("entity",entity);
     return this.repo.save(entity);
   }
 

@@ -87,8 +87,6 @@ export class AuthService {
     // 1. Récupère les adhérents liés au compte
     const adhesions:ProjetView[] = await this.compteserv.getAdhesion(compteId);
     const profs:ProjetView[] = await this.prof_serv.getProfContratActif(compteId);
-    console.log('Adhesions:', adhesions);
-    console.log('Profs:', profs);
     // 2. Crée une map pour fusionner les projets par ID
     if(!adhesions && !profs) {
       return [];
@@ -246,7 +244,6 @@ liste_compte.push(acc);
     if (!compte) {
       throw new NotFoundException('ACCOUNT_NOT_FOUND');
     } 
-    console.log('New password:', newPassword);
     if(newPassword){
       compte.password = hashPasswordWithPepper(newPassword, this.pepper);
     } else {
@@ -268,10 +265,8 @@ liste_compte.push(acc);
     } else {
       compte.password = null;
     }
-    console.log(newPassword);
     compte.activationToken = null; // supprime le token s’il en avait un
     compte.isActive = true; // active le compte s’il ne l’était pas
-    console.log(compte);
     await this.compteserv.update(compte.id, compte);
     return true;
   }

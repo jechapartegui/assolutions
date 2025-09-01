@@ -38,18 +38,16 @@
              [style.height.%]="ev.height"
              [style.left.%]="ev.left"
              [style.width.%]="ev.width"
-             [title]="ev.title + ' • ' + ev.start + '–' + ev.end">
+             [title]="ev.title + ' • ' + ev.start + '–' + ev.end + (ev.location ? ' • ' + ev.location : '') ">
           <div class="ev-title">{{ ev.title }}</div>
           <div class="ev-meta">
-            {{ ev.start }}–{{ ev.end }}
-            <ng-container *ngIf="ev.location"> • {{ ev.location }}</ng-container>
+            {{ ev.start }}–{{ ev.end }}<br/>
+            <ng-container *ngIf="ev.location">{{ ev.location }}</ng-container>
           </div>
 
           <!-- RDV/infos + statut (optionnel pour Séances) -->
 <div class="actions" *ngIf="ev.essai_possible">
-        <button class="button is-info is-rounded is-small is-outlined" (click)="Essayer(ev.id)">
-          <span i18n>Essai</span>
-        </button>
+  <a [routerLink]="['/seances-essais']" [queryParams]="{id: ev.id}"  i18n>Essayer</a>
       </div>
         </div>
       </ng-container>

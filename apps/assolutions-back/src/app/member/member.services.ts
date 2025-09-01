@@ -133,8 +133,7 @@ export class MemberService {
     const iss = ad.inscriptions?.find(x => x.saisonId === saison_id);
 
     if (!iss) continue;
-        iss.groups = await this.linkgroup_serv.getGroupsForObject('rider', iss.id);
-      
+        iss.groups = (await this.linkgroup_serv.getGroupsForObject('rider', ad.id)).filter(x => x.group.saisonId === saison_id);
     // On appelle toAdherent_VM sans le cacher dans un catch vide
     try {
       liste.push(toAdherent_VM(ad, [iss], []));

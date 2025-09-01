@@ -18,7 +18,7 @@
 </app-week-calendar>
 
     <app-course-list-public *ngIf="view()==='list'"
-      [items]="cours"
+      [items]="cours()"
       [referenceDate]="referenceDate()">
     </app-course-list-public>
   </div>

@@ -66,6 +66,7 @@ return await this.coursserv.delete(id);
 }
 
 export function toCours_VM(course: Course): Cours_VM {
+  
   return {
     id: course.id,
     nom: course.name,

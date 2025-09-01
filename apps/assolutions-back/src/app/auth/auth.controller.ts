@@ -78,7 +78,6 @@ async reinit_mdp(@Body('login') login: string): Promise<boolean> {
 
     @Post('reset_password_with_token')
     async resetPasswordWithToken(@Body() { login, token, newPassword }: { login: string; token: string; newPassword: string }) {
-      console.warn("resetPasswordWithToken",login, token, newPassword);
       return this.authService.resetPasswordWithToken(login, token, newPassword);
     }
 

@@ -181,7 +181,6 @@ export class MaSeanceComponent implements OnInit {
     } else if (statut == null) {
       inscription.statut_seance = null;
     }
-    console.log(inscription);
     if (!inscription.id || inscription.id == 0) {
 
       this.inscriptionserv.Add(inscription).then((id) => {
