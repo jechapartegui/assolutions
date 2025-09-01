@@ -48,6 +48,23 @@ export class ProjetService {
           return Promise.reject(error);
         });
     }
+
+      public CheckMDP(password:string): Promise<boolean> {
+      this.url = environment.maseance + 'api/project/check_mdp/';
+        const body = {
+        password: password
+      };
+  
+      return this.global.POST(this.url, body)
+        .then((response: boolean) => {
+  
+          return response;
+        })
+        .catch(error => {
+          // Gestion de l'erreur
+          return Promise.reject(error);
+        });
+    }
   
   public GetAll(): Promise<projet[]> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT

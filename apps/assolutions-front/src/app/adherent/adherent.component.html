@@ -962,7 +962,7 @@
   <div class="card-footer-item">
     <div class="buttons">
       <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
-      <btn *ngIf="!thisAdherent.inscrit && thisAdherent.id>0" [type_button]="'InscrireSmall'" (click)="Inscrire()"></btn>
+      <btn *ngIf="store.isLoggedIn() && store.isProf()" [type_button]="'InscrireSmall'" (click)="Inscrire()"></btn>
       <btn *ngIf="thisAdherent.id < 1"
            [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"
            [type_button]="'SauvegarderSmall'"

@@ -96,6 +96,23 @@ baseMonday = computed(() => {
 
 // Lundi affiché = baseMonday + offset (navigation semaines)
 referenceDate = computed(() => addDays(this.baseMonday(), this.weekOffset() * 7));
+// Ajuste selon ton signal/store actuel
+// Navigation via l’URL (source de vérité)
+shiftWeek(delta: number) {
+  const next = (this.weekOffset() || 0) + delta;
+  this.router.navigate([], {
+    queryParams: { week: next, view: 'calendar' },
+    queryParamsHandling: 'merge',
+  });
+}
+
+goToday() {
+  this.router.navigate([], {
+    queryParams: { week: 0, view: 'calendar' },
+    queryParamsHandling: 'merge',
+  });
+}
+
 
 // Tes événements pour la semaine affichée
 events = computed(() => {

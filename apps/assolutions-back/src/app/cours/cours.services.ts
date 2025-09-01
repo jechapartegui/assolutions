@@ -89,7 +89,7 @@ export function toCours_VM(course: Course): Cours_VM {
     est_place_maximum:    course.maxPlaces != null,
     essai_possible: course.trialAllowed,
     // Champ enrichi
-    lieu_nom: course.location?.name,
+    lieu_nom: course.location?.name|| '',
 
     // Professeurs liés
     professeursCours: (course.professors ?? []).map(cp => ( toPersonneLight_VM(cp.contract.professor.person))),

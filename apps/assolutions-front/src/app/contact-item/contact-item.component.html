@@ -10,63 +10,72 @@
     <p *ngIf="!rMail.key"         class="is-small help is-danger">{{rMail.value}}</p>
     <p *ngIf="!rTel.key"          class="is-small help is-danger">{{rTel.value}}</p>
   </div>
-    <div class="columns is-vcentered">
-<div class="container">
-    <div *ngIf="thisContact" class="table" style=" font-size:small; width: 100%;padding: 0px;">
-        <thead>
-            <th i18n>Type</th>
-            <th i18n>Valeur</th>
-            <th i18n>{{Notes}}</th>
-            <th i18n></th>
-        </thead>
-        <tbody>
-            <td>
-              <div class="control">
-                <div class="select is-small">
-                  <select [(ngModel)]="thisContact.Type" (blur)="autoSave()">
-                    <option value="EMAIL" i18n>Email</option>
-                    <option value="PHONE" i18n>Téléphone</option>
-                    <option value="INSTGRAM" i18n>Instagram</option>
-                    <option value="FACEBOOK" i18n>Facebook</option>
-                    <option value="TWITTER" i18n>Twitter</option>
-                  </select>
-                </div>
+<div class="columns is-vcentered is-mobile is-multiline is-marginless">
+  <div class="column is-full" *ngIf="thisContact">
+    <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+      <thead>
+        <tr>
+          <th i18n>Type</th>
+          <th i18n>Valeur</th>
+          <th i18n>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="control">
+              <div class="select is-small">
+                <select [(ngModel)]="thisContact.Type" (blur)="autoSave()">
+                  <option value="EMAIL" i18n>Email</option>
+                  <option value="PHONE" i18n>Téléphone</option>
+                  <option value="INSTAGRAM" i18n>Instagram</option>
+                  <option value="FACEBOOK" i18n>Facebook</option>
+                  <option value="TWITTER" i18n>Twitter</option>
+                </select>
               </div>
-            </td>
-            <td>
-              <input class="input is-small" style="width:150px" [(ngModel)]="thisContact.Value" (blur)="autoSave()">
-            </td>
-            <td>
-              <input maxlength="20" class="input is-small" style="width:100px" [(ngModel)]="thisContact.Notes" (blur)="autoSave()">
-            </td>
-            <td>
-              <btn [disabled]="!IsValid(thisContact)"  [type_button]="'SauvegarderSmallLight'" (click)="Save()"></btn>
-              <btn   [type_button]="'AnnulerSmallLight'" (click)="DontSave()"></btn>
-            </td>
-          </tbody>
-    </div>
-    <ng-container *ngFor="let cont of Contacts; let i = index; trackBy: trackByIndex">
-        <div class="box listofbox" style="font-size: small;">
-            <div *ngIf="!thisContact" class="actions" style="margin-right: 2px;">              
-                <button
-                    [class]="cont.Pref ? 'button is-small is-primary' : 'button is-small is-primary is-outlined'"
-                    (click)="!cont.Pref ? NewPref(i) : ''">
-                    <i class="fab fa-get-pocket"></i>
-                </button>
-                <btn [type_button]="'EditerSmallLight'" (click)="Edit(i)"></btn>
-                <btn [type_button]="'SupprimerSmallLight'" (click)="Delete(i)"></btn>
             </div>
-            <span *ngIf="cont.Type=='EMAIL'"><i class="fas fa-at"></i></span>
-            <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
-            <span *ngIf="cont.Type=='INSTA'"><i class="fab fa-instagram-square"></i></span>
-            <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
-            <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
-            <span class="ml-1">{{cont.Value}}</span>
-            <span class="ml-1">{{cont.Notes}}</span>
+          </td>
+          <td>
+            <input class="input is-small" style="width:150px"
+                   [(ngModel)]="thisContact.Value" (blur)="autoSave()">
+          </td>
+          <td>
+            <input maxlength="20" class="input is-small" style="width:100px"
+                   [(ngModel)]="thisContact.Notes" (blur)="autoSave()">
+          </td>
+          <td>
+            <btn [disabled]="!IsValid(thisContact)" [type_button]="'SauvegarderSmallLight'" (click)="Save()"></btn>
+            <btn [type_button]="'AnnulerSmallLight'" (click)="DontSave()"></btn>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-container *ngFor="let cont of Contacts; let i = index; trackBy: trackByIndex">
+    <div class="column is-full">
+      <div class="box listofbox" style="font-size: small;">
+        <div *ngIf="!thisContact" class="actions" style="margin-right: 2px;">
+          <button
+            [class]="cont.Pref ? 'button is-small is-primary' : 'button is-small is-primary is-outlined'"
+            (click)="!cont.Pref ? NewPref(i) : ''">
+            <i class="fab fa-get-pocket"></i>
+          </button>
+          <btn [type_button]="'EditerSmallLight'" (click)="Edit(i)"></btn>
+          <btn [type_button]="'SupprimerSmallLight'" (click)="Delete(i)"></btn>
         </div>
-    </ng-container>
 
+        <span *ngIf="cont.Type=='EMAIL'"><i class="fas fa-at"></i></span>
+        <span *ngIf="cont.Type=='PHONE'"><i class="fas fa-phone"></i></span>
+        <span *ngIf="cont.Type=='INSTAGRAM'"><i class="fab fa-instagram-square"></i></span>
+        <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
+        <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
+        <span class="ml-1">{{cont.Value}}</span>
+        <span class="ml-1">{{cont.Notes}}</span>
+      </div>
+    </div>
+  </ng-container>
+</div>
 
-</div>
-</div>
 </div>

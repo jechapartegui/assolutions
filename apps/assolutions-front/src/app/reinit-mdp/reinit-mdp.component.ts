@@ -99,6 +99,10 @@ export class ReinitMdpComponent implements OnInit {
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
+      } else {
+         setTimeout(() => {
+          this.router.navigate(['/menu']);
+        }, 2000);
       }
     } catch (err: any) {
       this.error = err?.message || $localize`Une erreur est survenue pendant la mise à jour.`;
@@ -119,10 +123,14 @@ export class ReinitMdpComponent implements OnInit {
       this.vm.Password = this.vm.Confirm = '';
       this.vm.withPassword = false;
       this.validate();
-        if(!this.vm.logged) {
+ if(!this.vm.logged) {
         // si on vient de réinitialiser via un token, on propose d'aller se logguer
         setTimeout(() => {
           this.router.navigate(['/login']);
+        }, 2000);
+      } else {
+         setTimeout(() => {
+          this.router.navigate(['/menu']);
         }, 2000);
       }
     } catch (err: any) {

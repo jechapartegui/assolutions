@@ -319,6 +319,7 @@ valid_contact_urgence(isValid: boolean): void {
     this.thisAccount  = compte_VM;
     // nouveau compte -- ancien compte
      if(this.thisAccount.id > 0){
+      
     // nouvelle personne -- selection possible
       this.ListePersonne = await this.ridersService.GetAllPersonne(this.thisAccount.id);
       if(this.ListePersonne.length == 0){
@@ -331,9 +332,9 @@ valid_contact_urgence(isValid: boolean): void {
         this.ListePersonne = this.ListePersonne.filter(y => !this.liste_adherents_VM.map(x => x.id).includes(y.id));
           if(this.ListePersonne.length == 0){
         this.id = 0;
+        this.thisAdherent = new Adherent_VM();
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
-        this.thisAdherent = new Adherent_VM();
         this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];    
       }
       }

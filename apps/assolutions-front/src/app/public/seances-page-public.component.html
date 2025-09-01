@@ -14,7 +14,10 @@
   [events]="events()"
   [showNav]="true"
   [showDates]="true"    
-  [showStatus]="true">  
+  [showStatus]="true"
+  (prevWeek)="shiftWeek(-1)"
+  (nextWeek)="shiftWeek(1)"
+  (todayWeek)="goToday()"> 
 </app-week-calendar>
 
     <app-seance-list-public *ngIf="view()==='list'" [items]="seances()"></app-seance-list-public>

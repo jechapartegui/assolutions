@@ -48,7 +48,6 @@
         flex-direction: column;
         justify-content: center;
         align-items: stretch;
-        margin-bottom: 60px;
         margin-top: 60px;
         margin-left: 5px;
         margin-right: 5px;
@@ -175,4 +174,83 @@ margin-top: 2x;
 .scrollable-card-content {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+
+/* ========================= */
+/* === AJOUTS NON CASSANTS === */
+/* ========================= */
+
+/* Variables + hauteur 100% pour un calcul propre */
+html, body { height: 100%; }
+:root {
+  /* ajuste si ton footer mobile est plus haut */
+  --mobile-footer-h: 64px;
+}
+
+/* iOS safe-area fallback-friendly */
+@supports (padding: max(0px)) {
+  :root { --safe-bottom: env(safe-area-inset-bottom); }
+}
+@supports not (padding: max(0px)) {
+  :root { --safe-bottom: 0px; }
+}
+
+/* Spécifique MOBILE seulement */
+@media (max-width: 767px) {
+  /* Tabbar mobile bien calée */
+  .mobile .footer {
+    left: 0;
+    right: 0;
+    width: 100vw;
+    z-index: 1000;
+    margin: 0;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+    padding-bottom: calc(0.25rem + var(--safe-bottom));
+    /* on garde ta position: fixed existante */
+  }
+
+  /* Réserver de la place pour le footer en bas pour éviter le chevauchement */
+  body,
+  .container {
+    min-height: 100dvh;
+    padding-bottom: calc(var(--mobile-footer-h) + var(--safe-bottom));
+  }
+
+  /* Sécurité supplémentaire pour les zones scrollables */
+  .section,
+  .content,
+  .card-content,
+  .container-box {
+    padding-bottom: calc(var(--mobile-footer-h) + 16px);
+  }
+
+  /* Bouton "scroll-to-top" au-dessus du footer */
+  .scroll-to-top {
+    bottom: calc(var(--mobile-footer-h) + 20px);
+  }
+
+  /* Harmonisation hauteur de la barre d’onglets */
+  .mobile .footer .tabs.is-toggle.is-fullwidth {
+    height: var(--mobile-footer-h);
+    display: flex;
+    align-items: center;
+  }
+  .mobile .footer .tabs ul { width: 100%; }
+
+  /* Navbar au-dessus du contenu (tu avais déjà du sticky inline) */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+  }
+
+  /* Évite que des contenus des cards débordent visuellement */
+  .card { overflow: hidden; }
+}
+
+/* Optionnel : petit correctif pour assurer le full width du footer si jamais utilisé hors .mobile */
+@media (min-width: 768px) {
+  .mobile .footer { position: static; } /* ne s’applique pas car .mobile hidden, mais safe */
 }

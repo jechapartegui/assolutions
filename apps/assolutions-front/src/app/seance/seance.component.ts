@@ -113,6 +113,7 @@ export class SeanceComponent implements OnInit {
     this.action = $localize`Charger la séance`;
     const thisseance = await this.seancesservice.Get(id);
     this.editSeance = thisseance;
+        this.histo_seance = JSON.stringify(this.editSeance);
     this.readonly = true;
     let o = errorService.OKMessage(this.action);
     errorService.emitChange(o);
@@ -823,18 +824,21 @@ export class SeanceComponent implements OnInit {
   }
 
   RetourListe(): void {
-    if(this.store.isProf){
-        this.router.navigate(['/menu']);
-            this.store.updateSelectedMenu("MENU");
-    }
+  
    if (this.checkModification()) {
       let confirm = window.confirm(
         $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
       );
       if (!confirm) {
         return;
-      }
+      } 
+
     }
+             if(this.list_seance_VM.length == 0 && !this.store.isProf() ){
+      this.router.navigate(['/menu']);
+      this.store.updateSelectedMenu("MENU");
+      return;
+   }
     this.editSeance = null;
     this.UpdateListeSeance();
   }

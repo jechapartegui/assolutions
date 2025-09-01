@@ -17,6 +17,11 @@ export class ProjectService {
     return item;
   }
 
+    async getByLogin(login: string): Promise<Project> {
+    const item = await this.repo.findOne({ where: { login } });
+    return item;
+  }
+
   async getAll(): Promise<Project[]> {
     return this.repo.find();
   }

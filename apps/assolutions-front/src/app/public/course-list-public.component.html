@@ -4,9 +4,8 @@
     <div class="course-item">
       <div class="when">
         <div class="dow" class="has-text-capitalized">{{ c.jour_semaine }}</div>
-        <div class="dom">{{ nextDate(c) | date:'dd/MM' }}</div>
         <div class="hour">
-          {{ c.heure }}<ng-container *ngIf="c.duree != null">–{{ end(c.heure, c.duree) }}</ng-container>
+          {{ c.heure }} <ng-container *ngIf="c.duree != null">– {{ end(c.heure, c.duree) }} </ng-container>
         </div>
       </div>
 

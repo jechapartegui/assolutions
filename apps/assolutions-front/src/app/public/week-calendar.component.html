@@ -32,7 +32,7 @@
       <div class="hour-cell" *ngFor="let _ of viewHours()"></div>
       <div class="hour-cell last"></div>
 
-      <ng-container *ngFor="let ev of (layoutByDay().get(dayIso(d)) || []); trackBy: trackByEvent">
+     <ng-container *ngFor="let ev of (layoutByDay().get(d.iso) || []); trackBy: trackByEvent">
         <div class="event-card"
              [style.top.%]="ev.top"
              [style.height.%]="ev.height"
@@ -46,16 +46,15 @@
           </div>
 
           <!-- RDV/infos + statut (optionnel pour Séances) -->
-          <div class="ev-sub" *ngIf="ev.subtitle || (showStatus() && ev.statut)">
-            <ng-container *ngIf="ev.subtitle">{{ ev.subtitle }}</ng-container>
-            <ng-container *ngIf="showStatus() && ev.statut">
-              <span *ngIf="ev.subtitle"> • </span>{{ ev.statut }}
-            </ng-container>
-          </div>
+<div class="actions" *ngIf="ev.essai_possible">
+        <button class="button is-info is-rounded is-small is-outlined" (click)="Essayer(ev.id)">
+          <span i18n>Essai</span>
+        </button>
+      </div>
         </div>
       </ng-container>
 
-      <div class="more-after" *ngIf="dayHasAfter().get(dayIso(d))" title="Autres séances plus tard">⋯</div>
+      <div class="more-after" *ngIf="dayHasAfter().get(d.iso)" title="Autres séances plus tard">⋯</div>
     </div>
   </div>
 </div>

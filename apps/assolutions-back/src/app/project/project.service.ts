@@ -32,6 +32,20 @@ import { ConfigService } from '@nestjs/config';
             }
         return true;
       }
+
+      async login(username:string, password:string) : Promise<boolean> {
+        const pr =  this.projectSer.getByLogin(username);
+        if(!pr){
+          throw new UnauthorizedException('INCORRECT_LOGIN');
+        }
+        const storedPassword = (await pr).password;
+         const hashed = hashPasswordWithPepper(password, this.pepper);
+            if (storedPassword !== hashed) {
+              throw new UnauthorizedException('INCORRECT_PASSWORD');
+            }
+        return true;
+      }
+  
   
     
     }

@@ -7,7 +7,7 @@ import { Seance_VM } from '@shared/lib/seance.interface';
 // ⬅ ajuster le chemin d'import selon ton arbo
 
 export interface CalendarEvent {
-  id?: number | string;
+  id: number;
   date: string;     // 'YYYY-MM-DD' (obligatoire pour le WeekCalendar)
   start: string;    // 'HH:mm'
   end: string;      // 'HH:mm'

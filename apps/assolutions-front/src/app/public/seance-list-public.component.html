@@ -6,7 +6,7 @@
         <div class="dow">{{ s.date_seance | date:'EEE' }}</div>
         <div class="dom">{{ s.date_seance | date:'dd/MM' }}</div>
         <div class="hour" *ngIf="s.heure_debut as start">
-          {{ start }}<ng-container *ngIf="s.duree_seance != null">–{{ end(start, s.duree_seance) }}</ng-container>
+          {{ start }} <ng-container *ngIf="s.duree_seance != null">– {{ end(start, s.duree_seance)}} </ng-container>
         </div>
       </div>
 

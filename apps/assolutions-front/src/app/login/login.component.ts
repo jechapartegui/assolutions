@@ -215,6 +215,32 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       });
   }
 
+  SelectionnerCompteAdmin() {
+    this.action = $localize`Se connecter en tant qu'admin`;
+    const errorService = ErrorService.instance;
+    this.proj_serv.CheckMDP(this.VM.Password).then((ok:boolean) => {
+      if(ok){
+        this.compte_serv.getAccountLogin(this.VM.Login).then((compte:Compte_VM) => {          
+          this.essai.emit(compte);
+          return;
+        }).catch((error: Error) => {
+          let o = errorService.CreateError(this.action, error.message);
+          errorService.emitChange(o);
+          return;
+        });
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Mot de passe administrateur incorrect`);
+          errorService.emitChange(o);
+          return;
+      }
+
+    }).catch((error: Error) => {
+          let o = errorService.CreateError(this.action, error.message);
+            this.store.logout();
+          errorService.emitChange(o);
+        });
+  }
+
   PreCreerCompte(){
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
@@ -252,11 +278,12 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
     this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((compte_vm:Compte_VM) => {
-          this.store.login(compte_vm);
+       
           if(this.context == "ESSAI" || this.context == "CREATE"){
             this.essai.emit(compte_vm);
             return;
           }
+             this.store.login(compte_vm);
           this.VM.compte = compte_vm;
         this.store.updateappli('APPLI');
         this.store.updateSelectedMenu('MENU');

@@ -30,6 +30,7 @@ export class CourseService {
    async getAll(seasonId:number): Promise<Course[]> {
     let courses = await this.repo.find({ where: {seasonId},
     relations: [
+      'location',
       'professors',
       'professors.contract',                         // 1er niveau
       'professors.contract.professor',           // 2ᵉ niveau

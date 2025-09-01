@@ -36,7 +36,13 @@ export class WeekCalendarComponent implements AfterViewInit {
 
 
   // 👇 NEW: helper public pour unifier la clé jour dans le template
-  public dayIso(d: DayView): string { return d.iso; }
+  public dayIso(d: Date): string {
+  // yyyy-MM-dd en LOCAL (pas UTC) pour matcher le mapping des events
+  const y = d.getFullYear();
+  const m = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
   // Événements navigation
   @Output() prevWeek = new EventEmitter<void>();
   @Output() nextWeek = new EventEmitter<void>();
@@ -50,9 +56,17 @@ export class WeekCalendarComponent implements AfterViewInit {
 
   @ViewChild('scroller', { static: true }) scrollerRef!: ElementRef<HTMLDivElement>;
 
-  // Semaine affichée
-  weekStart = computed(() => getWeekStart(this.referenceDate()));
-  weekEndExcl = computed(() => addDays(this.weekStart(), 7));
+private startOfWeekMondayLocal = (ref: Date) => {
+  const d = new Date(ref);
+  d.setHours(12,0,0,0);               // évite les glissements DST
+  const diffToMon = (d.getDay() + 6) % 7;  // lun=0, ... dim=6
+  d.setDate(d.getDate() - diffToMon);
+  d.setHours(12,0,0,0);
+  return d;
+};
+
+weekStart   = computed(() => this.startOfWeekMondayLocal(this.referenceDate()));
+weekEndExcl = computed(() => addDays(this.weekStart(), 7));
 
   // Jours & heures (0→24, on scroll auto vers 8h)
   days = computed(() => weekDays(this.weekStart()));
@@ -208,6 +222,7 @@ private scrollToHour(h: number) {
   el.scrollTop = this.HOUR_HEIGHT_PX * (h - this.hoursRange().start); // aligné sur début fenêtre
 }
 
+
 // Helpers template
 hourLabel(h: number) { return (h < 10 ? '0' + h : h) + ':00'; }
 // Id unique pour la colonne "jour"
@@ -226,5 +241,7 @@ trackByEvent(_index: number, ev: any) {
 
   // Helpers pour le template
   dayKey(d: Date): string { return ymd(d); }
+
+  
 }
 type DayView = { date: Date; iso: string; label: string; wd: number };
