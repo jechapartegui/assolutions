@@ -120,7 +120,7 @@ export class SeanceComponent implements OnInit {
   }
 });
     this.action = $localize`Charger les séances`;
-    if (this.store.isLoggedIn) {    
+    if (this.store.isLoggedIn()) {    
       // Chargez la liste des cours
       this.grServ
         .GetAll()

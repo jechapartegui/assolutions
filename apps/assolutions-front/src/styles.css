@@ -9,12 +9,17 @@
 @media (max-width: 767px) { .mobile { display: contents; } .fullscreen { display: none; } }
 
 /* =========================
-   VARIABLES
+   VARIABLES (ajuste ici)
    ========================= */
 :root{
-  --topbar-h: 0px;             /* si tu as une barre fixe globale en haut, renseigne ici */
-  --navbar-mobile-h: 56px;     /* hauteur de la navbar mobile (is-fixed-top) */
-  --mobile-footer-h: 64px;     /* hauteur de ton footer mobile (tabs) */
+  /* Desktop : tu m’as dit 50px */
+  --desktop-topbar-h: 50px;
+
+  /* Mobile : navbar + footer appli (tabs) */
+  --navbar-mobile-h: 56px;
+  --mobile-footer-h: 64px;
+
+  /* Safe areas iOS */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -24,10 +29,10 @@
    ========================= */
 html, body {
   height: 100%;
-  overflow: hidden;       /* on désactive TOUT scroll de page */
+  overflow: hidden; /* pas de scroll page */
 }
 
-/* Par sécurité, l’host Angular */
+/* Host Angular */
 app-root {
   height: 100%;
   display: flex;
@@ -58,8 +63,9 @@ app-root {
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 1100;
-    /* si besoin, fixe la hauteur exacte ici */
     min-height: var(--navbar-mobile-h);
+    background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.06);
   }
 }
 
@@ -67,76 +73,88 @@ app-root {
    LAYOUT PAGES PLEIN ÉCRAN
    ========================= */
 .page-fill{
-  height: calc(100dvh - var(--topbar-h));  /* desktop */
-  overflow: hidden;                        /* pas de scroll wrapper */
+  /* Desktop : 100vh - topbar desktop (50px) */
+  height: calc(100dvh - var(--desktop-topbar-h));
+  overflow: hidden;
+  display: flex; /* garde le modèle flex des colonnes Bulma */
 }
+
 @media (max-width: 767px){
   .page-fill{
+    /* Mobile : 100vh - navbar mobile - footer mobile */
+  /*  height: calc(100dvh - var(--navbar-mobile-h) - var(--mobile-footer-h));*/
     height: calc(100dvh - var(--mobile-footer-h));
   }
 }
 
-/* =========================
-   CARD STANDARD (LISTE DESKTOP)
-   ========================= */
-.card{
+/* Colonnes internes -> doivent pouvoir rétrécir pour laisser scroller l’enfant */
+.columns.page-fill { min-height: 0; }
+.columns.page-fill > .column{
   display: flex;
   flex-direction: column;
-  border: 1px solid #ddd;
-  overflow: hidden;             /* coupe les débords */
-}
-.card > .card-content{
-  flex: 1 1 auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  min-height: 0;               /* clé pour que le scroll fonctionne en flex/grid */
+  min-height: 0; /* crucial pour autoriser le scroll interne */
 }
 
 /* =========================
-   CARD SCROLLER (FICHE ADHÉRENT)
-   header + footer fixes, contenu scrollable
+   CARD : header/footer fixes + contenu scrollable
    ========================= */
+.card{
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* header | content | footer */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  height: 100%; /* prend toute la hauteur de sa colonne */
+}
 
-.card.card--scroller > .card-header{ grid-row: 1; background:#fff; z-index:1; }
-.card.card--scroller > .card-footer{ grid-row: 3; background:#fff; z-index:1; }
+/* Header/footer homogènes (liste & fiche) */
+.card > .card-header,
+.card > .card-footer{
+  background: #fff;
+  align-items: center;
+  min-height: 48px;                 /* visuel homogène */
+  padding: .6rem 1rem;              /* petit padding pour ne pas coller aux bords */
+  border-color: rgba(0,0,0,.06);
+}
+.card > .card-header{ border-bottom: 1px solid rgba(0,0,0,.06); }
+.card > .card-footer{ border-top:    1px solid rgba(0,0,0,.06); }
 
-/* Contenu scrollable — supporte .card-content OU .scrollable-card-content */
-.card.card--scroller > .card-content,
-.card.card--scroller > .scrollable-card-content{
-  grid-row: 2;
+/* Zone scrollable unique */
+.card > .card-content,
+.card > .scrollable-card-content{
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  min-height: 0;
+  min-height: 0; /* indispensable en grid */
+  padding: .75rem 1rem; /* léger padding global */
 }
 
-/* En mobile : pas de footer de card, réserve en bas pour le footer global */
+/* Mobile : réserve juste ce qu’il faut pour le footer global */
 @media (max-width: 767px){
-  .card.card--scroller > .card-content,
-  .card.card--scroller > .scrollable-card-content{
-    padding-bottom: calc(var(--mobile-footer-h) + 8px + var(--safe-bottom));
+  .card > .card-content,
+  .card > .scrollable-card-content{
+    padding-bottom: calc(var(--mobile-footer-h) + 4px + var(--safe-bottom));
   }
 }
 
 /* =========================
    LISTE — MOBILE
    ========================= */
-/* Zone qui SCROLLE pour la liste mobile sous la navbar fixe */
+/* Zone qui SCROLLE sous la navbar fixe */
 @media (max-width: 767px){
   .container-box{
     position: relative;
-    /* On pousse sous la navbar fixe */
-    padding-top: calc(var(--navbar-mobile-h) + 8px + var(--safe-top));
-    /* Hauteur dispo = écran - navbar - footer */
+    padding-top: calc(var(--navbar-mobile-h) + 8px + var(--safe-top)); /* descend sous la navbar */
     height: calc(100dvh - var(--navbar-mobile-h) - var(--mobile-footer-h));
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-bottom: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
     margin: 0;
+    background: #fff;
   }
 }
 
@@ -145,8 +163,8 @@ app-root {
    ========================= */
 .fullscreen .card .card-content .content .table{ font-size: .9rem; }   /* desktop compact */
 @media (max-width: 767px){
-  .mobile .media .title{ font-size: .95rem; }
-  .mobile .media-content{ font-size: .9rem; }
+  .mobile .media .title{ font-size: .9rem; }
+  .mobile .media-content{ font-size: .85rem; }
 }
 
 /* =========================
@@ -168,6 +186,7 @@ app-root {
   flex: 1 1 200px; max-width: 200px; width: 100%;
 }
 
+/* Footer de card : éléments un peu plus compacts */
 .card-footer select,
 .card-footer input,
 .card-footer label,
@@ -225,7 +244,7 @@ app-root {
   background: transparent;
   border: 0;
   padding: 0.25rem 0;
-  color: #3273dc; /* Bulma primary par défaut */
+  color: #3273dc; /* Bulma primary */
   font-weight: 500;
   cursor: pointer;
 }
@@ -234,6 +253,7 @@ app-root {
 /* Petites utilitaires d’empilement vertical propre */
 .stack-2 { display: flex; flex-direction: column; gap: 0.5rem; }    /* 8px */
 .stack-3 { display: flex; flex-direction: column; gap: 0.75rem; }   /* 12px */
+
 /* Compact pour lignes serrées */
 .btn-compact{
   padding: .25rem .4rem;
@@ -254,63 +274,4 @@ app-root {
 .tags .tag.is-success{ background-color: #e6f8ed; color: #257942; }
 .tags .tag.is-info{ background-color: #e6f3fa; color: #216fa5; }
 .tags .tag.is-danger{ background-color: #fde8e8; color: #b42318; }
-
-
-/* ============ CRITICAL HEIGHT & FLEX FIXES (append-only) ============ */
-
-/* 1) Jamais de scroll page, toute l’app fait 100% */
-html, body, app-root {
-  height: 100%;
-  overflow: hidden;
-}
-
-/* 2) La rangée qui contient la card doit avoir une vraie hauteur viewport
-      (desktop: topbar ; mobile: navbar + footer appli) */
-:root{
-  --topbar-h: 0px;             /* ajuste si tu as une barre globale en haut */
-  --navbar-mobile-h: 56px;     /* hauteur de ta navbar mobile (is-fixed-top) */
-  --mobile-footer-h: 64px;     /* hauteur de ton footer mobile (tabs) */
-}
-
-.columns.page-fill{
-  height: calc(100dvh - var(--topbar-h));  /* fullscreen */
-  display: flex;            /* Bulma columns est flex, on s’assure ici */
-  overflow: hidden;         /* pas de scroll sur le wrapper */
-  min-height: 0;            /* ⚠️ indispensable pour autoriser l’enfant à rétrécir */
-}
-
-@media (max-width: 767px){
-  .columns.page-fill{
-    height: calc(100dvh - var(--navbar-mobile-h) - var(--mobile-footer-h)); /* mobile */
-  }
-}
-
-/* 3) La colonne et la card doivent s’étirer ET autoriser le scroll interne */
-.columns.page-fill > .column{
-  display: flex;
-  flex-direction: column;
-  min-height: 0;            /* ⚠️ sinon le contenu pousse et empêche le scroll */
-}
-
-.columns.page-fill > .column > .card{
-  flex: 1 1 auto;           /* la card prend toute la hauteur disponible */
-  min-height: 0;            /* ⚠️ clé pour que .card-content puisse scroller */
-}
-
-/* 4) La version scroller (fiche adhérent) doit réellement remplir la hauteur */
-.card.card--scroller{
-  display: grid;                   /* header | content | footer */
-  grid-template-rows: auto 1fr auto;
-  max-height: none;
-  overflow: hidden;
-}
-
-/* 5) L’unique zone scrollable : le content de la card */
-.card.card--scroller > .card-content,
-.card.card--scroller > .scrollable-card-content, /* si tu utilises cette classe */
-.card > .card-content{
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  min-height: 0;            /* ⚠️ le “truc” qui manquait pour scroller */
-}
+ 

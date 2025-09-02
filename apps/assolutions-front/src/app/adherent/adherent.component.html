@@ -576,21 +576,18 @@
 
       <!-- ====== FICHE ADHERENT ====== -->
       <ng-container *ngIf="thisAdherent">
-<div class="columns page-fill">
-  <div class="column">
-    <div class="card card--scroller">
-      <!-- Header titre (desktop) -->
-      <header class="card-header fullscreen" style="align-items: center">
-        <p class="card-header-title subtitle is-6">
+ <div class="columns page-fill">
+            <div class="column">
+              <div class="card card--scroller">
+                <header class="card-header" style="align-items: center">
+        <span class="fullscreen">
+                  <p class="card-header-title">
           <span *ngIf="thisAdherent.id < 1" i18n>Nouvel adhérent</span>
           <span *ngIf="thisAdherent.id > 0">
             <span i18n>Editer</span> : {{ thisAdherent.prenom }} {{ thisAdherent.nom }}
           </span>
         </p>
-      </header>
-
-      <!-- Header actions (mobile) -->
-      <header class="card-header mobile" style="align-items: center">
+   </span><span class="mobile">
         <div class="buttons">
           <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
           <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id)"
@@ -600,6 +597,7 @@
                [type_button]="'SauvegarderMobile'"
                (click)="Save()"></btn>
         </div>
+        </span>
       </header>
 
               <!-- Contenu (scrollable) --> 
@@ -679,8 +677,10 @@
                 </div>
 
               <!-- Footer (actions desktop) -->
-                   <div class="card-footer fullscreen">
-        <div class="card-footer-item">
+ <footer class="card-footer">
+  <span class="fullscreen">
+                  <div class="columns">
+                    <div class="column">
           <div class="buttons">
             <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
             <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id)"
@@ -692,6 +692,8 @@
           </div>
         </div>
       </div>
+      </span>
+      </footer>
     </div>
   </div>
 </div>

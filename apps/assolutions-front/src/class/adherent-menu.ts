@@ -8,6 +8,7 @@ export class AdherentMenu extends Adherent_VM {
   public sort_date = "NO";
   public sort_lieu = "NO";
   public selected_filter: string;
+  public filtre_et_option:boolean = false;
   public filters = new FilterMenu();
   public profil : "ADH" | "PROF" = "ADH";
   public MesSeances: MesSeances_VM[];

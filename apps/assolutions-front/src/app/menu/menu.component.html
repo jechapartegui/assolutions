@@ -553,11 +553,15 @@
           <footer class="card-footer">
             <div class="columns" style="font-size: medium;">
               <div class="column">
-              <div class="buttons">                
+              <div class="buttons">
+                <ng-container *ngIf="rider.filtre_et_option; else PasFiltre">
                 <div
                   class="field is-horizontal"
                   style="gap: 0.5rem; align-items: center"
                 >
+                  <button class="button is-danger is-light btn-mobile btn-elevated" (click)="rider.filtre_et_option = false;">
+                    Masquer les filtres et options
+                  </button>
                   <div class="field-label is-normal">
                     <label class="label" style="white-space: nowrap;font-size: smaller;" i18n
                       >Sélection du filtre</label
@@ -818,6 +822,12 @@
                       [type_button]="'AbsentLight'"
                       (click)="MAJInscriptionAffichee(rider, false)"></btn>
                 </div>
+                </ng-container>                
+                <ng-template #PasFiltre>
+                  <button class="button is-primary is-light btn-mobile btn-elevated" (click)="rider.filtre_et_option = true;">
+                    Afficher les filtres et options
+                  </button>
+                </ng-template>
               </div>
              
            

@@ -10,7 +10,7 @@
         </span>
         </span>
         <span class="mobile">
-            <span class="tag is-success is-large">
+            <span class="tag is-success">
                 {{niv.nom}}
                 <button *ngIf="edit" class="delete" (click)="RemoveGroupe(niv)"></button>
             </span>
@@ -25,13 +25,9 @@
             </ng-container>
         </select>
     </div>
-    <span class="fullscreen">
         <btn [type_button]="'CreerSmallLight'" [disabled]="current_groupe_key === 0" (click)="AjouterGroupe()"></btn>
 
-    </span>
-    <span class="mobile">
-        <btn [type_button]="'CreerMobile'" [disabled]="current_groupe_key === 0" (click)="AjouterGroupe()"></btn>
-    </span>
+   
 </ng-container>
 <ng-container *ngIf="groupe_dispo.length == 0 && edit">
 <p style="font-size: smaller;" i18n>Pas de groupe disponible</p>

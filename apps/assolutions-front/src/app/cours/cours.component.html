@@ -10,13 +10,13 @@
       <p>Chargement en cours</p>
     </ng-container>
     <ng-container *ngIf="!loading">
-        <div class="columns"  *ngIf="!editCours" >
-          <div class="column">
-      <span class="fullscreen">
-            <div class="card">
-              <header class="card-header" style="align-items: center">
-                <p
-                  class="card-header-title"
+       <ng-container *ngIf="!editCours">
+        <span class="fullscreen">
+          <div class="columns page-fill">
+            <div class="column">
+              <div class="card card--scroller">
+                <header class="card-header" style="align-items: center">
+                  <p class="card-header-title"
                   *ngIf="
                     listeCours
                       | multifiltersCours : filters as filteredApplis
@@ -490,10 +490,9 @@
                 </div>
               </footer>
             </div>
-      </span>
           </div>
         </div>
-
+      </span>
       <span class="mobile">
         <ng-container *ngIf="afficher_filtre">
           <nav class="navbar is-fixed-top">
@@ -744,10 +743,10 @@
                   (click)="Create()"
                 ></btn>
           </nav>
+           <div class="container-box">
           <ng-container
             *ngFor="let cours of listeCours | multifiltersCours : filters"
           >
-            <div class="container-box">
               <article class="media">
                 <div class="media-content">
                   <span class="title" (click)="Edit(cours)"
@@ -762,14 +761,17 @@
                   </div>
                 </div>
               </article>
-            </div>
           </ng-container>
+          </div>
         </ng-container>
       </span>
-<div class="columns" *ngIf="editCours">
-  <div class="column">
-    <div class="card">
+      </ng-container>
+<ng-container *ngIf="editCours">
+   <div class="columns page-fill">
+            <div class="column">
+              <div class="card card--scroller">
       <header class="card-header" style="align-items: center">
+        <span class="fullscreen">
         <p class="card-header-title subtitle is-6">
           <span *ngIf="editCours.id < 1">
            <input [ngClass]="!rNom.key   ? 'input is-danger'   : 'input' " [(ngModel)]="editCours.nom" (ngModelChange)="autoSave()">
@@ -779,7 +781,20 @@
             <span i18n>Editer</span> : {{ editCours.nom }} 
           </span>
         </p>
-      </header>
+    </span>
+    <span class="mobile">
+        <div class="buttons">
+          <btn
+              [type_button]="'RetourSmall'"
+              (click)="Retour()"
+            ></btn>
+            <btn *ngIf="editCours.id < 1"
+            [disabled]="!is_valid"
+              [type_button]="'SauvegarderSmall'"
+              (click)="Save()"
+            ></btn>
+        </div></span>
+      </header> 
       
       <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
         <!-- Bloc Infos personnelles -->
@@ -922,8 +937,9 @@
                         
         </div>
       </div>
-      
-      <div class="card-footer">
+    
+      <footer class="card-footer">
+<span class="fullscreen">
         <div class="columns is-mobile is-centered">
           <div class="column is-half">
              <div class="buttons" style="flex-wrap: nowrap">
@@ -939,9 +955,11 @@
             </div>
           </div>
         </div>
-    </div>
+        </span>
+    </footer>
     </div>
   </div>
   </div>
+    </ng-container>
     </ng-container>
 </div>
