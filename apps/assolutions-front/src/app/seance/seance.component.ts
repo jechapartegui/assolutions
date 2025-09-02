@@ -438,6 +438,7 @@ export class SeanceComponent implements OnInit {
   SaveNom(){
     this.edit_nom = false;
     this.checkall();
+    console.log(this.is_valid);
     if(this.is_valid){
     this.Save();
     }
@@ -1101,23 +1102,32 @@ export class FilterSeance {
     this.onFilterChange();
   }
 
-  private _filter_date_avant: Date | null = new Date(2025,2,25);
-  get filter_date_avant(): Date | null {
-    return this._filter_date_avant;
-  }
-  set filter_date_avant(value: Date | null) {
-    this._filter_date_avant = value;
-    this.onFilterChange();
-  }
+private _filter_date_avant: Date | null = this.calcDate(-2);   // aujourd'hui - 2 jours
+private _filter_date_apres: Date | null = this.calcDate(0, 2); // aujourd'hui + 2 mois
 
-  private _filter_date_apres: Date | null ;
-  get filter_date_apres(): Date | null {
-    return this._filter_date_apres;
-  }
-  set filter_date_apres(value: Date | null) {
-    this._filter_date_apres = value;
-    this.onFilterChange();
-  }
+get filter_date_apres(): Date | null {
+  return this._filter_date_apres;
+}
+set filter_date_apres(value: Date | null) {
+  this._filter_date_apres = value;
+  this.onFilterChange();
+}
+
+get filter_date_avant(): Date | null {
+  return this._filter_date_avant;
+}
+set filter_date_avant(value: Date | null) {
+  this._filter_date_avant = value;
+  this.onFilterChange();
+}
+
+/** utilitaire pour décaler une date */
+private calcDate(daysDelta = 0, monthsDelta = 0): Date {
+  const d = new Date();
+  if (daysDelta) d.setDate(d.getDate() + daysDelta);
+  if (monthsDelta) d.setMonth(d.getMonth() + monthsDelta);
+  return d;
+}
 
   private _filter_prof: string | null = null;
   get filter_prof(): string | null {

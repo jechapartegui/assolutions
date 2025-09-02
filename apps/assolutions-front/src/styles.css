@@ -1,256 +1,316 @@
-/* You can add global styles to this file, and also import other style files */
-.mobile {
-    display: none;
-}
-.tablet {
-    display: none;
+/* =========================
+   VISIBILITÉ RESPONSIVE
+   ========================= */
+.mobile { display: none; }
+.tablet { display: none; }
+.fullscreen { display: contents; }
+
+@media (min-width: 500px) { .tablet { display: contents; } }
+@media (max-width: 767px) { .mobile { display: contents; } .fullscreen { display: none; } }
+
+/* =========================
+   VARIABLES
+   ========================= */
+:root{
+  --topbar-h: 0px;             /* si tu as une barre fixe globale en haut, renseigne ici */
+  --navbar-mobile-h: 56px;     /* hauteur de la navbar mobile (is-fixed-top) */
+  --mobile-footer-h: 64px;     /* hauteur de ton footer mobile (tabs) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.fullscreen {
-    display: contents;
-}
-@media screen and (min-width: 500px) {
-    .tablet {
-        display: contents;
-    }
+/* =========================
+   LOCK SCROLL GLOBAL
+   ========================= */
+html, body {
+  height: 100%;
+  overflow: hidden;       /* on désactive TOUT scroll de page */
 }
 
-@media screen and (max-width: 767px) {
-  .media-content{
-    padding-left: 10px;
+/* Par sécurité, l’host Angular */
+app-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* =========================
+   FOOTER MOBILE (APP-COMPONENT)
+   ========================= */
+.mobile .footer{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  width: 100%;
+  z-index: 1000;
+  margin: 0;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  padding: .25rem 0;
+  padding-bottom: calc(.25rem + var(--safe-bottom));
+}
+
+/* =========================
+   NAVBAR MOBILE FIXE (haut)
+   ========================= */
+@media (max-width: 767px){
+  .navbar.is-fixed-top{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1100;
+    /* si besoin, fixe la hauteur exacte ici */
+    min-height: var(--navbar-mobile-h);
   }
-    .mobile {
-        display: contents;
-    }
-    .box{
-        padding: 0.25rem;
-    }
-    .panel-block{
-        padding: 0.25rem;
-    }
-    .panel-heading{
-        padding: 0.25rem;
-    }
-
-    .fullscreen {
-        display: none;
-    }
-
-    .title {
-        cursor: pointer;
-        text-transform: uppercase;
-        font-weight: 700;
-        font-size: smaller;
-        text-align: start;
-    }
-    .container-box{
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: stretch;
-        margin-top: 60px;
-        margin-left: 5px;
-        margin-right: 5px;
-      }
 }
-/* Rendre la card adaptative */
-.card {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(99vh - 52px); /* Soustraire la hauteur de la navbar */
-    border: 1px solid #ddd;
-    overflow: hidden; /* Coupe tout débordement */
+
+/* =========================
+   LAYOUT PAGES PLEIN ÉCRAN
+   ========================= */
+.page-fill{
+  height: calc(100dvh - var(--topbar-h));  /* desktop */
+  overflow: hidden;                        /* pas de scroll wrapper */
+}
+@media (max-width: 767px){
+  .page-fill{
+    height: calc(100dvh - var(--mobile-footer-h));
   }
-  
-  /* Permet de scroller uniquement le contenu */
-  .card-content {
-    flex: 1;
-    overflow-y: auto; /* Active le défilement vertical */
-  }
-  .card-content > .content > .columns {
-    width: 100%;
-}
-.field-container >.columns {
-    width: 100%;
 }
 
-  .card-footer{
-    padding: 10px;
-  }
-
-  @media screen and (min-width: 768px) {
-    .field-container {
-        margin-top: 30px;
-    }
+/* =========================
+   CARD STANDARD (LISTE DESKTOP)
+   ========================= */
+.card{
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  overflow: hidden;             /* coupe les débords */
 }
-  
+.card > .card-content{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-height: 0;               /* clé pour que le scroll fonctionne en flex/grid */
+}
+
+/* =========================
+   CARD SCROLLER (FICHE ADHÉRENT)
+   header + footer fixes, contenu scrollable
+   ========================= */
+
+.card.card--scroller > .card-header{ grid-row: 1; background:#fff; z-index:1; }
+.card.card--scroller > .card-footer{ grid-row: 3; background:#fff; z-index:1; }
+
+/* Contenu scrollable — supporte .card-content OU .scrollable-card-content */
+.card.card--scroller > .card-content,
+.card.card--scroller > .scrollable-card-content{
+  grid-row: 2;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+
+/* En mobile : pas de footer de card, réserve en bas pour le footer global */
+@media (max-width: 767px){
+  .card.card--scroller > .card-content,
+  .card.card--scroller > .scrollable-card-content{
+    padding-bottom: calc(var(--mobile-footer-h) + 8px + var(--safe-bottom));
+  }
+}
+
+/* =========================
+   LISTE — MOBILE
+   ========================= */
+/* Zone qui SCROLLE pour la liste mobile sous la navbar fixe */
+@media (max-width: 767px){
+  .container-box{
+    position: relative;
+    /* On pousse sous la navbar fixe */
+    padding-top: calc(var(--navbar-mobile-h) + 8px + var(--safe-top));
+    /* Hauteur dispo = écran - navbar - footer */
+    height: calc(100dvh - var(--navbar-mobile-h) - var(--mobile-footer-h));
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 12px;
+    margin: 0;
+  }
+}
+
+/* =========================
+   LISTE — TYPO + ALIGNEMENT
+   ========================= */
+.fullscreen .card .card-content .content .table{ font-size: .9rem; }   /* desktop compact */
+@media (max-width: 767px){
+  .mobile .media .title{ font-size: .95rem; }
+  .mobile .media-content{ font-size: .9rem; }
+}
+
+/* =========================
+   TABLES / FORM / DIVERS
+   ========================= */
+.card-content > .content > .columns,
+.field-container > .columns{ width: 100%; }
+
+.field-container{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.field-container .field{ flex: 1 1 auto; min-width: 200px; }
+.field-container .field input[type="date"],
+.field-container .field input[type="time"],
+.field-container .field input[type="number"]{
+  flex: 1 1 200px; max-width: 200px; width: 100%;
+}
 
 .card-footer select,
 .card-footer input,
 .card-footer label,
 .card-footer span,
 .card-footer .btn,
-.card-footer .buttons {
-    font-size: smaller;
-    /* Appliquer aux inputs, sélecteurs, boutons, etc. */
+.card-footer .buttons{ font-size: smaller; }
+.card-footer .field-label{ align-content: center; }
+.card-footer .field-body{ margin-right: .5rem; }
+
+.media-content{ padding-left: 10px; }
+
+/* =========================
+   SCROLL TO TOP
+   ========================= */
+.scroll-to-top{
+  position: absolute;
+  right: 20px;
+  bottom: 60px;
+  z-index: 1000;
+  background-color: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: .7;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.scroll-to-top:hover{ opacity: 1; transform: scale(1.1); }
+
+/* =========================
+   BOUTONS MODERNES
+   ========================= */
+.btn-mobile{
+  min-height: 3rem; min-width: 3rem; padding: .75rem 1rem;
+  border-radius: 9999px; line-height: 1.15; border-width: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, filter 120ms ease;
+}
+.btn-elevated{ box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.btn-mobile:hover{ transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.16); }
+.btn-mobile:active{ transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,.16); filter: saturate(1.06); }
+.btn-mobile:focus-visible{
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12), 0 0 0 3px rgba(32,156,238,.35);
+}
+.btn-mobile[disabled]{ opacity: .55; pointer-events: none; transform: none; box-shadow: none; }
+.btn-lg{ font-size: 1rem; padding: .9rem 1.25rem; }
+.btn-block-mobile{ width: 100%; }
+@media (min-width: 769px){ .btn-block-mobile{ width: auto; } }
+
+/* Lien “bouton-texte” moderne (pour actions secondaires) */
+.btn-link {
+  background: transparent;
+  border: 0;
+  padding: 0.25rem 0;
+  color: #3273dc; /* Bulma primary par défaut */
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-link:hover { text-decoration: underline; }
+
+/* Petites utilitaires d’empilement vertical propre */
+.stack-2 { display: flex; flex-direction: column; gap: 0.5rem; }    /* 8px */
+.stack-3 { display: flex; flex-direction: column; gap: 0.75rem; }   /* 12px */
+/* Compact pour lignes serrées */
+.btn-compact{
+  padding: .25rem .4rem;
+  min-height: auto; min-width: auto;
+  border-radius: 6px; box-shadow: none;
+}
+.btn-compact .icon, .btn-compact i{ font-size: 1rem; line-height: 1; }
+
+/* =========================
+   TAGS JOLIS
+   ========================= */
+.tags .tag{
+  border-radius: 9999px; padding: .35em .85em; font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12); transition: all 150ms ease;
+}
+.tags .tag:hover{ transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,.16); }
+.tags .tag:active{ transform: translateY(0); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+.tags .tag.is-success{ background-color: #e6f8ed; color: #257942; }
+.tags .tag.is-info{ background-color: #e6f3fa; color: #216fa5; }
+.tags .tag.is-danger{ background-color: #fde8e8; color: #b42318; }
+
+
+/* ============ CRITICAL HEIGHT & FLEX FIXES (append-only) ============ */
+
+/* 1) Jamais de scroll page, toute l’app fait 100% */
+html, body, app-root {
+  height: 100%;
+  overflow: hidden;
 }
 
-.card-footer .field-label{
-    align-content: center;
-}
-.card-footer .field-body {
-margin-right: 0.5rem;
-}
-
-.scroll-to-top {
-    position: absolute; /* Par rapport au conteneur */
-    bottom: 60px;
-    right: 20px;
-    z-index: 1000;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-  
-  .scroll-to-top:hover {
-    opacity: 1; /* Pleine opacité au survol */
-    transform: scale(1.1); /* Légère augmentation de la taille */
-  }
-
-  .footer{
-    padding: 0.25rem;
-    position: fixed;
-    bottom: 0;
-  }
-  .field-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between; /* Répartir l'espace entre les champs */
-    gap: 1rem; /* Espacement entre les éléments */
-  }
-  
-  .field-container .field {
-    flex: 1 1 auto; /* Comportement flexible par défaut */
-    min-width: 200px; /* Adjust the minimum width as needed */
-  }
-  
-  .field-container .field input[type="date"],
-  .field-container .field input[type="time"],
-  .field-container .field input[type="number"] {
-    flex: 1 1 200px; /* Minimum 200px, comportement flexible */
-    max-width: 200px; /* Limite maximale */
-    width: 100%; /* Remplit le conteneur disponible */
-  }
-  
-
-
-@media (prefers-color-scheme: dark) {
-    .footer {
-        background-color: rgba(0, 0, 0, 0.8);
-        /* Noir avec 80% d'opacité */
-        border-top: 1px solid #444;
-    }
+/* 2) La rangée qui contient la card doit avoir une vraie hauteur viewport
+      (desktop: topbar ; mobile: navbar + footer appli) */
+:root{
+  --topbar-h: 0px;             /* ajuste si tu as une barre globale en haut */
+  --navbar-mobile-h: 56px;     /* hauteur de ta navbar mobile (is-fixed-top) */
+  --mobile-footer-h: 64px;     /* hauteur de ton footer mobile (tabs) */
 }
 
-.mobile .navbar.is-fixed-top .button{
-margin-left: 10px;
-margin-top: 2x;
+.columns.page-fill{
+  height: calc(100dvh - var(--topbar-h));  /* fullscreen */
+  display: flex;            /* Bulma columns est flex, on s’assure ici */
+  overflow: hidden;         /* pas de scroll sur le wrapper */
+  min-height: 0;            /* ⚠️ indispensable pour autoriser l’enfant à rétrécir */
 }
 
-.scrollable-card-content {
-  max-height: calc(99vh - 160px); 
-  overflow-y: auto;
-  padding-right: 0.5rem;
-  margin-bottom: 1rem;
-}
-.scrollable-card-content {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-
-/* ========================= */
-/* === AJOUTS NON CASSANTS === */
-/* ========================= */
-
-/* Variables + hauteur 100% pour un calcul propre */
-html, body { height: 100%; }
-:root {
-  /* ajuste si ton footer mobile est plus haut */
-  --mobile-footer-h: 64px;
-}
-
-/* iOS safe-area fallback-friendly */
-@supports (padding: max(0px)) {
-  :root { --safe-bottom: env(safe-area-inset-bottom); }
-}
-@supports not (padding: max(0px)) {
-  :root { --safe-bottom: 0px; }
-}
-
-/* Spécifique MOBILE seulement */
-@media (max-width: 767px) {
-  /* Tabbar mobile bien calée */
-  .mobile .footer {
-    left: 0;
-    right: 0;
-    width: 100vw;
-    z-index: 1000;
-    margin: 0;
-    border-top: 1px solid rgba(0,0,0,0.08);
-    background: #fff;
-    padding-bottom: calc(0.25rem + var(--safe-bottom));
-    /* on garde ta position: fixed existante */
+@media (max-width: 767px){
+  .columns.page-fill{
+    height: calc(100dvh - var(--navbar-mobile-h) - var(--mobile-footer-h)); /* mobile */
   }
-
-  /* Réserver de la place pour le footer en bas pour éviter le chevauchement */
-  body,
-  .container {
-    min-height: 100dvh;
-    padding-bottom: calc(var(--mobile-footer-h) + var(--safe-bottom));
-  }
-
-  /* Sécurité supplémentaire pour les zones scrollables */
-  .section,
-  .content,
-  .card-content,
-  .container-box {
-    padding-bottom: calc(var(--mobile-footer-h) + 16px);
-  }
-
-  /* Bouton "scroll-to-top" au-dessus du footer */
-  .scroll-to-top {
-    bottom: calc(var(--mobile-footer-h) + 20px);
-  }
-
-  /* Harmonisation hauteur de la barre d’onglets */
-  .mobile .footer .tabs.is-toggle.is-fullwidth {
-    height: var(--mobile-footer-h);
-    display: flex;
-    align-items: center;
-  }
-  .mobile .footer .tabs ul { width: 100%; }
-
-  /* Navbar au-dessus du contenu (tu avais déjà du sticky inline) */
-  .navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1100;
-  }
-
-  /* Évite que des contenus des cards débordent visuellement */
-  .card { overflow: hidden; }
 }
 
-/* Optionnel : petit correctif pour assurer le full width du footer si jamais utilisé hors .mobile */
-@media (min-width: 768px) {
-  .mobile .footer { position: static; } /* ne s’applique pas car .mobile hidden, mais safe */
+/* 3) La colonne et la card doivent s’étirer ET autoriser le scroll interne */
+.columns.page-fill > .column{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;            /* ⚠️ sinon le contenu pousse et empêche le scroll */
+}
+
+.columns.page-fill > .column > .card{
+  flex: 1 1 auto;           /* la card prend toute la hauteur disponible */
+  min-height: 0;            /* ⚠️ clé pour que .card-content puisse scroller */
+}
+
+/* 4) La version scroller (fiche adhérent) doit réellement remplir la hauteur */
+.card.card--scroller{
+  display: grid;                   /* header | content | footer */
+  grid-template-rows: auto 1fr auto;
+  max-height: none;
+  overflow: hidden;
+}
+
+/* 5) L’unique zone scrollable : le content de la card */
+.card.card--scroller > .card-content,
+.card.card--scroller > .scrollable-card-content, /* si tu utilises cette classe */
+.card > .card-content{
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-height: 0;            /* ⚠️ le “truc” qui manquait pour scroller */
 }

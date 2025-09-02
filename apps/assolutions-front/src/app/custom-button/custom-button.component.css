@@ -1,3 +1,55 @@
 button{
     gap: 0.5rem;
 }
+/* Bouton rond, grand, tactile, lignes soignées */
+.btn-mobile {
+  /* tailles sûres pour les doigts */
+  min-width: 3rem;  /* 48px */
+  min-height: 3rem; /* 48px */
+  padding: 0.75rem; /* respire sans étirer la bulle */
+  border-radius: 9999px; /* parfait cercle */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* icône parfaitement centrée */
+  border-width: 0; /* avec is-light, on garde un bord clean */
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+/* Élévation subtile (mode carte moderne) */
+.btn-elevated {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* Hover/active/focus — feedback “propre” et rapide */
+.btn-mobile:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+}
+
+.btn-mobile:active {
+  transform: translateY(0); /* évite le “saut” au clic */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+  filter: saturate(1.1);
+}
+
+/* Anneau d’accessibilité discret mais visible */
+.btn-mobile:focus-visible {
+  outline: none;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.12),
+    0 0 0 3px rgba(32,156,238,0.35); /* anneau focus */
+}
+
+/* Icône taille confortable */
+.btn-mobile .icon.is-medium i {
+  font-size: 1.25rem; /* ~20px, lisible sans être énorme */
+}
+
+/* État disabled harmonisé avec Bulma */
+.btn-mobile[disabled] {
+  opacity: 0.55;
+  pointer-events: none;
+  transform: none;
+  box-shadow: none;
+}

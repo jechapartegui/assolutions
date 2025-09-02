@@ -57,52 +57,110 @@
           <div class="columns">
             <div class="column">
               <div class="field" *ngIf="!projets">
-                <p class="control" style="display: flex; flex-direction: column; gap: 2px;"> 
-                  <button *ngIf="(!store.isLoggedIn()) && !VM.creer_compte && !VM.mdp_requis" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
-                    (click)="PreLogin()  && !VM.creer_compte" i18n>
-                    Se connecter
-                  </button>
-                   <button *ngIf="(store.isLoggedIn()) && !VM.creer_compte && context == 'CREATE' && !VM.mdp_requis" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
-                    (click)="PreLogin()  && !VM.creer_compte" i18n>
-                    Selectionner ce compte
-                  </button>
-                   <button *ngIf="(store.isLoggedIn()) && !VM.creer_compte && context == 'CREATE' && VM.mdp_requis" [disabled]="!VM.isValid"  class="button is-success is-outlined is-rounded"
-                    (click)="SelectionnerCompteAdmin()" i18n>
-                    Selectionner ce compte en tant qu'admin
-                  </button>
-                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isPasswordValid || !VM.isLoginValid"  class="button is-success is-outlined is-rounded"
-                    (click)="CreerCompte(true)" i18n>
-                    Créer un compte avec mot de passe
-                  </button>
-                   <button *ngIf="(!store.isLoggedIn()) && VM.creer_compte" [disabled]="!VM.isLoginValid"  class="button is-success is-outlined is-rounded"
-                    (click)="CreerCompte(false)" i18n>
-                    Créer un compte sans mot de passe
-                  </button>
-                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isPasswordValid || !VM.isLoginValid"  class="button is-success is-outlined is-rounded"
-                    (click)="CreerCompte(true)" i18n>
-                    Créer un compte avec mot de passe
-                  </button>
-                   <button *ngIf="context == 'CREATE' && VM.creer_compte" [disabled]="!VM.isLoginValid"  class="button is-success is-outlined is-rounded"
-                    (click)="CreerCompte(false)" i18n>
-                    Créer un compte sans mot de passe
-                  </button>
-                  <button *ngIf="VM.mdp_requis && !store.isLoggedIn()  && !VM.creer_compte " [disabled]="!VM.isValid" class="button is-success is-outlined is-rounded"
-                    (click)="Login()  && !VM.creer_compte" i18n>
-                    Valider le mot de passe
-                  </button>
-                
-                  <a *ngIf="VM.isLoginValid && !VM.creer_compte && context != 'CREATE' && context != 'ESSAI'"  (click)="ReinitMDP()" i18n
-                  >Reinitialiser le mot de passe</a>
-                </p>
+<p class="control stack-3">
+  <button
+    *ngIf="(!store.isLoggedIn()) && !VM.creer_compte && !VM.mdp_requis"
+    [disabled]="!VM.isValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="PreLogin() && !VM.creer_compte"
+    i18n
+  >
+    Se connecter
+  </button>
+
+  <button
+    *ngIf="(store.isLoggedIn()) && !VM.creer_compte && context == 'CREATE' && !VM.mdp_requis"
+    [disabled]="!VM.isValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="PreLogin() && !VM.creer_compte"
+    i18n
+  >
+    Selectionner ce compte
+  </button>
+
+  <button
+    *ngIf="(store.isLoggedIn()) && !VM.creer_compte && context == 'CREATE' && VM.mdp_requis"
+    [disabled]="!VM.isValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="SelectionnerCompteAdmin()"
+    i18n
+  >
+    Selectionner ce compte en tant qu'admin
+  </button>
+
+  <button
+    *ngIf="(!store.isLoggedIn()) && VM.creer_compte"
+    [disabled]="!VM.isPasswordValid || !VM.isLoginValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="CreerCompte(true)"
+    i18n
+  >
+    Créer un compte avec mot de passe
+  </button>
+
+  <button
+    *ngIf="(!store.isLoggedIn()) && VM.creer_compte"
+    [disabled]="!VM.isLoginValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="CreerCompte(false)"
+    i18n
+  >
+    Créer un compte sans mot de passe
+  </button>
+
+  <button
+    *ngIf="context == 'CREATE' && VM.creer_compte"
+    [disabled]="!VM.isPasswordValid || !VM.isLoginValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="CreerCompte(true)"
+    i18n
+  >
+    Créer un compte avec mot de passe
+  </button>
+
+  <button
+    *ngIf="context == 'CREATE' && VM.creer_compte"
+    [disabled]="!VM.isLoginValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="CreerCompte(false)"
+    i18n
+  >
+    Créer un compte sans mot de passe
+  </button>
+
+  <button
+    *ngIf="VM.mdp_requis && !store.isLoggedIn() && !VM.creer_compte"
+    [disabled]="!VM.isValid"
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+    (click)="Login() && !VM.creer_compte"
+    i18n
+  >
+    Valider le mot de passe
+  </button>
+
+  <!-- Action secondaire : lien moderne -->
+  <button
+    *ngIf="VM.isLoginValid && !VM.creer_compte && context != 'CREATE' && context != 'ESSAI'"
+    type="button"
+    class="btn-link"
+    (click)="ReinitMDP()"
+    i18n
+  >
+    Reinitialiser le mot de passe
+  </button>
+</p>
+
               </div>
               <div class="field" *ngIf="projets">
-                <p class="control">
-                  <button class="button is-primary is-outlined is-rounded" (click)="ConnectToProject()">
+                <p class="control stack-3">
+                  <button 
+    class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile" (click)="ConnectToProject()">
                     Se connecter au projet
                   </button>
                 </p>
-                <p class="control">
-                  <button class="button is-danger is-outlined is-rounded" (click)="LogOut()">
+                <p class="control stack-3">
+                  <button 
+    class="button is-danger is-light btn-mobile btn-elevated btn-lg btn-block-mobile" (click)="LogOut()">
                     Se déconnecter
                   </button>
                 </p>

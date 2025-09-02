@@ -31,7 +31,7 @@ async getPersonRegistrations( personneId: number,
     // pour chaque cours, on va chercher ses liens “cours”
     return Promise.all(
       courses.map(async course => {
-        course.groups = await this.linkgroup_serv.getGroupsForObject('rider', course.id);
+        course.groups = (await this.linkgroup_serv.getGroupsForObject('rider', personneId)).filter(x => x.group.saisonId === course.saisonId);
         return course;
       })
     );

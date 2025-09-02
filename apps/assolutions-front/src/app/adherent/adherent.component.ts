@@ -104,6 +104,7 @@ export class AdherentComponent implements OnInit {
   // === État de l’édition UI ===
   public edit_info_adresse = false;
   public edit_info_perso = false;
+private readonly defaultPhotoUrl = 'assets/photo_H.png';
 
   // === Constructeur ===
   constructor(
@@ -118,6 +119,7 @@ export class AdherentComponent implements OnInit {
     private grServ: GroupeService,
     private route: ActivatedRoute,
     public store:AppStore
+    
   ) {}
   ngOnInit(): void {
     const errorService = ErrorService.instance;
@@ -479,16 +481,34 @@ Inscrire(){
   getSaison(id: number): string {
     return this.liste_saison.filter((x) => x.id == id)[0].nom;
   }
-  createBlobUrl(base64Data: string): string {
-  const byteString = atob(base64Data.split(',')[1]);
-  const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
-  const ab = new ArrayBuffer(byteString.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i);
+createBlobUrl(base64Data: string | null | undefined): string {
+  try {
+    if (!base64Data || base64Data.trim() === '') {
+      throw new Error('Base64 vide');
+    }
+
+    // si format "data:mime;base64,xxxx"
+    const parts = base64Data.split(',');
+    if (parts.length < 2) {
+      throw new Error('Format Base64 invalide');
+    }
+
+    const byteString = atob(parts[1]);
+    const mimeString = parts[0].split(':')[1].split(';')[0];
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([ab], { type: mimeString });
+    return URL.createObjectURL(blob);
+
+  } catch (e) {
+    console.warn('Photo invalide, utilisation de la photo par défaut', e);
+    return this.defaultPhotoUrl;
   }
-  const blob = new Blob([ab], { type: mimeString });
-  return URL.createObjectURL(blob);
 }
 
 isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
