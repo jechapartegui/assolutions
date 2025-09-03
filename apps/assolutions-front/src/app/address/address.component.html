@@ -17,7 +17,7 @@
     <div *ngIf="edit || id ==0; else readAdresse">
       <p *ngIf="rLibelle && !rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
               <div class="field">
-                <label class="label" i18n>Voie</label>
+                <label class="label is-small" i18n>Voie</label>
                 <div class="control">
                   <input (ngModelChange)="CheckAdresse()"
                    [ngClass]="!rStreet.key   ? 'input is-danger is-small'   : 'input is-small' "
@@ -28,7 +28,7 @@
                 <p *ngIf="!rStreet.key" class="is-small help is-danger">{{rStreet.value}}</p>
               </div>
               <div class="field">
-                <label class="label" i18n>Code postal</label>
+                <label class="label is-small" i18n>Code postal</label>
                 <div class="control">
                   <input (ngModelChange)="CheckAdresse()"
                      [ngClass]="!rPostCode.key   ? 'input is-danger is-small'   : 'input is-small' "
@@ -39,7 +39,7 @@
                 <p *ngIf="!rPostCode.key" class="is-small help is-danger">{{rPostCode.value}}</p>
               </div>
               <div class="field">
-                <label class="label" i18n>Ville</label>
+                <label class="label is-small" i18n>Ville</label>
                 <div class="control">
                   <input (ngModelChange)="CheckAdresse()"
                   [ngClass]="!rCity.key   ? 'input is-danger is-small'   : 'input is-small' "

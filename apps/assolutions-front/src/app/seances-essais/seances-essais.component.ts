@@ -105,7 +105,6 @@ export class SeancesEssaisComponent implements OnInit {
                 .then(() => {
                   let o = errorService.OKMessage(this.action);
                   errorService.emitChange(o);
-                  this.router.navigate(['/login']);
                 })
                 .catch((err: HttpErrorResponse) => {
                   let o = errorService.CreateError(this.action, err.message);
@@ -141,6 +140,7 @@ export class SeancesEssaisComponent implements OnInit {
                 );
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
+                  this.router.navigate(['/login']);
               } else {
                 let o = errorService.UnknownError(this.action);
                 errorService.emitChange(o);
@@ -177,6 +177,7 @@ export class SeancesEssaisComponent implements OnInit {
                 );
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
+                  this.router.navigate(['/login']);
               } else {
                 let o = errorService.UnknownError(this.action);
                 errorService.emitChange(o);

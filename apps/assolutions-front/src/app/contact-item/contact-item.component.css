@@ -1,25 +1,193 @@
-.actions{
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 2px;
-  align-items: flex-start;
-
-}
-td{
-  padding: 0px;
+:host {
+  display: block;
 }
 
-.listofbox{
-  font-size: small;
-    padding-left: 2px;
-    padding-top: 2px;
-    padding-right: 2px;
-    padding-bottom: 2px;
+/* ====== En-tête box + titre + bouton créer ====== */
+:host > .box.is-light {
+  padding: 12px;
+}
+:host .is-flex.mb-3 {
+  gap: .5rem;
+}
+
+/* ====== Messages d'aide/erreur ====== */
+:host .mb-2 .help {
+  margin: 2px 0;
+  line-height: 1.2;
+  font-size: .85rem;
+}
+
+/* =======================================================
+   COLONNES BULMA — on compacte pour les contextes serrés
+   ======================================================= */
+:host .columns.is-mobile.is-multiline {
+  margin-left: 0;
+  margin-right: 0;
+}
+:host .columns.is-mobile.is-multiline .column.is-full {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* =======================================================
+   MODE ÉDITION (thisContact) — TABLE en version Desktop
+   ======================================================= */
+:host table.table {
+  font-size: .9rem;
+}
+:host table.table td:last-child {
+  white-space: nowrap;
+  text-align: right;
+}
+:host table.table td:last-child btn,
+:host table.table td:last-child .button {
+  margin-left: .35rem;
+}
+
+/* Largeur fluide des champs (écrase les width inline) */
+:host table.table .input.is-small {
+  width: 100% !important;
+  max-width: 100%;
+}
+:host table.table .select.is-small select {
+  width: 100%;
+}
+
+/* =======================================================
+   MODE ÉDITION — MOBILE : le tableau devient une "carte"
+   (sans toucher au HTML) — Variante : cacher "Notes"
+   ======================================================= */
+@media (max-width: 767px) {
+
+  /* On “dé-table” : chaque ligne devient une carte responsive */
+  :host table.table {
+    display: block;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent;
+  }
+  :host table.table thead { display: none; }
+  :host table.table tbody {
+    display: grid;
+    gap: 8px;
+  }
+  :host table.table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "type actions"
+      "value actions";      /* <-- plus de zone "notes" */
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 10px;
+    background: var(--card-bg, #fff);
+  }
+
+  /* Affectation des cellules aux zones */
+  :host table.table tr td:nth-child(1) { grid-area: type; }
+  :host table.table tr td:nth-child(2) { grid-area: value; }
+  :host table.table tr td:nth-child(3) { display: none; }       /* <-- cache "Notes" en mobile */
+  :host table.table tr td:nth-child(4) {
+    grid-area: actions;
     display: flex;
-    flex-direction: row
+    justify-content: flex-end;
+    align-items: center;
+    gap: .4rem;
+  }
+
+  /* Champs full-width */
+  :host table.table .select.is-small,
+  :host table.table .input.is-small {
+    width: 100%;
+  }
+  :host table.table .input.is-small {
+    font-size: .95rem;
+    padding: .5rem .6rem;
+  }
 }
-.columns.is-marginless {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+
+
+/* =======================================================
+   LISTE DES CONTACTS — compacte, sans tableau
+   ======================================================= */
+:host .listofbox {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: var(--card-bg, #fff);
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* icône | texte | actions */
+  align-items: center;
+  gap: 8px;
+}
+
+/* Icônes + textes */
+:host .listofbox i {
+  font-size: 1rem;
+  opacity: .9;
+}
+:host .listofbox .ml-1 {
+  margin-left: 6px;
+}
+:host .listofbox .ml-1 + .ml-1 {
+  margin-left: 10px; /* espace entre valeur et notes */
+}
+@media (max-width: 480px) {
+  :host .listofbox { grid-template-columns: auto 1fr auto; }
+}
+
+/* Zone actions compacte à droite */
+:host .listofbox .actions {
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .35rem;
+  white-space: nowrap;
+}
+
+/* Bouton "préférence" compact (fallback si .btn-compact absent du global) */
+:host .btn-compact {
+  padding: .2rem .45rem;
+  line-height: 1;
+  border-radius: 6px;
+  box-shadow: none;
+}
+:host .btn-compact .icon { width: auto; height: auto; }
+:host .btn-compact .icon i { font-size: 1rem; line-height: 1; }
+
+/* Petites retouches responsives */
+@media (max-width: 767px){
+  :host > .box.is-light { padding: 10px; }
+  :host .listofbox { padding: 8px; }
+  :host .is-flex.mb-3 h3.subtitle {
+    margin: 0;
+    font-size: .95rem;
+  }
+}
+
+/* =======================================================
+   ACCESSIBILITÉ / ÉTATS
+   ======================================================= */
+:host button[disabled],
+:host btn[disabled] {
+  opacity: .6;
+  pointer-events: none;
+}
+
+/* Dark mode (si ton global définit des variables) */
+@media (prefers-color-scheme: dark){
+  :host .listofbox {
+    border-color: rgba(255,255,255,.12);
+    background: var(--card-bg, #171923);
+  }
+  :host table.table tr {
+    border-color: rgba(255,255,255,.12);
+    background: var(--card-bg, #171923);
+  }
 }

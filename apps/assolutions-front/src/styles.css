@@ -23,7 +23,6 @@
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
-
 /* =========================
    LOCK SCROLL GLOBAL
    ========================= */
@@ -31,7 +30,9 @@ html, body {
   height: 100%;
   overflow: hidden; /* pas de scroll page */
 }
-
+.box{
+  padding: 1rem;
+}
 /* Host Angular */
 app-root {
   height: 100%;

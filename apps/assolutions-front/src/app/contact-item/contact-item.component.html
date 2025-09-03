@@ -37,11 +37,11 @@
             </div>
           </td>
           <td>
-            <input class="input is-small" style="width:150px"
+            <input class="input is-small" style="width:150px" title="valeur à renseigner"
                    [(ngModel)]="thisContact.Value" (blur)="autoSave()">
           </td>
           <td>
-            <input maxlength="20" class="input is-small" style="width:100px"
+            <input maxlength="20" class="input is-small" title="Notes supplémentaires" style="width:100px"
                    [(ngModel)]="thisContact.Notes" (blur)="autoSave()">
           </td>
           <td>
@@ -58,7 +58,7 @@
       <div class="box listofbox" style="font-size: small;">
         <div *ngIf="!thisContact" class="actions" style="margin-right: 2px;">
           
-  <button [class]="cont.Pref ? 'button is-small is-primary is-light btn-compact' : 'button is-small is-primary is-light btn-compact is-outlined'" (click)="!cont.Pref ? NewPref(i) : ''" aria-label="Préférence">
+  <button [class]="cont.Pref ? 'button is-small is-primary is-light btn-compact is-outlined' : 'button is-small is-primary is-light btn-compact'" (click)="!cont.Pref ? NewPref(i) : ''" aria-label="Préférence">
     <span class="icon"><i class="fab fa-get-pocket"></i></span>
   </button>
           <btn [type_button]="'EditerSmallLight'" (click)="Edit(i)"></btn>

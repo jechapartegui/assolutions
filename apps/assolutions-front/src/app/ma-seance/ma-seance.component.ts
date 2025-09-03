@@ -283,6 +283,7 @@ AjouterAdherentsHorsGroupe() {
 }
 
 GetNbPersonne(liste: FullInscriptionSeance_VM[]): boolean {
+  console.log(this.thisSeance.est_place_maximum);
   if (this.thisSeance.est_place_maximum) {
     let ct = liste.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).length;
     if (ct >= this.thisSeance.place_maximum) {
