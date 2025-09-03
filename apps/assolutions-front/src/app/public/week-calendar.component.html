@@ -41,7 +41,7 @@
              [title]="ev.title + ' • ' + ev.start + '–' + ev.end + (ev.location ? ' • ' + ev.location : '') ">
           <div class="ev-title">{{ ev.title }}</div>
           <div class="ev-meta">
-            {{ ev.start }}–{{ ev.end }}<br/>
+            {{ ev.start }}–{{ ev.end }} <br/>
             <ng-container *ngIf="ev.location">{{ ev.location }}</ng-container>
           </div>
 

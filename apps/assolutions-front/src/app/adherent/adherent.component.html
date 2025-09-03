@@ -22,8 +22,8 @@
         </div>
 
         <btn [type_button]="'RetourSmall'" *ngIf="ListePersonne" (click)="retourListePersonne()" i18n></btn>
-        <button *ngIf="ListePersonne" class="button is-outlined is-primary is-small" (click)="CreatePersonneCompte()" i18n>Créer une personne pour ce compte</button>
-        <button *ngIf="personne" class="button is-outlined is-primary is-small" (click)="SelectPersonne()" i18n>Sélectionner la personne</button>
+        <button *ngIf="ListePersonne" class="button is-small is-danger is-light btn-mobile btn-elevated" (click)="CreatePersonneCompte()" i18n>Créer une personne pour ce compte</button>
+        <button *ngIf="personne" class="button is-small is-danger is-light btn-mobile btn-elevated" (click)="SelectPersonne()" i18n>Sélectionner la personne</button>
       </ng-container>
 
       <ng-template #PasPersonne>

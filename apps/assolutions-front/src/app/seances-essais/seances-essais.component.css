@@ -1,68 +1,179 @@
 /* seances-essais.component.css */
 :host { color-scheme: light dark; }
 
-/* Spacing + tags déjà en place */
+/* Spacing + tags */
 .mb-3 { margin-bottom: .75rem; }
 .break { overflow-wrap: anywhere; word-break: break-word; }
 
-/* Rendre les .tag adaptatifs (Bulma met height fixe + nowrap) */
+/* Tags compacts multi-lignes (Bulma force souvent height/nowrap) */
 .tag-auto { height: auto; white-space: normal; line-height: 1.25; align-items: flex-start; max-width: 100%; }
 .tag-auto .break { display: inline-block; max-width: 70vw; }
-
 @media (max-width: 480px) {
-  .tag-auto.is-medium { font-size: .85rem; padding: .35em .6em; }
-  .tag-auto .break { max-width: 64vw; }
+ .tag-auto.is-medium { font-size: .85rem; padding: .35em .6em; }
+ .tag-auto .break { max-width: 64vw; }
 }
 
 /* === THEME TOKENS (fallback clair) === */
 :host {
-  --panel-bg: #fff;
-  --panel-bdr: rgba(0,0,0,.12);
-  --soft-text: #4a4a4a;
-}
+ --panel-bg: #fff;
+ --panel-bdr: rgba(0,0,0,.12);
+ --soft-text: #4a4a4a;
 
-/* === DARK MODE ===
-   Active automatiquement si l’OS est en sombre,
-   ET/OU si tu ajoutes data-theme="dark" sur <html> ou <body>. */
+ /* petit “fudge” pour neutraliser les scrollbars fantômes */
+ --adh-fix: 2px; /* si besoin, mets 1px ou 3px selon ton OS */
+}
 @media (prefers-color-scheme: dark) {
-  :host { --panel-bg: #1a1b1e; --panel-bdr: rgba(255,255,255,.14); --soft-text: #c9ced6; }
+ :host { --panel-bg: #1a1b1e; --panel-bdr: rgba(255,255,255,.14); --soft-text: #c9ced6; }
 
-  /* Cartes / panneaux maison */
-  .panel { background: var(--panel-bg); border-color: var(--panel-bdr); }
-  .panel-title { color: #e8eaee; }
+ .panel { background: var(--panel-bg); border-color: var(--panel-bdr); }
+ .panel-title { color: #e8eaee; }
 
-  /* Neutralise les blancs de Bulma en .is-light */
-  .notification.is-light { background: #24262a; color: #e6e6e6; }
-  .tag.is-light { background: #2a2d33; color: #e6e6e6; border-color: var(--panel-bdr); }
-  .tag.is-info.is-light { background: #17324d; color: #dbeafe; }
-  .button.is-light { background: #2b2d31; color: #e6e6e6; border-color: var(--panel-bdr); }
-  .button.is-link.is-light { background: #1f2a44; color: #dbeafe; border-color: #2b3e63; }
+ .notification.is-light { background: #24262a; color: #e6e6e6; }
+ .tag.is-light { background: #2a2d33; color: #e6e6e6; border-color: var(--panel-bdr); }
+ .tag.is-info.is-light { background: #17324d; color: #dbeafe; }
+ .button.is-light { background: #2b2d31; color: #e6e6e6; border-color: var(--panel-bdr); }
+ .button.is-link.is-light { background: #1f2a44; color: #dbeafe; border-color: #2b3e63; }
 
-  /* Inputs/selects intégrés dans le composant */
-  .select select,
-  select,
-  input,
-  textarea {
-    background-color: #1c1e22;
-    color: #e6e6e6;
-    border-color: var(--panel-bdr);
-  }
-  .select:not(.is-multiple):not(.is-loading)::after { border-color: #9aa3af; }
+ .select select, select, input, textarea {
+ background-color: #1c1e22;
+ color: #e6e6e6;
+ border-color: var(--panel-bdr);
+ }
+ .select:not(.is-multiple):not(.is-loading)::after { border-color: #9aa3af; }
 
-  /* Aides/erreurs plus lisibles sur fond sombre */
-  .help { color: var(--soft-text); }
-  .help.is-danger { color: #ffb4b4; }
-  .help.is-success { color: #a6e3a1; }
+ .help { color: var(--soft-text); }
+ .help.is-danger { color: #ffb4b4; }
+ .help.is-success { color: #a6e3a1; }
 }
 
-/* Panneau générique utilisé dans le HTML */
+/* Panneau générique */
 .panel {
-  border: 1px solid var(--panel-bdr);
-  border-radius: 12px;
-  padding: 12px;
-  background: var(--panel-bg);
+ border: 1px solid var(--panel-bdr);
+ border-radius: 12px;
+ padding: 12px;
+ background: var(--panel-bg);
 }
 .panel-title { font-weight: 700; font-size: 1rem; margin-bottom: .5rem; }
 
-/* Évite le clipping de l’éditeur enfant */
-.editor-wrap { overflow: visible; }
+/* =========================
+ LAYOUT LOCAL (Desktop)
+ - Header compact & aligné
+ - Main qui scrolle uniquement en Y (dans la CARD interne)
+ - Footer juste en dessous (visuel plus “présent”)
+ ========================= */
+@media (min-width: 768px){
+ /* Container global en colonne : header / main / footer */
+ .essais-layout{
+ display: flex;
+ flex-direction: column;
+ max-height: calc(100dvh - var(--desktop-topbar-h)); /* cf. styles.css global */
+ overflow: hidden; /* pas de scroll global */
+ }
+
+ /* Header : tags compacts sur une ligne (wrap si besoin) */
+ .essais-header{
+ display: flex;
+ align-items: center;
+ flex-wrap: wrap;
+ gap: .5rem;
+ margin-bottom: .5rem;
+ }
+ .essais-header .tag{ margin-right: .25rem; }
+
+ /* Main : ne scrolle pas ; c’est l’enfant (card-content) qui scrolle */
+ .essais-main{
+ flex: 1 1 auto;
+ min-height: 0;
+ overflow: hidden; /* aucun scroll ici */
+ }
+
+ /* Wrapper de l’éditeur : pas de scroll non plus */
+ .editor-wrap{
+ height: 100%;
+ overflow: hidden; /* supprime la “petite” scrollbar parasite */
+ -webkit-overflow-scrolling: touch;
+ overscroll-behavior: contain;
+ }
+
+ /* Footer : immédiatement sous le main, plus confortable */
+ .essais-footer{
+ flex: 0 0 auto;
+ margin-top: .5rem;
+ padding: .9rem 0;
+ display: flex;
+ justify-content: flex-end;
+ gap: .75rem;
+ border-top: 1px solid var(--panel-bdr);
+ background: var(--panel-bg);
+ }
+ .essais-footer .buttons{
+ gap: .6rem;
+ flex-wrap: nowrap;
+ }
+}
+
+/* =========================
+ Mobile
+ - Flow naturel
+ - Gaps compacts & pas de scroll horizontal
+ ========================= */
+@media (max-width: 767px){
+ .essais-header{
+ display: flex;
+ flex-direction: column;
+ gap: .35rem;
+ margin-bottom: .5rem;
+ }
+ .editor-wrap{ overflow-x: hidden; }
+}
+
+/* =========================
+ OVERRIDES LOCAUX pour l’EMBED d’APP-ADHERENT
+ (Neutralise les hauteurs “viewport” du style global .columns.page-fill
+ quand l’adherent est inclus dans cette page)
+ ========================= */
+@media (min-width: 768px){
+ /* Assure la chaîne de hauteur et bloque tout scroll horizontal */
+ .essais-main .editor-wrap,
+ .essais-main app-adherent{
+ height: 100%;
+ max-width: 100%;
+ display: block;
+ overflow-x: hidden;
+ }
+
+ /* Neutralise `height: calc(100dvh - …)` du global
+ et retranche légèrement pour éviter la 2e scrollbar */
+ .essais-main app-adherent .columns.page-fill{
+ height: calc(100% - var(--adh-fix)) !important;
+ min-height: 0 !important;
+ overflow: hidden; /* évite un deuxième scroll parasite */
+ margin: 0; /* sécurité contre un margin collapsé */
+ }
+
+ /* Colonne interne : doit pouvoir rétrécir et laisser scroller la card */
+ .essais-main app-adherent .columns.page-fill > .column{
+ display: flex;
+ flex-direction: column;
+ min-height: 0;
+ overflow: hidden;
+ }
+
+ /* Card interne : prend 100% et scrolle uniquement dans .card-content */
+ .essais-main app-adherent .card{
+ height: calc(100% - var(--adh-fix));
+ min-height: 0;
+ margin: 0; /* évite de dépasser la boîte parent */
+ display: grid;
+ grid-template-rows: auto 1fr auto;
+ overflow: hidden;
+ }
+
+ .essais-main app-adherent .card > .card-content,
+ .essais-main app-adherent .card > .scrollable-card-content{
+ min-height: 0;
+ overflow-y: auto; /* le SEUL scroll vertical */
+ overflow-x: hidden; /* pas de scroll horizontal */
+ -webkit-overflow-scrolling: touch;
+ }
+}

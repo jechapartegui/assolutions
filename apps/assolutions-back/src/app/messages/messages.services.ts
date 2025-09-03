@@ -60,7 +60,7 @@ html    = fillTemplate(templatemail.mail_essai,  dataEssai);
 
 
     const msg: MailInput = {
-      to: p?.account.login || '',
+      to: [p?.account.login || '',proj.login],
       subject,
       html
     };

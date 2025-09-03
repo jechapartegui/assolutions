@@ -1,96 +1,123 @@
 <!-- seances-essais.component.html -->
-<ng-container [ngSwitch]="context">
-<p *ngIf="thisSeance" class="mb-3">
-  <span class="tag is-info is-light is-medium tag-auto">
-    <span i18n>Séance sélectionnée :</span>&nbsp;
-    <strong class="break">{{ thisSeance.libelle }}</strong>&nbsp;—&nbsp;
-    {{ thisSeance.date_seance | date:'dd/MM/yyyy' }}
-  </span>
-</p>
+<div class="essais-layout" [ngSwitch]="context">
+ <!-- ===== Header compact : tags alignés ===== -->
+ <div class="essais-header">
+ <p *ngIf="thisSeance" class="mb-3">
+ <span class="tag is-info is-light is-medium tag-auto">
+ <span i18n>Séance sélectionnée :</span>&nbsp;
+ <strong class="break">{{ thisSeance.libelle }}</strong>&nbsp;—&nbsp;
+ {{ thisSeance.date_seance | date:'dd/MM/yyyy' }}
+ </span>
+ </p>
 
-  <!-- COMPTE -->
-  <ng-container *ngSwitchCase="'compte'">
-    <div class="panel">
-      <h2 class="panel-title" i18n>Connexion / Création de compte</h2>
-      <app-login (essai)="gererCompte($event)" [context]="'ESSAI'"></app-login>
-    </div>
-  </ng-container>
+ <!-- Tags compte / personne visibles uniquement dans le contexte 'personne' -->
+ <ng-container *ngIf="context === 'personne'">
+ <p class="mb-3">
+ <span class="tag is-info is-light is-medium tag-auto">
+ <span i18n>Compte sélectionné :</span>&nbsp;
+ <strong class="break">{{ thisAccount?.email }}</strong>
+ </span>
+ </p>
 
-  <!-- PERSONNE -->
-  <ng-container *ngSwitchCase="'personne'">
+ <p *ngIf="personne" class="mb-3">
+ <span class="tag is-info is-light is-medium tag-auto">
+ <span i18n>Personne sélectionnée :</span>&nbsp;
+ <strong class="break">{{ personne.prenom }} {{ personne.nom }} </strong>
+ </span>
+ </p>
+ </ng-container>
+ </div>
 
-<p class="mb-3">
-  <span class="tag is-info is-light is-medium tag-auto">
-    <span i18n>Compte sélectionné : </span>
-    <strong class="break">{{ thisAccount?.email }}</strong>
-  </span>
-</p>
+ <!-- ===== Corps : scrolle en Y si / quand l’éditeur adhérent est inclus ===== -->
+ <div class="essais-main">
+ <!-- COMPTE -->
+ <ng-container *ngSwitchCase="'compte'">
+ <div class="panel">
+ <h2 class="panel-title" i18n>Connexion / Création de compte</h2>
+ <app-login (essai)="gererCompte($event)" [context]="'ESSAI'"></app-login>
+ </div>
+ </ng-container>
 
-<p *ngIf="personne" class="mb-3">
-  <span class="tag is-info is-light is-medium tag-auto">
-    <span i18n>Personne sélectionnée : </span>
-    <strong class="break">{{ personne.prenom }} {{ personne.nom }}</strong>
-  </span>
-</p>
-      <!-- Édition / Création -->
-      <ng-container *ngIf="edit_personne; else noedit">
-        <!-- pas de card/box supplémentaires -->
-        <div class="editor-wrap">
-          <app-adherent
-            [context]="'ESSAI'"
-            [login_adherent]="thisAccount?.email"
-            [Personne]="personne"
-            (essai)="addPersonne($event)">
-          </app-adherent>
-        </div>
-      </ng-container>
+ <!-- PERSONNE -->
+ <ng-container *ngSwitchCase="'personne'">
+ <!-- Édition / Création -->
+ <ng-container *ngIf="edit_personne; else noedit">
+ <!-- scroller local : pas de card/box supplémentaire autour -->
+ <div class="editor-wrap">
+ <app-adherent
+ [context]="'ESSAI'"
+ [login_adherent]="thisAccount?.email"
+ [Personne]="personne"
+ (essai)="addPersonne($event)">
+ </app-adherent>
+ </div>
+ </ng-container>
 
-      <!-- Sélection existante -->
-      <ng-template #noedit>
-        <div class="mb-3">
-          <button
-            *ngIf="isLP0()"
-            class="button is-link is-light is-rounded"
-            (click)="edit_personne = true; personne = null" i18n>
-            ➕ Créer une nouvelle personne
-          </button>
-        </div>
+ <!-- Sélection existante -->
+ <ng-template #noedit>
+ <div class="mb-3" *ngIf="isLP0()">
+ <!-- Nouveau bouton cohérent -->
+ <btn
+ [type_button]="'Creer'"
+ (click)="edit_personne = true; personne = null"
+ i18n-title
+ title="Créer une nouvelle personne">
+ </btn>
+ </div>
 
-        <div *ngIf="thisAccount?.id > 0" class="field">
-          <label class="label" i18n>Sélection de la personne</label>
+ <div *ngIf="thisAccount?.id > 0" class="field">
+ <label class="label" i18n>Sélection de la personne</label>
 
-          <p *ngIf="ListePersonne && ListePersonne.length == 0"
-             class="notification is-danger is-light py-2">
-            ⚠️ <span i18n>Aucune personne n'est rattachée à ce compte. Veuillez en créer une.</span>
-          </p>
+ <p *ngIf="ListePersonne && ListePersonne.length == 0"
+ class="notification is-danger is-light py-2">
+ <span i18n>Aucune personne n'est rattachée à ce compte. Veuillez en créer une.</span>
+ </p>
 
-          <p *ngIf="ListePersonne && ListePersonne.length == 1"
-             class="notification is-success is-light py-2">
-            ✅ {{ personne?.prenom }} {{ personne?.nom }}
-            {{ personne?.date_naissance | date:'dd/MM/yyyy' }}
-            <span i18n>a été sélectionnée automatiquement.</span>
-          </p>
+ <p *ngIf="ListePersonne && ListePersonne.length == 1"
+ class="notification is-success is-light py-2">
+ {{ personne?.prenom }} {{ personne?.nom }}
+ {{ personne?.date_naissance | date:'dd/MM/yyyy' }}
+ <span i18n>a été sélectionnée automatiquement.</span>
+ </p>
 
-          <div *ngIf="ListePersonne && ListePersonne.length > 1" class="control">
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="personne">
-                <option [ngValue]="null" i18n>— Sélectionner —</option>
-                <option *ngFor="let p of ListePersonne" [ngValue]="p">
-                  {{ p.prenom }} {{ p.nom }} {{ p.date_naissance | date:'dd/MM/yyyy' }}
-                </option>
-              </select>
-            </div>
-          </div>
+ <div *ngIf="ListePersonne && ListePersonne.length > 1" class="control">
+ <div class="select is-fullwidth">
+ <select [(ngModel)]="personne">
+ <option [ngValue]="null" i18n>— Sélectionner —</option>
+ <option *ngFor="let p of ListePersonne" [ngValue]="p">
+ {{ p.prenom }} {{ p.nom }} {{ p.date_naissance | date:'dd/MM/yyyy' }}
+ </option>
+ </select>
+ </div>
+ </div>
 
-          <p class="help is-danger mt-2" *ngIf="!personne" i18n>
-            La sélection d'une personne est obligatoire.
-          </p>
-        </div>
-      </ng-template>
+ <p class="help is-danger mt-2" *ngIf="!personne" i18n>
+ La sélection d'une personne est obligatoire.
+ </p>
+ </div>
+ </ng-template>
+ </ng-container>
+ </div>
 
-      <div class="actions" *ngIf="personne">
-        <button class="button is-link" (click)="Valider()" i18n>Valider l'essai</button>
-        <button class="button is-light" *ngIf="personne?.id" (click)="edit_personne = true" i18n>Modifier</button>
-      </div>
-  </ng-container>
-</ng-container>
+ <!-- ===== Footer : actions desktop, juste sous le contenu ===== -->
+ <div class="essais-footer" *ngIf="context === 'personne' && personne && !edit_personne">
+ <div class="buttons" style="flex-wrap: nowrap">
+ <!-- Libellé cohérent : Valider l'essai (type_button conservé pour compatibilité) -->
+ <btn
+ [type_button]="'ValiderEssai'"
+ (click)="Valider()"
+ i18n-title
+ title="Valider l'essai">
+ </btn>
+
+ <!-- Modifier -->
+ <btn
+ *ngIf="personne?.id"
+ [type_button]="'Editer'"
+ (click)="edit_personne = true"
+ i18n-title
+ title="Modifier">
+ </btn>
+ </div>
+ </div>
+</div>

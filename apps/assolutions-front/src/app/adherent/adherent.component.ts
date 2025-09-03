@@ -130,6 +130,7 @@ this.thisAdherent = Object.assign(new Adherent_VM(), this.Personne);
 this.thisAdherent.inscrit = false;
 this.thisAdherent.inscriptionsSaison = [];
 this.thisAdherent.inscriptionsSeance = [];
+this.histo_adherent = JSON.stringify(this.thisAdherent);
 
       }else {
         
@@ -139,6 +140,7 @@ this.thisAdherent.inscriptionsSeance = [];
       }
       this.id = 0;
       }
+this.histo_adherent = JSON.stringify(this.thisAdherent);
       return;
     }
     this.loading = true;
@@ -712,6 +714,7 @@ PreSave() {
       this.UpdateListeAdherents();
     } else  if (this.context == 'ESSAI') {
       this.thisAdherent = null;
+      console.log("ici");
       this.essai.emit(null);
     } else {
       this.router.navigate(['/menu']);

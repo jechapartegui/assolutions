@@ -274,4 +274,129 @@ app-root {
 .tags .tag.is-success{ background-color: #e6f8ed; color: #257942; }
 .tags .tag.is-info{ background-color: #e6f3fa; color: #216fa5; }
 .tags .tag.is-danger{ background-color: #fde8e8; color: #b42318; }
+
+/* =========================================================
+   🌙 THEME SOMBRE — APPEND-ONLY (ne remplace rien)
+   Active auto via l’OS ; possibilité de forcer via attribut/classe.
+   ========================================================= */
+
+/* ---------- Palettes ---------- */
+@media (prefers-color-scheme: dark){
+  body{
+    background: #0f1115;
+    color: #e6e7e9;
+  }
+  /* Surfaces principales */
+  .navbar.is-fixed-top,
+  .container-box,
+  .mobile .footer{
+    background: #12141b;
+    color: #e6e7e9;
+    border-color: rgba(255,255,255,0.12) !important;
+  }
+
+  /* Cards et zones internes */
+  .card,
+  .card > .card-header,
+  .card > .card-footer,
+  .box{
+    background: #171923;
+    color: #e6e7e9;
+    border-color: rgba(255,255,255,0.12) !important;
+  }
+  .card > .card-content,
+  .card > .scrollable-card-content{
+    background: #171923;
+    color: #e6e7e9;
+  }
+
+  /* Boutons compacts / mobiles existants */
+  .btn-mobile{
+    background: #12141b;
+    color: #e6e7e9;
+    border-color: rgba(255,255,255,0.16);
+    box-shadow: 0 2px 8px rgba(0,0,0,.6);
+  }
+  .btn-compact{
+    background: transparent;
+    color: #e6e7e9;
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  /* Tags (garde tes classes existantes) */
+  .tags .tag{ box-shadow: none; border-color: rgba(255,255,255,0.12); }
+  .tags .tag.is-success{ background-color: rgba(72,199,116,.16); color: #94e2b3; }
+  .tags .tag.is-info   { background-color: rgba(32,156,238,.16); color: #8ac8ff; }
+  .tags .tag.is-danger { background-color: rgba(241,70,104,.18); color: #ff99ac; }
+
+  /* Tables / textes */
+  .table{ color: #e6e7e9; background: transparent; }
+  .table thead th{ border-color: rgba(255,255,255,.12); }
+  .table td, .table th{ border-color: rgba(255,255,255,.08); }
+
+  /* Divers utils déjà présents */
+  .scroll-to-top{
+    background-color: #e6e7e9; color: #171923;
+  }
+}
+
+/* ---------- Thème sombre forcé (optionnel) ----------
+   Ajoute soit <html data-theme="dark"> soit <body class="dark"> */
+html[data-theme="dark"], body.dark{
+  background: #0f1115; color: #e6e7e9;
+}
+html[data-theme="dark"] .navbar.is-fixed-top,
+html[data-theme="dark"] .container-box,
+html[data-theme="dark"] .mobile .footer,
+body.dark .navbar.is-fixed-top,
+body.dark .container-box,
+body.dark .mobile .footer{
+  background: #12141b; color: #e6e7e9;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .card > .card-header,
+html[data-theme="dark"] .card > .card-footer,
+html[data-theme="dark"] .box,
+body.dark .card,
+body.dark .card > .card-header,
+body.dark .card > .card-footer,
+body.dark .box{
+  background: #171923; color: #e6e7e9;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+html[data-theme="dark"] .card > .card-content,
+html[data-theme="dark"] .card > .scrollable-card-content,
+body.dark .card > .card-content,
+body.dark .card > .scrollable-card-content{
+  background: #171923; color: #e6e7e9;
+}
+html[data-theme="dark"] .btn-mobile,
+body.dark .btn-mobile{
+  background: #12141b; color: #e6e7e9;
+  border-color: rgba(255,255,255,0.16); box-shadow: 0 2px 8px rgba(0,0,0,.6);
+}
+html[data-theme="dark"] .btn-compact,
+body.dark .btn-compact{
+  background: transparent; color: #e6e7e9; border-color: rgba(255,255,255,0.18);
+}
+html[data-theme="dark"] .tags .tag,
+body.dark .tags .tag{ box-shadow: none; border-color: rgba(255,255,255,0.12); }
+html[data-theme="dark"] .tags .tag.is-success,
+body.dark .tags .tag.is-success{ background-color: rgba(72,199,116,.16); color: #94e2b3; }
+html[data-theme="dark"] .tags .tag.is-info,
+body.dark .tags .tag.is-info   { background-color: rgba(32,156,238,.16); color: #8ac8ff; }
+html[data-theme="dark"] .tags .tag.is-danger,
+body.dark .tags .tag.is-danger { background-color: rgba(241,70,104,.18); color: #ff99ac; }
+html[data-theme="dark"] .table,
+body.dark .table{ color: #e6e7e9; background: transparent; }
+html[data-theme="dark"] .table thead th,
+body.dark .table thead th{ border-color: rgba(255,255,255,.12); }
+html[data-theme="dark"] .table td, html[data-theme="dark"] .table th,
+body.dark .table td, body.dark .table th{ border-color: rgba(255,255,255,.08); }
+html[data-theme="dark"] .scroll-to-top,
+body.dark .scroll-to-top{ background-color: #e6e7e9; color: #171923; }
+
+/* (Rappel) Aucune classe utilitaire existante (.stack, etc.) n’est modifiée. */
+
  
