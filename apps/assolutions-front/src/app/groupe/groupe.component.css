@@ -1,0 +1,29 @@
+/* ===== Scroll local pour l'écran Groupe ===== */
+:host { display: block; height: 100%; }
+
+/* Le container devient le viewport qui scrolle */
+:host > .container{
+  height: calc(100dvh - var(--desktop-topbar-h)); /* topbar desktop = 50px (global) */
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 12px; /* petit “air” en bas */
+}
+
+/* Mobile : on réserve aussi la place du footer appli (tabs) */
+@media (max-width: 767px){
+  :host > .container{
+    height: calc(100dvh - var(--mobile-footer-h));
+    padding-bottom: calc(var(--mobile-footer-h) + 12px + var(--safe-bottom));
+  }
+}
+
+/* Important : ici on neutralise la règle globale (.card{height:100%}) 
+   pour éviter que CHAQUE carte se prenne pour un panneau plein écran */
+:host .card{
+  height: auto;  /* ← laisse la carte prendre la taille de son contenu */
+}
+
+/* Un peu de compaction des colonnes pour éviter les “trous” verticaux */
+:host .columns { margin-left: 0; margin-right: 0; }
+:host .columns .column { padding-top: .5rem; padding-bottom: .5rem; }

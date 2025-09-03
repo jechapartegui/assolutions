@@ -1,62 +1,103 @@
-.panel {
-    --bulma-panel-heading-padding: 0.5em 0.75em; /* Seulement pour ce conteneur */
-  }
-  
+/* On garde tes styles initiaux + compactage léger */
+.panel { --bulma-panel-heading-padding: 0.5em 0.75em; }
+
 .ligne{
-    font-size: small;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-content: center;
+  font-size: small;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: center;
+  gap: .5rem;
 }
+
 .nom_personne{
-    font-size: smaller;
-    font-weight: bold;
-    text-transform: uppercase;    
-/* Limite la largeur maximale à 170px */
-    display: inline-block;      /* S'ajuste en fonction du contenu */
-    word-wrap: break-word;      /* Permet le retour à la ligne si nécessaire */
-    white-space: normal;        /* Empêche le texte de rester sur une seule ligne */
+  font-size: smaller;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+  word-wrap: break-word;
+  white-space: normal;
+  max-width: 170px;
 }
+
 .partie1{
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 4px;    min-width: auto;  /* Permet à l'input de s'adapter au contenu */
-    max-width: 240px; 
-    align-items: center;
-    align-content: center;
+  display: flex; flex-direction: row; flex-wrap: wrap;
+  justify-content: flex-start; gap: 4px;
+  max-width: 240px;
+  align-items: center; align-content: center;
 }
+
 .button.is-rounded{
-    border-radius: var(--bulma-radius-rounded);
-    padding-left: calc(var(--bulma-button-padding-horizontal));
-    padding-right: calc(var(--bulma-button-padding-horizontal));
+  border-radius: var(--bulma-radius-rounded);
+  padding-left: var(--bulma-button-padding-horizontal);
+  padding-right: var(--bulma-button-padding-horizontal);
 }
+
+/* menu contextuel icônes (statut) */
 .menu-icons {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    list-style: none;
-    padding: 10px;
-    z-index: 100;
-  }
-  
-  .menu-icons li {
-    cursor: pointer;
-    padding: 5px 10px;
-  }
-  
-  .menu-icons.is-visible {
-    display: block;
-  }
-  
-  .menu-icons li:hover {
-    background-color: #f0f0f0;
-  }
-  .not{
-    display: none;
-  }
-  
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  list-style: none;
+  padding: 8px;
+  z-index: 100;
+}
+.menu-icons li { cursor: pointer; padding: 6px 10px; border-radius: 6px; }
+.menu-icons.is-visible { display: block; }
+.menu-icons li:hover { background-color: #f0f0f0; }
+.not{ display: none; }
+
+/* ====== Toolbar Options/Panneaux ====== */
+.ms-panel-toolbar{
+  display:flex; align-items:center; justify-content: space-between;
+  gap:.75rem; margin-bottom: .75rem;
+}
+.ms-panel-title{ font-weight: 700; }
+
+/* ====== Panneaux d’options (remplacent la liste) ====== */
+.ms-panel{
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+}
+@media (prefers-color-scheme: dark){
+  .ms-panel{ background: #171923; border-color: rgba(255,255,255,.12); }
+}
+
+/* Form layout desktop/tablet */
+.ms-form{ display:grid; gap: 16px; }
+.ms-form.grid-2{ grid-template-columns: 1.2fr 1fr; }
+.ms-form.grid-1{ grid-template-columns: 1fr; }
+@media (max-width: 1023px){ .ms-form.grid-2{ grid-template-columns: 1fr; } }
+
+/* Liste de destinataires (checkboxes compactes) */
+.ms-recipients{
+  display: grid;
+  gap: 6px;
+  max-height: 50vh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ms-rec-name{ margin-left: 6px; margin-right: 6px; }
+.ms-badge{ margin-left: 4px; }
+
+/* Utilitaires de marges */
+.mt-2{ margin-top: .5rem; }
+.mt-3{ margin-top: .75rem; }
+
+/* Dropdown (bulma) aligné à droite du header */
+.card-header .dropdown .dropdown-menu{
+  right: 0; left: auto;
+}
+
+/* Compacter les boutons addon */
+.buttons.has-addons .button{ padding: .35rem .6rem; }
+
+/* Petits ajustements mobile */
+@media (max-width: 767px){
+  .nom_personne{ max-width: 55vw; }
+  .ms-recipients{ max-height: 45vh; }
+}

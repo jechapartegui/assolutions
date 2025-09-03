@@ -383,9 +383,9 @@ export function toSession(vm: Seance_VM): Session {
   entity.nominativeCall = !!vm.convocation_nominative;
   entity.showAttendance = !!vm.afficher_present;
   entity.appointment = vm.rdv ?? '';
-  entity.limitMinAge = vm.est_limite_age_minimum !== undefined;
-  entity.limitMaxAge = vm.est_limite_age_maximum !== undefined;
-  entity.limitPlaces = vm.est_place_maximum !== undefined;
+  entity.limitMinAge = vm.est_limite_age_minimum;
+  entity.limitMaxAge = vm.est_limite_age_maximum;
+  entity.limitPlaces = vm.est_place_maximum;
 
   return entity;
 }

@@ -39,6 +39,7 @@ export class MaSeanceComponent implements OnInit {
   constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
 
   }
+
   ngOnInit(): void {
     if (this.id == 0) {
       this.route.queryParams.subscribe(params => {
@@ -60,7 +61,84 @@ export class MaSeanceComponent implements OnInit {
       errorService.emitChange(n);
     });
 
+
+    
   }
+
+optionsOpen = false;
+toggleMobileOptions = false;
+uiMode: 'list' | 'convocation' | 'annulation' | 'ajout' | 'note' = 'list';
+
+// Mail panel state
+selectedRecipients: any[] = [];
+mailSubject = '';
+mailBody = '';
+
+// Ouvre un panneau et prépare les presets
+openPanel(mode: 'convocation'|'annulation'|'ajout'|'note') {
+  this.uiMode = mode;
+  this.optionsOpen = false;
+  this.toggleMobileOptions = false;
+
+  if (mode === 'convocation') {
+    // Par défaut : tous les "convoqué"
+    this.selectedRecipients = this.All.filter(p => p.statut_inscription === 'convoqué');
+    this.mailSubject = `[Convocation] ${this.thisSeance?.libelle ?? ''}`;
+    this.mailBody =
+`Bonjour,
+
+Vous êtes convoqué(e) pour la séance ${this.seanceText}.
+Merci de confirmer votre présence.
+
+Sportivement,`;
+  } else if (mode === 'annulation') {
+    // Par défaut : tous (même sans présence)
+    this.selectedRecipients = [...this.All];
+    this.mailSubject = `[Annulation] ${this.thisSeance?.libelle ?? ''}`;
+    this.mailBody =
+`Bonjour,
+
+La séance ${this.seanceText} est annulée.
+Désolé(e) pour la gêne occasionnée.`;
+  }
+}
+
+closePanel(){ this.uiMode = 'list'; }
+
+// Helpers sélection
+isChecked(p: any, kind: 'convocation'|'annulation'){ 
+  return this.selectedRecipients?.some(x => x === p);
+}
+toggleRecipient(p: any, kind: 'convocation'|'annulation', checked: boolean){
+  if (checked){
+    if (!this.selectedRecipients.some(x => x === p)) this.selectedRecipients.push(p);
+  } else {
+    this.selectedRecipients = this.selectedRecipients.filter(x => x !== p);
+  }
+}
+checkAll(kind:'convocation'|'annulation', val:boolean){
+  if (kind==='convocation'){
+    this.selectedRecipients = val ? this.All.filter(p => p.statut_inscription === 'convoqué') : [];
+  } else {
+    this.selectedRecipients = val ? [...this.All] : [];
+  }
+}
+
+// Envoi (branche sur ton service réel si dispo)
+sendMail(kind: 'convocation'|'annulation'){
+  // TODO: brancher ici ton service d’envoi / template réel
+  // -> this.mailService.send({ to: mapEmails(this.selectedRecipients), subject: this.mailSubject, body: this.mailBody })
+  console.log('SEND', kind, this.selectedRecipients, this.mailSubject, this.mailBody);
+  this.closePanel();
+}
+
+// Sauvegarde de la note de séance
+saveInfoSeance(){
+  // TODO: appelle ton service / méthode existante si besoin
+  // ex: this.SeanceService.updateInfo(this.thisSeance.id, this.thisSeance.infoseance).subscribe(...)
+  console.log('Save info séance:', this.thisSeance.info_seance);
+  this.closePanel();
+}
   setStatus(statut, inscription: FullInscriptionSeance_VM) {
     inscription.isVisible = false;
     const errorService = ErrorService.instance;
