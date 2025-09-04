@@ -76,6 +76,19 @@ public Envoyer(mail:MailData):Promise<boolean>{
       return Promise.reject(error);
     });
 }
+public GetMail(type:string) : Promise<KeyValuePairAny>{
+   this.url = environment.maseance + 'api/mail/get_mail/' + type;
+
+    return this.global.GET(this.url)
+      .then((response: KeyValuePairAny) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
 public DemandeRattachement(login:string, rider_id:number): Promise<boolean> {
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";

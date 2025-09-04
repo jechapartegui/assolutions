@@ -10,6 +10,8 @@ import { Seance_VM, StatutSeance } from '@shared/lib/seance.interface';
 import { Personne_VM } from '@shared/lib/personne.interface';
 import { AppStore } from '../app.store';
 import { AdherentService } from '../../services/adherent.service';
+import { MailService } from '../../services/mail.service';
+import { KeyValuePairAny } from '@shared/index';
 @Component({
   standalone: false,
   selector: 'app-ma-seance',
@@ -33,10 +35,14 @@ export class MaSeanceComponent implements OnInit {
   All: FullInscriptionSeance_VM[] = [];
   Absents: FullInscriptionSeance_VM[] = [];
   Presents: FullInscriptionSeance_VM[] = [];
+  Notes:string="";
+  variables: Record<string, any> = {};
   adherent_to: Adherent_VM = null;
   action: string;
   seanceText: string;
-  constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef, private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, private inscriptionserv: InscriptionSeanceService) {
+  constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef,
+    private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, 
+    private inscriptionserv: InscriptionSeanceService, private mailserv:MailService) {
 
   }
 
@@ -80,9 +86,24 @@ openPanel(mode: 'convocation'|'annulation'|'ajout'|'note') {
   this.optionsOpen = false;
   this.toggleMobileOptions = false;
 
+
+
   if (mode === 'convocation') {
-    // Par défaut : tous les "convoqué"
+   const errorService = ErrorService.instance;
+        this.action = $localize`Chargement du template de convocation`;
     this.selectedRecipients = this.All.filter(p => p.statut_inscription === 'convoqué');
+      this.mailserv.GetMail(mode).then((retour:KeyValuePairAny) =>{
+    this.mailSubject = retour.key;
+    this.mailBody = retour.value;
+this.variables = {
+    SEANCE: this.thisSeance?.libelle ?? '',
+    DATE:  this.thisSeance?.date_seance ? new Date(this.thisSeance.date_seance).toLocaleDateString('fr-FR') : '',
+    HEURE: this.thisSeance?.heure_debut ?? '',
+    LIEU: this.thisSeance?.lieu_nom?? ''
+  };
+  this.Notes = ''; // reset notes
+   }).catch((err: HttpErrorResponse) => {
+     // Par défaut : tous les "convoqué"
     this.mailSubject = `[Convocation] ${this.thisSeance?.libelle ?? ''}`;
     this.mailBody =
 `Bonjour,
@@ -91,15 +112,36 @@ Vous êtes convoqué(e) pour la séance ${this.seanceText}.
 Merci de confirmer votre présence.
 
 Sportivement,`;
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
+   
   } else if (mode === 'annulation') {
-    // Par défaut : tous (même sans présence)
+   const errorService = ErrorService.instance;
+        this.action = $localize`Chargement du template d'annulation`;
     this.selectedRecipients = [...this.All];
-    this.mailSubject = `[Annulation] ${this.thisSeance?.libelle ?? ''}`;
+      this.mailserv.GetMail(mode).then((retour:KeyValuePairAny) =>{
+    this.mailSubject = retour.key;
+    this.mailBody = retour.value;
+this.variables = {
+    SEANCE: this.thisSeance?.libelle ?? '',
+    DATE:  this.thisSeance?.date_seance ? new Date(this.thisSeance.date_seance).toLocaleDateString('fr-FR') : '',
+    HEURE: this.thisSeance?.heure_debut ?? '',
+    LIEU: this.thisSeance?.lieu_nom?? ''
+  };
+  this.Notes = ''; // reset notes
+   }).catch((err: HttpErrorResponse) => {
+     // Par défaut : tous les "convoqué"
+ this.mailSubject = `[Annulation] ${this.thisSeance?.libelle ?? ''}`;
     this.mailBody =
 `Bonjour,
 
 La séance ${this.seanceText} est annulée.
 Désolé(e) pour la gêne occasionnée.`;
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
+   
   }
 }
 
@@ -126,17 +168,31 @@ checkAll(kind:'convocation'|'annulation', val:boolean){
 
 // Envoi (branche sur ton service réel si dispo)
 sendMail(kind: 'convocation'|'annulation'){
+   const errorService = ErrorService.instance;
+        this.action = $localize`Envoi du mail`;
   // TODO: brancher ici ton service d’envoi / template réel
-  // -> this.mailService.send({ to: mapEmails(this.selectedRecipients), subject: this.mailSubject, body: this.mailBody })
-  console.log('SEND', kind, this.selectedRecipients, this.mailSubject, this.mailBody);
+ this.mailserv.send(kind, this.selectedRecipients,this.mailSubject,this.mailBody, this.Notes).then(() =>{
+     let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+   }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
   this.closePanel();
 }
 
 // Sauvegarde de la note de séance
 saveInfoSeance(){
-  // TODO: appelle ton service / méthode existante si besoin
-  // ex: this.SeanceService.updateInfo(this.thisSeance.id, this.thisSeance.infoseance).subscribe(...)
-  console.log('Save info séance:', this.thisSeance.info_seance);
+   const errorService = ErrorService.instance;
+        this.action = $localize`Note sauvegardée`;
+
+  this.seanceserv.Update(this.thisSeance).then(() =>{
+     let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+   }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
   this.closePanel();
 }
   setStatus(statut, inscription: FullInscriptionSeance_VM) {
@@ -361,7 +417,6 @@ AjouterAdherentsHorsGroupe() {
 }
 
 GetNbPersonne(liste: FullInscriptionSeance_VM[]): boolean {
-  console.log(this.thisSeance.est_place_maximum);
   if (this.thisSeance.est_place_maximum) {
     let ct = liste.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).length;
     if (ct >= this.thisSeance.place_maximum) {

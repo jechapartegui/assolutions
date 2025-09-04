@@ -1,0 +1,6 @@
+:host { display:block; }
+.mail-preview {
+  background: transparent;   /* on laisse le style inline du mail faire son job */
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}

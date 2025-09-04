@@ -1,5 +1,5 @@
 // src/app/components/week-calendar/week-calendar.component.ts
-import { Component,  Output, EventEmitter, computed, input, effect, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component,  Output, EventEmitter, computed, input, effect, ViewChild, ElementRef, AfterViewInit, inject, Injector, runInInjectionContext } from '@angular/core';
 import { getWeekStart, weekDays, timeToMinutes, addDays} from '../utils/date.utils';
 import { CalendarEvent } from '../../class/calendar-event';
 import { Router } from '@angular/router';
@@ -207,14 +207,16 @@ dayHasAfter = computed(() => {
 
 // Hauteur de la grille (8h * 56px)
 gridHeightPx = computed(() => this.HOUR_HEIGHT_PX * (this.hoursRange().end - this.hoursRange().start));
+ private injector = inject(Injector);
 
-// scroll auto vers le début de fenêtre
-ngAfterViewInit(): void {
-  effect(() => {
+  ngAfterViewInit() {
+    runInInjectionContext(this.injector, () => {
+      effect(() => {
     // re-scroll au début de la fenêtre
     setTimeout(() => this.scrollToHour(this.hoursRange().start), 0);
-  });
-}
+   });
+    });
+  }
 
 private scrollToHour(h: number) {
   const el = this.scrollerRef?.nativeElement;

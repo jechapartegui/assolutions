@@ -1,16 +1,27 @@
-:host { color-scheme: light dark; }
 
-.seance-list {
-  display: grid;
-  gap: 10px;
+/* Hauteur fixe pour l’embed + scroll interne */
+:host {
+  display: block;
+  height: 800px;          /* <- demande */
+  overflow: hidden;       /* évite un double scroll, le contenu scrolle seul */
 }
 
+.seance-list {
+  height: 100%;
+  overflow: auto;         /* le scroll se fait ici */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: .5rem;   /* petit confort avec la scrollbar */
+}
+
+/* optionnel : un peu de rythme visuel */
 .seance-item {
+  padding: .75rem 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: center;
-  padding: 10px;
   border: 1px solid var(--bdr, rgba(0,0,0,.12));
   border-radius: 12px;
   background: var(--panel-bg, #fff);

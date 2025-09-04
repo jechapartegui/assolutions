@@ -36,6 +36,7 @@ export class AuthService {
   async prelogin(login: string): Promise<boolean> {
     //test throw
     const compte = await this.compteserv.getLogin(login);
+    console.warn(compte, login);
     if (!compte) {
       throw new UnauthorizedException('NO_ACCOUNT_FOUND');
     }

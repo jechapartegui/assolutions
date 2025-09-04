@@ -67,6 +67,7 @@ import { SeancesPage } from './public/seance-page-public.component';
 import { SeanceListComponent } from './public/seance-list-public.component';
 import { CourseListPublicComponent } from './public/course-list-public.component';
 import { OrEmptyPipe } from '../filters/orempty.pipe';
+import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -75,7 +76,7 @@ import { OrEmptyPipe } from '../filters/orempty.pipe';
     AdherentComponent,
     GroupeComponent,
     CoursComponent,
-    SeanceComponent,
+    SeanceComponent, MailTemplatePreviewComponent,
     ComptabiliteComponent, InfoPersoComponent,
     ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,
     NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,

@@ -10,6 +10,7 @@ import { MailInput } from '@shared/lib/mail-input.interface';
 import { MailProject } from '../../entities/mail-project.entity';
 import { Account } from '../../entities/compte.entity';
 import { ConfigService } from '@nestjs/config';
+import { KeyValuePairAny } from '@shared/lib/autres.interface';
 
 @Injectable()
 export class MessagesService {
@@ -22,6 +23,17 @@ export class MessagesService {
     @InjectRepository(Account)  private readonly accountrepo: Repository<Account>,
     @InjectRepository(MailProject) private readonly mailProjectRepo: Repository<MailProject>
   ) {}
+
+async GetMail(type: 'convocation' | 'annulation', id: number): Promise<KeyValuePairAny> {
+  const proj = await this.mailProjectRepo.findOne({ where: { id } });
+  if (!proj) throw new Error('Mail project introuvable');
+
+  if (type === 'convocation') {
+    return { key: proj.sujet_convocation ?? '', value: proj.mail_convocation ?? '' };
+  }
+  // annulation par défaut
+  return { key: proj.sujet_annulation ?? '', value: proj.mail_annulation ?? '' };
+}
 
   // Exemple : convocation à une séance
   async MailEssai(sessionId: number, personId: number, projectId: number) {

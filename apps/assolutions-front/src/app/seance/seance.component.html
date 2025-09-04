@@ -1114,7 +1114,6 @@
                       class="input"
                       [ngClass]="{ 'is-danger': !rNom.key }"
                       [(ngModel)]="editSeance.libelle"
-                      (ngModelChange)="autoSave()"
                     />
                     <p *ngIf="!rNom.key" class="help is-danger is-small">
                       {{ rNom.value }}

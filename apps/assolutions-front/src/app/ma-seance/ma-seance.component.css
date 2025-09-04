@@ -95,7 +95,11 @@
 
 /* Compacter les boutons addon */
 .buttons.has-addons .button{ padding: .35rem .6rem; }
-
+/* Un léger gap pour que le menu ne colle pas au bouton quand il s'ouvre vers le haut */
+.dropdown.is-up .dropdown-menu{
+  left: 0;
+  bottom: calc(100% + 8px); /* Bulma met bottom:100% ; on ajoute un espace */
+}
 /* Petits ajustements mobile */
 @media (max-width: 767px){
   .nom_personne{ max-width: 55vw; }

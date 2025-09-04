@@ -354,12 +354,15 @@ valid_contact_urgence(isValid: boolean): void {
      this.thisAdherent = new Adherent_VM();
         this.id = 0;
         this.thisAdherent.compte = this.thisAccount.id;
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];   
+        this.histo_adherent = JSON.stringify(this.thisAdherent);
         this.select_account = false;
         this.ListePersonne = null;
         this.personne = null;
   }
   async SelectPersonne(){
   this.thisAdherent = await this.ridersService.Get(this.personne.id);
+        this.histo_adherent = JSON.stringify(this.thisAdherent);
   this.select_account = false;
         this.ListePersonne = null;
         this.personne = null;

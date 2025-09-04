@@ -12,6 +12,10 @@ export class MessagesController {
   MailEssai(@Headers('projectid') projectId: number,@Body() body: { sessionId: number; personId: number }) {
     return this.svc.MailEssai(body.sessionId, body.personId, projectId);
   }
+    @Get('get_mail/:type')
+  GetMail(@Headers('projectid') projectId: number,@Param() { type }: { type: 'convocation' | 'annulation' }) {
+    return this.svc.GetMail(type, projectId);
+  }
   @Get('mail_activation/:login')
   MailActivation(@Param() { login }: { login: string }) {
     return this.svc.MailActivation(login);

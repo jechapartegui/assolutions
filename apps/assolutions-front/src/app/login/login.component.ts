@@ -29,6 +29,9 @@ export class LoginComponent implements OnInit {
   loading: boolean;
   libelle_titre:string = $localize`Saisissez votre email pour vous connecter`;
   psw_projet: string = null;
+  reponse:string=null;
+  id_adherent:number =null;
+  id_seance:number=null;
 
   constructor(
     private login_serv_nest: LoginNestService,
@@ -114,6 +117,18 @@ export class LoginComponent implements OnInit {
           break; 
         case "SEANCE":
           this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
+           if('login' in params){
+              this.VM.Login = params['login'];     
+             }
+             if('seance' in params){
+              this.id_seance = params['seance'];     
+             }
+             if('adherent' in params){
+              this.id_adherent = params['personne'];     
+             }
+             if('reponse' in params){
+              this.reponse = params['reponse'];     
+             }
           break; 
       }
       this.VM.Login =  environment.defaultlogin;    

@@ -438,7 +438,6 @@ export class SeanceComponent implements OnInit {
   SaveNom(){
     this.edit_nom = false;
     this.checkall();
-    console.log(this.is_valid);
     if(this.is_valid){
     this.Save();
     }
@@ -447,7 +446,6 @@ export class SeanceComponent implements OnInit {
   
   autoSave(){
     this.checkall();
-    console.log(this.is_valid);
     if(this.is_valid){
     this.Save();
     }
