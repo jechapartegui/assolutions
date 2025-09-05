@@ -1,62 +1,95 @@
 /* On garde tes styles initiaux + compactage léger */
 .panel { --bulma-panel-heading-padding: 0.5em 0.75em; }
 
+/* Chaque ligne: infos à gauche, boutons à droite */
 .ligne{
+  position: relative;                /* pour les menus absolus */
   font-size: small;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-content: center;
+  justify-content: space-between;    /* boutons à droite, infos à gauche */
+  align-items: center;
   gap: .5rem;
+  min-height: 40px;
 }
 
-.nom_personne{
-  font-size: smaller;
-  font-weight: bold;
-  text-transform: uppercase;
-  display: inline-block;
-  word-wrap: break-word;
-  white-space: normal;
-  max-width: 170px;
-}
-
+/* Bloc gauche (icône + nom + contact) => tient sur une seule ligne */
 .partie1{
-  display: flex; flex-direction: row; flex-wrap: wrap;
-  justify-content: flex-start; gap: 4px;
-  max-width: 240px;
-  align-items: center; align-content: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;                 /* ❗ reste sur une ligne */
+  align-items: center;
+  align-content: center;
+  gap: 6px;
+  flex: 1 1 auto;                    /* prend la place disponible */
+  min-width: 0;                      /* autorise les ellipses */
 }
 
-.button.is-rounded{
-  border-radius: var(--bulma-radius-rounded);
-  padding-left: var(--bulma-button-padding-horizontal);
-  padding-right: var(--bulma-button-padding-horizontal);
+/* Nom: garde une largeur flexible, ellipses si trop long */
+.nom_personne{
+  font-size: .95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
-/* menu contextuel icônes (statut) */
+/* Contact d’urgence: inline si ça passe, ellipses sinon */
+.partie1 > span[title]{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
+  max-width: 40%;                    /* limite pour que le nom + contact tiennent */
+  color: #6b7280;                    /* gris doux par défaut */
+}
+
+/* Boutons: compacts, cohérents avec le style "btn-compact" */
+.ligne .buttons.has-addons .button{
+  padding: .35rem .6rem;
+  min-height: 2rem;
+  line-height: 1;
+}
+
+/* Icônes empilées déjà existantes: pas de changement, juste un petit ajustement */
+.fa-stack.fa-sm { line-height: 1; }
+
+/* ========== MENU CONTEXTUEL (statut) ========== */
 .menu-icons {
   display: none;
   position: absolute;
+  z-index: 1000;
+  top: 100%;                         /* sous l’icône par défaut */
+  left: 42px;
   background-color: #fff;
+  color: #111;
   border: 1px solid #ccc;
   border-radius: 8px;
   list-style: none;
   padding: 8px;
-  z-index: 100;
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
 }
-.menu-icons li { cursor: pointer; padding: 6px 10px; border-radius: 6px; }
 .menu-icons.is-visible { display: block; }
+.menu-icons li {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
 .menu-icons li:hover { background-color: #f0f0f0; }
 .not{ display: none; }
 
-/* ====== Toolbar Options/Panneaux ====== */
+/* ========== Toolbar Options/Panneaux ========== */
 .ms-panel-toolbar{
   display:flex; align-items:center; justify-content: space-between;
   gap:.75rem; margin-bottom: .75rem;
 }
 .ms-panel-title{ font-weight: 700; }
 
-/* ====== Panneaux d’options (remplacent la liste) ====== */
+/* ========== Panneaux d’options (remplacent la liste) ========== */
 .ms-panel{
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 10px;
@@ -98,10 +131,46 @@
 /* Un léger gap pour que le menu ne colle pas au bouton quand il s'ouvre vers le haut */
 .dropdown.is-up .dropdown-menu{
   left: 0;
-  bottom: calc(100% + 8px); /* Bulma met bottom:100% ; on ajoute un espace */
+  bottom: calc(100% + 8px);
 }
-/* Petits ajustements mobile */
+
+/* ========== Mobile: remplace le contact par une icône, sans régression d’alignement ========== */
 @media (max-width: 767px){
-  .nom_personne{ max-width: 55vw; }
+  /* Le bloc gauche garde son comportement 1-ligne */
+  .partie1{ gap: 6px; }
+
+  /* Contact: on masque le texte et on affiche une icône, le titre reste accessible (long-press/hover) */
+  .partie1 > span[title]{
+    max-width: 0;
+    overflow: hidden;
+    padding: 0;
+    margin-left: 2px;
+  }
+  .partie1 > span[title]::before{
+    content: "\f095";                /* phone (Font Awesome) */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    display: inline-block;
+    width: 1.25rem;
+    text-align: center;
+    color: #3273dc;                  /* Bulma primary */
+  }
+
   .ms-recipients{ max-height: 45vh; }
+}
+
+/* ========== DARK MODE spécifique: menu contextuel lisible ========== */
+@media (prefers-color-scheme: dark){
+  .menu-icons{
+    background: #1f2330;
+    color: #e6e7e9;
+    border-color: rgba(255,255,255,.14);
+    box-shadow: 0 10px 24px rgba(0,0,0,.5);
+  }
+  .menu-icons li:hover{
+    background: rgba(255,255,255,.06);
+  }
+
+  /* Couleur du contact (quand visible en desktop) */
+  .partie1 > span[title]{ color: #a0a7b3; }
 }

@@ -27,4 +27,10 @@ export class MessagesController {
   send(@Headers('projectid') projectId: number, @Body() body: { input: MailInput; fromEmail: string; fromName: string}) {
     return this.svc.sendRaw(body.input, body.fromEmail, body.fromName, projectId);
   }
+
+  
+   @Post('mail_convoc_annulation')
+  mail_convoc_annulation(@Headers('projectid') projectId: number, @Body() body: { type: string; destinataire:number[], notes:string,seance_id:number}) {
+    return this.svc.mail_convoc_annulation(body.type, body.destinataire, body.notes,body.seance_id, projectId);
+  }
 }

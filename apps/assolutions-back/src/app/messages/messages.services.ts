@@ -110,6 +110,64 @@ const html = fillTemplate(activationTmpl, dataAct);
     return this.mailer.queue(msg, "assolutions.club@gmail.com", "AsSolutions");
   }
 
+  async mail_convoc_annulation(type:string, destinataire:number[],notes:string, sessionId:number, projectId:number){
+    
+        const [s,  proj, templatemail] = await Promise.all([
+      this.sessionRepo.findOne({
+    where: { id: sessionId },
+    relations: [
+      'location'
+    ],
+  }),
+
+      this.projectRepo.findOneByOrFail({ id: projectId }),
+      this.mailProjectRepo.findOneByOrFail({ id: projectId })
+    ]);
+
+    let subject = templatemail.sujet_annulation;
+    let html = templatemail.mail_annulation;
+    if(type==="convocation"){
+      subject = templatemail.sujet_convocation;
+      html = templatemail.mail_convocation;
+    }
+    destinataire.forEach(async (id) =>{
+ 
+ let p = await this.personRepo.findOne({
+    where: { id },
+    relations: [
+      'account'
+    ],
+  })
+     const dataEssai = {
+  SEANCE: s?.label ?? 'séance',
+  SEANCE_ID: s?.id ?? 0,
+  PERSONNE_ID: p?.id ?? 0,
+  DATE: formatDDMMYYYY(s?.date),
+  ID: sessionId,
+  NOM: `${p?.firstName ?? ''} ${p?.lastName ?? ''}`.trim(),
+  LIEU: s?.location?.name ?? 'lieu non défini',
+  HEURE: s?.startTime ?? 'heure non définie',
+  RDV: s?.appointment ?? '',
+  DUREE: (s?.duration != null) ? `${s.duration} min` : 'durée non définie',
+  NOTES: notes
+};
+subject = fillTemplate(subject, dataEssai);
+html    = fillTemplate(html,  dataEssai);
+
+
+    const msg: MailInput = {
+      to: [p?.account.login || '',proj.login],
+      subject,
+      html
+    };
+
+    // nom+email expéditeur affiché (ou laisse vide pour fallback .env)
+    return this.mailer.queue(msg, proj.login, proj.name, projectId);
+    })
+ 
+
+
+  }
 
   // Exemple très générique : envoi “brut” (tu fournis déjà le contenu)
   async sendRaw(input: MailInput, fromEmail: string, fromName: string, projectId: number | null = null) {

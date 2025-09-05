@@ -59,23 +59,43 @@ const body = {
         return Promise.reject(message);
       });
   }
-public Envoyer(mail:MailData):Promise<boolean>{
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"send",
-    mail:mail
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
+  public Envoyer(MailData:MailData):Promise<boolean>{
+this.url = environment.maseance + 'api/mail/mail_data';
+const body = {
+  MailData :MailData
+ }
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
+
+public EnvoyerConvocationAnnulation(type:string, destinataire:number[], notes:string, seance_id:number):Promise<boolean>{
+  this.url = environment.maseance + 'api/mail/mail_convoc_annulation';
+const body = {
+  type :type,
+  destinataire:destinataire,
+  notes:notes,
+  seance_id:seance_id
+ }
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
 public GetMail(type:string) : Promise<KeyValuePairAny>{
    this.url = environment.maseance + 'api/mail/get_mail/' + type;
 

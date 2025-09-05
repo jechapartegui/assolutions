@@ -55,9 +55,9 @@
                         </label>
                       </div>
                       <div class="buttons is-right mt-2">
-                        <button class="button is-small is-light"
+                        <button class="button is-small is-light is-rounded btn-compact"
                                 (click)="checkAll('convocation', true)">Tout sélectionner</button>
-                        <button class="button is-small is-light"
+                        <button class="button is-small is-light is-rounded btn-compact"
                                 (click)="checkAll('convocation', false)">Tout désélectionner</button>
                       </div>
                     </div>
@@ -80,7 +80,7 @@
 </mail-template-preview>
 
                       <div class="buttons is-right mt-3">
-                        <button class="button is-primary"
+                        <button class="button is-primary is-light is-rounded btn-compact"
                                 [disabled]="!selectedRecipients.length"
                                 (click)="sendMail('convocation')">
                           <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
@@ -107,9 +107,9 @@
                         </label>
                       </div>
                       <div class="buttons is-right mt-2">
-                        <button class="button is-small is-light"
+                        <button class="button is-small is-info is-light is-rounded btn-compact"
                                 (click)="checkAll('annulation', true)">Tout sélectionner</button>
-                        <button class="button is-small is-light"
+                        <button class="button is-small is-info is-light is-rounded btn-compact"
                                 (click)="checkAll('annulation', false)">Tout désélectionner</button>
                       </div>
                     </div>
@@ -117,7 +117,12 @@
                     <div>
                       <label class="label">Sujet</label>
 
-              <input class="input" [(ngModel)]="mailSubject" />
+              <label class="label">Sujet</label>
+                                   <mail-template-preview
+  [html]="mailSubject"
+  [variables]="variables"
+  [notes]="Notes">
+</mail-template-preview>
 <label class="label mt-2">Message</label>
 <textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
 
@@ -128,7 +133,7 @@
 </mail-template-preview>
 
                       <div class="buttons is-right mt-3">
-                        <button class="button is-danger"
+                        <button class="button is-success is-light is-rounded btn-compact"
                                 [disabled]="!selectedRecipients.length"
                                 (click)="sendMail('annulation')">
                           <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
@@ -157,7 +162,7 @@
                         </div>
                       </div>
                     </div>
-                    <button class="button is-primary"
+                    <button class="button is-primary is-light is-rounded btn-compact"
                             [disabled]="!adherent_to"
                             (click)="AjouterAdherentsHorsGroupe(); closePanel()">
                       <i class="fas fa-user-plus"></i>&nbsp;Ajouter
@@ -171,7 +176,7 @@
                   <textarea class="textarea" rows="8"
                             [(ngModel)]="thisSeance.info_seance"></textarea>
                   <div class="buttons is-right mt-3">
-                    <button class="button is-link" (click)="saveInfoSeance()">Enregistrer</button>
+                    <button class="button is-link is-light is-rounded btn-compact" (click)="saveInfoSeance()">Enregistrer</button>
                   </div>
                 </div>
               </ng-container>
@@ -713,7 +718,7 @@
                 (click)="toggleMobileOptions = !toggleMobileOptions">
           <i class="fas fa-ellipsis-h"></i>&nbsp;<span>Options</span>
         </button>
-        <div class="dropdown is-right" [class.is-active]="toggleMobileOptions">
+        <div class="dropdown is-left" [class.is-active]="toggleMobileOptions">
           <div class="dropdown-menu">
             <div class="dropdown-content">
               <a class="dropdown-item" (click)="openPanel('convocation'); toggleMobileOptions=false">Envoyer convocation</a>
@@ -758,13 +763,17 @@
                 </label>
               </div>
               <div class="buttons is-right mt-2">
-                <button class="button is-small is-light" (click)="checkAll('convocation', true)">Tout sélectionner</button>
-                <button class="button is-small is-light" (click)="checkAll('convocation', false)">Tout désélectionner</button>
+                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('convocation', true)">Tout sélectionner</button>
+                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('convocation', false)">Tout désélectionner</button>
               </div>
             </div>
             <div>
               <label class="label">Sujet</label>
-              <input class="input" [(ngModel)]="mailSubject" />
+              <mail-template-preview
+  [html]="mailSubject"
+  [variables]="variables"
+  [notes]="Notes">
+</mail-template-preview>
 <label class="label mt-2">Message</label>
 <textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
 
@@ -800,17 +809,27 @@
                 </label>
               </div>
               <div class="buttons is-right mt-2">
-                <button class="button is-small is-light" (click)="checkAll('annulation', true)">Tout sélectionner</button>
-                <button class="button is-small is-light" (click)="checkAll('annulation', false)">Tout désélectionner</button>
+                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('annulation', true)">Tout sélectionner</button>
+                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('annulation', false)">Tout désélectionner</button>
               </div>
             </div>
             <div>
-              <label class="label">Sujet</label>
-              <input class="input" [(ngModel)]="mailSubject" />
-              <label class="label mt-2">Message</label>
-              <textarea class="textarea" rows="4" [(ngModel)]="mailBody"></textarea>
+                          <label class="label">Sujet</label>
+              <mail-template-preview
+  [html]="mailSubject"
+  [variables]="variables"
+  [notes]="Notes">
+</mail-template-preview>
+<label class="label mt-2">Message</label>
+<textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
+
+<mail-template-preview
+  [html]="mailBody"
+  [variables]="variables"
+  [notes]="Notes">
+</mail-template-preview>
               <div class="buttons is-right mt-3">
-                <button class="button is-danger" [disabled]="!selectedRecipients.length"
+                <button class="button is-danger is-light is-rounded btn-compact" [disabled]="!selectedRecipients.length"
                         (click)="sendMail('annulation')">
                   <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
                 </button>
@@ -838,7 +857,7 @@
                 </div>
               </div>
             </div>
-            <button class="button is-primary"
+            <button class="button is-primary is-light is-rounded btn-compact"
                     [disabled]="!adherent_to"
                     (click)="AjouterAdherentsHorsGroupe(); closePanel()">
               <i class="fas fa-user-plus"></i>&nbsp;Ajouter
@@ -850,12 +869,21 @@
           <label class="label">Info séance</label>
           <textarea class="textarea" rows="8" [(ngModel)]="thisSeance.info_seance"></textarea>
           <div class="buttons is-right mt-3">
-            <button class="button is-link" (click)="saveInfoSeance()">Enregistrer</button>
+            <button class="button is-link is-light is-rounded btn-compact" (click)="saveInfoSeance()">Enregistrer</button>
           </div>
         </div>
       </ng-container>
 
       <ng-container *ngIf="uiMode === 'list'">
+                       <!-- Présences potentielles -->
+                <h6 class="title is-6" style="cursor:pointer;"
+                    (click)="display_personne = !display_personne">
+                  <i class="fas"
+                     [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{ All.length }}&nbsp;<span i18n>personnes</span>)
+                </h6>
+
+                <span *ngIf="display_personne">
           <ng-container *ngFor="let potentiel of All">
         <ng-container *ngIf="!potentiel.statut_seance">
           <ng-container
@@ -1128,7 +1156,7 @@
       </ng-container>
       <ng-container *ngFor="let potentiel of All">
         <ng-container *ngIf="!potentiel.statut_seance">
-          <ng-container *ngIf="potentiel.statut_inscription === null">
+          <ng-container *ngIf="!potentiel.statut_inscription">
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
@@ -1190,6 +1218,157 @@
           </ng-container>
         </ng-container>
       </ng-container>
+                    <h6  style="cursor:pointer;"
+                class="title is-6"
+                (click)="
+                  display_present
+                    ? (display_present = false)
+                    : (display_present = true)
+                "
+              >
+                <i *ngIf="!display_present" class="fas fa-chevron-down"></i>
+                <i *ngIf="display_present" class="fas fa-chevron-up"></i> &nbsp;
+                <span i18n>Présents</span>&nbsp;({{ Presents.length }}&nbsp;<span
+                  i18n
+                  >personnes</span
+                >)
+              </h6>
+                </span>
+             <span *ngIf="display_present">
+                <ng-container *ngFor="let potentiel of Presents">
+                  <ng-container *ngIf="potentiel.statut_seance">
+                    <ng-container *ngIf="potentiel.statut_seance === 'présent'">
+                      <div class="ligne">
+                        <span class="partie1">
+                          <span class="icon is-medium">
+                            <span class="fa-stack fa-sm">
+                              <i
+                                *ngIf="potentiel.statut_inscription == 'présent'"
+                                class="fas fa-stack-2x fa-thumbs-up"
+                              ></i>
+                              <i
+                                *ngIf="potentiel.statut_inscription == 'absent'"
+                                class="fas fa-stack-2x fa-thumbs-down"
+                              ></i>
+                              <i
+                                *ngIf="potentiel.statut_inscription == 'essai'"
+                                class="fas fa-stack-2x fa-question"
+                              ></i>
+                              <i
+                                *ngIf="
+                                  potentiel.statut_inscription == 'convoqué'
+                                "
+                                class="fas fa-stack-2x fa-hand-point-up"
+                              ></i>
+                              <i
+                                *ngIf="potentiel.statut_inscription == null"
+                                class="fas fa-stack-2x fa-ellipsis-h"
+                              ></i>
+                            </span>
+                          </span>
+                          <span class="nom_personne">{{
+                            potentiel.person.libelle
+                          }}</span>
+                          <span [title]="contact_urgence_nom(potentiel)">{{
+                            contact_urgence(potentiel)
+                          }}</span>
+                        </span>
+
+                        <div class="buttons has-addons">
+                          <button
+                            type="button"
+                            class="button is-rounded is-primary"
+                            (click)="MAJInscription(potentiel, null)"
+                          >
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="button is-outlined is-rounded is-danger"
+                            (click)="MAJInscription(potentiel, false)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                </ng-container>
+              </span>
+              <h6  style="cursor:pointer;"
+                class="title is-6"
+                (click)="
+                  display_absent
+                    ? (display_absent = false)
+                    : (display_absent = true)
+                "
+              >
+                <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
+                <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
+                <span i18n>Absents</span>&nbsp;({{ Absents.length }}&nbsp;<span
+                  i18n
+                  >personnes</span
+                >)
+              </h6>
+              <span *ngIf="display_absent">
+              <ng-container *ngFor="let potentiel of Absents">
+                <ng-container *ngIf="potentiel.statut_seance">
+                  <ng-container *ngIf="potentiel.statut_seance === 'absent'">
+                    <div class="ligne">
+                      <span class="partie1">
+                        <span class="icon is-medium">
+                          <span class="fa-stack fa-sm">
+                            <i
+                              *ngIf="potentiel.statut_inscription == 'présent'"
+                              class="fas fa-stack-2x fa-thumbs-up"
+                            ></i>
+                            <i
+                              *ngIf="potentiel.statut_inscription == 'absent'"
+                              class="fas fa-stack-2x fa-thumbs-down"
+                            ></i>
+                            <i
+                              *ngIf="potentiel.statut_inscription == 'essai'"
+                              class="fas fa-stack-2x fa-question"
+                            ></i>
+                            <i
+                              *ngIf="potentiel.statut_inscription == 'convoqué'"
+                              class="fas fa-stack-2x fa-hand-point-up"
+                            ></i>
+                            <i
+                              *ngIf="potentiel.statut_inscription == null"
+                              class="fas fa-stack-2x fa-ellipsis-h"
+                            ></i>
+                          </span>
+                        </span>
+                        <span class="nom_personne">{{
+                          potentiel.person.libelle
+                        }}</span>
+                        <span [title]="contact_urgence_nom(potentiel)">{{
+                          contact_urgence(potentiel)
+                        }}</span>
+                      </span>
+
+                      <div class="buttons has-addons">
+                        <button
+                          type="button"
+                          class="button is-outlined is-rounded is-primary"
+                          [disabled]="!GetNbPersonne(Presents)"
+                          (click)="MAJInscription(potentiel, true)"
+                        >
+                          <i class="fas fa-check"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="button is-rounded is-danger"
+                          (click)="MAJInscription(potentiel, null)"
+                        >
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </ng-container></span>
       </ng-container>
     </div>
   </span>

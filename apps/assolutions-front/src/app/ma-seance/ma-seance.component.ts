@@ -47,6 +47,9 @@ export class MaSeanceComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Charger la séance`;
+    if(this.store.isLoggedIn()){
     if (this.id == 0) {
       this.route.queryParams.subscribe(params => {
         if ('id' in params) {
@@ -56,8 +59,6 @@ export class MaSeanceComponent implements OnInit {
         }
       })
     }
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger la séance`;
     this.seanceserv.Get(this.id).then((ss) => {
       this.thisSeance = ss;
       this.generateSeanceText();
@@ -65,7 +66,11 @@ export class MaSeanceComponent implements OnInit {
     }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
-    });
+    });  } else {
+      let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
+      errorService.emitChange(o);
+      this.router.navigate(['/login']);
+    }
 
 
     
@@ -76,7 +81,7 @@ toggleMobileOptions = false;
 uiMode: 'list' | 'convocation' | 'annulation' | 'ajout' | 'note' = 'list';
 
 // Mail panel state
-selectedRecipients: any[] = [];
+selectedRecipients: FullInscriptionSeance_VM[] = [];
 mailSubject = '';
 mailBody = '';
 
@@ -85,7 +90,20 @@ openPanel(mode: 'convocation'|'annulation'|'ajout'|'note') {
   this.uiMode = mode;
   this.optionsOpen = false;
   this.toggleMobileOptions = false;
-
+  this.Notes = ''; // reset notes
+this.variables = {
+   SEANCE: this.thisSeance.libelle,
+  SEANCE_ID: this.thisSeance.seance_id,
+  PERSONNE_ID: this.selectedRecipients[0]?.id ?? 0,
+  DATE: formatDDMMYYYY(this.thisSeance.date_seance),
+  ID: this.thisSeance.seance_id,
+  NOM: $localize`Prénom Nom`,
+  LIEU: this.thisSeance.lieu_nom ?? 'lieu non défini',
+  HEURE: this.thisSeance.heure_debut ?? 'heure non définie',
+  RDV: this.thisSeance.rdv ?? '',
+  DUREE: (this.thisSeance.duree_seance != null) ? `${this.thisSeance.duree_seance} min` : 'durée non définie',
+  NOTES: this.Notes
+  };
 
 
   if (mode === 'convocation') {
@@ -95,12 +113,6 @@ openPanel(mode: 'convocation'|'annulation'|'ajout'|'note') {
       this.mailserv.GetMail(mode).then((retour:KeyValuePairAny) =>{
     this.mailSubject = retour.key;
     this.mailBody = retour.value;
-this.variables = {
-    SEANCE: this.thisSeance?.libelle ?? '',
-    DATE:  this.thisSeance?.date_seance ? new Date(this.thisSeance.date_seance).toLocaleDateString('fr-FR') : '',
-    HEURE: this.thisSeance?.heure_debut ?? '',
-    LIEU: this.thisSeance?.lieu_nom?? ''
-  };
   this.Notes = ''; // reset notes
    }).catch((err: HttpErrorResponse) => {
      // Par défaut : tous les "convoqué"
@@ -123,13 +135,8 @@ Sportivement,`;
       this.mailserv.GetMail(mode).then((retour:KeyValuePairAny) =>{
     this.mailSubject = retour.key;
     this.mailBody = retour.value;
-this.variables = {
-    SEANCE: this.thisSeance?.libelle ?? '',
-    DATE:  this.thisSeance?.date_seance ? new Date(this.thisSeance.date_seance).toLocaleDateString('fr-FR') : '',
-    HEURE: this.thisSeance?.heure_debut ?? '',
-    LIEU: this.thisSeance?.lieu_nom?? ''
-  };
-  this.Notes = ''; // reset notes
+    
+
    }).catch((err: HttpErrorResponse) => {
      // Par défaut : tous les "convoqué"
  this.mailSubject = `[Annulation] ${this.thisSeance?.libelle ?? ''}`;
@@ -168,10 +175,25 @@ checkAll(kind:'convocation'|'annulation', val:boolean){
 
 // Envoi (branche sur ton service réel si dispo)
 sendMail(kind: 'convocation'|'annulation'){
+  if(kind=='annulation'){
+  let c =window.confirm($localize`Voulez-vous passer le statut de la séance à Annulée ?`);
+  if(c){
+        this.action = $localize`Annuler la séance`;
+    this.thisSeance.statut = "annulée";
+  this.seanceserv.Update(this.thisSeance).then(() =>{
+     let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+   }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      })
+  }
+
+  }
    const errorService = ErrorService.instance;
         this.action = $localize`Envoi du mail`;
   // TODO: brancher ici ton service d’envoi / template réel
- this.mailserv.send(kind, this.selectedRecipients,this.mailSubject,this.mailBody, this.Notes).then(() =>{
+ this.mailserv.EnvoyerConvocationAnnulation(kind, this.selectedRecipients.map(x => x.person.id),this.Notes, this.thisSeance.seance_id).then(() =>{
      let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
    }).catch((err: HttpErrorResponse) => {
@@ -543,4 +565,40 @@ openMenu(potentiel: any, ev: MouseEvent) {
   onEsc(_: KeyboardEvent) {
     this.closeAllMenus();
   }
+}
+function formatDDMMYYYY(input: unknown): string {
+  const d = toDateSafe(input);
+  if (!d) return ''; // ou retourne '??/??/????'
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+function toDateSafe(input: unknown): Date | null {
+  if (!input) return null;
+  if (input instanceof Date) return new Date(input.getTime());
+
+  if (typeof input === 'string') {
+    const s = input.trim();
+
+    // Cas le plus fréquent avec TypeORM Postgres "date" -> 'YYYY-MM-DD'
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) {
+      const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+      return new Date(y, mo, d); // évite les décalages de fuseau
+    }
+
+    // Sinon, tente un parse standard (ISO, etc.)
+    const ms = Date.parse(s);
+    if (!Number.isNaN(ms)) return new Date(ms);
+
+    return null;
+  }
+
+  if (typeof input === 'number') {
+    const d = new Date(input);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  return null;
 }
