@@ -68,6 +68,7 @@ import { SeanceListComponent } from './public/seance-list-public.component';
 import { CourseListPublicComponent } from './public/course-list-public.component';
 import { OrEmptyPipe } from '../filters/orempty.pipe';
 import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
+import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -77,7 +78,7 @@ import { MailTemplatePreviewComponent } from './mail-template-preview/mail-templ
     GroupeComponent,
     CoursComponent,
     SeanceComponent, MailTemplatePreviewComponent,
-    ComptabiliteComponent, InfoPersoComponent,
+    ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
     ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,
     NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,
     ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,

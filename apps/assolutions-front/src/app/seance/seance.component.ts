@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdherentService } from '../../services/adherent.service';
 import { CoursService } from '../../services/cours.service';
@@ -21,6 +21,7 @@ import { Saison_VM } from '@shared/lib/saison.interface';
 import type { donnee_date_lieu } from '../component/datelieu/datelieu.component';
 import type { caracteristique } from '../component/caracteristique_seance/caracteristique_seance.component';
 import { AppStore } from '../app.store';
+import { StaticClass } from '../global';
 
 
 @Component({
@@ -29,7 +30,7 @@ import { AppStore } from '../app.store';
   templateUrl: './seance.component.html',
   styleUrls: ['./seance.component.css'],
 })
-export class SeanceComponent implements OnInit {
+export class SeanceComponent implements OnInit, OnDestroy {
   public afficher_filtre: boolean = false;
   public loading: boolean = false;
   @ViewChild('scrollableContent', { static: false })
@@ -101,10 +102,13 @@ export class SeanceComponent implements OnInit {
     private saisonserv: SaisonService,
     private grServ: GroupeService,
         private route: ActivatedRoute,
-        public store:AppStore
+        public store:AppStore,
+        public global:StaticClass
   ) {}
 
   async ngOnInit(): Promise<void> {
+    
+  window.addEventListener('resize', this.onResize);
     const errorService = ErrorService.instance;
     this.loading = true;
     this.route.queryParams.subscribe(async (params) => {
@@ -1088,6 +1092,78 @@ return $localize`Evénement`;
         });
         this.checkall();
       }
+
+      pollOpen = false;
+pollCopied = false;
+
+/** Dropdown “up” sur desktop (comme pour tes autres menus d’options) */
+isDesktopDropUp = window.innerWidth >= 1024;
+onResize = () => (this.isDesktopDropUp = window.innerWidth >= 1024);
+
+ngOnDestroy() {
+  window.removeEventListener('resize', this.onResize);
+}
+
+/** Base très courte pour les liens (mets ton domaine court ici si tu en as un) */
+private shortBase(): string {
+  // idéalement: https://t.tondomaine.fr
+  return `${location.origin}/s`;
+}
+
+/** Code bref et stable par séance (base62) */
+private shortCodeForSeance(): string {
+  const id = this.editSeance?.seance_id ?? 0;
+  const d  = this.editSeance?.date_seance ? new Date(this.editSeance.date_seance).getTime() : 0;
+  // mélange simple: (id << 8) ^ (timestamp jour)
+  const day = Math.floor(d / 86400000);
+  const n = (id << 8) ^ day;
+  return this.base62(Math.abs(n));
+}
+
+/** Encodeur base62 simple */
+private base62(n: number): string {
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  if (n === 0) return '0';
+  let s = '';
+  while (n > 0) { s = alphabet[n % 62] + s; n = Math.floor(n / 62); }
+  return s;
+}
+
+/** Fabrique le texte à coller dans WhatsApp */
+generatePoll(mode: 'avec' | 'seul') {
+  const libelle = this.editSeance?.libelle ?? 'Séance';
+  const type_seance = this.editSeance?.type_seance ?? 'Evenement';
+  const lieu    = (this.editSeance as any)?.lieu ?? '';
+  const dateStr = this.editSeance?.date_seance
+    ? new Date(this.editSeance.date_seance).toLocaleDateString('fr-FR')
+    : '';
+  const heure   = (this.editSeance as any)?.heure ?? '';
+  const rdv     = (this.editSeance as any)?.rdv ?? '';
+
+  const titre = `${libelle} ${lieu ? 'à ' + lieu : ''} le ${dateStr}${heure ? ' à ' + heure : ''}. ${rdv}.`;
+  let message = `${type_seance} ${titre} Vous venez ?`;
+
+  if (mode === 'avec') {
+    const id = this.editSeance?.seance_id ?? 0;
+    const yes = this.global.shortLinkSeanceWithAnswer(id, true);
+    const no  = this.global.shortLinkSeanceWithAnswer(id, false);
+    message += `\nOui : ${yes}\nNon : ${no}`;
+  }
+
+  this.copyToClipboard(message);
+}
+
+private async copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    this.pollCopied = true;
+    setTimeout(() => (this.pollCopied = false), 1500);
+  } catch {
+    // fallback: prompt
+    window.prompt('Copier le message WhatsApp :', text);
+  }
+}
+
 }
 
 export class FilterSeance {

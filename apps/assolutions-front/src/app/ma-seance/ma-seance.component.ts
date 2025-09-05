@@ -49,7 +49,6 @@ export class MaSeanceComponent implements OnInit {
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
-    if(this.store.isLoggedIn()){
     if (this.id == 0) {
       this.route.queryParams.subscribe(params => {
         if ('id' in params) {
@@ -66,11 +65,7 @@ export class MaSeanceComponent implements OnInit {
     }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
-    });  } else {
-      let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
-      errorService.emitChange(o);
-      this.router.navigate(['/login']);
-    }
+    }); 
 
 
     

@@ -45,6 +45,35 @@ export class StaticClass{
     return docu;
   }
 
+  /** Encode un objet minimal {i,l?,r?} en base64-URL */
+private toSlug(payload: { i: number; l?: string; r?: 0 | 1 }): string {
+  const json = JSON.stringify(payload);                           // ex: {"i":1,"l":"mail","r":1}
+  const b64  = btoa(unescape(encodeURIComponent(json)));          // base64
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/,''); // base64url sans padding
+}
+
+/** Base des shortlinks */
+private shortBase(): string {
+  return `${location.origin}/s`;
+}
+
+/** 1) /ma-seance?id=1 → court */
+public shortLinkSeance(id: number): string {
+  return `${this.shortBase()}/${this.toSlug({ i: id })}`;
+}
+/** 2) /ma-seance?id=1&login=... → court */
+public shortLinkSeanceWithLogin(id: number, login: string): string {
+  return `${this.shortBase()}/${this.toSlug({ i: id, l: login })}`;
+}
+/** 3) /ma-seance?id=1&login=...&reponse=oui|non → court */
+public hortLinkSeanceWithLoginAndAnswer(id: number, login: string, reponseOui: boolean): string {
+  return `${this.shortBase()}/${this.toSlug({ i: id, l: login, r: reponseOui ? 1 : 0 })}`;
+}
+/** 4) /ma-seance?id=1&reponse=oui|non → court */
+public shortLinkSeanceWithAnswer(id: number, reponseOui: boolean): string {
+  return `${this.shortBase()}/${this.toSlug({ i: id, r: reponseOui ? 1 : 0 })}`;
+}
+
   parseDate(dateString: string): Date | null {
     if (!dateString || typeof dateString !== 'string') {
       return new Date();

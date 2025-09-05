@@ -30,6 +30,8 @@ import { ClementineComponent } from './clementine/clementine.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { CoursPage } from './public/course-page-public.component';
 import { SeancesPage } from './public/seance-page-public.component';
+import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
+
 
 
 
@@ -68,6 +70,9 @@ const routes: Routes = [
   { path: 'liste-seances-public', component: SeancesPage },
   {path:'menu-admin',component:MenuAdminComponent},
   {path:'tdb',component:TableauDeBordComponent},
+{ path: 's/:slug', component: ShortLinkRedirectComponent },
+{ path: 's/:code/:answer', component: ShortLinkRedirectComponent }, // legacy (facultatif)
+
 
 
 ];

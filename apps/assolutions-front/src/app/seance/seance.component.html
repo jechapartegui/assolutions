@@ -337,6 +337,8 @@
                         [type_button]="'CreerSerieSmall'"
                         (click)="Creer(true)"
                       ></btn>
+                    
+
                       <btn
                         [type_button]="'TerminerSeancesSmall'"
                         (click)="TerminerSeances()"
@@ -1419,7 +1421,30 @@
                      *ngIf="editSeance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
                     [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
-                    ></btn>
+                    ></btn> 
+<div class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
+  <div class="dropdown-trigger">
+    <button
+      class="button is-success is-outlined btn-mobile btn-elevated btn-compact"
+      (click)="pollOpen = !pollOpen"
+      title="Sondage WhatsApp">
+      <span class="icon"><i class="fab fa-whatsapp"></i></span>
+      <span>Sondage</span>
+      <span class="icon is-small"><i class="fas fa-angle-down"></i></span>
+    </button>
+  </div>
+  <div class="dropdown-menu" role="menu">
+    <div class="dropdown-content">
+      <a class="dropdown-item" (click)="generatePoll('avec'); pollOpen=false">
+        <i class="fas fa-link"></i>&nbsp;Avec réponses (Oui / Non)
+      </a>
+      <a class="dropdown-item" (click)="generatePoll('seul'); pollOpen=false">
+        <i class="fas fa-align-left"></i>&nbsp;Sondage seul
+      </a>
+    </div>
+  </div>
+</div>
+<span *ngIf="pollCopied" class="tag is-success is-light ms-copy-hint">Copié !</span>
                     </ng-template>
                   </div>
                 </div>

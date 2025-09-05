@@ -53,6 +53,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   public selected_menu: "MATCH" | "CLUB" | "COMPETITION"= "MATCH";
   ngOnInit(): void {
+    console.log(this.router);
     this.sub = this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map(e => e.urlAfterRedirects.toLowerCase()),

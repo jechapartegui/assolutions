@@ -1,3 +1,5 @@
+<ng-container *ngIf="store.isLoggedIn(); else NonConnecte">
+
 <ng-container *ngIf="thisSeance">
   <!-- ====== DESKTOP / TABLET ====== -->
   <span class="fullscreen">
@@ -1373,3 +1375,7 @@
     </div>
   </span>
 </ng-container>
+</ng-container>
+<ng-template #NonConnecte>
+  <app-login></app-login>
+</ng-template>
