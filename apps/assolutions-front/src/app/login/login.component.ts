@@ -117,18 +117,7 @@ export class LoginComponent implements OnInit {
           break; 
         case "SEANCE":
           this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
-           if('login' in params){
-              this.VM.Login = params['login'];     
-             }
-             if('seance' in params){
-              this.id_seance = params['seance'];     
-             }
-             if('adherent' in params){
-              this.id_adherent = params['personne'];     
-             }
-             if('reponse' in params){
-              this.reponse = params['reponse'];     
-             }
+         
           break; 
       }
       this.VM.Login =  environment.defaultlogin;    
@@ -385,6 +374,10 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
             throw new Error($localize`Pas de saison active détectée sur le projet`);
           }
 
+             if(this.context == "SEANCE"){
+            this.essai.emit(this.VM.compte);
+            return;
+          }
           // suite du traitement
         } catch (err: any) {
           this.loading = false;

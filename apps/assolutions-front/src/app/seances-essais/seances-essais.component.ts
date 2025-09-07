@@ -177,7 +177,7 @@ export class SeancesEssaisComponent implements OnInit {
                 );
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
-                  this.router.navigate(['/login']);
+                  this.router.navigate(['/liste-seances-public?id=' + this.store.projet().id]);
               } else {
                 let o = errorService.UnknownError(this.action);
                 errorService.emitChange(o);

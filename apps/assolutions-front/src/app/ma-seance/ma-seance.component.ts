@@ -11,7 +11,7 @@ import { Personne_VM } from '@shared/lib/personne.interface';
 import { AppStore } from '../app.store';
 import { AdherentService } from '../../services/adherent.service';
 import { MailService } from '../../services/mail.service';
-import { KeyValuePairAny } from '@shared/index';
+import { Compte_VM, KeyValuePairAny } from '@shared/index';
 @Component({
   standalone: false,
   selector: 'app-ma-seance',
@@ -21,6 +21,7 @@ import { KeyValuePairAny } from '@shared/index';
 export class MaSeanceComponent implements OnInit {
   @Input() id: number = 0;
   @ViewChild('scrollableContent', { static: false })
+  context:"prof" | "lien" | "view" = "prof";
     scrollableContent!: ElementRef;
     showScrollToTop: boolean = false;
     display_personne:boolean = true;
@@ -40,35 +41,108 @@ export class MaSeanceComponent implements OnInit {
   adherent_to: Adherent_VM = null;
   action: string;
   seanceText: string;
+  login:number = null;
+  reponse:boolean = null;
+  adherent:number = null;
+  MesAdherents:FullInscriptionSeance_VM[]=[];
   constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef,
     private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, 
     private inscriptionserv: InscriptionSeanceService, private mailserv:MailService) {
 
   }
 
-  ngOnInit(): void {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger la séance`;
-    if (this.id == 0) {
-      this.route.queryParams.subscribe(params => {
-        if ('id' in params) {
-          this.id = params['id'];
-        } else {
-          this.router.navigate(['/menu']);
-        }
-      })
+async ngOnInit(): Promise<void> {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Charger la séance`;
+
+  // 1) Récupérer les params de façon synchrone
+  const params = this.route.snapshot.queryParams as { [k: string]: string | undefined };
+
+  // 2) Gérer l'id de séance
+  if (this.id === 0) {
+    if (params['id']) {
+      this.id = +params['id'];
+    } else {
+      console.log("huhu");
+      this.router.navigate(['/menu']);
+                    this.store.updateSelectedMenu("MENU");
+      return;
     }
-    this.seanceserv.Get(this.id).then((ss) => {
-      this.thisSeance = ss;
-      this.generateSeanceText();
+  }
+
+  // 3) Déterminer le contexte "lien" avant tout chargement
+  let isLien = false;
+
+  if (params['login']) {
+    isLien = true;
+    this.action = $localize`Charger les adhérents de mon compte`;
+    this.login = +params['login'];
+    this.context = 'lien';
+    this.inscriptionserv.GetAdherentCompte(this.login, this.id)
+      .then(fis => this.MesAdherents = fis)
+      .catch(error => {
+      console.log("huhu");
+        const n = errorService.CreateError(this.action, error);
+        errorService.emitChange(n);
+      });
+  }
+
+  if (params['adherent']) {
+    isLien = true;
+    this.action = $localize`Charger l'adhérent`;
+    const adherentId = +params['adherent'];
+    this.context = 'lien';
+    this.inscriptionserv.GetAdherentPersonne(adherentId, this.id) // << corrige la variable
+      .then(fis => this.MesAdherents = [fis])
+      .catch(error => {
+        const n = errorService.CreateError(this.action, error);
+        errorService.emitChange(n);
+      });
+  }
+
+  if (params['reponse'] !== undefined) {
+    isLien = true;
+    this.context = 'lien';
+    // "0" => false, "1" => true ; si autre chose => null
+    const r = params['reponse']!;
+    this.reponse = r === '0' ? false : r === '1' ? true : null;
+  }
+
+  // 4) Charger la séance
+  try {
+    const ss = await this.seanceserv.Get(this.id);
+    this.thisSeance = ss;
+    this.generateSeanceText();
+
+    // 5) Ne pas appeler Load() si on est dans le contexte "lien"
+    if (!isLien) {
       this.Load();
-    }).catch((error) => {
+    } else {
+      // console.log("lien"); // si tu veux tracer
+    }
+  } catch (error) {
+    const n = errorService.CreateError(this.action, error);
+    errorService.emitChange(n);
+  }
+}
+
+AfficherMenu(){
+  
+                    this.router.navigate(['/menu']);
+                    this.store.updateSelectedMenu("MENU");
+}
+
+
+  LoadLogin(compte:Compte_VM){
+    const errorService = ErrorService.instance;
+     this.action = $localize`Charger les adhérents de mon compte`;
+          this.login = compte.id;
+          this.inscriptionserv.GetAdherentCompte(this.login, this.thisSeance.seance_id).then((fis) =>{
+            this.MesAdherents = fis;
+         }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
     }); 
-
-
-    
   }
 
 optionsOpen = false;

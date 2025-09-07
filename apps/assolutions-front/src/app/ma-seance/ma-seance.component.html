@@ -1,6 +1,8 @@
 <ng-container *ngIf="store.isLoggedIn(); else NonConnecte">
-
 <ng-container *ngIf="thisSeance">
+  <ng-container *ngIf="context !== 'lien'">
+
+  </ng-container>
   <!-- ====== DESKTOP / TABLET ====== -->
   <span class="fullscreen">
     <div class="columns page-fill">
@@ -1374,8 +1376,42 @@
       </ng-container>
     </div>
   </span>
+
 </ng-container>
+<ng-container *ngIf="context =='lien'">
+     <div class="box is-light">
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Mes adhérents</h3>
+       <btn *ngIf="thisSeance.afficher_present"
+        [type_button]="'RetourLight'" 
+        (click)="context = 'view'" 
+      ></btn> 
+      <btn *ngIf="!thisSeance.afficher_present"
+        [type_button]="'RetourLight'" 
+        (click)="AfficherMenu()" 
+      ></btn>
+            
+    </div>
+
+    <div class="columns is-vcentered">
+      <ng-container *ngIf="!MesAdherents || MesAdherents.length==0; else MesAdherentsOK">
+
+      </ng-container>
+      <ng-template #MesAdherentsOK>
+
+      </ng-template>
+
+      <!-- Photo -->
+      <div class="column is-4" >
+
+        </div>
+        </div>
+        </div>
+
+
+</ng-container>
+
 </ng-container>
 <ng-template #NonConnecte>
-  <app-login></app-login>
+  <app-login [context]="'SEANCE'" (essai)="LoadLogin($event)" ></app-login>
 </ng-template>

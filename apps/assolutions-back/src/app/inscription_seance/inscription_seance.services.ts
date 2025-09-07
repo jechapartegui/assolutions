@@ -34,6 +34,24 @@ export class InscriptionSeanceService {
     return to_FullInscriptionSeance_VM(pISS);
 
   }
+   async GetAdherentCompte(id: number,id_seance:number) {
+    const pISS = await this.inscriptionseanceserv.get(id);
+    if (!pISS) {
+      throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
+    }
+   
+    return to_FullInscriptionSeance_VM(pISS);
+
+  }
+     async GetAdherentPersonne(id: number,id_seance:number) {
+    const pISS = await this.inscriptionseanceserv.get(id);
+    if (!pISS) {
+      throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
+    }
+   
+    return to_FullInscriptionSeance_VM(pISS);
+
+  }
    async FaireEssai(personId : number, sessionId: number) {
     if (!personId || !sessionId) {
       throw new BadRequestException('INVALID_PERSON_SESSION');

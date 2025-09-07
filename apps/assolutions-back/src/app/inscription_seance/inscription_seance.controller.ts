@@ -23,6 +23,19 @@ export class InscriptionSeanceController {
   async GetFull(@Param('id') id: number) {
     return this.inscription_seance_serv.GetFull(id);
   }
+    @UseGuards(PasswordGuard)
+  @Get('get_adherent_compte/:id/:id_seance')
+  async GetAdherentCompte(@Param('id') id: number,@Param('id_seance') id_seance:number) {
+    return this.inscription_seance_serv.GetAdherentCompte(id, id_seance);
+  }
+
+      @UseGuards(PasswordGuard)
+  @Get('get_adherent_personne/:id/:id_seance')
+  async GetAdherentPersonne(@Param('id') id: number,@Param('id_seance') id_seance:number) {
+    return this.inscription_seance_serv.GetAdherentPersonne(id, id_seance);
+  }
+
+
 
   @UseGuards(PasswordGuard)
 @Get('get_all_rider_saison/:rider_id/:saison_id')
