@@ -143,12 +143,12 @@ public Add(inscription:InscriptionSeance_VM): Promise<number> {
       return Promise.reject(error);
     });
 }
-public Update(inscription:InscriptionSeance_VM): Promise<boolean> {
+public Update(inscription:InscriptionSeance_VM) {
     this.url = environment.maseance + 'api/inscription_seance/update';
 
   return this.global.PUT(this.url, inscription)
-    .then((response: boolean) => {
-      return response;
+    .then(() => {
+      return ;
     })
     .catch(error => {
       // Gestion de l'erreur

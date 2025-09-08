@@ -20,7 +20,7 @@ export class ShortLinkRedirectComponent implements OnInit {
     if (answerLegacy && legacyCode) {
       const id = this.base62Decode(legacyCode);
       if (!Number.isFinite(id))  {this.router.navigateByUrl('/');return};
-      const qp: any = { id, reponse: answerLegacy.toLowerCase() === 'y' ? 'oui' : 'non' };
+      const qp: any = { id, reponse: answerLegacy.toLowerCase() === 'y' ? '1' : '0' };
        this.router.navigate(['/ma-seance'], { queryParams: qp });
        return;
     }
@@ -32,7 +32,7 @@ export class ShortLinkRedirectComponent implements OnInit {
 
       const qp: any = { id: payload.i };
       if (payload.l) qp.login = payload.l;
-      if (payload.r !== undefined) qp.reponse = payload.r ? 'oui' : 'non';
+      if (payload.r !== undefined) qp.reponse = payload.r ? '1' : '0';
 
       // (option) ici: appeler un service pour enregistrer la réponse avant de naviguer
       // ex: this.seanceService.answer(payload.i, !!payload.r).subscribe(() => ...)

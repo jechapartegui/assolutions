@@ -1,8 +1,7 @@
 <ng-container *ngIf="store.isLoggedIn(); else NonConnecte">
 <ng-container *ngIf="thisSeance">
-  <ng-container *ngIf="context !== 'lien'">
+  <ng-container *ngIf="!isLien">
 
-  </ng-container>
   <!-- ====== DESKTOP / TABLET ====== -->
   <span class="fullscreen">
     <div class="columns page-fill">
@@ -1378,13 +1377,13 @@
   </span>
 
 </ng-container>
-<ng-container *ngIf="context =='lien'">
+<ng-container *ngIf="isLien">
      <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Mes adhérents</h3>
        <btn *ngIf="thisSeance.afficher_present"
         [type_button]="'RetourLight'" 
-        (click)="context = 'view'" 
+        (click)="isLien = false;" 
       ></btn> 
       <btn *ngIf="!thisSeance.afficher_present"
         [type_button]="'RetourLight'" 
@@ -1394,24 +1393,42 @@
     </div>
 
     <div class="columns is-vcentered">
+      <div class="column">
       <ng-container *ngIf="!MesAdherents || MesAdherents.length==0; else MesAdherentsOK">
-
+        <p>Vous n'avez pas d'adhérents concernés par la séance</p>
       </ng-container>
       <ng-template #MesAdherentsOK>
-
-      </ng-template>
-
-      <!-- Photo -->
-      <div class="column is-4" >
-
+        <ng-container *ngFor="let adh of MesAdherents">
+            <div class="ligne">
+                <span class="partie1" style="gap:20px">
+                          <span class="icon is-medium" style="gap:20px">
+                            <span
+                              class="fa-stack fa-sm" (click)="ChangerPresent(adh, true)"
+                            >
+                              <i [ngClass]="IsPresent(adh) ? 'fas fa-stack-2x fa-thumbs-up has-text-success' : 'fas fa-stack-2x fa-thumbs-up'" ></i>
+                            </span>
+                            <span
+                              class="fa-stack fa-sm" (click)="ChangerPresent(adh, false)"
+                            >
+                              <i [ngClass]="IsAbsent(adh) ? 'fas fa-stack-2x fa-thumbs-down has-text-danger' : 'fas fa-stack-2x fa-thumbs-down'" ></i>
+                            </span>
+                          </span>
+  <span class="nom_personne">{{
+                            adh.person.libelle
+                          }}</span>
+                          </span>
+                        </div>
+        </ng-container>
+                  
+      </ng-template>      
+        </div>     
         </div>
-        </div>
-        </div>
 
-
+</div>
 </ng-container>
 
+</ng-container>
 </ng-container>
 <ng-template #NonConnecte>
-  <app-login [context]="'SEANCE'" (essai)="LoadLogin($event)" ></app-login>
+  <app-login [context]="'SEANCE'" ></app-login>
 </ng-template>

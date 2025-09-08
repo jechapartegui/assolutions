@@ -35,22 +35,22 @@ export class InscriptionSeanceService {
 
   }
    async GetAdherentCompte(id: number,id_seance:number) {
-    const pISS = await this.inscriptionseanceserv.get(id);
+    const pISS = await this.GetAllSeanceFull(id_seance);
+    const liste_id = await this.personserv.getAllCompte(id);
+    const person_id = liste_id.map(x => x.id);
     if (!pISS) {
       throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
     }
    
-    return to_FullInscriptionSeance_VM(pISS);
+    return pISS.filter(x => person_id.includes(x.rider_id));
 
   }
      async GetAdherentPersonne(id: number,id_seance:number) {
-    const pISS = await this.inscriptionseanceserv.get(id);
+    const pISS = await this.GetAllSeanceFull(id_seance);
     if (!pISS) {
       throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
     }
-   
-    return to_FullInscriptionSeance_VM(pISS);
-
+    return pISS.filter(x => x.rider_id == id);
   }
    async FaireEssai(personId : number, sessionId: number) {
     if (!personId || !sessionId) {

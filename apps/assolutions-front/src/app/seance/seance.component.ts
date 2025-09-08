@@ -1143,15 +1143,20 @@ generatePoll(mode: 'avec' | 'seul') {
   const titre = `${libelle} ${lieu ? 'à ' + lieu : ''} le ${dateStr}${heure ? ' à ' + heure : ''}. ${rdv}.`;
   let message = `${type_seance} ${titre} Vous venez ?`;
 
+  const id = this.editSeance?.seance_id ?? 0;
+
   if (mode === 'avec') {
-    const id = this.editSeance?.seance_id ?? 0;
     const yes = this.global.shortLinkSeanceWithAnswer(id, true);
     const no  = this.global.shortLinkSeanceWithAnswer(id, false);
     message += `\nOui : ${yes}\nNon : ${no}`;
+  } else if (mode === 'seul') {
+    const lien = this.global.shortLinkSeance(id); // 👈 lien générique pour accéder / se connecter
+    message += `\n👉 Répondez ici : ${lien}`;
   }
 
   this.copyToClipboard(message);
 }
+
 
 private async copyToClipboard(text: string) {
   try {

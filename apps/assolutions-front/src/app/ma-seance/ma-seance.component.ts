@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
@@ -21,7 +21,6 @@ import { Compte_VM, KeyValuePairAny } from '@shared/index';
 export class MaSeanceComponent implements OnInit {
   @Input() id: number = 0;
   @ViewChild('scrollableContent', { static: false })
-  context:"prof" | "lien" | "view" = "prof";
     scrollableContent!: ElementRef;
     showScrollToTop: boolean = false;
     display_personne:boolean = true;
@@ -44,10 +43,21 @@ export class MaSeanceComponent implements OnInit {
   login:number = null;
   reponse:boolean = null;
   adherent:number = null;
+   isLien = false;
+  private _loadLoginDone = false;
+
   MesAdherents:FullInscriptionSeance_VM[]=[];
   constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef,
     private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, 
     private inscriptionserv: InscriptionSeanceService, private mailserv:MailService) {
+       effect(() => {
+    const logged = this.store.isLoggedIn();
+    const compte = this.store.compte();
+   if (!this._loadLoginDone && logged && compte) {
+      this._loadLoginDone = true;
+      this.LoadLogin(compte);
+    }
+  });
 
   }
 
@@ -63,7 +73,6 @@ async ngOnInit(): Promise<void> {
     if (params['id']) {
       this.id = +params['id'];
     } else {
-      console.log("huhu");
       this.router.navigate(['/menu']);
                     this.store.updateSelectedMenu("MENU");
       return;
@@ -71,27 +80,23 @@ async ngOnInit(): Promise<void> {
   }
 
   // 3) Déterminer le contexte "lien" avant tout chargement
-  let isLien = false;
 
   if (params['login']) {
-    isLien = true;
+    this.isLien = true;
     this.action = $localize`Charger les adhérents de mon compte`;
     this.login = +params['login'];
-    this.context = 'lien';
     this.inscriptionserv.GetAdherentCompte(this.login, this.id)
       .then(fis => this.MesAdherents = fis)
       .catch(error => {
-      console.log("huhu");
         const n = errorService.CreateError(this.action, error);
         errorService.emitChange(n);
       });
   }
 
   if (params['adherent']) {
-    isLien = true;
+    this.isLien = true;
     this.action = $localize`Charger l'adhérent`;
     const adherentId = +params['adherent'];
-    this.context = 'lien';
     this.inscriptionserv.GetAdherentPersonne(adherentId, this.id) // << corrige la variable
       .then(fis => this.MesAdherents = [fis])
       .catch(error => {
@@ -101,8 +106,7 @@ async ngOnInit(): Promise<void> {
   }
 
   if (params['reponse'] !== undefined) {
-    isLien = true;
-    this.context = 'lien';
+    this.isLien = true;
     // "0" => false, "1" => true ; si autre chose => null
     const r = params['reponse']!;
     this.reponse = r === '0' ? false : r === '1' ? true : null;
@@ -115,7 +119,7 @@ async ngOnInit(): Promise<void> {
     this.generateSeanceText();
 
     // 5) Ne pas appeler Load() si on est dans le contexte "lien"
-    if (!isLien) {
+    if (!this.isLien) {
       this.Load();
     } else {
       // console.log("lien"); // si tu veux tracer
@@ -137,12 +141,72 @@ AfficherMenu(){
     const errorService = ErrorService.instance;
      this.action = $localize`Charger les adhérents de mon compte`;
           this.login = compte.id;
-          this.inscriptionserv.GetAdherentCompte(this.login, this.thisSeance.seance_id).then((fis) =>{
+          if(!this.adherent){
+   this.inscriptionserv.GetAdherentCompte(this.login, this.thisSeance.seance_id).then((fis) =>{
+            fis.forEach(p => Personne_VM.bakeLibelle(p.person));
             this.MesAdherents = fis;
+            if(this.reponse != null){
+              
+            let statins = this.reponse ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT
+            console.log(statins);
+     this.action = $localize`Mise à jour des présences`;
+            fis.forEach((ins) =>{
+              ins.statut_inscription = statins;
+              if(!ins.id || ins.id == 0){
+                this.inscriptionserv.Add(ins).then((id_) =>{
+                  ins.id = id_;
+                 }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+              } else {
+                 this.inscriptionserv.Update(ins).then(() =>{
+                 }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+              }
+            })
+            
+
+            }
          }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
     }); 
+          } else {
+   this.inscriptionserv.GetAdherentPersonne(this.adherent, this.thisSeance.seance_id).then((fis) =>{
+            Personne_VM.bakeLibelle(fis.person);
+            this.MesAdherents = [fis];
+            if(this.reponse != null){
+              
+            let statins = this.reponse ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT
+            console.log(statins);
+     this.action = $localize`Mise à jour des présences`;
+              fis.statut_inscription = statins;
+              if(!fis.id || fis.id == 0){
+                this.inscriptionserv.Add(fis).then((id_) =>{
+                  fis.id = id_;
+                 }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+              } else {
+                 this.inscriptionserv.Update(fis).then(() =>{
+                 }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+              }
+            
+
+            }
+         }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+          }
+       
   }
 
 optionsOpen = false;
@@ -330,16 +394,10 @@ saveInfoSeance(){
         return;
       })
     } else {
-      this.inscriptionserv.Update(inscription).then((retour) => {
-        if (retour) {
+      this.inscriptionserv.Update(inscription).then(() => {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
           this.Load();
-        } else {
-          inscription.statut_inscription = oldstatut
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
 
       }).catch((err: HttpErrorResponse) => {
         inscription.statut_inscription = oldstatut
@@ -576,6 +634,45 @@ Save() {
 ngAfterViewInit(): void {
   this.waitForScrollableContainer();
 }
+
+IsPresent(adh:FullInscriptionSeance_VM){
+  if(adh.statut_inscription && adh.statut_inscription == InscriptionStatus_VM.PRESENT){
+    return true;
+  } else {
+    return false;
+  }
+}
+IsAbsent(adh:FullInscriptionSeance_VM){
+  if(adh.statut_inscription && adh.statut_inscription == InscriptionStatus_VM.ABSENT){
+    return true;
+  } else {
+    return false;
+  }
+}
+ChangerPresent(adh:FullInscriptionSeance_VM, present:boolean){
+  let statutins =InscriptionStatus_VM.ABSENT;
+  if(present){
+    statutins =InscriptionStatus_VM.PRESENT;
+  }
+  adh.statut_inscription = statutins;
+   const errorService = ErrorService.instance;
+  this.action = $localize`Mettre à  jour le statut`;
+ if(!adh.id || adh.id == 0){
+                this.inscriptionserv.Add(adh).then((id_) =>{
+                  adh.id = id_;
+                 }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+              } else {
+                 this.inscriptionserv.Update(adh).then(() =>{
+                 }).catch((error) => {
+      let n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }); 
+              }
+}
+
 
 private waitForScrollableContainer(): void {
   setTimeout(() => {

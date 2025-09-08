@@ -61,6 +61,7 @@ export class LoginComponent implements OnInit {
               return;
         }
       }
+      console.log(this.context);
       switch (this.context) {
         case "ACTIVATE":
         case "REINIT":
@@ -375,7 +376,9 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
           }
 
              if(this.context == "SEANCE"){
+              console.log("ici");
             this.essai.emit(this.VM.compte);
+              console.log(this.VM.compte);
             return;
           }
           // suite du traitement
