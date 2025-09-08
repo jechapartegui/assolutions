@@ -1383,7 +1383,7 @@
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Mes adhérents</h3>
        <btn *ngIf="thisSeance.afficher_present"
         [type_button]="'RetourLight'" 
-        (click)="isLien = false;" 
+        (click)="isLien = false;Load();" 
       ></btn> 
       <btn *ngIf="!thisSeance.afficher_present"
         [type_button]="'RetourLight'" 
