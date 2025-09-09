@@ -4,6 +4,8 @@ export const environment = {
   password:'jecha266',
   defaultlogin:'',
   defaultpassword:'',
-  environment: 'preprod'
+  environment: 'preprod',
+  defaultloginProjet:'',
+  defaultloginpassword:''
   
 };

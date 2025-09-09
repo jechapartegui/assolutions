@@ -59,6 +59,11 @@ export class Project {
   @Column({ name: "password" })
   password: string;
 
+  
+  /** Jeton d'activation après inscription */
+@Column({ name: 'activation_token', type: 'text', nullable: true, default: null })
+activationToken: string | null;   // <-- important
+
   @CreateDateColumn({ type: "timestamp with time zone", name: "date_creation" })
   createdAt: Date;
 

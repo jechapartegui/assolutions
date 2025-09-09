@@ -5,7 +5,9 @@ import {
 import { Project } from '../../entities/projet.entity';
 import { ProjectService } from '../../crud/project.service';
 import { hashPasswordWithPepper } from '../auth/auth.services';
+import { Projet_VM} from "@shared/lib/projet.interface";
 import { ConfigService } from '@nestjs/config';
+import { Adresse } from '@shared/lib/adresse.interface';
   
   
   @Injectable()
@@ -33,8 +35,8 @@ import { ConfigService } from '@nestjs/config';
         return true;
       }
 
-      async login(username:string, password:string) : Promise<boolean> {
-        const pr =  this.projectSer.getByLogin(username);
+      async login(username:string, password:string) : Promise<Projet_VM> {
+        const pr = await this.projectSer.getByLogin(username);
         if(!pr){
           throw new UnauthorizedException('INCORRECT_LOGIN');
         }
@@ -43,9 +45,26 @@ import { ConfigService } from '@nestjs/config';
             if (storedPassword !== hashed) {
               throw new UnauthorizedException('INCORRECT_PASSWORD');
             }
-        return true;
+        return to_Project_VM(pr);
       }
-  
-  
     
     }
+
+    export function to_Project_VM(entity: Project): Projet_VM {
+      const vm = new Projet_VM();
+      vm.actif = entity.isActive;
+      vm.activite = entity.activity ?? '';
+  vm.adresse = entity.address ?? new Adresse();
+  vm.contacts = entity.contacts?? [];
+  vm.couleur = entity.color?? '#FFFFFF';
+  vm.login = entity.login;
+  vm.date_debut = entity.startDate;
+  vm.date_fin = entity.endDate;
+  vm.id =  entity.id;
+  vm.langue = entity.language ?? 'FR';
+vm.logo = entity.logo ?? null;
+vm.nom = entity.name;
+vm.token = entity.activationToken ?? null;
+      return vm;
+    }
+

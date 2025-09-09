@@ -13,3 +13,14 @@ export class Login_VM{
 
     
 }
+
+
+export class Login_Projet_VM{
+    public Login:string;
+    public Password:string;
+    public isLoginValid:boolean;
+    public isPasswordValid:boolean;
+    public isValid:boolean;
+
+    
+}

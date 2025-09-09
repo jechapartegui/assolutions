@@ -61,6 +61,9 @@ export class MenuComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le menu`;
+    if(this.store.appli() == "ADMIN"){
+      this.router.navigate(['/menu-admin']);
+    }
     this.loading = true;
     
     if (!this.store.isLoggedIn) {

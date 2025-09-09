@@ -6,6 +6,7 @@ import { KeyValuePair } from '@shared/lib/autres.interface';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Groupe_VM } from '@shared/lib/groupe.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
+import { Projet_VM } from '@shared/index';
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +49,39 @@ export class ProjetService {
           return Promise.reject(error);
         });
     }
+    
+  public Login(email:string, password:string): Promise<Projet_VM> {
+      this.url = environment.maseance + 'api/project/login';
+    //  this.url = this.url + "login.php";
+    const body = {
+      email: email.toLowerCase(),
+      password: password
+    };
+
+    return this.global.POST(this.url, body)
+        .then((response: Projet_VM) => {
+  
+          return response;
+        })
+        .catch(error => {
+          // Gestion de l'erreur
+          return Promise.reject(error);
+        });
+    }
+     public ReinitMDP(login:string):Promise<boolean>{
+    this.url = environment.maseance + "api/project/reinit_mdp";
+  const payload = { login: login.toLowerCase() };   // <-- objet JSON
+
+  return this.global.POST(this.url, payload)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+
+
 
       public CheckMDP(password:string): Promise<boolean> {
       this.url = environment.maseance + 'api/project/check_mdp/';

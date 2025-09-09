@@ -12,3 +12,4 @@ export * from './lib/inscription_saison.interface';
 export * from './lib/inscription_seance.interface';
 export * from './lib/mail-input.interface';
 export * from './lib/personne.interface';
+export * from './lib/projet.interface';

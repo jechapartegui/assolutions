@@ -1,5 +1,6 @@
 import {  Body, Controller, Headers, Post, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
+import { Projet_VM} from "@shared/lib/projet.interface";
 import { ProjetService } from './project.service';
 
 // src/auth/auth.controller.ts
@@ -16,10 +17,13 @@ export class ProjetController {
 
     @UseGuards(PasswordGuard)
   @Post('login')
-  async login(@Body() { login,  password }: {login:string,password: string }
-  ) : Promise<boolean> {
-    return this.projserv.login(login, password);
+  async login(
+    @Body() { email, password }: { email: string; password: string }
+  ) : Promise<Projet_VM> {
+    return this.projserv.login(email, password);
   }
 
+
+  
  
 }

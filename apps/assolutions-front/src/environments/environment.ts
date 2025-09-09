@@ -9,7 +9,9 @@ export const environment = {
   password:'jecha266',
   defaultlogin:'jechapartegui@gmail.com',
   defaultpassword:'',
-  environment: 'dev'
+  environment: 'dev',
+  defaultloginProjet:'usivry.roller@gmail.com',
+  defaultloginpassword:'Yakalelo2211!'
   
 };
 

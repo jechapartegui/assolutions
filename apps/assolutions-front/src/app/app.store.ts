@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
+import { Projet_VM } from '@shared/lib/projet.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -8,6 +9,7 @@ export class AppStore {
   readonly isLoggedIn = signal(false);
   readonly projet = signal<ProjetView | null>(null);
   readonly compte = signal<Compte_VM | null>(null);
+  readonly projetVM = signal<Projet_VM | null>(null);
   readonly listprojet = signal<ProjetView[] | null>(null);
   readonly appli = signal<"APPLI" | "ADMIN">("APPLI");
   readonly menu = signal<"APPLI" | "ADMIN">("APPLI");
@@ -24,6 +26,24 @@ export class AppStore {
     this.projet.set(null);
     this.compte.set(null);
   }
+  login_projet(prok: Projet_VM)   { 
+    this.isLoggedIn.set(true); 
+    this.projetVM.set(prok);
+ const pv:ProjetView ={
+      id : prok.id,
+      nom : prok.nom,
+      adherent : true,
+      prof : true,
+      essai : true
+    }
+    this.updateProjet(pv);
+   }
+  logout_projet() {
+    this.isLoggedIn.set(false);
+    this.projet.set(null);
+    this.compte.set(null);
+  }
+
   updateProjet(p: ProjetView | null) { this.projet.set(p); }
   updateListeProjet(p: ProjetView[] | null) { this.listprojet.set(p); }
 

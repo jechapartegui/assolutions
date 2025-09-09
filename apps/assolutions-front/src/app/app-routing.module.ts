@@ -31,6 +31,7 @@ import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { CoursPage } from './public/course-page-public.component';
 import { SeancesPage } from './public/seance-page-public.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
+import { LoginProjetComponent } from './login-projet/login-projet.component';
 
 
 
@@ -66,6 +67,8 @@ const routes: Routes = [
   { path: 'gestion-liste', component: GestionListeComponent },
   { path: 'operations', component: OperationsComponent },
   { path: 'clementine', component: ClementineComponent }, 
+  { path: 'login-projet', component: LoginProjetComponent }, 
+  { path: 'menu-admin', component: MenuAdminComponent }, 
   { path: 'liste-cours-public', component: CoursPage },
   { path: 'liste-seances-public', component: SeancesPage },
   {path:'menu-admin',component:MenuAdminComponent},
