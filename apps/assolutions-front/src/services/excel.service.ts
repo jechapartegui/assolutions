@@ -11,6 +11,7 @@ export class ExcelService {
   constructor() { }
 
   public exportAsExcelFile(json: any[], excelFileName: string, headers: any): void {
+    console.log(json);
     const mappedJson = json.map(item => {
       const mappedItem = {};
       for (const key in headers) {

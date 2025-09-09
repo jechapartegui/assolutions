@@ -1412,13 +1412,11 @@
                       (click)="Save()"
                     ></btn>
                     <ng-container *ngIf="editSeance.seance_id >0 && editSeance.afficher_present && !store.isProf; else prof">
-                      ici
   <btn [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
                     ></btn>
                     </ng-container>
                     <ng-template #prof>    
-                      là                  
                      <btn
                      *ngIf="editSeance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
                     [type_button]="'VoirSmall'"

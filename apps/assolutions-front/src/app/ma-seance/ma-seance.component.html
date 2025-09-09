@@ -202,12 +202,13 @@
                       <div class="ligne">
                                                 <span class="partie1">
                           <span class="icon is-medium">
-                            <span
+                            <span *ngIf="store.isProf()"
                               class="fa-stack fa-sm"     (click)="openMenu(potentiel, $event)"
                               (click)="potentiel.isVisible = true"
                             >
                               <i class="fas fa-stack-2x fa-thumbs-up has-text-success" ></i>
                             </span>
+                            <span *ngIf="!store.isProf()"><i class="fas fa-stack-2x fa-thumbs-up has-text-success" ></i></span>
                           </span>
                           <ul
                             class="menu-icons"
@@ -239,7 +240,7 @@
                             contact_urgence(potentiel)
                           }}</span>
                         </span>
-                        <div class="buttons has-addons">
+                        <div *ngIf="store.isProf()"  class="buttons has-addons">
                           <button
                             type="button"
                             class="button is-outlined is-rounded is-primary"
@@ -266,12 +267,13 @@
                       <div class="ligne">
                         <span class="partie1">
                           <span class="icon is-medium">
-                            <span
+                            <span *ngIf="store.isProf()"
                               class="fa-stack fa-sm"     (click)="openMenu(potentiel, $event)"
                               (click)="potentiel.isVisible = true"
                             >
                               <i class="fas fa-stack-2x fa-question"></i>
                             </span>
+                              <i *ngIf="!store.isProf()" class="fas fa-stack-2x fa-question"></i>
                           </span>
                           <ul
                             class="menu-icons"
@@ -303,7 +305,7 @@
                             contact_urgence(potentiel)
                           }}</span>
                         </span>
-                        <div class="buttons has-addons">
+                        <div class="buttons has-addons" *ngIf="store.isProf()">
                           <button
                             type="button"
                             class="button is-outlined is-rounded is-primary"
@@ -331,11 +333,12 @@
                         <span class="partie1">
                           <span class="icon is-medium">
                             <span
-                              class="fa-stack fa-sm"     (click)="openMenu(potentiel, $event)"
+                              class="fa-stack fa-sm" *ngIf="store.isProf()"    (click)="openMenu(potentiel, $event)"
                               (click)="potentiel.isVisible = true"
                             >
                               <i  class="fas fa-stack-2x fa-hand-point-up has-text-info"></i>
                             </span>
+                              <i *ngIf="!store.isProf()" class="fas fa-stack-2x fa-hand-point-up has-text-info"></i>
                           </span>
                           <ul
                             class="menu-icons"
@@ -367,7 +370,7 @@
                             contact_urgence(potentiel)
                           }}</span>
                         </span>
-                        <div class="buttons has-addons">
+                        <div class="buttons has-addons" *ngIf="store.isProf()" >
                           <button
                             type="button"
                             class="button is-outlined is-rounded is-primary"
@@ -395,13 +398,14 @@
                             <span class="partie1">
                           <span class="icon is-medium">
                             <span
-                              class="fa-stack fa-sm"     (click)="openMenu(potentiel, $event)"
+                              class="fa-stack fa-sm" *ngIf="store.isProf()"     (click)="openMenu(potentiel, $event)"
                               (click)="potentiel.isVisible = true"
                             >
                               <i  class="fas fa-stack-2x fa-thumbs-down has-text-danger"></i>
                             </span>
+                              <i  *ngIf="!store.isProf()"    class="fas fa-stack-2x fa-thumbs-down has-text-danger"></i>
                           </span>
-                          <ul
+                          <ul  
                             class="menu-icons"
                             [ngClass]="{
                               'is-visible': potentiel.isVisible,
@@ -431,7 +435,7 @@
                             contact_urgence(potentiel)
                           }}</span>
                         </span>
-                        <div class="buttons has-addons">
+                        <div class="buttons has-addons" *ngIf="store.isProf()" >
                           <button
                             type="button"
                             class="button is-outlined is-rounded is-primary"
@@ -454,7 +458,7 @@
                 </ng-container>
                 <ng-container *ngFor="let potentiel of All">
                   <ng-container *ngIf="!potentiel.statut_seance">
-                    <ng-container *ngIf="!potentiel.statut_inscription">
+                    <ng-container *ngIf="!potentiel.statut_inscription && store.isProf()">
                       <div class="ligne">
                                                     <span class="partie1">
                           <span class="icon is-medium">
@@ -531,7 +535,7 @@
                     <ng-container *ngIf="potentiel.statut_seance === 'présent'">
                       <div class="ligne">
                         <span class="partie1">
-                          <span class="icon is-medium">
+                          <span class="icon is-medium" *ngIf="store.isProf()" >
                             <span class="fa-stack fa-sm">
                               <i
                                 *ngIf="potentiel.statut_inscription == 'présent'"
@@ -565,7 +569,7 @@
                           }}</span>
                         </span>
 
-                        <div class="buttons has-addons">
+                        <div class="buttons has-addons"  *ngIf="store.isProf()">
                           <button
                             type="button"
                             class="button is-rounded is-primary"
@@ -607,7 +611,7 @@
                   <ng-container *ngIf="potentiel.statut_seance === 'absent'">
                     <div class="ligne">
                       <span class="partie1">
-                        <span class="icon is-medium">
+                        <span class="icon is-medium"  *ngIf="store.isProf()">
                           <span class="fa-stack fa-sm">
                             <i
                               *ngIf="potentiel.statut_inscription == 'présent'"
@@ -639,7 +643,7 @@
                         }}</span>
                       </span>
 
-                      <div class="buttons has-addons">
+                      <div class="buttons has-addons"  *ngIf="store.isProf()">
                         <button
                           type="button"
                           class="button is-outlined is-rounded is-primary"
@@ -717,7 +721,7 @@
     <div class="container-box">
       <nav class="navbar is-fixed-top">
         <btn [type_button]="'RetourMobile'" (click)="uiMode!=='list' ? closePanel() : RetourListe()"></btn>
-        <button class="button is-outlined is-primary btn-mobile btn-elevated"
+        <button class="button is-outlined is-primary btn-mobile btn-elevated" *ngIf="store.isProf()" 
                 (click)="toggleMobileOptions = !toggleMobileOptions">
           <i class="fas fa-ellipsis-h"></i>&nbsp;<span>Options</span>
         </button>
@@ -895,7 +899,7 @@
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
-                  <span
+                  <span *ngIf="store.isProf()" 
                     class="fa-stack fa-sm"
                     (click)="potentiel.isVisible = true"
                   >
@@ -903,6 +907,9 @@
                       class="fas fa-stack-2x fa-thumbs-up has-text-success"
                     ></i>
                   </span>
+                  <i *ngIf="!store.isProf()" 
+                      class="fas fa-stack-2x fa-thumbs-up has-text-success" style="text-align: left;"
+                    ></i>
                 </span>
                 <ul
                   class="menu-icons"
@@ -934,7 +941,7 @@
                   contact_urgence(potentiel)
                 }}</span>
               </span>
-              <div class="buttons has-addons">
+              <div *ngIf="store.isProf()"  class="buttons has-addons">
                 <button
                   type="button"
                   class="button is-outlined is-rounded is-primary"
@@ -963,12 +970,13 @@
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
-                  <span
+                  <span *ngIf="store.isProf()" 
                     class="fa-stack fa-sm"
                     (click)="potentiel.isVisible = true"
                   >
                     <i class="fas fa-stack-2x fa-question"></i>
                   </span>
+                    <i *ngIf="!store.isProf()" class="fas fa-stack-2x fa-question"  style="text-align: left;"></i>
                 </span>
                 <ul
                   class="menu-icons"
@@ -1000,7 +1008,7 @@
                   contact_urgence(potentiel)
                 }}</span>
               </span>
-              <div class="buttons has-addons">
+              <div class="buttons has-addons" *ngIf="store.isProf()">
                 <button
                   type="button"
                   class="button is-outlined is-rounded is-primary"
@@ -1029,7 +1037,7 @@
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
-                  <span
+                  <span *ngIf="store.isProf()"
                     class="fa-stack fa-sm"
                     (click)="potentiel.isVisible = true"
                   >
@@ -1037,6 +1045,9 @@
                       class="fas fa-stack-2x fa-hand-point-up has-text-info"
                     ></i>
                   </span>
+                    <i *ngIf="!store.isProf()" 
+                      class="fas fa-stack-2x fa-hand-point-up has-text-info"  style="text-align: left;"
+                    ></i>
                 </span>
                 <ul
                   class="menu-icons"
@@ -1068,7 +1079,7 @@
                   contact_urgence(potentiel)
                 }}</span>
               </span>
-              <div class="buttons has-addons">
+              <div class="buttons has-addons" *ngIf="store.isProf()">
                 <button
                   type="button"
                   class="button is-outlined is-rounded is-primary"
@@ -1097,7 +1108,7 @@
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
-                  <span
+                  <span *ngIf="store.isProf()"
                     class="fa-stack fa-sm"
                     (click)="potentiel.isVisible = true"
                   >
@@ -1105,6 +1116,9 @@
                       class="fas fa-stack-2x fa-thumbs-down has-text-danger"
                     ></i>
                   </span>
+                    <i *ngIf="!store.isProf()"
+                      class="fas fa-stack-2x fa-thumbs-down has-text-danger"  style="text-align: left;"
+                    ></i>
                 </span>
                 <ul
                   class="menu-icons"
@@ -1136,7 +1150,7 @@
                   contact_urgence(potentiel)
                 }}</span>
               </span>
-              <div class="buttons has-addons">
+              <div class="buttons has-addons" *ngIf="store.isProf()">
                 <button
                   type="button"
                   class="button is-outlined is-rounded is-primary"
@@ -1159,7 +1173,7 @@
       </ng-container>
       <ng-container *ngFor="let potentiel of All">
         <ng-container *ngIf="!potentiel.statut_seance">
-          <ng-container *ngIf="!potentiel.statut_inscription">
+          <ng-container *ngIf="!potentiel.statut_inscription && store.isProf()">
             <div class="ligne">
               <span class="partie1">
                 <span class="icon is-medium">
@@ -1243,7 +1257,7 @@
                     <ng-container *ngIf="potentiel.statut_seance === 'présent'">
                       <div class="ligne">
                         <span class="partie1">
-                          <span class="icon is-medium">
+                          <span class="icon is-medium" *ngIf="store.isProf()">
                             <span class="fa-stack fa-sm">
                               <i
                                 *ngIf="potentiel.statut_inscription == 'présent'"
@@ -1277,7 +1291,7 @@
                           }}</span>
                         </span>
 
-                        <div class="buttons has-addons">
+                        <div class="buttons has-addons" *ngIf="store.isProf()">
                           <button
                             type="button"
                             class="button is-rounded is-primary"
@@ -1319,7 +1333,7 @@
                   <ng-container *ngIf="potentiel.statut_seance === 'absent'">
                     <div class="ligne">
                       <span class="partie1">
-                        <span class="icon is-medium">
+                        <span class="icon is-medium" *ngIf="store.isProf()">
                           <span class="fa-stack fa-sm">
                             <i
                               *ngIf="potentiel.statut_inscription == 'présent'"
@@ -1351,7 +1365,7 @@
                         }}</span>
                       </span>
 
-                      <div class="buttons has-addons">
+                      <div class="buttons has-addons" *ngIf="store.isProf()">
                         <button
                           type="button"
                           class="button is-outlined is-rounded is-primary"

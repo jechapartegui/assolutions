@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import {
   Adhesion,
   Type_Adhesion,
@@ -26,12 +27,14 @@ import { ItemContact, Personne_VM } from '@shared/lib/personne.interface';
 import { AppStore } from '../app.store';
 import { CompteService } from '../../services/compte.service';
 import { Compte_VM } from '@shared/lib/compte.interface';
+import { MultifiltersAdherentPipe } from '../../filters/multifilters-adherent.pipe';
 
 @Component({
   standalone: false,
   selector: 'app-adherent',
   templateUrl: './adherent.component.html',
   styleUrls: ['./adherent.component.css'],
+    providers: [MultifiltersAdherentPipe],
 })
 export class AdherentComponent implements OnInit {
 
@@ -118,7 +121,8 @@ private readonly defaultPhotoUrl = 'assets/photo_H.png';
     private compteserv:CompteService,
     private grServ: GroupeService,
     private route: ActivatedRoute,
-    public store:AppStore
+    public store:AppStore,
+        private multiFiltersAdherent: MultifiltersAdherentPipe
     
   ) {}
   ngOnInit(): void {
@@ -818,38 +822,19 @@ PreSave() {
       NomPhoneUrgence: 'Contact téléphone si urgence',
       Inscrit: 'Inscrit',
     };
-    let list: Adherent_VM[] = this.getFilteredAdherents();
-    this.excelService.exportAsExcelFile(
-      list.map((x) => new AdherentExport(x)),
-      'liste_adherent',
-      headers
-    );
-  }
-  getFilteredAdherents(): Adherent_VM[] {
-    return this.liste_adherents_VM.filter((adherent) => {
-      return (
-        (!this.filters.filter_nom ||
-          adherent.libelle.toLowerCase().includes(
-            this.filters.filter_nom.toLowerCase()
-          )) &&
-        (!this.filters.filter_date_avant ||
-          new Date(adherent.date_naissance) <= new Date(this.filters.filter_date_avant)) &&
-        (!this.filters.filter_date_apres ||
-          new Date(adherent.date_naissance) >= new Date(this.filters.filter_date_apres)) &&
-        (!this.filters.filter_sexe ||
-          adherent.sexe === this.filters.filter_sexe) &&
-        (!this.filters.filter_groupe ||
-          adherent.inscriptionsSaison[0].groupes.find((x) =>
-            x.nom
-              .toLowerCase()
-              .includes(this.filters.filter_groupe.toLowerCase())
-          )) &&
-        (!this.filters.filter_inscrit ||
-          adherent.inscrit === this.filters.filter_inscrit)
-      );
-    });
-  }
+     // même filtrage que dans le HTML
+  const list = this.multiFiltersAdherent.transform(
+    this.liste_adherents_VM,
+    this.filters,
+    this.active_saison?.id
+  );
 
+  this.excelService.exportAsExcelFile(
+    list.map(x => new AdherentExport(x)),
+    'liste_adherent',
+    headers
+  );
+  }
 
   StatutMAJ(ad: Adherent_VM) {
     let n = this.liste_adherents_VM.find((x) => x.id == ad.id);

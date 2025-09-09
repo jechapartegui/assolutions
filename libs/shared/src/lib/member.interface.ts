@@ -40,12 +40,13 @@ export class AdherentExport {
       this.safeAssign(() => this.Nom = a.nom);
       this.safeAssign(() => this.Prenom = a.prenom);
       this.safeAssign(() => this.Surnom = a.surnom);
-      this.safeAssign(() => this.DDN = a.date_naissance.toDateString());
+      this.safeAssign(() => this.DDN =  new Date(a.date_naissance).toLocaleDateString('fr-FR'));
       this.safeAssign(() => this.Sexe = a.sexe);
       this.safeAssign(() => this.Street = a.adresse.Street);
       this.safeAssign(() => this.PostCode = a.adresse.PostCode);
       this.safeAssign(() => this.City = a.adresse.City);
       this.safeAssign(() => this.Country = a.adresse.Country);
+      this.safeAssign(() => this.Login = a.login);
       this.safeAssign(() => this.Mail = a.contact.filter(x => x.Type === 'EMAIL')[0]?.Value);
       this.safeAssign(() => this.MailPref = a.contact.filter(x => x.Type === 'EMAIL')[0]?.Pref);
       this.safeAssign(() => this.Phone = a.contact.filter(x => x.Type === 'PHONE')[0]?.Value);

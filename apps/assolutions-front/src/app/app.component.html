@@ -396,7 +396,7 @@
           </a>
         </li>
 
-        <li *ngIf="store.isLoggedIn()">
+        <li *ngIf="store.isLoggedIn() && store.isProf()">
           <a [class]="
          store.selectedMenu()=== 'ADHERENT'
             ? 'navbar-item is-selected'
@@ -409,7 +409,7 @@
             <span class="tablet">Adhérents</span>
           </a>
         </li>
-        <li *ngIf="store.isLoggedIn()">
+        <li *ngIf="store.isLoggedIn() && store.isProf()">
           <a [class]="
          store.selectedMenu()=== 'SEANCE'
             ? 'navbar-item is-selected'
@@ -422,7 +422,7 @@
               <span class="tablet">Séances</span>
           </a>
         </li>
-        <li *ngIf="store.isLoggedIn()">
+        <li *ngIf="store.isLoggedIn() && store.isProf()">
           <a [class]="
          store.selectedMenu()=== 'COURS'
             ? 'navbar-item is-selected'
@@ -435,7 +435,7 @@
               <span class="tablet">Cours</span>
           </a>
         </li>
-        <li *ngIf="store.isLoggedIn()">
+        <li *ngIf="store.isLoggedIn() && store.isProf()">
           <a [class]="
          store.selectedMenu()=== 'GROUPE'
             ? 'navbar-item is-selected'
