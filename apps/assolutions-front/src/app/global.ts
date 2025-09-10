@@ -1,9 +1,10 @@
+import { GenericLink_VM } from "@shared/index";
 import { Doc } from "../class/doc";
 
 
 export class StaticClass{
 
-  public ListeObjet:ObjetAppli[] = [];
+  public ListeObjet:GenericLink_VM[] = [];
   public ClassComptable:ClassComptable[] = [];
   public TypeStock:TypeStock[] = [];
   public TypeTransaction:TypeTransaction[] = [];
@@ -140,7 +141,6 @@ export  const configapi= [
   }
 ]
 
-export class ObjetAppli{id:number; type:string;value:string }
 export class ClassComptable{numero:number; libelle:string }
 export class TypeStock{id:number =0;categorie: string| null = null; libelle: string = $localize`Autre`
 

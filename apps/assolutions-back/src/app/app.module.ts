@@ -22,6 +22,7 @@ import { MessagesModule } from './messages/messages.module';
 
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { join } from 'path';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { join } from 'path';
     CoursModule,
     GroupeModule,
     DocumentModule,
+    AdminModule,
     InscriptionSaisonModule,
   ],
   providers: [

@@ -1,120 +1,35 @@
 import { Injectable } from '@angular/core';
-import { stock } from '../class/stock';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
+import { Stock_VM } from '@shared/lib/stock.interface';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class StockService {
+private base = environment.maseance + 'api/admin/stock';
+constructor(private http: GlobalService) {}
 
-  url = environment.maseance;
-  constructor(public global: GlobalService) {
- }
- public Get(id:number): Promise<stock> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/stock_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get",
-    id:id
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: stock) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
- public GetAll(): Promise<stock[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/stock_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all"
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: stock[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public get(id: number): Promise<Stock_VM> {
+return this.http.GET(`${this.base}/get/${id}`);
 }
 
-public GetAllFF(flux_financier_id:number): Promise<stock[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/stock_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_flux_financier",
-    flux_financier_id:flux_financier_id
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: stock[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public getAll(): Promise<Stock_VM[]> {
+return this.http.GET(`${this.base}/getall/`);
 }
 
-public Add(stock:stock): Promise<number> {
-  this.url = environment.maseance + 'maseance/stock_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"add",
-    stock:stock,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: number) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public add(payload: Partial<Stock_VM>): Promise<number> {
+return this.http.PUT(`${this.base}/add`, payload);
 }
-public Update(stock:stock): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/stock_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"update",
-    stock:stock,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+
+public update(payload: Partial<Stock_VM> & { id: number }): Promise<boolean> {
+return this.http.PUT(`${this.base}/update`, payload);
 }
-public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/stock_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"delete",
-    id:id,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+
+public delete(id: number): Promise<boolean> {
+return this.http.DELETE(`${this.base}/delete/${id}`);
 }
 }

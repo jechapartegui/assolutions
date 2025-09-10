@@ -1,126 +1,40 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
-import { fluxfinancier } from '../class/fluxfinancier';
+import { FluxFinancier_VM } from '@shared/index';
 
-@Injectable({
-  providedIn: 'root'
-})
+
+@Injectable({ providedIn: 'root' })
 export class ComptabiliteService {
+private base = environment.maseance + 'api/admin/flow';
+constructor(private http: GlobalService) {}
 
-  url = environment.maseance;
-  constructor(public global: GlobalService) {
- }
- public VoirSituation(saison_id:number): Promise<fluxfinancier[]> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"situation_complete",
-    saison_id:saison_id
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: fluxfinancier[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
- public Add(fluxfinancier:fluxfinancier): Promise<number> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"add",
-    fluxfinancier:fluxfinancier
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: number) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public get(id: number): Promise<FluxFinancier_VM> {
+return this.http.GET(`${this.base}/get/${id}`);
 }
 
 
-
-public Update(fluxfinancier:fluxfinancier): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"update",
-    fluxfinancier:fluxfinancier,
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public getAll(projectId: number | null, saisonId?: number | null): Promise<FluxFinancier_VM[]> {
+const pid = projectId ?? 'null';
+const url = new URL(`${this.base}/getall/${pid}`, window.location.origin);
+if (saisonId != null) url.searchParams.set('saison_id', String(saisonId));
+return this.http.GET(url.pathname + (url.search || ''));
 }
 
-public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"delete",
-    id:id,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public add(payload: Partial<FluxFinancier_VM>): Promise<number> {
+return this.http.PUT(`${this.base}/add`, payload);
 }
 
-public Get(id:number): Promise<fluxfinancier> {
-  this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get",
-    id:id,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: fluxfinancier) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public update(payload: Partial<FluxFinancier_VM> & { id: number }): Promise<boolean> {
+return this.http.PUT(`${this.base}/update`, payload);
 }
 
-public GetAll(date_min:Date=null, date_max:Date=null): Promise<fluxfinancier[]> {
-  this.url = environment.maseance + 'maseance/fluxfinancier_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all",
-    date_min:date_min,
-    date_max:date_max
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: fluxfinancier[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public delete(id: number): Promise<boolean> {
+return this.http.DELETE(`${this.base}/delete/${id}`);
 }
 }
 

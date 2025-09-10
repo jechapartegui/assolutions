@@ -1,71 +1,45 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
+import { AddInfo_VM } from '@shared/lib/addinfo.interface';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AddInfoService {
-  url = environment.maseance;
-  constructor(public global: GlobalService) {}
+private base = environment.maseance + 'api/admin/addinfo';
+constructor(private http: GlobalService) {}
 
-  public GetLV(name: string, original:boolean=false): Promise<string> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/addinfo_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: 'get_lv',
-      name: name,
-      original:original
-    };
 
-    return this.global
-      .POST(this.url, body)
-      .then((response: string) => {
-        return response;
-      })
-      .catch((error) => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public UpdateLV(name: string, content:string): Promise<boolean> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/addinfo_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: 'update_lv',
-      name: name,
-      content:content
-    };
+/** Liste de valeurs (LV) pour un object_type donné */
+public list(objectType: string, original = false): Promise<AddInfo_VM> {
+const url = `${this.base}/list/${encodeURIComponent(objectType)}?original=${original}`;
+return this.http.GET(url);
+}
 
-    return this.global
-      .POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch((error) => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
 
-  public GetObjet():Promise<{id:number, type:string,value:string }[]>{
-    this.url = environment.maseance + 'maseance/addinfo_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: 'all_objets'
-    };
+/** Récupérer un addinfo par id */
+public get(id: number): Promise<AddInfo_VM> {
+const url = `${this.base}/get/${id}`;
+return this.http.GET(url);
+}
 
-    return this.global
-      .POST(this.url, body)
-      .then((response: {id:number, type:string,value:string }[]) => {
-        return response;
-      })
-      .catch((error) => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
 
+/** Créer une entrée addinfo */
+public add(payload: Partial<AddInfo_VM>): Promise<number> {
+const url = `${this.base}/add`;
+return this.http.PUT(url, payload);
+}
+
+
+/** Mettre à jour une entrée addinfo */
+public update(payload: Partial<AddInfo_VM> & { id: number }): Promise<boolean> {
+const url = `${this.base}/update`;
+return this.http.PUT(url, payload);
+}
+
+
+/** Supprimer */
+public delete(id: number): Promise<boolean> {
+const url = `${this.base}/delete/${id}`;
+return this.http.DELETE(url);
+}
 }

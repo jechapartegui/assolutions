@@ -1,127 +1,41 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
-import { operation } from '../class/operation';
+import { Operation_VM } from '@shared/lib/operation.interface';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class operationService {
+@Injectable({ providedIn: 'root' })
+export class OperationService {
+private base = environment.maseance + 'api/admin/op';
+constructor(private http: GlobalService) {}
 
-  url = environment.maseance;
-  constructor(public global: GlobalService) {
- }
 
- public Add(operation:operation): Promise<number> {
-  // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-  this.url = environment.maseance + 'maseance/operation_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"add",
-    operation:operation
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: number) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public get(id: number): Promise<Operation_VM> {
+return this.http.GET(`${this.base}/get/${id}`);
 }
 
 
-
-public Update(operation:operation): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/operation_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"update",
-    operation:operation,
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public byAccount(compteId: number): Promise<Operation_VM[]> {
+return this.http.GET(`${this.base}/by-account/${compteId}`);
 }
 
-public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/operation_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"delete",
-    id:id,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public byFlow(flowId: number): Promise<Operation_VM[]> {
+return this.http.GET(`${this.base}/by-flow/${flowId}`);
 }
 
-public Get(id:number): Promise<operation> {
-  this.url = environment.maseance + 'maseance/operation_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get",
-    id:id,
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: operation) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public add(payload: Partial<Operation_VM>): Promise<number> {
+return this.http.PUT(`${this.base}/add`, payload);
 }
 
-public GetByFF(id:number): Promise<operation[]> {
-  this.url = environment.maseance + 'maseance/operation_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all_by_fluxfinancier",
-    id:id
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: operation[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public update(payload: Partial<Operation_VM> & { id: number }): Promise<boolean> {
+return this.http.PUT(`${this.base}/update`, payload);
 }
 
-public GetAll(date_min:Date=null, date_max:Date=null): Promise<operation[]> {
-  this.url = environment.maseance + 'maseance/operation_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_all",
-    date_min:date_min,
-    date_max:date_max
-  };
 
-  return this.global.POST(this.url, body)
-    .then((response: operation[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+public delete(id: number): Promise<boolean> {
+return this.http.DELETE(`${this.base}/delete/${id}`);
 }
 }
 

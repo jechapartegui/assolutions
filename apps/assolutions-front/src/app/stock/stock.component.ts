@@ -1,15 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Stock, stock } from '../../class/stock';
 import { MultifiltersStockPipe } from '../../filters/multifilters-stock.pipe';
 import { AddInfoService } from '../../services/addinfo.service';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
 import { StockService } from '../../services/stock.service';
-import { ObjetAppli, TypeStock, TypeTransaction, StaticClass } from '../global';
+import { TypeStock, TypeTransaction, StaticClass } from '../global';
 import { AppStore } from '../app.store';
+import { GenericLink_VM, Stock_VM } from '@shared/index';
 
 @Component({
   standalone: false,
@@ -27,16 +27,16 @@ export class StockComponent implements OnInit {
     public histo_stock: string;
     public selected_filter: string;
 
-  liste_lieu: ObjetAppli[] = [];
-  liste_transaction: ObjetAppli[] = [];
+  liste_lieu: GenericLink_VM[] = [];
+  liste_transaction: GenericLink_VM[] = [];
   est_prof: boolean = false;
   est_admin: boolean = false;
-  liste_stock: Stock[] = [];
+  liste_stock: Stock_VM[] = [];
   liste_type_equipement: string[] = [];
   liste_equipement: string[];
   IsVendre: boolean = false;
   editMode = false;
-  editStock: Stock | null = null;
+  editStock: Stock_VM | null = null;
   public TypeStock: TypeStock[] = [];
   public TypeTransaction: TypeTransaction[] = [];
   public null_item: TypeStock = new TypeStock();
@@ -74,7 +74,7 @@ export class StockComponent implements OnInit {
 
       this.action = $localize`Charger la liste des endroits de stockage`;
       if (!this.SC.ListeObjet || this.SC.ListeObjet.length == 0) {
-        this.addinfo_serv.GetObjet().then((liste) => {
+        this.addinfo_serv.getall_liste().then((liste) => {
           this.SC.ListeObjet = liste;
           this.liste_lieu = this.SC.ListeObjet.filter(
             (x) => x.type == 'rider' || x.type == 'lieu' || x.type == 'autre'
@@ -93,7 +93,7 @@ export class StockComponent implements OnInit {
       }
       this.action = $localize`Charger les types de stcok`;
       if (!this.SC.TypeStock || this.SC.TypeStock.length == 0) {
-        this.addinfo_serv.GetLV('stock').then((liste) => {
+        this.addinfo_serv.list('stock').then((liste) => {
           this.SC.TypeStock = JSON.parse(liste);
           this.TypeStock = this.SC.TypeStock;
           this.liste_type_equipement = Array.from(
@@ -105,7 +105,7 @@ export class StockComponent implements OnInit {
       }
       this.action = $localize`Charger les types d'achat`;
       if (!this.SC.TypeTransaction || this.SC.TypeTransaction.length == 0) {
-        this.addinfo_serv.GetLV('type_achat').then((liste) => {
+        this.addinfo_serv.list('type_achat').then((liste) => {
           this.SC.TypeTransaction = JSON.parse(liste);
           this.TypeTransaction = this.SC.TypeTransaction;
         });
@@ -131,13 +131,13 @@ export class StockComponent implements OnInit {
     }
   }
 
-  Edit(stock: Stock): void {
+  Edit(stock: Stock_VM): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'équipement`;
     this.stockservice
-      .Get(stock.ID)
+      .get(stock.id)
       .then((ss) => {
-        this.editStock = new Stock(ss);
+        this.editStock = ss;
         this.editMode = true;
       })
       .catch((err: HttpErrorResponse) => {
@@ -149,30 +149,21 @@ export class StockComponent implements OnInit {
   Acheter() {}
   VendreList() {}
 
-  Vendre(stock: Stock) {}
+  Vendre(stock: Stock_VM) {}
 
   Creer(): void {
-    this.editStock = new Stock(new stock());
-    this.editStock.Date = new Date().toString();
+    this.editStock = new Stock_VM();
+    this.editStock.date_achat = new Date().toString();
     this.editMode = true;
   }
 
-  Voir(stock: Stock = null) {
+  Voir(stock: Stock_VM = null) {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'équipement`;
     this.stockservice
-      .Get(stock.ID)
+      .get(stock.id)
       .then((ss) => {
-        this.editStock = new Stock(ss);
-        const LS = this.editStock.LieuStockage;
-        if (
-          LS.type == 'autre' &&
-          LS.value == $localize`:@@non_defini:Non défini`
-        ) {
-          this.editStock.LieuStockageLibelle = $localize`:@@non_defini:Non défini`;
-        } else {
-          this.editStock.LieuStockageLibelle = LS.value + '(' + LS.type + ')';
-        }
+        this.editStock = ss;
         this.editMode = false;
       })
       .catch((err: HttpErrorResponse) => {
@@ -185,7 +176,7 @@ export class StockComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les équipements`;
     this.stockservice
-      .GetAll()
+      .getAll()
       .then((stocks) => {
         if (stocks.length == 0) {
           this.liste_stock = [];
@@ -193,33 +184,12 @@ export class StockComponent implements OnInit {
           errorService.emitChange(o);
           return;
         } else {
-          this.liste_stock = stocks.map((x) => new Stock(x));
-          this.liste_stock.forEach((st) => {
-            const LS = st.LieuStockage;
-            if (
-              LS.type == 'autre' &&
-              LS.value == $localize`:@@non_defini:Non défini`
-            ) {
-              st.LieuStockageLibelle = $localize`:@@non_defini:Non défini`;
-            } else {
-              st.LieuStockageLibelle = LS.value + '(' + LS.type + ')';
-            }
-            if (!st.TypeStock || st.TypeStock == 0) {
-              st.TypeStockLibelle = $localize`Autre`;
-            } else {
-              const TS = this.SC.TypeStock.find((x) => x.id == st.TypeStock);
-              if (TS) {
-                st.TypeStockLibelle = TS.libelle + ' (' + TS.categorie + ')';
-              } else {
-                st.TypeStockLibelle = $localize`Autre`;
-              }
-            }
-          });
+          this.liste_stock = stocks;
 
           this.loading = false;
           this.liste_stock.sort((a, b) => {
-            let dateA = a.datasource.date_achat;
-            let dateB = b.datasource.date_achat;
+            let dateA = a.date_achat;
+            let dateB = b.date_achat;
 
             let comparaison = 0;
             if (dateA > dateB) {
@@ -246,8 +216,8 @@ export class StockComponent implements OnInit {
     );
     if (selectedOption) {
       // Mettre à jour l'affichage et le modèle avec l'objet sélectionné
-      this.editStock.LieuStockageLibelle = displayText;
-      this.editStock.LieuStockage = selectedOption;
+      this.editStock.lieu_stockage.value = displayText;
+      this.editStock.lieu_stockage.id = selectedOption;
       this.editStock.datasource.lieu_stockage =
         JSON.stringify(selectedOption);
     } else {
@@ -352,9 +322,9 @@ export class StockComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Rafraichir l'équipement`;
     this.stockservice
-      .Get(this.editStock.ID)
+      .get(this.editStock.ID)
       .then((c) => {
-        this.editStock = new Stock(c);
+        this.editStock = c;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       })
@@ -546,11 +516,11 @@ export class FilterStock {
     this._filter_equipement = value;
     this.onFilterChange();
   }
-  private _filter_lieu: ObjetAppli | null = null;
-  get filter_lieu(): ObjetAppli | null {
+  private _filter_lieu: GenericLink_VM | null = null;
+  get filter_lieu(): GenericLink_VM | null {
     return this._filter_lieu;
   }
-  set filter_lieu(value: ObjetAppli | null) {
+  set filter_lieu(value: GenericLink_VM | null) {
     this._filter_lieu = value;
     this.onFilterChange();
   }

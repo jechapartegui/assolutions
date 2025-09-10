@@ -121,13 +121,21 @@ public AddLien(
     });
 }
 
-public DeleteLien(id_lien: number): Promise<boolean> {
+public DeleteLien(id: number): Promise<boolean> {
   // encodeURIComponent protège contre les '/' ou caractères spéciaux dans type_objet
-  const url = `api/groupe/deletelien/${id_lien}`;
+  const url = `api/groupe/deletelien`;
+ const body = {
+      id: id, 
+    };
 
-  return this.global.DELETE(url)
-    .then((response: boolean) => response)
-    .catch(error => Promise.reject(error));
-}
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
+
 
 }

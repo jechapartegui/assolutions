@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
 import { GroupeService } from "./groupe.service";
 import { PasswordGuard } from "../guards/password.guard";
 import type { KeyValuePair } from "@shared/lib/autres.interface";
@@ -45,10 +45,10 @@ async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
     }
 
         @UseGuards(PasswordGuard)
-@Delete('deletelien/:id')
+@Post('deletelien')
 async DeleteLien(
-  @Param('id') id: number,
-) {
+ @Body() body: { id: number }) {
+      const { id } = body;
   return this.groupe_serv.DeleteLien(id);
 }
 
