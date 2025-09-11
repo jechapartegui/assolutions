@@ -17,9 +17,9 @@ balance: number; // signed
 operationDate: string; // YYYY-MM-DD
 
 
-@Column({ name: 'mode', type: 'varchar', length: 255 })
-mode: string; // e.g., "Prélèvement", codes, etc.
-
+@Column({ name: 'mode', type: 'int'})
+mode: number; // e.g., "Prélèvement", codes, etc.
+ 
 
 @Column({ name: 'destinataire', type: 'text' })
 recipient: string; // JSON link

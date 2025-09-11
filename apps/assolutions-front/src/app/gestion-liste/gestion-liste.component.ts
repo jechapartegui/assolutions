@@ -3,6 +3,7 @@ import { ClassComptable, StaticClass, TypeStock, TypeTransaction } from '../glob
 import { HttpErrorResponse } from '@angular/common/http';
 import { AddInfoService } from '../../services/addinfo.service';
 import { ErrorService } from '../../services/error.service';
+import { AddInfo_VM } from '@shared/index';
 
 @Component({
   standalone: false,
@@ -21,17 +22,17 @@ export class GestionListeComponent {
   Load(force:boolean) {
     const errorService = ErrorService.instance;
     this.addinfo_serv
-      .GetLV(this.lv, force)
-      .then((ret: string) => {
+      .get_lv(this.lv, force)
+      .then((ret: AddInfo_VM) => {
         switch (this.lv) {
           case 'class_compta':
-            this.ClassComptable = JSON.parse(ret);
+            this.ClassComptable = JSON.parse(ret.text);
             break;
           case 'stock':
-            this.TypeStock = JSON.parse(ret);
+            this.TypeStock = JSON.parse(ret.text);
             break;
           case 'type_achat':
-            this.TypeTransaction = JSON.parse(ret);
+            this.TypeTransaction = JSON.parse(ret.text);
             break;
         }
         this.charge = true;
@@ -65,10 +66,16 @@ export class GestionListeComponent {
           content = JSON.stringify(this.TypeTransaction);
           break;
     }
+    let adin:AddInfo_VM = new AddInfo_VM();
+    adin.id = 0 // va falloir alors chercher ca
+    adin.object_id = 0;
+    adin.value_type = ""
+    adin.text = content;
+    adin.object_type = this.lv;
     this.action = $localize`Sauvegarder`;
     const errorService = ErrorService.instance;
     this.addinfo_serv
-      .UpdateLV(this.lv, content)
+      .update(adin)
       .then((ret: boolean) => {
         let o = errorService.OKMessage(this.action);
         if(!ret){
@@ -82,13 +89,13 @@ export class GestionListeComponent {
 
   }
   AjouterCC() {
-    let cc: { numero: number; libelle: string } = {
-      numero: 0,
+    let cc: ClassComptable = {
+      numero: "0",
       libelle: 'Nouveau',
     };
     this.ClassComptable.push(cc);
   }
-  SupprimerCC(cc: { numero: number; libelle: string }) {
+  SupprimerCC(cc: ClassComptable) {
     this.ClassComptable = this.ClassComptable.filter(
       (x) => x.libelle !== cc.libelle && x.numero !== cc.numero
     );

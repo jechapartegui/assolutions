@@ -2,13 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import {
-  Adhesion,
-  Type_Adhesion,
-  paiement_adhesion,
-} from '../../class/adhesion';
-import { fluxfinancier } from '../../class/fluxfinancier';
-import { operation } from '../../class/operation';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
@@ -149,7 +142,7 @@ this.histo_adherent = JSON.stringify(this.thisAdherent);
     }
     this.loading = true;
 
-    if (this.store.isLoggedIn) {
+    if (this.store.isLoggedIn()) {
       this.saisonserv
         .GetAll()
         .then((sa) => {
@@ -174,6 +167,9 @@ this.histo_adherent = JSON.stringify(this.thisAdherent);
           this.active_saison = this.liste_saison.filter(
             (x) => x.active == true
           )[0];
+          if(this.active_saison && !this.store.saison_active()){
+            this.store.updateSaisonActive(this.active_saison);
+          }
           this.route.queryParams.subscribe((params) => {
             if ('id' in params) {
               this.id = params['id'];
@@ -236,7 +232,6 @@ this.histo_adherent = JSON.stringify(this.thisAdherent);
       .then((groupes) => {
         this.liste_groupe = groupes;
         this.liste_groupe_filter = groupes;
-
         this.ridersService
           .GetAdherentAdhesion(this.active_saison.id)
           .then((adh) => {
@@ -412,78 +407,6 @@ Inscrire(){
   Read(adh: Adherent_VM) {
     this.id = adh.id;
     this.ChargerAdherent();
-  }
-  CreerPaiement(
-    adh: Adhesion,
-    type_a: Type_Adhesion,
-    libelle_nom: string,
-    libelle_saison: string
-  ) {
-    let dd: string;
-    let st: number = 0;
-    if (type_a.paiements.length == 1) {
-      if (type_a.date_paiement_fixe) {
-        dd = type_a.paiements[0].date_prevue;
-      } else {
-        dd = new Date().toISOString().slice(0, 10);
-        st = 1;
-      }
-      let ff: fluxfinancier = new fluxfinancier();
-      ff.date = dd;
-      ff.montant = type_a.paiements[0].montant;
-      ff.classe_comptable = type_a.classe_comptable_id;
-      ff.recette = true;
-      ff.statut = st;
-      ff.libelle =
-        $localize`Adhésion ` +
-        type_a.libelle +
-        $localize` pour la saison ` +
-        libelle_saison +
-        $localize` de ` +
-        libelle_nom;
-      let o: operation = new operation();
-      o.solde = type_a.paiements[0].montant;
-      o.date_operation = dd;
-      o.mode = type_a.mode_paiement;
-      o.compte_bancaire_id = type_a.compte_id;
-      o.paiement_execute = st;
-      ff.operations.push(o);
-      let paiement: paiement_adhesion = {
-        numero: 1,
-        date_prevue: dd,
-        montant: type_a.paiements[0].montant,
-      };
-      adh.paiements.push(paiement);
-    } else {
-      let ff: fluxfinancier = new fluxfinancier();
-      ff.date = dd;
-      ff.montant = type_a.paiements[0].montant;
-      ff.classe_comptable = type_a.classe_comptable_id;
-      ff.recette = true;
-      ff.statut = 0;
-      ff.libelle =
-        $localize`Adhésion ` +
-        type_a.libelle +
-        $localize` pour la saison ` +
-        libelle_saison +
-        $localize` de ` +
-        libelle_nom;
-      for (let i = 0; i < type_a.paiements.length; i++) {
-        let o: operation = new operation();
-        o.solde = type_a.paiements[i].montant;
-        o.date_operation = type_a.paiements[i].date_prevue;
-        o.mode = type_a.mode_paiement;
-        o.compte_bancaire_id = type_a.compte_id;
-        o.paiement_execute = 0;
-        ff.operations.push(o);
-        let paiement: paiement_adhesion = {
-          numero: i + 1,
-          date_prevue: type_a.paiements[i].date_prevue,
-          montant: type_a.paiements[i].montant,
-        };
-        adh.paiements.push(paiement);
-      }
-    }
   }
 
 
@@ -721,7 +644,6 @@ PreSave() {
       this.UpdateListeAdherents();
     } else  if (this.context == 'ESSAI') {
       this.thisAdherent = null;
-      console.log("ici");
       this.essai.emit(null);
     } else {
       this.router.navigate(['/menu']);

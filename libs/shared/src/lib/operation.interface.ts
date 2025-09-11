@@ -5,8 +5,8 @@ import { GenericLink_VM } from "./liens.interface";
 export class Operation_VM {
 id = 0;
 solde!: number;
-date_operation!: string; // YYYY-MM-DD
-mode!: string;
+date_operation!: Date; // YYYY-MM-DD
+mode!: number;
 destinataire!: GenericLink_VM; // parsed recipient
 paiement_execute!: boolean;
 compte_bancaire_id!: number;
@@ -14,4 +14,5 @@ compte_bancaire?: CompteBancaire_VM;
 flux_financier_id!: number;
 flux_financier?: FluxFinancier_VM
 info?: string;
+temp_id:number;
 }

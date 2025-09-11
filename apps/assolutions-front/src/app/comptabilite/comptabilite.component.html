@@ -3,10 +3,10 @@
   <div class="columns is-justify-content-center">
     <div class="column is-12-tablet is-8-widescreen is-6-fullh">
       <div *ngIf="editFluxFlinancier" class="box">
-        <h2 *ngIf="editFluxFlinancier.ID < 1" class="title is-2" i18n>
+        <h2 *ngIf="editFluxFlinancier.id < 1" class="title is-2" i18n>
           Créer un flux
         </h2>
-        <h2 *ngIf="editFluxFlinancier.ID > 0" class="title is-2" i18n>
+        <h2 *ngIf="editFluxFlinancier.id > 0" class="title is-2" i18n>
           Editer un flux
         </h2>
 
@@ -19,7 +19,7 @@
                   class="input"
                   type="text"
                   placeholder="Libellé"
-                  [(ngModel)]="editFluxFlinancier.Libelle"
+                  [(ngModel)]="editFluxFlinancier.libelle"
                 />
               </p>
             </div>
@@ -32,25 +32,12 @@
               ;
                   align-items: center;
                   gap: 2px;">
-                <input (ngModelChange)="$event < 0 ? editFluxFlinancier.IsRecette = false : editFluxFlinancier.IsRecette = true"
+                <input  
                   class="input"
                   type="number"
                   placeholder="Montant"
-                  [(ngModel)]="editFluxFlinancier.Montant"
+                  [(ngModel)]="editFluxFlinancier.montant"
                 />
-                <span class="icon is-small is-right">
-                  <i (click)="editFluxFlinancier.IsRecette = false"
-                  *ngIf="editFluxFlinancier.IsRecette"
-                  style="color: green;cursor: pointer;"
-                  class="fas fa-plus-square"
-                ></i>
-                <i (click)="editFluxFlinancier.IsRecette = true"
-                  *ngIf="!editFluxFlinancier.IsRecette"
-                  style="color: red;cursor: pointer;"
-                  class="fas fa-minus-square"
-                ></i>
-                  
-                </span>
               </p>
             </div>
           </div>
@@ -60,16 +47,16 @@
               <div class="control">
                 <input
                   [class]="
-                    editFluxFlinancier.Date ? 'input' : 'input is-danger'
+                    editFluxFlinancier.date ? 'input' : 'input is-danger'
                   "
                   type="date"
                   id="date_naissance"
                   name="date_naissance"
                   i18n-placeholder
                   placeholder="Date comptanle"
-                  [(ngModel)]="editFluxFlinancier.Date"
+                  [(ngModel)]="editFluxFlinancier.date"
                 />
-                <p class="help is-danger" *ngIf="!editFluxFlinancier.Date" i18n>
+                <p class="help is-danger" *ngIf="!editFluxFlinancier.date" i18n>
                   La date doit être saisie
                 </p>
               </div>
@@ -84,12 +71,12 @@
                 class="input"
                 list="destinataires"
                 id="destinataire"
-                [ngModel]="editFluxFlinancier.DestinataireLibelle"
+                [ngModel]="editFluxFlinancier.destinataire"
                 (ngModelChange)="onInputChange($event)"
               />
               <datalist id="destinataires">
                 <ng-container *ngFor="let option of Destinataire">
-                  <option [value]="formatDestinataire(option)"></option>
+                  <option [value]="option">{{option.value}}</option>
                   <!-- Affiche le texte formaté -->
                 </ng-container>
               </datalist>
@@ -100,7 +87,7 @@
               <label class="label" i18n>Statut paiement</label>
               <div class="control">
                 <div class="select">
-                  <select [(ngModel)]="editFluxFlinancier.Statut">
+                  <select [(ngModel)]="editFluxFlinancier.statut">
                     <option value="0"><span i18n>Non exécuté</span></option>
                     <option value="1"><span i18n>Exécuté</span></option>
                     <option value="-1"><span i18n>Annulé</span></option>
@@ -109,7 +96,7 @@
               </div>
             </div>
           </div>
-          <div *ngIf="editFluxFlinancier.ID == 0" class="column is-4">
+          <div *ngIf="editFluxFlinancier.id == 0" class="column is-4">
             <div class="field">
               <label class="label" i18n>Nombre de paiement</label>
               <div class="control">
@@ -119,7 +106,7 @@
                   min="1"
                   max="36"
                   placeholder="Nombre de paiement"
-                  [(ngModel)]="editFluxFlinancier.NbPaiement"
+                  [(ngModel)]="editFluxFlinancier.nb_paiement"
                 />
               </div>
             </div>
@@ -135,7 +122,7 @@
                   class="input"
                   type="text"
                   placeholder="Info"
-                  [(ngModel)]="editFluxFlinancier.Info"
+                  [(ngModel)]="editFluxFlinancier.info"
                 />
               </p>
             </div>
@@ -160,7 +147,7 @@
               <label class="label" i18n>Classe comptable</label>
               <div class="control">
                 <div class="select">
-                  <select [(ngModel)]="editFluxFlinancier.ClasseComptable">
+                  <select [(ngModel)]="editFluxFlinancier.classe_comptable">
                     <ng-container *ngFor="let cc of ClassesComptable">
                       <option [value]="cc.numero">{{ cc.libelle }}</option>
                     </ng-container>
@@ -174,7 +161,7 @@
 
       <div
         class="field"
-        *ngIf="editFluxFlinancier.ID !=  0"
+        *ngIf="editFluxFlinancier.id !=  0"
       >
         <div class="card">
           <header class="card-header">
@@ -234,7 +221,7 @@
                         min="0"
                         i18n-placeholder
                         placeholder="Quantité"
-                        [(ngModel)]="cpt.Quantite"
+                        [(ngModel)]="cpt.qte"
                       />
                     </td>
                     <td>
@@ -246,7 +233,7 @@
                           name="date_naissance"
                           i18n-placeholder
                           placeholder="Date comptanle"
-                          [(ngModel)]="cpt.Date"
+                          [(ngModel)]="cpt.date_achat"
                         />
                       </div>
                     </td>
@@ -256,13 +243,13 @@
                         type="number"
                         min="0"
                         placeholder="Solde"
-                        [(ngModel)]="cpt.Valeur_Achat"
+                        [(ngModel)]="cpt.valeur_achat"
                       />
                     </td>
                     <td>
                       <div class="control">
                         <div class="select is-small">
-                          <select id="cours" [(ngModel)]="cpt.TypeStock">
+                          <select id="cours" [(ngModel)]="cpt.type_stock">
                             <option value="0" i18n>Autre</option>
                             <ng-container *ngFor="let st of TypeStock">
                                 <option [value]="st.id">{{st.libelle}}&nbsp;({{st.categorie}}) </option>
@@ -277,7 +264,7 @@
                         list="lieux"
                         id="lieu"
                         (ngModelChange)="onInputChangeListStock($event,cpt)"
-                        [(ngModel)]="cpt.LieuStockageLibelle"
+                        [(ngModel)]="cpt.lieu_stockage"
                       />
                       <datalist id="lieux">
                         <option
@@ -292,7 +279,7 @@
                         type="text"
                         i18n-placeholder
                         placeholder="Libellé"
-                        [(ngModel)]="cpt.Libelle"
+                        [(ngModel)]="cpt.libelle"
                       />
                     </td>
                     <td>
@@ -317,7 +304,7 @@
       </div>
       <div
         class="field"
-        *ngIf="editFluxFlinancier.ID !=  0"
+        *ngIf="editFluxFlinancier.id !=  0"
       >
         <div class="card">
           <header class="card-header">
@@ -378,7 +365,7 @@
                         name="date_operation"
                         i18n-placeholder
                         placeholder="Date opération"
-                        [(ngModel)]="cpt.Date"
+                        [(ngModel)]="cpt.date_operation"
                       />
                     </td>
                     <td>
@@ -387,13 +374,13 @@
                         type="number"
                         min="0"
                         placeholder="Solde"
-                        [(ngModel)]="cpt.Solde"
+                        [(ngModel)]="cpt.solde"
                       />
                     </td>
                     <td>
                       <div class="control">
                         <div class="select is-small">
-                          <select [(ngModel)]="cpt.CompteBancaireID">
+                          <select [(ngModel)]="cpt.compte_bancaire_id">
                             <ng-container *ngFor="let cpt of Comptes">
                               <option [ngValue]="cpt.id">
                                 {{ cpt.nom }}
@@ -408,7 +395,7 @@
                         class="input is-small"
                         list="destinataires"
                         id="destinataire"
-                        [ngModel]="cpt.DestinataireLibelle"
+                        [ngModel]="cpt.destinataire"
                         (ngModelChange)="onInputChangeList($event, cpt)"
                       />
                       <datalist id="destinataires">
@@ -422,7 +409,7 @@
                       <div class="field">
                         <div class="control">
                           <div class="select is-small">
-                            <select [(ngModel)]="cpt.ModePaiement">
+                            <select [(ngModel)]="cpt.mode">
                               <option value="0">
                                 <span i18n>Espèces</span>
                               </option>
@@ -447,15 +434,12 @@
                       <div class="field">
                         <div class="control">
                           <div class="select is-small">
-                            <select [(ngModel)]="cpt.StatutPaiement">
-                              <option value="0">
+                            <select [(ngModel)]="cpt.paiement_execute">
+                              <option value="false">
                                 <span i18n>Non exécuté</span>
                               </option>
-                              <option value="1">
+                              <option value="true">
                                 <span i18n>Exécuté</span>
-                              </option>
-                              <option value="-1">
-                                <span i18n>Annulé</span>
                               </option>
                             </select>
                           </div>
@@ -487,7 +471,7 @@
         class="buttons"
       >
       <button         *ngIf="
-      editFluxFlinancier.ID ==0"
+      editFluxFlinancier.id ==0"
           class="button is-primary is-rounded is-outlined"
           type="button"
           style="fill: hsl(171, 100%, 41%)"
@@ -652,33 +636,33 @@
             <tbody>
               <tr *ngFor="let cpt of FFByClass(cl.numero)">
                 <td>
-                  {{ cpt.Date | date : "dd/MM/yyyy" }}
+                  {{ cpt.date | date : "dd/MM/yyyy" }}
                 </td>
                 <td>
-                  {{ cpt.Montant }}
+                  {{ cpt.montant }}
                 </td>
                 <td>
                   <i
-                    *ngIf="cpt.IsRecette"
+                    *ngIf="cpt.montant>0"
                     style="color: green"
                     class="fas fa-plus-square"
                   ></i>
                   <i
-                    *ngIf="!cpt.IsRecette"
+                    *ngIf="cpt.montant <= 0"
                     style="color: red"
                     class="fas fa-minus-square"
                   ></i>
                 </td>
                 <td>
-                  {{ cpt.Libelle }}
+                  {{ cpt.libelle }}
                 </td>
                 <td>
-                  {{ cpt.DestinataireLibelle }}
+                  {{ cpt.destinataire.value }}
                 </td>
                 <td>
-                  <span *ngIf="cpt.Statut == 0" i18n>Non exécuté</span>
-                  <span *ngIf="cpt.Statut == 1" i18n>Exécuté</span>
-                  <span *ngIf="cpt.Statut == -1" i18n>Annulé</span>
+                  <span *ngIf="cpt.statut == 0" i18n>Non exécuté</span>
+                  <span *ngIf="cpt.statut == 1" i18n>Exécuté</span>
+                  <span *ngIf="cpt.statut == -1" i18n>Annulé</span>
                 </td>
                 <td>
                   <div class="buttons">
@@ -692,7 +676,7 @@
                       <i class="fa-solid fa-trash-can"></i>
                     </button>
                     <button
-                      *ngIf="cpt.Statut != 1"
+                      *ngIf="cpt.statut != 1"
                       i18n-title
                       title="Payer maintenant"
                       class="button is-info is-rounded is-outlined"
@@ -715,7 +699,7 @@
                       title="Editer"
                       class="button is-info is-rounded is-outlined"
                       type="button"
-                      (click)="Edit_ff(cpt.ID)"
+                      (click)="Edit_ff(cpt.id)"
                     >
                       <i class="fa-solid fa-pen-to-square"></i>
                     </button>
@@ -869,33 +853,33 @@
         <tbody>
           <tr *ngFor="let cpt of this.FluxFinanciers">
             <td>
-              {{ cpt.Date | date : "dd/MM/yyyy" }}
+              {{ cpt.date | date : "dd/MM/yyyy" }}
             </td>
             <td>
-              {{ cpt.Montant }}
+              {{ cpt.montant }}
             </td>
             <td>
               <i
-                *ngIf="cpt.IsRecette"
+                *ngIf="cpt.montant >0"
                 style="color: green"
                 class="fas fa-plus-square"
               ></i>
               <i
-                *ngIf="!cpt.IsRecette"
+                *ngIf="cpt.montant <= 0"
                 style="color: red"
                 class="fas fa-minus-square"
               ></i>
             </td>
             <td>
-              {{ cpt.Libelle }}
+              {{ cpt.libelle }}
             </td>
             <td>
-              {{ cpt.DestinataireLibelle }}
+              {{ cpt.destinataire.value }}
             </td>
             <td>
-              <span *ngIf="cpt.Statut == 0" i18n>Non exécuté</span>
-              <span *ngIf="cpt.Statut == 1" i18n>Exécuté</span>
-              <span *ngIf="cpt.Statut == -1" i18n>Annulé</span>
+              <span *ngIf="cpt.statut == 0" i18n>Non exécuté</span>
+              <span *ngIf="cpt.statut == 1" i18n>Exécuté</span>
+              <span *ngIf="cpt.statut == -1" i18n>Annulé</span>
             </td>
             <td>
               <div class="buttons">
@@ -909,7 +893,7 @@
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
                 <button
-                  *ngIf="cpt.Statut != 1"
+                  *ngIf="cpt.statut != 1"
                   i18n-title
                   title="Payer maintenant"
                   class="button is-info is-rounded is-outlined"
@@ -932,7 +916,7 @@
                   title="Editer"
                   class="button is-info is-rounded is-outlined"
                   type="button"
-                  (click)="Edit_ff(cpt.ID)"
+                  (click)="Edit_ff(cpt.id)"
                 >
                   <i class="fa-solid fa-pen-to-square"></i>
                 </button>

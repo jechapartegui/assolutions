@@ -8,6 +8,8 @@ import { hashPasswordWithPepper } from '../auth/auth.services';
 import { Projet_VM} from "@shared/lib/projet.interface";
 import { ConfigService } from '@nestjs/config';
 import { Adresse } from '@shared/lib/adresse.interface';
+import { toSaison_VM } from '../saison/saison.services';
+import { Season } from '../../entities/saison.entity';
   
   
   @Injectable()
@@ -65,6 +67,10 @@ import { Adresse } from '@shared/lib/adresse.interface';
 vm.logo = entity.logo ?? null;
 vm.nom = entity.name;
 vm.token = entity.activationToken ?? null;
+if(entity.seasons && entity.seasons.length >0 && entity.seasons.find(x => x.isActive) ){
+
+vm.saison_active = toSaison_VM(entity.seasons.find(x => x.isActive));
+}
       return vm;
     }
 

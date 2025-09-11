@@ -12,13 +12,15 @@ export class ProjectService {
   ) {}
 
   async get(id: number): Promise<Project> {
-    const item = await this.repo.findOne({ where: { id } });
+    const item = await this.repo.findOne({ where: { id } ,
+      relations: ['seasons'], });
     if (!item) throw new NotFoundException('PROJECT_NOT_FOUND');
     return item;
   }
 
     async getByLogin(login: string): Promise<Project> {
-    const item = await this.repo.findOne({ where: { login } });
+    const item = await this.repo.findOne({ where: { login },
+      relations: ['seasons'], });
     return item;
   }
 

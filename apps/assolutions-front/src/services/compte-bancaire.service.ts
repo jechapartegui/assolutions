@@ -14,9 +14,8 @@ return this.http.GET(`${this.base}/get/${id}`);
 }
 
 
-public getAll(projectId: number | null): Promise<CompteBancaire_VM[]> {
-const pid = projectId ?? 'null';
-return this.http.GET(`${this.base}/getall/${pid}`);
+public getAll(): Promise<CompteBancaire_VM[]> {
+return this.http.GET(`${this.base}/getall/`);
 }
 
 

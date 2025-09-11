@@ -31,7 +31,7 @@ export class GroupeService {
   }
   public GetAll(saison_id:number =0): Promise<KeyValuePair[]> {
     if(saison_id ===0){
-    saison_id = this.store.saison_active().id
+    saison_id = this.store.saison_active().id;
   }
     this.url = environment.maseance + 'api/groupe/getall/'  + saison_id;
     

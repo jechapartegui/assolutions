@@ -141,7 +141,7 @@ export  const configapi= [
   }
 ]
 
-export class ClassComptable{numero:number; libelle:string }
+export class ClassComptable{numero:string; libelle:string }
 export class TypeStock{id:number =0;categorie: string| null = null; libelle: string = $localize`Autre`
 
   equals(other: TypeStock): boolean {

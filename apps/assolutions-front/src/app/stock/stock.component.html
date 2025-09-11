@@ -156,16 +156,16 @@
                 <tbody>
                   <tr *ngFor="let stock of liste_stock | multifiltersStock : filters as filteredStock">
                     <td>
-                      {{ stock.Libelle }}
+                      {{ stock.libelle }}
                     </td>
                     <td>
-                      {{ stock.TypeStockLibelle }}
+                      {{ stock.type_stock }}
                     </td>
-                    <td>{{ stock.Date | date : "dd/MM/yyyy" }}</td>
-                    <td>{{ stock.LieuStockageLibelle }}</td>
-                    <td>{{ stock.Valeur_Achat }}</td>
-                    <td>{{ stock.Quantite }}</td>
-                    <td>{{ GetTransaction(stock.FluxFinancierID) }}</td>
+                    <td>{{ stock.date_achat | date : "dd/MM/yyyy" }}</td>
+                    <td>{{ stock.lieu_stockage.value }}</td>
+                    <td>{{ stock.valeur_achat }}</td>
+                    <td>{{ stock.qte }}</td>
+                    <td>{{ GetTransaction(stock.flux_financier_id) }}</td>
 
                     <td>
                       <ng-container *ngIf="IsVendre">
@@ -498,16 +498,16 @@
     <div class="columns is-justify-content-center">
       <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
         <div class="box">
-          <h2 *ngIf="editStock.ID == 0" class="title is-2" i18n>
+          <h2 *ngIf="editStock.id == 0" class="title is-2" i18n>
             Créer un équipement
           </h2>
-          <h2 *ngIf="editStock.ID > 0" class="title is-2" i18n>
+          <h2 *ngIf="editStock.id > 0" class="title is-2" i18n>
             Editer un équipement
           </h2>
           <div class="field">
             <label class="label" i18n>Type d'équipement</label>
             <div class="select">
-              <select id="cours" [(ngModel)]="editStock.TypeStock">
+              <select id="cours" [(ngModel)]="editStock.type_stock">
                 <option value="0" i18n>Autre</option>
                 <ng-container *ngFor="let st of TypeStock">
                   <option [value]="st.id">
@@ -516,7 +516,7 @@
                 </ng-container>
               </select>
             </div>
-            <p class="help is-danger" *ngIf="!editStock.TypeStock" i18n>
+            <p class="help is-danger" *ngIf="!editStock.type_stock" i18n>
               La sélection d'un type de stock est obligatoire
             </p>
           </div>
@@ -526,7 +526,7 @@
               class="input"
               list="liste_lieu"
               id="lieu"
-              [ngModel]="editStock.LieuStockageLibelle"
+              [ngModel]="editStock.lieu_stockage"
               (ngModelChange)="onInputChange($event)"
             />
             <datalist id="liste_lieu">
@@ -543,9 +543,9 @@
               class="input"
               id="date_seance"
               type="date"
-              [(ngModel)]="editStock.Date"
+              [(ngModel)]="editStock.date_achat"
             />
-            <p class="help is-danger" *ngIf="!editStock.Date" i18n>
+            <p class="help is-danger" *ngIf="!editStock.date_achat" i18n>
               La date d'achat doit doit être saisie
             </p>
           </div>
@@ -553,17 +553,17 @@
             <label class="label" i18n>Libellé</label>
             <input
               [class]="
-                editStock.Libelle.length > 4 ? 'input' : 'input is-danger'
+                editStock.libelle.length > 4 ? 'input' : 'input is-danger'
               "
               type="text"
               id="nom_rider"
               name="nom_rider"
               i18n-placeholder
               placeholder="Nom"
-              [(ngModel)]="editStock.Libelle"
+              [(ngModel)]="editStock.libelle"
               required
             />
-            <p class="help is-danger" *ngIf="editStock.Libelle.length < 5" i18n>
+            <p class="help is-danger" *ngIf="editStock.libelle.length < 5" i18n>
               Le libellé doit faire au moins 5 caractères
             </p>
           </div>
@@ -575,9 +575,9 @@
               id="qte"
               type="number"
               min="0"
-              [(ngModel)]="editStock.Quantite"
+              [(ngModel)]="editStock.qte"
             />
-            <p class="help is-danger" *ngIf="!editStock.Quantite" i18n>
+            <p class="help is-danger" *ngIf="!editStock.qte" i18n>
               La qunatité doit être saisie
             </p>
           </div>
@@ -587,21 +587,21 @@
               class="input"
               id="valeur_achat"
               type="number"
-              [(ngModel)]="editStock.Valeur_Achat"
+              [(ngModel)]="editStock.valeur_achat"
             />
           </div>
           <div class="field">
             <label class="label" i18n for="place_maximum">Info stock : </label>
-            <textarea class="textarea" [(ngModel)]="editStock.Info"></textarea>
+            <textarea class="textarea" [(ngModel)]="editStock.info"></textarea>
           </div>
 
           <div class="buttons">
             <button
               class="button is-primary is-rounded is-outlined"
               [disabled]="
-                !editStock.TypeStock ||
-                !editStock.Date ||
-                editStock.Libelle.length < 5
+                !editStock.type_stock ||
+                !editStock.date_achat ||
+                editStock.libelle.length < 5
               "
               type="button"
               style="fill: hsl(171, 100%, 41%)"

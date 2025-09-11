@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { CompteBancaire } from '../../class/comptebancaire';
 import { CompteBancaireService } from '../../services/compte-bancaire.service';
 import { ErrorService } from '../../services/error.service';
+import { CompteBancaire_VM } from '@shared/index';
 
 @Component({
   standalone: false,
@@ -12,8 +12,8 @@ import { ErrorService } from '../../services/error.service';
   styleUrls: ['./compte-bancaire.component.css']
 })
 export class CompteBancaireComponent implements OnInit {
-  ListeCompte: CompteBancaire[];
-  editCB:CompteBancaire;
+  ListeCompte: CompteBancaire_VM[];
+  editCB:CompteBancaire_VM;
   context :"LISTE" | "EDIT" = "LISTE";
   action: string;
   selected_compte: number;
@@ -30,7 +30,7 @@ export class CompteBancaireComponent implements OnInit {
     this.action = $localize`Ajouter un compte`;
     if(this.editCB.id == 0){
       this.cpt_serv
-        .Add(this.editCB)
+        .add(this.editCB)
         .then((liste) => {
           if (liste > 0) {
             this.editCB.id = liste;
@@ -49,7 +49,7 @@ export class CompteBancaireComponent implements OnInit {
     } else {
       this.action = $localize`Editer un compte`;
       this.cpt_serv
-      .Update(this.editCB)
+      .update(this.editCB)
       .then((liste) => {
         if (liste) {
           let o = errorService.OKMessage(this.action);
@@ -71,7 +71,7 @@ export class CompteBancaireComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer un compte`;
     this.cpt_serv
-      .Delete(cpt.id)
+      .delete(cpt.id)
       .then((liste) => {
         if (liste) {
           let o = errorService.OKMessage(this.action);
@@ -92,7 +92,7 @@ export class CompteBancaireComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les comptes`;
     this.cpt_serv
-      .GetAll()
+      .getAll()
       .then((liste) => {
         this.ListeCompte = liste;       
       })
@@ -123,10 +123,10 @@ export class CompteBancaireComponent implements OnInit {
   }
 
   Creer(){
-    this.editCB = new CompteBancaire();
+    this.editCB = new CompteBancaire_VM();
     this.context = "EDIT";
   }
-  Edit(cb:CompteBancaire){
+  Edit(cb:CompteBancaire_VM){
     this.editCB = cb;
     this.context = "EDIT";
   }
@@ -138,7 +138,7 @@ export class CompteBancaireComponent implements OnInit {
       this.UpdateListeCompte();
     }
   }
-  Transactions(cb:CompteBancaire){
+  Transactions(cb:CompteBancaire_VM){
   this.router.navigate(['/comptabilite'], { queryParams: { id: cb.id }} );
   }
 }

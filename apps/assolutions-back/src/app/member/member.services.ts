@@ -102,7 +102,7 @@ export class MemberService {
   
     const profs = await this.ProfSaison(temp_adh, saison_active);
     if (!profs || profs.length === 0) {
-      throw new UnauthorizedException('NO_USER_FOUND');
+      return [];
     }
   
     const retour: AdherentSeance_VM[] = [];

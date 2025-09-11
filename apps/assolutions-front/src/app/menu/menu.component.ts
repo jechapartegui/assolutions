@@ -63,6 +63,7 @@ export class MenuComponent implements OnInit {
     this.action = $localize`Charger le menu`;
     if(this.store.appli() == "ADMIN"){
       this.router.navigate(['/menu-admin']);
+      return;
     }
     this.loading = true;
     

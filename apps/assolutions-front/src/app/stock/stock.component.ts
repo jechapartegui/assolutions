@@ -74,7 +74,8 @@ export class StockComponent implements OnInit {
 
       this.action = $localize`Charger la liste des endroits de stockage`;
       if (!this.SC.ListeObjet || this.SC.ListeObjet.length == 0) {
-        this.addinfo_serv.getall_liste().then((liste) => {
+        let ad: string[] = ['rider', 'lieu'];
+        this.addinfo_serv.getall_liste(ad).then((liste) => {
           this.SC.ListeObjet = liste;
           this.liste_lieu = this.SC.ListeObjet.filter(
             (x) => x.type == 'rider' || x.type == 'lieu' || x.type == 'autre'
@@ -94,7 +95,7 @@ export class StockComponent implements OnInit {
       this.action = $localize`Charger les types de stcok`;
       if (!this.SC.TypeStock || this.SC.TypeStock.length == 0) {
         this.addinfo_serv.list('stock').then((liste) => {
-          this.SC.TypeStock = JSON.parse(liste);
+          this.SC.TypeStock = JSON.parse(liste.text);
           this.TypeStock = this.SC.TypeStock;
           this.liste_type_equipement = Array.from(
             new Set(this.TypeStock.map((typeStock) => typeStock.categorie))
@@ -106,7 +107,7 @@ export class StockComponent implements OnInit {
       this.action = $localize`Charger les types d'achat`;
       if (!this.SC.TypeTransaction || this.SC.TypeTransaction.length == 0) {
         this.addinfo_serv.list('type_achat').then((liste) => {
-          this.SC.TypeTransaction = JSON.parse(liste);
+          this.SC.TypeTransaction = JSON.parse(liste.text);
           this.TypeTransaction = this.SC.TypeTransaction;
         });
       } else {
@@ -153,7 +154,7 @@ export class StockComponent implements OnInit {
 
   Creer(): void {
     this.editStock = new Stock_VM();
-    this.editStock.date_achat = new Date().toString();
+    this.editStock.date_achat = new Date();
     this.editMode = true;
   }
 
@@ -209,31 +210,18 @@ export class StockComponent implements OnInit {
         return;
       });
   }
-  onInputChange(displayText: string) {
+  onInputChange(L: GenericLink_VM) {
     // Trouver l'objet complet correspondant à la valeur d'affichage
     const selectedOption = this.liste_lieu.find(
-      (option) => this.formatLieu(option) === displayText
+      (option) => L === option
     );
     if (selectedOption) {
       // Mettre à jour l'affichage et le modèle avec l'objet sélectionné
-      this.editStock.lieu_stockage.value = displayText;
-      this.editStock.lieu_stockage.id = selectedOption;
-      this.editStock.datasource.lieu_stockage =
-        JSON.stringify(selectedOption);
-    } else {
-      // Gérer les saisies libres si nécessaire
-      this.editStock.LieuStockage = {
-        id: 0,
-        type: '',
-        value: displayText,
-      };
-      this.editStock.datasource.lieu_stockage = JSON.stringify(
-        this.editStock.LieuStockage
-      );
+      this.editStock.lieu_stockage = selectedOption;
     }
   }
 
-  formatLieu(destinataire: ObjetAppli) {
+  formatLieu(destinataire: GenericLink_VM) {
     return `${destinataire.value} (${destinataire.type})`;
   }
 
@@ -242,7 +230,7 @@ export class StockComponent implements OnInit {
     this.filters = new FilterStock();
   }
 
-  Delete(stock: Stock): void {
+  Delete(stock: Stock_VM): void {
     const errorService = ErrorService.instance;
 
     let confirmation = window.confirm(
@@ -252,7 +240,7 @@ export class StockComponent implements OnInit {
       this.action = $localize`Supprimer un équipement`;
       if (stock) {
         this.stockservice
-          .Delete(stock.ID)
+          .delete(stock.id)
           .then((result) => {
             if (result) {
               this.UpdateListeStock();
@@ -274,16 +262,13 @@ export class StockComponent implements OnInit {
   Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un équipement`;
-    this.editStock.datasource.lieu_stockage = JSON.stringify(
-      this.editStock.LieuStockage
-    );
     if (this.editStock) {
-      if (this.editStock.ID == 0) {
+      if (this.editStock.id == 0) {
         this.stockservice
-          .Add(this.editStock.datasource)
+          .add(this.editStock)
           .then((id) => {
             if (id > 0) {
-              this.editStock.ID = id;
+              this.editStock.id = id;
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
               this.UpdateListeStock();
@@ -299,7 +284,7 @@ export class StockComponent implements OnInit {
       } else {
         this.action = $localize`Mettre à jour un équipement`;
         this.stockservice
-          .Update(this.editStock.datasource)
+          .update(this.editStock)
           .then((ok) => {
             if (ok) {
               let o = errorService.OKMessage(this.action);
@@ -322,7 +307,7 @@ export class StockComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Rafraichir l'équipement`;
     this.stockservice
-      .get(this.editStock.ID)
+      .get(this.editStock.id)
       .then((c) => {
         this.editStock = c;
         let o = errorService.OKMessage(this.action);
@@ -354,8 +339,8 @@ export class StockComponent implements OnInit {
         this.sort_lieu = 'NO';
         this.sort_type = 'NO';
         this.liste_stock.sort((a, b) => {
-          const nomA = a.Libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.Libelle.toUpperCase();
+          const nomA = a.libelle.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.libelle.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -372,8 +357,8 @@ export class StockComponent implements OnInit {
         this.sort_libelle = 'NO';
         this.sort_type = 'NO';
         this.liste_stock.sort((a, b) => {
-          const lieuA = a.LieuStockageLibelle;
-          const lieuB = b.LieuStockageLibelle;
+          const lieuA = a.lieu_stockage.value;
+          const lieuB = b.lieu_stockage.value;
 
           // Ignorer la casse lors du tri
           const lieuAUpper = lieuA.toUpperCase();
@@ -395,8 +380,8 @@ export class StockComponent implements OnInit {
         this.sort_libelle = 'NO';
         this.sort_type = 'NO';
         this.liste_stock.sort((a, b) => {
-          let dateA = a.datasource.date_achat;
-          let dateB = b.datasource.date_achat;
+          let dateA = a.date_achat;
+          let dateB = b.date_achat;
 
           let comparaison = 0;
           if (dateA > dateB) {
@@ -414,8 +399,8 @@ export class StockComponent implements OnInit {
         this.sort_libelle = 'NO';
         this.sort_type = sens;
         this.liste_stock.sort((a, b) => {
-          const coursA = a.TypeStockLibelle;
-          const coursB = b.TypeStockLibelle;
+          const coursA = a.type_stock;
+          const coursB = b.type_stock;
           let comparaison = 0;
           if (coursA > coursB) {
             comparaison = 1;
@@ -438,11 +423,11 @@ export class StockComponent implements OnInit {
       Valeur_Achat: 'Valeur achat',
       Quantite: 'Quantite',
     };
-    let list: Stock[] = this.getFilteredStocks();
+    let list: Stock_VM[] = this.getFilteredStocks();
 
     this.excelService.exportAsExcelFile(list, 'liste_stock', headers);
   }
-  getFilteredStocks(): Stock[] {
+  getFilteredStocks(): Stock_VM[] {
     return this.multifiltersStockPipe.transform(this.liste_stock, this.filters);
   }
   private waitForScrollableContainer(): void {

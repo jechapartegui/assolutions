@@ -281,58 +281,57 @@
               <tbody>
                 <tr *ngFor="let cpt of Operations">
                   <td>
-                    {{ cpt.Date | date : "dd/MM/yyyy" }}
+                    {{ cpt.date_operation | date : "dd/MM/yyyy" }}
                   </td>
                   <td>
-                    {{ cpt.Solde }}
+                    {{ cpt.solde }}
                   </td>
                   <td>
                     <i
-                      *ngIf="cpt.IsRecette"
+                      *ngIf="cpt.solde >0"
                       style="color: green"
                       class="fas fa-plus-square"
                     ></i>
                     <i
-                      *ngIf="!cpt.IsRecette"
+                      *ngIf="cpt.solde <=0"
                       style="color: red"
                       class="fas fa-minus-square"
                     ></i>
                   </td>
                   <td>
-                    <a (click)="GotoFF(cpt.FluxFinancierID)">{{
-                      cpt.Libelle
+                    <a (click)="GotoFF(cpt.flux_financier_id)">{{
+                      cpt.flux_financier.libelle
                     }}</a>
                   </td>
                   <td *ngIf="filter_compte == 0">
                     <a
                       (click)="
-                        filter_compte = getCompte(cpt.CompteBancaireID).id
+                        filter_compte = getCompte(cpt.compte_bancaire_id).id
                       "
                     >
-                      {{ getCompte(cpt.CompteBancaireID).nom }}</a
+                      {{ getCompte(cpt.compte_bancaire_id).nom }}</a
                     >
                   </td>
                   <td>
-                    {{ cpt.DestinataireLibelle }}
+                    {{ cpt.destinataire.value }}
                   </td>
                   <td>
-                    <span *ngIf="cpt.ModePaiement == 0">Espèces</span>
-                    <span *ngIf="cpt.ModePaiement == 1">Carte bancaire</span>
-                    <span *ngIf="cpt.ModePaiement == 2">Virement</span>
-                    <span *ngIf="cpt.ModePaiement == 3">Chèque</span>
-                    <span *ngIf="cpt.ModePaiement == 4">Prélèvement</span>
+                    <span *ngIf="cpt.mode == 0">Espèces</span>
+                    <span *ngIf="cpt.mode == 1">Carte bancaire</span>
+                    <span *ngIf="cpt.mode == 2">Virement</span>
+                    <span *ngIf="cpt.mode == 3">Chèque</span>
+                    <span *ngIf="cpt.mode == 4">Prélèvement</span>
                   </td>
                   <td>
-                    <span *ngIf="cpt.StatutPaiement == 0" i18n
+                    <span *ngIf="!cpt.paiement_execute" i18n
                       >Non exécuté</span
                     >
-                    <span *ngIf="cpt.StatutPaiement == 1" i18n>Exécuté</span>
-                    <span *ngIf="cpt.StatutPaiement == -1" i18n>Annulé</span>
+                    <span *ngIf="cpt.paiement_execute" i18n>Exécuté</span>
                   </td>
                   <td>
                     <div class="buttons">
                       <button
-                        *ngIf="cpt.StatutPaiement != 1"
+                        *ngIf="!cpt.paiement_execute"
                         i18n-title
                         title="Payer maintenant"
                         class="button is-info is-rounded is-outlined"
@@ -372,16 +371,16 @@
         <div class="field">
           <label class="label" i18n>Montant</label>
           <p class="control"><i
-            *ngIf="editOperations.IsRecette"
+            *ngIf="editOperations.solde > 0"
             style="color: green"
             class="fas fa-plus-square"
           ></i>
           <i
-            *ngIf="!editOperations.IsRecette"
+            *ngIf="editOperations.solde <= 0"
             style="color: red"
             class="fas fa-minus-square"
           ></i>
-            <label>{{ editOperations.Solde }}</label>
+            <label>{{ editOperations.solde }}</label>
             <span class="icon is-small is-right">
               <i class="fas fa-euro-sign"></i>
             </span>
@@ -392,15 +391,15 @@
           <label class="label" i18n>Date de operation</label>
           <div class="control">
             <input
-              [class]="editOperations.Date ? 'input' : 'input is-danger'"
+              [class]="editOperations.date_operation ? 'input' : 'input is-danger'"
               type="date"
               id="date_operation"
               name="date_operation"
               i18n-placeholder
               placeholder="Date d'opération"
-              [(ngModel)]="editOperations.Date"
+              [(ngModel)]="editOperations.date_operation"
             />
-            <p class="help is-danger" *ngIf="!editOperations.Date" i18n>
+            <p class="help is-danger" *ngIf="!editOperations.date_operation" i18n>
               La date doit être saisie
             </p>
           </div>
@@ -412,7 +411,7 @@
               class="input"
               type="text"
               placeholder="Info"
-              [(ngModel)]="editOperations.Info"
+              [(ngModel)]="editOperations.info"
             />
           </p>
         </div>
@@ -420,7 +419,7 @@
           <label class="label" i18n>Compte bancaire</label>
           <div class="control">
             <div class="select">
-              <select [(ngModel)]="editOperations.CompteBancaireID">
+              <select [(ngModel)]="editOperations.compte_bancaire_id">
                 <option value="0">Tous</option>
                 <ng-container *ngFor="let cpt of Comptes">
                   <option [ngValue]="cpt.id">{{ cpt.nom }}</option>
@@ -435,12 +434,12 @@
             class="input"
             list="destinataires"
             id="destinataire"
-            [ngModel]="editOperations.DestinataireLibelle"
+            [ngModel]="editOperations.destinataire.value"
             (ngModelChange)="onInputChange($event)"
           />
           <datalist id="destinataires">
             <ng-container *ngFor="let option of Destinataire">
-              <option [value]="formatDestinataire(option)"></option>
+              <option [value]="option">{{option.value}}</option>
               <!-- Affiche le texte formaté -->
             </ng-container>
           </datalist>
@@ -449,10 +448,9 @@
           <label class="label" i18n>Statut paiement</label>
           <div class="control">
             <div class="select">
-              <select [(ngModel)]="editOperations.StatutPaiement">
-                <option value="0"><span i18n>Non exécuté</span></option>
-                <option value="1"><span i18n>Exécuté</span></option>
-                <option value="-1"><span i18n>Annulé</span></option>
+              <select [(ngModel)]="editOperations.paiement_execute">
+                <option value="false"><span i18n>Non exécuté</span></option>
+                <option value="true"><span i18n>Exécuté</span></option>
               </select>
             </div>
           </div>
@@ -461,7 +459,7 @@
           <label class="label" i18n>Mode de paiement</label>
           <div class="control">
             <div class="select">
-              <select [(ngModel)]="editOperations.ModePaiement">
+              <select [(ngModel)]="editOperations.mode">
                 <option value="0"><span i18n>Espèces</span></option>
                 <option value="1"><span i18n>Carte bancaire</span></option>
                 <option value="2"><span i18n>Virement</span></option>
@@ -474,14 +472,14 @@
         <div class="field">
           <label class="label" i18n>Flux Financier</label>
           <p class="control">
-            <a (click)="GotoFF(editOperations.FluxFinancierID)">{{
-                editOperations.Libelle
+            <a (click)="GotoFF(editOperations.flux_financier_id)">{{
+                editOperations.flux_financier.libelle
               }}</a>
           </p>
         </div>
         <p>
           Montant total comptabilisé :
-          {{ getFFMontant(editOperations.FluxFinancierID) }}
+          {{ getFFMontant(editOperations.flux_financier_id) }}
         </p>
         <div *ngIf="editOperations" class="buttons">
           <button

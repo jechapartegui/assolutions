@@ -23,8 +23,8 @@ export class Type_Adhesion{
 
 export interface paiement_adhesion {
     numero: number;
-    date_prevue: string; // format "AAAA-MM-JJ"
-    date_realisée?: string; // format "AAAA-MM-JJ", peut être undefined si non réalisée
+    date_prevue: Date; // format "AAAA-MM-JJ"
+    date_realisée?: Date; // format "AAAA-MM-JJ", peut être undefined si non réalisée
     montant: number;
     id_flux_financier?: number; // id du flux financier correspondant, peut être undefined si non réalisé
   }

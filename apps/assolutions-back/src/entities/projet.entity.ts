@@ -6,7 +6,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Season } from "./saison.entity";
 
 /**
  * Représente un login de projet (projet_login) avec ses informations de connexion et de contact.
@@ -69,4 +71,7 @@ activationToken: string | null;   // <-- important
 
   @UpdateDateColumn({ type: "timestamp with time zone", name: "date_maj" })
   updatedAt: Date;
+
+  @OneToMany(() => Season, s => s.project)
+seasons?: Season[];
 }

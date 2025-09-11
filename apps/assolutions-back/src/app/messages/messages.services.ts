@@ -24,7 +24,7 @@ export class MessagesService {
     @InjectRepository(MailProject) private readonly mailProjectRepo: Repository<MailProject>
   ) {}
 
-async GetMail(type: 'convocation' | 'annulation', id: number): Promise<KeyValuePairAny> {
+async GetMail(type: 'convocation' | 'annulation' | 'seance_dispo', id: number): Promise<KeyValuePairAny> {
   const proj = await this.mailProjectRepo.findOne({ where: { id } });
   if (!proj) throw new Error('Mail project introuvable');
 

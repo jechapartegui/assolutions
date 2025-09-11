@@ -28,6 +28,7 @@ export class AppStore {
   }
   login_projet(prok: Projet_VM)   { 
     this.isLoggedIn.set(true); 
+    this.updateSaisonActive(prok.saison_active);
     this.projetVM.set(prok);
  const pv:ProjetView ={
       id : prok.id,

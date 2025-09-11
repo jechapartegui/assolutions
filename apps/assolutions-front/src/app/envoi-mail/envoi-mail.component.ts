@@ -10,9 +10,12 @@ import { SeancesService } from '../../services/seance.service';
 import { KeyValuePair, KeyValuePairAny } from '@shared/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
 import { Adherent_VM } from '@shared/lib/member.interface';
-import {  Seance_VM } from '@shared/lib/seance.interface';
+import { Seance_VM } from '@shared/lib/seance.interface';
 import { AppStore } from '../app.store';
 
+type Etape = 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON';
+type Audience  =  'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT';
+type Typemail = 'relance' | 'annulation' | 'convocation' | 'libre'| 'essai';
 @Component({
   standalone: false,
   selector: 'app-envoi-mail',
@@ -20,349 +23,335 @@ import { AppStore } from '../app.store';
   styleUrls: ['./envoi-mail.component.css'],
 })
 export class EnvoiMailComponent implements OnInit {
-  typemail:
-    | 'SEANCE_DISPO'
-    | 'ANNULATION_SEANCE'
-    | 'CONVOCATION_SEANCE'
-    | 'LIBRE';
-  ouvert_type_mail: boolean = true;
-  ouvert_param: boolean = false;
-  ouvert_audience: boolean = false;
-  ouvert_brouillon: boolean = false;
-  ouvert_mail: boolean = false;
+  ouvert_type_mail = true;
+  ouvert_param = false;
+  ouvert_audience = false;
+  ouvert_brouillon = false;
+  ouvert_mail = false;
+
   date_debut: string;
   date_fin: string;
-  params: KeyValuePairAny[];
+  params: KeyValuePairAny[] = [];
   action: string;
-  liste_groupe: KeyValuePair[];
+
+  liste_groupe: KeyValuePair[] = [];
   groupe_selectionne: number;
-  liste_adherent: Adherent_VM[];
+
+  liste_adherent: Adherent_VM[] = [];
   ListeUserSelectionne: Adherent_VM[] = [];
   adherent_selectionne: Adherent_VM;
-  seance_periode: Seance_VM[];
+
+  seance_periode: Seance_VM[] = [];
   seance_selectionnee: Seance_VM;
-  liste_mail: MailData[];
+
+  liste_mail: MailData[] = [];
   selected_mail: MailData;
   mail_selectionne: MailData;
+
   mail_a_generer: MailData;
   subject_mail_a_generer: string;
-  type_audience: 'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT' = 'TOUS';
-  etape: 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON' =
-    'SELECTION_MAIL';
+
+
+  etape: Etape = 'SELECTION_MAIL';
+  audience:Audience = "TOUS";
+  typemail:Typemail;
+  mailSubject: string;
+  mailBody: string;
+  
+
   constructor(
     public adh_serv: AdherentService,
     public gr_serv: GroupeService,
     public seance_serv: SeancesService,
     public mail_serv: MailService,
     public proj_serv: ProjetService,
-    public GlobalService:GlobalService, public store:AppStore
+    public GlobalService: GlobalService,
+    public store: AppStore
   ) {}
 
   ngOnInit(): void {}
+
   formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = ('0' + (date.getMonth() + 1)).slice(-2);
-    const day = ('0' + date.getDate()).slice(-2);
-    return `${year}-${month}-${day}`;
+    const y = date.getFullYear();
+    const m = ('0' + (date.getMonth() + 1)).slice(-2);
+    const d = ('0' + date.getDate()).slice(-2);
+    return `${y}-${m}-${d}`;
   }
 
-  GoToParam(type){
-    const auj = new Date();
+  goto(step: Etape) {
+  this.etape = step;
+  // on ouvre seulement le panneau de l'étape visée, pour rester “card scroller”
+  this.ouvert_type_mail = (step === 'SELECTION_MAIL');
+  this.ouvert_param     = (step === 'PARAMETRE');
+  this.ouvert_audience  = (step === 'AUDIENCE');
+  this.ouvert_brouillon = (step === 'BROUILLON');
+}
 
-    // Date dans un mois
+
+
+/** Autorisations de navigation (avance possible quand les prérequis sont satisfaits). */
+canGoTo(step: Etape): boolean {
+  switch (step) {
+    case 'SELECTION_MAIL':
+      return true; // toujours OK (revenir en arrière)
+    case 'PARAMETRE':
+      // avoir choisi un type (ou LIBRE qui saute la plage)
+      return !!this.typemail;
+    case 'AUDIENCE':
+      // si “LIBRE”, pas de plage requise ; sinon dates présentes
+      return this.typemail === 'libre'
+        ? true
+        : (!!this.date_debut && !!this.date_fin);
+    case 'BROUILLON':
+      // on a déjà généré au moins un mail (retour possible si brouillon existant)
+      return (this.liste_mail && this.liste_mail.length > 0) || !!this.mail_a_generer;
+    default:
+      return false;
+  }
+}
+
+  GoToParam(type: Typemail) {
+    const auj = new Date();
     const nextMonth = new Date(auj);
     this.date_debut = this.formatDate(auj);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     this.date_fin = this.formatDate(nextMonth);
+
     this.typemail = type;
     this.etape = 'PARAMETRE';
     this.ouvert_type_mail = false;
     this.ouvert_param = true;
   }
- 
-  Libre(){    
-    this.typemail = 'LIBRE';
+
+  Libre() {
+    this.typemail = "libre";
     this.etape = 'AUDIENCE';
     this.ValiderPlage();
   }
 
-
-
   ValiderPlage() {
     const errorService = ErrorService.instance;
-    this.action = $localize`Charger l'audience`;    
-    this.adh_serv
-      .GetAdherentAdhesion(this.store.saison_active().id)
-      .then((list) => {
-        this.liste_adherent = list;
-        this.gr_serv
-          .GetAll()
-          .then((lg) => {
-            this.liste_groupe = lg;
-            this.seance_serv
-              .GetSeances()
-              .then((seances) => {
-                this.seance_periode = seances;
-                this.etape = 'AUDIENCE';
-                this.ouvert_param = false;
-                this.ouvert_audience = true;
-              })
-              .catch((err: HttpErrorResponse) => {
-                let o = errorService.CreateError(this.action, err.message);
-                errorService.emitChange(o);
-              });
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
+    this.action = $localize`Charger l'audience`;
+
+    this.adh_serv.GetAdherentAdhesion(this.store.saison_active().id)
+      .then(list => {
+                    this.liste_adherent = list.map(data =>
+  Object.assign(new Adherent_VM(), data)
+);
+        return this.gr_serv.GetAll();
+      })
+      .then(lg => {
+        this.liste_groupe = lg;
+        return this.seance_serv.GetSeances();
+      })
+      .then(seances => {
+
+        this.seance_periode =  seances.sort((a, b) => {
+          const nomA = a.date_seance; // Ignore la casse lors du tri
+          const nomB = b.date_seance;
+          let comparaison = 0;
+          if (nomA > nomB) {
+            comparaison = 1;
+          } else if (nomA < nomB) {
+            comparaison = -1;
+          }
+
+          return  comparaison; // Inverse pour le tri descendant
+        });
+        this.etape = 'AUDIENCE';
+        this.ouvert_param = false;
+        this.ouvert_audience = true;
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
 
-  AddUsers() {
+  AddUsers(inscrit:boolean=false) {
     this.ListeUserSelectionne = [];
-    this.liste_adherent.forEach((e) => {
-      let te = this.ListeUserSelectionne.find((x) => x.id == e.id);
-      if (!te) {
+    if(inscrit){
+    this.liste_adherent.forEach(e => {
+      if (!this.ListeUserSelectionne.find(x => x.id === e.id && x.inscrit)) {
         this.ListeUserSelectionne.push(e);
       }
     });
+
+    } else {
+    this.liste_adherent.forEach(e => {
+      if (!this.ListeUserSelectionne.find(x => x.id === e.id)) {
+        this.ListeUserSelectionne.push(e);
+      }
+    });
+
+    }
   }
 
   AddGroupe() {
-    if(!this.ListeUserSelectionne){
-      this.ListeUserSelectionne= [];
-    }
-    if(this.groupe_selectionne){
-      let list = this.liste_adherent.filter(x => x.inscriptionsSaison[0].groupes.map(x => x.id).includes(this.groupe_selectionne));
-      this.ListeUserSelectionne.push(...list);
+    if (!this.ListeUserSelectionne) this.ListeUserSelectionne = [];
+    if (this.groupe_selectionne) {
+      const list = this.liste_adherent.filter(x =>
+        x.inscriptionsSaison?.[0]?.groupes?.map(g => g.id).includes(this.groupe_selectionne)
+      );
+      // éviter les doublons
+      const existing = new Set(this.ListeUserSelectionne.map(p => p.id));
+      this.ListeUserSelectionne.push(...list.filter(p => !existing.has(p.id)));
     }
   }
+
   RemoveUsers() {
     this.ListeUserSelectionne = [];
   }
+
   ValiderDestinataire() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le template du mail`;
     this.etape = 'BROUILLON';
     this.ouvert_brouillon = true;
     this.ouvert_audience = false;
-    this.mail_serv
-      .GetTemplate(this.typemail)
-      .then((content) => {
+
+    this.mail_serv.GetTemplate(this.typemail)
+      .then(content => {
         this.mail_a_generer = new MailData();
         this.mail_a_generer.content = content;
         this.params = [];
-        if (this.typemail == 'SEANCE_DISPO') {
+
+        if (this.typemail === 'relance') {
           this.params.push({ key: 'date_debut', value: this.date_debut });
-  this.params.push({ key: 'date_fin', value: this.date_fin });
+          this.params.push({ key: 'date_fin', value: this.date_fin });
         }
-        this.mail_serv
-          .GetSubjecct(this.typemail)
-          .then((suj) => {
-            this.mail_a_generer.subject = suj;
-            this.action = $localize`Charger le contenu du mail`;
-            this.mail_serv
-              .ChargerTemplateUser(
-                this.typemail,
-                this.mail_a_generer.content,
-                this.mail_a_generer.subject,
-                this.ListeUserSelectionne.map((x) => x.id),
-                this.params
-              )
-              .then((liste_mail) => {
-                this.liste_mail = liste_mail;
-                this.selected_mail = this.liste_mail[0];
-              })
-              .catch((err: HttpErrorResponse) => {
-                let o = errorService.CreateError(this.action, err.message);
-                errorService.emitChange(o);
-              });
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
+
+        return this.mail_serv.GetSubjecct(this.typemail);
+      })
+      .then(suj => {
+        this.mail_a_generer.subject = suj;
+        this.action = $localize`Charger le contenu du mail`;
+        return this.mail_serv.ChargerTemplateUser(
+          this.typemail,
+          this.mail_a_generer.content,
+          this.mail_a_generer.subject,
+          this.ListeUserSelectionne.map(x => x.id),
+          this.params
+        );
+      })
+      .then(liste_mail => {
+        this.liste_mail = liste_mail;
+        this.selected_mail = this.liste_mail[0];
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
 
   RemoveUser(user: Adherent_VM) {
-    this.ListeUserSelectionne = this.ListeUserSelectionne.filter(
-      (x) => x.id !== user.id
-    );
+    this.ListeUserSelectionne = this.ListeUserSelectionne.filter(x => x.id !== user.id);
   }
+
   GenererVue() {
     const errorService = ErrorService.instance;
-    this.action = $localize`Charger le contenu du mail`;   
-      this.mail_serv
-      .ChargerTemplateUser(
-        this.typemail,
-        this.mail_a_generer.content,
-        this.mail_a_generer.subject,
-        this.ListeUserSelectionne.map((x) => x.id),
-        this.params
-      )
-      .then((liste_mail) => {
-        this.liste_mail = liste_mail;
-        this.selected_mail = this.liste_mail[0];
-      })
-      .catch((err: HttpErrorResponse) => {
+    this.action = $localize`Charger le contenu du mail`;
+     this.mail_serv.GetMail(this.typemail).then((retour:KeyValuePairAny) =>{
+    this.mailSubject = retour.key;
+    this.mailBody = retour.value;
+   }).catch((err: HttpErrorResponse) => {
+     // Par défaut : tous les "convoqué"
+    this.mailSubject = ``;
+    this.mailBody =``;
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-      });
-   
+      })
   }
 
   SauvegarderTemplate() {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder le template`;
-    this.proj_serv
-      .SauvegarderTemplate(
-        this.mail_a_generer.content,
-        this.mail_a_generer.subject,
-        this.typemail
-      )
-      .then((ok) => {
-        if (ok) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
+    this.proj_serv.SauvegarderTemplate(
+      this.mail_a_generer.content,
+      this.mail_a_generer.subject,
+      this.typemail
+    )
+    .then(ok => {
+      const o = ok ? errorService.OKMessage(this.action)
+                   : errorService.UnknownError(this.action);
+      errorService.emitChange(o);
+    })
+    .catch((err: HttpErrorResponse) => {
+      const o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+    });
   }
 
-  vue(
-    thisvue: 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON' | 'ENVOI'
-  ): boolean {
-    switch (this.etape) {
-      case 'SELECTION_MAIL':
-        if (thisvue == 'SELECTION_MAIL') {
-          return true;
-        } else {
-          return false;
-        }
-      case 'PARAMETRE':
-        if (thisvue == 'SELECTION_MAIL' || thisvue == 'PARAMETRE') {
-          return true;
-        } else {
-          return false;
-        }
-      case 'AUDIENCE':
-        if (
-          thisvue == 'SELECTION_MAIL' ||
-          thisvue == 'PARAMETRE' ||
-          thisvue == 'AUDIENCE'
-        ) {
-          return true;
-        } else {
-          return false;
-        }
-      case 'BROUILLON':
-        return true;
-    }
+  // ✅ Une seule étape visible: parfait pour la card scroller
+  vue(thisvue: 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON' | 'ENVOI'): boolean {
+    return this.etape === thisvue;
   }
 
-  AddSeanceTous() {}
-
-  AddSeancePresent() {}
-  AddSeanceConvoque() {}
+  AddSeanceTous() { /* TODO */ }
+  AddSeancePresent() { /* TODO */ }
+  AddSeanceConvoque() { /* TODO */ }
 
   Addherent() {
-    console.log(this.adherent_selectionne);
-    if (
-      !this.ListeUserSelectionne.find(
-        (x) => x.id == this.adherent_selectionne.id
-      )
-    ) {
+    if (!this.adherent_selectionne) return;
+    if (!this.ListeUserSelectionne.find(x => x.id === this.adherent_selectionne.id)) {
       this.ListeUserSelectionne.push(this.adherent_selectionne);
     }
   }
-calculateAge(dateNaissance: Date): number {
+
+  calculateAge(dateNaissance: Date): number {
     const today = new Date();
     const birthDate = new Date(dateNaissance);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
     return age;
   }
+
   ValiderFormatEmail() {}
+
   async EnvoyerTousLesMails() {
     let nb_ok = 0;
-    let nb_mail = this.liste_mail.length;
+    const nb_mail = this.liste_mail.length;
     let erreur = false;
     const errorService = ErrorService.instance;
     this.action = $localize`Envoyer tous les mails`;
 
-    const delay = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms)); // fonction pour la temporisation
-    const mailLimitPerMinute = 30; // 30 mails par minute
-    const interval = 60000 / mailLimitPerMinute; // Calcul du délai entre chaque envoi
+    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+    const mailLimitPerMinute = 30;
+    const interval = 60000 / mailLimitPerMinute;
 
-    for (let i = 0; i < this.liste_mail.length; i++) {
-      const mail = this.liste_mail[i];
-
+    for (const mail of this.liste_mail) {
       try {
-        const ok = await this.mail_serv.Envoyer(mail); // Attendre l'envoi du mail
-        if (ok) {
-          nb_ok++;
-        } else {
+        const ok = await this.mail_serv.Envoyer(mail);
+        if (ok) nb_ok++;
+        else {
           erreur = true;
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
+          errorService.emitChange(errorService.UnknownError(this.action));
         }
       } catch (err: any) {
         erreur = true;
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
+        errorService.emitChange(errorService.CreateError(this.action, err.message));
       }
-
-      // Temporiser l'envoi (attendre avant de passer au mail suivant)
       await delay(interval);
     }
 
-    if (!erreur) {
-      let o = errorService.OKMessage(this.action);
-      errorService.emitChange(o);
-    }
-
+    if (!erreur) errorService.emitChange(errorService.OKMessage(this.action));
     console.log(`${nb_ok}/${nb_mail} mails envoyés.`);
   }
 
   EnvoiMail() {
     const errorService = ErrorService.instance;
     this.action = $localize`Envoyer l'email`;
-    this.mail_serv
-      .Envoyer(this.selected_mail)
-      .then((ok) => {
-        if (ok) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
+    this.mail_serv.Envoyer(this.selected_mail)
+      .then(ok => {
+        const o = ok ? errorService.OKMessage(this.action)
+                     : errorService.UnknownError(this.action);
+        errorService.emitChange(o);
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
