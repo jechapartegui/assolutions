@@ -41,7 +41,10 @@ async DeleteBank(id: number) { await this.bank.delete(id); }
 
 // --- Financial flows
 async GetFlow(id: number) { return toFlowVM(await this.flow.get(id)); }
-async GetAllFlows(project_id: number) { return (await this.flow.getAll(project_id)).map(toFlowVM); }
+async GetAllFlows(project_id: number) { 
+    const flows = await this.flow.getAll(project_id);
+  return flows.map(e => toFlowVM(e));
+ }
 async AddFlow(vm: FluxFinancier_VM, project_id: number) { if (!vm) throw new BadRequestException('INVALID_ITEM');  return toFlowVM(await this.flow.create(toFlowEntity(vm, project_id))); }
 async UpdateFlow(vm: FluxFinancier_VM, project_id: number) { if (!vm) throw new BadRequestException('INVALID_ITEM');  return toFlowVM(await this.flow.update(vm.id, toFlowEntity(vm, project_id))); }
 async DeleteFlow(id: number) { await this.flow.delete(id); }

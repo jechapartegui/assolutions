@@ -25,7 +25,7 @@ buyValue?: number | null;
 
 
 @Column({ name: 'date_achat', type: 'date', nullable: true })
-buyDate?: string | null; // YYYY-MM-DD
+buyDate?: Date | null; // YYYY-MM-DD
 
 
 @Column({ name: 'flux_financier_id', type: 'int', nullable: true })

@@ -32,6 +32,8 @@ isIncome: boolean;
 @Column({ name: 'statut', type: 'int' })
 status: number; // LV if desired
 
+@Column({ name: 'nb_paiement', type: 'int' })
+nbpayment: number; // LV if desired
 
 @Column({ name: 'montant', type: 'float' })
 amount: number;

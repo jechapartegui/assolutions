@@ -19,5 +19,5 @@ liste_operation:Operation_VM[]=[];
 liste_stock:Stock_VM[]=[];
 nb_paiement:number = 1;
 Documents:any[];
-temp_id:number;
+temp_id:number = 0;
 }

@@ -9,6 +9,7 @@ import { FluxFinancier_VM } from '@shared/lib/flux-financier.interface';
 import { Operation_VM } from '@shared/lib/operation.interface';
 import { Stock_VM } from '@shared/lib/stock.interface';
 import { toPersonneLight_VM } from "./member/member.services";
+import { Document } from "../entities/document.entity";
 
 function parseJson<T>(s?: string | null): T | null {
 if (!s) return null;
@@ -49,11 +50,12 @@ return e;
 }
 
 
-export function toFlowVM(e: FinancialFlow): FluxFinancier_VM {
+export function toFlowVM(e: FinancialFlow, operations : Operation [] = [], stocks: StockItem[] = [], doc:Document[] = [] ): FluxFinancier_VM {
 return {
 id: e.id, libelle: e.label, date: e.date, classe_comptable: e.accountingClass,
-destinataire: parseJson(e.recipient)!, recette: !!e.isIncome, statut: e.status, montant: e.amount,
-info: e.info ?? undefined,  saison_id: e.seasonId ?? undefined,
+destinataire: parseJson(e.recipient)!, recette: !!e.isIncome, statut: e.status, montant: e.amount, nb_paiement: e.nbpayment, liste_stock : stocks.map(x => toStockVM(x)), Documents: doc,
+temp_id : 0,
+info: e.info ?? undefined,  saison_id: e.seasonId ?? undefined, liste_operation : operations.map(x => toOpVM(x)), 
 };
 }
 
@@ -71,7 +73,7 @@ return e;
 export function toOpVM(e: Operation): Operation_VM {
 return {
 id: e.id, solde: e.balance, date_operation: e.operationDate, mode: e.mode,
-destinataire: parseJson(e.recipient)!, paiement_execute: !!e.executed,
+destinataire: parseJson(e.recipient)!, paiement_execute: !!e.executed, temp_id : 0,
 compte_bancaire_id: e.bankAccountId, flux_financier_id: e.financialFlowId, info: e.info ?? undefined,
 };
 }
@@ -89,7 +91,7 @@ export function toStockVM(e: StockItem): Stock_VM {
 return {
 id: e.id, qte: e.quantity, lieu_stockage: parseJson(e.storagePlace)!, type_stock: e.stockType,
 valeur_achat: e.buyValue ?? undefined, date_achat: e.buyDate ?? undefined, flux_financier_id: e.financialFlowId ?? undefined,
-libelle: e.label, info: e.info,
+libelle: e.label, info: e.info, temp_id : 0, to_sell : false
 };
 }
 export function toStockEntity(vm: Stock_VM, project_id:number): StockItem {

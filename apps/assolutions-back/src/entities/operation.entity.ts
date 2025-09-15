@@ -14,7 +14,7 @@ balance: number; // signed
 
 
 @Column({ name: 'date_operation', type: 'date' })
-operationDate: string; // YYYY-MM-DD
+operationDate: Date; // YYYY-MM-DD
 
 
 @Column({ name: 'mode', type: 'int'})
