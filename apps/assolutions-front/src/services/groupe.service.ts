@@ -123,7 +123,7 @@ public AddLien(
 
 public DeleteLien(id: number): Promise<boolean> {
   // encodeURIComponent protège contre les '/' ou caractères spéciaux dans type_objet
-  const url = `api/groupe/deletelien`;
+   this.url = environment.maseance + 'api/groupe/deletelien';
  const body = {
       id: id, 
     };

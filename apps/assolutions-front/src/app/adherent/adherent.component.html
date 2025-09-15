@@ -590,7 +590,7 @@
    </span><span class="mobile">
         <div class="buttons">
           <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
-          <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id)"
+          <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0"
                [type_button]="'InscrireMobile'" (click)="Inscrire()"></btn>
           <btn *ngIf="thisAdherent.id < 1"
                [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"
@@ -657,8 +657,11 @@
 
                   <!-- Groupes actifs (prof) -->
         <ng-container *ngIf="store.isProf()">
-          <ng-container *ngIf="store.isProf() && CurrentActiveInscriptionGroupe(thisAdherent) && CurrentActiveInscriptionGroupe(thisAdherent).length > 0">
             <div class="column is-full-tablet is-half-desktop">
+            <app-groupe-detail [edit]="true" [id_source]="thisAdherent.id" [objet_source]="'rider'" [Groupes]="CurrentActiveInscriptionGroupe(thisAdherent)" [liste_groupe]="liste_groupe" [groupe_dispo]="CurrentInactiveInscriptionGroupe(thisAdherent)">
+            </app-groupe-detail>
+          <ng-container *ngIf="store.isProf() && CurrentActiveInscriptionGroupe(thisAdherent) && CurrentActiveInscriptionGroupe(thisAdherent).length > 0">
+
               <div class="box is-light">
                 <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
                   <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Groupes</h3>
@@ -671,8 +674,8 @@
                   </div>
                 </div>
               </div>
-            </div>
           </ng-container>
+            </div>
         </ng-container>
                 </div>
 
@@ -683,7 +686,7 @@
                     <div class="column">
           <div class="buttons">
             <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
-            <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id)"
+            <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0"
                  [type_button]="'InscrireSmall'" (click)="Inscrire()"></btn>
             <btn *ngIf="thisAdherent.id < 1"
                  [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"

@@ -324,7 +324,10 @@ valid_contact_urgence(isValid: boolean): void {
      if(this.thisAccount.id > 0){
       
     // nouvelle personne -- selection possible
-      this.ListePersonne = await this.ridersService.GetAllPersonne(this.thisAccount.id);
+      const adh = await this.ridersService.GetAllPersonne(this.thisAccount.id);
+     this.ListePersonne = adh.map(data =>
+    Object.assign(new Adherent_VM(), data)
+  );
       if(this.ListePersonne.length == 0){
         this.thisAdherent = new Adherent_VM();  
         this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];      
@@ -332,7 +335,7 @@ valid_contact_urgence(isValid: boolean): void {
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
       } else {
-        this.ListePersonne = this.ListePersonne.filter(y => !this.liste_adherents_VM.map(x => x.id).includes(y.id));
+        this.ListePersonne = this.ListePersonne.filter(y => !this.liste_adherents_VM.filter(x => x.inscrit).map(x => x.id).includes(y.id));
           if(this.ListePersonne.length == 0){
         this.id = 0;
         this.thisAdherent = new Adherent_VM();
@@ -360,7 +363,9 @@ valid_contact_urgence(isValid: boolean): void {
         this.personne = null;
   }
   async SelectPersonne(){
-  this.thisAdherent = await this.ridersService.Get(this.personne.id);
+  const adh = await this.ridersService.Get(this.personne.id);
+
+this.thisAdherent = Object.assign(new Adherent_VM(), adh);
         this.histo_adherent = JSON.stringify(this.thisAdherent);
   this.select_account = false;
         this.ListePersonne = null;
@@ -828,6 +833,19 @@ PreSave() {
       return adh.inscriptionsSaison.find(x => x.active == true).groupes;
     } else {
       return [];
+    }
+  }
+    CurrentInactiveInscriptionGroupe(adh:Adherent_VM): KeyValuePair[]{
+
+    if(!adh.inscriptionsSaison || adh.inscriptionsSaison.length == 0){
+      return this.liste_groupe;
+    }
+    if(adh.inscriptionsSaison.find(x => x.active == true)){
+      const list_id_group = adh.inscriptionsSaison.find(x => x.active == true).groupes.map(n => n.id);
+      return this.liste_groupe.filter( x => !list_id_group.includes(Number(x.key)));
+
+    } else {
+      return this.liste_groupe;
     }
   }
 
