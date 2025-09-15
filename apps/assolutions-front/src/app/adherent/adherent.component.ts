@@ -13,7 +13,7 @@ import { SaisonService } from '../../services/saison.service';
 import { AdherentExport, Adherent_VM } from '@shared/lib/member.interface';
 import { KeyValuePair } from '@shared/lib/autres.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
-import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { Adresse } from '@shared/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 import { ItemContact, Personne_VM } from '@shared/lib/personne.interface';
@@ -56,8 +56,8 @@ export class AdherentComponent implements OnInit {
   public personne:Personne_VM = null;
 
   // === Groupes et saisons ===
-  public liste_groupe: KeyValuePair[] = [];
-  public liste_groupe_filter: KeyValuePair[];
+  public liste_groupe: Groupe_VM[] = [];
+  public liste_groupe_filter: Groupe_VM[];
   public titre_groupe = $localize`Groupe de l'adhérent`;
   public liste_saison: Saison_VM[] = [];
   public active_saison: Saison_VM;
@@ -72,6 +72,7 @@ export class AdherentComponent implements OnInit {
   public selected_sort_sens: any;
   public afficher_tri = false;
   public afficher_filtre = false;
+  public editmongroupe:boolean = false;
 
   // === Texte et traduction ===
   public titre_contact = $localize`Contacts de l'adhérent`;
@@ -462,6 +463,9 @@ isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer l'adhérent`;
     try {
+      if(!this.liste_groupe || this.liste_groupe.length==0){
+        this.liste_groupe = await this.grServ.GetAll(this.active_saison.id);
+      }
       const adh = await this.ridersService.Get(this.id);
       if (!adh) {
         this.loading = false;
@@ -835,17 +839,17 @@ PreSave() {
       return [];
     }
   }
-    CurrentInactiveInscriptionGroupe(adh:Adherent_VM): KeyValuePair[]{
+    CurrentInactiveInscriptionGroupe(adh:Adherent_VM): LienGroupe_VM[]{
 
     if(!adh.inscriptionsSaison || adh.inscriptionsSaison.length == 0){
-      return this.liste_groupe;
+      return this.liste_groupe.map(x => new LienGroupe_VM(x.id, x.nom, 0));
     }
     if(adh.inscriptionsSaison.find(x => x.active == true)){
       const list_id_group = adh.inscriptionsSaison.find(x => x.active == true).groupes.map(n => n.id);
-      return this.liste_groupe.filter( x => !list_id_group.includes(Number(x.key)));
+      return this.liste_groupe.filter( x => !list_id_group.includes(Number(x.id))).map(x => new LienGroupe_VM(x.id, x.nom, 0));
 
     } else {
-      return this.liste_groupe;
+      return this.liste_groupe.map(x => new LienGroupe_VM(x.id, x.nom, 0));
     }
   }
 

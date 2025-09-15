@@ -127,24 +127,6 @@ public DemandeRattachement(login:string, rider_id:number): Promise<boolean> {
       return Promise.reject(error);
     });
 }
-
-public GetTemplate(type_mail:string):Promise<string>{
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_template",
-    type_mail:type_mail
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: string) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
 public GetSubjecct(type_mail:string):Promise<string>{
   this.url = environment.maseance + 'maseance/mail_manage.php';
   //  this.url = this.url + "login.php";

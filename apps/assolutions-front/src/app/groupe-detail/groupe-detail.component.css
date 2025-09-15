@@ -4,3 +4,4 @@
     font-size: smaller;
 }
 }
+.tag.is-clickable { cursor: pointer; }

@@ -33,7 +33,7 @@ export class MemberService {
     if (!saison) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
-    return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], [])).sort((a, b) => a.nom.localeCompare(b.nom));
+    return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], [], saison_id)).sort((a, b) => a.nom.localeCompare(b.nom));
   }
   async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
     const saison = await this.personserivce.getAllCompte(compte_id);
@@ -322,7 +322,7 @@ export function toPerson(vm:Personne_VM){
   return entity;
 }
 
-export function toAdherent_VM(pentity:Person, ise:RegistrationSeason[], isa:RegistrationSession[]){
+export function toAdherent_VM(pentity:Person, ise:RegistrationSeason[], isa:RegistrationSession[], season_id:number = null){
   const vm = new Adherent_VM();
     vm.id = pentity.id;
   vm.nom = pentity.lastName;
@@ -339,7 +339,9 @@ export function toAdherent_VM(pentity:Person, ise:RegistrationSeason[], isa:Regi
   } else  {
     vm.login = '';
   }
-    
+  if(season_id){
+    vm.inscrit = ise.find(x => x.saisonId == season_id) ? true : false;
+  }
   vm.inscriptionsSaison = ise.map(x => toInscriptionSaison_VM(x));  
   vm.inscriptionsSeance = isa.map(x => to_InscriptionSeances_VM(x));
   return vm;

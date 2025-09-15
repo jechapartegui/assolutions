@@ -218,7 +218,7 @@
                                   <select style="font-size: smaller" [(ngModel)]="filters.filter_groupe">
                                     <option [ngValue]="null" i18n>Tous</option>
                                     <ng-container *ngFor="let group of liste_groupe_filter">
-                                      <option [ngValue]="group.value">{{ group.value }}</option>
+                                      <option [ngValue]="group.nom">{{ group.nom }}</option>
                                     </ng-container>
                                   </select>
                                 </div>
@@ -359,8 +359,8 @@
                       >
                         <option [ngValue]="null" i18n>Tous</option>
                         <ng-container *ngFor="let group of liste_groupe_filter">
-                          <option [ngValue]="group.value">
-                            {{ group.value }}
+                          <option [ngValue]="group.nom">
+                            {{ group.nom }}
                           </option>
                         </ng-container>
                       </select>
@@ -656,27 +656,24 @@
                   </div>
 
                   <!-- Groupes actifs (prof) -->
-        <ng-container *ngIf="store.isProf()">
+        <ng-container *ngIf="store.isProf(); else NoProf">
             <div class="column is-full-tablet is-half-desktop">
             <app-groupe-detail [edit]="true" [id_source]="thisAdherent.id" [objet_source]="'rider'" [Groupes]="CurrentActiveInscriptionGroupe(thisAdherent)" [liste_groupe]="liste_groupe" [groupe_dispo]="CurrentInactiveInscriptionGroupe(thisAdherent)">
             </app-groupe-detail>
-          <ng-container *ngIf="store.isProf() && CurrentActiveInscriptionGroupe(thisAdherent) && CurrentActiveInscriptionGroupe(thisAdherent).length > 0">
-
-              <div class="box is-light">
-                <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-                  <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Groupes</h3>
-                </div>
-                <div class="columns is-vcentered">
-                  <div class="tags">
-                    <ng-container *ngFor="let group of CurrentActiveInscriptionGroupe(thisAdherent)">
-                      <span class="tag is-small is-success">{{group.nom}}</span>
-                    </ng-container>
-                  </div>
-                </div>
-              </div>
-          </ng-container>
+        
             </div>
         </ng-container>
+
+        <ng-template #NoProf> 
+            <div class="column is-full-tablet is-half-desktop">
+           <button class="button is-small is-info is-light btn-mobile btn-elevated" (click)="editmongroupe = !editmongroupe">
+            <span *ngIf="editmongroupe" i18n>Terminé</span>
+            <span *ngIf="!editmongroupe" i18n>Je modifie mes groupes</span>
+           </button>
+          <app-groupe-detail [edit]="editmongroupe" [id_source]="thisAdherent.id" [objet_source]="'rider'" [Groupes]="CurrentActiveInscriptionGroupe(thisAdherent)" [liste_groupe]="liste_groupe" [groupe_dispo]="CurrentInactiveInscriptionGroupe(thisAdherent)">
+            </app-groupe-detail>
+            </div>
+        </ng-template>
                 </div>
 
               <!-- Footer (actions desktop) -->

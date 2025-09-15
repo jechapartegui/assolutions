@@ -45,7 +45,7 @@ export class GroupeComponent implements OnInit {
 
       this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {
 
-        this.liste_groupe = result.map(g => new Groupe_VM(Number(g.key), g.value, this.store.saison_active().id));
+        this.liste_groupe = result.map(g => new Groupe_VM(Number(g.id), g.nom, this.store.saison_active().id, ""));
         this.adhserv.GetAdherentAdhesion(this.store.saison_active().id).then((riders) => {
          riders.forEach(p => Personne_VM.bakeLibelle(p));
           this.liste_adherent = riders.filter(x => x.inscriptionsSaison && x.inscriptionsSaison.length > 0);
@@ -119,7 +119,7 @@ export class GroupeComponent implements OnInit {
       this.groupeserv.Add(    g   
       ).then((id) => {
         g.key = id;
-        const newGroupe = new Groupe_VM(id,this.nom_groupe, this.store.saison_active().id);
+        const newGroupe = new Groupe_VM(id,this.nom_groupe, this.store.saison_active().id, "");
         this.liste_groupe.push(newGroupe);
         let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);

@@ -462,8 +462,8 @@
                                   <ng-container
                                     *ngFor="let group of liste_groupe_filter"
                                   >
-                                    <option [ngValue]="group.value">
-                                      {{ group.value }}
+                                    <option [ngValue]="group.nom">
+                                      {{ group.nom }}
                                     </option>
                                   </ng-container>
                                 </select>
@@ -744,8 +744,8 @@
                       >
                         <option [ngValue]="null" i18n>Tous</option>
                         <ng-container *ngFor="let group of liste_groupe_filter">
-                          <option [ngValue]="group.value">
-                            {{ group.value }}
+                          <option [ngValue]="group.nom">
+                            {{ group.nom }}
                           </option>
                         </ng-container>
                       </select>

@@ -15,7 +15,7 @@ import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/lib/autres.interface';
-import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { Professeur_VM } from '@shared/lib/prof.interface';
 import { Cours_VM } from '@shared/lib/cours.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
@@ -42,7 +42,7 @@ export class CoursComponent implements OnInit {
   current_prof_id: number;
    prof_dispo: Professeur_VM[];
   groupe_dispo: KeyValuePair[] = [];
-  liste_groupe: KeyValuePair[] = [];
+  liste_groupe: Groupe_VM[] = [];
   liste_prof: Professeur_VM[];
   is_valid:boolean = false;
   save:string= "";
@@ -64,7 +64,7 @@ export class CoursComponent implements OnInit {
   filter_groupe: number;
   filter_lieu: number;
   filter_prof: number;
-  liste_groupe_filter: KeyValuePair[];
+  liste_groupe_filter: Groupe_VM[];
   liste_prof_filter: KeyValuePairAny[];
   liste_lieu_filter: KeyValuePairAny[];
   action: string = "";

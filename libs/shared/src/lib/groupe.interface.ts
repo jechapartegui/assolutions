@@ -14,13 +14,15 @@ export class Groupe_VM {
   id: number;
   nom: string;
   saison_id: number;
+  whatsapp:string;
   display: boolean = false; // Pour l'affichage dans la liste
   // Lien vers les groupes
   groupes?: LienGroupe_VM[];
 
-  constructor(id: number, nom: string, saison_id: number) {
+  constructor(id: number, nom: string, saison_id: number, whatsapp:string) {
     this.id = id;
     this.nom = nom;
     this.saison_id = saison_id;
+    this.whatsapp = whatsapp;
   }
 }

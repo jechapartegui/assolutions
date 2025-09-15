@@ -4,6 +4,7 @@ import { GlobalService } from './global.services';
 import { KeyValuePair } from '@shared/lib/autres.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppStore } from '../app/app.store';
+import { Groupe_VM } from '@shared/index';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class GroupeService {
         return Promise.reject(message);
       });
   }
-  public GetAll(saison_id:number =0): Promise<KeyValuePair[]> {
+  public GetAll(saison_id:number =0): Promise<Groupe_VM[]> {
     if(saison_id ===0){
     saison_id = this.store.saison_active().id;
   }

@@ -15,7 +15,7 @@ import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/lib/autre
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { Cours_VM } from '@shared/lib/cours.interface';
 import {  Seance_VM, SeanceProfesseur_VM, StatutSeance } from '@shared/lib/seance.interface';
-import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { Professeur_VM } from '@shared/lib/prof.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
 import type { donnee_date_lieu } from '../component/datelieu/datelieu.component';
@@ -69,7 +69,7 @@ export class SeanceComponent implements OnInit, OnDestroy {
 
   current_groupe_id: number;
   groupe_dispo: KeyValuePair[] = [];
-  liste_groupe: KeyValuePair[] = [];
+  liste_groupe: Groupe_VM[] = [];
 
   public sort_nom = 'NO';
   public sort_cours = 'NO';
@@ -77,7 +77,7 @@ export class SeanceComponent implements OnInit, OnDestroy {
   public sort_lieu = 'NO';
   public season_id: number;
 
-  public liste_groupe_filter: KeyValuePair[];
+  public liste_groupe_filter: Groupe_VM[];
   public liste_prof_filter: KeyValuePair[];
   public liste_lieu_filter: string[];
   public liste_saison: Saison_VM[] = [];

@@ -147,7 +147,7 @@
                 <div class="select is-fullwidth">
                   <select id="groupe" style="font-size: smaller" [(ngModel)]="groupe_selectionne">
                     <ng-container *ngFor="let pr of liste_groupe">
-                      <option [value]="pr.key">{{ pr.value }}</option>
+                      <option [value]="pr.id">{{ pr.nom }}</option>
                     </ng-container>
                   </select>
                 </div>
@@ -233,20 +233,20 @@
                   <div class="panel-block">
                     <div class="field" style="width:100%">
                       <label class="label" i18n>Sujet :</label>
-                      <input type="text" class="input" [(ngModel)]="mail_a_generer.subject" />
+                      <input type="text" class="input" [(ngModel)]="subject_mail_a_generer" />
                     </div>
                   </div>
                   <div class="panel-block">
                     <textarea class="textarea" rows="18" style="font-size: smaller"
                               i18n-placeholder placeholder="Ici s'affichera le contenu du mail en HTML"
-                              [(ngModel)]="mail_a_generer.content"></textarea>
+                              [(ngModel)]="mail_a_generer"></textarea>
                   </div>
                 </article>
 
                 <div class="buttons" *ngIf="mail_a_generer">
                   <button (click)="GenererVue()" type="button"
                           class="button is-info is-small is-light btn-mobile btn-elevated">
-                    <span i18n>Regénérer la vue</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
+                    <span i18n>Générer la vue</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
                   </button>
                   <button (click)="SauvegarderTemplate()" type="button"
                           class="button is-primary is-small is-light btn-mobile btn-elevated">
@@ -258,22 +258,18 @@
               <div class="column is-full-tablet is-half-desktop">
                 <article class="panel is-success" *ngIf="selected_mail">
                   <p class="panel-heading" i18n>Vue Générée</p>
-                  <div class="panel-block" style="width:100%">
-                    <div class="field" style="width:100%">
-                      <label class="label" i18n>Destinataire :</label>
-                      <div class="select is-fullwidth">
-                        <select [(ngModel)]="selected_mail">
-                          <ng-container *ngFor="let mail of liste_mail">
-                            <option [ngValue]="mail">{{ mail.to }}</option>
-                          </ng-container>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="panel-block"><p><span i18n>Sujet : </span>{{ selected_mail.subject }}</p></div>
-                  <div class="panel-block">
-                    <div style="font-size: smaller" [innerHTML]="selected_mail.content"></div>
-                  </div>
+                <label class="label">Sujet</label>
+              <mail-template-preview
+  [html]="mailSubject"
+  [variables]="variables">
+</mail-template-preview>
+<label class="label mt-2">Message</label>
+
+<mail-template-preview
+  [html]="mailBody"
+  [variables]="variables">
+</mail-template-preview>
+
                 </article>
 
                 <div class="buttons is-right" *ngIf="selected_mail">

@@ -3,7 +3,7 @@ import { LinkGroup } from '../../entities/lien_groupe.entity';
 import { LinkGroupService } from '../../crud/linkgroup.service';
 import { GroupService } from '../../crud/group.service';
 import { Group } from '../../entities/groupe.entity';
-import { LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { KeyValuePair } from '@shared/lib/autres.interface';
 
 @Injectable()
@@ -34,16 +34,13 @@ export class GroupeService {
   }
 
 
-  async GetAll(saison_id: number): Promise<KeyValuePair[]> {
+  async GetAll(saison_id: number): Promise<Groupe_VM[]> {
     const gr =  await this.groupe_serv.getAll(saison_id);
      if (!gr) {
       return [];
       }
     return gr.map((x) => { 
-      return {
-        key: x.id,
-        value: x.name,
-      };
+     return new Groupe_VM(x.id, x.name, x.saisonId, x.whatsapp);
     });
   }
 

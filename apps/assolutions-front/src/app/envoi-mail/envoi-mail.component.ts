@@ -12,6 +12,7 @@ import { GlobalService } from '../../services/global.services';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Seance_VM } from '@shared/lib/seance.interface';
 import { AppStore } from '../app.store';
+import { Groupe_VM } from '@shared/index';
 
 type Etape = 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON';
 type Audience  =  'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT';
@@ -33,8 +34,10 @@ export class EnvoiMailComponent implements OnInit {
   date_fin: string;
   params: KeyValuePairAny[] = [];
   action: string;
+  
+  variables: Record<string, any> = {};
 
-  liste_groupe: KeyValuePair[] = [];
+  liste_groupe: Groupe_VM[] = [];
   groupe_selectionne: number;
 
   liste_adherent: Adherent_VM[] = [];
@@ -168,24 +171,17 @@ canGoTo(step: Etape): boolean {
       });
   }
 
-  AddUsers(inscrit:boolean=false) {
-    this.ListeUserSelectionne = [];
-    if(inscrit){
-    this.liste_adherent.forEach(e => {
-      if (!this.ListeUserSelectionne.find(x => x.id === e.id && x.inscrit)) {
-        this.ListeUserSelectionne.push(e);
-      }
-    });
+AddUsers(inscrit: boolean = false) {
+  const isInscrit = (v: any) =>
+    v === true || v === 1 || v === '1' || v === 'true'; // robustesse si la source n'est pas booléenne
 
-    } else {
-    this.liste_adherent.forEach(e => {
-      if (!this.ListeUserSelectionne.find(x => x.id === e.id)) {
-        this.ListeUserSelectionne.push(e);
-      }
-    });
+  const src = this.liste_adherent ?? [];
 
-    }
-  }
+  this.ListeUserSelectionne = inscrit
+    ? src.filter(e => isInscrit(e.inscrit)) // seulement les inscrits
+    : [...src];                              // tous les adhérents
+}
+
 
   AddGroupe() {
     if (!this.ListeUserSelectionne) this.ListeUserSelectionne = [];
@@ -210,33 +206,11 @@ canGoTo(step: Etape): boolean {
     this.ouvert_brouillon = true;
     this.ouvert_audience = false;
 
-    this.mail_serv.GetTemplate(this.typemail)
-      .then(content => {
-        this.mail_a_generer = new MailData();
-        this.mail_a_generer.content = content;
-        this.params = [];
-
-        if (this.typemail === 'relance') {
-          this.params.push({ key: 'date_debut', value: this.date_debut });
-          this.params.push({ key: 'date_fin', value: this.date_fin });
-        }
-
-        return this.mail_serv.GetSubjecct(this.typemail);
-      })
-      .then(suj => {
-        this.mail_a_generer.subject = suj;
-        this.action = $localize`Charger le contenu du mail`;
-        return this.mail_serv.ChargerTemplateUser(
-          this.typemail,
-          this.mail_a_generer.content,
-          this.mail_a_generer.subject,
-          this.ListeUserSelectionne.map(x => x.id),
-          this.params
-        );
-      })
-      .then(liste_mail => {
-        this.liste_mail = liste_mail;
-        this.selected_mail = this.liste_mail[0];
+    this.mail_serv.GetMail(this.typemail)
+      .then(kvp => {
+        this.subject_mail_a_generer = kvp.key;
+        this.mail_a_generer = kvp.value;
+        this.variables = [];
       })
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);

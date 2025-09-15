@@ -3,26 +3,62 @@
                 <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
                   <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>{{titre_groupe}}</h3>
 </div><div class="tags">
-    <ng-container *ngFor="let niv of Groupes">
-        <span class="fullscreen">
-        <span class="tag is-success">
-            {{niv.nom}}
-            <button *ngIf="edit"  class="delete is-small" (click)="RemoveGroupe(niv)"></button>
+  <ng-container *ngFor="let niv of Groupes">
+    <!-- Desktop -->
+    <span class="fullscreen">
+      <ng-container *ngIf="GetWA(niv) as wa; else tagSansLienDesktop">
+        <span
+          class="tag is-success is-clickable"
+          [attr.title]="'Cliquer pour copier le lien du groupe WhatsApp\n' + wa"
+          role="button"
+          tabindex="0"
+          (click)="CopyWA(niv)"
+          (keydown.enter)="CopyWA(niv)"
+        >
+          {{ niv.nom }} &nbsp;🔗
+          <small *ngIf="copiedId === niv.id">&nbsp;copié !</small>
+          <button *ngIf="edit" class="delete is-small" (click)="RemoveGroupe(niv)"></button>
         </span>
+      </ng-container>
+      <ng-template #tagSansLienDesktop>
+        <span class="tag is-success" [attr.title]="null">
+          {{ niv.nom }}
+          <button *ngIf="edit" class="delete is-small" (click)="RemoveGroupe(niv)"></button>
         </span>
-        <span class="mobile">
-            <span class="tag is-success">
-                {{niv.nom}}
-                <button *ngIf="edit" class="delete" (click)="RemoveGroupe(niv)"></button>
-            </span>
-            </span>
-    </ng-container>
-</div> 
+      </ng-template>
+    </span>
+
+    <!-- Mobile -->
+    <span class="mobile">
+      <ng-container *ngIf="GetWA(niv) as wa; else tagSansLienMobile">
+        <span
+          class="tag is-success is-clickable"
+          [attr.title]="'Cliquer pour copier le lien du groupe WhatsApp\n' + wa"
+          role="button"
+          tabindex="0"
+          (click)="CopyWA(niv)"
+          (keydown.enter)="CopyWA(niv)"
+        >
+          {{ niv.nom }} &nbsp;📋
+          <small *ngIf="copiedId === niv.id">&nbsp;copié !</small>
+          <button *ngIf="edit" class="delete" (click)="RemoveGroupe(niv)"></button>
+        </span>
+      </ng-container>
+      <ng-template #tagSansLienMobile>
+        <span class="tag is-success" [attr.title]="null">
+          {{ niv.nom }}
+          <button *ngIf="edit" class="delete" (click)="RemoveGroupe(niv)"></button>
+        </span>
+      </ng-template>
+    </span>
+  </ng-container>
+</div>
+
 <ng-container *ngIf="groupe_dispo.length >0 && edit">
     <div class="select">
         <select class="select is-small" id="groupes" [(ngModel)]="current_groupe_key">
             <ng-container *ngFor="let ni of groupe_dispo;let first = first	">
-                <option [value]="ni.key">{{ ni.value }}</option>
+                <option [value]="ni.id">{{ ni.nom }}</option>
             </ng-container>
         </select>
     </div>
