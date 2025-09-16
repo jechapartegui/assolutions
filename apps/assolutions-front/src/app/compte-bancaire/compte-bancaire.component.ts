@@ -72,14 +72,9 @@ export class CompteBancaireComponent implements OnInit {
     this.action = $localize`Supprimer un compte`;
     this.cpt_serv
       .delete(cpt.id)
-      .then((liste) => {
-        if (liste) {
+      .then(() => {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
         this.UpdateListeCompte();
       })
       .catch((err: HttpErrorResponse) => {

@@ -2,39 +2,106 @@ import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
 import { FluxFinancier_VM } from '@shared/index';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 @Injectable({ providedIn: 'root' })
 export class ComptabiliteService {
-private base = environment.maseance + 'api/admin/flow';
-constructor(private http: GlobalService) {}
+  url = environment.maseance;
+constructor(private global: GlobalService) {}
 
 
 public get(id: number): Promise<FluxFinancier_VM> {
-return this.http.GET(`${this.base}/get/${id}`);
+ this.url = environment.maseance + 'api/admin/flow/get/' + id;
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.GET(this.url)
+      .then((response: any) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
+public getAll(): Promise<FluxFinancier_VM[]> {
+
+ this.url = environment.maseance + 'api/admin/flow/getall/';
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.GET(this.url)
+      .then((response: any) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
+
+public getAllSeason(saison_id:number): Promise<FluxFinancier_VM[]> {
+
+ this.url = environment.maseance + 'api/admin/flow/getall_season/' + saison_id;
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.GET(this.url)
+      .then((response: any) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
+
+
+public add(vm: Partial<FluxFinancier_VM>): Promise<FluxFinancier_VM> {
+  this.url = environment.maseance + 'api/admin/flow/add';
+
+  return this.global.PUT(this.url, vm)
+    .then((response: FluxFinancier_VM) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
 }
 
 
-public getAll(projectId: number | null, saisonId?: number | null): Promise<FluxFinancier_VM[]> {
-const pid = projectId ?? 'null';
-const url = new URL(`${this.base}/getall/${pid}`, window.location.origin);
-if (saisonId != null) url.searchParams.set('saison_id', String(saisonId));
-return this.http.GET(url.pathname + (url.search || ''));
+public update(vm: Partial<FluxFinancier_VM>): Promise<FluxFinancier_VM> {
+this.url = environment.maseance + 'api/admin/flow/update';
+  return this.global.PUT(this.url, vm)
+    .then((response: FluxFinancier_VM) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
 }
+public Delete(id:number) {
+  this.url = environment.maseance + 'api/admin/flow/delete/';
+ const body = {
+      id: id
+    };
 
-
-public add(payload: Partial<FluxFinancier_VM>): Promise<number> {
-return this.http.PUT(`${this.base}/add`, payload);
+    return this.global.POST(this.url, body)
+    .then(() => {
+      return;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
 }
-
-
-public update(payload: Partial<FluxFinancier_VM> & { id: number }): Promise<boolean> {
-return this.http.PUT(`${this.base}/update`, payload);
 }
-
-
-public delete(id: number): Promise<boolean> {
-return this.http.DELETE(`${this.base}/delete/${id}`);
-}
-}
-

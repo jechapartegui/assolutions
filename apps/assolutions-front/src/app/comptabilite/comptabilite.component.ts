@@ -234,15 +234,15 @@ export class ComptabiliteComponent implements OnInit {
     if (this.editFluxFlinancier.id == -1) {
       this.compta_serv
         .add(this.editFluxFlinancier)
-        .then((id) => {
-          this.editFluxFlinancier.id = id;
+        .then((ffx) => {
+          this.editFluxFlinancier.id = ffx.id;
           this.editFluxFlinancier.liste_operation.forEach((ope) => {
-            ope.flux_financier_id = id;
+            ope.flux_financier_id = ffx.id;
             this.action = $localize`Ajouter une opération`;
             this.trns_serv
               .add(ope)
               .then((idop) => {
-                ope.id = idop;
+                ope.id = idop.id;
               })
               .catch((err: HttpErrorResponse) => {
                 let o = errorService.CreateError(this.action, err.message);
@@ -250,7 +250,7 @@ export class ComptabiliteComponent implements OnInit {
               });
           });
           this.editFluxFlinancier.liste_stock.forEach((ope) => {
-            ope.flux_financier_id = id;
+            ope.flux_financier_id = ffx.id;
             this.action = $localize`Ajouter un stock`;
             this.stock_serv
               .add(ope)
@@ -280,8 +280,8 @@ export class ComptabiliteComponent implements OnInit {
                 this.action = $localize`Ajouter une opération`;
                 this.trns_serv
                   .add(ope)
-                  .then((idop) => {
-                    ope.id = idop;
+                  .then((operation_vm) => {
+                    ope.id = operation_vm.id;
                   })
                   .catch((err: HttpErrorResponse) => {
                     let o = errorService.CreateError(this.action, err.message);
@@ -444,19 +444,14 @@ export class ComptabiliteComponent implements OnInit {
     this.action = $localize`Supprimer une opération`;
     if (cpt.id > 0) {
       this.trns_serv
-        .delete(cpt.id)
-        .then((ret) => {
-          if (ret) {
-            let o = errorService.OKMessage(this.action);
+        .Delete(cpt.id)
+        .then(() => {
+          let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
             this.editFluxFlinancier.liste_operation =
               this.editFluxFlinancier.liste_operation.filter(
                 (x) => x.id !== cpt.id
               );
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
         })
         .catch((err: HttpErrorResponse) => {
           let o = errorService.CreateError(this.action, err.message);
