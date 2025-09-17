@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { FluxFinancier_VM } from '@shared/lib/flux-financier.interface';
 import { Operation_VM } from '@shared/lib/operation.interface';
 import { Stock_VM } from '@shared/lib/stock.interface';
@@ -44,21 +44,23 @@ GetBank(@Param('id') id: number) { return this.srv.GetBank(+id); }
 
 
 @UseGuards(PasswordGuard)
-@Get('bank/getall/:project_id')
-GetAllBanks(@Param('project_id') projectId: number) { return this.srv.GetAllBanks(+projectId); }
+@Get('bank/getall/')
+GetAllBanks(@Headers('projectid') projectId: number) { return this.srv.GetAllBanks(+projectId); }
 
 
+@UseGuards(PasswordGuard)
 @Put('bank/add')
 AddBank(@Headers('projectid') projectId: number, @Body() vm: CompteBancaire_VM) { return this.srv.AddBank(vm, +projectId); }
 
 
+@UseGuards(PasswordGuard)
 @Put('bank/update')
 UpdateBank(@Headers('projectid') projectId: number, @Body() vm: CompteBancaire_VM) { return this.srv.UpdateBank(vm, +projectId); }
 
 
 @UseGuards(PasswordGuard)
-@Delete('bank/delete/:id')
-DeleteBank(@Param('id') id: number) { return this.srv.DeleteBank(+id); }
+@Post('bank/delete/:id')
+DeleteBank(@Body() body: { id: number}) { return this.srv.DeleteBank(+body.id); }
 
 
 // --- Financial flows ---
@@ -68,20 +70,27 @@ GetFlow(@Param('id') id: number) { return this.srv.GetFlow(+id); }
 
 
 @UseGuards(PasswordGuard)
-@Get('flow/getall/:project_id')
-GetAllFlows(@Param('project_id') projectId: number) { return this.srv.GetAllFlows(+projectId); }
+@Get('flow/getall/')
+GetAllFlows(@Headers('projectid') projectId: number) { return this.srv.GetAllFlows(projectId); }
+
+@UseGuards(PasswordGuard)
+@Get('flow/getall_season/:saison_id')
+GetAllSeasonFlows(@Param('saison_id') seasonId: number) { return this.srv.GetAllFlowsSeason(seasonId); }
 
 
+@UseGuards(PasswordGuard)
 @Put('flow/add')
 AddFlow(@Headers('projectid') projectId: number, @Body() vm: FluxFinancier_VM) { return this.srv.AddFlow(vm, +projectId); }
 
+
+@UseGuards(PasswordGuard)
 @Put('flow/update')
 UpdateFlow(@Headers('projectid') projectId: number, @Body() vm: FluxFinancier_VM) { return this.srv.UpdateFlow(vm, +projectId); }
 
 
 @UseGuards(PasswordGuard)
-@Delete('flow/delete/:id')
-DeleteFlow(@Param('id') id: number) { return this.srv.DeleteFlow(+id); }
+@Post('flow/delete/')
+DeleteFlow(@Body() body: { id: number})  { return this.srv.DeleteFlow(body.id); }
 
 
 // --- Operations ---
@@ -100,17 +109,19 @@ GetAllOpsForAccount(@Param('compte_id') compteId: number) { return this.srv.GetA
 GetAllOpsForFlow(@Param('flow_id') flowId: number) { return this.srv.GetAllOperationsForFlow(+flowId); }
 
 
+@UseGuards(PasswordGuard)
 @Put('op/add')
 AddOperation(@Body() vm: Operation_VM) { return this.srv.AddOperation(vm); }
 
 
+@UseGuards(PasswordGuard)
 @Put('op/update')
 UpdateOperation(@Body() vm: Operation_VM) { return this.srv.UpdateOperation(vm); }
 
 
 @UseGuards(PasswordGuard)
-@Delete('op/delete/:id')
-DeleteOperation(@Param('id') id: number) { return this.srv.DeleteOperation(+id); }
+@Post('op/delete/')
+DeleteOperation(@Body() body: { id: number})  { return this.srv.DeleteOperation(body.id); }
 
 
 // --- Stock ---

@@ -38,7 +38,6 @@ id: e.id, project_id: e.projectId, nom: e.name, type: e.type, info: e.info ?? un
 actif: !!e.active, iban: e.iban ?? undefined,
 carte: parseJson<Record<string, unknown>>(e.cardJson),
 carte_titulaire_id : e.cardHolder,
-carte_titulaire: toPersonneLight_VM(e.Person) ?? undefined,
 };
 }
 export function toBankEntity(vm: CompteBancaire_VM): BankAccount {
