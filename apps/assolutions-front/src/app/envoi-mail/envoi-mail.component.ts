@@ -51,7 +51,7 @@ export class EnvoiMailComponent implements OnInit {
   selected_mail: MailData;
   mail_selectionne: MailData;
 
-  mail_a_generer: MailData;
+  mail_a_generer: string;
   subject_mail_a_generer: string;
 
 
@@ -225,24 +225,26 @@ AddUsers(inscrit: boolean = false) {
   GenererVue() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le contenu du mail`;
-     this.mail_serv.GetMail(this.typemail).then((retour:KeyValuePairAny) =>{
-    this.mailSubject = retour.key;
-    this.mailBody = retour.value;
-   }).catch((err: HttpErrorResponse) => {
-     // Par défaut : tous les "convoqué"
-    this.mailSubject = ``;
-    this.mailBody =``;
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      })
+    const champ_sujet = this.getPlaceholders(this.subject_mail_a_generer);
+    const champ_mail = this.getPlaceholders(this.mail_a_generer);
+    console.log(champ_sujet, champ_mail);
   }
+
+getPlaceholders(text: string): string[] {
+  const re = /{{\s*([^{}]+?)\s*}}/g;
+  const out = new Set<string>();
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) out.add(m[1].trim());
+  return Array.from(out);
+}
+
 
   SauvegarderTemplate() {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder le template`;
     this.proj_serv.SauvegarderTemplate(
-      this.mail_a_generer.content,
-      this.mail_a_generer.subject,
+      this.subject_mail_a_generer,
+      this.mail_a_generer,
       this.typemail
     )
     .then(ok => {

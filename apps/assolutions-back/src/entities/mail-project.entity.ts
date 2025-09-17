@@ -18,6 +18,9 @@ export class MailProject {
     @Column({ type: 'text' })
   mail_essai!: string;
 
+    @Column({ type: 'text' })
+  mail_vide!: string;
+
    @Column({ type: 'varchar', length:100 })
   sujet_relance!: string;
 
