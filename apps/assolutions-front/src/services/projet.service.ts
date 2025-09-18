@@ -135,25 +135,7 @@ export class ProjetService {
       });
   }
 
-  public SauvegarderTemplate(template: string, subject:string, type_mail:string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "save_template",
-      template: template,
-      subject:subject,
-      type_mail: type_mail
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
+  
 
 
   public Create(projet: projet, compte: number): Promise<number> {

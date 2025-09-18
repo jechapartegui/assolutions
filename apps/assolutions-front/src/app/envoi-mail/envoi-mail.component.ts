@@ -13,6 +13,7 @@ import { Adherent_VM } from '@shared/lib/member.interface';
 import { Seance_VM } from '@shared/lib/seance.interface';
 import { AppStore } from '../app.store';
 import { Groupe_VM } from '@shared/index';
+import { formatDDMMYYYY } from '../ma-seance/ma-seance.component';
 
 type Etape = 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON';
 type Audience  =  'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT';
@@ -60,6 +61,7 @@ export class EnvoiMailComponent implements OnInit {
   typemail:Typemail;
   mailSubject: string;
   mailBody: string;
+  adherent_generer_vue:Adherent_VM = null;
   
 
   constructor(
@@ -135,6 +137,11 @@ canGoTo(step: Etape): boolean {
   ValiderPlage() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'audience`;
+   this.variables = {
+   DATE_DEBUT: formatDDMMYYYY(this.date_debut),
+  DATE_FIN: formatDDMMYYYY(this.date_fin),
+  };
+
 
     this.adh_serv.GetAdherentAdhesion(this.store.saison_active().id)
       .then(list => {
@@ -170,6 +177,7 @@ canGoTo(step: Etape): boolean {
         errorService.emitChange(o);
       });
   }
+
 
 AddUsers(inscrit: boolean = false) {
   const isInscrit = (v: any) =>
@@ -225,26 +233,51 @@ AddUsers(inscrit: boolean = false) {
   GenererVue() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le contenu du mail`;
+    this.mail_serv.simuler(this.adherent_generer_vue.id, this.typemail, this.variables).then((mail:KeyValuePairAny) =>{
+      this.mailBody = mail.value;
+      this.mailSubject = mail.key;
+   })
+      .catch((err: HttpErrorResponse) => {
+        const o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
     const champ_sujet = this.getPlaceholders(this.subject_mail_a_generer);
     const champ_mail = this.getPlaceholders(this.mail_a_generer);
-    console.log(champ_sujet, champ_mail);
+    console.log(champ_sujet, champ_mail);    
   }
 
-getPlaceholders(text: string): string[] {
-  const re = /{{\s*([^{}]+?)\s*}}/g;
-  const out = new Set<string>();
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) out.add(m[1].trim());
-  return Array.from(out);
+getPlaceholders(text: string): { global: string[]; loop: string[] } {
+  if (!text) return { global: [], loop: [] };
+
+  const loopRe = /\[\[([\s\S]*?)\]\]/g;    // capte chaque bloc [[ ... ]] (multi-lignes)
+  const phRe   = /{{\s*([^{}]+?)\s*}}/g;   // capte {{ PLACEHOLDER }}
+
+  const loopSet = new Set<string>();
+  const globalSet = new Set<string>();
+
+  // 1) Placeholders à l'intérieur des boucles
+  for (const m of text.matchAll(loopRe)) {
+    const block = m[1];
+    for (const pm of block.matchAll(phRe)) loopSet.add(pm[1].trim());
+  }
+
+  // 2) Placeholders hors boucles
+  const outside = text.replace(loopRe, "");
+  for (const pm of outside.matchAll(phRe)) globalSet.add(pm[1].trim());
+
+  return { global: [...globalSet], loop: [...loopSet] };
 }
+
+
+
 
 
   SauvegarderTemplate() {
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder le template`;
-    this.proj_serv.SauvegarderTemplate(
-      this.subject_mail_a_generer,
+    this.mail_serv.SauvegarderTemplate(
       this.mail_a_generer,
+      this.subject_mail_a_generer,
       this.typemail
     )
     .then(ok => {

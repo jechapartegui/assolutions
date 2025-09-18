@@ -28,6 +28,11 @@ export class MessagesController {
     return this.svc.sendRaw(body.input, body.fromEmail, body.fromName, projectId);
   }
 
+    @Post('update')
+  Update(@Headers('projectid') projectId: number, @Body() body: { template: string, subject:string, type_mail: 'convocation' | 'annulation'| 'relance' | 'libre' | 'essai'}) {
+    return this.svc.Update(body.template, body.subject, body.type_mail, projectId);
+  }
+
   
    @Post('mail_convoc_annulation')
   mail_convoc_annulation(@Headers('projectid') projectId: number, @Body() body: { type: string; destinataire:number[], notes:string,seance_id:number}) {

@@ -1,7 +1,7 @@
 // messages/messages.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { MailerService } from '../mail/mailer.service';
 import { Project } from '../../entities/projet.entity';
 import { Session } from '../../entities/seance.entity';
@@ -39,6 +39,33 @@ async GetMail(type: 'convocation' | 'annulation' | 'relance' | 'libre', id: numb
   }
   // annulation par défaut
   return { key: proj.sujet_annulation ?? '', value: proj.mail_annulation ?? '' };
+}
+
+async Update(template:string, subject:string, type: 'convocation' | 'annulation' | 'relance' | 'libre' | 'essai', id: number): Promise<UpdateResult> {
+  const proj = await this.mailProjectRepo.findOne({ where: { id } });
+  if (!proj) throw new Error('Mail project introuvable');
+
+  if (type === 'convocation') {
+   proj.mail_convocation = template;
+   proj.sujet_convocation = subject;
+  }
+    if (type === 'annulation') {
+   proj.mail_annulation = template;
+   proj.sujet_annulation = subject;
+  }
+    if (type === 'essai') {
+   proj.mail_essai = template;
+   proj.sujet_essai = subject;
+  }
+    if (type === 'relance') {
+   proj.mail_relance = template;
+   proj.sujet_relance = subject;
+  }
+     if (type === 'libre') {
+   proj.mail_vide = template;
+  }
+  // annulation par défaut
+  return this.mailProjectRepo.update({ id },proj);
 }
 
   // Exemple : convocation à une séance

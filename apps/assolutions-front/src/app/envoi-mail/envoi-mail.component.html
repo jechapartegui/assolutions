@@ -244,9 +244,16 @@
                 </article>
 
                 <div class="buttons" *ngIf="mail_a_generer">
-                  <button (click)="GenererVue()" type="button"
+                <div class="select is-fullwidth">
+                  <select id="adh" style="font-size: smaller" [(ngModel)]="adherent_generer_vue">
+                    <ng-container *ngFor="let pr of ListeUserSelectionne">
+                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp;{{ calculateAge(pr.date_naissance) }} <span i18n>ans</span></option>
+                    </ng-container>
+                  </select>
+                </div>
+                  <button [disabled]="!adherent_generer_vue" (click)="GenererVue()" type="button"
                           class="button is-info is-small is-light btn-mobile btn-elevated">
-                    <span i18n>Générer la vue</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
+                    <span i18n>Générer la vue avec ce mail</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
                   </button>
                   <button (click)="SauvegarderTemplate()" type="button"
                           class="button is-primary is-small is-light btn-mobile btn-elevated">

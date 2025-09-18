@@ -109,60 +109,22 @@ public GetMail(type:string) : Promise<KeyValuePairAny>{
         return Promise.reject(message);
       });
   }
-public DemandeRattachement(login:string, rider_id:number): Promise<boolean> {
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"demander_rattachement",
-    login:login,
-    rider_id:rider_id
-  };
+public SauvegarderTemplate(template: string, subject:string, type_mail:string): Promise<boolean> {
+   this.url = environment.maseance + 'api/mail/update/';
+    //  this.url = this.url + "login.php";
+    const body = {
+      template: template,
+      subject:subject,
+      type_mail: type_mail
+    };
 
-  return this.global.POST(this.url, body)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-public GetSubjecct(type_mail:string):Promise<string>{
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"get_subject",
-    type_mail:type_mail
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: string) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-public ChargerTemplateUser(type_mail:string,template:string, subject:string, liste_users:number[], params:KeyValuePairAny[]):Promise<MailData[]>{
-  this.url = environment.maseance + 'maseance/mail_manage.php';
-  //  this.url = this.url + "login.php";
-  const body = {
-    command:"charger_template_users",
-    type_mail:type_mail,
-    template:template,
-    liste_users:liste_users,
-    params:params,
-    subject:subject
-  };
-
-  return this.global.POST(this.url, body)
-    .then((response: MailData[]) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
 }

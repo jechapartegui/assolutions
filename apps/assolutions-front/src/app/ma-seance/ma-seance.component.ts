@@ -732,7 +732,7 @@ openMenu(potentiel: any, ev: MouseEvent) {
     this.closeAllMenus();
   }
 }
-function formatDDMMYYYY(input: unknown): string {
+export function formatDDMMYYYY(input: unknown): string {
   const d = toDateSafe(input);
   if (!d) return ''; // ou retourne '??/??/????'
   const dd = String(d.getDate()).padStart(2, '0');
@@ -740,7 +740,7 @@ function formatDDMMYYYY(input: unknown): string {
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
-function toDateSafe(input: unknown): Date | null {
+export function toDateSafe(input: unknown): Date | null {
   if (!input) return null;
   if (input instanceof Date) return new Date(input.getTime());
 
