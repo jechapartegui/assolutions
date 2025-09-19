@@ -244,14 +244,8 @@
                 </article>
 
                 <div class="buttons" *ngIf="mail_a_generer">
-                <div class="select is-fullwidth">
-                  <select id="adh" style="font-size: smaller" [(ngModel)]="adherent_generer_vue">
-                    <ng-container *ngFor="let pr of ListeUserSelectionne">
-                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp;{{ calculateAge(pr.date_naissance) }} <span i18n>ans</span></option>
-                    </ng-container>
-                  </select>
-                </div>
-                  <button [disabled]="!adherent_generer_vue" (click)="GenererVue()" type="button"
+             
+                  <button  (click)="GenererVue()" type="button"
                           class="button is-info is-small is-light btn-mobile btn-elevated">
                     <span i18n>Générer la vue avec ce mail</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
                   </button>
@@ -262,29 +256,30 @@
                 </div>
               </div>
 
-              <div class="column is-full-tablet is-half-desktop">
-                <article class="panel is-success" *ngIf="selected_mail">
+              <div *ngIf="ListeGeneree && ListeGeneree.length>0" class="column is-full-tablet is-half-desktop">
+                <article class="panel is-success" >
                   <p class="panel-heading" i18n>Vue Générée</p>
-                <label class="label">Sujet</label>
-              <mail-template-preview
-  [html]="mailSubject"
-  [variables]="variables">
-</mail-template-preview>
-<label class="label mt-2">Message</label>
+    <div class="select is-fullwidth">
+  <select id="adh" style="font-size: smaller" [(ngModel)]="adherent_generer_vue">
+    <!-- met directement *ngFor sur option -->
+   <option *ngFor="let pr of ListeGeneree;"
+          [ngValue]="pr"
+          [innerText]="makeLabel(pr.key)">
+  </select>
+</div>
 
-<mail-template-preview
-  [html]="mailBody"
-  [variables]="variables">
-</mail-template-preview>
+<ng-container *ngIf="adherent_generer_vue">
+  <label class="label">Sujet</label>
+  <mail-template-preview [html]="adherent_generer_vue.value.key"></mail-template-preview>
+
+  <label class="label mt-2">Message</label>
+  <mail-template-preview [html]="adherent_generer_vue.value.value"></mail-template-preview>
+</ng-container>
+
 
                 </article>
 
-                <div class="buttons is-right" *ngIf="selected_mail">
-                  <button type="button" (click)="EnvoiMail()"
-                          class="button is-primary is-small is-light btn-mobile btn-elevated">
-                    <span i18n>Envoyer cet email</span>&nbsp;<i class="far fa-paper-plane"></i>
-                  </button>
-                </div>
+                
               </div>
             </div>
           </div>
@@ -292,7 +287,7 @@
 
       </div>
 </div>
-      <footer class="card-footer"  *ngIf="(etape==='AUDIENCE') || (etape==='BROUILLON' && liste_mail && liste_mail.length>0)">
+      <footer class="card-footer"  *ngIf="(etape==='AUDIENCE') || (etape==='BROUILLON' && ListeGeneree && ListeGeneree.length>0)">
                   <div class="columns">
                     <div class="column">
           <div class="buttons">
@@ -316,6 +311,12 @@
                       class="button is-primary is-outlined btn-mobile btn-elevated">
                 <span i18n>Envoyer tous les mails</span>&nbsp;<i class="far fa-paper-plane"></i>
               </button>
+              <div class="buttons is-right" *ngIf="adherent_generer_vue">
+                  <button type="button" (click)="EnvoiMail()"
+                          class="button is-primary is-small is-light btn-mobile btn-elevated">
+                    <span i18n>Envoyer cet email</span>&nbsp;<i class="far fa-paper-plane"></i>
+                  </button>
+                </div>
             </ng-container>
           </div>
         </div>

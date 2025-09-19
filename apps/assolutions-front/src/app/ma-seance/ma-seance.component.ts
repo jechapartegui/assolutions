@@ -142,6 +142,7 @@ AfficherMenu(){
      this.action = $localize`Charger les adhérents de mon compte`;
           this.login = compte.id;
           if(!this.adherent){
+            
    this.inscriptionserv.GetAdherentCompte(this.login, this.thisSeance.seance_id).then((fis) =>{
             fis.forEach(p => Personne_VM.bakeLibelle(p.person));
             this.MesAdherents = fis;

@@ -96,6 +96,26 @@ const body = {
         return Promise.reject(message);
       });
   }
+  public EnvoyerRelance(template: string, subject:string, destinataire:number[], variables:Record<string,any>, simuler:boolean = false):Promise<KeyValuePairAny[]>{
+  this.url = environment.maseance + 'api/mail/mail_relance';
+const body = {
+  template :template,
+  subject:subject,
+  destinataire:destinataire,
+  variables:variables,
+  simuler:simuler
+ }
+
+    return this.global.POST(this.url, body)
+      .then((response: KeyValuePairAny[]) => {
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
 public GetMail(type:string) : Promise<KeyValuePairAny>{
    this.url = environment.maseance + 'api/mail/get_mail/' + type;
 

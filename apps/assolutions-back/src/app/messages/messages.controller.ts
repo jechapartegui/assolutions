@@ -38,4 +38,9 @@ export class MessagesController {
   mail_convoc_annulation(@Headers('projectid') projectId: number, @Body() body: { type: string; destinataire:number[], notes:string,seance_id:number}) {
     return this.svc.mail_convoc_annulation(body.type, body.destinataire, body.notes,body.seance_id, projectId);
   }
+
+  @Post('mail_relance')
+  mail_relance(@Headers('projectid') projectId: number, @Body() body: { template: string, subject:string, destinataire:number[], variables:Record<string,any>, simuler:boolean }) {
+    return this.svc.mail_relance(body.template, body.subject, body.destinataire, body.variables,body.simuler, projectId);
+  }
 }

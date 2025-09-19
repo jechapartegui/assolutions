@@ -33,7 +33,6 @@ export class EnvoiMailComponent implements OnInit {
 
   date_debut: string;
   date_fin: string;
-  params: KeyValuePairAny[] = [];
   action: string;
   
   variables: Record<string, any> = {};
@@ -48,20 +47,18 @@ export class EnvoiMailComponent implements OnInit {
   seance_periode: Seance_VM[] = [];
   seance_selectionnee: Seance_VM;
 
-  liste_mail: MailData[] = [];
-  selected_mail: MailData;
-  mail_selectionne: MailData;
 
   mail_a_generer: string;
   subject_mail_a_generer: string;
+
+  log:string = "";
 
 
   etape: Etape = 'SELECTION_MAIL';
   audience:Audience = "TOUS";
   typemail:Typemail;
-  mailSubject: string;
-  mailBody: string;
-  adherent_generer_vue:Adherent_VM = null;
+  adherent_generer_vue:KeyValuePairAny = null;
+  ListeGeneree:KeyValuePairAny[] = null;
   
 
   constructor(
@@ -109,7 +106,7 @@ canGoTo(step: Etape): boolean {
         : (!!this.date_debut && !!this.date_fin);
     case 'BROUILLON':
       // on a déjà généré au moins un mail (retour possible si brouillon existant)
-      return (this.liste_mail && this.liste_mail.length > 0) || !!this.mail_a_generer;
+      return (this.ListeGeneree && this.ListeGeneree.length > 0) 
     default:
       return false;
   }
@@ -233,17 +230,29 @@ AddUsers(inscrit: boolean = false) {
   GenererVue() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le contenu du mail`;
-    this.mail_serv.simuler(this.adherent_generer_vue.id, this.typemail, this.variables).then((mail:KeyValuePairAny) =>{
-      this.mailBody = mail.value;
-      this.mailSubject = mail.key;
+    if(this.typemail == 'relance'){
+      this.variables = {
+        DATE_DEBUT : this.date_debut,
+        DATE_FIN: this.date_fin
+      }
+      this.ListeGeneree=  [];
+    this.mail_serv.EnvoyerRelance(this.mail_a_generer, this.subject_mail_a_generer, this.ListeUserSelectionne.map(x => x.id), this.variables, true).then((mail:KeyValuePairAny[]) =>{
+      mail.forEach(m =>{
+        let P:Adherent_VM = m.key;
+        let kvp = m.value;
+        console.log(kvp.key);
+        console.log(P);
+        this.ListeGeneree.push({key:P, value:kvp})
+      })
+      this.adherent_generer_vue = this.ListeGeneree[0] ?? null;
+
    })
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
-    const champ_sujet = this.getPlaceholders(this.subject_mail_a_generer);
-    const champ_mail = this.getPlaceholders(this.mail_a_generer);
-    console.log(champ_sujet, champ_mail);    
+    }
+
   }
 
 getPlaceholders(text: string): { global: string[]; loop: string[] } {
@@ -320,48 +329,60 @@ getPlaceholders(text: string): { global: string[]; loop: string[] } {
 
   ValiderFormatEmail() {}
 
-  async EnvoyerTousLesMails() {
-    let nb_ok = 0;
-    const nb_mail = this.liste_mail.length;
-    let erreur = false;
-    const errorService = ErrorService.instance;
-    this.action = $localize`Envoyer tous les mails`;
+async EnvoyerTousLesMails() {
+  const total = this.ListeGeneree.length;
+  let OK = 0;
+  this.action = $localize`Envoyer les mails`;
 
-    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-    const mailLimitPerMinute = 30;
-    const interval = 60000 / mailLimitPerMinute;
+  if (this.typemail === 'relance') {
+    this.variables = { DATE_DEBUT: this.date_debut, DATE_FIN: this.date_fin };
 
-    for (const mail of this.liste_mail) {
-      try {
-        const ok = await this.mail_serv.Envoyer(mail);
-        if (ok) nb_ok++;
-        else {
-          erreur = true;
-          errorService.emitChange(errorService.UnknownError(this.action));
-        }
-      } catch (err: any) {
-        erreur = true;
-        errorService.emitChange(errorService.CreateError(this.action, err.message));
-      }
-      await delay(interval);
-    }
-
-    if (!erreur) errorService.emitChange(errorService.OKMessage(this.action));
-    console.log(`${nb_ok}/${nb_mail} mails envoyés.`);
+    this.mail_serv.EnvoyerRelance(
+      this.mail_a_generer,
+      this.subject_mail_a_generer,
+      this.ListeUserSelectionne.map(x => x.id),
+      this.variables,
+      false
+    ).then((mail: KeyValuePairAny[]) => {
+      this.log = '';
+      mail.forEach(m => {
+        OK++;
+        const nom = this.makeLabel(m.key);
+        const sujet = m?.value?.key ?? '';
+        this.log += `${nom} — ${sujet}\n`;
+      });
+      window.alert($localize`Nombre de mails envoyés : ` + OK.toString() + '/' + total.toString() + '\n' + this.log);
+    }).catch(/* ... */);
   }
+}
+
 
   EnvoiMail() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Envoyer l'email`;
-    this.mail_serv.Envoyer(this.selected_mail)
-      .then(ok => {
-        const o = ok ? errorService.OKMessage(this.action)
-                     : errorService.UnknownError(this.action);
-        errorService.emitChange(o);
+     const errorService = ErrorService.instance;
+    this.action = $localize`Envoyer les mails`;
+    if(this.typemail == 'relance'){
+      this.variables = {
+        DATE_DEBUT : this.date_debut,
+        DATE_FIN: this.date_fin
+      }
+    this.mail_serv.EnvoyerRelance(this.mail_a_generer, this.subject_mail_a_generer, [this.adherent_generer_vue.key.id], this.variables, false).then((mail:KeyValuePairAny[]) =>{
+      
+      mail.forEach((m) =>{
+      window.alert($localize`Mail envoyé`)
       })
+      ;
+   })
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
+    }
   }
+  makeLabel(p: any): string {
+    console.log(p);
+  const prenom = p?.prenom ?? p?.firstName ?? '';
+  const nom    = p?.nom    ?? p?.lastName  ?? '';
+  const age    = this.calculateAge(p?.date_naissance ?? p?.birthDate);
+  return `${prenom} ${nom}${age ? ' ' + age + ' ans' : ''}`.trim();
+}
 }

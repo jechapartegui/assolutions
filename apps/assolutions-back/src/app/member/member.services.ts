@@ -65,7 +65,7 @@ export class MemberService {
     const retour: AdherentSeance_VM[] = [];
   
     for (const ad of adhrents_saison) {
-      const age = this.calculateAge(ad.date_naissance);
+      const age = calculateAge(ad.date_naissance);
       const groupe = ad.inscriptionsSaison[0].groupes.map(x => x.id);
       const mes_seances = await this.seanceService.MySeance(
         ad.id,
@@ -203,27 +203,7 @@ async EssaiProjet(
   }
 
 
-  calculateAge(dateNaissance?: Date | string): number {
-    const today = new Date();
 
-    let birthDate: Date;
-
-    if (!dateNaissance) {
-      birthDate = today; // Pas de date fournie => utiliser aujourd'hui
-    } else {
-      birthDate = new Date(dateNaissance); // Convertir string ou Date en Date
-    }
-
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    const dayDiff = today.getDate() - birthDate.getDate();
-
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-      age--; // Anniversaire pas encore passé cette année
-    }
-
-    return age;
-  }
 
   async Get(id: number, project_id:number): Promise<Adherent_VM> {
      const pAdh = await this.personserivce.get(id);
@@ -275,6 +255,28 @@ async EssaiProjet(
        }
   }
 }
+
+  export function calculateAge(dateNaissance?: Date | string): number {
+    const today = new Date();
+
+    let birthDate: Date;
+
+    if (!dateNaissance) {
+      birthDate = today; // Pas de date fournie => utiliser aujourd'hui
+    } else {
+      birthDate = new Date(dateNaissance); // Convertir string ou Date en Date
+    }
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--; // Anniversaire pas encore passé cette année
+    }
+
+    return age;
+  }
 
 export function toPersonneLight_VM(obj: Person): PersonneLight_VM {
  const adh = new PersonneLight_VM();

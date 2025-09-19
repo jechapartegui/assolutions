@@ -11,16 +11,24 @@ import { MailProject } from '../../entities/mail-project.entity';
 import { Account } from '../../entities/compte.entity';
 import { ConfigService } from '@nestjs/config';
 import { KeyValuePairAny } from '@shared/lib/autres.interface';
+import { calculateAge } from '../member/member.services';
+import { RegistrationSeason } from '../../entities/inscription-saison.entity';
+import { LinkGroupService } from '../../crud/linkgroup.service';
+import { SessionService } from '../../crud/session.service';
+import { SeanceService } from '../seance/seance.services';
 
 @Injectable()
 export class MessagesService {
   constructor(
       private readonly configService: ConfigService,
     private readonly mailer: MailerService,
+    private readonly linkgroup_serv:LinkGroupService, 
+    private readonly seanceService:SeanceService, 
     @InjectRepository(Project) private readonly projectRepo: Repository<Project>,
     @InjectRepository(Session) private readonly sessionRepo: Repository<Session>,
     @InjectRepository(Person)  private readonly personRepo: Repository<Person>,
     @InjectRepository(Account)  private readonly accountrepo: Repository<Account>,
+    @InjectRepository(RegistrationSeason)  private readonly regsarepo: Repository<RegistrationSeason>,
     @InjectRepository(MailProject) private readonly mailProjectRepo: Repository<MailProject>
   ) {}
 
@@ -202,11 +210,158 @@ html    = fillTemplate(html,  dataEssai);
 
   }
 
+async mail_relance(
+  template: string,
+  subject: string,
+  destinataire: number[],
+  variables: Record<string, any>,
+  simuler: boolean,
+  projectId: number
+): Promise<KeyValuePairAny[]> {
+
+  // 1) Charger le projet + saison active
+  const proj = await this.projectRepo.findOne({
+    where: { id: projectId },
+    relations: ['seasons'],
+  });
+  if (!proj) throw new Error(`Projet ${projectId} introuvable`);
+  const activeSeason = proj.seasons?.find(s => (s as any)?.isActive);
+  if (!activeSeason) throw new Error(`Aucune saison active pour le projet ${projectId}`);
+
+  // 2) Préparer parsing du template
+  const { outer: outerTemplate, loop: loopTemplate } = parseLoop(template); // outer => avec "[[]]" comme placeholder
+
+  const results: KeyValuePairAny[] = [];
+
+  // Dates borne issues des variables (obligatoires d’après ta note)
+  // Accepte string | Date ; normalise en début/fin de journée.
+  const dateDebutRaw = variables?.DATE_DEBUT;
+  const dateFinRaw   = variables?.DATE_FIN;
+  const dateDebut = toStartOfDay(parseDateStrict(dateDebutRaw));
+  const dateFin   = toEndOfDay(parseDateStrict(dateFinRaw));
+  if (!dateDebut || !dateFin) {
+    throw new Error('DATE_DEBUT ou DATE_FIN invalide(s) dans variables');
+  }
+
+  for (const id of destinataire) {
+    try {
+      // 3) Charger la personne + données liées
+      const p = await this.personRepo.findOne({
+        where: { id },
+        relations: ['account', 'inscriptions'],
+      });
+      if (!p) continue;
+
+      // 4) Variables globales pour remplir {{ ... }} (inclut les bornes)
+      const info = {
+        DATE_DEBUT: dateDebut,
+        DATE_FIN:dateFin,
+        LOGIN: p.account?.login ?? '',
+        NOM: `${p?.firstName ?? ''} ${p?.lastName ?? ''}`.trim(),
+      };
+
+      const subjectFilled = fillTemplate(subject, info);
+      let htmlOuter = fillTemplate(outerTemplate, info); // partie autour, sans la boucle encore
+
+      // 5) Données de la boucle [[ ... ]] (séances)
+      const age = calculateAge(p.birthDate);
+      const groupes = (await this.linkgroup_serv.getGroupsForObject('rider', id, activeSeason.id))
+        ?.map((x: any) => x.groupId) ?? [];
+
+      let mes_seances = await this.seanceService.MySeance(
+        p.id,
+        age,
+        activeSeason.id,
+        groupes
+      );
+
+      // -- Filtrer entre DATE_DEBUT et DATE_FIN (inclusif) + trier par date
+      mes_seances = (mes_seances ?? [])
+        .filter((s: any) => {
+          const d = parseDateStrict(s?.seance?.date_seance);
+          return d != null && d >= dateDebut && d <= dateFin;
+        })
+        .sort((a: any, b: any) => {
+          const da = parseDateStrict(a?.seance?.date_seance)?.getTime() ?? 0;
+          const db = parseDateStrict(b?.seance?.date_seance)?.getTime() ?? 0;
+          return da - db;
+        });
+
+      const boucleContent = mes_seances
+        .map((s: any) => {
+          const dataSeance = {
+            SEANCE: s?.seance?.libelle ?? 'séance',
+            SEANCE_ID: s?.seance?.seance_id ?? 0,
+            PERSONNE_ID: p?.id ?? 0,
+            DATE: formatDDMMYYYY(s?.seance?.date_seance),
+            LIEU: s?.seance?.lieu_nom ?? 'lieu non défini',
+            HEURE: s?.seance?.heure_debut ?? 'heure non définie',
+            RDV: s?.seance?.rdv ?? '',
+            DUREE: (s?.seance?.duree_seance != null) ? `${s.seance.duree_seance} min` : 'durée non définie',
+         PRESENT: `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}&reponse=1&login=${encodeURIComponent(p.account?.login ?? '')}&adherent=${p.id}" title="Je viens" aria-label="Je viens" style="text-decoration:none;font-size:18px;">👍</a>`,
+ABSENT:  `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}&reponse=0&login=${encodeURIComponent(p.account?.login ?? '')}&adherent=${p.id}" title="Je ne viens pas" aria-label="Je ne viens pas" style="text-decoration:none;font-size:18px;">👎</a>`,          };
+          return fillTemplate(loopTemplate, dataSeance);
+        })
+        .join('');
+
+      // 6) Réintégrer la boucle
+      const finalHtml = replaceLoopPlaceholder(htmlOuter, boucleContent);
+
+      // 7) Envoi (ou simulation)
+      const to = [p.account?.login, proj.login].filter((x): x is string => !!x && x.trim().length > 0);
+      if (!simuler) {
+        const msg: MailInput = { to, subject: subjectFilled, html: finalHtml };
+        await this.mailer.queue(msg, proj.login, proj.name, projectId);
+      }
+
+      results.push({ key: p, value:{ key: subjectFilled, value: finalHtml }});
+
+    } catch {
+      // silencieux comme dans ton exemple
+    }
+  }
+
+  return results;
+}
+
+
+
+
+   
+
   // Exemple très générique : envoi “brut” (tu fournis déjà le contenu)
   async sendRaw(input: MailInput, fromEmail: string, fromName: string, projectId: number | null = null) {
     return this.mailer.queue(input, fromEmail, fromName, projectId);
   }
   
+}
+function parseDateStrict(d: unknown): Date | null {
+  if (!d) return null;
+  if (d instanceof Date && !isNaN(d.getTime())) return d;
+  const s = typeof d === 'string' ? d.trim() : '';
+  if (!s) return null;
+
+  // Tente 'YYYY-MM-DD' (local, sans fuseau) puis ISO standard
+  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (ymd) {
+    const [_, y, m, day] = ymd;
+    const dt = new Date(Number(y), Number(m) - 1, Number(day));
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+  const dt = new Date(s);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+function toStartOfDay(d: Date | null): Date | null {
+  if (!d) return null;
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function toEndOfDay(d: Date | null): Date | null {
+  if (!d) return null;
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
 }
 function toDateSafe(input: unknown): Date | null {
   if (!input) return null;
@@ -256,11 +411,44 @@ function normalizeTemplate(tmpl: string): string {
     .replace(/[\u200B-\u200D\uFEFF]/g, ''); // zero-width
 }
 
-function fillTemplate(tmpl: string, data: Record<string, unknown>): string {
-  const norm = normalizeTemplate(tmpl);
-  return norm.replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (m, key) => {
-    const v = data[key];
-    return (v === null || v === undefined) ? m : String(v);
+
+
+function parseLoop(tpl: string): { outer: string; loop: string } {
+  // Prend la première occurrence [[ ... ]] (dotall)
+  const re = /\[\[(.*?)\]\]/s;
+  const m = re.exec(tpl);
+  if (!m) {
+    // pas de boucle => outer = tpl, loop = ''
+    return { outer: tpl, loop: '' };
+  }
+  const loop = m[1] ?? '';
+  // Remplacer la première occurrence par un placeholder canonique "[[]]"
+  const outer = tpl.replace(re, '[[]]');
+  return { outer, loop };
+}
+
+function replaceLoopPlaceholder(outer: string, content: string): string {
+  return outer.replace('[[]]', content ?? '');
+}
+
+function fillTemplate(text: string, data: Record<string, any>): string {
+  if (!text) return '';
+  return text.replace(/{{\s*([^{}]+?)\s*}}/g, (_match, keyRaw: string) => {
+    const key = String(keyRaw || '').trim();
+    const val = getPath(data, key);
+    if (val === null || val === undefined) return '';
+    if (val instanceof Date) return formatDDMMYYYY(val);
+    return String(val);
   });
 }
+
+// Supporte des clés simples ou en "chemin" (ex: user.name, seance.date)
+function getPath(obj: any, path: string): any {
+  if (!obj || !path) return undefined;
+  if (!path.includes('.')) return obj[path];
+  return path.split('.').reduce((acc, k) => (acc ? acc[k] : undefined), obj);
+}
+
+
+
 
