@@ -40,7 +40,7 @@ export class MessagesController {
   }
 
   @Post('mail_relance')
-  mail_relance(@Headers('projectid') projectId: number, @Body() body: { template: string, subject:string, destinataire:number[], variables:Record<string,any>, simuler:boolean }) {
-    return this.svc.mail_relance(body.template, body.subject, body.destinataire, body.variables,body.simuler, projectId);
+  mail_relance(@Headers('projectid') projectId: number, @Body() body: { template: string, subject:string, destinataire:number[], variables:Record<string,any>, type_mail: 'convocation' | 'annulation'| 'relance' | 'libre' | 'essai', envoi_par_compte:boolean, simuler:boolean }) {
+    return this.svc.mail_relance(body.template, body.subject, body.destinataire, body.variables, body.type_mail, body.envoi_par_compte, body.simuler, projectId);
   }
 }

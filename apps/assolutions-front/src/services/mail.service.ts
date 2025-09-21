@@ -96,13 +96,15 @@ const body = {
         return Promise.reject(message);
       });
   }
-  public EnvoyerRelance(template: string, subject:string, destinataire:number[], variables:Record<string,any>, simuler:boolean = false):Promise<KeyValuePairAny[]>{
+  public EnvoyerMail(template: string, subject:string, destinataire:number[], variables:Record<string,any>,type_mail:string, envoi_par_compte:boolean, simuler:boolean = false):Promise<KeyValuePairAny[]>{
   this.url = environment.maseance + 'api/mail/mail_relance';
 const body = {
   template :template,
   subject:subject,
   destinataire:destinataire,
   variables:variables,
+  type_mail:type_mail,
+  envoi_par_compte:envoi_par_compte,
   simuler:simuler
  }
 

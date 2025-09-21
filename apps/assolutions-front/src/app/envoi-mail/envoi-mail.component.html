@@ -244,15 +244,11 @@
                 </article>
 
                 <div class="buttons" *ngIf="mail_a_generer">
-             
-                  <button  (click)="GenererVue()" type="button"
-                          class="button is-info is-small is-light btn-mobile btn-elevated">
-                    <span i18n>Générer la vue avec ce mail</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
-                  </button>
-                  <button (click)="SauvegarderTemplate()" type="button"
-                          class="button is-primary is-small is-light btn-mobile btn-elevated">
-                    <span i18n>Sauvegarder le template</span>&nbsp;<i class="fa-solid fa-floppy-disk"></i>
-                  </button>
+             <label class="checkbox">
+  <input type="checkbox" [(ngModel)]="envoi_par_compte"/>
+  <span i18n>Envoyer par compte</span>
+</label>
+                
                 </div>
               </div>
 
@@ -287,41 +283,78 @@
 
       </div>
 </div>
-      <footer class="card-footer"  *ngIf="(etape==='AUDIENCE') || (etape==='BROUILLON' && ListeGeneree && ListeGeneree.length>0)">
-                  <div class="columns">
-                    <div class="column">
-          <div class="buttons">
-            <!-- Footer AUDIENCE -->
-            <ng-container *ngIf="etape==='AUDIENCE'">
-              <button type="button"
-                      [disabled]="ListeUserSelectionne.length === 0"
-                      (click)="ValiderDestinataire()"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la liste de destinataire</span>
-              </button>
-              <button (click)="RemoveUsers()" type="button"
-                      class="button is-danger is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-trash"></i>&nbsp;<span i18n>Vider la liste</span>
-              </button>
-            </ng-container>
+<footer class="card-footer" [ngSwitch]="etape">
+  <div class="card-footer-item" style="width:100%">
+    <div class="columns is-mobile is-multiline" style="width:100%">
+      <div class="column is-full">
+        <div class="buttons">
 
-            <!-- Footer BROUILLON -->
-            <ng-container *ngIf="etape==='BROUILLON'">
-              <button type="button" (click)="EnvoyerTousLesMails()"
-                      class="button is-primary is-outlined btn-mobile btn-elevated">
-                <span i18n>Envoyer tous les mails</span>&nbsp;<i class="far fa-paper-plane"></i>
-              </button>
-              <div class="buttons is-right" *ngIf="adherent_generer_vue">
-                  <button type="button" (click)="EnvoiMail()"
-                          class="button is-primary is-small is-light btn-mobile btn-elevated">
-                    <span i18n>Envoyer cet email</span>&nbsp;<i class="far fa-paper-plane"></i>
-                  </button>
-                </div>
-            </ng-container>
-          </div>
+          <!-- ÉTAPE 1 — SELECTION_MAIL : (optionnel) rien à mettre si tout se passe via les cartes/boutons de sélection -->
+
+          <!-- ÉTAPE 2 — PARAMETRE -->
+          <ng-container *ngSwitchCase="'PARAMETRE'">
+            <button type="button"
+                    (click)="ValiderPlage()"
+                    [disabled]="!date_debut || !date_fin"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la plage</span>
+            </button>
+          </ng-container>
+
+          <!-- ÉTAPE 3 — AUDIENCE -->
+          <ng-container *ngSwitchCase="'AUDIENCE'">
+            <button type="button"
+                    (click)="ValiderDestinataire()"
+                    [disabled]="ListeUserSelectionne.length === 0"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la liste de destinataire</span>
+            </button>
+
+            <button type="button"
+                    (click)="RemoveUsers()"
+                    [disabled]="ListeUserSelectionne.length === 0"
+                    class="button is-dangeris-small is-light btn-mobile btn-elevated">
+              <i class="fas fa-trash"></i>&nbsp;<span i18n>Vider la liste</span>
+            </button>
+          </ng-container>
+
+          <!-- ÉTAPE 4 — BROUILLON -->
+          <ng-container *ngSwitchCase="'BROUILLON'">
+            <button type="button"
+                    (click)="GenererVue()"
+                    [disabled]="!mail_a_generer"
+                    class="button is-info is-small is-light btn-mobile btn-elevated">
+              <span i18n>Générer la vue avec ce mail</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
+            </button>
+
+            <button type="button"
+                    (click)="SauvegarderTemplate()"
+                    [disabled]="!mail_a_generer || !subject_mail_a_generer"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <span i18n>Sauvegarder le template</span>&nbsp;<i class="fa-solid fa-floppy-disk"></i>
+            </button>
+
+            <button type="button"
+                    (click)="EnvoyerTousLesMails()"
+                    [disabled]="!(ListeGeneree && ListeGeneree.length>0)"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <span i18n>Envoyer tous les mails</span>&nbsp;<i class="far fa-paper-plane"></i>
+            </button>
+
+            <button type="button"
+                    (click)="EnvoiMail()"
+                    [disabled]="!adherent_generer_vue"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <span i18n>Envoyer cet email</span>&nbsp;<i class="far fa-paper-plane"></i>
+            </button>
+          </ng-container>
+
         </div>
-        </div>
-      </footer>
+      </div>
+    </div>
+  </div>
+</footer>
+
 
     </div>
   </div>

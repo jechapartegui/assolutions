@@ -215,6 +215,8 @@ async mail_relance(
   subject: string,
   destinataire: number[],
   variables: Record<string, any>,
+  type_mail: 'convocation' | 'annulation' | 'relance' | 'libre' | 'essai',
+  envoi_par_compte: boolean,
   simuler: boolean,
   projectId: number
 ): Promise<KeyValuePairAny[]> {
@@ -228,31 +230,36 @@ async mail_relance(
   const activeSeason = proj.seasons?.find(s => (s as any)?.isActive);
   if (!activeSeason) throw new Error(`Aucune saison active pour le projet ${projectId}`);
 
-  // 2) Préparer parsing du template
-  const { outer: outerTemplate, loop: loopTemplate } = parseLoop(template); // outer => avec "[[]]" comme placeholder
-
   const results: KeyValuePairAny[] = [];
 
-  // Dates borne issues des variables (obligatoires d’après ta note)
-  // Accepte string | Date ; normalise en début/fin de journée.
-  const dateDebutRaw = variables?.DATE_DEBUT;
+
+  switch (type_mail) {
+    case 'convocation': 
+    break;
+    case 'annulation':
+    break;
+    case 'relance':
+        const { outer: outerTemplate, loop: loopTemplate } = parseLoop(template); // outer => avec "[[]]" comme placeholder
+          const dateDebutRaw = variables?.DATE_DEBUT;
   const dateFinRaw   = variables?.DATE_FIN;
   const dateDebut = toStartOfDay(parseDateStrict(dateDebutRaw));
   const dateFin   = toEndOfDay(parseDateStrict(dateFinRaw));
   if (!dateDebut || !dateFin) {
     throw new Error('DATE_DEBUT ou DATE_FIN invalide(s) dans variables');
   }
-
-  for (const id of destinataire) {
+ for (const id of destinataire) {
     try {
-      // 3) Charger la personne + données liées
-      const p = await this.personRepo.findOne({
+    // Filtrer les destinataires pour n'avoir que les personnes avec un compte (login non vide)
+        const p = await this.personRepo.findOne({
         where: { id },
         relations: ['account', 'inscriptions'],
       });
       if (!p) continue;
 
-      // 4) Variables globales pour remplir {{ ... }} (inclut les bornes)
+  // Dates borne issues des variables (obligatoires d’après ta note)
+  // Accepte string | Date ; normalise en début/fin de journée.
+
+     // 4) Variables globales pour remplir {{ ... }} (inclut les bornes)
       const info = {
         DATE_DEBUT: dateDebut,
         DATE_FIN:dateFin,
@@ -320,6 +327,23 @@ ABSENT:  `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}
       // silencieux comme dans ton exemple
     }
   }
+    break;
+    case 'libre':
+      
+  if(!envoi_par_compte){
+     
+  }
+    break;
+  }
+
+
+  // 2) Préparer parsing du template
+
+
+
+      // 3) Charger la personne + données liées
+      
+
 
   return results;
 }

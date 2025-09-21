@@ -50,6 +50,7 @@ export class EnvoiMailComponent implements OnInit {
 
   mail_a_generer: string;
   subject_mail_a_generer: string;
+  envoi_par_compte: boolean = false;
 
   log:string = "";
 
@@ -236,12 +237,14 @@ AddUsers(inscrit: boolean = false) {
         DATE_FIN: this.date_fin
       }
       this.ListeGeneree=  [];
-    this.mail_serv.EnvoyerRelance(this.mail_a_generer, this.subject_mail_a_generer, this.ListeUserSelectionne.map(x => x.id), this.variables, true).then((mail:KeyValuePairAny[]) =>{
+      let userss = this.ListeUserSelectionne.map(x => x.id);
+      if(this.envoi_par_compte){
+         userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
+      }
+    this.mail_serv.EnvoyerMail(this.mail_a_generer, this.subject_mail_a_generer, userss, this.variables, this.typemail, this.envoi_par_compte, true).then((mail:KeyValuePairAny[]) =>{
       mail.forEach(m =>{
         let P:Adherent_VM = m.key;
         let kvp = m.value;
-        console.log(kvp.key);
-        console.log(P);
         this.ListeGeneree.push({key:P, value:kvp})
       })
       this.adherent_generer_vue = this.ListeGeneree[0] ?? null;
@@ -336,12 +339,16 @@ async EnvoyerTousLesMails() {
 
   if (this.typemail === 'relance') {
     this.variables = { DATE_DEBUT: this.date_debut, DATE_FIN: this.date_fin };
-
-    this.mail_serv.EnvoyerRelance(
+    
+  }
+    let userss = this.ListeUserSelectionne.map(x => x.id);
+      if(this.envoi_par_compte){
+         userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
+      }
+    this.mail_serv.EnvoyerMail(
       this.mail_a_generer,
       this.subject_mail_a_generer,
-      this.ListeUserSelectionne.map(x => x.id),
-      this.variables,
+      userss, this.variables,this.typemail, this.envoi_par_compte,      
       false
     ).then((mail: KeyValuePairAny[]) => {
       this.log = '';
@@ -353,7 +360,6 @@ async EnvoyerTousLesMails() {
       });
       window.alert($localize`Nombre de mails envoyés : ` + OK.toString() + '/' + total.toString() + '\n' + this.log);
     }).catch(/* ... */);
-  }
 }
 
 
@@ -365,7 +371,12 @@ async EnvoyerTousLesMails() {
         DATE_DEBUT : this.date_debut,
         DATE_FIN: this.date_fin
       }
-    this.mail_serv.EnvoyerRelance(this.mail_a_generer, this.subject_mail_a_generer, [this.adherent_generer_vue.key.id], this.variables, false).then((mail:KeyValuePairAny[]) =>{
+    }
+    let userss = [this.adherent_generer_vue.key.id]
+    if(this.envoi_par_compte){
+      userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
+    } 
+    this.mail_serv.EnvoyerMail(this.mail_a_generer, this.subject_mail_a_generer,userss , this.variables, this.typemail, this.envoi_par_compte, false).then((mail:KeyValuePairAny[]) =>{
       
       mail.forEach((m) =>{
       window.alert($localize`Mail envoyé`)
@@ -376,7 +387,6 @@ async EnvoyerTousLesMails() {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
-    }
   }
   makeLabel(p: any): string {
     console.log(p);
