@@ -25,7 +25,7 @@ export class InscriptionSeanceController {
   }
     @UseGuards(PasswordGuard)
   @Get('get_adherent_compte/:id/:id_seance')
-  async GetAdherentCompte(@Param('id') id: number,@Param('id_seance') id_seance:number) {
+  async GetAdherentCompte(@Param('id') id: string,@Param('id_seance') id_seance:number) {
     return this.inscription_seance_serv.GetAdherentCompte(id, id_seance);
   }
 

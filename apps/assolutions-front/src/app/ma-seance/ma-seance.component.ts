@@ -40,7 +40,7 @@ export class MaSeanceComponent implements OnInit {
   adherent_to: Adherent_VM = null;
   action: string;
   seanceText: string;
-  login:number = null;
+  login:string = null;
   reponse:boolean = null;
   adherent:number = null;
    isLien = false;
@@ -74,7 +74,7 @@ async ngOnInit(): Promise<void> {
       this.id = +params['id'];
     } else {
       this.router.navigate(['/menu']);
-                    this.store.updateSelectedMenu("MENU");
+      this.store.updateSelectedMenu("MENU");
       return;
     }
   }
@@ -83,34 +83,48 @@ async ngOnInit(): Promise<void> {
 
   if (params['login']) {
     this.isLien = true;
-    this.action = $localize`Charger les adhérents de mon compte`;
-    this.login = +params['login'];
-    this.inscriptionserv.GetAdherentCompte(this.login, this.id)
-      .then(fis => this.MesAdherents = fis)
-      .catch(error => {
-        const n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
-      });
+    this.login = params['login'];
+  
   }
-
   if (params['adherent']) {
     this.isLien = true;
-    this.action = $localize`Charger l'adhérent`;
-    const adherentId = +params['adherent'];
-    this.inscriptionserv.GetAdherentPersonne(adherentId, this.id) // << corrige la variable
-      .then(fis => this.MesAdherents = [fis])
-      .catch(error => {
-        const n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
-      });
+    this.adherent = +params['adherent'];   
   }
-
-  if (params['reponse'] !== undefined) {
+    if (params['adherent']) {
+    this.isLien = true;
+    this.adherent = +params['adherent'];   
+  }
+   if (params['reponse'] !== undefined) {
     this.isLien = true;
     // "0" => false, "1" => true ; si autre chose => null
     const r = params['reponse']!;
     this.reponse = r === '0' ? false : r === '1' ? true : null;
   }
+
+if (this.isLien && this.login && !this.adherent) {
+  this.inscriptionserv.GetAdherentCompte(this.login, this.id)
+    .then((liste) => {
+      (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+      this.MesAdherents = liste ?? [];
+    })
+    .catch((error) => {
+      const n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    });
+
+} else if (this.isLien && this.login && this.adherent) {
+  this.inscriptionserv.GetAdherentPersonne(this.adherent, this.id)
+  .then((liste) => {
+      (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+      this.MesAdherents = liste ?? [];
+    })
+    .catch((error) => {
+      const n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    });
+}
+
+  
 
   // 4) Charger la séance
   try {
@@ -140,7 +154,7 @@ AfficherMenu(){
   LoadLogin(compte:Compte_VM){
     const errorService = ErrorService.instance;
      this.action = $localize`Charger les adhérents de mon compte`;
-          this.login = compte.id;
+          this.login = compte.email;
           if(!this.adherent){
             
    this.inscriptionserv.GetAdherentCompte(this.login, this.thisSeance.seance_id).then((fis) =>{
@@ -176,24 +190,24 @@ AfficherMenu(){
       errorService.emitChange(n);
     }); 
           } else {
-   this.inscriptionserv.GetAdherentPersonne(this.adherent, this.thisSeance.seance_id).then((fis) =>{
-            Personne_VM.bakeLibelle(fis.person);
-            this.MesAdherents = [fis];
+   this.inscriptionserv.GetAdherentPersonne(this.adherent, this.thisSeance.seance_id) .then((liste) => {
+      (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+      this.MesAdherents = liste ?? [];
             if(this.reponse != null){
               
             let statins = this.reponse ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT
             console.log(statins);
      this.action = $localize`Mise à jour des présences`;
-              fis.statut_inscription = statins;
-              if(!fis.id || fis.id == 0){
-                this.inscriptionserv.Add(fis).then((id_) =>{
-                  fis.id = id_;
+              liste[0].statut_inscription = statins;
+              if(!liste[0].id || liste[0].id == 0){
+                this.inscriptionserv.Add(liste[0]).then((id_) =>{
+                  liste[0].id = id_;
                  }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);
     }); 
               } else {
-                 this.inscriptionserv.Update(fis).then(() =>{
+                 this.inscriptionserv.Update(liste[0]).then(() =>{
                  }).catch((error) => {
       let n = errorService.CreateError(this.action, error);
       errorService.emitChange(n);

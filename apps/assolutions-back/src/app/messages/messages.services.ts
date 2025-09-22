@@ -15,7 +15,7 @@ import { calculateAge } from '../member/member.services';
 import { RegistrationSeason } from '../../entities/inscription-saison.entity';
 import { LinkGroupService } from '../../crud/linkgroup.service';
 import { SessionService } from '../../crud/session.service';
-import { SeanceService } from '../seance/seance.services';
+import { SeanceService, to_Seance_VM } from '../seance/seance.services';
 
 @Injectable()
 export class MessagesService {
@@ -220,7 +220,6 @@ async mail_relance(
   simuler: boolean,
   projectId: number
 ): Promise<KeyValuePairAny[]> {
-
   // 1) Charger le projet + saison active
   const proj = await this.projectRepo.findOne({
     where: { id: projectId },
@@ -235,8 +234,44 @@ async mail_relance(
 
   switch (type_mail) {
     case 'convocation': 
-    break;
     case 'annulation':
+    const idseance_con = variables?.SEANCE_ID;
+    if(!idseance_con) throw new Error('SEANCE_ID manquant dans variables');
+    const s = await this.seanceService.Get(idseance_con);
+  for (const id of destinataire) {
+    try {
+    // Filtrer les destinataires pour n'avoir que les personnes avec un compte (login non vide)
+        const p = await this.personRepo.findOne({
+        where: { id },
+        relations: ['account', 'inscriptions'],
+      });
+      if (!p) continue;
+      if (!p.account?.login || p.account.login.trim().length === 0) continue;
+     const dataSeance = {
+            SEANCE: s.libelle ?? 'séance',
+            SEANCE_ID: s.seance_id ?? 0,
+            PERSONNE_ID: p?.id ?? 0,
+            DATE: formatDDMMYYYY(s.date_seance),
+            LIEU: s.lieu_nom ?? 'lieu non défini',
+            HEURE: s.heure_debut ?? 'heure non définie',
+            RDV: s.rdv ?? '',
+            DUREE: (s.duree_seance != null) ? `${s.duree_seance} min` : 'durée non définie',
+             LOGIN: p.account?.login ?? '',
+        NOM: `${p?.firstName ?? ''} ${p?.lastName ?? ''}`.trim(),
+     }
+     const subjectFilled = fillTemplate(subject, dataSeance);
+     const htmlFilled = fillTemplate(template, dataSeance);
+      const to = [p.account?.login, proj.login].filter((x): x is string => !!x && x.trim().length > 0);
+      if (!simuler) {
+        const msg: MailInput = { to, subject: subjectFilled, html: htmlFilled };
+        await this.mailer.queue(msg, proj.login, proj.name, projectId);
+      }
+
+      results.push({ key: p, value:{ key: subjectFilled, value: htmlFilled }});
+    } catch {
+      // silencieux comme dans ton exemple
+    }
+  }
     break;
     case 'relance':
         const { outer: outerTemplate, loop: loopTemplate } = parseLoop(template); // outer => avec "[[]]" comme placeholder
@@ -244,6 +279,8 @@ async mail_relance(
   const dateFinRaw   = variables?.DATE_FIN;
   const dateDebut = toStartOfDay(parseDateStrict(dateDebutRaw));
   const dateFin   = toEndOfDay(parseDateStrict(dateFinRaw));
+  console.log('Date début:', dateDebut, 'Date fin:', dateFin);
+  console.log("date", dateDebutRaw, dateFinRaw);
   if (!dateDebut || !dateFin) {
     throw new Error('DATE_DEBUT ou DATE_FIN invalide(s) dans variables');
   }
@@ -329,20 +366,61 @@ ABSENT:  `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}
   }
     break;
     case 'libre':
-      
   if(!envoi_par_compte){
-     
+      for (const id of destinataire) {
+    try {
+    // Filtrer les destinataires pour n'avoir que les personnes avec un compte (login non vide)
+        const p = await this.personRepo.findOne({
+        where: { id },
+        relations: ['account', 'inscriptions'],
+      });
+      if (!p) continue;
+      if (!p.account?.login || p.account.login.trim().length === 0) continue;
+     const dataSeance = {
+            PERSONNE_ID: p?.id ?? 0,
+             LOGIN: p.account?.login ?? '',
+        NOM: `${p?.firstName ?? ''} ${p?.lastName ?? ''}`.trim(),
+     }
+      const subjectFilled = fillTemplate(subject, dataSeance);
+     const htmlFilled = fillTemplate(template, dataSeance);
+      const to = [p.account?.login, proj.login].filter((x): x is string => !!x && x.trim().length > 0);
+      if (!simuler) {
+        const msg: MailInput = { to, subject: subjectFilled, html: htmlFilled };
+        await this.mailer.queue(msg, proj.login, proj.name, projectId);
+      }
+
+      results.push({ key: p, value:{ key: subjectFilled, value: htmlFilled }});
+    }  catch {
+
   }
+}     
+  } else {
+          for (const id of destinataire) {
+    try {
+    // Filtrer les destinataires pour n'avoir que les personnes avec un compte (login non vide)
+        const ac = await this.accountrepo.findOne({
+        where: { id }
+      });
+      if (!ac) continue;
+      if (!ac.login || ac.login.trim().length === 0) continue;
+     const dataSeance = {
+             LOGIN: ac.login ?? '',
+     }
+      const subjectFilled = fillTemplate(subject, dataSeance);
+     const htmlFilled = fillTemplate(template, dataSeance);
+      const to = [ac.login, proj.login].filter((x): x is string => !!x && x.trim().length > 0);
+      if (!simuler) {
+        const msg: MailInput = { to, subject: subjectFilled, html: htmlFilled };
+        await this.mailer.queue(msg, proj.login, proj.name, projectId);
+      }
+
+      results.push({ key: ac.login, value:{ key: subjectFilled, value: htmlFilled }});
+    }  catch {
+  }
+  }
+}
     break;
   }
-
-
-  // 2) Préparer parsing du template
-
-
-
-      // 3) Charger la personne + données liées
-      
 
 
   return results;
@@ -360,33 +438,53 @@ ABSENT:  `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}
   
 }
 function parseDateStrict(d: unknown): Date | null {
-  if (!d) return null;
-  if (d instanceof Date && !isNaN(d.getTime())) return d;
+  if (d == null) return null;
+
+  // Déjà une Date valide ?
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  // Chaîne ?
   const s = typeof d === 'string' ? d.trim() : '';
   if (!s) return null;
 
-  // Tente 'YYYY-MM-DD' (local, sans fuseau) puis ISO standard
-  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-  if (ymd) {
-    const [_, y, m, day] = ymd;
-    const dt = new Date(Number(y), Number(m) - 1, Number(day));
-    return isNaN(dt.getTime()) ? null : dt;
+  // 1) YYYY-MM-DD
+  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (m) {
+    const [, y, mm, dd] = m;
+    const Y = +y, M = +mm, D = +dd;
+    const dt = new Date(Y, M - 1, D);
+    return (dt.getFullYear() === Y && dt.getMonth() === M - 1 && dt.getDate() === D) ? dt : null;
   }
+
+  // 2) dd/MM/yyyy ou dd-MM-yyyy
+  m = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/.exec(s);
+  if (m) {
+    const [, dd, mm, y] = m;
+    const D = +dd, M = +mm, Y = +y;
+    const dt = new Date(Y, M - 1, D);
+    return (dt.getFullYear() === Y && dt.getMonth() === M - 1 && dt.getDate() === D) ? dt : null;
+  }
+
+  // 3) Dernière chance : parsers natifs (ISO, RFC…)
   const dt = new Date(s);
   return isNaN(dt.getTime()) ? null : dt;
 }
+
 function toStartOfDay(d: Date | null): Date | null {
   if (!d) return null;
-  const x = new Date(d);
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   x.setHours(0, 0, 0, 0);
   return x;
 }
 function toEndOfDay(d: Date | null): Date | null {
   if (!d) return null;
-  const x = new Date(d);
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   x.setHours(23, 59, 59, 999);
   return x;
 }
+
 function toDateSafe(input: unknown): Date | null {
   if (!input) return null;
   if (input instanceof Date) return new Date(input.getTime());

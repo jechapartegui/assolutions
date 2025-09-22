@@ -34,7 +34,7 @@ export class InscriptionSeanceService {
     return to_FullInscriptionSeance_VM(pISS);
 
   }
-   async GetAdherentCompte(id: number,id_seance:number) {
+   async GetAdherentCompte(id: string,id_seance:number) {
     const pISS = await this.GetAllSeanceFull(id_seance);
     const liste_id = await this.personserv.getAllCompte(id);
     const person_id = liste_id.map(x => x.id);

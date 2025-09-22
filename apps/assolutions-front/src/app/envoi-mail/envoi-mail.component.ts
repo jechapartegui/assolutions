@@ -46,6 +46,7 @@ export class EnvoiMailComponent implements OnInit {
 
   seance_periode: Seance_VM[] = [];
   seance_selectionnee: Seance_VM;
+  seance_annul_convoc: Seance_VM;
 
 
   mail_a_generer: string;
@@ -132,17 +133,19 @@ canGoTo(step: Etape): boolean {
     this.ValiderPlage();
   }
 
-  ValiderPlage() {
+  async ValiderPlage() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'audience`;
+    if(this.typemail === 'relance'){
    this.variables = {
    DATE_DEBUT: formatDDMMYYYY(this.date_debut),
   DATE_FIN: formatDDMMYYYY(this.date_fin),
   };
+} 
 
 
-    this.adh_serv.GetAdherentAdhesion(this.store.saison_active().id)
-      .then(list => {
+
+    this.adh_serv.GetAdherentAdhesion(this.store.saison_active().id).then(list => {
                     this.liste_adherent = list.map(data =>
   Object.assign(new Adherent_VM(), data)
 );
@@ -150,11 +153,15 @@ canGoTo(step: Etape): boolean {
       })
       .then(lg => {
         this.liste_groupe = lg;
-        return this.seance_serv.GetSeances();
       })
-      .then(seances => {
-
-        this.seance_periode =  seances.sort((a, b) => {
+      .catch((err: HttpErrorResponse) => {
+        const o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+if(this.typemail === 'annulation' || this.typemail === 'convocation' || this.typemail === 'relance'){
+   await this.seance_serv.GetPlageDate(this.date_debut, this.date_fin).then(seances => {
+      this.seance_periode = seances;
+       this.seance_periode =  seances.sort((a, b) => {
           const nomA = a.date_seance; // Ignore la casse lors du tri
           const nomB = b.date_seance;
           let comparaison = 0;
@@ -166,15 +173,49 @@ canGoTo(step: Etape): boolean {
 
           return  comparaison; // Inverse pour le tri descendant
         });
-        this.etape = 'AUDIENCE';
+    });
+} else {
+ await this.seance_serv.GetSeances().then(seances => {
+    this.seance_periode = seances;
+       this.seance_periode =  seances.sort((a, b) => {
+          const nomA = a.date_seance; // Ignore la casse lors du tri
+          const nomB = b.date_seance;
+          let comparaison = 0;
+          if (nomA > nomB) {
+            comparaison = 1;
+          } else if (nomA < nomB) {
+            comparaison = -1;
+          }
+
+          return  comparaison; // Inverse pour le tri descendant
+        });
+    });
+}
+
+if(this.typemail === 'libre' || this.typemail === 'relance'){
+  this.etape = 'AUDIENCE';
+  this.audience = 'TOUS';
+  this.ouvert_param = false;
+  this.ouvert_audience = true;
+
+  
+}
+}
+
+ValiderSeance() {
+  if (!this.seance_annul_convoc) return;
+  
+  this.etape = 'AUDIENCE';
+        this.audience = 'SEANCE';
+        this.seance_selectionnee = this.seance_annul_convoc;
         this.ouvert_param = false;
         this.ouvert_audience = true;
-      })
-      .catch((err: HttpErrorResponse) => {
-        const o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-  }
+        this.variables = {
+          SEANCE_ID: this.seance_selectionnee.seance_id,
+        };
+        console.log(this.variables);
+    }
+
 
 
 AddUsers(inscrit: boolean = false) {
@@ -216,7 +257,6 @@ AddUsers(inscrit: boolean = false) {
       .then(kvp => {
         this.subject_mail_a_generer = kvp.key;
         this.mail_a_generer = kvp.value;
-        this.variables = [];
       })
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);
@@ -231,11 +271,7 @@ AddUsers(inscrit: boolean = false) {
   GenererVue() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le contenu du mail`;
-    if(this.typemail == 'relance'){
-      this.variables = {
-        DATE_DEBUT : this.date_debut,
-        DATE_FIN: this.date_fin
-      }
+   
       this.ListeGeneree=  [];
       let userss = this.ListeUserSelectionne.map(x => x.id);
       if(this.envoi_par_compte){
@@ -254,7 +290,6 @@ AddUsers(inscrit: boolean = false) {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
-    }
 
   }
 
@@ -389,10 +424,14 @@ async EnvoyerTousLesMails() {
       });
   }
   makeLabel(p: any): string {
-    console.log(p);
-  const prenom = p?.prenom ?? p?.firstName ?? '';
+  if(this.envoi_par_compte){
+    return p?? '';
+  } else {
+ const prenom = p?.prenom ?? p?.firstName ?? '';
   const nom    = p?.nom    ?? p?.lastName  ?? '';
   const age    = this.calculateAge(p?.date_naissance ?? p?.birthDate);
   return `${prenom} ${nom}${age ? ' ' + age + ' ans' : ''}`.trim();
+  }
+ 
 }
 }

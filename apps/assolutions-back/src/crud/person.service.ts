@@ -66,9 +66,16 @@ async getEssai(accountId: number | null, seasonId: number): Promise<Person[]> {
 
 
 
-    async getAllCompte(accountId : number): Promise<Person[]> {
-    return this.repo.find({ where: { accountId } });
-  }
+async getAllCompte(login: string): Promise<Person[]> {
+  return this.repo.find({
+    relations: ['account'],
+    where: {
+      account: {
+        login: login,
+      },
+    },
+  });
+}
    
 
     async create(data: Partial<Person>): Promise<Person> {

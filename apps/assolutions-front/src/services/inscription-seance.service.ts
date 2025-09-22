@@ -39,7 +39,7 @@ public GetFull(id:number): Promise<FullInscriptionSeance_VM> {
       return Promise.reject(error);
     });
 }
-public GetAdherentCompte(id:number, seance_id:number): Promise<FullInscriptionSeance_VM[]> {
+public GetAdherentCompte(id:string, seance_id:number): Promise<FullInscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
  this.url = environment.maseance + 'api/inscription_seance/get_adherent_compte/' + id + '/' + seance_id;
   //  this.url = this.url + "login.php";
@@ -54,14 +54,14 @@ public GetAdherentCompte(id:number, seance_id:number): Promise<FullInscriptionSe
       return Promise.reject(error);
     });
 }
-public GetAdherentPersonne(id:number, seance_id:number): Promise<FullInscriptionSeance_VM> {
+public GetAdherentPersonne(id:number, seance_id:number): Promise<FullInscriptionSeance_VM[]> {
   // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
  this.url = environment.maseance + 'api/inscription_seance/get_adherent_personne/' + id + '/' + seance_id;
   //  this.url = this.url + "login.php";
 
   return this.global.GET(this.url)
 
-    .then((response: FullInscriptionSeance_VM) => {
+    .then((response: FullInscriptionSeance_VM[]) => {
       return response;
     })
     .catch(error => {

@@ -26,6 +26,7 @@ export class LoginComponent implements OnInit {
   selectedLogin:boolean = false;
   @Output() essai = new EventEmitter<Compte_VM>();
   @Input() context:"REINIT" | "ACTIVATE" | "SEANCE" | "MENU" | "ESSAI" | "CREATE" = "MENU" // contexte d'accès à la page
+  @Input() login_seance:string = null; // login à utiliser dans le contexte SEANCE
   loading: boolean;
   libelle_titre:string = $localize`Saisissez votre email pour vous connecter`;
   psw_projet: string = null;
@@ -61,7 +62,6 @@ export class LoginComponent implements OnInit {
               return;
         }
       }
-      console.log(this.context);
       switch (this.context) {
         case "ACTIVATE":
         case "REINIT":
@@ -118,7 +118,11 @@ export class LoginComponent implements OnInit {
           break; 
         case "SEANCE":
           this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
-         
+          if(this.login_seance){
+            this.VM.Login = this.login_seance;
+            this.validateLogin();
+            this.PreLogin();
+          }
           break; 
       }
       this.VM.Login =  environment.defaultlogin;    

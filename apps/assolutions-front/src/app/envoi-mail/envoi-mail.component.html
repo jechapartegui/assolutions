@@ -96,15 +96,25 @@
                   </div>
                 </div>
               </div>
-
-              <div class="buttons">
-                <button type="button" (click)="ValiderPlage()"
-                        class="button is-primary is-small is-light btn-mobile btn-elevated">
-                  <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la plage</span>
-                </button>
-              </div>
             </ng-container>
-          </div>
+            <ng-container *ngIf="(typemail === 'annulation' || typemail === 'convocation') && seance_periode && seance_periode.length>0">
+              <div class="field">
+                <label class="label"><span *ngIf="typemail === 'annulation'" i18n>Séance annulée</span>
+                <span *ngIf="typemail === 'convocation'" i18n>Convocation séance</span></label> 
+                <div class="select is-fullwidth">
+                  <select id="seance_annulee" style="font-size: smaller" [(ngModel)]="seance_annul_convoc">
+                    <ng-container *ngFor="let pr of seance_periode">
+                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
+                    </ng-container>
+                  </select>
+                </div>
+                <p class="help is-danger" *ngIf="!seance_annul_convoc" i18n>
+                 Une séance doit être sélectionnée.	
+                </p>
+              </div>
+
+              </ng-container>
+              </div>
         </ng-container>
 
         <!-- ÉTAPE 3 — Audience -->
@@ -167,7 +177,7 @@
                 <div class="select is-fullwidth">
                   <select id="seance" style="font-size: smaller" [(ngModel)]="seance_selectionnee">
                     <ng-container *ngFor="let pr of seance_periode">
-                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp;{{ pr.date_seance | date : 'dd/MM/yyyy' }}</option>
+                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
                     </ng-container>
                   </select>
                 </div>
@@ -245,7 +255,7 @@
 
                 <div class="buttons" *ngIf="mail_a_generer">
              <label class="checkbox">
-  <input type="checkbox" [(ngModel)]="envoi_par_compte"/>
+  <input type="checkbox" *ngIf="typemail==='libre'" [(ngModel)]="envoi_par_compte"/>
   <span i18n>Envoyer par compte</span>
 </label>
                 
@@ -282,7 +292,7 @@
         </ng-container>
 
       </div>
-</div>
+
 <footer class="card-footer" [ngSwitch]="etape">
   <div class="card-footer-item" style="width:100%">
     <div class="columns is-mobile is-multiline" style="width:100%">
@@ -293,12 +303,22 @@
 
           <!-- ÉTAPE 2 — PARAMETRE -->
           <ng-container *ngSwitchCase="'PARAMETRE'">
+            <ng-container *ngIf="typemail !== 'libre'">
             <button type="button"
                     (click)="ValiderPlage()"
                     [disabled]="!date_debut || !date_fin"
                     class="button is-primary is-small is-light btn-mobile btn-elevated">
               <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la plage</span>
             </button>
+            </ng-container>
+            <ng-container *ngIf="(typemail === 'annulation' || typemail === 'convocation') && seance_periode && seance_periode.length>0">
+ <button type="button"
+                    (click)="ValiderSeance()"
+                    [disabled]="seance_annul_convoc==null"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la séance</span>
+            </button>
+              </ng-container>
           </ng-container>
 
           <!-- ÉTAPE 3 — AUDIENCE -->
