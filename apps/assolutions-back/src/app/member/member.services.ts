@@ -36,7 +36,7 @@ export class MemberService {
     return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], [], saison_id)).sort((a, b) => a.nom.localeCompare(b.nom));
   }
   async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
-    const saison = await this.personserivce.getAllCompte(compte_id);
+    const saison = await this.personserivce.getAllCompte_number(compte_id);
     if (!saison) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
@@ -92,7 +92,7 @@ export class MemberService {
     return retour;
   }
   async GetMyProf(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
-    const temp_adh = await this.personserivce.getAllCompte(compte);
+    const temp_adh = await this.personserivce.getAllCompte_number(compte);
   
     const saison_active = (await this.saison_serv.getActive(project_id)).id
   

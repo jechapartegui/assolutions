@@ -64,7 +64,14 @@ async getEssai(accountId: number | null, seasonId: number): Promise<Person[]> {
   return qb.distinct(true).getMany();
 }
 
-
+async getAllCompte_number(accountId: number): Promise<Person[]> {
+  return this.repo.find({
+    relations: ['account'],
+    where: {
+      accountId,
+    },
+  });
+}
 
 async getAllCompte(login: string): Promise<Person[]> {
   return this.repo.find({
