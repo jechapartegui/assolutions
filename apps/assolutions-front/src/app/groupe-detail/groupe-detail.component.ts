@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
 import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
-import { KeyValuePair } from '@shared/lib/autres.interface';
 
 
 @Component({
@@ -49,7 +48,7 @@ async CopyWA(g: LienGroupe_VM) {
   @Input() id_source: number;
   @Input() objet_source: string;
   @Input() Groupes: LienGroupe_VM[];
-  current_groupe_key: number = 0;
+  current_groupe_key: number | null = null;
   @Input() groupe_dispo: LienGroupe_VM[] = [];
   @Output() groupesUpdated = new EventEmitter<LienGroupe_VM[]>();  // Ajout du @Output()
   public action: string = "";
@@ -72,6 +71,7 @@ if (groupe) {
 }
     if (this.id_source > 0) {
       this.gr_serv.AddLien(this.id_source, this.objet_source, Number(this.current_groupe_key)).then((id) => {
+        newValue.id_lien = id;
         this.Groupes.push(newValue);
         this.current_groupe_key = null;
         this.MAJListeGroupe();
