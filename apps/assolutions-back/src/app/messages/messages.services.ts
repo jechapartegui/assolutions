@@ -333,20 +333,28 @@ async mail_relance(
 
       const boucleContent = mes_seances
         .map((s: any) => {
-          const dataSeance = {
-            SEANCE: s?.seance?.libelle ?? 'séance',
-            SEANCE_ID: s?.seance?.seance_id ?? 0,
-            PERSONNE_ID: p?.id ?? 0,
-            DATE: formatDDMMYYYY(s?.seance?.date_seance),
-            LIEU: s?.seance?.lieu_nom ?? 'lieu non défini',
-            HEURE: s?.seance?.heure_debut ?? 'heure non définie',
-            RDV: s?.seance?.rdv ?? '',
-            DUREE: (s?.seance?.duree_seance != null) ? `${s.seance.duree_seance} min` : 'durée non définie',
-         PRESENT: `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}&reponse=1&login=${encodeURIComponent(p.account?.login ?? '')}&adherent=${p.id}" title="Je viens" aria-label="Je viens" style="text-decoration:none;font-size:18px;">👍</a>`,
-ABSENT:  `<a href="https://assolutions.club/ma-seance?id=${s?.seance?.seance_id}&reponse=0&login=${encodeURIComponent(p.account?.login ?? '')}&adherent=${p.id}" title="Je ne viens pas" aria-label="Je ne viens pas" style="text-decoration:none;font-size:18px;">👎</a>`,          };
-          return fillTemplate(loopTemplate, dataSeance);
-        })
-        .join('');
+           const seanceId = s?.seance?.seance_id ?? 0;
+  const login = encodeURIComponent(p.account?.login ?? '');
+  const adherentId = p?.id ?? 0;
+
+  const dataSeance = {
+    SEANCE: s?.seance?.libelle ?? 'séance',
+    SEANCE_ID: seanceId,
+    PERSONNE_ID: adherentId,
+    DATE: formatDDMMYYYY(s?.seance?.date_seance),
+    LIEU: s?.seance?.lieu_nom ?? 'lieu non défini',
+    HEURE: s?.seance?.heure_debut ?? 'heure non définie',
+    RDV: s?.seance?.rdv ?? '',
+    DUREE: (s?.seance?.duree_seance != null) ? `${s.seance.duree_seance} min` : 'durée non définie',
+
+    // Icônes seules (multilingue) + classes pour matching avec le CSS de l’email
+    PRESENT: `<a class="icon-btn yes" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=1&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP yes" aria-label="RSVP yes">👍</a>`,
+    ABSENT:  `<a class="icon-btn no" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=0&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP no" aria-label="RSVP no">👎</a>`,
+  };
+
+  return fillTemplate(loopTemplate, dataSeance);
+})
+.join('');
 
       // 6) Réintégrer la boucle
       const finalHtml = replaceLoopPlaceholder(htmlOuter, boucleContent);
