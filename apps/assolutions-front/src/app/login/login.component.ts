@@ -125,8 +125,10 @@ export class LoginComponent implements OnInit {
           }
           break; 
       }
-      this.VM.Login =  environment.defaultlogin;    
-      this.validateLogin();
+      if (!this.VM.Login) {
+  this.VM.Login = environment.defaultlogin ?? '';
+  this.validateLogin();
+}  
     });
   }
 
