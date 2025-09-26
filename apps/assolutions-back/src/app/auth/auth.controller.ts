@@ -65,9 +65,9 @@ async reinit_mdp(@Body('login') login: string): Promise<boolean> {
     
     
         @UseGuards(PasswordGuard)
-    @Delete('delete/:id')
-    async Delete(@Param('id') id: number) {
-      return this.authService.delete(id);
+    @Post('delete')
+    async Delete(@Body() body: { id: number})  {
+      return this.authService.delete(body.id);
     }
 
     @UseGuards(PasswordGuard)

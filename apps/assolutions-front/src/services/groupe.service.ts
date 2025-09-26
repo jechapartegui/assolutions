@@ -89,16 +89,18 @@ if(saison_id ===0){
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'api/groupe/delete/' + id;
+  this.url = environment.maseance + 'api/groupe/delete/';
+const body = {
+      id: id, 
+    };
 
-  return this.global.DELETE(this.url)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
 }
 
 public AddLien(

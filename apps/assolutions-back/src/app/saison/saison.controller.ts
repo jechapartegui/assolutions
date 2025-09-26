@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { Saison_VM } from '@shared/lib/saison.interface';
 import { SaisonService } from './saison.services';
@@ -43,9 +43,9 @@ async Update(@Headers('projectid') projectId: number,@Body() s: Saison_VM) {
 
 
     @UseGuards(PasswordGuard)
-@Delete('delete/:id')
-async Delete(@Param('id') id: number) {
-  return this.saison_serv.delete(id);
+@Post('delete')
+async Delete(@Body() body: { id: number}) {
+  return this.saison_serv.delete(body.id);
 }
 
 }

@@ -105,16 +105,17 @@ UpdatePhoto(id: number, photo: string): Promise<any> {
 
   public Delete(id: number): Promise<boolean> {
     // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url =  'api/member/delete/' + id;
     //  this.url = this.url + "login.php";
+ this.url = environment.maseance + 'api/member/delete';
+const body = {
+      id: id, 
+    };
 
-    return this.global.DELETE(this.url)
+    return this.global.POST(this.url, body)
       .then((response: boolean) => {
-
         return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }

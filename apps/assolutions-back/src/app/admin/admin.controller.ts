@@ -33,8 +33,8 @@ UpdateAddInfo(@Body() vm: AddInfo_VM) { return this.srv.UpdateAddInfo(vm); }
 
 
 @UseGuards(PasswordGuard)
-@Delete('addinfo/delete/:id')
-DeleteAddInfo(@Param('id') id: number) { return this.srv.DeleteAddInfo(+id); }
+@Post('addinfo/delete')
+DeleteAddInfo(@Body() body: { id: number}) { return this.srv.DeleteAddInfo(body.id); }
 
 
 // --- Bank accounts ---
@@ -59,7 +59,7 @@ UpdateBank(@Headers('projectid') projectId: number, @Body() vm: CompteBancaire_V
 
 
 @UseGuards(PasswordGuard)
-@Post('bank/delete/:id')
+@Post('bank/delete')
 DeleteBank(@Body() body: { id: number}) { return this.srv.DeleteBank(+body.id); }
 
 
@@ -144,6 +144,6 @@ UpdateStock(@Headers('projectid') projectId: number, @Body() vm: Stock_VM) { ret
 
 
 @UseGuards(PasswordGuard)
-@Delete('stock/delete/:id')
-DeleteStock(@Param('id') id: number) { return this.srv.DeleteStock(+id); }
+@Post('stock/delete/')
+DeleteStock(@Body() body: { id: number}) { return this.srv.DeleteStock(body.id); }
 }

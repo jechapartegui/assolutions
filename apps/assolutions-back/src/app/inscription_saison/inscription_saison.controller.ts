@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { InscriptionSaisonService } from './inscription_saison.services';
 import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
@@ -47,9 +47,9 @@ async Update(@Body() inscription: InscriptionSaison_VM) {
 
 
     @UseGuards(PasswordGuard)
-@Delete('delete/:id')
-async Delete(@Param('id') id: number) {
-  return this.inscription_saison_serv.Delete(id);
+@Post('delete')
+async Delete(@Body() body: { id: number}) {
+  return this.inscription_saison_serv.Delete(body.id);
 }
 
 }

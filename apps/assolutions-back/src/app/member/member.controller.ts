@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { MemberService } from './member.services';
 import  { Adherent_VM } from '@shared/lib/member.interface';
@@ -60,9 +60,9 @@ async GetAllEver(@Param('compte_id') compte_id: number) {
     
     
         @UseGuards(PasswordGuard)
-    @Delete('delete/:id')
-    async Delete(@Param('id') id: number) {
-      return this.mem_serv.Delete(id);
+    @Post('delete')
+    async Delete(@Body() body: { id: number}) {
+      return this.mem_serv.Delete(body.id);
     }
 
 }

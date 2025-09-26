@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { CoursService } from './cours.services';
 
@@ -35,9 +35,9 @@ export class CoursController {
     
     
         @UseGuards(PasswordGuard)
-    @Delete('delete/:id')
-    async Delete(@Param('id') id: number) {
-      return this.cours_serv.Delete(id);
+    @Post('delete')
+    async Delete(@Body() body: { id: number}) {
+      return this.cours_serv.Delete(body.id);
     }
 
 }

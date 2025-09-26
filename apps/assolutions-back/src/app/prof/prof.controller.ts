@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { ProfService } from './prof.services';
 import { Professeur_VM } from '@shared/lib/prof.interface';
@@ -37,9 +37,9 @@ async GetProfSaison(@Param('saison_id') saison_id : number ) {
   
   
   @UseGuards(PasswordGuard)
-  @Delete('delete/:id')
-  async Delete(@Param('id') id: number) {
-    return this.prof_serv.delete(id);
+  @Post('delete')
+  async Delete(@Body() body: { id: number}) {
+    return this.prof_serv.delete(body.id);
   }
 
 }

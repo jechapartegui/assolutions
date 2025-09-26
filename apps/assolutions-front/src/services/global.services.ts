@@ -53,7 +53,7 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
     let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
     let _varid: string = "0";
     let project_id: string = "-1";
-    const timeoutMilliseconds = 50000;
+    const timeoutMilliseconds = 1500000;
 
     if (this.store.compte()) {
   _varid = this.store.compte()!.id.toString();
@@ -108,7 +108,7 @@ if (this.store.projet()) {
       let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
       let _varid: string = "0";
       let project_id: string = "-1";
-      const timeoutMilliseconds = 50000;
+      const timeoutMilliseconds = 1500000;
     if (this.store.compte()) {
   _varid = this.store.compte()!.id.toString();
 }
@@ -153,7 +153,7 @@ if (this.store.projet()) {
       let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
       let _varid: string = "0";
       let project_id: string = "-1";
-      const timeoutMilliseconds = 50000;
+      const timeoutMilliseconds = 1500000;
      if (this.store.compte()) {
   _varid = this.store.compte()!.id.toString();
 }
@@ -173,52 +173,6 @@ if (this.store.projet()) {
 
     const response = await firstValueFrom(
       this.http.put(url, body, { headers }).pipe(
-        timeout(timeoutMilliseconds),
-        catchError((error) => {
-          if (error.name === 'TimeoutError') {
-            throw new Error('La requête a expiré en raison du délai dépassé.');
-          } else {
-            throw error;
-          }
-        })
-      )
-    );
-
-    return response;
-  } catch (error) {
-    console.log(error);
-    if (error instanceof HttpErrorResponse) {
-      this.handleError(error);
-    } else {
-      throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
-    }
-  }
-}
-public async DELETE(url: string): Promise<any> {
-  try {
-    let date_ref = new Date();
-      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
-      let _varid: string = "0";
-      let project_id: string = "-1";
-      const timeoutMilliseconds = 50000;
-     if (this.store.compte()) {
-  _varid = this.store.compte()!.id.toString();
-}
-
-if (this.store.projet()) {
-  project_id = this.store.projet()!.id.toString();
-}
-
-      const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
-      const headers = new HttpHeaders()
-        .set('content-type', 'application/json')
-        .set('password', expectedPassword)
-        .set('dateref', date_ref_string)
-        .set('projectid', project_id)
-        .set('lang', this.getCurrentLanguage())
-        .set('userid', _varid)
-    const response = await firstValueFrom(
-      this.http.delete(url, { headers }).pipe(
         timeout(timeoutMilliseconds),
         catchError((error) => {
           if (error.name === 'TimeoutError') {

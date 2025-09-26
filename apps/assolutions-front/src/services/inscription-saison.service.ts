@@ -74,14 +74,16 @@ export class InscriptionSaisonService {
       });
   }
   public Delete(id:number) {
-    this.url = environment.maseance + 'api/inscription_saison/delete/' + id;
-  
-    return this.global.DELETE(this.url)
-      .then(() => {
-        return;
+    this.url = environment.maseance + 'api/inscription_saison/delete/';
+  const body = {
+      id: id, 
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }

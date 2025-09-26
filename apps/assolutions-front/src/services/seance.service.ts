@@ -39,16 +39,16 @@ export class SeancesService {
   }
   
   public Delete(id: number) {
-      this.url = environment.maseance +  "api/seance/delete/" + id; 
-    //  this.url = this.url + "login.php";
-    
+      this.url = environment.maseance +  "api/seance/delete/" ; 
+    const body = {
+      id: id, 
+    };
 
-    return this.global.DELETE(this.url)
-      .then(() => {
-        return;
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }

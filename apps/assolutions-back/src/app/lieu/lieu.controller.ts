@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { LieuService } from './lieu.services';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
@@ -37,9 +37,9 @@ export class LieuController {
   
   
       @UseGuards(PasswordGuard)
-  @Delete('delete/:id')
-  async Delete(@Param('id') id: number) {
-    return this.lieu_serv.delete(id);
+  @Post('delete')
+  async Delete(@Body() body: { id: number}) {
+    return this.lieu_serv.delete(body.id);
   }
 
 

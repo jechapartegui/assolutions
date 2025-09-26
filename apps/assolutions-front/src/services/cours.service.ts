@@ -83,16 +83,18 @@ public Update(l:Cours_VM): Promise<boolean> {
     });
 }
 public Delete(id:number) {
-  this.url = environment.maseance + 'api/cours/delete/' + id;
+  this.url = environment.maseance + 'api/cours/delete/';
+const body = {
+      id: id, 
+    };
 
-  return this.global.DELETE(this.url)
-    .then(() => {
-      return;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
 }
 
 public GetCoursProf(id:number) : Promise<PersonneLight_VM>{
@@ -145,15 +147,18 @@ public AddCoursProf(cours_id:number, person_id:number): Promise<number>{
 
 public DeleteCoursProf(cours_id:number, person_id:number): Promise<boolean>{
    this.url = environment.maseance + 'api/cours_prof/delete/' + cours_id + '/' + person_id;
+const body = {
+      cours_id: cours_id, 
+      person_id: person_id
+    };
 
-  return this.global.DELETE(this.url)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
 }
 
 }

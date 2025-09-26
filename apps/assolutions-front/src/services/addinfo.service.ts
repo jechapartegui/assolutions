@@ -11,23 +11,39 @@ import { AppStore } from '../app/app.store';
 
 @Injectable({ providedIn: 'root' })
 export class AddInfoService {
-private base = environment.maseance + 'api/admin/addinfo';
-constructor(private http: GlobalService,private  lieu_serv:LieuNestService,private  adherent_serv:AdherentService, private store:AppStore,
+  url = environment.maseance;
+constructor(private global: GlobalService,private store:AppStore,private  lieu_serv:LieuNestService,private  adherent_serv:AdherentService, 
     private  profserv:ProfesseurService, private comptebancaireserv:CompteBancaireService) {}
 
 
 /** Liste de valeurs (LV) pour un object_type donné */
 public list(objectType: string, original = false): Promise<AddInfo_VM> {
-const url = `${this.base}/list/${encodeURIComponent(objectType)}?original=${original}`;
-return this.http.GET(url);
+this.url = environment.maseance + `api/admin/addinfo/list/${encodeURIComponent(objectType)}?original=${original}`;
+    return this.global.GET(this.url)
+      .then((response: AddInfo_VM) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
 }
 
 
 
 /** Récupérer un addinfo par id */
 public get(id: number): Promise<AddInfo_VM> {
-const url = `${this.base}/get/${id}`;
-return this.http.GET(url);
+this.url = environment.maseance + `api/admin/addinfo/get/${id}`;
+   return this.global.GET(this.url)
+      .then((response: AddInfo_VM) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
 }
 public async getall_liste(ad: string[]): Promise<GenericLink_VM[]> {
   const list: GenericLink_VM[] = [];
@@ -78,33 +94,84 @@ public async getall_liste(ad: string[]): Promise<GenericLink_VM[]> {
 
 /** Récupérer un addinfo par id */
 public get_lv(nom:string,force:boolean): Promise<AddInfo_VM> {
-const url = `${this.base}/get/${nom}/${force}`;
-return this.http.GET(url);
+this.url = environment.maseance + `api/admin/addinfo/get/${nom}/${force}`;
+   return this.global.GET(this.url)
+      .then((response: AddInfo_VM) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
 }
 
 public update_lv(payload: Partial<AddInfo_VM> & { id: number }): Promise<boolean> {
-const url = `${this.base}/update`;
-return this.http.PUT(url, payload);
+  this.url = environment.maseance + 'api/admin/addinfo/update_lv';
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.PUT(this.url, payload)
+      .then((response: boolean) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
 }
 
 
 /** Créer une entrée addinfo */
 public add(payload: Partial<AddInfo_VM>): Promise<number> {
-const url = `${this.base}/add`;
-return this.http.PUT(url, payload);
+this.url = environment.maseance + 'api/admin/addinfo/add';
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.PUT(this.url, payload)
+      .then((response: number) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
 }
 
 
 /** Mettre à jour une entrée addinfo */
 public update(payload: Partial<AddInfo_VM> & { id: number }): Promise<boolean> {
-const url = `${this.base}/update`;
-return this.http.PUT(url, payload);
+ this.url = environment.maseance + 'api/admin/addinfo/update';
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.PUT(this.url, payload)
+      .then((response: boolean) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
 }
 
 
 /** Supprimer */
 public delete(id: number): Promise<boolean> {
-const url = `${this.base}/delete/${id}`;
-return this.http.DELETE(url);
-}
+   this.url = environment.maseance + 'api/groupe/deletelien';
+const body = {
+      id: id, 
+    };
+
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+  }
 }

@@ -33,9 +33,9 @@ async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
 }
 
         @UseGuards(PasswordGuard)
-    @Delete('delete/:id')
-    async Delete(@Param('id') id: number) {
-      return this.groupe_serv.delete(id);
+    @Post('delete')
+    async Delete(@Body() body: { id: number}) {
+      return this.groupe_serv.delete(body.id);
     }
 
      @Put('addlien')

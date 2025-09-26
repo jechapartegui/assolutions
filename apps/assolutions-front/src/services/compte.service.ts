@@ -210,14 +210,16 @@ export class CompteService {
       });
   }
   public Delete(id:number): Promise<boolean> {
-    this.url = environment.maseance + 'api/auth/delete/' + id;
-  
-    return this.global.DELETE(this.url)
+    this.url = environment.maseance + 'api/auth/delete/';
+  const body = {
+      id: id, 
+    };
+
+    return this.global.POST(this.url, body)
       .then((response: boolean) => {
         return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
   }

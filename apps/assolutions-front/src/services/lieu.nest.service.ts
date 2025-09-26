@@ -84,15 +84,17 @@ public Update(l:Lieu_VM): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'api/lieu/delete/' + id;
+  this.url = environment.maseance + 'api/lieu/delete/';
+const body = {
+      id: id, 
+    };
 
-  return this.global.DELETE(this.url)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
 }
 }

@@ -78,16 +78,18 @@ public Update(saison:Saison_VM): Promise<boolean> {
     });
 }
 public Delete(id:number): Promise<boolean> {
-  this.url = environment.maseance + 'api/seance/delete/' + id;
+  this.url = environment.maseance + 'api/seance/delete/';
+const body = {
+      id: id, 
+    };
 
-  return this.global.DELETE(this.url)
-    .then((response: boolean) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
+    return this.global.POST(this.url, body)
+      .then((response: boolean) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
 }
 }
 

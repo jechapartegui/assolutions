@@ -56,9 +56,9 @@ async GetByDate(
     return this.seance_serv.Update(seance);
   }
   @UseGuards(PasswordGuard)
-@Delete('delete/:id')
-  async Delete(@Param('id') id: number) {
-    return this.seance_serv.Delete(id);
+@Post('delete')
+  async Delete(@Body() body: { id: number}) {
+    return this.seance_serv.Delete(body.id);
   }
 
   @UseGuards(PasswordGuard)
