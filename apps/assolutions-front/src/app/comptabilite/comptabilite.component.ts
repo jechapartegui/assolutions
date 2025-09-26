@@ -83,6 +83,7 @@ export class ComptabiliteComponent implements OnInit {
             if (!this.SC.ClassComptable || this.SC.ClassComptable.length == 0) {
               this.addinfo_serv.get_lv('class_compta', true).then((liste) => {
                 this.SC.ClassComptable = JSON.parse(liste.text);
+                console.log(this.SC.ClassComptable);
                 this.ClassesComptable = this.SC.ClassComptable;
               });
             } else {
@@ -128,8 +129,30 @@ export class ComptabiliteComponent implements OnInit {
       });
   }
   VoirSituation() {
+    const errorService = ErrorService.instance;
     this.action = $localize`Charger la situation`;
 
+    this.compta_serv.VoirSituation(this.saison_id).then((ff) => {
+      this.FluxFinanciers = ff.map((x) => new FluxFinancier(x));
+
+      this.FluxFinanciers.forEach((fluxf) => {
+        try {
+          let lib_dest = JSON.parse(fluxf.datasource.destinataire);
+          fluxf.DestinataireLibelle = lib_dest.value;
+        } catch (error) {
+          console.log(error);
+          fluxf.DestinataireLibelle = ''; // Définit une chaîne vide en cas d'erreur
+        }
+        fluxf.liste_operation.forEach((ttr) => {
+          try {
+            let lib_dest = JSON.parse(ttr.datasource.destinataire);
+            ttr.DestinataireLibelle = lib_dest.value;
+          } catch (error) {
+            ttr.DestinataireLibelle = ''; // Définit une chaîne vide en cas d'erreur
+          }
+        });
+      });
+    });
   }
 
   Sort_ff(sens: 'NO' | 'ASC' | 'DESC', champ: string) {

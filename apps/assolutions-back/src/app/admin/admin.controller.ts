@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, ParseBoolPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { FluxFinancier_VM } from '@shared/lib/flux-financier.interface';
 import { Operation_VM } from '@shared/lib/operation.interface';
 import { Stock_VM } from '@shared/lib/stock.interface';
@@ -20,8 +20,12 @@ GetAddInfo(@Param('id') id: number) { return this.srv.GetAddInfo(+id); }
 
 
 @UseGuards(PasswordGuard)
-@Get('addinfo/list/:object_type')
-GetAllAddInfoByType(@Param('object_type') t: string) { return this.srv.GetAllAddInfoByType(t); }
+@Get('addinfo/list/:object_type/:force')
+GetAllAddInfoByType(
+  @Headers('projectid') projectId: number,
+  @Param('object_type') t: string,
+  @Param('force', ParseBoolPipe) force: boolean,
+) { return this.srv.GetAllAddInfoByType(t, projectId, force); }
 
 
 @Put('addinfo/add')

@@ -94,7 +94,7 @@ export class StockComponent implements OnInit {
       }
       this.action = $localize`Charger les types de stcok`;
       if (!this.SC.TypeStock || this.SC.TypeStock.length == 0) {
-        this.addinfo_serv.list('stock').then((liste) => {
+        this.addinfo_serv.get_lv('stock', false).then((liste) => {
           this.SC.TypeStock = JSON.parse(liste.text);
           this.TypeStock = this.SC.TypeStock;
           this.liste_type_equipement = Array.from(
@@ -106,7 +106,7 @@ export class StockComponent implements OnInit {
       }
       this.action = $localize`Charger les types d'achat`;
       if (!this.SC.TypeTransaction || this.SC.TypeTransaction.length == 0) {
-        this.addinfo_serv.list('type_achat').then((liste) => {
+        this.addinfo_serv.get_lv('type_achat', false).then((liste) => {
           this.SC.TypeTransaction = JSON.parse(liste.text);
           this.TypeTransaction = this.SC.TypeTransaction;
         });

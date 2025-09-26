@@ -73,7 +73,7 @@ export class OperationsComponent implements OnInit {
             this.Comptes = cpts;
             this.action = $localize`Charger les classes comptables`;
             if (!this.SC.ClassComptable || this.SC.ClassComptable.length == 0) {
-              this.addinfo_serv.list('class_compta').then((liste) => {
+              this.addinfo_serv.get_lv('class_compta', false).then((liste) => {
                 this.SC.ClassComptable = JSON.parse(liste.text);
                 this.ClassesComptable = this.SC.ClassComptable;
               });

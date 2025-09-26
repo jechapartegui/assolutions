@@ -1,3 +1,10 @@
+<div *ngIf="uiLock" class="ui-lock-overlay">
+  <div class="ui-lock-panel">
+    <i class="fas fa-circle-notch fa-spin"></i>
+    <span class="ml-2" i18n>Veuillez patienter…</span>
+  </div>
+</div>
+<fieldset [disabled]="uiLock">
   <div class="columns page-fill">
             <div class="column">
               <div class="card card--scroller">
@@ -379,3 +386,5 @@
     </div>
   </div>
 </div>
+</div>
+</fieldset>

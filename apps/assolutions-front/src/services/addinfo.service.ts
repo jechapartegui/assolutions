@@ -16,19 +16,7 @@ constructor(private global: GlobalService,private store:AppStore,private  lieu_s
     private  profserv:ProfesseurService, private comptebancaireserv:CompteBancaireService) {}
 
 
-/** Liste de valeurs (LV) pour un object_type donné */
-public list(objectType: string, original = false): Promise<AddInfo_VM> {
-this.url = environment.maseance + `api/admin/addinfo/list/${encodeURIComponent(objectType)}?original=${original}`;
-    return this.global.GET(this.url)
-      .then((response: AddInfo_VM) => {
 
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-}
 
 
 
@@ -93,8 +81,8 @@ public async getall_liste(ad: string[]): Promise<GenericLink_VM[]> {
 }
 
 /** Récupérer un addinfo par id */
-public get_lv(nom:string,force:boolean): Promise<AddInfo_VM> {
-this.url = environment.maseance + `api/admin/addinfo/get/${nom}/${force}`;
+public get_lv(nom:string, force:boolean): Promise<AddInfo_VM> {
+this.url = environment.maseance + `api/admin/addinfo/list/${nom}/${force}`;	
    return this.global.GET(this.url)
       .then((response: AddInfo_VM) => {
 

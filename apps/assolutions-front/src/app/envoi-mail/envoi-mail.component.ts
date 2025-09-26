@@ -25,6 +25,26 @@ type Typemail = 'relance' | 'annulation' | 'convocation' | 'libre'| 'essai';
   styleUrls: ['./envoi-mail.component.css'],
 })
 export class EnvoiMailComponent implements OnInit {
+  // === UI lock additions (non-breaking) ===
+  uiLock: boolean = false;
+
+  /**
+   * Helper to run a Promise-returning action while locking the UI.
+   * Example: this.runLocked(this.somePromise());
+   */
+  runLocked<T = any>(p: Promise<T> | { finally?: () => void } | any): void {
+    this.uiLock = true;
+    try {
+      if (p && typeof p.finally === 'function') {
+        (p as Promise<any>).finally(() => { this.uiLock = false; });
+      } else {
+        this.uiLock = false;
+      }
+    } catch {
+      this.uiLock = false;
+    }
+  }
+
   ouvert_type_mail = true;
   ouvert_param = false;
   ouvert_audience = false;
@@ -134,6 +154,8 @@ canGoTo(step: Etape): boolean {
   }
 
   async ValiderPlage() {
+    this.uiLock = true;
+
     const errorService = ErrorService.instance;
     this.action = $localize`Charger l'audience`;
     if(this.typemail === 'relance'){
@@ -200,9 +222,13 @@ if(this.typemail === 'libre' || this.typemail === 'relance'){
 
   
 }
+
+    this.uiLock = false;
 }
 
 ValiderSeance() {
+    this.uiLock = true;
+
   if (!this.seance_annul_convoc) return;
   
   this.etape = 'AUDIENCE';
@@ -214,7 +240,9 @@ ValiderSeance() {
           SEANCE_ID: this.seance_selectionnee.seance_id,
         };
         console.log(this.variables);
-    }
+    
+    this.uiLock = false;
+}
 
 
 
@@ -247,13 +275,15 @@ AddUsers(inscrit: boolean = false) {
   }
 
   ValiderDestinataire() {
+    this.uiLock = true;
+
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le template du mail`;
     this.etape = 'BROUILLON';
     this.ouvert_brouillon = true;
     this.ouvert_audience = false;
 
-    this.mail_serv.GetMail(this.typemail)
+return     this.mail_serv.GetMail(this.typemail)
       .then(kvp => {
         this.subject_mail_a_generer = kvp.key;
         this.mail_a_generer = kvp.value;
@@ -261,7 +291,7 @@ AddUsers(inscrit: boolean = false) {
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-      });
+      }).finally(() => { this.uiLock = false; })
   }
 
   RemoveUser(user: Adherent_VM) {
@@ -269,6 +299,8 @@ AddUsers(inscrit: boolean = false) {
   }
 
   GenererVue() {
+    this.uiLock = true;
+
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le contenu du mail`;
    
@@ -277,7 +309,7 @@ AddUsers(inscrit: boolean = false) {
       if(this.envoi_par_compte){
          userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
       }
-    this.mail_serv.EnvoyerMail(this.mail_a_generer, this.subject_mail_a_generer, userss, this.variables, this.typemail, this.envoi_par_compte, true).then((mail:KeyValuePairAny[]) =>{
+return     this.mail_serv.EnvoyerMail(this.mail_a_generer, this.subject_mail_a_generer, userss, this.variables, this.typemail, this.envoi_par_compte, true).then((mail:KeyValuePairAny[]) =>{
       mail.forEach(m =>{
         let P:Adherent_VM = m.key;
         let kvp = m.value;
@@ -289,7 +321,7 @@ AddUsers(inscrit: boolean = false) {
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-      });
+      }).finally(() => { this.uiLock = false; })
 
   }
 
@@ -320,9 +352,11 @@ getPlaceholders(text: string): { global: string[]; loop: string[] } {
 
 
   SauvegarderTemplate() {
+    this.uiLock = true;
+
     const errorService = ErrorService.instance;
     this.action = $localize`Sauvegarder le template`;
-    this.mail_serv.SauvegarderTemplate(
+return     this.mail_serv.SauvegarderTemplate(
       this.mail_a_generer,
       this.subject_mail_a_generer,
       this.typemail
@@ -335,7 +369,7 @@ getPlaceholders(text: string): { global: string[]; loop: string[] } {
     .catch((err: HttpErrorResponse) => {
       const o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
-    });
+    }).finally(() => { this.uiLock = false; })
   }
 
   // ✅ Une seule étape visible: parfait pour la card scroller
@@ -368,6 +402,9 @@ getPlaceholders(text: string): { global: string[]; loop: string[] } {
   ValiderFormatEmail() {}
 
 async EnvoyerTousLesMails() {
+    this.uiLock = true;
+    try {
+
   const total = this.ListeGeneree.length;
   let OK = 0;
   this.action = $localize`Envoyer les mails`;
@@ -395,10 +432,27 @@ async EnvoyerTousLesMails() {
       });
       window.alert($localize`Nombre de mails envoyés : ` + OK.toString() + '/' + total.toString() + '\n' + this.log);
     }).catch(/* ... */);
+
+    } finally {
+      this.uiLock = false;
+    }
+}
+  makeLabel(p: any): string {
+  if(this.envoi_par_compte){
+    return p?? '';
+  } else {
+ const prenom = p?.prenom ?? p?.firstName ?? '';
+  const nom    = p?.nom    ?? p?.lastName  ?? '';
+  const age    = this.calculateAge(p?.date_naissance ?? p?.birthDate);
+  return `${prenom} ${nom}${age ? ' ' + age + ' ans' : ''}`.trim();
+  }
+ 
 }
 
 
   EnvoiMail() {
+    this.uiLock = true;
+
      const errorService = ErrorService.instance;
     this.action = $localize`Envoyer les mails`;
     if(this.typemail == 'relance'){
@@ -411,7 +465,7 @@ async EnvoyerTousLesMails() {
     if(this.envoi_par_compte){
       userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
     } 
-    this.mail_serv.EnvoyerMail(this.mail_a_generer, this.subject_mail_a_generer,userss , this.variables, this.typemail, this.envoi_par_compte, false).then((mail:KeyValuePairAny[]) =>{
+return     this.mail_serv.EnvoyerMail(this.mail_a_generer, this.subject_mail_a_generer,userss , this.variables, this.typemail, this.envoi_par_compte, false).then((mail:KeyValuePairAny[]) =>{
       
       mail.forEach((m) =>{
       window.alert($localize`Mail envoyé`)
@@ -421,17 +475,6 @@ async EnvoyerTousLesMails() {
       .catch((err: HttpErrorResponse) => {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
-      });
+      }).finally(() => { this.uiLock = false; })
   }
-  makeLabel(p: any): string {
-  if(this.envoi_par_compte){
-    return p?? '';
-  } else {
- const prenom = p?.prenom ?? p?.firstName ?? '';
-  const nom    = p?.nom    ?? p?.lastName  ?? '';
-  const age    = this.calculateAge(p?.date_naissance ?? p?.birthDate);
-  return `${prenom} ${nom}${age ? ' ' + age + ' ans' : ''}`.trim();
-  }
- 
-}
 }

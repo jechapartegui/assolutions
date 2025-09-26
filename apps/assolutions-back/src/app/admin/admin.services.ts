@@ -36,8 +36,20 @@ export class AdminService {
   async GetAddInfo(id: number) {
     return toAddInfoVM(await this.addinfo.get(id));
   }
-  async GetAllAddInfoByType(object_type: string) {
-    return (await this.addinfo.getAllByType(object_type)).map(toAddInfoVM);
+  async GetAllAddInfoByType(object_type: string, project_id: number, force:boolean) {
+    if(!force) {
+      const existing = await this.addinfo.getAllByType(object_type, project_id);
+      if(existing) {return toAddInfoVM(existing);} else 
+      {
+      const existing2 = await this.addinfo.getAllByType(object_type, null);
+      if(existing2) {return toAddInfoVM(existing2);}
+      }
+      
+    } else {
+      const existing3 = await this.addinfo.getAllByType(object_type, null);
+      if(existing3) {return toAddInfoVM(existing3);}
+    }
+   
   }
   async AddAddInfo(vm: AddInfo_VM) {
     if (!vm) throw new BadRequestException('INVALID_ITEM');

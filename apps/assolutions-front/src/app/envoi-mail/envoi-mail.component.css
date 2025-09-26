@@ -1,1 +1,24 @@
 
+.card.is-relative { position: relative; }
+
+.ui-lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.6); /* semi-opaque */
+  backdrop-filter: blur(1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40; /* au-dessus du contenu de la carte */
+  pointer-events: all; /* capte tous les clics */
+}
+
+.ui-lock-panel {
+  display: inline-flex;
+  align-items: center;
+  padding: .75rem 1rem;
+  border-radius: .75rem;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  font-weight: 600;
+}
