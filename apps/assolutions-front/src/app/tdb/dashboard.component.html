@@ -1,0 +1,150 @@
+<div class="container">
+  <ng-container *ngIf="loading">
+    <progress class="progress is-large is-info" style="margin-top: 60px" max="100">60%</progress>
+    <p>Chargement en cours</p>
+  </ng-container>
+
+  <ng-container *ngIf="!loading">
+    <!-- Carrousel Riders (identique à Menu) -->
+    <div class="riders-scroll-container" *ngIf="Riders?.length">
+      <div class="rider-card" *ngFor="let personne of Riders" (click)="AfficherProfil(personne)">
+        <div
+          class="card has-text-centered p-2 modern-card"
+          [ngClass]="{ 'is-primary-border': personne.profil === 'ADH', 'is-info-border': personne.profil === 'PROF' }"
+        >
+          <div class="photo-wrapper mb-2">
+            <figure class="image is-64x64 is-inline-block">
+              <img class="is-rounded" [src]="personne.photo ?? '../../assets/photo_H.png'" [alt]="'Photo de ' + personne.nom" />
+            </figure>
+          </div>
+          <p class="is-size-7 has-text-weight-bold">
+            {{ personne.prenom }} {{ personne.nom }}
+          </p>
+          <p class="is-size-7" [ngClass]="{ 'has-text-primary': personne.profil === 'ADH', 'has-text-info': personne.profil === 'PROF' }">
+            {{ getLibelleProfil(personne.profil) }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <br />
+
+    <!-- CARTES Riders -->
+    <ng-container *ngFor="let rider of Riders">
+      <ng-container *ngIf="rider.afficher">
+        <div class="card">
+          <header
+            class="card-header"
+            [ngClass]="{
+              'has-background-primary has-text-white': rider.profil === 'ADH',
+              'has-background-info has-text-white': rider.profil === 'PROF'
+            }"
+          >
+            <p class="card-header-title">
+              {{ rider.libelle }} — Tableau de bord
+            </p>
+            <button title="Voir la fiche" class="button is-small is-outlined m-1" type="button" (click)="Voir(rider.id)">
+              <i class="fa-solid fa-user-pen"></i>
+            </button>
+          </header>
+
+          <div class="card-content" #scrollableContent>
+            <!-- RÉSUMÉ GROUPÉ PAR COURS -->
+            <div class="table-container">
+              <table class="table is-fullwidth is-striped is-hoverable">
+                <thead>
+                  <tr>
+                     <tr>
+    <th rowspan="2">🎯 Cours</th>
+    <th class="has-text-centered" colspan="3">Déclarée</th>
+    <th class="has-text-centered" colspan="2">Séance</th>
+  </tr>
+  <tr>
+    <th class="has-text-centered" title="Présence déclarée">Présences déclarées 👍</th>
+    <th class="has-text-centered" title="Absence déclarée">Absences déclarées 👎</th>
+    <th class="has-text-centered" title="Non déclaré">Non déclarés ❓</th>
+    <th class="has-text-centered" title="Présence réelle">Présent à la séance 👍</th>
+    <th class="has-text-centered" title="Absence réelle">Absent à la séance 👎</th>
+  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let g of buildGroups(rider)">
+                    <td><strong>{{ g.cours }}</strong></td>
+                    <td class="has-text-centered">{{ g.declare_present }}</td>
+                    <td class="has-text-centered">{{ g.declare_absent }}</td>
+                    <td class="has-text-centered">{{ g.declare_aucun }}</td>
+                    <td class="has-text-centered">{{ g.reel_present }}</td>
+                    <td class="has-text-centered">{{ g.reel_absent }}</td>
+                  </tr>
+                  <tr *ngIf="buildGroups(rider).length === 0">
+                    <td colspan="8" class="has-text-centered">Aucune séance réalisée sur la période.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- DÉTAIL PAR COURS (séances réalisées uniquement) -->
+            <div class="scrollable-card-table">
+              <ng-container *ngFor="let g of buildGroups(rider)">
+                <h4 class="title is-6 mt-5 mb-2">📚 {{ g.cours }}</h4>
+                <table class="table is-fullwidth is-striped is-hoverable">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Date Heure (durée)</th>
+                      <th>Lieu</th>
+                      <th>Déclaré</th>
+                      <th>Réel</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let ms of g.items">
+                      <td style="cursor: pointer" (click)="GotoSeance(ms.seance.seance_id)">
+                        {{ ms.seance.libelle }}
+                      </td>
+                      <td style="cursor: pointer" (click)="GotoSeance(ms.seance.seance_id)">
+                        {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
+                        {{ ms.seance.heure_debut }} -
+                        {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
+                        ({{ ms.seance.duree_seance | dureeHHMM }})
+                      </td>
+                      <td>
+                        <span
+                          [title]="getadresse(ms.seance.lieu_id)"
+                          (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
+                          style="cursor: pointer;"
+                          >{{ ms.seance.lieu_nom }}</span
+                        >
+                      </td>
+                      <td>
+                        <ng-container [ngSwitch]="ms.statutInscription">
+                          <span *ngSwitchCase="'présent'"><i class="fas fa-thumbs-up has-text-success"></i></span>
+                          <span *ngSwitchCase="'essai'"><i class="fas fa-thumbs-up has-text-success"></i></span>
+                          <span *ngSwitchCase="'absent'"><i class="fas fa-thumbs-down has-text-danger"></i></span>
+                          <span *ngSwitchDefault><i class="fas fa-question has-text-info"></i></span>
+                        </ng-container>
+                      </td>
+                      <td>
+                       <ng-container [ngSwitch]="$any(ms)['statutPrésence']">
+  <span *ngSwitchCase="'présent'"><i class="fas fa-thumbs-up has-text-success"></i></span>
+  <span *ngSwitchCase="'absent'"><i class="fas fa-thumbs-down has-text-danger"></i></span>
+  <span *ngSwitchDefault><i class="fas fa-question has-text-info"></i></span>
+</ng-container>
+                      </td>
+                      <td>
+                        <btn *ngIf="rider.profil === 'PROF'" [type_button]="'VoirLight'" (click)="VoirMaSeance(ms.seance)"></btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </ng-container>
+            </div>
+
+            <p *ngIf="buildGroups(rider).length === 0">Pas de séances réalisées sur la période.</p>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>

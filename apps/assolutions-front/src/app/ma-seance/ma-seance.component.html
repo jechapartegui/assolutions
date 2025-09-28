@@ -192,7 +192,7 @@
                     (click)="display_personne = !display_personne">
                   <i class="fas"
                      [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{ All.length }}&nbsp;<span i18n>personnes</span>)
+                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle(All)}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
                 </h6>
 
                 <span *ngIf="display_personne">
@@ -887,7 +887,7 @@
                     (click)="display_personne = !display_personne">
                   <i class="fas"
                      [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{ All.length }}&nbsp;<span i18n>personnes</span>)
+                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle(All)}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
                 </h6>
 
                 <span *ngIf="display_personne">

@@ -22,7 +22,7 @@ import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { SuiviMailComponent } from './suivi-mail/suivi-mail.component';
 import { StockComponent } from './stock/stock.component';
 import { AdministrateursComponent } from './administrateurs/administrateurs.component';
-import { TableauDeBordComponent } from './tdb/tableau-de-bord.component';
+import { DashboardComponent } from './tdb/dashboard.component';
 import { ImportAdherentComponent } from './import-adherent/import-adherent.component';
 import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
@@ -54,7 +54,7 @@ const routes: Routes = [
   { path: 'saison', component: SaisonComponent },
   { path: 'lieu', component: LieuComponent },
   { path: 'comptabilite', component: ComptabiliteComponent },
-  { path: 'tableau-de-bord', component: TableauDeBordComponent },
+  { path: 'tableau-de-bord', component: DashboardComponent },
   { path: 'compte-bancaire', component: CompteBancaireComponent },
   { path: 'factures', component: FacturesComponent },
   { path: 'envoi-mail', component: EnvoiMailComponent },
@@ -72,7 +72,7 @@ const routes: Routes = [
   { path: 'liste-cours-public', component: CoursPage },
   { path: 'liste-seances-public', component: SeancesPage },
   {path:'menu-admin',component:MenuAdminComponent},
-  {path:'tdb',component:TableauDeBordComponent},
+  {path:'tdb',component:DashboardComponent},
 { path: 's/:slug', component: ShortLinkRedirectComponent },
 { path: 's/:code/:answer', component: ShortLinkRedirectComponent }, // legacy (facultatif)
 

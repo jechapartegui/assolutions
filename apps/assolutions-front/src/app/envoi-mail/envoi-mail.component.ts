@@ -399,7 +399,6 @@ return     this.mail_serv.SauvegarderTemplate(
     return age;
   }
 
-  ValiderFormatEmail() {}
 
 async EnvoyerTousLesMails() {
     this.uiLock = true;

@@ -720,6 +720,10 @@ openMenu(potentiel: any, ev: MouseEvent) {
     this.cdr.markForCheck?.();         // utile si OnPush
   }
 
+  getPresencePotentielle(potentiel: FullInscriptionSeance_VM[]): number {
+    return potentiel.filter(x => x.statut_inscription == InscriptionStatus_VM.PRESENT).length;
+  }
+
   /** Optionnel : ferme après avoir choisi une action */
   setStatusAndClose(status: any, potentiel: FullInscriptionSeance_VM, ev?: MouseEvent) {
     ev?.stopPropagation();

@@ -54,6 +54,7 @@ async MySeance(
     const ins = await this.inscriptionseance_serv.getRiderSeance(adherent_id, s.seance_id);
     if (ins && typeof ins.id === 'number') {
       item.inscription_id = ins.id ?? 0;
+      item.statutPrésence = ins.statutSeance;
       item.statutInscription = ins.statutInscription;
       results.push(item);
       continue;
