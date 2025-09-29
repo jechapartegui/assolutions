@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
     Injectable,
     UnauthorizedException
   } from '@nestjs/common';
@@ -20,12 +21,17 @@ import { Season } from '../../entities/saison.entity';
        ) {
     this.pepper = this.configService.get<string>('PEPPER') ?? '';
     }
-      async get(id: number) : Promise<Project> {
-        return await this.projectSer.get(id);
+      async get(id: number) : Promise<Projet_VM> {
+         const pv = await this.projectSer.get(id);
+               if (!pv) {
+                 throw new UnauthorizedException('PROJECT_NOT_FOUND');
+               }
+               //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
+               return to_Project_VM(pv);
       }
 
       async checkpsw(id:number, password:string) : Promise<boolean> {
-        const pr =  this.get(id);
+        const pr =  await this.projectSer.get(id);
         if(!pr){
           throw new UnauthorizedException('PROJECT_NOT_FOUND');
         }
@@ -48,6 +54,35 @@ import { Season } from '../../entities/saison.entity';
               throw new UnauthorizedException('INCORRECT_PASSWORD');
             }
         return to_Project_VM(pr);
+      }
+      async Add(s: Projet_VM) {
+        if (!s) {
+          throw new BadRequestException('INVALID_ITEM');
+        }
+      
+        const objet_base = toProject(s);
+         const objet_insere = await this.projectSer.create(objet_base);
+          return objet_insere.id;
+      }
+      
+      async Update(s: Projet_VM) {
+        
+        if (!s) {
+          throw new BadRequestException('INVALID_ITEM');
+        }
+      
+        const objet_base = toProject(s);
+        return this.projectSer.update(objet_base.id, objet_base);
+      }
+      
+      async RendreInactif(id:number) { 
+        const pr =  await this.projectSer.get(id);
+        if (!pr) {
+          throw new BadRequestException('INVALID_ITEM');
+        }
+        pr.isActive = false;
+
+        return this.projectSer.update(pr.id, pr);
       }
     
     }
@@ -73,4 +108,50 @@ vm.saison_active = toSaison_VM(entity.seasons.find(x => x.isActive));
 }
       return vm;
     }
+
+    // Hypothèses :
+// - Project et Projet_VM sont des classes (sinon remplace "new Project()" par un littéral).
+// - Vous avez un convertisseur de saison VM -> entity : toSeason(...) ou toSaison_Entity(...).
+//   Adaptez le nom si besoin.
+
+export function toProject(vm: Projet_VM): Project {
+  const entity = new Project();
+
+  entity.id = vm.id ?? undefined as any; // laissez undefined si création
+  entity.isActive = !!vm.actif;
+  entity.activity = (vm.activite ?? '').trim() || null;
+
+  // Adresse/contacts : on renvoie null/[] si absent pour rester cohérent
+  entity.address = vm.adresse ?? null;
+  entity.contacts = vm.contacts ?? [];
+
+  entity.color = vm.couleur ?? '#FFFFFF';
+  entity.login = vm.login ?? null;
+
+  entity.startDate = vm.date_debut ?? null;
+  entity.endDate   = vm.date_fin ?? null;
+
+  entity.language = vm.langue ?? 'FR';
+  entity.logo = vm.logo ?? null;
+  entity.name = (vm.nom ?? '').trim();
+  entity.activationToken = vm.token ?? null;
+
+  // Saison active -> seasons (unique et marquée active)
+  if (vm.saison_active) {
+    const toSeason = (globalThis as any).toSeason ?? (globalThis as any).toSaison_Entity;
+    if (typeof toSeason === 'function') {
+      const s = toSeason(vm.saison_active);
+      s.isActive = true;
+      entity.seasons = [s];
+    } else {
+      // Pas de convertisseur dispo : au moins on crée un conteneur vide
+      entity.seasons = [];
+    }
+  } else {
+    entity.seasons = []; // ou laissez undefined si votre ORM préfère
+  }
+
+  return entity;
+}
+
 

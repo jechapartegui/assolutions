@@ -1,1 +1,200 @@
-<p>projet-info works!</p>
+<!-- Informations du projet (remplace l'ancien bloc inputs adresse en double) -->
+  <ng-container *ngIf="thisProject">
+ <div class="columns page-fill">
+            <div class="column">
+              <div class="card card--scroller">
+                <header class="card-header" style="align-items: center">
+                  <p class="card-header-title">
+          <span *ngIf="thisProject.id < 1" i18n>Nouveau projet</span>
+          <span *ngIf="thisProject.id > 0">
+            <span i18n>Editer</span> : {{ thisProject.nom }} 
+            </span>
+            </p><ng-container *ngIf="id>0">
+      <btn *ngIf="!edit"
+        [type_button]="'EditerLight'" 
+        (click)="edit = !edit" 
+      ></btn>
+      <btn *ngIf="edit" (click)="Save()"
+        [type_button]="'SauvegarderLight'">
+      </btn> <btn *ngIf="edit" (click)="Cancel()"
+        [type_button]="'AnnulerLight'">
+      </btn>
+      </ng-container>
+                </header>
+              <div class="card-content" #scrollableContent>
+                <div class="content">
+            <div class="column is-full-tablet is-half-desktop">
+  <div class="box is-light">
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations du projet</h3>
+
+      <ng-container *ngIf="id > 0">
+        <btn *ngIf="!edit"
+             [type_button]="'EditerLight'"
+             (click)="edit = !edit"></btn>
+
+        <btn *ngIf="edit"
+             [disabled]="!projetValide"
+             (click)="Save()"
+             [type_button]="'SauvegarderLight'">
+        </btn>
+
+        <btn *ngIf="edit"
+             (click)="Cancel()"
+             [type_button]="'AnnulerLight'">
+        </btn>
+      </ng-container>
+    </div>
+
+    <!-- MODE EDIT -->
+    <div *ngIf="edit || id == 0; else readProjectInfo">
+      <!-- Nom -->
+      <div class="field">
+        <label class="label is-small" i18n>Nom</label>
+        <div class="control">
+          <input
+            type="text"
+            [(ngModel)]="thisProject.nom"
+            (ngModelChange)="CheckProjet()"
+            [ngClass]="!rNom.key ? 'input is-danger is-small' : 'input is-small'"/>
+        </div>
+        <p *ngIf="!rNom.key" class="is-small help is-danger">{{ rNom.value }}</p>
+      </div>
+
+      <!-- Activité -->
+      <div class="field">
+        <label class="label is-small" i18n>Activité</label>
+        <div class="control">
+          <textarea
+            class="textarea is-small"
+            [(ngModel)]="thisProject.activite"
+            (ngModelChange)="CheckProjet()"
+            placeholder="ex. club de roller, association sportive..."
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Couleur -->
+      <div class="field">
+        <label class="label is-small" i18n>Couleur (thème)</label>
+        <div class="control is-flex is-align-items-center" style="gap:.5rem">
+          <input
+            type="color"
+            [(ngModel)]="thisProject.couleur"
+            (ngModelChange)="CheckProjet()"
+            class="input is-small"
+            style="width: 3rem; padding: 0; border: none; background: transparent;" />
+          <input
+            type="text"
+            [(ngModel)]="thisProject.couleur"
+            (ngModelChange)="CheckProjet()"
+            [ngClass]="!rCouleur.key ? 'input is-danger is-small' : 'input is-small'"
+            placeholder="#FFFFFF"/>
+        </div>
+        <p *ngIf="!rCouleur.key" class="is-small help is-danger">{{ rCouleur.value }}</p>
+      </div>
+
+      <!-- Logo (URL) + aperçu si fourni -->
+      <div class="field">
+        <label class="label is-small" i18n>Logo (URL)</label>
+        <div class="control">
+          <input
+            type="text"
+            [(ngModel)]="thisProject.logo"
+            (ngModelChange)="CheckProjet()"
+            class="input is-small"
+            placeholder="https://.../logo.png"/>
+        </div>
+        <figure *ngIf="thisProject.logo" class="image mt-2" style="max-width: 160px;">
+          <img [src]="thisProject.logo" alt="logo" style="object-fit: contain"/>
+        </figure>
+      </div>
+
+      <!-- Champs non modifiables (readonly) -->
+      <div class="columns is-multiline mt-4">
+        <div class="column is-half">
+          <p class="is-size-7 has-text-grey" i18n>Actif</p>
+          <p class="has-text-weight-medium">
+            <span class="tag" [class.is-success]="thisProject.actif" [class.is-danger]="!thisProject.actif">
+              <span *ngIf="thisProject.actif" i18n>Oui</span>
+              <span *ngIf="!thisProject.actif" i18n>Non</span>
+            </span>
+          </p>
+        </div>
+        <div class="column is-half">
+          <p class="is-size-7 has-text-grey" i18n>Login</p>
+          <p class="has-text-weight-medium">{{ thisProject.login || '' }}</p>
+        </div>
+        <div class="column is-half">
+          <p class="is-size-7 has-text-grey" i18n>Date de début</p>
+          <p class="has-text-weight-medium">{{ thisProject.date_debut | date : 'shortDate' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE LECTURE -->
+    <ng-template #readProjectInfo>
+      <p><strong i18n>Nom : </strong>{{ thisProject.nom }}</p>
+      <p><strong i18n>Activité : </strong>{{ thisProject.activite || '' }}</p>
+      <p><strong i18n>Couleur : </strong>
+        <span class="tag is-light" style="display:inline-flex; align-items:center; gap:.5rem">
+          <span style="width:1rem; height:1rem; border-radius:3px; display:inline-block;"
+                [style.background]="thisProject.couleur || '#FFFFFF'"></span>
+          {{ thisProject.couleur || '#FFFFFF' }}
+        </span>
+      </p>
+      <p><strong i18n>Logo : </strong>
+        <ng-container *ngIf="thisProject.logo; else nologo">
+          <img [src]="thisProject.logo" alt="logo" style="max-height:48px; object-fit:contain"/>
+        </ng-container>
+        <ng-template #nologo><span i18n>(non renseigné)</span></ng-template>
+      </p>
+      <hr class="my-3">
+      <p><strong i18n>Actif : </strong>
+        <span class="tag" [class.is-success]="thisProject.actif" [class.is-danger]="!thisProject.actif">
+            <span *ngIf="thisProject.actif" i18n>Oui</span>
+              <span *ngIf="!thisProject.actif" i18n>Non</span>
+        </span>
+      </p>
+      <p><strong i18n>Login : </strong>{{ thisProject.login || ''}}</p>
+      <p><strong i18n>Date de début : </strong>{{ thisProject.date_debut | date : 'shortDate' }}</p>
+    </ng-template>
+  </div>
+</div>
+  <div class="column is-full-tablet is-half-desktop">                    <app-address 
+                                 [id]="thisProject.id"
+                                 [thisAdresse]="thisProject.adresse"
+                                 [Regles]="(GlobalService.getRegleProjetAdresse())"
+                                 (InfoAdresseChange)="SaveAdresse($event)"
+                                 (valid)="valid_adresse($event)"></app-address>                    
+                  </div>
+                  <!-- Contacts -->
+                  <div class="column is-full-tablet is-half-desktop">
+                    <app-contact-item [Contacts]="thisProject.contacts"
+                                      [Regles]="(GlobalService.getRegleProjetContact())"
+                                      [Titre]="titre_contact"
+                                      (ContactChange)="PreSave()"
+                                      (valid)="valid_contact($event)"></app-contact-item>
+                  </div>                 
+                </div>
+</div>
+              <!-- Footer (actions desktop) -->
+ <footer class="card-footer">
+  <span class="fullscreen">
+                  <div class="columns">
+                    <div class="column">
+          <div class="buttons">
+            <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>          
+            <btn *ngIf="thisProject.id < 1"
+                 [disabled]="!projetValide || !AdresseValide || !ContactValide"
+                 [type_button]="'SauvegarderSmall'"
+                 (click)="Save()"></btn>
+          </div>
+        </div>
+      </div>
+      </span>
+      </footer>
+      </div>
+      </div>
+      </div>
+      </ng-container>

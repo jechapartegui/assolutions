@@ -23,11 +23,13 @@ export class CoursController {
       return this.cours_serv.GetAllLight(saison_id);
     }
   
+        @UseGuards(PasswordGuard)
     @Put('add')
     async Add(@Headers('projectid') projectId: number,@Body() s: any) {
       return this.cours_serv.Add(s, projectId);
     }
     
+        @UseGuards(PasswordGuard)
     @Put('update')
     async Update(@Headers('projectid') projectId: number,@Body() s: any) {
       return this.cours_serv.Update(s, projectId);

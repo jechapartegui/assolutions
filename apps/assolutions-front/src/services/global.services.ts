@@ -4,7 +4,7 @@ import {  catchError, firstValueFrom, timeout } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/lib/autres.interface';
-import { ReglesFormulaire } from '../class/regles';
+import { ReglesAdresse, ReglesContact, ReglesFormulaire } from '../class/regles';
 import { REGLES_PAR_DEFAUT } from '../assets/regles.const';
 import { ItemContact } from '@shared/lib/personne.interface';
 import { AppStore } from '../app/app.store';
@@ -20,6 +20,31 @@ export class GlobalService {
 
   getRegles(): ReglesFormulaire {
     return this.regles;
+  }
+
+   getRegleProjetAdresse(): ReglesAdresse {
+    return {
+    Street_min: -1,
+    Street_max: -1,
+    Street_obligatoire: true,
+    PostCode_min: 4,
+    PostCode_max: -1,
+    PostCode_obligatoire: true,
+    City_min: -1,
+    City_max: -1,
+    City_obligatoire: true,
+    Adresse_obligatoire: true
+    };
+  }
+
+  getRegleProjetContact(): ReglesContact {
+    return {
+     nb_contact_min: 2,
+    nb_contact_max: 5,  
+    verifier_format: true,
+    mail_obligatoire: true,
+    tel_obligatoire: true
+    };
   }
 
   // plus tard : méthode pour charger depuis JSON

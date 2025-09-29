@@ -15,8 +15,8 @@ export interface ReglesFormulaire {
   Cours_DateLieu: ReglesDateLieu;
   Cours_Parametres: ReglesSeance;
   Seance_Parametres: ReglesSeance;
-
 }
+
 export interface ReglesPersonne {
   Nom_min: number;
   Nom_max: number;

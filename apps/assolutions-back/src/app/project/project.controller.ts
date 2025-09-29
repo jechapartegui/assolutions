@@ -1,4 +1,4 @@
-import {  Body, Controller, Headers, Post, UseGuards } from '@nestjs/common';
+import {  Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { Projet_VM} from "@shared/lib/projet.interface";
 import { ProjetService } from './project.service';
@@ -23,7 +23,28 @@ export class ProjetController {
     return this.projserv.login(email, password);
   }
 
+    @UseGuards(PasswordGuard)
+       @Get('get/:id')
+       async Get(@Param() { id }: { id: number }) {
+         return this.projserv.get(id);
+       }
 
+    @Put('add')
+    async Add(@Body() s: any) {
+      return this.projserv.Add(s);
+    }
+    
+    @Put('update')
+    async Update(@Body() s: any) {
+      return this.projserv.Update(s);
+    }
+    
+    
+        @UseGuards(PasswordGuard)
+    @Post('delete')
+    async Delete(@Body() body: { id: number}) {
+      return this.projserv.RendreInactif(body.id);
+    }
   
  
 }

@@ -41,7 +41,7 @@ async Mail(project_id: number, MI: MailInput) {
   if (project_id && project_id > 0) {
     const projet = await this.projetserv.get(project_id);
     email = projet.login;
-    name = projet.name;
+    name = projet.nom;
   }
   // await ici pour propager proprement erreurs + logs synchrones avec la requête
   return await this.queue(MI, email, name, project_id);

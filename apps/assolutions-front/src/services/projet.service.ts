@@ -7,6 +7,7 @@ import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Groupe_VM } from '@shared/lib/groupe.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
 import { Projet_VM } from '@shared/index';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -17,25 +18,10 @@ export class ProjetService {
   constructor(public global: GlobalService) {
   }
   url = environment.maseance;
-  public Get(id: number): Promise<projet> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get",
-      id: id
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: projet) => {
 
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
+
+
   public GetActiveSaison(): Promise<Saison_VM> {
       this.url = environment.maseance + 'api/saison/active_saison/';
   
@@ -100,92 +86,54 @@ export class ProjetService {
         });
     }
   
-  public GetAll(): Promise<projet[]> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_all"
-    };
 
-    return this.global.POST(this.url, body)
-      .then((response: projet[]) => {
+
+
+  public Get(id:number): Promise<Projet_VM> {
+    this.url = environment.maseance + 'api/project/get/' + id;
+    //  this.url = this.url + "login.php";
+   
+
+    return this.global.GET(this.url)
+      .then((response: Projet_VM) => {
         return response;
       })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
       });
   }
-  public GetAllLight(): Promise<KeyValuePair[]> {
-    // si pas de compte rattacher, renvoyer 0 en compte avec mail : NO_ACCOUNT
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "get_all_light"
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: KeyValuePair[]) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
   
+  public Add(l:Projet_VM): Promise<Projet_VM> {
+  this.url = environment.maseance + 'api/project/add';
 
-
-  public Create(projet: projet, compte: number): Promise<number> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "create",
-      projet: projet,
-      compte_id: compte
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-
-
-
-  public Add(projet: projet, groupes: Groupe_VM[], saisons: Saison_VM[], compte_id: number, ll: Lieu_VM[]): Promise<number> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "add",
-      projet: projet,
-      groupes: groupes,
-      saisons: saisons,
-      lieu: ll,
-      compte_id: compte_id,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: number) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Activate(token: string): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "activate",
-      token: token,
+  return this.global.PUT(this.url, l)
+    .then((response: number) => {
+      l.id = response;
+      return l;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+public Update(l:Projet_VM): Promise<boolean> {
+  this.url = environment.maseance + 'api/project/update';
+  return this.global.PUT(this.url, l)
+    .then((response: boolean) => {
+      return response;
+    })
+    .catch(error => {
+      // Gestion de l'erreur
+      return Promise.reject(error);
+    });
+}
+public Delete(id:number) {
+  this.url = environment.maseance + 'api/project/delete/';
+const body = {
+      id: id, 
     };
 
     return this.global.POST(this.url, body)
@@ -193,76 +141,8 @@ export class ProjetService {
         return response;
       })
       .catch(error => {
-        // Gestion de l'erreur
         return Promise.reject(error);
       });
-  }
-  public Update(projet: projet): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "update",
-      projet: projet,
-    };
+}
 
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public UpdateInfo(projet: projet): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "update_info",
-      projet: projet,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public UpdateParam(projet: projet): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "update_param",
-      projet: projet,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
-  public Delete(id: number): Promise<boolean> {
-    this.url = environment.maseance + 'maseance/projet_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "delete",
-      id: id,
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        // Gestion de l'erreur
-        return Promise.reject(error);
-      });
-  }
 }
