@@ -40,24 +40,24 @@ export class GroupeService {
       return [];
       }
     return gr.map((x) => { 
-     return new Groupe_VM(x.id, x.name, x.saisonId, x.whatsapp);
+     return toGroupe_VM(x);
     });
   }
 
-async add(s: KeyValuePair, seasonId :number):Promise<number> {
+async add(s: Groupe_VM):Promise<number> {
     if (!s) {
       throw new BadRequestException('INVALID_GROUP');
     }
-    const objet_base = toGroup(s, seasonId);
+    const objet_base = toGroup(s);
   
     const objet_insere = await this.groupe_serv.create(objet_base);
     return objet_insere.id;
   }
-  async update(s: KeyValuePair, seasonId :number) {
+  async update(s: Groupe_VM) {
        if (!s) {
       throw new BadRequestException('INVALID_GROUP');
     }
-    const objet_base = toGroup(s, seasonId);
+    const objet_base = toGroup(s);
   
      await this.groupe_serv.update(objet_base.id, objet_base);
   
@@ -93,10 +93,24 @@ async add(s: KeyValuePair, seasonId :number):Promise<number> {
   }
 }
 
-export function toGroup(v:KeyValuePair,seasonId:number):Group{
+export function toGroup(v:Groupe_VM):Group{
   const entity = new Group();
-  entity.id = Number(v.key);
-  entity.name = v.value;
-  entity.saisonId=seasonId;
+  entity.id = Number(v.id);
+  entity.name = v.nom;
+  entity.saisonId=v.saison_id;
+  entity.whatsapp=v.whatsapp;
+  entity.visible = v.prive;
   return entity;
 }
+
+export function toGroupe_VM(entity:Group):Groupe_VM{
+  const vm = new Groupe_VM();
+  vm.id = entity.id;
+  vm.nom = entity.name;
+  vm.saison_id=entity.saisonId;
+  vm.whatsapp=entity.whatsapp;
+  vm.prive=entity.visible;
+  return vm;
+}
+
+

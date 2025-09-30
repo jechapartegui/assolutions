@@ -70,13 +70,9 @@ export class GroupeService {
       return Promise.reject(error);
     });
 }
-public Update(gr:KeyValuePair, saison_id:number =0): Promise<boolean> {
+public Update( gr: Groupe_VM): Promise<boolean> {
   this.url = environment.maseance + 'api/groupe/update';
-if(saison_id ===0){
-    saison_id = this.store.saison_active().id
-  }
  const l = {
-    saison_id: saison_id,
     gr: gr
   };
   return this.global.PUT(this.url, l)

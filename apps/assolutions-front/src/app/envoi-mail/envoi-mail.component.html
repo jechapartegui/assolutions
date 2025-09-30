@@ -70,6 +70,14 @@
                       class="button is-primary is-small is-light btn-mobile btn-elevated">
                 <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Convocation à un événement</span>
               </button>
+              <button type="button" (click)="GoToParam('bienvenue')"
+                      class="button is-primary is-small is-light btn-mobile btn-elevated">
+                <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Mail de bienvenue</span>
+              </button>
+              <button type="button" (click)="GoToParam('serie_seance')"
+                      class="button is-primary is-small is-light btn-mobile btn-elevated">
+                <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Série de séances</span>
+              </button>
 
               <button type="button" (click)="Libre()"
                       class="button is-primary is-small is-light btn-mobile btn-elevated">
@@ -82,7 +90,7 @@
         <!-- ÉTAPE 2 — Paramétrage -->
         <ng-container *ngIf="vue('PARAMETRE')">
           <div *ngIf="ouvert_param" class="content">
-            <ng-container *ngIf="typemail !== 'libre'">
+            <ng-container *ngIf="typemail !== 'libre' && typemail !== 'bienvenue'">
               <div class="columns is-multiline is-variable is-3">
                 <div class="column is-full-tablet is-half-desktop">
                   <div class="field">
@@ -104,10 +112,11 @@
                 </div>
               </div>
             </ng-container>
-            <ng-container *ngIf="(typemail === 'annulation' || typemail === 'convocation') && seance_periode && seance_periode.length>0">
+            <ng-container *ngIf="(typemail === 'annulation' || typemail === 'convocation' || typemail === 'serie_seance') && seance_periode && seance_periode.length>0">
               <div class="field">
                 <label class="label"><span *ngIf="typemail === 'annulation'" i18n>Séance annulée</span>
-                <span *ngIf="typemail === 'convocation'" i18n>Convocation séance</span></label> 
+                <span *ngIf="typemail === 'convocation'" i18n>Convocation séance</span>
+                <span *ngIf="typemail === 'serie_seance'" i18n>Séance à ajouter</span></label> 
                 <div class="select is-fullwidth">
                   <select id="seance_annulee" style="font-size: smaller" [(ngModel)]="seance_annul_convoc">
                     <ng-container *ngFor="let pr of seance_periode">

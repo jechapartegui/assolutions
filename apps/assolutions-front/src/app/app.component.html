@@ -135,11 +135,11 @@
             </a>
               <a
                 [class]="
-                 store.selectedMenu()=== 'FACTURE'
+                 store.selectedMenu()=== 'PROJETMAIL'
                     ? 'navbar-item is-selected'
                     : 'navbar-item'
                 "
-                (click)="store.updateSelectedMenu('FACTURE')"
+                (click)="store.updateSelectedMenu('PROJETMAIL')"
                 [routerLink]="['/projet-mail']"
                 i18n
               >

@@ -18,6 +18,12 @@ export class MailProject {
     @Column({ type: 'text' })
   mail_essai!: string;
 
+    @Column({ type: 'text', nullable: true, default: '' })
+  mail_bienvenue!: string;
+
+    @Column({ type: 'text', nullable: true, default: '' })
+  mail_serie_seance!: string;
+
     @Column({ type: 'text' })
   mail_vide!: string;
 
@@ -32,5 +38,9 @@ export class MailProject {
   
    @Column({ type: 'varchar', length:100 })
   sujet_essai!: string;
+   @Column({ type: 'varchar', length:100, default: '' })
+  sujet_serie_seance!: string;
+   @Column({ type: 'varchar', length:100, default: '' })
+  sujet_bienvenue!: string;
 
 }

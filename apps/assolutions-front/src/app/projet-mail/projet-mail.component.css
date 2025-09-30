@@ -1,1 +1,30 @@
 
+/* réutilise le pattern lock overlay comme envoi-mail */ /* :contentReference[oaicite:2]{index=2} */
+.card.is-relative { position: relative; }
+
+.ui-lock-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  pointer-events: all;
+}
+
+.ui-lock-panel {
+  display: inline-flex;
+  align-items: center;
+  padding: .75rem 1rem;
+  border-radius: .75rem;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  font-weight: 600;
+}
+
+.input--dense {
+  height: 2.25rem;
+  font-size: .9rem;
+}

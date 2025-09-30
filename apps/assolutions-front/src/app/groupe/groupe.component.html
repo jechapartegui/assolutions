@@ -218,39 +218,52 @@
         *ngIf="liste_groupe && liste_groupe.length > 0"
       >
         <div class="box is-light" *ngIf="groupe">
-          <div
-            class="is-flex is-justify-content-space-between is-align-items-center mb-3"
-          >
-            <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold">
-              {{ groupe.nom }} ({{ countAdherents(groupe.id) }}&nbsp;<span i18n
-                >adhérents</span
-              >)
-            </h3>
-            <button
-              (click)="
-                groupe.display
-                  ? (groupe.display = false)
-                  : (groupe.display = true)
-              "
-              class="card-header-icon"
-              aria-label="more options"
-            >
-              <span class="icon">
-                <svg *ngIf="!groupe.display" width="20" height="20">
-                  <use
-                    xlink:href=".\assets\liste.svg#chevron-up"
-                    style="fill: blue"
-                  ></use>
-                </svg>
-                <svg *ngIf="groupe.display" width="20" height="20">
-                  <use
-                    xlink:href=".\assets\liste.svg#chevron-down"
-                    style="fill: blue"
-                  ></use>
-                </svg>
-              </span>
-            </button>
-          </div>
+<div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+  <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold">
+    {{ groupe.nom }} ({{ countAdherents(groupe.id) }} <span i18n>adhérents</span>)
+  </h3>
+
+  <div class="is-flex is-align-items-center" style="gap:.75rem">
+    <!-- Champ WhatsApp: update à chaque saisie -->
+    <input
+      class="input is-small"
+      style="max-width: 260px"
+      type="text"
+      i18n-placeholder
+      placeholder="Lien WhatsApp"
+      [(ngModel)]="groupe.whatsapp"
+      (ngModelChange)="updateWhatsapp(groupe)"
+    />
+
+    <!-- Toggle privé/public -->
+    <label class="checkbox is-flex is-align-items-center" style="gap:.4rem">
+      <input
+        type="checkbox"
+        [(ngModel)]="groupe.prive"
+        (ngModelChange)="updatePrive(groupe, $event)"
+      />
+      <span *ngIf="!groupe.prive" i18n>Public</span>
+      <span *ngIf="groupe.prive" i18n>Privé</span>
+    </label>
+
+    <!-- Bouton d’ouverture/fermeture -->
+    <button
+      (click)="groupe.display = !groupe.display"
+      class="card-header-icon"
+      aria-label="more options"
+    >
+      <span class="icon">
+        <svg *ngIf="!groupe.display" width="20" height="20">
+          <use xlink:href="./assets/liste.svg#chevron-up" style="fill: blue"></use>
+        </svg>
+        <svg *ngIf="groupe.display" width="20" height="20">
+          <use xlink:href="./assets/liste.svg#chevron-down" style="fill: blue"></use>
+        </svg>
+      </span>
+    </button>
+  </div>
+</div>
+
           <div class="columns is-vcentered" *ngIf="groupe.display">
             <div class="column is-12">
               <div class="tags is-small">

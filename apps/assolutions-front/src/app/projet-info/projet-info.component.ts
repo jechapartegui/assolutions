@@ -4,6 +4,8 @@ import { AppStore } from '../app.store';
 import { Router } from '@angular/router';
 import { ProjetService } from '../../services/projet.service';
 import { GlobalService } from '../../services/global.services';
+import { ErrorService } from '../../services/error.service';
+import { HttpErrorResponse } from '@angular/common/module.d-yNBsZ8gb';
 
 @Component({
   standalone: false,
@@ -17,6 +19,7 @@ ContactValide: boolean;
 titre_contact: string = "Contact principal";
 AdresseValide: boolean;
 projetValide: boolean;
+action: string = "";
 edit: boolean = false;
 @Input() id: number;
 
@@ -36,13 +39,15 @@ edit: boolean = false;
     this.proj_serv.Get(this.store.projet().id).then(res=>{
       this.id = this.store.projet().id;
       this.thisProject=res;
+      this.CheckProjet();
     });
   }  
 }
 
-PreSave() {
-}
-SaveAdresse($event: Adresse) {
+SaveAdresse(thisAdresse :Adresse){
+    this.thisProject.adresse = thisAdresse;
+    this.Save();
+
 }
 // Règles simples de validation
 rNom = { key: true, value: '' };
@@ -67,8 +72,24 @@ valid_adresse(ok: boolean) { this.AdresseValide = ok; }
 valid_contact(ok: boolean) { this.ContactValide = ok; }
 
 Save() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Sauvegarder le projet`;
+    this.CheckProjet();
   if (!this.projetValide || !this.AdresseValide || !this.ContactValide) return;
   // ... map VM -> Entity (toProject), call service, etc.
+  this.proj_serv.Update(this.thisProject).then(res => {
+   if(res){
+    this.edit = false;
+      let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+   } else {
+      let o = errorService.CreateError(this.action, $localize`Erreur inconnue`);
+      errorService.emitChange(o);
+   }
+   }).catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
 }
 
 Cancel() {

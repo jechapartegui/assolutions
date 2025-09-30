@@ -45,7 +45,7 @@ export class GroupeComponent implements OnInit {
 
       this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {
 
-        this.liste_groupe = result.map(g => new Groupe_VM(Number(g.id), g.nom, this.store.saison_active().id, ""));
+        this.liste_groupe = result;
         this.adhserv.GetAdherentAdhesion(this.store.saison_active().id).then((riders) => {
          riders.forEach(p => Personne_VM.bakeLibelle(p));
           this.liste_adherent = riders.filter(x => x.inscriptionsSaison && x.inscriptionsSaison.length > 0);
@@ -119,7 +119,14 @@ export class GroupeComponent implements OnInit {
       this.groupeserv.Add(    g   
       ).then((id) => {
         g.key = id;
-        const newGroupe = new Groupe_VM(id,this.nom_groupe, this.store.saison_active().id, "");
+        const newGroupe = new Groupe_VM();
+          newGroupe.prive = false;
+          newGroupe.display = true;
+          newGroupe.whatsapp = "";  
+          newGroupe.saison_id = this.store.saison_active().id;
+          newGroupe.id = id;
+          newGroupe.nom = this.nom_groupe;
+
         this.liste_groupe.push(newGroupe);
         let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
@@ -227,7 +234,21 @@ export class GroupeComponent implements OnInit {
       errorService.emitChange(o);
     })
   }
+updateWhatsapp(g: Groupe_VM) {
+  this.groupeserv.Update(g).then().catch((error) => {
+    let o = ErrorService.instance.CreateError($localize`Mise à jour du lien WhatsApp`, error);
+    ErrorService.instance.emitChange(o);
+  });
+}
 
+updatePrive(g: Groupe_VM, value: boolean) {
+  // Update immédiat du flag privé/public
+  g.prive = value;
+  this.groupeserv.Update(g).then().catch((error) => {
+    let o = ErrorService.instance.CreateError($localize`Mise à jour du champ privé`, error);
+    ErrorService.instance.emitChange(o);
+  });
+}
 
 
 }

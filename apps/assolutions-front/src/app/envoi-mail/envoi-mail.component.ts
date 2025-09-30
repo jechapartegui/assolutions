@@ -17,7 +17,7 @@ import { formatDDMMYYYY } from '../ma-seance/ma-seance.component';
 
 type Etape = 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON';
 type Audience  =  'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT';
-type Typemail = 'relance' | 'annulation' | 'convocation' | 'libre'| 'essai';
+type Typemail = 'relance' | 'annulation' | 'convocation' | 'libre'| 'essai' | 'bienvenue' | 'serie_seance';
 @Component({
   standalone: false,
   selector: 'app-envoi-mail',

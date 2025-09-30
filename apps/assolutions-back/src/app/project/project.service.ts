@@ -137,19 +137,6 @@ export function toProject(vm: Projet_VM): Project {
   entity.activationToken = vm.token ?? null;
 
   // Saison active -> seasons (unique et marquée active)
-  if (vm.saison_active) {
-    const toSeason = (globalThis as any).toSeason ?? (globalThis as any).toSaison_Entity;
-    if (typeof toSeason === 'function') {
-      const s = toSeason(vm.saison_active);
-      s.isActive = true;
-      entity.seasons = [s];
-    } else {
-      // Pas de convertisseur dispo : au moins on crée un conteneur vide
-      entity.seasons = [];
-    }
-  } else {
-    entity.seasons = []; // ou laissez undefined si votre ORM préfère
-  }
 
   return entity;
 }

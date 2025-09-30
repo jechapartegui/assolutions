@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nes
 import { GroupeService } from "./groupe.service";
 import { PasswordGuard } from "../guards/password.guard";
 import type { KeyValuePair } from "@shared/lib/autres.interface";
+import { Groupe_VM } from "@shared/lib/groupe.interface";
 
 @Controller('groupe')
 export class GroupeController {
@@ -21,15 +22,15 @@ export class GroupeController {
      
   
     @Put('add')
-    async Add(@Body() body: { saison_id: number; gr: KeyValuePair }) {
-      const { saison_id, gr } = body;
-      return this.groupe_serv.add(gr, saison_id);
+    async Add(@Body() body: { gr: Groupe_VM }) {
+      const { gr } = body;
+      return this.groupe_serv.add(gr);
     }
 
 @Put('update')
-async Update(@Body() body: { saison_id: number; gr: KeyValuePair }) {
-  const { saison_id, gr } = body;
-  return this.groupe_serv.update(gr, saison_id);
+async Update(@Body() body: { gr: Groupe_VM })  {
+      const { gr } = body;
+  return this.groupe_serv.update(gr);
 }
 
         @UseGuards(PasswordGuard)
