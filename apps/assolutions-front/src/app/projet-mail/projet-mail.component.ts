@@ -4,7 +4,7 @@ import { ErrorService } from '../../services/error.service';
 import { MailService } from '../../services/mail.service';
 
 // Types connus dans ton app d’envoi (les mêmes + "essai")
-type TemplateType = 'relance' | 'annulation' | 'convocation' | 'bienvenue' | 'serie_seance' | 'essai' | 'libre';
+export type TemplateType = 'relance' | 'annulation' | 'convocation' | 'bienvenue' | 'serie_seance' | 'essai' | 'libre';
 
 @Component({
   standalone: false,

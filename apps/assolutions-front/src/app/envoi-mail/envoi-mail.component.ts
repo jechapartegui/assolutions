@@ -1,23 +1,25 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { MailData } from '../../class/mail';
 import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
 import { MailService } from '../../services/mail.service';
 import { ProjetService } from '../../services/projet.service';
 import { SeancesService } from '../../services/seance.service';
-import { KeyValuePair, KeyValuePairAny } from '@shared/lib/autres.interface';
+import { KeyValuePairAny } from '@shared/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Seance_VM } from '@shared/lib/seance.interface';
 import { AppStore } from '../app.store';
-import { Groupe_VM } from '@shared/index';
+import { Groupe_VM } from '@shared/lib/groupe.interface';
+import { Personne_VM } from '@shared/lib/personne.interface';
 import { formatDDMMYYYY } from '../ma-seance/ma-seance.component';
+import { TemplateType } from '../projet-mail/projet-mail.component';
+import { InscriptionSeanceService } from '../../services/inscription-seance.service';
+import { InscriptionStatus_VM } from '@shared/index';
 
 type Etape = 'SELECTION_MAIL' | 'PARAMETRE' | 'AUDIENCE' | 'BROUILLON';
 type Audience  =  'TOUS' | 'GROUPE' | 'SEANCE' | 'ADHERENT';
-type Typemail = 'relance' | 'annulation' | 'convocation' | 'libre'| 'essai' | 'bienvenue' | 'serie_seance';
 @Component({
   standalone: false,
   selector: 'app-envoi-mail',
@@ -25,6 +27,7 @@ type Typemail = 'relance' | 'annulation' | 'convocation' | 'libre'| 'essai' | 'b
   styleUrls: ['./envoi-mail.component.css'],
 })
 export class EnvoiMailComponent implements OnInit {
+
   // === UI lock additions (non-breaking) ===
   uiLock: boolean = false;
 
@@ -63,11 +66,12 @@ export class EnvoiMailComponent implements OnInit {
   liste_adherent: Adherent_VM[] = [];
   ListeUserSelectionne: Adherent_VM[] = [];
   adherent_selectionne: Adherent_VM;
+  liste_seance_serie:Seance_VM[] = [];
 
   seance_periode: Seance_VM[] = [];
   seance_selectionnee: Seance_VM;
   seance_annul_convoc: Seance_VM;
-
+sujet_serie_seance:string="";
 
   mail_a_generer: string;
   subject_mail_a_generer: string;
@@ -78,7 +82,7 @@ export class EnvoiMailComponent implements OnInit {
 
   etape: Etape = 'SELECTION_MAIL';
   audience:Audience = "TOUS";
-  typemail:Typemail;
+  typemail:TemplateType;
   adherent_generer_vue:KeyValuePairAny = null;
   ListeGeneree:KeyValuePairAny[] = null;
   
@@ -90,6 +94,7 @@ export class EnvoiMailComponent implements OnInit {
     public mail_serv: MailService,
     public proj_serv: ProjetService,
     public GlobalService: GlobalService,
+    public inscriptionserv: InscriptionSeanceService,
     public store: AppStore
   ) {}
 
@@ -134,7 +139,7 @@ canGoTo(step: Etape): boolean {
   }
 }
 
-  GoToParam(type: Typemail) {
+  GoToParam(type: TemplateType) {
     const auj = new Date();
     const nextMonth = new Date(auj);
     this.date_debut = this.formatDate(auj);
@@ -164,9 +169,7 @@ canGoTo(step: Etape): boolean {
   DATE_FIN: formatDDMMYYYY(this.date_fin),
   };
 } 
-
-
-
+  
     this.adh_serv.GetAdherentAdhesion(this.store.saison_active().id).then(list => {
                     this.liste_adherent = list.map(data =>
   Object.assign(new Adherent_VM(), data)
@@ -218,9 +221,7 @@ if(this.typemail === 'libre' || this.typemail === 'relance'){
   this.etape = 'AUDIENCE';
   this.audience = 'TOUS';
   this.ouvert_param = false;
-  this.ouvert_audience = true;
-
-  
+  this.ouvert_audience = true;  
 }
 
     this.uiLock = false;
@@ -239,11 +240,45 @@ ValiderSeance() {
         this.variables = {
           SEANCE_ID: this.seance_selectionnee.seance_id,
         };
-        console.log(this.variables);
     
     this.uiLock = false;
 }
+ValiderSerieSeance() {
+    this.uiLock = true;
 
+  if (!this.liste_seance_serie) return;
+  
+  this.etape = 'AUDIENCE';
+        this.audience = 'GROUPE';
+        this.ouvert_param = false;
+        this.ouvert_audience = true;
+        this.variables = {
+          SERIE_SEANCE: this.liste_seance_serie.map(x => x.seance_id).join(', '),
+          CHAMPIONNAT: this.sujet_serie_seance.trim()
+        };
+    
+    this.uiLock = false;
+}
+RemoveSeanceSerie(_t146: Seance_VM) {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Séance retirée`;
+  this.liste_seance_serie = this.liste_seance_serie.filter(x => x.seance_id !== _t146.seance_id);
+  let o = errorService.OKMessage(this.action);
+  errorService.emitChange(o); 
+}
+AjouterSeanceSerie() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Séance ajoutée`;
+  if (!this.seance_annul_convoc) return;
+  if (!this.liste_seance_serie.find(x => x.seance_id === this.seance_annul_convoc.seance_id)) {
+    this.liste_seance_serie.push(this.seance_annul_convoc);
+    let o = errorService.OKMessage(this.action);
+    errorService.emitChange(o);
+  } else {
+    let o = errorService.CreateError(this.action, $localize`Cette séance a déjà été ajoutée.`);
+    errorService.emitChange(o);}
+  
+}
 
 
 AddUsers(inscrit: boolean = false) {
@@ -258,17 +293,54 @@ AddUsers(inscrit: boolean = false) {
 }
 
 
-  AddGroupe() {
-    if (!this.ListeUserSelectionne) this.ListeUserSelectionne = [];
-    if (this.groupe_selectionne) {
-      const list = this.liste_adherent.filter(x =>
-        x.inscriptionsSaison?.[0]?.groupes?.map(g => g.id).includes(this.groupe_selectionne)
-      );
-      // éviter les doublons
-      const existing = new Set(this.ListeUserSelectionne.map(p => p.id));
-      this.ListeUserSelectionne.push(...list.filter(p => !existing.has(p.id)));
-    }
+AddGroupe() {
+  // 0) Sécurité
+  if (!this.liste_adherent) return;
+
+  // 1) Normaliser l'id du groupe sélectionné
+  const gid = this._selectedGroupId(this.groupe_selectionne);
+  if (gid == null) return;
+
+  // 2) Saison active (si pas de saison, on ne filtre pas sur la saison)
+  const saisonActiveId = this.store?.saison_active?.()?.id ?? null;
+
+  // 3) Filtre : adhérents qui ont une inscription sur la saison (si connue)
+  //    ET qui contiennent le groupe sélectionné
+  const list = this.liste_adherent.filter((x: any) => {
+    const inscriptions = Array.isArray(x?.inscriptionsSaison) ? x.inscriptionsSaison : [];
+    return inscriptions.some((ins: any) => {
+      const saisonOK = saisonActiveId == null || ins?.saison_id === saisonActiveId;
+      if (!saisonOK) return false;
+
+      const groupes = Array.isArray(ins?.groupes) ? ins.groupes : [];
+      // groupes peut être [{id: number}, ...] OU [number, ...]
+      return groupes.some((g: any) => (g?.id ?? g) === gid);
+    });
+  });
+
+  // 4) Fusion sans doublons (clé = id adhérent)
+  const current = Array.isArray(this.ListeUserSelectionne) ? this.ListeUserSelectionne : [];
+  const existing = new Set(current.map((p: any) => p?.id));
+  const toAdd = list.filter((p: any) => !existing.has(p?.id));
+
+  // 5) Remplacer la référence (OnPush-friendly)
+  this.ListeUserSelectionne = [...current, ...toAdd];
+}
+
+// Helper : normaliser l'id du groupe sélectionné
+private _selectedGroupId(sel: any): number | null {
+  if (sel == null) return null;
+  if (typeof sel === 'number') return sel;
+  if (typeof sel === 'string') {
+    const n = Number(sel);
+    return Number.isFinite(n) ? n : null;
   }
+  if (typeof sel === 'object' && sel.id != null) {
+    return typeof sel.id === 'number' ? sel.id : Number(sel.id);
+  }
+  return null;
+}
+
 
   RemoveUsers() {
     this.ListeUserSelectionne = [];
@@ -377,9 +449,61 @@ return     this.mail_serv.SauvegarderTemplate(
     return this.etape === thisvue;
   }
 
-  AddSeanceTous() { /* TODO */ }
-  AddSeancePresent() { /* TODO */ }
-  AddSeanceConvoque() { /* TODO */ }
+  AddSeanceTous() {    
+    if(!this.seance_selectionnee) return;
+     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.seance_id).then((res) => {
+         res.forEach(p => {
+        if (p?.person) {
+          Object.setPrototypeOf(p.person, Personne_VM.prototype);
+          // 2) (Optionnel) matérialiser la valeur pour la sérialisation / filtres ultérieurs
+          // (p.person as any).libelle = p.person.libelle;
+        }
+           const adh = Object.assign(new Adherent_VM(), p.person);
+if (!adh.inscriptionsSaison) adh.inscriptionsSaison = [];
+if (!adh.inscriptionsSeance) adh.inscriptionsSeance = [];
+if (adh.inscrit == null) adh.inscrit = false;
+if (adh.photo === undefined) adh.photo = null;
+
+this.ListeUserSelectionne.push(adh);
+       })
+      });
+    }
+  AddSeancePresent() {  if(!this.seance_selectionnee) return;
+     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.seance_id).then((res) => {
+         res.forEach(p => {
+          if(p.statut_inscription === InscriptionStatus_VM.PRESENT){
+        if (p?.person) {
+          Object.setPrototypeOf(p.person, Personne_VM.prototype);
+          // 2) (Optionnel) matérialiser la valeur pour la sérialisation / filtres ultérieurs
+          // (p.person as any).libelle = p.person.libelle;
+        }
+           const adh = Object.assign(new Adherent_VM(), p.person);
+if (!adh.inscriptionsSaison) adh.inscriptionsSaison = [];
+if (!adh.inscriptionsSeance) adh.inscriptionsSeance = [];
+if (adh.inscrit == null) adh.inscrit = false;
+if (adh.photo === undefined) adh.photo = null;
+
+this.ListeUserSelectionne.push(adh);
+      } })
+      });}
+  AddSeanceConvoque() {  if(!this.seance_selectionnee) return;
+     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.seance_id).then((res) => {
+         res.forEach(p => {
+          if(p.statut_inscription === InscriptionStatus_VM.CONVOQUE){
+        if (p?.person) {
+          Object.setPrototypeOf(p.person, Personne_VM.prototype);
+          // 2) (Optionnel) matérialiser la valeur pour la sérialisation / filtres ultérieurs
+          // (p.person as any).libelle = p.person.libelle;
+        }
+           const adh = Object.assign(new Adherent_VM(), p.person);
+if (!adh.inscriptionsSaison) adh.inscriptionsSaison = [];
+if (!adh.inscriptionsSeance) adh.inscriptionsSeance = [];
+if (adh.inscrit == null) adh.inscrit = false;
+if (adh.photo === undefined) adh.photo = null;
+
+this.ListeUserSelectionne.push(adh);
+      } })
+      });}
 
   Addherent() {
     if (!this.adherent_selectionne) return;

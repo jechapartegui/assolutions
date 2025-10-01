@@ -36,11 +36,7 @@ export class GroupeComponent implements OnInit {
     this.action = $localize`Charger les groupes`;
     if (this.store.isLoggedIn) {
 
-      if (this.store.appli() === "ADMIN") {
-        this.router.navigate(['/menu']);
-        this.store.updateSelectedMenu("MENU")
-        return;
-      }
+      
       // Chargez la liste des cours
 
       this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {

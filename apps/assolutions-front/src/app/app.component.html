@@ -8,7 +8,7 @@
       <a
         class="navbar-item"
         (click)="store.isLoggedIn() ?? store.updateSelectedMenu('MENU')"
-         [routerLink]="store.isLoggedIn() ? ['/menu'] : null"
+         [routerLink]="store.isLoggedIn()  ?  store.appli() === 'ADMIN' ? ['menu-admin'] : ['/menu'] : null"
         ><svg
           width="57"
           height="38"

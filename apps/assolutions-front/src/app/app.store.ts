@@ -12,7 +12,6 @@ export class AppStore {
   readonly projetVM = signal<Projet_VM | null>(null);
   readonly listprojet = signal<ProjetView[] | null>(null);
   readonly appli = signal<"APPLI" | "ADMIN">("APPLI");
-  readonly menu = signal<"APPLI" | "ADMIN">("APPLI");
   readonly selectedMenu = signal<MenuType>('MENU');
   readonly saison_active = signal<Saison_VM>(null); 
   // Derivés

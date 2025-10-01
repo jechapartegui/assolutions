@@ -1,1 +1,218 @@
-<p>Menu admin</p>
+<div class="container" *ngIf="store.isLoggedIn() && store.hasProjet() && store.isProf()">
+  <div class="columns page-fill">
+    <div class="column">
+      <div class="card">
+        <!-- HEADER FIXE -->
+        <header class="card-header" style="align-items:center">
+          <p class="card-header-title">
+            <span class="title is-5">Espace administration</span>
+            <span class="is-size-7 has-text-grey">&nbsp;— Accès rapides et rubriques</span>
+          </p>
+        </header>
+
+        <!-- CONTENU QUI SCROLLE -->
+        <div class="scrollable-card-content">
+          <!-- ACCÈS RAPIDES -->
+          <h2 class="title is-6 mb-2">Accès rapides</h2>
+          <div class="columns is-multiline">
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('ADHERENT')" [routerLink]="['/adherent']" aria-label="Adhérents">
+                <div class="is-size-3 mb-1">👥</div>
+                <div class="is-size-7 has-text-weight-semibold">Adhérents</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('COURS')" [routerLink]="['/cours']" aria-label="Cours">
+                <div class="is-size-3 mb-1">🎓</div>
+                <div class="is-size-7 has-text-weight-semibold">Cours</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('SEANCE')" [routerLink]="['/seance']" aria-label="Séances">
+                <div class="is-size-3 mb-1">🗓️</div>
+                <div class="is-size-7 has-text-weight-semibold">Séances</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('GROUPE')" [routerLink]="['/groupe']" aria-label="Groupes">
+                <div class="is-size-3 mb-1">👪</div>
+                <div class="is-size-7 has-text-weight-semibold">Groupes</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- GESTION -->
+          <h2 class="title is-6 mt-4 mb-2">Gestion</h2>
+          <div class="columns is-multiline">
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ context: 'COMPTA' }" aria-label="Comptabilité">
+                <div class="is-size-3 mb-1">💶</div>
+                <div class="is-size-7 has-text-weight-semibold">Comptabilité</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('TRANSACTION')" [routerLink]="['/operations']" [queryParams]="{ context: 'LISTE' }" aria-label="Transactions">
+                <div class="is-size-3 mb-1">🔁</div>
+                <div class="is-size-7 has-text-weight-semibold">Transactions</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('PROJETMAIL')" [routerLink]="['/projet-mail']" aria-label="Factures">
+                <div class="is-size-3 mb-1">🧾</div>
+                <div class="is-size-7 has-text-weight-semibold">Factures</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('STOCK')" [routerLink]="['/stock']" aria-label="Stocks">
+                <div class="is-size-3 mb-1">📦</div>
+                <div class="is-size-7 has-text-weight-semibold">Stocks</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('ENVOIMAIL')" [routerLink]="['/envoi-mail']" aria-label="Envoyer des mails">
+                <div class="is-size-3 mb-1">✉️</div>
+                <div class="is-size-7 has-text-weight-semibold">Envoyer des mails</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('TDB')" [routerLink]="['/tableau-de-bord']" aria-label="Tableaux de bord">
+                <div class="is-size-3 mb-1">📊</div>
+                <div class="is-size-7 has-text-weight-semibold">Tableaux de bord</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- PARAMÉTRAGE -->
+          <h2 class="title is-6 mt-4 mb-2">Paramétrage</h2>
+          <div class="columns is-multiline">
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('LIEU')" [routerLink]="['/lieu']" aria-label="Lieux">
+                <div class="is-size-3 mb-1">📍</div>
+                <div class="is-size-7 has-text-weight-semibold">Lieux</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('SAISON')" [routerLink]="['/saison']" aria-label="Saisons">
+                <div class="is-size-3 mb-1">🍂</div>
+                <div class="is-size-7 has-text-weight-semibold">Saisons</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('CB')" [routerLink]="['/compte-bancaire']" aria-label="Compte bancaire">
+                <div class="is-size-3 mb-1">🏦</div>
+                <div class="is-size-7 has-text-weight-semibold">Compte bancaire</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('LISTE_VALEUR')" [routerLink]="['/gestion-liste']" aria-label="Listes de valeur">
+                <div class="is-size-3 mb-1">🧩</div>
+                <div class="is-size-7 has-text-weight-semibold">Listes de valeur</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- PROJET -->
+          <h2 class="title is-6 mt-4 mb-2">Projet</h2>
+          <div class="columns is-multiline">
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('PROF')" [routerLink]="['/professeur']" aria-label="Professeurs">
+                <div class="is-size-3 mb-1">🧑‍🏫</div>
+                <div class="is-size-7 has-text-weight-semibold">Professeurs</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('ADMINISTRATEUR')" [routerLink]="['/administrateurs']" aria-label="Administrateurs">
+                <div class="is-size-3 mb-1">🛡️</div>
+                <div class="is-size-7 has-text-weight-semibold">Administrateurs</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('PROJETINFO')" [routerLink]="['/projet-info']" aria-label="Infos projet">
+                <div class="is-size-3 mb-1">ℹ️</div>
+                <div class="is-size-7 has-text-weight-semibold">Infos projet</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('PROJETMAIL')" [routerLink]="['/projet-mail']" aria-label="Configuration des mails">
+                <div class="is-size-3 mb-1">⚙️✉️</div>
+                <div class="is-size-7 has-text-weight-semibold">Config. mails</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('SUIVIMAIL')" [routerLink]="['/projet-mail']" aria-label="Suivi des mails">
+                <div class="is-size-3 mb-1">📨📈</div>
+                <div class="is-size-7 has-text-weight-semibold">Suivi des mails</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3"
+                 (click)="store.updateSelectedMenu('COMPTE')" [routerLink]="['/compte']" aria-label="Comptes">
+                <div class="is-size-3 mb-1">👤</div>
+                <div class="is-size-7 has-text-weight-semibold">Comptes</div>
+              </a>
+            </div>
+          </div>
+
+          <!-- OUTILS -->
+          <h2 class="title is-6 mt-4 mb-2">Outils</h2>
+          <div class="columns is-multiline">
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3" (click)="Dashboard()" aria-label="Tableau de bord">
+                <div class="is-size-3 mb-1">📊</div>
+                <div class="is-size-7 has-text-weight-semibold">Tableau de bord</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3" (click)="MDP()" aria-label="Changer de mot de passe">
+                <div class="is-size-3 mb-1">🔒</div>
+                <div class="is-size-7 has-text-weight-semibold">Mot de passe</div>
+              </a>
+            </div>
+            <div class="column is-2-desktop is-3-tablet is-6-mobile">
+              <a class="box is-clickable has-text-centered p-3 has-text-danger" (click)="LogOut()" aria-label="Se déconnecter">
+                <div class="is-size-3 mb-1">🚪</div>
+                <div class="is-size-7 has-text-weight-semibold">Déconnexion</div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER FIXE (optionnel) -->
+        <footer class="card-footer">
+          <div class="card-footer-item is-size-7 has-text-grey">
+            Astuce : utilise <strong>Ctrl/Cmd + K</strong> si tu as une recherche globale.
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÉTAT NON AUTORISÉ -->
+<div class="container" *ngIf="!(store.isLoggedIn() && store.hasProjet() && store.isProf())">
+  <article class="message is-warning">
+    <div class="message-header"><p>Accès restreint</p></div>
+    <div class="message-body">
+      Connecte-toi et sélectionne un projet pour accéder aux fonctions d’administration.
+    </div>
+  </article>
+</div>

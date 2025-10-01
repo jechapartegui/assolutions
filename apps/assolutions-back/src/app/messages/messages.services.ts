@@ -16,6 +16,7 @@ import { RegistrationSeason } from '../../entities/inscription-saison.entity';
 import { LinkGroupService } from '../../crud/linkgroup.service';
 import { SessionService } from '../../crud/session.service';
 import { SeanceService, to_Seance_VM } from '../seance/seance.services';
+import { Seance_VM } from '@shared/lib/seance.interface';
 
 @Injectable()
 export class MessagesService {
@@ -32,7 +33,7 @@ export class MessagesService {
     @InjectRepository(MailProject) private readonly mailProjectRepo: Repository<MailProject>
   ) {}
 
-async GetMail(type: 'convocation' | 'annulation' | 'relance' | 'libre', id: number): Promise<KeyValuePairAny> {
+async GetMail(type: 'convocation' | 'annulation' | 'relance' | 'libre' | 'serie_seance' | 'bienvenue', id: number): Promise<KeyValuePairAny> {
   const proj = await this.mailProjectRepo.findOne({ where: { id } });
   if (!proj) throw new Error('Mail project introuvable');
 
@@ -41,6 +42,12 @@ async GetMail(type: 'convocation' | 'annulation' | 'relance' | 'libre', id: numb
   }
     if (type === 'relance') {
     return { key: proj.sujet_relance ?? '', value: proj.mail_relance ?? '' };
+  }
+   if (type === 'serie_seance') {
+    return { key: proj.sujet_serie_seance ?? '', value: proj.mail_serie_seance ?? '' };
+  }
+   if (type === 'bienvenue') {
+    return { key: proj.sujet_bienvenue ?? '', value: proj.mail_bienvenue ?? '' };
   }
      if (type === 'libre') {
     return { key: '', value: proj.mail_vide ?? '' };
@@ -215,7 +222,7 @@ async mail_relance(
   subject: string,
   destinataire: number[],
   variables: Record<string, any>,
-  type_mail: 'convocation' | 'annulation' | 'relance' | 'libre' | 'essai',
+  type_mail: 'convocation' | 'annulation' | 'relance' | 'libre' | 'essai' | 'serie_seance' | 'bienvenue',
   envoi_par_compte: boolean,
   simuler: boolean,
   projectId: number
@@ -268,6 +275,99 @@ async mail_relance(
       }
 
       results.push({ key: p, value:{ key: subjectFilled, value: htmlFilled }});
+    } catch {
+      // silencieux comme dans ton exemple
+    }
+  }
+    break;
+      case 'serie_seance':
+        const { outer: outerTemplate_serie, loop: loopTemplate_serie } = parseLoop(template);
+    const ids = variables?.SERIE_SEANCE;
+    if(!idseance_con) throw new Error('SERIE_SEANCE manquant dans variables');
+    let liste_seance: Seance_VM[] = [];
+    ids.forEach(async (id: number) => {
+      const seance = await this.seanceService.Get(id);
+      if(seance) liste_seance.push(seance);
+    });
+    if(liste_seance.length === 0) throw new Error('Aucune séance trouvée pour les IDs fournis dans SERIE_SEANCE');
+    // Utiliser la première séance pour les données communes
+   for (const id of destinataire) {
+    try {
+    // Filtrer les destinataires pour n'avoir que les personnes avec un compte (login non vide)
+        const p = await this.personRepo.findOne({
+        where: { id },
+        relations: ['account', 'inscriptions'],
+      });
+      if (!p) continue;
+
+  // Dates borne issues des variables (obligatoires d’après ta note)
+  // Accepte string | Date ; normalise en début/fin de journée.
+
+     // 4) Variables globales pour remplir {{ ... }} (inclut les bornes)
+      const info = {
+        LOGIN: p.account?.login ?? '',
+        NOM: `${p?.firstName ?? ''} ${p?.lastName ?? ''}`.trim(),
+      };
+
+      const subjectFilled = fillTemplate(subject, info);
+      let htmlOuter = fillTemplate(outerTemplate_serie, info); // partie autour, sans la boucle encore
+
+      // 5) Données de la boucle [[ ... ]] (séances)
+      const age = calculateAge(p.birthDate);
+      const groupes = (await this.linkgroup_serv.getGroupsForObject('rider', id, activeSeason.id))
+        ?.map((x: any) => x.groupId) ?? [];
+
+     
+
+      // -- Filtrer entre DATE_DEBUT et DATE_FIN (inclusif) + trier par date
+      liste_seance = (liste_seance ?? [])
+        .filter((s: any) => {
+          const d = parseDateStrict(s?.seance?.date_seance);
+          return d != null && d >= dateDebut && d <= dateFin;
+        })
+        .sort((a: any, b: any) => {
+          const da = parseDateStrict(a?.seance?.date_seance)?.getTime() ?? 0;
+          const db = parseDateStrict(b?.seance?.date_seance)?.getTime() ?? 0;
+          return da - db;
+        });
+
+      const boucleContent = liste_seance
+        .map((s: any) => {
+           const seanceId = s?.seance?.seance_id ?? 0;
+  const login = encodeURIComponent(p.account?.login ?? '');
+  const adherentId = p?.id ?? 0;
+
+  const dataSeance_serie = {
+    SEANCE: s?.seance?.libelle ?? 'séance',
+    SEANCE_ID: seanceId,
+    PERSONNE_ID: adherentId,
+    DATE: formatDDMMYYYY(s?.seance?.date_seance),
+    LIEU: s?.seance?.lieu_nom ?? 'lieu non défini',
+    HEURE: s?.seance?.heure_debut ?? 'heure non définie',
+    RDV: s?.seance?.rdv ?? '',
+    DUREE: (s?.seance?.duree_seance != null) ? `${s.seance.duree_seance} min` : 'durée non définie',
+
+    // Icônes seules (multilingue) + classes pour matching avec le CSS de l’email
+    PRESENT: `<a class="icon-btn yes" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=1&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP yes" aria-label="RSVP yes">👍</a>`,
+    ABSENT:  `<a class="icon-btn no" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=0&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP no" aria-label="RSVP no">👎</a>`,
+  };
+
+  return fillTemplate(loopTemplate_serie, dataSeance_serie);
+})
+.join('');
+
+      // 6) Réintégrer la boucle
+      const finalHtml = replaceLoopPlaceholder(htmlOuter, boucleContent);
+
+      // 7) Envoi (ou simulation)
+      const to = [p.account?.login, proj.login].filter((x): x is string => !!x && x.trim().length > 0);
+      if (!simuler) {
+        const msg: MailInput = { to, subject: subjectFilled, html: finalHtml };
+        await this.mailer.queue(msg, proj.login, proj.name, projectId);
+      }
+
+      results.push({ key: p, value:{ key: subjectFilled, value: finalHtml }});
+
     } catch {
       // silencieux comme dans ton exemple
     }
@@ -374,6 +474,7 @@ async mail_relance(
   }
     break;
     case 'libre':
+      case 'bienvenue':
   if(!envoi_par_compte){
       for (const id of destinataire) {
     try {

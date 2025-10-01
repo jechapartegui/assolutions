@@ -128,7 +128,28 @@
                  Une séance doit être sélectionnée.	
                 </p>
               </div>
-
+              <ng-container *ngIf="typemail === 'serie_seance'">
+                <button type="button" (click)="AjouterSeanceSerie()"
+                        class="button is-primary is-small is-light btn-mobile btn-elevated">
+                  <i class="fas fa-plus"></i>&nbsp;<span i18n>Ajouter la séance à la série</span>
+                </button>
+                <div class="block">
+                  <p i18n>Liste des séances de la série</p>
+                  <div class="tags are-medium">
+                    <ng-container *ngFor="let seance of liste_seance_serie">
+                      <span class="tag is-info is-medium">
+                        {{ seance.libelle }}&nbsp; {{ seance.date_seance | date : 'dd/MM/yyyy' }}
+                        <button (click)="RemoveSeanceSerie(seance)" class="delete is-small"></button>
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+                 <div class="field">
+                <label class="label" i18n>Sujet du mail</label>
+                  <input type="text" class="input" [(ngModel)]="sujet_serie_seance" i18n-placeholder placeholder="Sujet du mail (ex: Championnat)"/>
+                  </div>
+                </ng-container>
+                
               </ng-container>
               </div>
         </ng-container>
@@ -333,6 +354,14 @@
                     [disabled]="seance_annul_convoc==null"
                     class="button is-primary is-small is-light btn-mobile btn-elevated">
               <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la séance</span>
+            </button>
+              </ng-container>
+            <ng-container *ngIf="typemail === 'serie_seance' && liste_seance_serie && liste_seance_serie.length>0">
+ <button type="button"
+ [disabled]="sujet_serie_seance.trim().length===0"
+                    (click)="ValiderSerieSeance()"
+                    class="button is-primary is-small is-light btn-mobile btn-elevated">
+              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la série de séances</span>
             </button>
               </ng-container>
           </ng-container>
