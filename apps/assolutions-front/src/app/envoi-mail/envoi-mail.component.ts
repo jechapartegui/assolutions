@@ -183,7 +183,7 @@ canGoTo(step: Etape): boolean {
         const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
-if(this.typemail === 'annulation' || this.typemail === 'convocation' || this.typemail === 'relance'){
+if(this.typemail === 'annulation' || this.typemail === 'convocation' || this.typemail === 'relance'|| this.typemail === 'serie_seance'){
    await this.seance_serv.GetPlageDate(this.date_debut, this.date_fin).then(seances => {
       this.seance_periode = seances;
        this.seance_periode =  seances.sort((a, b) => {

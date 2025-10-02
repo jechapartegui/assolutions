@@ -281,14 +281,41 @@ async mail_relance(
   }
     break;
       case 'serie_seance':
-        const { outer: outerTemplate_serie, loop: loopTemplate_serie } = parseLoop(template);
-    const ids = variables?.SERIE_SEANCE;
-    if(!idseance_con) throw new Error('SERIE_SEANCE manquant dans variables');
-    let liste_seance: Seance_VM[] = [];
-    ids.forEach(async (id: number) => {
-      const seance = await this.seanceService.Get(id);
-      if(seance) liste_seance.push(seance);
-    });
+   function normalizeIds(input: unknown): number[] {
+  if (Array.isArray(input)) return input.map(Number).filter(n => !Number.isNaN(n));
+
+  if (typeof input === 'number') return [input];
+
+  if (typeof input === 'string') {
+    const s = input.trim();
+    // Si c'est du JSON genre "[1002,789,885]"
+    if (s.startsWith('[') && s.endsWith(']')) {
+      try {
+        const arr = JSON.parse(s);
+        return Array.isArray(arr) ? arr.map(Number).filter(n => !Number.isNaN(n)) : [];
+      } catch { /* ignore */ }
+    }
+    // Sinon "1002, 789, 885" ou "1002 789 885"
+    return s.split(/[,\s]+/).filter(Boolean).map(Number).filter(n => !Number.isNaN(n));
+  }
+
+  return [];
+}
+
+const { outer: outerTemplate_serie, loop: loopTemplate_serie } = parseLoop(template);
+
+const raw = variables?.SERIE_SEANCE;
+const ids: number[] = normalizeIds(raw);
+
+console.log('IDs séance (normalisés):', ids);
+
+if (!ids.length) {
+  throw new Error('SERIE_SEANCE manquant ou au mauvais format dans variables');
+}
+
+// Récupérer les séances en parallèle et attendre correctement
+const seances = await Promise.all(ids.map(id => this.seanceService.Get(id)));
+const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
     if(liste_seance.length === 0) throw new Error('Aucune séance trouvée pour les IDs fournis dans SERIE_SEANCE');
     // Utiliser la première séance pour les données communes
    for (const id of destinataire) {
@@ -320,8 +347,7 @@ async mail_relance(
      
 
       // -- Filtrer entre DATE_DEBUT et DATE_FIN (inclusif) + trier par date
-      liste_seance = (liste_seance ?? [])
-        .filter((s: any) => {
+      liste_seance.filter((s: any) => {
           const d = parseDateStrict(s?.seance?.date_seance);
           return d != null && d >= dateDebut && d <= dateFin;
         })
