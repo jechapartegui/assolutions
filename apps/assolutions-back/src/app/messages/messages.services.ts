@@ -56,7 +56,7 @@ async GetMail(type: 'convocation' | 'annulation' | 'relance' | 'libre' | 'serie_
   return { key: proj.sujet_annulation ?? '', value: proj.mail_annulation ?? '' };
 }
 
-async Update(template:string, subject:string, type: 'convocation' | 'annulation' | 'relance' | 'libre' | 'essai', id: number): Promise<UpdateResult> {
+async Update(template:string, subject:string, type: 'convocation' | 'annulation' | 'relance' | 'libre' | 'essai' | 'serie_seance' | 'bienvenue', id: number): Promise<UpdateResult> {
   const proj = await this.mailProjectRepo.findOne({ where: { id } });
   if (!proj) throw new Error('Mail project introuvable');
 
@@ -75,6 +75,14 @@ async Update(template:string, subject:string, type: 'convocation' | 'annulation'
     if (type === 'relance') {
    proj.mail_relance = template;
    proj.sujet_relance = subject;
+  }
+    if (type === 'serie_seance') {
+   proj.mail_serie_seance = template;
+   proj.sujet_serie_seance = subject;
+  }
+    if (type === 'bienvenue') {
+   proj.mail_bienvenue = template;
+   proj.sujet_bienvenue = subject;
   }
      if (type === 'libre') {
    proj.mail_vide = template;
@@ -305,6 +313,7 @@ async mail_relance(
 const { outer: outerTemplate_serie, loop: loopTemplate_serie } = parseLoop(template);
 
 const raw = variables?.SERIE_SEANCE;
+const champ = variables?.CHAMPIONNAT ?? 'Championnat';
 const ids: number[] = normalizeIds(raw);
 
 if (!ids.length) {
@@ -332,6 +341,7 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
       const info = {
         LOGIN: p.account?.login ?? '',
         NOM: `${p?.firstName ?? ''} ${p?.lastName ?? ''}`.trim(),
+    CHAMPIONNAT :champ,
       };
 
       const subjectFilled = fillTemplate(subject, info);
@@ -358,7 +368,6 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
     HEURE: s?.heure_debut ?? 'heure non définie',
     RDV: s?.rdv ?? '',
     DUREE: (s?.duree_seance != null) ? `${s.duree_seance} min` : 'durée non définie',
-
     // Icônes seules (multilingue) + classes pour matching avec le CSS de l’email
     PRESENT: `<a class="icon-btn yes" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=1&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP yes" aria-label="RSVP yes">👍</a>`,
     ABSENT:  `<a class="icon-btn no" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=0&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP no" aria-label="RSVP no">👎</a>`,
