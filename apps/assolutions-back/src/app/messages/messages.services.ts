@@ -307,8 +307,6 @@ const { outer: outerTemplate_serie, loop: loopTemplate_serie } = parseLoop(templ
 const raw = variables?.SERIE_SEANCE;
 const ids: number[] = normalizeIds(raw);
 
-console.log('IDs séance (normalisés):', ids);
-
 if (!ids.length) {
   throw new Error('SERIE_SEANCE manquant ou au mauvais format dans variables');
 }
@@ -339,19 +337,8 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
       const subjectFilled = fillTemplate(subject, info);
       let htmlOuter = fillTemplate(outerTemplate_serie, info); // partie autour, sans la boucle encore
 
-      // 5) Données de la boucle [[ ... ]] (séances)
-      const age = calculateAge(p.birthDate);
-      const groupes = (await this.linkgroup_serv.getGroupsForObject('rider', id, activeSeason.id))
-        ?.map((x: any) => x.groupId) ?? [];
-
-     
-
       // -- Filtrer entre DATE_DEBUT et DATE_FIN (inclusif) + trier par date
-      liste_seance.filter((s: any) => {
-          const d = parseDateStrict(s?.seance?.date_seance);
-          return d != null && d >= dateDebut && d <= dateFin;
-        })
-        .sort((a: any, b: any) => {
+      liste_seance.sort((a: any, b: any) => {
           const da = parseDateStrict(a?.seance?.date_seance)?.getTime() ?? 0;
           const db = parseDateStrict(b?.seance?.date_seance)?.getTime() ?? 0;
           return da - db;
@@ -359,25 +346,23 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
 
       const boucleContent = liste_seance
         .map((s: any) => {
-           const seanceId = s?.seance?.seance_id ?? 0;
+           const seanceId = s?.seance_id ?? 0;
   const login = encodeURIComponent(p.account?.login ?? '');
   const adherentId = p?.id ?? 0;
-
   const dataSeance_serie = {
-    SEANCE: s?.seance?.libelle ?? 'séance',
+    SEANCE: s?.libelle ?? 'séance',
     SEANCE_ID: seanceId,
     PERSONNE_ID: adherentId,
-    DATE: formatDDMMYYYY(s?.seance?.date_seance),
-    LIEU: s?.seance?.lieu_nom ?? 'lieu non défini',
-    HEURE: s?.seance?.heure_debut ?? 'heure non définie',
-    RDV: s?.seance?.rdv ?? '',
-    DUREE: (s?.seance?.duree_seance != null) ? `${s.seance.duree_seance} min` : 'durée non définie',
+    DATE: formatDDMMYYYY(s?.date_seance),
+    LIEU: s?.lieu_nom ?? 'lieu non défini',
+    HEURE: s?.heure_debut ?? 'heure non définie',
+    RDV: s?.rdv ?? '',
+    DUREE: (s?.duree_seance != null) ? `${s.duree_seance} min` : 'durée non définie',
 
     // Icônes seules (multilingue) + classes pour matching avec le CSS de l’email
     PRESENT: `<a class="icon-btn yes" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=1&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP yes" aria-label="RSVP yes">👍</a>`,
     ABSENT:  `<a class="icon-btn no" href="https://assolutions.club/ma-seance?id=${seanceId}&reponse=0&login=${login}&adherent=${adherentId}" target="_blank" rel="noopener" title="RSVP no" aria-label="RSVP no">👎</a>`,
   };
-
   return fillTemplate(loopTemplate_serie, dataSeance_serie);
 })
 .join('');

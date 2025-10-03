@@ -1137,10 +1137,10 @@ generatePoll(mode: 'avec' | 'seul') {
   const dateStr = this.editSeance?.date_seance
     ? new Date(this.editSeance.date_seance).toLocaleDateString('fr-FR')
     : '';
-  const heure   = (this.editSeance as any)?.heure ?? '';
+  const heure   = (this.editSeance as any)?.heure_debut ?? '';
   const rdv     = (this.editSeance as any)?.rdv ?? '';
 
-  const titre = `${libelle} ${lieu ? 'à ' + lieu : ''} le ${dateStr}${heure ? ' à ' + heure : ''}. ${rdv}.`;
+  const titre = `${libelle} ${lieu ? 'à ' + lieu : ''} le ${dateStr}${heure ? ' à ' + heure : ''} ${rdv}.`;
   let message = `${type_seance} ${titre} Vous venez ?`;
 
   const id = this.editSeance?.seance_id ?? 0;
