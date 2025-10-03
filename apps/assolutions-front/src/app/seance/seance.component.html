@@ -1052,6 +1052,7 @@
             <div class="column">
               <div class="card card--scroller">
       <header class="card-header" style="align-items: center">
+        <span class="fullscreen">
         <p class="card-header-title subtitle is-6"
                 *ngIf="editSeance.seance_id == 0 && editMode_serie"
                 i18n
@@ -1072,7 +1073,55 @@
               >
                 Editer une séance
               </p>
-            </header>
+      </span>        
+    <span class="mobile">
+        <div class="buttons">
+          <btn
+              [type_button]="'RetourMobile'"
+              (click)="RetourListe()"
+            ></btn>
+            <btn *ngIf="editSeance.seance_id < 1"
+            [disabled]="!is_valid"
+              [type_button]="'SauvegarderMobile'"
+              (click)="Save()"
+            ></btn>
+                                <ng-container *ngIf="editSeance.seance_id >0 && editSeance.afficher_present && !store.isProf; else prof">
+  <btn [type_button]="'VoirMobile'"
+                      (click)="VoirMaSeance()"
+                    ></btn>
+                    </ng-container>
+                    <ng-template #prof>    
+                     <btn
+                     *ngIf="editSeance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
+                    [type_button]="'VoirMobile'"
+                      (click)="VoirMaSeance()"
+                    ></btn> 
+<div  *ngIf="editSeance.seance_id >0" class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
+  <div class="dropdown-trigger">
+    <button
+      class="button is-success is-outlined btn-mobile btn-elevated btn-compact"
+      (click)="pollOpen = !pollOpen"
+      title="Sondage WhatsApp">
+      <span class="icon"><i class="fab fa-whatsapp"></i></span>
+      <span>Sondage</span>
+      <span class="icon is-small"><i class="fas fa-angle-down"></i></span>
+    </button>
+  </div>
+  <div class="dropdown-menu" role="menu">
+    <div class="dropdown-content">
+      <a class="dropdown-item" (click)="generatePoll('avec'); pollOpen=false">
+        <i class="fas fa-link"></i>&nbsp;Avec réponses (Oui / Non)
+      </a>
+      <a class="dropdown-item" (click)="generatePoll('seul'); pollOpen=false">
+        <i class="fas fa-align-left"></i>&nbsp;Sondage seul
+      </a>
+    </div>
+  </div>
+</div>
+<span *ngIf="pollCopied" class="tag is-success is-light ms-copy-hint">Copié !</span>
+                    </ng-template>
+        </div></span>
+      </header> 
             <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3" >
               <!-- Bloc Infos personnelles -->
               <div class="column is-full-tablet is-half-desktop">
@@ -1401,6 +1450,7 @@
             </div>
 
             <div class="card-footer">
+<span class="fullscreen">
               <div class="columns is-mobile is-centered">
                 <div class="column is-half">
                   <div class="buttons" style="flex-wrap: nowrap">
@@ -1422,7 +1472,7 @@
                     [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
                     ></btn> 
-<div class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
+<div  *ngIf="editSeance.seance_id >0" class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
   <div class="dropdown-trigger">
     <button
       class="button is-success is-outlined btn-mobile btn-elevated btn-compact"
@@ -1449,6 +1499,7 @@
                   </div>
                 </div>
               </div>
+              </span>
             </div>
           </div>
         </div>

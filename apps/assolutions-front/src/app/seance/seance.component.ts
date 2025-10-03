@@ -118,7 +118,11 @@ export class SeanceComponent implements OnInit, OnDestroy {
     const thisseance = await this.seancesservice.Get(id);
     this.editSeance = thisseance;
         this.histo_seance = JSON.stringify(this.editSeance);
+        if(this.store.isProf() == false && this.store.appli() == "APPLI"){
     this.readonly = true;
+        } else {
+          this.readonly = false;
+        }
     let o = errorService.OKMessage(this.action);
     errorService.emitChange(o);
   }
