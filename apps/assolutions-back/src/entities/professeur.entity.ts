@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne } from 'typeorm';
 import { Person } from './personne.entity';
 import { ProfessorContract } from './contrat_prof.entity';
+import { Project } from './projet.entity';
 
 /**
  * Spécialisation de Person pour les professeurs.
@@ -17,6 +18,12 @@ export class Professor {
   })
   @JoinColumn({ name: 'id' })  // la FK “id” fait référence à person.id
   person: Person;
+
+    @Column({ name: 'project_id' })
+    projectId: number;
+    @ManyToOne(() => Project)
+    @JoinColumn({ name: 'project_id' })
+    project: Project;
 
   /** Taux horaire appliqué */
   @Column({ type: 'float', nullable: true })

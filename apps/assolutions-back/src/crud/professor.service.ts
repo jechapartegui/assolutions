@@ -22,8 +22,12 @@ export class ProfessorService {
     return item;
   }
 
-  async getAll(): Promise<Professor[]> {
-    return this.repo.find();
+  async getAll(projectId:number): Promise<Professor[]> {
+    return await this.repo.find({
+  where: { projectId },                      // ou { projectId }
+  relations: { person: true, project: true, contracts:true },
+});
+
   }
 
   async create(data: Partial<Professor>): Promise<Professor> {

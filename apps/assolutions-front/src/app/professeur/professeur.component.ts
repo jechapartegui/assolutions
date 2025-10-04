@@ -142,23 +142,22 @@ throw new Error('Method not implemented.');
     const errorService = ErrorService.instance;
     this.action = $localize`Récupérer les professeurs`;
     this.prof_serv.GetProfAll().then((cpt) => {
-      this.ListeProf = cpt;
-     
-      this.action = $localize`Récupérer les adhérents`;
-      this.ridersService.GetAdherentAdhesion(this.store.saison_active().id).then((adhs) => {
-        this.liste_adherents_VM = adhs;
-        this.loading = false;
-      }).catch((error: HttpErrorResponse) => {
-        let n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
-        this.loading = false;
-      });
-    }).catch((error: HttpErrorResponse) => {
-      let n = errorService.CreateError(this.action, error);
-      errorService.emitChange(n);
-      this.loading = false;
-    });
-
+      this.ListeProf = cpt;      
+        this.action = $localize`Récupérer les adhérents`;
+        this.ridersService.GetAdherentAdhesion(this.store.saison_active().id).then((adhs) => {
+          this.liste_adherents_VM = adhs;
+          this.loading = false;
+        }).catch((error: HttpErrorResponse) => {
+          let n = errorService.CreateError(this.action, error);
+          errorService.emitChange(n);
+          this.loading = false;
+        });
+          }).catch((error: HttpErrorResponse) => {
+          let n = errorService.CreateError(this.action, error);
+          errorService.emitChange(n);
+          this.loading = false;
+        });
+    
   }
   calculateAge(dateNaissance: Date): number {
     const today = new Date();

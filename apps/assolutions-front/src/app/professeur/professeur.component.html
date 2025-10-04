@@ -22,11 +22,9 @@
                         | multifiltersProf: filters as filteredApplis
                     "
                   >
-                    <span i18n>Liste des adhérents</span>&nbsp;({{
+                    <span i18n>Liste des professeurs</span>&nbsp;({{
                       filteredApplis.length
-                    }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
-                      active_saison.nom
-                    }}
+                    }})
                   </p>
                 </header>
                 <div class="card-content" #scrollableContent>
@@ -136,18 +134,17 @@
                                   filters.filter_groupe ? 'has-text-info' : ''
                                 "
                                 i18n
-                                >Groupes</span
+                                >Contrats</span
                               >
                             </span>
                           </th>
-                          <th><span i18n>Contact</span></th>
                           <th>
                             <span
                               [ngClass]="
                                 filters.filter_inscrit ? 'has-text-info' : ''
                               "
                               i18n
-                              >Inscrit</span
+                              >Saison en cours</span
                             >
                           </th>
                           <th>
@@ -181,7 +178,14 @@
                               class="fa-solid fa-venus has-text-danger"
                             ></i>
                           </td>
-                         
+                          <td>
+                            <ng-container
+                              *ngFor="let gr of adherent.contrats"
+                            >
+                              <span class="tag is-success">
+                                {{ gr.type_contrat }}    {{ gr.type_remuneration }}
+                              </span>
+                            </ng-container>
                           <td>
                             <i *ngIf="!isRegistred(adherent)" class="fas fa-times"></i>
                             <i
@@ -199,26 +203,10 @@
                                 (click)="Delete(adherent)"
                               ></btn>
                               <btn
-                                *ngIf="
-                                  !isRegistred(adherent)"
-                                i18n-title
-                                title="Inscrire"
-                                [type_button]="'InscrireLight'"
-                                (click)="
-                                  Register(adherent, active_saison.id, adherent.taux)
-                                "
-                              ></btn>
-                              <btn
                                 i18n-title
                                 title="Voir"
                                 [type_button]="'VoirLight'"
                                 (click)="Read(adherent)"
-                              ></btn>
-                              <btn
-                                i18n-title
-                                title="Editer"
-                                [type_button]="'EditerLight'"
-                                (click)="Edit(adherent)"
                               ></btn>
                             </div>
                           </td>
@@ -263,34 +251,6 @@
                           [type_button]="'ExporterSmall'"
                           (click)="ExportExcel()"
                         ></btn>
-                      
-                        <div class="field is-horizontal">
-                          <div class="field-label is-normal is-two-quarter">
-                            <label class="label" style="white-space: nowrap" i18n
-                              >Saison affichée</label
-                            >
-                          </div>
-                          <div class="field-body">
-                            <div class="field is-narrow">
-                              <div class="control">
-                                <div class="select is-fullwidth">
-                                  <select
-                                    [(ngModel)]="active_saison"
-                                    (ngModelChange)="UpdateListeProf()"
-                                  >
-                                    <ng-container
-                                      *ngFor="let saison of liste_saison"
-                                    >
-                                      <option [ngValue]="saison">
-                                        {{ saison.nom }}
-                                      </option>
-                                    </ng-container>
-                                  </select>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
   
                       <div class="buttons" *ngIf="afficher_filtre">
@@ -322,7 +282,7 @@
                                     </option>
                                     <option value="groupe" i18n>Groupe</option>
                                     <option value="sexe" i18n>Sexe</option>
-                                    <option value="inscrit" i18n>Inscrit</option>
+                                    <option value="inscrit" i18n>Contrat</option>
                                   </select>
                                 </div>
                               </div>

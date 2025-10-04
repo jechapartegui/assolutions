@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Headers, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { ProfService } from './prof.services';
 import { Professeur_VM } from '@shared/lib/prof.interface';
@@ -11,6 +11,11 @@ export class ProfController {
   @Get('get')
   async Get(@Param() { id }: { id: number }) {
     return this.prof_serv.Get(id);
+  }
+
+  @Get('getall')
+  async GetAll(@Headers('projectid') projectId: number) {
+    return this.prof_serv.GetAll(projectId);
   }
 
    @UseGuards(PasswordGuard)

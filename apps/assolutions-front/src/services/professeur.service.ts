@@ -103,12 +103,11 @@ export class ProfesseurService {
       });
   }
   public GetProfAll(): Promise<Professeur_VM[]> {
-    this.url = environment.maseance + "maseance/professeur_manage.php";
-    const body = {
-      command: "get_all",
-    };
+   this.url = environment.maseance + 'api/prof/getall/';
+    //  this.url = this.url + "login.php";
+   
 
-    return this.global.POST(this.url, body)
+    return this.global.GET(this.url)
       .then((response: Professeur_VM[]) => {
         return response;
       })

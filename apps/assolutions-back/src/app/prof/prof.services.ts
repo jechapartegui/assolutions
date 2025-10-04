@@ -5,10 +5,9 @@ import { SessionProfessor } from "../../entities/seance-professeur.entity";
 import { Professor } from "../../entities/professeur.entity";
 import { ProfessorContract } from "../../entities/contrat_prof.entity";
 import { ProfessorContractService } from "../../crud/professorcontract.service";
-import { toPersonneLight_VM } from "../member/member.services";
 import { AccountService } from "../../crud/account.service";
 import { ProjetView } from "@shared/lib/compte.interface";
-import { Professeur_VM} from "@shared/lib/prof.interface";
+import { ContratLight_VM, Professeur_VM} from "@shared/lib/prof.interface";
 
 @Injectable()
 export class ProfService {
@@ -21,6 +20,13 @@ export class ProfService {
           }
           //transformer plieu en lieu ou id =id nom= nom mais ou on deserialise adresse .
           return to_Professeur_VM(pIS);
+  }
+
+  async GetAll(project_id:number)  {
+    const profseance : Professor[] = await this.profserv.getAll(project_id);
+  return profseance.map(sp =>
+      to_Professeur_VM(sp)  
+    );
   }
 
    async GetProfSeance(seance_id: number)  {
@@ -87,16 +93,28 @@ async getProfContratActif(compte_id: number): Promise<ProjetView[]> {
      }  
  }
 
-export function to_Professeur_VM(entity:Professor) : Professeur_VM{
-  const vm = new Professeur_VM();
-  vm.person = toPersonneLight_VM(entity.person);
-  vm.iban = entity.iban;
-  vm.info = entity.info;
-  vm.num_siren = entity.sirenNumber;
-  vm.num_tva = entity.vatNumber;
-  vm.statut = entity.status;
-  vm.taux = entity.hourlyRate;
-  return vm;
+
+export function to_Professeur_VM(p: Professor): Professeur_VM {
+  const pers = p.person ?? ({} as any);
+
+  return {
+    person: {
+      id: pers.id ?? p.id, // fallback
+      prenom: pers.firstName ?? '',
+      nom: pers.lastName ?? '',
+      surnom: pers.nickname ?? undefined,
+      date_naissance: pers.birthDate ?? undefined,
+      sexe: pers.gender ?? undefined,
+    },
+    taux: p.hourlyRate,
+    statut: p.status,
+    num_tva: p.vatNumber,
+    num_siren: p.sirenNumber,
+    iban: p.iban,
+    info: p.info,
+    // Si les contrats n'ont pas été joints, on renvoie []
+    contrats: (p.contracts?.map(mapContrat)) ?? [],
+  };
 }
 export function to_Professor(vm:Professeur_VM) : Professor{
   const entity = new Professor();
@@ -108,4 +126,13 @@ export function to_Professor(vm:Professeur_VM) : Professor{
   entity.status = vm.statut;
   entity.vatNumber = vm.num_tva
   return entity;
+}
+export function mapContrat(c: ProfessorContract): ContratLight_VM {
+  return {
+    // -> choisis les bons noms selon ton entity:
+    // ex 1 : c.typeContrat / c.typeRemuneration
+    // ex 2 : c.contractType / c.remunerationType
+    type_contrat: (c as any).typeContrat ?? (c as any).contractType ?? '',
+    type_remuneration: (c as any).typeRemuneration ?? (c as any).remunerationType ?? '',
+  };
 }
