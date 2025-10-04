@@ -1,7 +1,7 @@
 
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError, IsNull } from 'typeorm';
 import { Group } from '../entities/groupe.entity';
 
 @Injectable()
@@ -19,8 +19,17 @@ export class GroupService {
 
 
 
-  async getAll(saisonId :number): Promise<Group[]> {
-    return this.repo.find({where:{saisonId}});
+  async getAll(saisonId :number, prive:boolean): Promise<Group[]> {
+    if(!prive){
+     return this.repo.find({
+  where: [
+    { saisonId, visible: false },
+    { saisonId, visible: IsNull() }
+  ]
+});
+    } else {
+      return this.repo.find({where:{saisonId}});
+    }
   }
 
   async create(data: Partial<Group>): Promise<Group> {

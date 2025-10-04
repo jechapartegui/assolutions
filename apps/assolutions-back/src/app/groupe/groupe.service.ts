@@ -34,8 +34,8 @@ export class GroupeService {
   }
 
 
-  async GetAll(saison_id: number): Promise<Groupe_VM[]> {
-    const gr =  await this.groupe_serv.getAll(saison_id);
+  async GetAll(saison_id: number, prive:boolean): Promise<Groupe_VM[]> {
+    const gr =  await this.groupe_serv.getAll(saison_id, prive);
      if (!gr) {
       return [];
       }

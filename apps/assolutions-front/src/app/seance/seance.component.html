@@ -599,7 +599,7 @@
                             "
                             class="tag is-success"
                           >
-                            <span i18n>Date : </span>
+                            <span i18n>Date :&nbsp;</span>
                             <span *ngIf="filters.filter_date_avant"
                               >&nbsp;>&nbsp;{{
                                 filters.filter_date_avant | date : 'dd/MM/yyyy'
@@ -608,7 +608,7 @@
                             <span *ngIf="filters.filter_date_apres"
                               >&nbsp;<&nbsp;{{
                                 filters.filter_date_apres | date : 'dd/MM/yyyy'
-                              }}</span
+                              }}&nbsp;</span
                             >
                             <button
                               class="delete"

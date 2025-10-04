@@ -16,9 +16,13 @@ export class GroupeController {
     @UseGuards(PasswordGuard)
     @Get('getall/:saison_id')
     async GetAll(@Param('saison_id') saison_id: number) {
-      return this.groupe_serv.GetAll(saison_id);
+      return this.groupe_serv.GetAll(saison_id, false);
     }
-    
+        @UseGuards(PasswordGuard)
+    @Get('getalladmin/:saison_id')
+    async GetAllAdmin(@Param('saison_id') saison_id: number) {
+      return this.groupe_serv.GetAll(saison_id, true);
+    }
      
   
     @Put('add')
