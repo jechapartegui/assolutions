@@ -4,6 +4,9 @@ import { PersonneLight_VM } from "./personne.interface";
 export type ContratLight_VM = {
   type_contrat: string;
   type_remuneration: string;
+  saison_id: number;
+  date_debut: Date;
+  date_fin?: Date;
 };
 
 // Ta VM prof

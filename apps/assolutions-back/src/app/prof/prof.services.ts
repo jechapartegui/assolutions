@@ -64,6 +64,22 @@ async getProfContratActif(compte_id: number): Promise<ProjetView[]> {
 
   return retour;
 }
+async add_contrat(s: ContratLight_VM, id:number):Promise<boolean> {
+       if (!s) {
+         throw new BadRequestException('INVALID_PROFESSOR');
+       }
+       const objet_base = to_ProfessorContract(s, id);    
+       const objet_insere = await this.contractprofservice.create(objet_base);
+       return true;
+     }
+     async update_contrat(s: ContratLight_VM, id:number):Promise<boolean> {
+       if (!s) {
+         throw new BadRequestException('INVALID_PROFESSOR');
+       }
+       const objet_base = to_ProfessorContract(s, id);    
+       const objet_insere = await this.contractprofservice.update(id,objet_base);
+       return true;
+     }
 
 
     async add(s: Professeur_VM):Promise<number> {
@@ -132,7 +148,21 @@ export function mapContrat(c: ProfessorContract): ContratLight_VM {
     // -> choisis les bons noms selon ton entity:
     // ex 1 : c.typeContrat / c.typeRemuneration
     // ex 2 : c.contractType / c.remunerationType
-    type_contrat: (c as any).typeContrat ?? (c as any).contractType ?? '',
-    type_remuneration: (c as any).typeRemuneration ?? (c as any).remunerationType ?? '',
+    saison_id: c.saisonId,
+    date_debut : c.startDate,
+    date_fin : c.endDate ?? undefined,
+    type_contrat: c.contractType ?? '',
+    type_remuneration: c.remunerationType ?? '',
   };
+}
+
+export function to_ProfessorContract(vm:ContratLight_VM, prof_id:number) : ProfessorContract{
+  const entity = new ProfessorContract();
+  entity.saisonId = vm.saison_id;
+  entity.professorId = prof_id
+  entity.startDate = vm.date_debut;
+  entity.endDate = vm.date_fin;
+  entity.contractType = vm.type_contrat;
+  entity.remunerationType = vm.type_remuneration;
+  return entity;
 }

@@ -7,7 +7,7 @@ import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { ProfesseurService } from '../../services/professeur.service';
 import { SaisonService } from '../../services/saison.service';
-import { Professeur_VM, ProfSaisonVM } from '@shared/lib/prof.interface';
+import { ContratLight_VM, Professeur_VM, ProfSaisonVM } from '@shared/lib/prof.interface';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
 import { AppStore } from '../app.store';
@@ -28,7 +28,6 @@ throw new Error('Method not implemented.');
   public action: string;
   public ListeProf: Professeur_VM[];
   public loading:boolean=false;
-  @Input() public context: "LECTURE" | "LISTE" | "ECRITURE" = "LISTE";
   @Input() public id: number;
   public thisProf: Professeur_VM = null;
   public thisAdherent: Adherent_VM = null;
@@ -46,9 +45,9 @@ throw new Error('Method not implemented.');
   public sort_sexe = "NO";
   public filters:FilterAdherent = new FilterAdherent();
   public selected_filter:string;
-  
+  public newContrat:ContratLight_VM;
   public creer:boolean;
-
+  public contratError: string | null = null;
   public login_adherent: string = "";
   public existing_login: boolean;
 
@@ -91,33 +90,9 @@ throw new Error('Method not implemented.');
         }
         this.liste_saison = sa;
         this.active_saison = this.liste_saison.filter(x => x.active == true)[0];
-        this.route.queryParams.subscribe(params => {
-          if ('id' in params) {
-            this.id = params['id'];
-            this.context = "LECTURE";
-          }
-          if ('context' in params) {
-            this.context = params['context'];
-
-          }
-        })
-        if (this.context == "ECRITURE" || this.context == "LECTURE") {
-          if (this.id == 0) {
-            this.context = "LISTE";
-            if (this.id > 0) {
-              this.ChargerProf();
-
-            }
-
-          }
-        }
-        if (this.context == "LISTE") {
           this.inscrits = this.active_saison.id;
           this.afficher_filtre = false;
-          this.UpdateListeProf();
-
-        }
-
+          this.UpdateListeProf();       
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       }).catch((err: HttpErrorResponse) => {
@@ -127,10 +102,6 @@ throw new Error('Method not implemented.');
             this.store.updateSelectedMenu("MENU");
         return;
       })
-
-
-
-
     } else {
       let o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
       errorService.emitChange(o);
@@ -174,45 +145,23 @@ throw new Error('Method not implemented.');
     if (this.thisAdherent) {
       this.thisProf = new Professeur_VM();
       this.thisProf.person  = this.thisAdherent;
-      this.context = "ECRITURE";
       this.creer = true;
       this.id = this.thisAdherent.id;
 
     }
   }
-  Edit(prof: Professeur_VM) {
-    this.context = "ECRITURE";
-    this.id = prof.person.id;
-    this.creer =false;
-    this.ChargerProf();
-  }
   Read(prof: Professeur_VM) {
-    this.context = "LECTURE";
     this.id = prof.person.id;
     this.ChargerProf();
   }
-  Register(adh: Professeur_VM, saison_id: number, taux_horaire: number) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Déclarer en tant que professeur`;
-    let pss: ProfSaisonVM = {
-      saison_id: saison_id,
-      prof_id: adh.person.id
-    }
-
-    this.prof_serv.AddSaison(pss).then((retour) => {
-      if (retour) {
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-
-      } else {
-        let o = errorService.UnknownError(this.action);
-        errorService.emitChange(o);
-      }
-    }).catch((err: HttpErrorResponse) => {
-      let o = errorService.CreateError(this.action, err.message);
-      errorService.emitChange(o);
-    })
-
+  Register() {
+    this.newContrat = {
+      type_contrat: '',
+      type_remuneration: '',
+      saison_id: this.store.saison_active().id,
+      date_debut: this.store.saison_active().date_debut,
+      date_fin: null
+    };
   }
   RemoveRegister(adh: Professeur_VM, saison_id: number) {
        let pss: ProfSaisonVM = {
@@ -237,19 +186,83 @@ throw new Error('Method not implemented.');
     })
   }
   isRegistred(adh: Professeur_VM): boolean {
-   return true;
+    if(adh.contrats && adh.contrats.length>0){
+    return adh.contrats.filter(x => x.saison_id == this.active_saison.id).length > 0;
+  } 
+  return false;
   }
 
-  getSaison(id: number): string {
+  nom_saison(id: number): string {
     return this.liste_saison.filter(x => x.id == id)[0].nom;
   }
+
+ 
+
+SaveContrat() {
+  this.contratError = null;
+
+  // Validations simples
+  if (!this.thisProf?.person.id || this.thisProf.person.id < 1) {
+    this.contratError = $localize`Sauvegarde d’abord le professeur.`;
+    return;
+  }
+  if (!this.newContrat.saison_id) {
+    this.contratError = $localize`Choisis une saison.`;
+    return;
+  } 
+  if (!this.newContrat.date_debut) {
+    this.contratError = $localize`La date de début est requise.`;
+    return;
+  }
+     const errorService = ErrorService.instance;
+if(this.thisProf.contrats && this.thisProf.contrats.filter(x => x.saison_id == this.newContrat.saison_id).length>0){
+        this.action = $localize`Mettre à jour un contrat`;
+this.prof_serv.UpdateContrat(this.newContrat, this.thisProf.person.id).then((created:boolean) => {
+    // Ajout optimiste à l’écran (adapte selon ce que renvoie l’API)
+    if(created) {
+      let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
+    this.newContrat = null;
+    } else {
+      let o = errorService.UnknownError(this.action);
+      errorService.emitChange(o);
+    }
+    // reset form
+  }).catch(err => {
+    console.error(err);
+    this.contratError = $localize`Impossible d’ajouter le contrat.`;
+  });
+} else {
+    this.action = $localize`Ajouter un contrat`;
+  this.prof_serv.AddContrat(this.newContrat, this.thisProf.person.id).then((created:boolean) => {
+    // Ajout optimiste à l’écran (adapte selon ce que renvoie l’API)
+    if(created) {
+      let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
+    this.thisProf.contrats = this.thisProf.contrats || [];
+    this.thisProf.contrats.push(this.newContrat);
+    this.newContrat = null;
+    } else {
+      let o = errorService.UnknownError(this.action);
+      errorService.emitChange(o);
+    }
+    // reset form
+  }).catch(err => {
+    console.error(err);
+    this.contratError = $localize`Impossible d’ajouter le contrat.`;
+  });
+}
+}
+
+
 
   ChargerProf() {
     this.thisProf = null;
     const errorService = ErrorService.instance;
-    this.action = $localize`Récupérer le prof`;
+    this.action = $localize`Récupérer le professeur`;
     
       this.prof_serv.Get(this.id).then((pf) => {
+        console.log(pf);
         this.thisProf = pf;
         this.loading = false;
        
@@ -302,15 +315,9 @@ throw new Error('Method not implemented.');
         errorService.emitChange(o);
       })
     } else {
-      this.prof_serv.Update(this.thisProf).then((retour) => {
-        if (retour) {
+      this.prof_serv.Update(this.thisProf).then(() => {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
-
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
@@ -320,19 +327,13 @@ throw new Error('Method not implemented.');
   }
 
 
-  Retour(lieu: "LISTE" | "LECTURE"): void {
+  Retour(): void {
 
     let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
-    if (confirm) {
-      if (lieu == "LISTE") {
-        this.context = "LISTE";
+    if (confirm) {     
         this.UpdateListeProf();
-      } else {
-        this.context = "LECTURE";
-        this.ChargerProf();
-      }
+      } 
     }
-  }
 
   Sort(sens: "NO" | "ASC" | "DESC", champ: string) {
     switch (champ) {

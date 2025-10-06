@@ -13,7 +13,8 @@ export class ProfessorService {
 
   async get(id: number): Promise<Professor | null> {
     const item = await this.repo.findOne({ where: { id },
-    relations: [
+   
+ relations: [
       'person',
       'contracts',
       'contracts.saison',        
