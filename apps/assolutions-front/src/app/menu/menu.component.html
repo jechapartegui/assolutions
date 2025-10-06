@@ -79,6 +79,7 @@
   </div>
 </div>
 <br/>
+
         <div class="columns m-0 is-multiline is-mobile is-centered">
       <ng-container *ngFor="let rider of Riders">
         <ng-container *ngIf="rider.afficher">
@@ -838,6 +839,31 @@
     </ng-container>   
   </ng-container>
   </div>
+  
+<!-- Affiche seulement s'il y a au moins un anniversaire -->
+<section *ngIf="anniversaire?.length"
+         class="box anniv-banner is-shadowless">
+  <div class="is-flex is-align-items-center is-justify-content-space-between">
+    <div class="is-flex is-align-items-center">
+      <div class="emoji" aria-hidden="true">🎂</div>
+      <div class="ml-3">
+        <h3 class="title is-5 mb-1">Anniversaire(s) aujourd’hui</h3>
+        <p class="subtitle is-6 mb-0">
+          On leur souhaite un très joyeux anniversaire ! 🎉
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <div class="tags are-medium">
+      <span *ngFor="let n of anniversaire"
+            class="tag is-danger is-light">
+        {{ n }}
+      </span>
+    </div>
+  </div>
+</section>
   </ng-container>
   </ng-container>
 </div>

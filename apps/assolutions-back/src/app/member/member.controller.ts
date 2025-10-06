@@ -19,6 +19,11 @@ async GetAllSeance(@Param('saison_id') saison_id: number) {
     return this.seance_serv.GetAll(saison_id);
   }
   @UseGuards(PasswordGuard)
+  @Get('anniversaire/:saison_id')
+async anniv(@Param('saison_id') saison_id: number) {
+    return this.mem_serv.anniv(saison_id);
+  }
+  @UseGuards(PasswordGuard)
   @Get('getall_adherent/:saison_id')
 async GetAllAdherent(@Param('saison_id') saison_id: number) {
     return this.mem_serv.GetAll(saison_id);

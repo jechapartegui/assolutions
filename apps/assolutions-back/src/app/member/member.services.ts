@@ -35,6 +35,24 @@ export class MemberService {
     }
     return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], [], saison_id)).sort((a, b) => a.nom.localeCompare(b.nom));
   }
+    async anniv(saison_id: number): Promise<string[]> {
+ const saison = await this.personserivce.getAllSaison(saison_id);
+  if (!Array.isArray(saison)) return [];
+
+  const today = new Date();
+  const m = today.getMonth();   // 0..11
+  const d = today.getDate();    // 1..31
+
+  return saison
+    .filter(x => x?.birthDate)
+    .filter(x => {
+      const b = new Date(x.birthDate);
+      return b.getMonth() === m && b.getDate() === d;
+    })
+    .map(x => `${x.firstName} ${x.lastName}`)
+    .sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+}
+
   async GetAllEver(compte_id: number): Promise<Personne_VM[]> {
     const saison = await this.personserivce.getAllCompte_number(compte_id);
     if (!saison) {

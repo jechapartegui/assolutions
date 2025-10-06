@@ -41,6 +41,7 @@ export class MenuComponent implements OnInit {
 
   public liste_prof_filter: KeyValuePair[];
   public liste_lieu_filter: string[];
+  public anniversaire: string[];
   listeCours: Cours_VM[] = [];
 
   public g: StaticClass;
@@ -87,7 +88,9 @@ export class MenuComponent implements OnInit {
       nextMonth.setMonth(today.getMonth() + 1);
   
       this.Riders = [];
-  
+      this.riderservice.Anniversaire(this.store.saison_active().id).then((anniv) => {  
+        this.anniversaire = anniv
+      });
       // Partie adhérent
       if (this.store.projet().adherent || this.store.projet().essai) {
         this.action = $localize`Récupérer les adhérents`;

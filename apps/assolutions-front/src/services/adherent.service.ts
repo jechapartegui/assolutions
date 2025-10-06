@@ -55,6 +55,18 @@ export class AdherentService {
         return Promise.reject(error);
       });
   }
+    Anniversaire(saison_id:number): Promise<string[]>{
+      this.url = environment.maseance + 'api/member/anniversaire/' + saison_id;
+    return this.global.GET(this.url)
+      .then((response: string[]) => {
+
+        return response;
+      })
+      .catch(error => {
+        // Gestion de l'erreur
+        return Promise.reject(error);
+      });
+  }
 
   GetAllSeance(): Promise<Seance_VM[]> {
     let saison_id = this.store.saison_active().id;
