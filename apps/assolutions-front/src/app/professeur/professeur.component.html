@@ -505,12 +505,7 @@
             <span *ngIf="!creer" i18n>Éditer un professeur</span>
             <span *ngIf="thisProf?.person"><strong>{{ thisProf.person?.prenom }}&nbsp;{{ thisProf.person?.nom }}</strong></span>
           </p>
-          <div class="card-header-icon">
-            <div class="buttons">
-              <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
-              <btn [type_button]="'SauvegarderSmall'" (click)="Save()" i18n>Sauvegarder</btn>
-            </div>
-          </div>
+         
         </header>
 
         <!-- Content -->

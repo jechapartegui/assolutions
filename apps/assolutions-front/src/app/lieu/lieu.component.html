@@ -1,17 +1,26 @@
 <div class="container">
-  <div *ngIf="!editMode" class="columns">
-    <div class="column">
-      <div class="card">
-        <header class="card-header">
+      <ng-container *ngIf="loading">
+        <progress
+          class="progress is-large is-info"
+          style="margin-top: 60px"
+          max="100"
+        >
+          60%
+        </progress>
+        <p>Chargement en cours</p>
+      </ng-container>
+      <ng-container *ngIf="!loading">
+        <ng-container *ngIf="!editLieu; else lieuDetail">
+          <div class="columns page-fill" *ngIf="lieux">
+            <div class="column">
+              <div class="card card--scroller">
+                <header class="card-header" style="align-items: center">
           <p class="card-header-title" i18n>Liste des lieux</p>
-          <button type="button" (click)="Creer()" class="button is-primary is-rounded is-outlined"
-            style="align-self: center; ;fill:hsl(171, 100%, 41%)">
-            <i class="fa-solid fa-plus"></i>
-          </button>
+       
         </header>
-        <span class="fullscreen">
-          <div class="card-content">
-            <table class="table" style="width: 100%;font-size:smaller" *ngIf="liste_lieu && liste_lieu.length> 0">
+        <div class="card-content" #scrollableContent>
+                  <div class="content">
+            <table class="table" style="width: 100%;font-size:smaller" *ngIf="lieux && lieux.length> 0">
               <thead>
                 <tr>
                   <th><span class="th_filtre">
@@ -37,7 +46,7 @@
               </thead>
               <tbody>
                 <tr
-                  *ngFor="let lieu of liste_lieu">
+                  *ngFor="let lieu of lieux; trackBy: trackById">
                   <td>
                     {{lieu.nom}}
                   </td>
@@ -45,53 +54,128 @@
                     {{lieu.adresse.Street}}&nbsp;{{lieu.adresse.PostCode}}&nbsp;{{lieu.adresse.City}}                       
                   </td>
                
-                  <td>
-                    <div class="buttons" style="display: flex; flex-direction: row; flex-wrap: nowrap;">                    
-                      <button i18n-title title="Supprimer" class="button is-danger is-rounded is-outlined" type="button"
-                        (click)="Delete(lieu)">
-                        <i class="fa-solid fa-trash-can"></i>
-                      </button>
-  
-                      <button i18n-title title="Editer" class="button is-info is-rounded is-outlined" type="button"
-                        (click)="Edit(lieu)">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                      </button>
-                    </div>
-                  </td>
+ <td>
+                          <div class="buttons" style="flex-wrap: nowrap">
+                            <btn
+                              i18n-title
+                              title="Supprimer"
+                              [type_button]="'SupprimerLight'"
+                              (click)="Delete(lieu)"
+                            ></btn>
+
+                            <btn
+                              i18n-title
+                              title="Editer"
+                              [type_button]="'EditerLight'"
+                              (click)="Edit(lieu)"
+                            ></btn>
+                          </div>
+                        </td>
                 </tr>
               </tbody>
             </table>
-            <p *ngIf="!liste_lieu || liste_lieu.length ==0">Pas de séances disponible</p>
+            <p *ngIf="!lieux || lieux.length ==0">Pas de lieu disponible</p>
           </div>
-        </span>
-        <span class="mobile">
-          <ng-container *ngFor="let lieu of liste_lieu">
-            <div class="box">
-              <article class="media">
-                <div class="media-content">
-                  <span class="title" (click)="Edit(lieu)"><strong>{{lieu.nom}}</strong></span>
-                  <div>
-                    {{lieu.adresse.Street}}&nbsp;{{lieu.adresse.PostCode}}&nbsp;{{lieu.adresse.City}} 
-                   
-                  </div>
+        </div>
+     <footer class="card-footer">
+                  <div class="columns">
+                    <div class="column">
+                      <div *ngIf="!afficher_filtre" class="buttons">
+                        <btn
+                          [type_button]="'CreerSmall'"
+                          (click)="Creer()"
+                        ></btn>
+                        <btn
+                          [type_button]="'FiltrerSmall'"
+                          (click)="
+                            afficher_filtre
+                              ? (afficher_filtre = false)
+                              : (afficher_filtre = true)
+                          "
+                        ></btn>
+                        <btn
+                          [type_button]="'ExporterSmall'"
+                          (click)="ExportExcel()"
+                        ></btn>
+                      </div>
   
-                </div>
-              </article>
+                      <div class="buttons" *ngIf="afficher_filtre">
+                        <btn
+                         (click)="afficher_filtre = false; filter_nom = null; FiltrerListeLieu()"
+                          [type_button]="'RetourLight'"
+                        ></btn>
+                        
+                        <div
+                          class="field is-horizontal"
+                          style="gap: 0.5rem; align-items: center"
+                        >
+                          <div class="field-label is-normal">
+                            <label class="label" style="white-space: nowrap" i18n
+                              >Filtrer par nom - valeur du filtre :
+                            </label>
+                            <div class="field is-narrow">
+                              <div class="control">
+                                <input
+                                  style="width: fit-content; font-size: smaller"
+                                  class="input is-small"
+                                  i18n-placeholder
+                                  placeholder="Nom du cours"
+                                  type="text"
+                                  (ngModelChange)="Filter($event)"
+                                  [(ngModel)]="filter_nom"
+                                />
+                                </div>
+                            </div>
+                          </div>
+                          <div class="tags">
+                            <span
+                              *ngIf="filter_nom"
+                              class="tag is-success"
+                            >
+                              <span i18n>Nom : </span>
+                              <span>{{ filter_nom }}</span>
+                              <button
+                                class="delete"
+                                (click)="filter_nom = null; FiltrerListeLieu()"
+                              ></button>
+                            </span>
+  
+                           
+                            <btn
+ [type_button]="'SupprimerLight'"
+  (click)="filter_nom = null; FiltrerListeLieu()"
+  *ngIf="filter_nom">
+                              
+                            >
+                            </btn>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </footer>
+              </div>  
             </div>
-          </ng-container>
-        </span>
-      </div>
-    </div>
-  </div>
-  <div *ngIf="editMode" class="container">
-    <div class="columns is-justify-content-center">
-      <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
-        <div class="box">
+          </div>
+</ng-container>
+<ng-template #lieuDetail>
+  <div class="columns page-fill">
+    <div class="column">
+      <div class="card card--scroller">
+        <!-- Header -->
+        <header class="card-header" style="align-items:center">
   
           <h2 *ngIf="editLieu.id==0" class="title is-2" i18n>Créer un lieu</h2>
           <h2 *ngIf="editLieu.id>0" class="title is-2" i18n>Editer un lieu</h2>
-                    
-             
+               
+          </header>     
+                <!-- Content -->
+        <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
+
+          <!-- Colonne gauche : champs Professor (entity exacte) -->
+          <div class="column is-full-tablet is-half-desktop">
+            <div class="box is-light">
+              <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations administratives</h3>  
             <div class="field">
               <label class="label" i18n>Nom</label>
               <input [class]="editLieu.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
@@ -100,25 +184,30 @@
                 caractères
               </p>
             </div>
-            <div class="field">
-                <label class="label" i18n>Adresse :</label>
-                <app-address [thisAdresse]="editLieu.adresse"></app-address>
             </div>
-        </div>
-  
-          <div class="buttons">
-            <button class="button is-primary is-rounded is-outlined" [disabled]="(editLieu.nom.length < 5 || !valid_address) " type="button"
-              style="fill:hsl(171, 100%, 41%)" (click)="Save(editLieu)">
-              <i class="fa-solid fa-floppy-disk"></i>
-            </button>
-            <button (click)="Refresh()" class="button is-warning is-rounded is-outlined" style="fill:#FFB70F">
-              <i class="fa-solid fa-arrows-rotate"></i>
-            </button>
-            <button (click)="Retour()" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
-              <i class="fa-solid fa-backward-fast"></i>
-            </button>
           </div>
-        </div>
+            <div class="column is-full-tablet is-half-desktop">
+                    <app-address
+                                 [id]="editLieu.id"
+                                 [thisAdresse]="editLieu.adresse"
+                                 [Regles]="(GlobalService.getRegleLieuAdresse())"
+                                 (InfoAdresseChange)="SaveAdresse($event)"
+                                 (valid)="valid_adresse($event)"></app-address>                    
+                  </div>
+  </div>
+       <footer class="card-footer">
+          <div class="columns is-mobile is-centered">
+            <div class="column is-half">
+              <div class="buttons" style="flex-wrap:nowrap">
+              <div class="buttons" style="flex-wrap:nowrap">
+                <btn [type_button]="'RetourSmall'"  (click)="Retour()"></btn>
+                <btn [type_button]="'SauvegarderSmall'" [disabled]="(editLieu.nom.length < 5 || !valid_address)" (click)="Save()" i18n>Sauvegarder</btn>          
+          </div>
       </div>
     </div>
   </div>
+       </footer>
+      </div>
+      </div>
+      </div>
+</ng-template>

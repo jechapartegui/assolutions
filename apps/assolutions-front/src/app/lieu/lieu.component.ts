@@ -1,11 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Adresse } from '@shared/lib/adresse.interface';
 import { AppStore } from '../app.store';
+import { GlobalService } from '../../services/global.services';
 
 @Component({
   standalone: false,
@@ -16,13 +17,20 @@ import { AppStore } from '../app.store';
 export class LieuComponent implements OnInit {
   valid_address: boolean;
   editLieu: Lieu_VM;
-  editMode: boolean = false;
+  afficher_filtre:boolean=false;
+  filter_nom = "";
   action: string = "";
-  liste_lieu: Lieu_VM[] = [];
+  public loading:boolean=false;
+  @ViewChild('scrollableContent', { static: false })
+  scrollableContent!: ElementRef<HTMLDivElement>;
+  lieux: Lieu_VM[] = [];
+  lieux_all: Lieu_VM[] = [];  
   sort_nom: string;
-  constructor(public router: Router, public lieu_serv: LieuNestService, public store:AppStore) { }
-
+  save :string="";
+  constructor(public router: Router, public lieu_serv: LieuNestService, public store:AppStore, public GlobalService:GlobalService) { }
+trackById = (_: number, l: Lieu_VM) => l.id;
   ngOnInit(): void {
+    this.loading = true;
     if (this.store.isLoggedIn) {
 
       if ((this.store.appli() === "APPLI")) {
@@ -36,54 +44,27 @@ export class LieuComponent implements OnInit {
     }
   }
 
-  UpdateListeLieu(){
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger les lieux`;
-    this.lieu_serv.GetAll().then((lieu) => {
-      this.liste_lieu = lieu;
-    }).catch((err: HttpErrorResponse) => {
-      let o = errorService.CreateError(this.action, err.message);
-      errorService.emitChange(o);
-      return;
-    })
-  }
-
-  onValidAdresseChange(isValid: boolean) {
-    this.valid_address = isValid;
-  }
-  onAdresseChange(data: Adresse) {
-    this.editLieu.adresse = data;
-  }
+  
+ExportExcel() {
+throw new Error('Method not implemented.');
+}
   Creer(): void {
     this.editLieu = new Lieu_VM();
-    this.editMode = true;
   }
-
-  Refresh(){
-    const errorService = ErrorService.instance;
-    this.action = $localize`Rafraichir le lieu`;
-    this.lieu_serv.Get(this.editLieu.id).then((c)=>{
-      this.editLieu = c;
-      let o = errorService.OKMessage(this.action);
-      errorService.emitChange(o);
-     }).catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        return;
-      })
-  }
-
-  Save(lieu: Lieu_VM) {
+ 
+  Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un lieu`;
-    if (lieu) {
-      if (lieu.id == 0) {
+    if (this.editLieu) {
+      if (this.editLieu.id == 0) {
 
-        this.lieu_serv.Add(lieu).then((id) => {
+        this.lieu_serv.Add(this.editLieu).then((id) => {
           if (id > 0) {
             this.editLieu.id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
+            
+            this.save = JSON.stringify(this.editLieu);
             this.UpdateListeLieu();
           } else {
             let o = errorService.UnknownError(this.action);
@@ -96,19 +77,16 @@ export class LieuComponent implements OnInit {
         });
       }
       else {
-        this.lieu_serv.Update(lieu).then((ok) => {
+        this.lieu_serv.Update(this.editLieu).then(() => {
 
           this.action = $localize`Mettre à jour un lieu`;
-          if (ok) {
-
+        
 
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
+            this.save = JSON.stringify(this.editLieu);
             this.UpdateListeLieu();
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
+          
 
         }).catch((err) => {
           let o = errorService.CreateError(this.action, err.message);
@@ -118,22 +96,73 @@ export class LieuComponent implements OnInit {
     }
   }
   Retour(): void {
-
+    
+  let h = JSON.stringify(this.editLieu);
+  if(h != this.save && this.save !=""){
     let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
     if (confirm) {
-      this.editMode = false;
       this.editLieu = null;
       this.UpdateListeLieu();
     }
   }
+}
 
+  valid_adresse(isValid: boolean): void {
+  this.valid_address = isValid;
+}
+ private normalize = (s?: string) =>
+    (s ?? "")
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  UpdateListeLieu(){
+    const errorService = ErrorService.instance;
+    this.action = $localize`Charger les lieux`;
+    this.lieu_serv.GetAll().then((lieu) => {
+      // ➕ on garde la source complète et on applique le filtre courant
+      this.lieux_all = lieu ?? [];
+      this.FiltrerListeLieu();
+      this.loading = false;
+    }).catch((err: HttpErrorResponse) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+      return;
+    })
+  }
+
+  Filter(even:string){
+    this.filter_nom = even;
+    this.FiltrerListeLieu();
+  }
+
+  FiltrerListeLieu(){
+    const q = this.normalize(this.filter_nom);
+    if (!q) {
+      this.lieux = [...this.lieux_all];
+    } else {
+      this.lieux = this.lieux_all.filter(l =>
+        this.normalize(l.nom).includes(q)
+      );
+    }
+    // si un tri est actif, on le ré-applique sur la liste filtrée
+    if (this.sort_nom !== "NO") {
+      this.Sort("ASC", "nom");
+    }
+  }
+SaveAdresse(thisAdresse :Adresse){
+    this.editLieu.adresse = thisAdresse;
+    if(this.valid_address && this.editLieu.nom.length>4){
+      this.Save();
+    }
+  }
 
 
   Sort(sens: "NO" | "ASC" | "DESC", champ: string) {
     switch (champ) {
       case "nom":
         this.sort_nom = sens;      
-        this.liste_lieu.sort((a, b) => {
+        this.lieux.sort((a, b) => {
           const nomA = a.nom.toUpperCase(); // Ignore la casse lors du tri
           const nomB = b.nom.toUpperCase();
           let comparaison = 0;
@@ -156,7 +185,7 @@ export class LieuComponent implements OnInit {
     this.action = $localize`Charger la séance`;
     this.lieu_serv.Get(lieu.id).then((ss) => {
       this.editLieu =ss;
-      this.editMode = true;
+      this.save = JSON.stringify(this.editLieu);
     }).catch((err: HttpErrorResponse) => {
       let o = errorService.CreateError(this.action, err.message);
       errorService.emitChange(o);
