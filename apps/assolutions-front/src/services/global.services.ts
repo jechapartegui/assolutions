@@ -21,6 +21,20 @@ export class GlobalService {
   getRegles(): ReglesFormulaire {
     return this.regles;
   }
+  getRegleLieuAdresse(): ReglesAdresse {
+    return {
+    Street_min: -1,
+    Street_max: -1,
+    Street_obligatoire: true,
+    PostCode_min: 4,
+    PostCode_max: -1,
+    PostCode_obligatoire: true,
+    City_min: -1,
+    City_max: -1,
+    City_obligatoire: true,
+    Adresse_obligatoire: true
+    };
+  }
 
    getRegleProjetAdresse(): ReglesAdresse {
     return {
