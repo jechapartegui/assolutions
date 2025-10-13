@@ -727,7 +727,7 @@ PreSave() {
     this.filters.filter_sexe = null;
   }
   GotoImport() {
-    this.router.navigate(['/import-adherent']);
+    this.router.navigate(['/import']);
   }
 
   ExportExcel() {

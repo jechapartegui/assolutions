@@ -23,7 +23,7 @@ import { SuiviMailComponent } from './suivi-mail/suivi-mail.component';
 import { StockComponent } from './stock/stock.component';
 import { AdministrateursComponent } from './administrateurs/administrateurs.component';
 import { DashboardComponent } from './tdb/dashboard.component';
-import { ImportAdherentComponent } from './import-adherent/import-adherent.component';
+import { ImportComponent } from './import/import.component';
 import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
 import { ClementineComponent } from './clementine/clementine.component';
@@ -63,7 +63,7 @@ const routes: Routes = [
   { path: 'suivi-mail', component: SuiviMailComponent },
   { path: 'administrateurs', component: AdministrateursComponent },
   { path: 'stock', component: StockComponent },
-  { path: 'import-adherent', component: ImportAdherentComponent },
+  { path: 'import', component: ImportComponent },
   { path: 'gestion-liste', component: GestionListeComponent },
   { path: 'operations', component: OperationsComponent },
   { path: 'clementine', component: ClementineComponent }, 

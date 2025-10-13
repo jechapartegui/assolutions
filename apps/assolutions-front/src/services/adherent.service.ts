@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment.prod';
-import { AdherentImport } from '../app/import-adherent/import-adherent.component';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Compte_VM } from '@shared/lib/compte.interface';
 import { Seance_VM } from '@shared/lib/seance.interface';
@@ -251,21 +250,4 @@ this.url = `api/member/getall_light/${saison_id}`;
       });
   }
 
-  public SimulerImport(liste:Adherent_VM[]): Promise<AdherentImport[]> {
-    this.url = environment.maseance + 'maseance/adherents_manage.php';
-    //  this.url = this.url + "login.php";
-    const body = {
-      command: "simuler_import",
-      liste:liste
-
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: AdherentImport[]) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-  }
 }

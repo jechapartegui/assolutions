@@ -1,0 +1,210 @@
+<div class="container">
+  <!-- ENTÊTE : choix d'entité + import fichier -->
+  <div class="columns is-vcentered" style="margin: 0;">
+    <div class="column is-narrow">
+      <label class="label is-small">Type d’objet</label>
+      <div class="select is-small">
+        <select [(ngModel)]="entity" (change)="onEntityChange()">
+          <option *ngFor="let e of entities" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="column is-narrow">
+      <label class="file-label">
+        <input
+          class="input file-input is-small is-primary is-outlined is-rounded"
+          type="file"
+          name="resume"
+          accept=".xls,.xlsx"
+          (change)="onFileChange($event)"
+        />
+        <span type="button" class="button is-small is-primary is-outlined is-rounded">
+          <span class="span-file-label">Importer depuis Excel</span>
+        </span>
+        <span *ngIf="file" class="file-name is-small"> {{ file.name }} </span>
+      </label>
+    </div>
+
+    <div class="column is-narrow" *ngIf="data.length > 0">
+      <button class="button is-primary is-small is-rounded is-outlined" type="button" (click)="ExporterJSON()">
+        Exporter la transformation
+      </button>
+    </div>
+
+    <div class="column is-narrow" *ngIf="data.length > 0">
+      <label class="file-label">
+        <input
+          class="input file-input is-primary is-outlined is-rounded"
+          type="file"
+          accept=".json"
+          (change)="ImporterJSON($event)"
+        />
+        <span type="button" class="button is-small is-primary is-outlined is-rounded">
+          <span class="span-file-label">Importer un mapping</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="column is-narrow" *ngIf="data.length > 0">
+      <button class="button is-primary is-small is-rounded is-outlined" type="button" (click)="importer()">
+        Importer (prévisualiser)
+      </button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE LOAD : table de mapping -->
+  <ng-container *ngIf="context === 'LOAD' && data.length > 0">
+    <div class="columns" style="margin: 0px;">
+      <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+        <thead>
+          <tr>
+            <th class="is-one-quarter">Nom de la propriété</th>
+            <th class="is-one-eighth">Nombre de colonnes</th>
+            <th>Colonnes sélectionnées</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let key of objectKeys(headers)">
+            <!-- Colonne 1 : label du header (issu du catalog) -->
+            <td style="width:min-content">
+              <label class="label is-small">{{ headers[key] }}</label>
+            </td>
+
+            <!-- Colonne 2 : nombre de morceaux (concat) -->
+            <td class="is-one-eighth">
+              <input
+                class="input is-small"
+                type="number"
+                [(ngModel)]="columnCounts[key]"
+                min="1"
+                max="7"
+                (change)="adjustColumnCount(key)"
+              />
+            </td>
+
+            <!-- Colonne 3 : sélecteurs -->
+            <td>
+              <div *ngFor="let i of columnCounts[key] | range" class="column is-narrow">
+                <select
+                  *ngIf="mappedValues[key][i]"
+                  class="select is-small"
+                  [(ngModel)]="mappedValues[key][i][5]"
+                  (ngModelChange)="onSelectHeader(key, i, $event)"
+                >
+                  <option [ngValue]="null">Aucun</option>
+                  <option [ngValue]="'Texte'">Texte</option>
+                  <option *ngFor="let header of listeHeader" [value]="header">
+                    {{ header.length > 40 ? (header | slice : 0 : 40) + '...' : header }}
+                  </option>
+                </select>
+
+                <!-- Valeur exemple -->
+                <div
+                  *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null"
+                  class="help is-small"
+                >
+                  Valeur Exemple : {{ headers[key] }} (colonne {{ i + 1 }}): {{ mappedValues[key]?.[i]?.[4] || '---' }}
+                </div>
+
+                <!-- Texte libre -->
+                <div *ngIf="mappedValues[key]?.[i]?.[5] === 'Texte'">
+                  <input type="text" class="input is-small" placeholder="Texte littéral" [(ngModel)]="mappedValues[key][i][2]" />
+                </div>
+
+                <!-- Transformation (facultative) -->
+                <div
+                  *ngIf="mappedValues[key]?.[i] && mappedValues[key]?.[i]?.[5] !== 'Texte' && mappedValues[key]?.[i]?.[5] !== null"
+                >
+                  <input
+                    type="text"
+                    class="input is-small"
+                    placeholder="Transformation (optionnelle)"
+                    [(ngModel)]="mappedValues[key][i][3]"
+                    (input)="onTransformationInput(key, i, $event)"
+                  />
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <!-- ÉTAPE VIEW : aperçu générique -->
+  <ng-container *ngIf="context === 'VIEW'">
+    <div class="columns" style="margin:0;">
+      <button class="button is-danger is-small is-rounded is-outlined" type="button" (click)="context='LOAD'">
+        Retour
+      </button>
+      <button class="button is-primary is-small is-rounded is-outlined" type="button" (click)="LetsGo()">
+        Vérifier les données
+      </button>
+    </div>
+
+    <div class="table-container" style="overflow:auto">
+      <table class="table is-small is-fullwidth">
+        <thead>
+          <tr>
+            <th *ngFor="let key of viewKeys">{{ headers[key] || key }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of viewRows">
+            <td *ngFor="let key of viewKeys">
+              <ng-container [ngSwitch]="headersDefs[key]?.type">
+                <ng-container *ngSwitchCase="'boolean'">
+                  <span *ngIf="row[key] === true">✔</span>
+                  <span *ngIf="row[key] === false">✖</span>
+                  <span *ngIf="row[key] !== true && row[key] !== false">—</span>
+                </ng-container>
+                <ng-container *ngSwitchDefault>
+                  {{ row[key] }}
+                </ng-container>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <!-- ÉTAPE COMPARE : simple readonly du même aperçu (placeholder diff) -->
+  <ng-container *ngIf="context === 'COMPARE'">
+    <div class="columns" style="margin:0;">
+      <button class="button is-danger is-small is-rounded is-outlined" type="button" (click)="context='VIEW'">
+        Retour
+      </button>
+      <button class="button is-primary is-small is-rounded is-outlined" type="button" (click)="LetsGoBase()">
+        Importer dans la base
+      </button>
+    </div>
+
+    <div class="table-container" style="overflow:auto">
+      <table class="table is-small is-fullwidth">
+        <thead>
+          <tr>
+            <th *ngFor="let key of viewKeys">{{ headers[key] || key }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of viewRows">
+            <td *ngFor="let key of viewKeys">
+              <ng-container [ngSwitch]="headersDefs[key]?.type">
+                <ng-container *ngSwitchCase="'boolean'">
+                  <span *ngIf="row[key] === true">✔</span>
+                  <span *ngIf="row[key] === false">✖</span>
+                  <span *ngIf="row[key] !== true && row[key] !== false">—</span>
+                </ng-container>
+                <ng-container *ngSwitchDefault>
+                  {{ row[key] }}
+                </ng-container>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

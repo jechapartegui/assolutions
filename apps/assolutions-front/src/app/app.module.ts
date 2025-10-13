@@ -38,7 +38,7 @@ import { SaisonComponent } from './saison/saison.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { AdministrateursComponent } from './administrateurs/administrateurs.component';
 import { DashboardComponent } from './tdb/dashboard.component';
-import { ImportAdherentComponent } from './import-adherent/import-adherent.component';
+import { ImportComponent   } from './import/import.component';
 import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
 import { ClementineComponent } from './clementine/clementine.component';
@@ -86,7 +86,7 @@ import { LoginProjetComponent } from './login-projet/login-projet.component';
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
    CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, MenuAdminComponent,
-   SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, DashboardComponent, ImportAdherentComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
+   SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, DashboardComponent, ImportComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
