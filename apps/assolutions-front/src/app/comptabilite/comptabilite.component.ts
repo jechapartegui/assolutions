@@ -46,8 +46,7 @@ export class ComptabiliteComponent implements OnInit {
   TypeStock: TypeStock[] = [];
   destinataireInput: string = '';
 
-  context: 'FLUXFIN' | 'COMPTA' | 'LISTE' | 'EDIT_FLUXFIN' = 'COMPTA';
-  ancien_context: 'FLUXFIN' | 'COMPTA' | 'LISTE' | 'EDIT_FLUXFIN' = 'LISTE';
+  vue: 'COMPTA' | 'BUDGET' | 'LISTE'  = 'LISTE';
 
   constructor(
     public compta_serv: ComptabiliteService,
@@ -63,8 +62,8 @@ export class ComptabiliteComponent implements OnInit {
   ) {}
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      if ('context' in params) {
-        this.context = params['context'];
+      if ('vue' in params) {
+        this.vue = params['vue'];
       }
     });
     const errorService = ErrorService.instance;
@@ -491,7 +490,6 @@ export class ComptabiliteComponent implements OnInit {
   }
 
   Retour_menu() {
-    this.context = this.ancien_context;
     this.editFluxFlinancier = null;
   }
 
@@ -588,7 +586,6 @@ export class ComptabiliteComponent implements OnInit {
   Read_ff(ff: FluxFinancier_VM) {}
 
   Ajouter(numero: string = null) {
-    this.context = 'EDIT_FLUXFIN';
     let ff = new FluxFinancier_VM();
     this.editFluxFlinancier = ff;
     this.editFluxFlinancier.date = new Date();
