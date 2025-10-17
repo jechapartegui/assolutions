@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AddInfoService } from '../../services/addinfo.service';
 import { ComptabiliteService } from '../../services/comptabilite.service';
@@ -10,7 +10,7 @@ import { SaisonService } from '../../services/saison.service';
 import { StockService } from '../../services/stock.service';
 import { ClassComptable,  TypeStock, StaticClass } from '../global';
 import { Saison_VM } from '@shared/lib/saison.interface';
-import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM, Stock_VM } from '@shared/index';
+import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM, Stock_VM, ValidationItem } from '@shared/index';
 
 @Component({
   standalone: false,
@@ -19,34 +19,40 @@ import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM, Stoc
   styleUrls: ['./comptabilite.component.css'],
 })
 export class ComptabiliteComponent implements OnInit {
-  filter_date_debut_ff: Date;
-  filter_date_fin_ff: Date;
-  filter_libelle_ff: string;
-  filter_classe_ff: number;
-  afficher_filtre_ff: boolean = false;
-  filter_montant_min_ff: number = 0;
-  filter_montant_max_ff: number;
-  filter_sens_operation_ff: boolean = null;
-  filter_sens_ff: boolean = null;
-  saison_id: number;
-  saisons: Saison_VM[];
+
+  active_saison: number;
+  liste_saison: Saison_VM[];
   FluxFinanciers: FluxFinancier_VM[];
   editFluxFlinancier: FluxFinancier_VM;
-  ClassesComptable: ClassComptable[];
-  stocks: Stock_VM[];
-  Comptes: CompteBancaire_VM[];
+  stocks: GenericLink_VM[];
+  liste_compte_bancaire: CompteBancaire_VM[];
+  
+      public filters: filterFF = new filterFF();  
 
   sort_libelle_ff: string = 'NO';
   sort_date_ff: string = 'NO';
   sort_montant_ff: string = 'NO';
   sort_sens_ff: string = 'NO';
   action = '';
-  Destinataire: GenericLink_VM[] = [];
-  Liste_Lieu: GenericLink_VM[] = [];
-  TypeStock: TypeStock[] = [];
-  destinataireInput: string = '';
+  liste_destintaire: GenericLink_VM[] = [];
+  liste_lieu: GenericLink_VM[] = [];
+  
+
+  
+    @ViewChild('scrollableContent', { static: false })
+    scrollableContent!: ElementRef;
+    showScrollToTop: boolean = false;
 
   vue: 'COMPTA' | 'BUDGET' | 'LISTE'  = 'LISTE';
+
+   public loading: boolean = false;
+        public afficher_filtre: boolean = false;
+        public selected_filter : string = null;
+
+        rLibelle:ValidationItem ={key:true, value:''};
+        is_valid:boolean = false;
+
+        histo:string;
 
   constructor(
     public compta_serv: ComptabiliteService,
@@ -71,51 +77,44 @@ export class ComptabiliteComponent implements OnInit {
     this.saison_sev
       .GetAll()
       .then((liste_saison) => {
-        this.saisons = liste_saison;
-        this.saison_id = liste_saison.find((x) => x.active == true).id;
+        this.liste_saison = liste_saison;
+        this.active_saison = liste_saison.find((x) => x.active == true).id;
         this.action = $localize`Charger les comptes`;
         this.cb_serv
           .getAll()
           .then((cpts) => {
-            this.Comptes = cpts;
+            this.liste_compte_bancaire = cpts;
             this.action = $localize`Charger les classes comptables`;
             if (!this.SC.ClassComptable || this.SC.ClassComptable.length == 0) {
               this.addinfo_serv.get_lv('class_compta', true).then((liste) => {
                 this.SC.ClassComptable = JSON.parse(liste.text);
-                console.log(this.SC.ClassComptable);
-                this.ClassesComptable = this.SC.ClassComptable;
               });
-            } else {
-              this.ClassesComptable = this.SC.ClassComptable;
-            }
+            } 
             if (!this.SC.TypeStock || this.SC.TypeStock.length == 0) {
               this.addinfo_serv.get_lv('stock',true).then((liste) => {
                 this.SC.TypeStock = JSON.parse(liste.text);
-                this.TypeStock = this.SC.TypeStock;
               });
-            } else {
-              this.TypeStock = this.SC.TypeStock;
-            }
-            this.VoirSituation();
+            } 
             if (!this.SC.ListeObjet || this.SC.ListeObjet.length == 0) {
               let ab: string[] = ['rider','compte', 'lieu', 'prof'];
               this.addinfo_serv.getall_liste(ab).then((liste) => {
                 this.SC.ListeObjet = liste;
-                this.Destinataire = this.SC.ListeObjet.filter(
+                this.liste_destintaire = this.SC.ListeObjet.filter(
                   (x) =>
                     x.type == 'rider' || x.type == 'compte' || x.type == 'prof'
                 );
-                this.Liste_Lieu = this.SC.ListeObjet.filter(
+                this.liste_lieu = this.SC.ListeObjet.filter(
                   (x) =>
                     x.type == 'rider' || x.type == 'lieu' || x.type == 'autre'
                 );
               });
             } else {
-              this.Destinataire = this.SC.ListeObjet.filter(
+              this.liste_destintaire = this.SC.ListeObjet.filter(
                 (x) =>
                   x.type == 'rider' || x.type == 'compte' || x.type == 'prof'
               );
             }
+            this.VoirSituation();
           })
           .catch((err: HttpErrorResponse) => {
             let o = errorService.CreateError(this.action, err.message);
@@ -127,10 +126,20 @@ export class ComptabiliteComponent implements OnInit {
         errorService.emitChange(o);
       });
   }
+  getActiveSaison(): string {
+    let s = this.liste_saison.find((x) => x.id == this.active_saison);
+    if (s) {
+      return s.nom;
+    } else {
+      return '';
+    }
+  }
   VoirSituation() {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la situation`;
-
+    this.compta_serv.getAllSeason(this.active_saison).then((liste) =>{
+      this.FluxFinanciers = liste;
+    })
     // this.compta_serv.VoirSituation(this.saison_id).then((ff) => {
     //   this.FluxFinanciers = ff.map((x) => new FluxFinancier(x));
 
@@ -159,7 +168,8 @@ export class ComptabiliteComponent implements OnInit {
       case 'libelle':
         this.sort_libelle_ff = sens;
         this.sort_date_ff = 'NO';
-        this.sort_montant_ff = 'NON';
+        this.sort_montant_ff = 'NO';
+        this.sort_sens_ff = 'NON';
         this.FluxFinanciers.sort((a, b) => {
           const nomA = a.libelle.toUpperCase(); // Ignore la casse lors du tri
           const nomB = b.libelle.toUpperCase();
@@ -173,11 +183,30 @@ export class ComptabiliteComponent implements OnInit {
           return this.sort_libelle_ff === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
+case 'sens':
+        this.sort_date_ff = sens;
+        this.sort_libelle_ff = 'NO';
+        this.sort_montant_ff = 'NO';
+        this.sort_sens_ff = 'NO';
+        this.FluxFinanciers.sort((a, b) => {
+          let dateA = a.date;
+          let dateB = b.date;
 
+          let comparaison = 0;
+          if (dateA > dateB) {
+            comparaison = 1;
+          } else if (dateA < dateB) {
+            comparaison = -1;
+          }
+
+          return this.sort_date_ff === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+        });
+        break;
       case 'date':
         this.sort_date_ff = sens;
         this.sort_libelle_ff = 'NO';
         this.sort_montant_ff = 'NO';
+        this.sort_sens_ff = 'NO';
         this.FluxFinanciers.sort((a, b) => {
           let dateA = a.date;
           let dateB = b.date;
@@ -195,6 +224,7 @@ export class ComptabiliteComponent implements OnInit {
       case 'montant':
         this.sort_libelle_ff = 'NO';
         this.sort_date_ff = 'NO';
+        this.sort_sens_ff = 'NO';
         this.sort_montant_ff = sens;
         this.FluxFinanciers.sort((a, b) => {
           const soldeA = a.montant; // Ignore la casse lors du tri
@@ -209,18 +239,26 @@ export class ComptabiliteComponent implements OnInit {
           return this.sort_montant_ff === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
         });
         break;
+      case 'sens':
+        this.sort_libelle_ff = 'NO';
+        this.sort_date_ff = 'NO';
+        this.sort_sens_ff = sens;
+        this.sort_montant_ff = 'NO';
+        this.FluxFinanciers.sort((a, b) => {
+          const soldeA = a.recette; // Ignore la casse lors du tri
+          const soldeB = b.recette;
+          let comparaison = 0;
+          if (soldeA > soldeB) {
+            comparaison = 1;
+          } else if (soldeA < soldeB) {
+            comparaison = -1;
+          }
+
+          return this.sort_sens_ff === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
+        });
+        break;
     }
   }
-
-  ReinitFiltre_ff() {
-    this.filter_classe_ff = null;
-    this.filter_date_debut_ff = null;
-    this.filter_libelle_ff = null;
-    this.filter_montant_max_ff = null;
-    this.filter_montant_min_ff = null;
-    this.filter_date_fin_ff = null;
-  }
-  ExporterExcel_ff() {}
 
   Payer_ff(t: FluxFinancier_VM) {
     t.statut = 1;
@@ -250,9 +288,19 @@ export class ComptabiliteComponent implements OnInit {
     });
   }
 
+  autoSave(){
+    if(this.is_valid){
+      this.Save_ff();
+    }
+  }
+
+
+
   Save_ff() {
     const errorService = ErrorService.instance;
     this.action = $localize`Mettre à jour une flux`;
+    let h = JSON.stringify(this.histo);
+
     if (this.editFluxFlinancier.id == -1) {
       this.compta_serv
         .add(this.editFluxFlinancier)
@@ -366,13 +414,6 @@ export class ComptabiliteComponent implements OnInit {
     }
   }
 
-  IsCC(cl: { numero: string; libelle: string }): boolean {
-    return (
-      this.FluxFinanciers.filter((x) => x.classe_comptable == cl.numero).length >
-      0
-    );
-  }
-
   isOKCreate(): boolean {
     if (this.editFluxFlinancier.libelle.length === 0) {
       return true;
@@ -424,81 +465,51 @@ export class ComptabiliteComponent implements OnInit {
     return ret;
   }
 
-  FFByClass(ff: string): FluxFinancier_VM[] {
+  FFByClass(ff: number): FluxFinancier_VM[] {
     return this.FluxFinanciers.filter((x) => x.classe_comptable == ff);
   }
-  AjouterDoc() {}
-
-  AjouterPaiement_ff() {
-    let newValue = new Operation_VM();
-    newValue.flux_financier_id = this.editFluxFlinancier.id;
-    newValue.date_operation = this.editFluxFlinancier.date;
-    newValue.destinataire = this.editFluxFlinancier.destinataire;
-    let max_id = 1;
-    let total = 0;
-    this.editFluxFlinancier.liste_operation.forEach((f) => {
-      total += f.solde;
-      if (f.temp_id && f.temp_id >= max_id) {
-        max_id++;
-      }
-    });
-    newValue.solde = this.editFluxFlinancier.montant - total;
-    newValue.paiement_execute = true;
-    newValue.temp_id = max_id;
-    this.editFluxFlinancier.liste_operation.push(newValue);
-  }
-  Ajouter_Stock() {
-    let s = new Stock_VM();
-    s.date_achat = this.editFluxFlinancier.date;
-    s.flux_financier_id = this.editFluxFlinancier.id;
-    s.id = 0;
-    s.qte = 1;
-    let max_id = 1;
-    this.editFluxFlinancier.liste_stock.forEach((f) => {
-      if (f.temp_id && f.temp_id >= max_id) {
-        max_id++;
-      }
-    });
-    this.editFluxFlinancier.liste_stock.push(s);
-  }
-  Remove_liste(cpt: Operation_VM) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Supprimer une opération`;
-    if (cpt.id > 0) {
-      this.trns_serv
-        .Delete(cpt.id)
-        .then(() => {
-          let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            this.editFluxFlinancier.liste_operation =
-              this.editFluxFlinancier.liste_operation.filter(
-                (x) => x.id !== cpt.id
-              );
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-    } else {
-      this.editFluxFlinancier.liste_operation =
-        this.editFluxFlinancier.liste_operation.filter(
-          (x) => x.temp_id !== cpt.temp_id
-        );
-      let o = errorService.OKMessage(this.action);
-      errorService.emitChange(o);
-    }
-  }
-
-  Retour_menu() {
+  
+  VoirClasse(cl:number){
+    this.vue = "COMPTA";
+    this.FluxFinanciers = this.FFByClass(cl);
     this.editFluxFlinancier = null;
   }
 
-  Edit_ff(id: number) {
-  
+  trouverclasse(cl:number){
+    return this.SC.ClassComptable.find(x => x.numero == cl).libelle;
+  }
+    trouverDestinataire(cl:string){
+    return this.liste_destintaire.find(x => x.value.toLowerCase().includes(cl.toLowerCase())).value;
+  }
+
+  Retour_menu() {
+    let h = JSON.stringify(this.editFluxFlinancier);
+    if(h !== this.histo){
+      let c = window.confirm($localize`Des modifications ont été détectées ? En revenant en arrière, vous perdez les modifications non sauvegardées ?`);
+      if(c){
+        this.editFluxFlinancier = null;
+      }
+    } else {
+    this.editFluxFlinancier = null;
+
+    }
+  }
+
+  Edit_ff(id: number) { 
+    const errorService = ErrorService.instance;
+    this.action = $localize`Supprimer une opération`;
+    this.compta_serv.get(id).then((FF) =>{
+      this.editFluxFlinancier = FF;
+      this.histo = JSON.stringify(this.editFluxFlinancier);
+    })
+  }
+
+  Delete_ff(id:number){
+    
   }
   onInputChange(displayText: GenericLink_VM) {
     // Trouver l'objet complet correspondant à la valeur d'affichage
-    const selectedOption = this.Destinataire.find(
+    const selectedOption = this.liste_destintaire.find(
       (option) => option === displayText
     );
     if (selectedOption) {
@@ -516,7 +527,7 @@ export class ComptabiliteComponent implements OnInit {
   }
   onInputChangeList(displayText: GenericLink_VM, cpt: Operation_VM) {
     // Trouver l'objet complet correspondant à la valeur d'affichage
-    const selectedOption = this.Destinataire.find(
+    const selectedOption = this.liste_destintaire.find(
       (option) => option === displayText
     );
     if (selectedOption) {
@@ -533,7 +544,7 @@ export class ComptabiliteComponent implements OnInit {
     }
   }
   onInputChangeListStock(displayText: GenericLink_VM, cpt: Stock_VM) {
-   const selectedOption = this.Destinataire.find(
+   const selectedOption = this.liste_destintaire.find(
       (option) => option === displayText
     );
     if (selectedOption) {
@@ -582,10 +593,19 @@ export class ComptabiliteComponent implements OnInit {
       errorService.emitChange(o);
     }
   }
-  Delete_ff(ff: FluxFinancier_VM) {}
-  Read_ff(ff: FluxFinancier_VM) {}
+  Reinit_Filter(){
+     this.filters.filter_date_debut_ff = null
+  this.filters.filter_date_fin_ff = null
+  this.filters.filter_libelle_ff = null
+  this.filters.filter_classe_ff = null
+  this.filters.filter_type_achat_ff = null
+  this.filters.filter_montant_min_ff = null
+  this.filters.filter_montant_max_ff = null
+  this.filters.filter_sens_operation_ff = null
+  this.filters.filter_destinataire_ff = null
+  }
 
-  Ajouter(numero: string = null) {
+  Ajouter(numero: number = null) {
     let ff = new FluxFinancier_VM();
     this.editFluxFlinancier = ff;
     this.editFluxFlinancier.date = new Date();
@@ -595,7 +615,7 @@ export class ComptabiliteComponent implements OnInit {
   }
 
   getCompte(id: number): CompteBancaire_VM {
-    return this.Comptes.find((x) => x.id == id);
+    return this.liste_compte_bancaire.find((x) => x.id == id);
   }
 
   GoToType(type_: string, id: number) {
@@ -604,6 +624,9 @@ export class ComptabiliteComponent implements OnInit {
         this.router.navigate(['/adherent'], { queryParams: { id: id } });
         break;
     }
+  }
+  ExportExcel(){
+
   }
 
   AppliquerPaiement() {
@@ -641,4 +664,41 @@ export class ComptabiliteComponent implements OnInit {
         this.editFluxFlinancier.liste_operation.filter((x) => x !== t);
     }
   }
+
+    private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer(); // Re-tente de le trouver
+      }
+    }, 100); // Réessaie toutes les 100 ms
+  }
+
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth', // Défilement fluide
+    });
+  }
+}
+
+export class filterFF {
+  filter_date_debut_ff: Date = null
+  filter_date_fin_ff: Date = null
+  filter_libelle_ff: string = null
+  filter_classe_ff: number = null
+  filter_type_achat_ff: number = null
+  filter_montant_min_ff: number = null
+  filter_montant_max_ff: number = null
+  filter_sens_operation_ff: boolean = null
+  filter_destinataire_ff: string = null
 }

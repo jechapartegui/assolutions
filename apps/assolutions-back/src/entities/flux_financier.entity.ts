@@ -17,8 +17,11 @@ label: string;
 date: Date; // YYYY-MM-DD
 
 
-@Column({ name: 'classe_comptable', type: 'varchar', length: 255 })
-accountingClass: string; // LV_COMPTE_FR code (e.g., '645')
+@Column({ name: 'classe_comptable', type: 'int', nullable: true })
+accountingClass: number; // LV_COMPTE_FR code (e.g., '645')
+
+@Column({ name: 'type_frais', type: 'varchar', length: 255, nullable: true  })
+type_flow: string; // LV_TYPE_ACHAT code (e.g., 'Cotisation')
 
 
 @Column({ name: 'destinataire', type: 'text' })
@@ -31,9 +34,6 @@ isIncome: boolean;
 
 @Column({ name: 'statut', type: 'int' })
 status: number; // LV if desired
-
-@Column({ name: 'nb_paiement', type: 'int' })
-nbpayment: number; // LV if desired
 
 @Column({ name: 'montant', type: 'float' })
 amount: number;

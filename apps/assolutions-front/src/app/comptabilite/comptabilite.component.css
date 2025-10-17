@@ -26,3 +26,11 @@
 :root {
     --bulma-modal-content-width: 60rem; /* Ajustez la valeur selon vos besoins */
   }
+
+  .dot{
+    display:inline-grid; place-items:center;
+    width:1.4em; height:1.4em; border-radius:50%;
+    color:#fff; font-weight:800; font-family:system-ui, sans-serif;
+  }
+  .dot-income{ background:#16a34a; }
+  .dot-expense{ background:#dc2626; }

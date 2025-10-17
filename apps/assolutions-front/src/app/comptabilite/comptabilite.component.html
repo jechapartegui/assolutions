@@ -2,10 +2,620 @@
 <div class="container">
   <ng-container *ngIf="vue == 'LISTE'">
     <ng-container *ngIf="editFluxFlinancier">
+   <div class="columns page-fill">
+            <div class="column">
+              <div class="card card--scroller">
+      <header class="card-header" style="align-items: center">
+        <p class="card-header-title subtitle is-6">
+          <span *ngIf="editFluxFlinancier.id < 1">
+           <input [ngClass]="!rLibelle.key   ? 'input is-danger'   : 'input' " [(ngModel)]="editFluxFlinancier.libelle" (ngModelChange)="autoSave()">
+           <p *ngIf="!rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
+          </span>
+          <span *ngIf="editFluxFlinancier.id > 0">
+            <span i18n>Editer</span> : {{ editFluxFlinancier.libelle }} 
+          </span>
+        </p>
+      </header> 
+      
+      <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
 
+      </div>
+      <footer class="card-footer">
+<span class="fullscreen">
+        <div class="columns is-mobile is-centered">
+          <div class="column is-half">
+             <div class="buttons" style="flex-wrap: nowrap">
+            <btn
+              [type_button]="'RetourSmall'"
+              (click)="Retour_menu()"
+            ></btn>
+            <btn *ngIf="editFluxFlinancier.id < 1"
+            [disabled]="!is_valid"
+              [type_button]="'SauvegarderSmall'"
+              (click)="Save_ff()"
+            ></btn>
+            </div>
+          </div>
+        </div>
+        </span>
+    </footer>
+    </div>
+    </div>
+    </div>
     </ng-container>
     <ng-container *ngIf="!editFluxFlinancier">
-      
+                <div class="columns page-fill">
+            <div class="column">
+              <div class="card card--scroller">
+                <header class="card-header" style="align-items: center">
+                  <p class="card-header-title"
+                  *ngIf="
+                    FluxFinanciers
+                      | multifiltersFF : filters as filteredApplis
+                  "
+                >
+                  <span i18n>Liste des flux financiers</span>&nbsp;({{
+                    filteredApplis.length
+                  }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
+                    getActiveSaison()
+                  }}
+                </p>
+               
+              </header>
+              <div class="card-content" #scrollableContent>
+                <div class="content">
+                  <table
+                    class="table"
+                    style="width: 100%; font-size: smaller"
+                    *ngIf="FluxFinanciers && FluxFinanciers.length > 0"
+                  >
+                    <thead>
+                      <tr>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_libelle_ff ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Libellé</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_libelle_ff === 'NO'"
+                              (click)="Sort_ff('ASC', 'libelle')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_libelle_ff === 'ASC'"
+                              (click)="Sort_ff('DESC', 'libelle')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_libelle_ff === 'DESC'"
+                              (click)="Sort_ff('ASC', 'libelle')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </th>
+                      
+                      <th>
+                        <span>
+                            <span
+                              [ngClass]="
+                                filters.filter_date_debut_ff ||
+                                filters.filter_date_fin_ff
+                                  ? 'has-text-info'
+                                  : ''
+                              "
+                              i18n
+                              >Date</span
+                            >
+                            <span style="cursor: pointer">
+                              <i
+                                *ngIf="sort_date_ff === 'NO'"
+                                (click)="Sort_ff('ASC', 'date')"
+                                class="fa-solid fa-sort"
+                              ></i>
+                              <i
+                                *ngIf="sort_date_ff === 'ASC'"
+                                (click)="Sort_ff('DESC', 'date')"
+                                class="fa-solid fa-sort-up"
+                              ></i>
+                              <i
+                                *ngIf="sort_date_ff === 'DESC'"
+                                (click)="Sort_ff('ASC', 'date')"
+                                class="fa-solid fa-sort-down"
+                              ></i> </span
+                          ></span>
+                      </th>
+                       
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_montant_min_ff || filters.filter_montant_max_ff  ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Montant</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_montant_ff === 'NO'"
+                              (click)="Sort_ff('ASC', 'montant')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_montant_ff === 'ASC'"
+                              (click)="Sort_ff('DESC', 'montant')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_montant_ff === 'DESC'"
+                              (click)="Sort_ff('ASC', 'montant')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </th>
+                        <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_sens_operation_ff   ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >+/-</span
+                          >
+                          <span style="cursor: pointer">
+                            <i
+                              *ngIf="sort_sens_ff === 'NO'"
+                              (click)="Sort_ff('ASC', 'sens')"
+                              class="fa-solid fa-sort"
+                            ></i>
+                            <i
+                              *ngIf="sort_sens_ff === 'ASC'"
+                              (click)="Sort_ff('DESC', 'sens')"
+                              class="fa-solid fa-sort-up"
+                            ></i>
+                            <i
+                              *ngIf="sort_sens_ff === 'DESC'"
+                              (click)="Sort_ff('ASC', 'sens')"
+                              class="fa-solid fa-sort-down"
+                            ></i>
+                          </span>
+                        </th>
+                          <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_destinataire_ff   ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Créantier / Débiteur</span
+                          >
+                        </th>
+                       <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_classe_ff   ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Classe comptable</span
+                          >
+                        </th>
+                       <th>
+                          <span
+                            [ngClass]="
+                              filters.filter_classe_ff   ? 'has-text-info' : ''
+                            "
+                            i18n
+                            >Type transaction</span
+                          >
+                        </th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="
+                          let ff of FluxFinanciers
+                            | multifiltersFF : filters
+                        "
+                      >
+                        <td>
+                          {{ ff.libelle }}
+                        </td>
+                        <td>
+                          {{ff.date | date : 'dd/MM/yyyy'}}
+                        </td>
+                        <td>
+                          {{ ff.montant }} €
+                        </td>
+                        <td>
+                          <span *ngIf="ff.recette"class="dot dot-income" aria-label="Recette">+</span>
+                          <span *ngIf="!ff.recette" class="dot dot-expense" aria-label="Dépense">−</span>
+                        </td>
+                        <td>
+                          {{ ff.destinataire.value }}
+                        </td>
+                        <td>
+                          <a href="#" (click)="VoirClasse(ff.classe_comptable)">&nbsp;{{trouverclasse(ff.classe_comptable)}}</a>
+                        </td>
+                        <td>
+                         {{ff.type_depense}}
+                        <td>
+                          <div class="buttons" style="flex-wrap: nowrap">
+                            <btn
+                              i18n-title
+                              title="Supprimer"
+                              [type_button]="'SupprimerLight'"
+                              (click)="Delete_ff(ff.id)"
+                            ></btn>
+
+                            <btn
+                              i18n-title
+                              title="Editer"
+                              [type_button]="'EditerLight'"
+                              (click)="Edit_ff(ff.id)"
+                            ></btn>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <button
+                    class="scroll-to-top"
+                    *ngIf="showScrollToTop"
+                    (click)="scrollToTop()"
+                    title="Revenir en haut"
+                  >
+                    ↑
+                  </button>
+                  <p *ngIf="!FluxFinanciers || FluxFinanciers.length == 0">
+                    Pas de flux financier disponible
+                  </p>
+                </div>
+              </div>
+              <footer class="card-footer">
+                <div class="columns">
+                  <div class="column">
+                    <div *ngIf="!afficher_filtre" class="buttons">
+                      <btn [type_button]="'CreerSmall'" (click)="Ajouter()"></btn>
+                      <btn
+                        [type_button]="'FiltrerSmall'"
+                        (click)="
+                          afficher_filtre
+                            ? (afficher_filtre = false)
+                            : (afficher_filtre = true)
+                        "
+                      ></btn>
+
+                      <btn
+                        [type_button]="'ExporterSmall'"
+                        (click)="ExportExcel()"
+                      ></btn>
+                      <div class="field is-horizontal">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Saison affichée</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <div class="select is-fullwidth">
+                                <select
+                                  [(ngModel)]="active_saison"
+                                  (ngModelChange)="VoirSituation()"
+                                >
+                                  <ng-container
+                                    *ngFor="let saison of liste_saison"
+                                  >
+                                    <option [ngValue]="saison">
+                                      {{ saison.nom }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="buttons" *ngIf="afficher_filtre">
+                      <btn
+                        (click)="
+                          afficher_filtre = false; selected_filter = null
+                        "
+                        [type_button]="'RetourLight'"
+                      ></btn>
+                      <div
+                        class="field is-horizontal"
+                        style="gap: 0.5rem; align-items: center"
+                      >
+                        <div class="field-label is-normal">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Sélection du filtre</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <div
+                                class="select is-fullwidth ; font-size: smaller"
+                              >
+                                <select [(ngModel)]="selected_filter">
+                                  <option value="libellé" i18n>Libellé</option>
+                                  <option value="montant" i18n>Montant</option>
+                                  <option value="recette" i18n>+/-</option>
+                                  <option value="date" i18n>Date</option>
+                                  <option value="type_achat" i18n>Type achat</option>
+                                  <option value="classe_comptable" i18n>Classe comptable</option>
+                                  <option value="destinataire" i18n>Créancier / Débiteur</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          *ngIf="selected_filter"
+                          class="field-label is-normal"
+                        >
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Valeur du filtre
+                          </label>
+                        </div>
+                        <div class="field-body" *ngIf="selected_filter">
+                          <div class="field is-narrow">
+                            <div class="control">
+                              <input
+                                *ngIf="selected_filter == 'libellé'"
+                                style="width: fit-content; font-size: smaller"
+                                class="input is-small"
+                                i18n-placeholder
+                                placeholder="Libellé de la dépense"
+                                type="text"
+                                [(ngModel)]="filters.filter_libelle_ff"
+                              />
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'recette'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_sens_operation_ff"
+                                >
+                                 <option [ngValue]="null" i18n>Tous</option>
+                                  <option [ngValue]="true" i18n>Recettes</option>
+                                  <option [ngValue]="false" i18n>Dépenses</option>
+                                </select>
+                              </div>
+                                                      <span
+                                *ngIf="selected_filter == 'date'"
+                                class="ligne"
+                              >
+                                <div
+                                  style="gap: 6px"
+                                  class="field is-small is-horizontal field-jecha"
+                                >
+                                  <label
+                                    for="groupe"
+                                    class="label is-small"
+                                    i18n
+                                    >Du</label
+                                  >
+                                  <input
+                                    style="width: fit-content"
+                                    class="input is-small"
+                                    i18n-placeholder
+                                    placeholder="Filtre date avant"
+                                    type="date"
+                                    [(ngModel)]="filters.filter_date_debut_ff"
+                                  />
+                                </div>
+                              </span>
+                              <span
+                                *ngIf="selected_filter == 'date'"
+                                class="ligne"
+                              >
+                                <div
+                                  style="gap: 6px"
+                                  class="field is-small is-horizontal field-jecha"
+                                >
+                                  <label
+                                    for="groupe"
+                                    class="label is-small"
+                                    i18n
+                                    >Au</label
+                                  >
+                                  <input
+                                    style="width: fit-content"
+                                    class="input is-small"
+                                    i18n-placeholder
+                                    placeholder="Filtre date après"
+                                    type="date"
+                                    [(ngModel)]="filters.filter_date_fin_ff"
+                                  />
+                                </div>
+                              </span>
+                              
+                            
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'classe_comptable'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_classe_ff"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let cc of SC.ClassComptable"
+                                  >
+                                    <option [ngValue]="cc.numero">
+                                      {{ cc.libelle }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                              <div
+                                class="select"
+                                *ngIf="selected_filter == 'type_achat'"
+                              >
+                                <select
+                                  style="font-size: smaller"
+                                  [(ngModel)]="filters.filter_type_achat_ff"
+                                >
+                                  <option [ngValue]="null" i18n>Tous</option>
+                                  <ng-container
+                                    *ngFor="let cc of SC.TypeTransaction"
+                                  >
+                                    <option [ngValue]="cc.libelle">
+                                      {{ cc.libelle }}
+                                    </option>
+                                  </ng-container>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tags">
+                          <span
+                            *ngIf="filters.filter_libelle_ff"
+                            class="tag is-success"
+                          >
+                            <span i18n>Nom : </span>
+                            <span>{{ filters.filter_libelle_ff }}</span>
+                            <button
+                              class="delete"
+                              (click)="filters.filter_libelle_ff = null"
+                            ></button>
+                          </span>
+
+                          <span
+                            *ngIf="filters.filter_sens_operation_ff != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>+/- : </span>
+                          <span *ngIf="filters.filter_sens_operation_ff" class="dot dot-income" aria-label="Recette">+</span>
+                          <span *ngIf="!filters.filter_sens_operation_ff" class="dot dot-expense" aria-label="Dépense">−</span>
+                            
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_sens_operation_ff = null"
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_destinataire_ff != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Créancier / Débiteur : </span>
+                            <span>{{ trouverDestinataire(filters.filter_destinataire_ff)}}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_destinataire_ff = null"
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_classe_ff != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Classe comptable : </span>
+                            <span i18n>{{ trouverclasse(filters.filter_classe_ff) }}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_classe_ff = null"
+                            ></button>
+                          </span>
+                           <span
+                            *ngIf="
+                              filters.filter_date_debut_ff ||
+                              filters.filter_date_fin_ff
+                            "
+                            class="tag is-success"
+                          >
+                            <span i18n>Date :&nbsp;</span>
+                            <span *ngIf="filters.filter_date_debut_ff"
+                              >&nbsp;>&nbsp;{{
+                                filters.filter_date_debut_ff | date : 'dd/MM/yyyy'
+                              }}</span
+                            >
+                            <span *ngIf="filters.filter_date_fin_ff"
+                              >&nbsp;<&nbsp;{{
+                                filters.filter_date_fin_ff | date : 'dd/MM/yyyy'
+                              }}&nbsp;</span
+                            >
+                            <button
+                              class="delete"
+                              (click)="
+                                filters.filter_date_debut_ff = null;
+                                filters.filter_date_fin_ff = null
+                              "
+                            ></button>
+                          </span>
+                                                <span
+                            *ngIf="
+                              filters.filter_montant_min_ff ||
+                              filters.filter_montant_max_ff
+                            "
+                            class="tag is-success"
+                          >
+                            <span i18n>Montant :&nbsp;</span>
+                            <span *ngIf="filters.filter_montant_min_ff"
+                              >&nbsp;>&nbsp;{{
+                                filters.filter_montant_min_ff 
+                              }}</span
+                            >
+                            <span *ngIf="filters.filter_montant_max_ff"
+                              >&nbsp;<&nbsp;{{
+                                filters.filter_montant_max_ff
+                              }}&nbsp;</span
+                            >
+                            <button
+                              class="delete"
+                              (click)="
+                                filters.filter_montant_min_ff = null;
+                                filters.filter_montant_max_ff = null
+                              "
+                            ></button>
+                          </span>
+                          <span
+                            *ngIf="filters.filter_classe_ff != null"
+                            class="tag is-success"
+                          >
+                            <span i18n>Type de transaction : </span>
+                            <span i18n>{{ filters.filter_type_achat_ff }}</span>
+
+                            <button
+                              class="delete"
+                              (click)="filters.filter_type_achat_ff = null"
+                            ></button>
+                          </span>
+                          <btn
+                            [type_button]="'SupprimerLight'"
+                            (click)="Reinit_Filter()"
+                            *ngIf="
+                              filters.filter_classe_ff ||
+                              filters.filter_date_debut_ff ||
+                              filters.filter_date_fin_ff ||
+                              filters.filter_destinataire_ff ||
+                              filters.filter_libelle_ff ||
+                              filters.filter_montant_max_ff ||
+                              filters.filter_montant_min_ff ||
+                              filters.filter_sens_operation_ff ||
+                              filters.filter_type_achat_ff
+                            "
+                          >
+                          </btn>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
     </ng-container>
     </ng-container>
   <ng-container *ngIf="vue == 'COMPTA'">
@@ -14,425 +624,4 @@
   <ng-container *ngIf="vue == 'BUDGET'">
     
     </ng-container>
-</div>
-<div class="container" *ngIf="FluxFinanciers && vue == 'COMPTA'">
- 
-  <ng-container *ngFor="let cl of ClassesComptable">
-    <ng-container *ngIf="IsCC(cl)">
-      <div class="card">
-        <header class="card-header">
-          <p class="card-header-title">{{ cl.numero }} - {{ cl.libelle }}</p>
-          <button (click)="Ajouter(cl.numero)" class="card-header-icon" aria-label="more options">
-            <span class="icon">
-              <i class="fa-solid fa-plus"></i>
-            </span>
-          </button>
-        </header>
-        <div class="card-content">
-          <table
-            class="table"
-            style="width: 100%; font-size: smaller"
-            *ngIf="FluxFinanciers && FluxFinanciers.length > 0"
-          >
-            <thead>
-              <tr>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n
-                        >Date comptable</span
-                      >
-                      <span style="cursor: pointer">
-                        <i
-                          *ngIf="sort_date_ff === 'NO'"
-                          (click)="Sort_ff('ASC', 'date')"
-                          class="fa-solid fa-sort"
-                        ></i>
-                        <i
-                          *ngIf="sort_date_ff === 'ASC'"
-                          (click)="Sort_ff('DESC', 'date')"
-                          class="fa-solid fa-sort-up"
-                        ></i>
-                        <i
-                          *ngIf="sort_date_ff === 'DESC'"
-                          (click)="Sort_ff('ASC', 'date')"
-                          class="fa-solid fa-sort-down"
-                        ></i> </span
-                    ></span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Montant</span>
-                      <span style="cursor: pointer">
-                        <i
-                          *ngIf="sort_montant_ff === 'NO'"
-                          (click)="Sort_ff('ASC', 'montant')"
-                          class="fa-solid fa-sort"
-                        ></i>
-                        <i
-                          *ngIf="sort_montant_ff === 'ASC'"
-                          (click)="Sort_ff('DESC', 'montant')"
-                          class="fa-solid fa-sort-up"
-                        ></i>
-                        <i
-                          *ngIf="sort_montant_ff === 'DESC'"
-                          (click)="Sort_ff('ASC', 'montant')"
-                          class="fa-solid fa-sort-down"
-                        ></i> </span
-                    ></span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>R / D</span
-                      ><span style="cursor: pointer">
-                        <i
-                          *ngIf="sort_sens_ff === 'NO'"
-                          (click)="Sort_ff('ASC', 'sens')"
-                          class="fa-solid fa-sort"
-                        ></i>
-                        <i
-                          *ngIf="sort_sens_ff === 'ASC'"
-                          (click)="Sort_ff('DESC', 'sens')"
-                          class="fa-solid fa-sort-up"
-                        ></i>
-                        <i
-                          *ngIf="sort_sens_ff === 'DESC'"
-                          (click)="Sort_ff('ASC', 'sens')"
-                          class="fa-solid fa-sort-down"
-                        ></i>
-                      </span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span class="th_filtre">
-                    <span class="ligne">
-                      <span style="font-size: smaller" i18n>Libellé</span>
-                      <span style="cursor: pointer">
-                        <i
-                          *ngIf="sort_libelle_ff === 'NO'"
-                          (click)="Sort_ff('ASC', 'libelle_ff')"
-                          class="fa-solid fa-sort"
-                        ></i>
-                        <i
-                          *ngIf="sort_libelle_ff === 'ASC'"
-                          (click)="Sort_ff('DESC', 'libelle_ff')"
-                          class="fa-solid fa-sort-up"
-                        ></i>
-                        <i
-                          *ngIf="sort_libelle_ff === 'DESC'"
-                          (click)="Sort_ff('ASC', 'libelle_ff')"
-                          class="fa-solid fa-sort-down"
-                        ></i>
-                      </span>
-                    </span>
-                  </span>
-                </th>
-                <th>
-                  <span style="font-size: smaller" i18n>Destinataire</span>
-                </th>
-                <th>
-                  <span style="font-size: smaller" i18n>Statut</span>
-                </th>
-                <th><span style="font-size: smaller" i18n>Action</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let cpt of FFByClass(cl.numero)">
-                <td>
-                  {{ cpt.date | date : "dd/MM/yyyy" }}
-                </td>
-                <td>
-                  {{ cpt.montant }}
-                </td>
-                <td>
-                  <i
-                    *ngIf="cpt.montant>0"
-                    style="color: green"
-                    class="fas fa-plus-square"
-                  ></i>
-                  <i
-                    *ngIf="cpt.montant <= 0"
-                    style="color: red"
-                    class="fas fa-minus-square"
-                  ></i>
-                </td>
-                <td>
-                  {{ cpt.libelle }}
-                </td>
-                <td>
-                  {{ cpt.destinataire.value }}
-                </td>
-                <td>
-                  <span *ngIf="cpt.statut == 0" i18n>Non exécuté</span>
-                  <span *ngIf="cpt.statut == 1" i18n>Exécuté</span>
-                  <span *ngIf="cpt.statut == -1" i18n>Annulé</span>
-                </td>
-                <td>
-                  <div class="buttons">
-                    <button
-                      i18n-title
-                      title="Supprimer"
-                      class="button is-danger is-rounded is-outlined"
-                      type="button"
-                      (click)="Delete_ff(cpt)"
-                    >
-                      <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                    <button
-                      *ngIf="cpt.statut != 1"
-                      i18n-title
-                      title="Payer maintenant"
-                      class="button is-info is-rounded is-outlined"
-                      type="button"
-                      (click)="Payer_ff(cpt)"
-                    >
-                      <i class="fas fa-coins"></i>
-                    </button>
-                    <button
-                      i18n-title
-                      title="Editer"
-                      class="button is-info is-rounded is-outlined"
-                      type="button"
-                      (click)="Read_ff(cpt)"
-                    >
-                      <i class="fa-solid fa-binoculars"></i>
-                    </button>
-                    <button
-                      i18n-title
-                      title="Editer"
-                      class="button is-info is-rounded is-outlined"
-                      type="button"
-                      (click)="Edit_ff(cpt.id)"
-                    >
-                      <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </ng-container>
-  </ng-container>
-</div>
-<div class="container" *ngIf="FluxFinanciers && context == 'LISTE'">
-  <button
-    (click)="context = 'COMPTA'"
-    class="button is-outlined is-rounded is-primary"
-    type="button"
-  >
-    <span i18n>Vue comptable</span>
-  </button>
-  <button
-  (click)="Ajouter()"
-  class="button is-outlined is-rounded is-primary"
-  type="button"
->
-  <span i18n>Ajouter</span>
-  
-              <i class="fa-solid fa-plus"></i>
-</button>
-  <div class="card">
-    <header class="card-header">
-      <p class="card-header-title">Liste des transactions annuelles</p>
-      <button class="card-header-icon" aria-label="more options">
-        <span class="icon">
-          <i class="fas fa-angle-down" aria-hidden="true"></i>
-        </span>
-      </button>
-    </header>
-    <div class="card-content">
-      <table
-        class="table"
-        style="width: 100%; font-size: smaller"
-        *ngIf="FluxFinanciers && FluxFinanciers.length > 0"
-      >
-        <thead>
-          <tr>
-            <th>
-              <span class="th_filtre">
-                <span class="ligne">
-                  <span style="font-size: smaller" i18n>Date comptable</span>
-                  <span style="cursor: pointer">
-                    <i
-                      *ngIf="sort_date_ff === 'NO'"
-                      (click)="Sort_ff('ASC', 'date')"
-                      class="fa-solid fa-sort"
-                    ></i>
-                    <i
-                      *ngIf="sort_date_ff === 'ASC'"
-                      (click)="Sort_ff('DESC', 'date')"
-                      class="fa-solid fa-sort-up"
-                    ></i>
-                    <i
-                      *ngIf="sort_date_ff === 'DESC'"
-                      (click)="Sort_ff('ASC', 'date')"
-                      class="fa-solid fa-sort-down"
-                    ></i> </span
-                ></span>
-              </span>
-            </th>
-            <th>
-              <span class="th_filtre">
-                <span class="ligne">
-                  <span style="font-size: smaller" i18n>Montant</span>
-                  <span style="cursor: pointer">
-                    <i
-                      *ngIf="sort_montant_ff === 'NO'"
-                      (click)="Sort_ff('ASC', 'montant')"
-                      class="fa-solid fa-sort"
-                    ></i>
-                    <i
-                      *ngIf="sort_montant_ff === 'ASC'"
-                      (click)="Sort_ff('DESC', 'montant')"
-                      class="fa-solid fa-sort-up"
-                    ></i>
-                    <i
-                      *ngIf="sort_montant_ff === 'DESC'"
-                      (click)="Sort_ff('ASC', 'montant')"
-                      class="fa-solid fa-sort-down"
-                    ></i> </span
-                ></span>
-              </span>
-            </th>
-            <th>
-              <span class="th_filtre">
-                <span class="ligne">
-                  <span style="font-size: smaller" i18n>R / D</span
-                  ><span style="cursor: pointer">
-                    <i
-                      *ngIf="sort_sens_ff === 'NO'"
-                      (click)="Sort_ff('ASC', 'sens')"
-                      class="fa-solid fa-sort"
-                    ></i>
-                    <i
-                      *ngIf="sort_sens_ff === 'ASC'"
-                      (click)="Sort_ff('DESC', 'sens')"
-                      class="fa-solid fa-sort-up"
-                    ></i>
-                    <i
-                      *ngIf="sort_sens_ff === 'DESC'"
-                      (click)="Sort_ff('ASC', 'sens')"
-                      class="fa-solid fa-sort-down"
-                    ></i>
-                  </span>
-                </span>
-              </span>
-            </th>
-            <th>
-              <span class="th_filtre">
-                <span class="ligne">
-                  <span style="font-size: smaller" i18n>Libellé</span>
-                  <span style="cursor: pointer">
-                    <i
-                      *ngIf="sort_libelle_ff === 'NO'"
-                      (click)="Sort_ff('ASC', 'libelle_ff')"
-                      class="fa-solid fa-sort"
-                    ></i>
-                    <i
-                      *ngIf="sort_libelle_ff === 'ASC'"
-                      (click)="Sort_ff('DESC', 'libelle_ff')"
-                      class="fa-solid fa-sort-up"
-                    ></i>
-                    <i
-                      *ngIf="sort_libelle_ff === 'DESC'"
-                      (click)="Sort_ff('ASC', 'libelle_ff')"
-                      class="fa-solid fa-sort-down"
-                    ></i>
-                  </span>
-                </span>
-              </span>
-            </th>
-            <th>
-              <span style="font-size: smaller" i18n>Destinataire</span>
-            </th>
-            <th>
-              <span style="font-size: smaller" i18n>Statut</span>
-            </th>
-            <th><span style="font-size: smaller" i18n>Action</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cpt of this.FluxFinanciers">
-            <td>
-              {{ cpt.date | date : "dd/MM/yyyy" }}
-            </td>
-            <td>
-              {{ cpt.montant }}
-            </td>
-            <td>
-              <i
-                *ngIf="cpt.montant >0"
-                style="color: green"
-                class="fas fa-plus-square"
-              ></i>
-              <i
-                *ngIf="cpt.montant <= 0"
-                style="color: red"
-                class="fas fa-minus-square"
-              ></i>
-            </td>
-            <td>
-              {{ cpt.libelle }}
-            </td>
-            <td>
-              {{ cpt.destinataire.value }}
-            </td>
-            <td>
-              <span *ngIf="cpt.statut == 0" i18n>Non exécuté</span>
-              <span *ngIf="cpt.statut == 1" i18n>Exécuté</span>
-              <span *ngIf="cpt.statut == -1" i18n>Annulé</span>
-            </td>
-            <td>
-              <div class="buttons">
-                <button
-                  i18n-title
-                  title="Supprimer"
-                  class="button is-danger is-rounded is-outlined"
-                  type="button"
-                  (click)="Delete_ff(cpt)"
-                >
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-                <button
-                  *ngIf="cpt.statut != 1"
-                  i18n-title
-                  title="Payer maintenant"
-                  class="button is-info is-rounded is-outlined"
-                  type="button"
-                  (click)="Payer_ff(cpt)"
-                >
-                  <i class="fas fa-coins"></i>
-                </button>
-                <button
-                  i18n-title
-                  title="Editer"
-                  class="button is-info is-rounded is-outlined"
-                  type="button"
-                  (click)="Read_ff(cpt)"
-                >
-                  <i class="fa-solid fa-binoculars"></i>
-                </button>
-                <button
-                  i18n-title
-                  title="Editer"
-                  class="button is-info is-rounded is-outlined"
-                  type="button"
-                  (click)="Edit_ff(cpt.id)"
-                >
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>

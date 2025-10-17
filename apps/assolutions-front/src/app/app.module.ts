@@ -70,6 +70,7 @@ import { OrEmptyPipe } from '../filters/orempty.pipe';
 import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 import { LoginProjetComponent } from './login-projet/login-projet.component';
+import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
 @NgModule({
   declarations: [
     AppComponent,
@@ -83,7 +84,7 @@ import { LoginProjetComponent } from './login-projet/login-projet.component';
     ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,
     NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,
     ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,
-    MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, 
+    MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, MultifiltersFFPipe,
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
    CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, MenuAdminComponent,
    SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, DashboardComponent, ImportComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],

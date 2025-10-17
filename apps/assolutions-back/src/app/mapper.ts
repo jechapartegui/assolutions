@@ -51,10 +51,10 @@ return e;
 
 export function toFlowVM(e: FinancialFlow, operations : Operation [] = [], stocks: StockItem[] = [], doc:Document[] = [] ): FluxFinancier_VM {
 return {
-id: e.id, libelle: e.label, date: e.date, classe_comptable: e.accountingClass,
-destinataire: parseJson(e.recipient)!, recette: !!e.isIncome, statut: e.status, montant: e.amount, nb_paiement: e.nbpayment, liste_stock : stocks.map(x => toStockVM(x)), Documents: doc,
+id: e.id, libelle: e.label, date: e.date, classe_comptable: e.accountingClass,type_depense: e.type_flow,
+destinataire: parseJson(e.recipient)!, recette: !!e.isIncome, statut: e.status, montant: e.amount, liste_stock : stocks.map(x => toStockVM(x)), Documents: doc,
 temp_id : 0,
-info: e.info ?? undefined,  saison_id: e.seasonId ?? undefined, liste_operation : operations.map(x => toOpVM(x)), 
+info: e.info ?? undefined,  saison_id: e.seasonId ?? undefined, liste_operation : operations.map(x => toOpVM(x)), nb_paiement: operations.length 
 };
 }
 
