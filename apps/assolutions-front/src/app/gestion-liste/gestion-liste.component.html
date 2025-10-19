@@ -18,6 +18,11 @@
     <span i18n>Liste des types de transaction</span>&nbsp;({{
                     SC.TypeTransaction.length
                   }})
+</span>
+<span *ngIf="lv === 'categorie_stock'">
+    <span i18n>Liste des catégories de stock</span>&nbsp;({{
+                    SC.CategorieStock.length
+                  }})
 </span></p>
   </header>
               <div class="card-content" #scrollableContent>
@@ -30,13 +35,15 @@
                           <th i18n>Libellé</th>
                         </ng-container>
                       <ng-container *ngIf="lv === 'stock'">
-                          <th i18n>ID</th>
                           <th i18n>Catégorie</th>
                           <th i18n>Libellé</th>
                         </ng-container>
                       <ng-container *ngIf="lv === 'type_achat'">
                           <th i18n>Classe comptable</th>
                           <th i18n>Libellé</th>
+                        </ng-container>
+                        <ng-container *ngIf="lv === 'categorie_stock'">
+                          <th i18n>Catégorie</th>
                         </ng-container>
                       </tr>
                       </thead>
@@ -57,11 +64,17 @@
 <ng-container *ngFor="let cl of SC.TypeStock">
   <tr>
     <td>
-      <input type="number" class="input is-small" [(ngModel)]="cl.id" />
-    </td>
-    <td>
-      <input type="text" class="input is-small" [(ngModel)]="cl.categorie" />
-    </td>
+      
+  <div class="control is-small">
+    <div class="select is-small">
+      <select [(ngModel)]="cl.categorie">
+        <option *ngFor="let key of SC.CategorieStock" [ngValue]="key.categorie">
+          {{ key.categorie }}
+        </option>
+      </select>
+    </div>
+  </div>
+
     <td>
       <input type="text" class="input is-small" [(ngModel)]="cl.libelle" />
     </td>
@@ -72,7 +85,16 @@
 <ng-container *ngFor="let cl of SC.TypeTransaction">
   <tr>
     <td>
-      <input type="number" class="input is-small" [(ngModel)]="cl.class_compta" />
+      
+  <div class="control is-small">
+    <div class="select is-small">
+      <select [(ngModel)]="cl.class_compta">
+        <option *ngFor="let key of SC.ClassComptable" [ngValue]="key.numero">
+          {{ key.numero }}&nbsp;-&nbsp;{{ key.libelle}}
+        </option>
+      </select>
+    </div>
+  </div>
     </td>
     <td>
       <input type="text" class="input is-small" [(ngModel)]="cl.libelle" />
@@ -80,6 +102,15 @@
   </tr>
 </ng-container>
 </ng-container>     
+<ng-container *ngIf="lv === 'categorie_stock'">
+<ng-container *ngFor="let cl of SC.CategorieStock">
+  <tr>
+    <td>
+      <input type="text" class="input is-small" [(ngModel)]="cl.categorie" />
+    </td>
+  </tr>
+</ng-container>
+</ng-container>   
                       </tbody>
                   </table>
                   <button
@@ -112,8 +143,8 @@
         </button>
         <div class="field">
   <label class="label">{{ lvLabel }}</label>
-  <div class="control">
-    <div class="select">
+  <div class="control is-small">
+    <div class="select is-small">
       <select [(ngModel)]="lv">
         <option *ngFor="let key of lvKeys" [ngValue]="key">
           {{ ListeValue[key] }}
@@ -121,13 +152,7 @@
       </select>
     </div>
   </div>
-</div><button
-          (click)="Load(true)"
-          type="button"
-          class="button is-primary is-small is-light btn-mobile btn-elevated"
-        >
-          Charger
-        </button>
+</div>
                       <btn
                         [type_button]="'ExporterSmall'"
                         (click)="ExporterExcel()"

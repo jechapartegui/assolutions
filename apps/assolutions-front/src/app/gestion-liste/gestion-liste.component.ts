@@ -1,19 +1,20 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ClassComptable, StaticClass, TypeStock, TypeTransaction } from '../global';
+import { CategorieStock, ClassComptable, StaticClass, TypeStock, TypeTransaction } from '../global';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AddInfoService } from '../../services/addinfo.service';
 import { ErrorService } from '../../services/error.service';
 import { AddInfo_VM } from '@shared/index';
 
  // 1) Déclare le catalogue en const pour dériver le type automatiquement
-const LV_OPTIONS = {
+export const LV_OPTIONS = {
   class_compta: $localize`Classe comptable`,
   stock:        $localize`Type de stock`,
   type_achat:   $localize`Type d'achat`,
+  categorie_stock:   $localize`Catégorie de stock`,
 } as const;
 
 // 2) Type dérivé des clés
-type LVKey = keyof typeof LV_OPTIONS;
+export type LVKey = keyof typeof LV_OPTIONS;
 
 @Component({
   standalone: false,
@@ -31,7 +32,10 @@ export class GestionListeComponent implements OnInit {
 
   // 4) Une liste de clés pour le *ngFor du <select>
   public lvKeys: LVKey[] = Object.keys(LV_OPTIONS) as LVKey[];
-  public histo:string = "";
+  public histo_ts:string = "";
+  public histo_cs:string = "";
+  public histo_ta:string = "";
+  public histo_cc:string = "";
    @ViewChild('scrollableContent', { static: false })
       scrollableContent!: ElementRef;
       showScrollToTop: boolean = false;
@@ -49,97 +53,14 @@ export class GestionListeComponent implements OnInit {
 
   // Appelée quand on change la sélection OU au démarrage
   Load(force: boolean) {
-    const errorService = ErrorService.instance;
-    if(this.histo.length > 1){ 
-      console.log("ici");
-      let h:string = "";
-      switch (this.lv) {
-          case 'class_compta':
-            h =  JSON.stringify(this.SC.ClassComptable);
-            break;
-          case 'stock':
-             h =  JSON.stringify(this.SC.TypeStock);
-            break;
-          case 'type_achat':
-             h =  JSON.stringify(this.SC.TypeTransaction);
-            break;
-        }
-      if(this.histo !== h){
-         let c = window.confirm($localize`Des modifications ont été détectées ? En revenant en arrière, vous perdez les modifications non sauvegardées ?`);
-         if(c){
-              this.addinfo_serv
-      .get_lv(this.lv, force)
-      .then((ret: AddInfo_VM) => {
-        this.histo = ret.text;
-        switch (this.lv) {
-          case 'class_compta':
-            this.SC.ClassComptable = JSON.parse(ret.text);
-            break;
-          case 'stock':
-            this.SC.TypeStock = JSON.parse(ret.text);
-            break;
-          case 'type_achat':
-            this.SC.TypeTransaction = JSON.parse(ret.text);
-            break;
-        }
-        this.charge = true;
-      })
-      .catch((err: HttpErrorResponse) => {
-        const o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        switch (this.lv) {
-          case 'class_compta':
-            this.SC.ClassComptable = [];
-            break;
-          case 'stock':
-            this.SC.TypeStock = [];
-            break;
-          case 'type_achat':
-            this.SC.TypeTransaction = [];
-            break;
-        }
-      });
-         } else {
-          return;
-         }
-      }
-    } else {
-      console.log("là", this.lv)
-    this.addinfo_serv
-      .get_lv(this.lv, force)
-      .then((ret: AddInfo_VM) => {
-        this.histo = ret.text;
-        switch (this.lv) {
-          case 'class_compta':
-            this.SC.ClassComptable = JSON.parse(ret.text);
-            break;
-          case 'stock':
-            this.SC.TypeStock = JSON.parse(ret.text);
-            break;
-          case 'type_achat':
-            this.SC.TypeTransaction = JSON.parse(ret.text);
-            break;
-        }
-        this.charge = true;
-      })
-      .catch((err: HttpErrorResponse) => {
-        const o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        switch (this.lv) {
-          case 'class_compta':
-            this.SC.ClassComptable = [];
-            break;
-          case 'stock':
-            this.SC.TypeStock = [];
-            break;
-          case 'type_achat':
-            this.SC.TypeTransaction = [];
-            break;
-        }
-      });
-    }
-
-  }
+          this.addinfo_serv.ChargerLV(force).then(()=>{
+            this.histo_cc = JSON.stringify(this.SC.ClassComptable);
+            this.histo_ts = JSON.stringify(this.SC.TypeStock);
+            this.histo_ta = JSON.stringify(this.SC.TypeTransaction);
+            this.histo_cs = JSON.stringify(this.SC.CategorieStock);
+            this.charge = true;
+    })
+}
 
       private waitForScrollableContainer(): void {
       setTimeout(() => {
@@ -169,44 +90,89 @@ export class GestionListeComponent implements OnInit {
   Sauvegarder() {
     this.action = $localize`Sauvegarder`;
     const errorService = ErrorService.instance;
-    let content = '';
-    switch (this.lv) {
-      case 'class_compta':
-        content = JSON.stringify(this.SC.ClassComptable);
-        break;
-        case 'stock':
-          content = JSON.stringify(this.SC.TypeStock);
-          break;
-        case 'type_achat':
-          content = JSON.stringify(this.SC.TypeTransaction);
-          break;
-    }
-    if(content === this.histo){
-
-        let o = errorService.Create(this.action,  $localize`Pas de modification`,  "Warning");
-        errorService.emitChange(o);
-        return;
-    }
-    let adin:AddInfo_VM = new AddInfo_VM();
+    let h_cc = JSON.stringify(this.SC.ClassComptable);
+    let h_cs = JSON.stringify(this.SC.CategorieStock);
+    let h_ta = JSON.stringify(this.SC.TypeTransaction);
+    let h_ts = JSON.stringify(this.SC.TypeStock);
+    if(h_cc !== this.histo_cc){
+       let adin:AddInfo_VM = new AddInfo_VM();
     adin.id = 0 // va falloir alors chercher ca
     adin.object_id = 0;
     adin.value_type = ""
-    adin.text = content;
-    adin.object_type = this.lv;
-    this.addinfo_serv
-      .update(adin)
-      .then((ret: boolean) => {
-        this.histo =content;
-        let o = errorService.OKMessage(this.action);
+    adin.text = h_cc;
+    adin.project_id = null;
+    adin.object_type = "class_compta";
+      this.addinfo_serv.update_lv(adin) .then((ret: boolean) => {
+        this.histo_cc = h_cc;
         if(!ret){
-           o = errorService.UnknownError(this.action);          
+        let o = errorService.UnknownError(this.action);  
+        errorService.emitChange(o);        
         }
-        errorService.emitChange(o);
       }).catch((err: HttpErrorResponse) => {
         let o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
 
+    }
+    if(h_cs !== this.histo_cs){
+       let adin:AddInfo_VM = new AddInfo_VM();
+    adin.id = 0 // va falloir alors chercher ca
+    adin.object_id = 0;
+    adin.value_type = ""
+    adin.text = h_cs;
+    adin.project_id = null;
+    adin.object_type = "categorie_stock";
+      this.addinfo_serv.update_lv(adin) .then((ret: boolean) => {
+        this.histo_cs = h_cs;
+        if(!ret){
+        let o = errorService.UnknownError(this.action);  
+        errorService.emitChange(o);        
+        }
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+
+    }
+ if(h_ta !== this.histo_ta){
+       let adin:AddInfo_VM = new AddInfo_VM();
+    adin.id = 0 // va falloir alors chercher ca
+    adin.object_id = 0;
+    adin.value_type = ""
+    adin.text = h_ta;
+    adin.project_id = null;
+    adin.object_type = "type_achat";
+      this.addinfo_serv.update_lv(adin) .then((ret: boolean) => {
+        this.histo_ta = h_ta
+        if(!ret){
+        let o = errorService.UnknownError(this.action);  
+        errorService.emitChange(o);        
+        }
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+
+    }
+    if(h_ts !== this.histo_ts){
+       let adin:AddInfo_VM = new AddInfo_VM();
+    adin.id = 0 // va falloir alors chercher ca
+    adin.object_id = 0;
+    adin.value_type = ""
+    adin.project_id = null;
+    adin.object_type = "stock";
+      this.addinfo_serv.update_lv(adin) .then((ret: boolean) => {
+        this.histo_ts = h_ts;
+        if(!ret){
+        let o = errorService.UnknownError(this.action);  
+        errorService.emitChange(o);        
+        }
+      }).catch((err: HttpErrorResponse) => {
+        let o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+
+    }
   }
 
   ExporterExcel(){}
@@ -218,6 +184,8 @@ export class GestionListeComponent implements OnInit {
       this.AjouterTS();
     } else if(this.lv == "type_achat"){
       this.AjouterTA();
+    } else if(this.lv == "categorie_stock"){
+      this.AjouterCS();
     }
   }
 
@@ -228,6 +196,8 @@ export class GestionListeComponent implements OnInit {
       this.SupprimerTS(obj);
     } else if(this.lv == "type_achat"){
       this.SupprimerTA(obj);
+    } else if(this.lv == "categorie_stock"){
+      this.SupprimerCS(obj);
     }
   }
 
@@ -238,21 +208,30 @@ export class GestionListeComponent implements OnInit {
     };
     this.SC.ClassComptable.push(cc);
   }
+
   SupprimerCC(cc: ClassComptable) {
     this.SC.ClassComptable = this.SC.ClassComptable.filter(
       (x) => x.libelle !== cc.libelle && x.numero !== cc.numero
     );
   }
+    AjouterCS() {
+    let cc: CategorieStock = {
+      categorie: 'Nouvelle catégorie',
+    };
+    this.SC.CategorieStock.push(cc);
+  }
+   SupprimerCS(cc: CategorieStock) {
+    this.SC.CategorieStock = this.SC.CategorieStock.filter(
+      (x) => x.categorie !== cc.categorie 
+    );
+  }
   AjouterTS() {
-    let id = Math.max(...this.SC.TypeStock.map(x => x.id),0)
-    console.log(id);
     let cc: TypeStock = new TypeStock();
-    cc.id = id + 1;
     this.SC.TypeStock.push(cc);
   }
   SupprimerTS(cc: TypeStock) {
     this.SC.TypeStock = this.SC.TypeStock.filter(
-      (x) => x.id !== cc.id
+      (x) => x.categorie !== cc.categorie && x.libelle !== cc.libelle
     );
   }
   AjouterTA() {

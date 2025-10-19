@@ -22,12 +22,12 @@ return JSON.stringify(obj);
 
 
 export function toAddInfoVM(e: AddInfo): AddInfo_VM {
-return { id: e.id, object_id: e.objectId, object_type: e.objectType, value_type: e.valueType, text: e.text };
+return { id: e.id, object_id: e.objectId, object_type: e.objectType, value_type: e.valueType, text: e.text, project_id:e.projectId };
 }
 export function toAddInfoEntity(vm: AddInfo_VM): AddInfo {
 const e = new AddInfo();
 if (vm.id) e.id = vm.id;
-e.objectId = vm.object_id; e.objectType = vm.object_type; e.valueType = vm.value_type; e.text = vm.text;
+e.objectId = vm.object_id; e.objectType = vm.object_type; e.valueType = vm.value_type; e.text = vm.text;e.projectId = vm.project_id;
 return e;
 }
 

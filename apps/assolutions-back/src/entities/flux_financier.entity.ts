@@ -17,8 +17,8 @@ label: string;
 date: Date; // YYYY-MM-DD
 
 
-@Column({ name: 'classe_comptable', type: 'int', nullable: true })
-accountingClass: number; // LV_COMPTE_FR code (e.g., '645')
+@Column({ name: 'classe_comptable', type: 'int', nullable: false })
+accountingClass: number;
 
 @Column({ name: 'type_frais', type: 'varchar', length: 255, nullable: true  })
 type_flow: string; // LV_TYPE_ACHAT code (e.g., 'Cotisation')
@@ -52,4 +52,4 @@ info?: string | null;
   @ManyToOne(() => Season)
   @JoinColumn({ name: 'saison_id' })
   season: Season;
-}
+} 

@@ -510,7 +510,7 @@
               <select id="cours" [(ngModel)]="editStock.type_stock">
                 <option value="0" i18n>Autre</option>
                 <ng-container *ngFor="let st of TypeStock">
-                  <option [value]="st.id">
+                  <option [value]="st.libelle + (st.categorie)">
                     {{ st.libelle }}&nbsp;({{ st.categorie }})
                   </option>
                 </ng-container>

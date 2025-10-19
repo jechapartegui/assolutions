@@ -31,7 +31,11 @@ GetAllAddInfoByType(
 @Put('addinfo/add')
 AddAddInfo(@Body() vm: AddInfo_VM) { return this.srv.AddAddInfo(vm); }
 
+@UseGuards(PasswordGuard)
+@Put('addinfo/update_lv')
+UpdateAddInfoLV(@Headers('projectid') projectId: number, @Body() vm: AddInfo_VM) { return this.srv.UpdateAddInfoLV(vm, projectId); }
 
+@UseGuards(PasswordGuard)
 @Put('addinfo/update')
 UpdateAddInfo(@Body() vm: AddInfo_VM) { return this.srv.UpdateAddInfo(vm); }
 

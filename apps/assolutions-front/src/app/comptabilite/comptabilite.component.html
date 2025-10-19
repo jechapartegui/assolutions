@@ -18,7 +18,77 @@
       </header> 
       
       <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
+         <div class="column is-full-tablet is-half-desktop">
+                <div class="box is-light">
+                  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations essentielles
+                                </h3>
+                    <ng-container *ngIf="editFluxFlinancier.id > 0">
+                      <btn
+                        *ngIf="!edit_infoessentielle"
+                        class="mx-1"
+                        [type_button]="'EditerLight'"
+                        (click)="edit_infoessentielle = true"
+                      >
+                      </btn>
 
+                      <btn
+                        *ngIf="edit_infoessentielle"
+                        class="mx-1"
+                        [type_button]="'SauvegarderLight'"
+                        [disabled]="!rIE.key"
+                        (click)="SaveIE()"
+                      >
+                      </btn>
+
+                      <btn
+                        *ngIf="edit_infoessentielle"
+                        class="mx-1"
+                        [type_button]="'AnnulerLight'"
+                        (click)="(edit_infoessentielle = false) && AnnulerIE() "
+                      >
+                      </btn>
+                    </ng-container>
+                  </div>
+
+                <ng-container
+                  *ngIf="editSeance.seance_id > 0; else NouvelleSeance"
+                >
+                  <ng-container *ngIf="edit_nom; else affichageNom">
+                                          <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Montant</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <input [(ngModel)]="editFluxFlinancier.montant" type="number"  class="input" />
+                          </div>
+                          </div>
+                          <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Recette / Dépense</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <span *ngIf="editFluxFlinancier.recette"class="dot dot-income" aria-label="Recette">+</span>
+                          <span *ngIf="!editFluxFlinancier.recette" class="dot dot-expense" aria-label="Dépense">−</span>
+                          </div>
+                          </div>
+                               <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Date de la transaction</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <input [(ngModel)]="editFluxFlinancier.date" class="input" type="date" />
+                          </div>
+                          </div>
+                  </div>
+                  </div>
+                  </div>
       </div>
       <footer class="card-footer">
 <span class="fullscreen">
@@ -45,7 +115,7 @@
     </ng-container>
     <ng-container *ngIf="!editFluxFlinancier">
                 <div class="columns page-fill">
-            <div class="column">
+            <div class="column" *ngIf="SC.CategorieStock && SC.ClassComptable && SC.TypeStock && SC.TypeTransaction">
               <div class="card card--scroller">
                 <header class="card-header" style="align-items: center">
                   <p class="card-header-title"
@@ -54,7 +124,7 @@
                       | multifiltersFF : filters as filteredApplis
                   "
                 >
-                  <span i18n>Liste des flux financiers</span>&nbsp;({{
+                  <span i18n>Liste des transactions</span>&nbsp;({{
                     filteredApplis.length
                   }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
                     getActiveSaison()

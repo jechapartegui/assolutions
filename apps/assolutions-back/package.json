@@ -15,7 +15,7 @@
 
     "start": "node dist/main.js",
 
-    "start:dev": "ts-node-dev --respawn --transpile-only --project tsconfig.dev.json -r ./register-tsconfig-paths.cjs src/main.ts"
+    "start:dev": "ts-node-dev --clear --respawn --transpile-only --project tsconfig.dev.json -r ./register-tsconfig-paths.cjs src/main.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.2",

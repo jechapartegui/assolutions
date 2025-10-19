@@ -1,5 +1,6 @@
-import { GenericLink_VM } from "@shared/index";
+import { AddInfo_VM, GenericLink_VM } from "@shared/index";
 import { Doc } from "../class/doc";
+import { AddInfoService } from "../services/addinfo.service";
 
 
 export class StaticClass{
@@ -8,6 +9,10 @@ export class StaticClass{
   public ClassComptable:ClassComptable[] = [];
   public TypeStock:TypeStock[] = [];
   public TypeTransaction:TypeTransaction[] = [];
+  public CategorieStock:CategorieStock[] = [];
+
+
+
 
 
   public downloadDocument(docu:Doc) {
@@ -270,10 +275,11 @@ export  const configapi= [
 ]
 
 export class ClassComptable{numero:number; libelle:string }
-export class TypeStock{id:number =0;categorie: string| null = null; libelle: string = $localize`Autre`
+export class TypeStock{categorie: string| null = null; libelle: string = $localize`Autre`
 
   equals(other: TypeStock): boolean {
     return this.categorie === other.categorie && other.libelle === this.libelle;
   }
 }
+export class CategorieStock{categorie:string= $localize`Nouvelle catégorie`};
 export class TypeTransaction{class_compta:number; libelle:string }

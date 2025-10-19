@@ -8,14 +8,39 @@ import { AdherentService } from './adherent.service';
 import { ProfesseurService } from './professeur.service';
 import { CompteBancaireService } from './compte-bancaire.service';
 import { AppStore } from '../app/app.store';
+import { StaticClass } from '../app/global';
 
 @Injectable({ providedIn: 'root' })
 export class AddInfoService {
   url = environment.maseance;
 constructor(private global: GlobalService,private store:AppStore,private  lieu_serv:LieuNestService,private  adherent_serv:AdherentService, 
-    private  profserv:ProfesseurService, private comptebancaireserv:CompteBancaireService) {}
+    private  profserv:ProfesseurService, private comptebancaireserv:CompteBancaireService, public SC: StaticClass) {}
 
+ // Helpers réutilisables
+private safeParse<T = any>(text: string, fallback: T): T {
+  try { return JSON.parse(text) as T; } catch { return fallback; }
+}
 
+private loadOne<T = any>(
+  key: string,
+  force: boolean,
+  assign: (val: T) => void,
+  fallback: T
+): Promise<void> {
+  return this.get_lv(key, force)
+    .then(ret => assign(this.safeParse<T>(ret.text, fallback)))
+    .catch(() => assign(fallback));
+}
+
+// Appel unique qui charge tout en parallèle
+public async ChargerLV(force: boolean = true): Promise<void> {
+  await Promise.allSettled([
+    this.loadOne<any[]>('class_comptable',   force, v => this.SC.ClassComptable   = v, []),
+    this.loadOne<any[]>('type_stock',        force, v => this.SC.TypeStock        = v, []),
+    this.loadOne<any[]>('categorie_stock',   force, v => this.SC.CategorieStock   = v, []),
+    this.loadOne<any[]>('type_achat',        force, v => this.SC.TypeTransaction  = v, []),
+  ]);
+}
 
 
 
