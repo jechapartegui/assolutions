@@ -34,3 +34,10 @@
   }
   .dot-income{ background:#16a34a; }
   .dot-expense{ background:#dc2626; }
+
+  .table.is-narrow td .input.is-small,
+.table.is-narrow td .select.is-small select {
+  height: 2.25em;
+  padding-top: 0;
+  padding-bottom: 0;
+}

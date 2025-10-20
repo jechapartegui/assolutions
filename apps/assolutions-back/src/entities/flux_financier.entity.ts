@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Season } from './saison.entity';
 import { Project } from './projet.entity';
+import { Operation } from './operation.entity';
 
 
 @Entity({ name: 'flux_financier' })
@@ -41,6 +42,12 @@ amount: number;
 
 @Column({ name: 'info', type: 'text', nullable: true })
 info?: string | null;
+
+ @OneToMany(() => Operation, op => op.financialFlow, {
+    cascade: ['insert', 'update'],
+    orphanedRowAction: 'delete',
+  })
+  operations: Operation[];
 
 
 @Column({ name: 'project_id', type: 'int' }) projectId: number;

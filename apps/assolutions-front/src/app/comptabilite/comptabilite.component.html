@@ -8,7 +8,7 @@
       <header class="card-header" style="align-items: center">
         <p class="card-header-title subtitle is-6">
           <span *ngIf="editFluxFlinancier.id < 1">
-           <input [ngClass]="!rLibelle.key   ? 'input is-danger'   : 'input' " [(ngModel)]="editFluxFlinancier.libelle" (ngModelChange)="autoSave()">
+           <input [ngClass]="!rLibelle.key   ? 'input is-danger'   : 'input' " [(ngModel)]="editFluxFlinancier.libelle" (ngModelChange)="UpdateIE()">
            <p *ngIf="!rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
           </span>
           <span *ngIf="editFluxFlinancier.id > 0">
@@ -36,8 +36,8 @@
                         *ngIf="edit_infoessentielle"
                         class="mx-1"
                         [type_button]="'SauvegarderLight'"
-                        [disabled]="!rIE.key"
-                        (click)="SaveIE()"
+                        [disabled]="!is_valid"
+                        (click)="UpdateIE()"
                       >
                       </btn>
 
@@ -51,10 +51,20 @@
                     </ng-container>
                   </div>
 
-                <ng-container
-                  *ngIf="editSeance.seance_id > 0; else NouvelleSeance"
-                >
-                  <ng-container *ngIf="edit_nom; else affichageNom">
+                  <ng-container *ngIf="edit_infoessentielle; else affichageFF">
+                                          <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Libellé</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <input [(ngModel)]="editFluxFlinancier.libelle" (ngModelChange)="updateLibelle($event)" type="text"  class="input" />
+                           <p *ngIf="!rLibelle.key" class="help is-danger is-small">
+                      {{ rLibelle.value }}
+                    </p>
+                          </div>
+                          </div>
                                           <div class="field">
                         <div class="field-label is-normal is-two-quarter">
                           <label class="label" style="white-space: nowrap" i18n
@@ -62,7 +72,10 @@
                           >
                         </div>
                         <div class="field-body">
-                          <input [(ngModel)]="editFluxFlinancier.montant" type="number"  class="input" />
+                          <input [(ngModel)]="editFluxFlinancier.montant" (ngModelChange)="updateValeurMontant($event)" type="number"  class="input" />
+                           <p *ngIf="!rMontant.key" class="help is-danger is-small">
+                      {{ rMontant.value }}
+                    </p>
                           </div>
                           </div>
                           <div class="field">
@@ -72,8 +85,8 @@
                           >
                         </div>
                         <div class="field-body">
-                          <span *ngIf="editFluxFlinancier.recette"class="dot dot-income" aria-label="Recette">+</span>
-                          <span *ngIf="!editFluxFlinancier.recette" class="dot dot-expense" aria-label="Dépense">−</span>
+                          <span *ngIf="editFluxFlinancier.recette"class="dot dot-income" (click)="updateMontant()" aria-label="Recette">+</span>
+                          <span *ngIf="!editFluxFlinancier.recette" class="dot dot-expense"  (click)="updateMontant()" aria-label="Dépense">−</span>
                           </div>
                           </div>
                                <div class="field">
@@ -83,15 +96,223 @@
                           >
                         </div>
                         <div class="field-body">
-                          <input [(ngModel)]="editFluxFlinancier.date" class="input" type="date" />
+                          <input [(ngModel)]="editFluxFlinancier.date"  (click)="updateDate($event)"  class="input" type="date" />
+                           <p *ngIf="!rDate.key" class="help is-danger is-small">
+                      {{ rDate.value }}
+                    </p>
                           </div>
                           </div>
+
+                                                         <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Info de la transaction</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          <textarea [(ngModel)]="editFluxFlinancier.info"    rows="3" class="textarea"></textarea>
+                                                    </div>
+                          </div>
+                  </ng-container>
+                  <ng-template #affichageFF>
+                    <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Montant</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          {{editFluxFlinancier.montant}} €
+                          </div>
+                          </div>
+                          <div class="field">
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Recette / Dépense</label
+                          > 
+                        </div>
+                        <div class="field-body
+">
+                          <span *ngIf="editFluxFlinancier.recette"class="dot dot-income" aria-label="Recette">+</span>
+                          <span *ngIf="!editFluxFlinancier.recette" class="dot dot-expense" aria-label="Dépense">−</span>
+                          </div>
+                          </div>
+                               <div class="field">  
+                        <div class="field-label is-normal is-two-quarter">
+                          <label class="label" style="white-space: nowrap" i18n
+                            >Date de la transaction</label
+                          >
+                        </div>
+                        <div class="field-body">
+                          {{editFluxFlinancier.date | date : 'dd/MM/yyyy'}}
+                          </div>
+                          </div>
+                  </ng-template>
                   </div>
                   </div>
+                  <!-- ===================== PAIEMENTS : tableau d’édition ===================== -->
+<div class="column is-full">
+  <div class="box is-light">
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Paiements</h3>
+      <div class="buttons" style="flex-wrap: nowrap">
+        <btn [type_button]="'CreerLight'" (click)="addPaiement()" i18n-title title="Ajouter un paiement"></btn>
+        <btn [type_button]="'SauvegarderLight'" (click)="savePaiements()" i18n-title title="Sauvegarder les paiements"></btn>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap" i18n>Date</th>
+            <th style="white-space:nowrap" i18n>Compte bancaire</th>
+            <th style="white-space:nowrap" i18n>Montant</th>
+            <th style="white-space:nowrap" i18n>Exécuté&nbsp;?</th>
+            <th style="white-space:nowrap" i18n>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let op of editFluxFlinancier.liste_operation; trackBy: trackOp">
+            <!-- Date -->
+            <td style="min-width: 10rem">
+              <input class="input"
+                     type="date"
+                     [(ngModel)]="op.date_operation"
+                     (ngModelChange)="onPaiementChange(op)" />
+            </td>
+
+            <!-- Compte -->
+            <td style="min-width: 14rem">
+              <div class="select is-fullwidth">
+                <select [(ngModel)]="op.compte_bancaire_id" (ngModelChange)="onPaiementChange(op)">
+                  <option [ngValue]="null" i18n *ngIf="!liste_compte_bancaire?.length">— Aucun compte —</option>
+                  <option *ngFor="let c of liste_compte_bancaire" [ngValue]="c.id">
+                    {{ c.nom  || ('Compte #' + c.id) }}
+                  </option>
+                </select>
+              </div>
+            </td>
+
+            <!-- Montant -->
+            <td style="min-width: 10rem">
+              <input class="input"
+                     type="number"
+                     step="0.01"
+                     [(ngModel)]="op.solde"
+                     (ngModelChange)="onPaiementChange(op)" />
+            </td>
+
+            <!-- Exécuté -->
+            <td class="has-text-centered">
+              <label class="checkbox">
+                <input type="checkbox"
+                       [(ngModel)]="op.paiement_execute"
+                       (ngModelChange)="onPaiementChange(op)" />
+              </label>
+            </td>
+
+            <!-- Actions -->
+            <td>
+              <div class="buttons" style="flex-wrap: nowrap">
+                <btn [type_button]="'VoirLight'"
+                     i18n-title
+                     title="Détail du paiement"
+                     (click)="openOperationModal(op)"></btn>
+
+                <btn [type_button]="'SupprimerLight'"
+                     i18n-title
+                     title="Supprimer ce paiement"
+                     (click)="removePaiement(op)"></btn>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <th colspan="2" class="has-text-right" i18n>Total des paiements</th>
+            <th>{{ totalPaiements | number:'1.2-2' }} €</th>
+            <th colspan="2">
+              <small class="has-text-grey"
+                     [ngClass]="{'has-text-success': deltaMontant === 0, 'has-text-danger': deltaMontant !== 0}">
+                <span i18n>Diff. avec la transaction</span> :
+                {{ deltaMontant | number:'1.2-2' }} €
+              </small>
+            </th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL DÉTAIL OPÉRATION ===================== -->
+<div class="modal" [ngClass]="{'is-active': showOperationModal}">
+  <div class="modal-background" (click)="closeOperationModal()"></div>
+  <div class="modal-card" style="max-width: 720px;">
+    <header class="modal-card-head">
+      <p class="modal-card-title" i18n>Éditer le paiement</p>
+      <button class="delete" aria-label="close" (click)="closeOperationModal()"></button>
+    </header>
+    <section class="modal-card-body" *ngIf="currentOperation">
+      <div class="columns is-multiline is-variable is-3">
+        <div class="column is-half">
+          <label class="label" i18n>Date de l’opération</label>
+          <input class="input" type="date" [(ngModel)]="currentOperation.date_operation" />
+        </div>
+
+        <div class="column is-half">
+          <label class="label" i18n>Montant</label>
+          <input class="input" type="number" step="0.01" [(ngModel)]="currentOperation.solde" />
+        </div>
+
+        <div class="column is-half">
+          <label class="label" i18n>Compte bancaire</label>
+          <div class="select is-fullwidth">
+            <select [(ngModel)]="currentOperation.compte_bancaire_id">
+              <option [ngValue]="null" i18n *ngIf="!liste_compte_bancaire?.length">— Aucun compte —</option>
+              <option *ngFor="let c of liste_compte_bancaire" [ngValue]="c.id">
+                {{ c.nom  || ('Compte #' + c.id) }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="column is-half">
+          <label class="label" i18n>Statut</label>
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="currentOperation.paiement_execute" />
+            <span class="ml-2" i18n>Paiement exécuté</span>
+          </label>
+        </div>
+
+        <!-- Champs additionnels si tu veux étendre -->
+        <div class="column is-half">
+          <label class="label" i18n>Mode</label>
+          <input class="input" type="number" [(ngModel)]="currentOperation.mode" />
+        </div>
+
+        <div class="column is-full">
+          <label class="label" i18n>Informations</label>
+          <textarea class="textarea" rows="3" [(ngModel)]="currentOperation.info"></textarea>
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <btn [type_button]="'SauvegarderLight'" (click)="saveOperationModal()" i18n-title title="Sauvegarder"></btn>
+        <btn [type_button]="'AnnulerLight'" (click)="closeOperationModal()" i18n-title title="Fermer"></btn>
+      </div>
+    </footer>
+  </div>
+</div>
+<!-- ===================== /MODAL ===================== -->
+
                   </div>
       </div>
       <footer class="card-footer">
-<span class="fullscreen">
         <div class="columns is-mobile is-centered">
           <div class="column is-half">
              <div class="buttons" style="flex-wrap: nowrap">
@@ -107,9 +328,7 @@
             </div>
           </div>
         </div>
-        </span>
     </footer>
-    </div>
     </div>
     </div>
     </ng-container>

@@ -14,7 +14,9 @@ export class FinancialFlowService {
   ) {}
 
   async get(id: number) {
-    const e = await this.repo.findOne({ where: { id } });
+    const e = await this.repo.findOne({ where: { id },
+        relations: [
+          'operations']} );
     if (!e) throw new NotFoundException('FLOW_NOT_FOUND');
     return e;
   }
@@ -22,7 +24,9 @@ export class FinancialFlowService {
     return this.repo.find({ where: { projectId } });
   }
   async getAllSeason(seasonId: number) {
-    return this.repo.find({ where: { seasonId } });
+    return this.repo.find({ where: { seasonId },
+        relations: [
+          'operations']} );
   }
   async create(data: Partial<FinancialFlow>) {
     try {

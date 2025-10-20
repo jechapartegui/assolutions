@@ -100,7 +100,8 @@ export class AdminService {
 
   // --- Financial flows
   async GetFlow(id: number) {
-    return toFlowVM(await this.flow.get(id));
+    const flow = await this.flow.get(id);
+    return toFlowVM(flow, flow.operations);
   }
   async GetAllFlows(project_id: number) {
     const flows = await this.flow.getAll(project_id);
@@ -108,7 +109,7 @@ export class AdminService {
   }
   async GetAllFlowsSeason(saison_id: number) {
     const flows = await this.flow.getAllSeason(saison_id);
-    return flows.map((e) => toFlowVM(e));
+    return flows.map((e) => toFlowVM(e, e.operations));
   }
   async AddFlow(vm: FluxFinancier_VM, project_id: number) {
     if (!vm) throw new BadRequestException('INVALID_ITEM');

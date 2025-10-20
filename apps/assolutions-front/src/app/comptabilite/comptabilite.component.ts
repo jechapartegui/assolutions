@@ -11,6 +11,7 @@ import { StockService } from '../../services/stock.service';
 import { StaticClass } from '../global';
 import { Saison_VM } from '@shared/lib/saison.interface';
 import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM, Stock_VM, ValidationItem } from '@shared/index';
+import { GlobalService } from '../../services/global.services';
 
 @Component({
   standalone: false,
@@ -48,10 +49,12 @@ export class ComptabiliteComponent implements OnInit {
   public afficher_filtre: boolean = false;
   public selected_filter: string | null = null;
 
-  rIE:ValidationItem = { key: true, value: '' };
   rLibelle: ValidationItem = { key: true, value: '' };
   rDate: ValidationItem = { key: true, value: '' };
   rMontant: ValidationItem = { key: true, value: '' };
+  rDestinataire: ValidationItem = { key: true, value: '' };
+  rNbOperation: ValidationItem = { key: true, value: '' };
+  rTypeAchat: ValidationItem = { key: true, value: '' };
   is_valid: boolean = false;
 
   histo: string = '';
@@ -241,11 +244,6 @@ export class ComptabiliteComponent implements OnInit {
     });
   }
 
-  autoSave(): void {
-    if (this.is_valid) {
-      this.Save_ff();
-    }
-  }
 
   Save_ff(): void {
     if (!this.editFluxFlinancier) return;
@@ -264,9 +262,10 @@ export class ComptabiliteComponent implements OnInit {
         : [];
     };
     ensureArrays();
-
+    console.log('Save_ff: ', this.editFluxFlinancier);
     if ((this.editFluxFlinancier.id ?? 0) === -1) {
       // CREATE
+      console.log("ici");
       this.compta_serv
         .add(this.editFluxFlinancier)
         .then((ffx) => {
@@ -299,6 +298,7 @@ export class ComptabiliteComponent implements OnInit {
         });
     } else {
       // UPDATE
+      console.log("là");
       this.compta_serv
         .update(this.editFluxFlinancier)
         .then((ok) => {
@@ -367,32 +367,33 @@ export class ComptabiliteComponent implements OnInit {
     this.histo = JSON.stringify(this.editFluxFlinancier ?? '');
   }
 
-  isOKCreate(): boolean {
-    const f = this.editFluxFlinancier;
-    if (!f) return true; // bloque le bouton si pas d'objet
-    if (!f.libelle || f.libelle.length === 0) return true;
-    if (f.classe_comptable === undefined || f.classe_comptable === null) return true;
-    if (!f.montant || Number(f.montant) === 0) return true;
-    if (!f.date) return true;
-    if (!f.destinataire) return true;
-    const nb = Number(f.nb_paiement ?? 0);
-    if (nb < 1 || nb > 36) return true;
-    return false;
-  }
 
   isValid(): boolean {
-    if (this.isOKCreate()) return true;
-    const f = this.editFluxFlinancier!;
-    let solde = 0;
-    let invalid = false;
-    (f.liste_operation ?? []).forEach((ope) => {
-      solde = Number(solde) + Number(ope.solde ?? 0);
-      if (!ope.destinataire) invalid = true;
-      if (!ope.date_operation) invalid = true;
-      if (!ope.mode) invalid = true;
-    });
-    if (solde !== Number(f.montant) && solde !== -Number(f.montant)) invalid = true;
-    return invalid;
+    this.rLibelle = { key: true, value: '' };
+    this.rDate = { key: true, value: '' };
+    this.rMontant = { key: true, value: '' };
+    this.rTypeAchat = { key: true, value: '' };
+    this.rLibelle = GlobalService.instance.validerChaine(this.editFluxFlinancier.libelle, 3, null, true, $localize`Libellé de la transaction`);
+    this.rDate = GlobalService.instance.validerDate(this.editFluxFlinancier.date, this.liste_saison.find(x => x.id == this.active_saison).date_debut ?? null,this.liste_saison.find(x => x.id == this.active_saison).date_fin ?? null , true, $localize`Date de la transaction`);
+    this.rMontant = GlobalService.instance.validerNombre(this.editFluxFlinancier.montant, 0.01, -1, true, $localize`Montant de la transaction`);
+    if(this.editFluxFlinancier.nb_paiement<1){
+      this.rNbOperation = { key: false, value: $localize`Le nombre de paiements doit être au moins égal à 1` };
+    } else {
+      let montant_op:number = 0;
+      (this.editFluxFlinancier.liste_operation ?? []).forEach(op=>{
+        montant_op += Number(op.solde ?? 0);
+      });
+      console.log('montant_op=', montant_op, ' editFluxFlinancier.montant=', this.editFluxFlinancier.montant);
+      if(montant_op != Number(this.editFluxFlinancier.montant)){
+        this.rNbOperation = { key: false, value: $localize`La somme des paiements doit être égale au montant total` };
+      } else {
+        this.rNbOperation = { key: true, value: '' };
+      }
+    }
+
+    console.log('isValid:', this.rLibelle, this.rDate, this.rMontant, this.rDestinataire, this.rNbOperation, this.rTypeAchat);
+    return this.rLibelle.key && this.rDate.key && this.rMontant.key && this.rDestinataire.key && this.rNbOperation.key && this.rTypeAchat.key;
+
   }
 
   FFByClass(ff: number): FluxFinancier_VM[] {
@@ -416,12 +417,34 @@ export class ComptabiliteComponent implements OnInit {
     return d?.value ?? '';
   }
 
-  SaveIE(){
+  updateLibelle(event:any){
+      this.editFluxFlinancier!.libelle = event;
+      this.UpdateIE();
+  }
+  updateValeurMontant(event:any){
+      this.editFluxFlinancier!.montant = Number(event);
+      this.UpdateIE();
+  }
 
+  updateDate(event:any){
+      this.editFluxFlinancier!.date = new Date(event);
+      this.UpdateIE();
+  }
+
+  UpdateIE(){
+    this.is_valid = this.isValid(); 
+    if(this.is_valid && this.editFluxFlinancier.id>0){
+      this.Save_ff();
+    }
   }
 
   AnnulerIE(){
     
+  }
+
+  updateMontant(){  
+    this.editFluxFlinancier.montant = -this.editFluxFlinancier.montant;
+    this.UpdateIE();
   }
 
   Retour_menu(): void {
@@ -608,6 +631,114 @@ export class ComptabiliteComponent implements OnInit {
     if (!el) return;
     el.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+showOperationModal = false;
+  currentOperation: Operation_VM | null = null;
+private _tempIdSeq = -1;
+
+get totalPaiements(): number {
+  if (!this.editFluxFlinancier?.liste_operation?.length) return 0;
+  return this.editFluxFlinancier.liste_operation
+    .map(o => Number(o?.solde || 0))
+    .reduce((a, b) => a + b, 0);
+}
+
+// Écart entre le montant du FF et la somme des paiements.
+// (Pas de signe différent Recette/Dépense ici : on additionne ce qui est saisi.)
+get deltaMontant(): number {
+  const ff = this.editFluxFlinancier;
+  const total = this.totalPaiements;
+  const ffMontant = Number(ff?.montant || 0);
+  if(this.editFluxFlinancier.recette){
+    return +(ffMontant - total).toFixed(2);
+  } else {
+  return +(ffMontant + total).toFixed(2);
+  }
+}
+
+trackOp = (_: number, op: Operation_VM) => op.id ?? op.temp_id;
+
+// ---- Actions ----
+addPaiement(): void {
+  if (!this.editFluxFlinancier) return;
+
+  const nowISO = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const defaultDate = (this.editFluxFlinancier.date as any) || nowISO;
+  const defaultCompte = this.liste_compte_bancaire?.[0]?.id ?? null;
+
+  const op: Operation_VM = {
+    id: 0,
+    temp_id: this._tempIdSeq--,
+    solde: 0,
+    date_operation: defaultDate as any,
+    mode: 0,
+    destinataire: this.editFluxFlinancier.destinataire,
+    paiement_execute: false,
+    compte_bancaire_id: defaultCompte as any,
+    flux_financier_id: this.editFluxFlinancier.id || 0,
+    flux_financier: this.editFluxFlinancier,
+    info: ''
+  };
+
+  this.editFluxFlinancier.liste_operation = [
+    ...(this.editFluxFlinancier.liste_operation || []),
+    op
+  ];
+
+  // Petite autosave si tu veux suivre la saisie
+  
+    this.is_valid = this.isValid(); 
+    if(this.is_valid && this.editFluxFlinancier.id>0){
+      this.Save_ff() ;
+    }
+}
+
+removePaiement(op: Operation_VM): void {
+  if (!this.editFluxFlinancier?.liste_operation) return;
+  this.editFluxFlinancier.liste_operation =
+    this.editFluxFlinancier.liste_operation.filter(x => (x.id || x.temp_id) !== (op.id || op.temp_id));
+  this.is_valid = this.isValid(); 
+    if(this.is_valid && this.editFluxFlinancier.id>0){
+      this.Save_ff() ;
+    }
+}
+
+onPaiementChange(_op: Operation_VM): void {
+  // Hook : recalculs / validations légères si besoin
+  // Ici, on déclenche juste une autosave silencieuse
+ 
+    this.is_valid = this.isValid(); 
+}
+
+savePaiements(): void {
+  // Si tu as une méthode de sauvegarde globale, tu peux l’appeler.
+  // Sinon, laisse l’autoSave faire le job (comme pour le reste).
+    this.is_valid = this.isValid(); 
+    console.log('is_valid=', this.is_valid);
+    if(this.is_valid && this.editFluxFlinancier.id>0){
+      this.Save_ff() ;
+    }
+}
+
+// ---- Modal ----
+openOperationModal(op: Operation_VM): void {
+  this.currentOperation = op;
+  this.showOperationModal = true;
+}
+
+closeOperationModal(): void {
+  this.showOperationModal = false;
+  this.currentOperation = null;
+}
+
+saveOperationModal(): void {
+  // Pas de sérialisation spéciale ici : les bindings ont déjà mis à jour currentOperation
+    this.is_valid = this.isValid(); 
+    if(this.is_valid && this.editFluxFlinancier.id>0){
+      this.Save_ff() ;
+    }
+  this.closeOperationModal();
+}
 }
 
 export class filterFF {

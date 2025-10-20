@@ -1,5 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, effect, ElementRef, HostListener, Input, OnInit, ViewChild } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectorRef, Component, effect, ElementRef, HostListener, Injectable, Input, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
