@@ -54,6 +54,7 @@
                            *ngIf="liste_adherents_VM && liste_adherents_VM.length > 0">
                       <thead>
                         <tr>
+                          <th></th>
                           <th>
                             <span>
                               <span class="ligne">
@@ -98,6 +99,13 @@
                       </thead>
                       <tbody>
                         <tr *ngFor="let adherent of liste_adherents_VM | multifiltersAdherent : filters : active_saison.id">
+                          <td> <figure class="image is-32x32 is-inline-block mr-2">
+    <img
+      class="is-rounded" style="width:auto; height:44px"
+      [src]="adherent?.photo || defaultAvatar"
+      [alt]="'Photo de ' + (adherent?.libelle || adherent?.nom || '')"
+      (error)="onImgError($event)">
+  </figure></td>
                           <td>{{ adherent.libelle }}</td>
                           <td>
                             {{ adherent.date_naissance | date : "dd/MM/yyyy" }}
@@ -560,14 +568,25 @@
 
             <div class="container-box">
               <ng-container *ngFor="let adherent of liste_adherents_VM | multifiltersAdherent : filters : active_saison.id">
-                <article class="media">
-                  <div class="media-content">
-                    <span class="title" (click)="Read(adherent)"><strong>{{ adherent.libelle }}</strong></span>
-                    <div>
-                      {{ adherent.date_naissance | date : "dd/MM/yyyy" }}&nbsp;{{ calculateAge(adherent.date_naissance) }}
-                    </div>
-                  </div>
-                </article>
+            <article class="media adherent-item" [class.dense]="denseMode">
+  <figure class="media-left">
+    <p class="image">
+      <img
+        class="is-rounded avatar"
+        [src]="adherent?.photo || defaultAvatar"
+        [alt]="'Photo de ' + (adherent?.libelle || adherent?.nom || '')"
+        (error)="onImgError($event)">
+    </p>
+  </figure>
+  <div class="media-content">
+    <p class="title is-6 mb-1 is-truncated">
+      <a class="adherent-name" (click)="Read(adherent)">{{ adherent.libelle }}</a>
+    </p>
+    <p class="subtitle is-7 has-text-grey">
+      {{ adherent.date_naissance | date:'dd/MM/yyyy' }} · {{ calculateAge(adherent.date_naissance) }} ans
+    </p>
+  </div>
+</article>
               </ng-container>
             </div>
           </ng-container>
@@ -596,6 +615,11 @@
                [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"
                [type_button]="'SauvegarderMobile'"
                (click)="Save()"></btn>
+      <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0 && !thisAdherent.archive"
+               [type_button]="'ArchiverMobile'" (click)="Archiver()"></btn> 
+      <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0 && thisAdherent.archive"
+               [type_button]="'DesarchiverMobile'" (click)="Archiver(false)"></btn> 
+               
         </div>
         </span>
       </header>
@@ -685,6 +709,10 @@
             <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
             <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0"
                  [type_button]="'InscrireSmall'" (click)="Inscrire()"></btn>
+                   <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0  && !thisAdherent.archive"
+                 [type_button]="'ArchiverSmall'" (click)="Archiver()"></btn>
+                   <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0  && thisAdherent.archive"
+                 [type_button]="'DesarchiverSmall'" (click)="Archiver(false)"></btn>
             <btn *ngIf="thisAdherent.id < 1"
                  [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"
                  [type_button]="'SauvegarderSmall'"

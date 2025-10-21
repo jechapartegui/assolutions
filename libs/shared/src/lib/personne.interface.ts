@@ -15,6 +15,9 @@ export class Personne_VM extends PersonneLight_VM {
     contact:ItemContact[] = [];
     contact_prevenir:ItemContact[]= [];
     login:string;
+    photo:any;
+    archive:boolean = false;
+
 
     get ContactPrefereType() :string {
       const contactPrefere = this.contact.find(c => c.Pref);

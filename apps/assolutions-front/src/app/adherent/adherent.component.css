@@ -1,0 +1,12 @@
+/* Avatar responsive */
+.avatar { width: 40px; height: 40px; object-fit: cover; }
+@media (min-width: 480px) { .avatar { width: 44px; height: 44px; } }
+@media (min-width: 768px) { .avatar { width: 48px; height: 48px; } }
+
+/* Mode dense (optionnel) */
+.adherent-item.dense .avatar { width: 44px; height: 44px; }
+.adherent-item.dense .title { font-size: .95rem; }
+.adherent-item.dense .subtitle { font-size: .75rem; }
+
+/* Petites finitions */
+.is-truncated { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

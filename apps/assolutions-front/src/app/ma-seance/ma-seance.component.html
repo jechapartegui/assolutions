@@ -233,12 +233,21 @@
     <i class="fas fa-ellipsis-h"></i> Non défini
   </li>
                           </ul>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
+                          <figure class="image is-32x32 is-inline-block mr-2">
+    <img
+      class="is-rounded"
+      [src]="potentiel.person?.photo || defaultAvatar"
+      [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
+      (error)="onImgError($event)">
+  </figure>
+
+  <span class="nom_personne">
+    {{ potentiel.person.libelle }}
+  </span>
+
+  <span [title]="contact_urgence_nom(potentiel)">
+    {{ contact_urgence(potentiel) }}
+  </span>
                         </span>
                         <div *ngIf="store.isProf()"  class="buttons has-addons">
                           <button
@@ -298,12 +307,21 @@
     <i class="fas fa-ellipsis-h"></i> Non défini
   </li>
                           </ul>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
+                        <figure class="image is-32x32 is-inline-block mr-2">
+    <img
+      class="is-rounded"
+      [src]="potentiel.person?.photo || defaultAvatar"
+      [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
+      (error)="onImgError($event)">
+  </figure>
+
+  <span class="nom_personne">
+    {{ potentiel.person.libelle }}
+  </span>
+
+  <span [title]="contact_urgence_nom(potentiel)">
+    {{ contact_urgence(potentiel) }}
+  </span>
                         </span>
                         <div class="buttons has-addons" *ngIf="store.isProf()">
                           <button
@@ -363,12 +381,21 @@
     <i class="fas fa-ellipsis-h"></i> Non défini
   </li>
                           </ul>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
+                        <figure class="image is-32x32 is-inline-block mr-2">
+    <img
+      class="is-rounded"
+      [src]="potentiel.person?.photo || defaultAvatar"
+      [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
+      (error)="onImgError($event)">
+  </figure>
+
+  <span class="nom_personne">
+    {{ potentiel.person.libelle }}
+  </span>
+
+  <span [title]="contact_urgence_nom(potentiel)">
+    {{ contact_urgence(potentiel) }}
+  </span>
                         </span>
                         <div class="buttons has-addons" *ngIf="store.isProf()" >
                           <button
@@ -428,12 +455,21 @@
     <i class="fas fa-ellipsis-h"></i> Non défini
   </li>
                           </ul>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
+                           <figure class="image is-32x32 is-inline-block mr-2">
+    <img
+      class="is-rounded"
+      [src]="potentiel.person?.photo || defaultAvatar"
+      [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
+      (error)="onImgError($event)">
+  </figure>
+
+  <span class="nom_personne">
+    {{ potentiel.person.libelle }}
+  </span>
+
+  <span [title]="contact_urgence_nom(potentiel)">
+    {{ contact_urgence(potentiel) }}
+  </span>
                         </span>
                         <div class="buttons has-addons" *ngIf="store.isProf()" >
                           <button
@@ -492,12 +528,21 @@
     <i class="fas fa-ellipsis-h"></i> Non défini
   </li>
                           </ul>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
+                           <figure class="image is-32x32 is-inline-block mr-2">
+    <img
+      class="is-rounded"
+      [src]="potentiel.person?.photo || defaultAvatar"
+      [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
+      (error)="onImgError($event)">
+  </figure>
+
+  <span class="nom_personne">
+    {{ potentiel.person.libelle }}
+  </span>
+
+  <span [title]="contact_urgence_nom(potentiel)">
+    {{ contact_urgence(potentiel) }}
+  </span>
                         </span>
                         <div class="buttons has-addons">
                           <button

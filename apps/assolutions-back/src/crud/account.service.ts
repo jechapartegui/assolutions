@@ -1,7 +1,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Account } from '../entities/compte.entity';
 import { Person } from '../entities/personne.entity';
 import { ProjetView } from '@shared/lib/compte.interface';
@@ -29,24 +29,32 @@ export class AccountService {
   return this.repo.findOneByOrFail({ id: item.id }); // on relit pour renvoyer l'état à jour
   }
 
+  async adherentCompte(id: number, archive: boolean = false): Promise<Person[]> {
+  // Si archive === true -> on ne veut que les non archivés (false)
+  // Sinon -> on accepte tout (true et false)
+  const valeursPossibles: boolean[] = archive ? [false] : [true, false];
 
-  async adherentCompte(id:number) : Promise<Person[]>{
-       const account = await this.repo.findOne({
-    where: { id },
-    relations: [
-      'persons', 
-      'persons.inscriptionsSeance',   
-      'persons.inscriptionsSeance.seance', 
-      'persons.inscriptionsSeance.seance.season',    
-      'persons.inscriptionsSeance.seance.season.project',               // 2ᵉ niveau                        // 1er niveau
-      'persons.inscriptions',           // 2ᵉ niveau
-      'persons.inscriptions.saison',    // 3ᵉ niveau (votre “season”)
-      'persons.inscriptions.saison.project',    // 4ᵉ niveau projet
-    ],
+  const account = await this.repo.findOne({
+    where: {
+      id,
+      persons: { archive: In(valeursPossibles) },
+    },
+    relations: {
+      persons: {
+        inscriptionsSeance: {
+          seance: {
+            season: { project: true },
+          },
+        },
+        inscriptions: {
+          saison: { project: true },
+        },
+      },
+    },
   });
-  if (!account) return [];
-  return account.persons;
-  }
+
+  return account?.persons ?? [];
+}
 
    async ProfCompte(id:number) : Promise<Person[]>{
        const account = await this.repo.findOne({

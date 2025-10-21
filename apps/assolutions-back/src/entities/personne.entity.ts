@@ -25,6 +25,10 @@ export class Person {
   @Column({ type: 'boolean', default: false })
   gender: boolean;
 
+  
+  @Column({ type: 'boolean', default: false })
+  archive: boolean;
+
   @Column({ length: 255 })
   address: string;
 

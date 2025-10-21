@@ -49,7 +49,11 @@ export class PersonService {
   return personnes;
 }
 
-async getEssai(accountId: number | null, seasonId: number): Promise<Person[]> {
+async getEssai(
+  accountId: number | null,
+  seasonId: number,
+  archive: boolean = false
+): Promise<Person[]> {
   const qb = this.repo
     .createQueryBuilder('person')
     .leftJoinAndSelect('person.account', 'account')
@@ -57,12 +61,24 @@ async getEssai(accountId: number | null, seasonId: number): Promise<Person[]> {
     .leftJoinAndSelect('insc.seance', 'seance')
     .where('seance.seasonId = :seasonId', { seasonId });
 
-  if (accountId) {
+  // Filtre archive :
+  // - si archive === true  -> person.archive = false
+  // - si archive === false -> person.archive IN (true, false) (pas de filtre)
+  if (archive) {
+    qb.andWhere('person.archive = :isArchived', { isArchived: false });
+  } else {
+    qb.andWhere('person.archive IN (:...flags)', { flags: [true, false] });
+    // ou simplement ne rien ajouter (aucun filtre) si tu préfères
+  }
+
+  // Filtre accountId si fourni (y compris 0 si c'est un id valide)
+  if (accountId !== null) {
     qb.andWhere('person.accountId = :accountId', { accountId });
   }
 
   return qb.distinct(true).getMany();
 }
+
 
 async getAllCompte_number(accountId: number): Promise<Person[]> {
   return this.repo.find({

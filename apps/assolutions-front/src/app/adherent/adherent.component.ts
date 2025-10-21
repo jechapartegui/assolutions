@@ -101,6 +101,7 @@ export class AdherentComponent implements OnInit {
   // === État de l’édition UI ===
   public edit_info_adresse = false;
   public edit_info_perso = false;
+  denseMode = false;
 private readonly defaultPhotoUrl = 'assets/photo_H.png';
 
   // === Constructeur ===
@@ -219,7 +220,65 @@ this.histo_adherent = JSON.stringify(this.thisAdherent);
       errorService.emitChange(o);
       this.router.navigate(['/login']);
     }
+    
+  this.updateDenseMode();
+  window.addEventListener('resize', this.updateDenseMode);
   }
+
+  ngOnDestroy() {
+  window.removeEventListener('resize', this.updateDenseMode);
+}
+
+updateDenseMode = () => {
+  // dense si largeur < 480px (à ajuster)
+  this.denseMode = window.innerWidth < 480;
+};
+
+  defaultAvatar = '../../assets/photo_H.png';
+  
+  onImgError(evt: Event) {
+    (evt.target as HTMLImageElement).src = this.defaultAvatar;
+  }
+  
+  // Cache simple des URLs déjà récupérées
+  private photoCache = new Map<number, string>();
+  // Pour éviter de lancer 2 fois la même requête simultanée
+  private inFlight = new Set<number>();
+  
+  // Lance le chargement des photos pour une liste de FullInscriptionSeance_VM
+  private preloadPhotos(items: Adherent_VM[]): void {
+    for (const it of items) {
+      const id = it?.id;
+      if (!id) continue;
+  
+      // déjà présente ?
+      if (it.photo && it.photo.length > 0) continue;
+  
+      // déjà en cache ?
+      const cached = this.photoCache.get(id);
+      if (cached) { it.photo = cached; continue; }
+  
+      // déjà en cours ?
+      if (this.inFlight.has(id)) continue;
+      this.inFlight.add(id);
+  
+      // fire-and-forget
+this.ridersService.GetPhoto(id)
+  .then(photoBase64 => {
+    const url = this.createBlobUrl(photoBase64);  // ✅ convertit base64 -> blob URL utilisable par <img>
+    if (url && url !== this.defaultPhotoUrl) {
+      this.photoCache.set(id, url);
+      it.photo = url;
+      // this.cdr?.markForCheck(); // si jamais tu passes le composant en OnPush
+    } else {
+      // createBlobUrl a retourné l'avatar par défaut -> on laisse le template gérer
+    }
+  })
+  .catch(() => { /* on ignore l’erreur */ })
+  .finally(() => this.inFlight.delete(id));
+    }
+  }
+
   onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
     this.thisAdherent.inscriptionsSaison.find(x => x.active).groupes = updatedGroupes;
   }
@@ -236,9 +295,11 @@ this.histo_adherent = JSON.stringify(this.thisAdherent);
         this.ridersService
           .GetAdherentAdhesion(this.active_saison.id)
           .then((adh) => {
+              // 🔹 Lancer le fetch des photos pour tous les items visibles
             this.liste_adherents_VM = adh.map(data =>
   Object.assign(new Adherent_VM(), data)
 );
+   this.preloadPhotos(this.liste_adherents_VM); // ✅ ici plutôt que sur 'adh'
             this.loading = false;
           })
           .catch((err: HttpErrorResponse) => {
@@ -379,6 +440,35 @@ retourListePersonne(){
         this.personne = null;
      this.thisAdherent = null;
       this.UpdateListeAdherents();
+}
+
+Archiver(boo:boolean = true){
+  this.action = $localize`Archiver la personne`;
+  const errorService = ErrorService.instance;
+  let message = $localize`Voulez-vous archiver l'adhérent ?`;
+  if(!boo){
+    message = $localize`Voulez-vous désarchiver l'adhérent ?`;}
+  let confirm = window.confirm(message);
+  this.thisAdherent.archive = boo;
+  if (confirm) {
+    this.ridersService
+      .Update(this.thisAdherent)
+        .then((retour) => {
+          if (retour) {
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+            this.histo_adherent = JSON.stringify(this.thisAdherent);
+          } else {
+            let o = errorService.UnknownError(this.action);
+            errorService.emitChange(o);
+          }
+        })
+        .catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
+      }
+
 }
 
 Inscrire(){

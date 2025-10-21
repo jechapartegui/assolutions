@@ -144,6 +144,59 @@ if (this.isLien && this.login && !this.adherent) {
   }
 }
 
+// Dans ta classe de composant
+defaultAvatar = '../../assets/photo_H.png';
+
+onImgError(evt: Event) {
+  (evt.target as HTMLImageElement).src = this.defaultAvatar;
+}
+
+// Cache simple des URLs déjà récupérées
+private photoCache = new Map<number, string>();
+// Pour éviter de lancer 2 fois la même requête simultanée
+private inFlight = new Set<number>();
+
+// Lance le chargement des photos pour une liste de FullInscriptionSeance_VM
+private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
+  for (const it of items) {
+    const id = it?.person?.id;
+    if (!id) continue;
+
+    // déjà présente ?
+    if (it.person.photo && it.person.photo.length > 0) continue;
+
+    // déjà en cache ?
+    const cached = this.photoCache.get(id);
+    if (cached) { it.person.photo = cached; continue; }
+
+    // déjà en cours ?
+    if (this.inFlight.has(id)) continue;
+    this.inFlight.add(id);
+
+    // fire-and-forget
+    this.riderservice.GetPhoto(id)
+      .then(photo => {
+        const url = photo && photo.length > 0 ? photo : '';
+        if (url) {
+          this.photoCache.set(id, url);
+          it.person.photo = url;
+          // Si ChangeDetectionStrategy.OnPush :
+          // this.cdr.markForCheck();
+        } else {
+          // vide ⇒ on laisse l’avatar par défaut côté template
+        }
+      })
+      .catch(() => {
+        // on ignore l’erreur pour ne pas bloquer l’UI
+      })
+      .finally(() => {
+        this.inFlight.delete(id);
+      });
+  }
+}
+
+
+
 AfficherMenu(){
   
                     this.router.navigate(['/menu']);
@@ -427,37 +480,56 @@ saveInfoSeance(){
     this.router.navigate(['/seance'], { queryParams: { id: this.thisSeance.seance_id } });
   }
 
-  Load() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger la séance`;
-    this.inscriptionserv.GetAllSeanceFull(this.id).then((res) => {
-       res.forEach(p => {
+Load() {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Charger la séance`;
+
+  this.inscriptionserv.GetAllSeanceFull(this.id).then((res) => {
+
+    // Rétablir le prototype et autres pré-traitements
+    res.forEach(p => {
       if (p?.person) {
         Object.setPrototypeOf(p.person, Personne_VM.prototype);
-        // 2) (Optionnel) matérialiser la valeur pour la sérialisation / filtres ultérieurs
-        // (p.person as any).libelle = p.person.libelle;
       }
     });
-      this.Inscrits = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT);
-      this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription);
-      this.All =  res.filter(x => !x.statut_seance);
-      this.Absents = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT);
-      this.Presents = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT);
-       this.riderservice
-          .GetAdherentAdhesion(this.store.saison_active().id)
-          .then((riders) => {
-            riders.forEach(p => Personne_VM.bakeLibelle(p));
-            this.Autres = riders.filter(x => !res.find(y => y.person.id == x.id));
-          }
-          ).catch((error) => {
-            let n = errorService.CreateError("Chargement", error);
-            errorService.emitChange(n);
-          });
-    }).catch((error) => {
-      let n = errorService.CreateError(this.action, error);
-      errorService.emitChange(n);
-    });
-  }
+
+    // Tes filtres existants
+    this.Inscrits  = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT);
+    this.Potentiels= res.filter(x => !x.statut_seance && !x.statut_inscription);
+    this.All       = res.filter(x => !x.statut_seance);
+    this.Absents   = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT);
+    this.Presents  = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT);
+
+    // 🔹 Lancer le fetch des photos pour tous les items visibles
+    this.preloadPhotos(res);
+
+    // Reste de ton code inchangé
+    this.riderservice
+      .GetAdherentAdhesion(this.store.saison_active().id)
+      .then((riders) => {
+        riders.forEach(p => Personne_VM.bakeLibelle(p));
+        this.Autres = riders.filter(x => !res.find(y => y.person.id == x.id));
+
+        // Optionnel : photos pour Autres (si tu les affiches avec avatar)
+        // On passe par un wrapping pour réutiliser preloadPhotos
+        const fakeFull: FullInscriptionSeance_VM[] = this.Autres.map(p => {
+          const f = new FullInscriptionSeance_VM();
+          (f as any).person = p as any; // p a déjà .id et .photo
+          return f;
+        });
+        this.preloadPhotos(fakeFull);
+      })
+      .catch((error) => {
+        let n = errorService.CreateError("Chargement", error);
+        errorService.emitChange(n);
+      });
+
+  }).catch((error) => {
+    let n = errorService.CreateError(this.action, error);
+    errorService.emitChange(n);
+  });
+}
+
   private generateSeanceText() {
     const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
     const ddb = new Date(this.thisSeance.date_seance);

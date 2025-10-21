@@ -77,9 +77,9 @@ export class MemberService {
     if (!saison_active) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
-    const adhrents_saison = await this.GetAdherentProject(compte, saison_active);
+    const adhrents_saison = await this.GetAdherentProject(compte, saison_active, true);
     
-    const essai_persons = await this.EssaiProjet(compte, saison_active);
+    const essai_persons = await this.EssaiProjet(compte, saison_active, true);
     const retour: AdherentSeance_VM[] = [];
   
     for (const ad of adhrents_saison) {
@@ -142,10 +142,11 @@ export class MemberService {
 
   async GetAdherentProject(
   compte: number,
-  saison_id: number
+  saison_id: number,
+  archive: boolean = false
 ): Promise<Adherent_VM[]> {
   const liste: Adherent_VM[] = [];
-  const _ads = await this.accountserv.adherentCompte(compte);
+  const _ads = await this.accountserv.adherentCompte(compte, archive);
 
   for (const ad of _ads) {
     const iss = ad.inscriptions?.find(x => x.saisonId === saison_id);
@@ -172,10 +173,11 @@ export class MemberService {
 
 async EssaiProjet(
   compte: number,
-  saison_id: number
+  saison_id: number,
+  archive:boolean = false
 ): Promise<AdherentSeance_VM[]> {
   let liste: AdherentSeance_VM[] = [];
-  const perso = await this.personserivce.getEssai(compte, saison_id);
+  const perso = await this.personserivce.getEssai(compte, saison_id, archive);
   for (const p of await perso) {
     let ms = [];
     p.inscriptionsSeance.forEach(async (ie) => {
@@ -317,6 +319,7 @@ export function toPersonne_VM(entity: Person): Personne_VM {
   vm.adresse = JSON.parse(entity.address);
   vm.compte = entity.accountId;
   vm.contact_prevenir = entity.emergencyContacts?? [];
+  vm.archive = entity.archive;
   vm.contact = entity.contacts?? [];
  if(entity.account) {
     vm.login = entity.account.login?? '';
@@ -338,7 +341,7 @@ export function toPerson(vm:Personne_VM){
   entity.contacts = vm.contact;
   entity.emergencyContacts = vm.contact_prevenir;
   entity.gender = vm.sexe;
-  
+  entity.archive = vm.archive;
   return entity;
 }
 
@@ -354,6 +357,7 @@ export function toAdherent_VM(pentity:Person, ise:RegistrationSeason[], isa:Regi
   vm.compte = pentity.accountId;
   vm.contact_prevenir = pentity.emergencyContacts?? [];
   vm.contact = pentity.contacts?? [];
+  vm.archive = pentity.archive;
   if(pentity.account) {
   vm.login = pentity.account.login?? '';
   } else  {
