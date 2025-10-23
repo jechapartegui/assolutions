@@ -580,7 +580,7 @@ Load() {
     }
   }
 
-  contact_urgence(ins: FullInscriptionSeance_VM): string {
+  _contact_urgence(ins: FullInscriptionSeance_VM): string {
     let phone = "";
     if (ins.person.contact_prevenir.length> 0) {
       if (ins.person.contact_prevenir.find(x => x.Type == "PHONE")) {
@@ -603,7 +603,7 @@ Load() {
       return "";
     }
   }
-contact_urgence_nom(ins: FullInscriptionSeance_VM): string {
+_contact_urgence_nom(ins: FullInscriptionSeance_VM): string {
   let phone = "";
     if (ins.person.contact_prevenir.length> 0) {
       if (ins.person.contact_prevenir.find(x => x.Type == "PHONE")) {
@@ -785,6 +785,41 @@ scrollToTop(): void {
     behavior: 'smooth', // Défilement fluide
   });
 }
+previewPotentiel: any | null = null;
+
+openPreview(potentiel: any, ev?: Event): void {
+  ev?.stopPropagation();
+  this.previewPotentiel = potentiel ?? null;
+}
+
+closePreview(): void {
+  this.previewPotentiel = null;
+}
+
+getPhoto(p: any): string {
+  return (p?.person?.photo || this.defaultAvatar) as string;
+}
+
+// 👇 robustes aux null/undefined
+contact_urgence(p?: any): string {
+  if (!p?.person) return '';
+  // ... ta logique actuelle, mais retourne '' si rien
+  try {
+    return this._contact_urgence(p); // si tu as une implémentation interne
+  } catch {
+    return '';
+  }
+}
+
+contact_urgence_nom(p?: any): string {
+  if (!p?.person) return '';
+  try {
+    return this._contact_urgence_nom(p);
+  } catch {
+    return '';
+  }
+}
+
 openMenu(potentiel: any, ev: MouseEvent) {
     ev.stopPropagation();              // évite la fermeture immédiate
     this.closeAllMenus();

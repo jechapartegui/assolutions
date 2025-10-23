@@ -173,4 +173,8 @@
 
   /* Couleur du contact (quand visible en desktop) */
   .partie1 > span[title]{ color: #a0a7b3; }
+  /* Optionnel : curseur zoom et meilleure responsivité de la modale */
+.nom_personne, .contact-urgence { cursor: zoom-in; }
+.modal-card { max-width: 520px; width: calc(100vw - 2rem); }
+
 }
