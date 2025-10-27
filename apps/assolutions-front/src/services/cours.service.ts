@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
-import { KeyValuePair } from '@shared/lib/autres.interface';
+import { KeyValuePair, KeyValuePairAny } from '@shared/lib/autres.interface';
 import { Cours_VM } from '@shared/lib/cours.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PersonneLight_VM } from '@shared/lib/personne.interface';
@@ -95,6 +95,23 @@ const body = {
       .catch(error => {
         return Promise.reject(error);
       });
+}
+
+public UpdateSerieCours(cours:Cours_VM, date:Date): Promise<KeyValuePairAny> {
+  this.url = environment.maseance + 'api/cours/updateserie';
+  const body = {
+      cours: cours, 
+      date: date
+    };
+    return this.global.POST(this.url, body)
+      .then((response: KeyValuePairAny) => {
+        return response;
+      })
+      .catch(error => {
+        return Promise.reject(error);
+      });
+
+
 }
 
 public GetCoursProf(id:number) : Promise<PersonneLight_VM>{

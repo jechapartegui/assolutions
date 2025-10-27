@@ -947,6 +947,10 @@
               [type_button]="'RetourSmall'"
               (click)="Retour()"
             ></btn>
+             <btn
+              [type_button]="'ModifierSerieSmall'"
+              (click)="ModifierSerie()"
+            ></btn>
             <btn *ngIf="editCours.id < 1"
             [disabled]="!is_valid"
               [type_button]="'SauvegarderSmall'"

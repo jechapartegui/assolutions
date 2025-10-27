@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PasswordGuard } from '../guards/password.guard';
 import { CoursService } from './cours.services';
+import { Cours_VM } from '@shared/lib/cours.interface';
 
 @Controller('cours')
 export class CoursController {
@@ -40,6 +41,12 @@ export class CoursController {
     @Post('delete')
     async Delete(@Body() body: { id: number}) {
       return this.cours_serv.Delete(body.id);
+    }
+
+            @UseGuards(PasswordGuard)
+    @Post('updateserie')
+    async UpdateSerie(@Body() body: { cours:Cours_VM, date:Date}) {
+      return this.cours_serv.UpdateSerie(body.cours, body.date);
     }
 
 }

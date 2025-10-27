@@ -98,33 +98,202 @@
     </span>
   </div>
 </th>
-                          <th>
-                            <span>
-                              <span class="ligne">
-                                <span [ngClass]="(filters.filter_date_apres || filters.filter_date_avant) ? 'has-text-info' : ''" i18n>Date de naissance</span>
-                                <span style="cursor: pointer">
-                                  <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort"></i>
-                                  <i *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'date')" class="fa-solid fa-sort-up"></i>
-                                  <i *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort-down"></i>
-                                </span>
-                              </span>
-                            </span>
-                          </th>
-                          <th>
-                            <span>
-                              <span class="ligne">
-                                <span [ngClass]="filters.filter_sexe ? 'has-text-info' : ''" i18n>Sexe</span>
-                                <span style="cursor: pointer">
-                                  <i *ngIf="sort_sexe === 'NO'" (click)="Sort('ASC', 'sexe')" class="fa-solid fa-sort"></i>
-                                  <i *ngIf="sort_sexe === 'ASC'" (click)="Sort('DESC', 'sexe')" class="fa-solid fa-sort-up"></i>
-                                  <i *ngIf="sort_sexe === 'DESC'" (click)="Sort('ASC', 'sexe')" class="fa-solid fa-sort-down"></i>
-                                </span>
-                              </span>
-                            </span>
-                          </th>
-                          <th><span [ngClass]="filters.filter_groupe ? 'has-text-info' : ''" i18n>Groupes</span></th>
+                         <th
+  (dblclick)="startEditFilter('date', dateFromInput)"
+  title="Double-clic pour filtrer"
+  style="user-select:none;"
+>
+  <!-- En-tête + tri (mode non-édition) -->
+  <span class="ligne" *ngIf="!filters.editing?.date">
+    <span [ngClass]="(filters.filter_date_apres || filters.filter_date_avant) ? 'has-text-info' : ''" i18n>Date de naissance</span>
+    <span style="cursor: pointer">
+      <i *ngIf="sort_date === 'NO'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort"></i>
+      <i *ngIf="sort_date === 'ASC'" (click)="Sort('DESC', 'date')" class="fa-solid fa-sort-up"></i>
+      <i *ngIf="sort_date === 'DESC'" (click)="Sort('ASC', 'date')" class="fa-solid fa-sort-down"></i>
+    </span>
+  </span>
+
+  <!-- Édition inline (Du / Au) -->
+  <div *ngIf="filters.editing?.date" class="field is-horizontal is-small" style="gap:.5rem; margin-top:.15rem;">
+    <div class="field has-addons is-small">
+      <div class="control is-small">
+        <span class="button is-static is-small" i18n>Du</span>
+      </div>
+      <div class="control is-small">
+        <input #dateFromInput
+               class="input is-small"
+               type="date"
+               [ngModel]="filters.filter_date_apres || ''"
+               (ngModelChange)="filters.filter_date_apres = normalizeFilterValue('date_apres', $event)"
+               (keydown.enter)="endEditFilter('date')"
+               (keydown.escape)="cancelEditFilter('date')"
+               (blur)="endEditFilter('date')" />
+      </div>
+    </div>
+
+    <div class="field has-addons is-small">
+      <div class="control is-small">
+        <span class="button is-static is-small" i18n>Au</span>
+      </div>
+      <div class="control is-small">
+        <input #dateToInput
+               class="input is-small"
+               type="date"
+               [ngModel]="filters.filter_date_avant || ''"
+               (ngModelChange)="filters.filter_date_avant = normalizeFilterValue('date_avant', $event)"
+               (keydown.enter)="endEditFilter('date')"
+               (keydown.escape)="cancelEditFilter('date')"
+               (blur)="endEditFilter('date')" />
+      </div>
+    </div>
+
+    <div class="control is-small">
+      <button class="button is-small" (click)="clearFilter('date')" title="Effacer">
+        <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tags récap -->
+  <div *ngIf="!filters.editing?.date && (filters.filter_date_apres || filters.filter_date_avant)" class="tags" style="margin-top:.15rem;"
+       (dblclick)="startEditFilter('date', dateFromInput)">
+    <span class="tag is-success is-light is-small">
+      <span i18n>Date : </span>
+      <ng-container *ngIf="filters.filter_date_apres"> < {{ filters.filter_date_apres }}</ng-container>
+      <ng-container *ngIf="filters.filter_date_avant"> > {{ filters.filter_date_avant }}</ng-container>
+      <button class="delete is-small" (click)="clearFilter('date')"></button>
+    </span>
+  </div>
+</th>
+
+<th
+  (dblclick)="startEditFilter('sexe', sexeSelect)"
+  title="Double-clic pour filtrer"
+  style="user-select:none;"
+>
+  <span class="ligne" *ngIf="!filters.editing?.sexe">
+    <span [ngClass]="filters.filter_sexe !== null ? 'has-text-info' : ''" i18n>Sexe</span>
+    <span style="cursor: pointer">
+      <i *ngIf="sort_sexe === 'NO'" (click)="Sort('ASC', 'sexe')" class="fa-solid fa-sort"></i>
+      <i *ngIf="sort_sexe === 'ASC'" (click)="Sort('DESC', 'sexe')" class="fa-solid fa-sort-up"></i>
+      <i *ngIf="sort_sexe === 'DESC'" (click)="Sort('ASC', 'sexe')" class="fa-solid fa-sort-down"></i>
+    </span>
+  </span>
+
+  <div *ngIf="filters.editing?.sexe" class="field has-addons is-small" style="margin-top:.15rem;">
+    <div class="control is-small">
+      <div class="select is-small">
+        <select #sexeSelect
+                [ngModel]="filters.filter_sexe"
+                (ngModelChange)="onFilterChange('sexe', $event)"
+                (change)="endEditFilter('sexe')"
+                (blur)="endEditFilter('sexe')">
+          <option [ngValue]="null" i18n>Tous</option>
+          <option [ngValue]="false" i18n>Femme</option>
+          <option [ngValue]="true" i18n>Homme</option>
+        </select>
+      </div>
+    </div>
+    <div class="control is-small">
+      <button class="button is-small" (click)="clearFilter('sexe')" title="Effacer">
+        <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!filters.editing?.sexe && filters.filter_sexe !== null" class="tags" style="margin-top:.15rem;"
+       (dblclick)="startEditFilter('sexe', sexeSelect)">
+    <span class="tag is-success is-light is-small">
+      <span i18n>Sexe :</span>&nbsp;
+      <span *ngIf="filters.filter_sexe" i18n>Homme</span>
+      <span *ngIf="filters.filter_sexe === false" i18n>Femme</span>
+      <button class="delete is-small" (click)="clearFilter('sexe')"></button>
+    </span>
+  </div>
+</th>
+
+                       <th
+  (dblclick)="startEditFilter('groupe', groupeSelect)"
+  title="Double-clic pour filtrer"
+  style="user-select:none;"
+>
+  <span class="ligne" *ngIf="!filters.editing?.groupe">
+    <span [ngClass]="filters.filter_groupe ? 'has-text-info' : ''" i18n>Groupes</span>
+  </span>
+
+  <div *ngIf="filters.editing?.groupe" class="field has-addons is-small" style="margin-top:.15rem;">
+    <div class="control is-small">
+      <div class="select is-small">
+        <select #groupeSelect
+                [ngModel]="filters.filter_groupe"
+                (ngModelChange)="onFilterChange('groupe', $event)"
+                (change)="endEditFilter('groupe')"
+                (blur)="endEditFilter('groupe')">
+          <option [ngValue]="null" i18n>Tous</option>
+          <ng-container *ngFor="let group of liste_groupe_filter">
+            <option [ngValue]="group.nom">{{ group.nom }}</option>
+          </ng-container>
+        </select>
+      </div>
+    </div>
+    <div class="control is-small">
+      <button class="button is-small" (click)="clearFilter('groupe')" title="Effacer">
+        <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!filters.editing?.groupe && filters.filter_groupe" class="tags" style="margin-top:.15rem;"
+       (dblclick)="startEditFilter('groupe', groupeSelect)">
+    <span class="tag is-success is-light is-small">
+      <span i18n>Groupe :</span>&nbsp;<span>{{ filters.filter_groupe }}</span>
+      <button class="delete is-small" (click)="clearFilter('groupe')"></button>
+    </span>
+  </div>
+</th>
+
                           <th><span i18n>Contact</span></th>
-                          <th><span [ngClass]="filters.filter_inscrit ? 'has-text-info' : ''" i18n>Inscrit</span></th>
+                          <th
+  (dblclick)="startEditFilter('inscrit', inscritSelect)"
+  title="Double-clic pour filtrer"
+  style="user-select:none;"
+>
+  <span class="ligne" *ngIf="!filters.editing?.inscrit">
+    <span [ngClass]="filters.filter_inscrit !== null ? 'has-text-info' : ''" i18n>Inscrit</span>
+  </span>
+
+  <div *ngIf="filters.editing?.inscrit" class="field has-addons is-small" style="margin-top:.15rem;">
+    <div class="control is-small">
+      <div class="select is-small">
+        <select #inscritSelect
+                [ngModel]="filters.filter_inscrit"
+                (ngModelChange)="onFilterChange('inscrit', $event)"
+                (change)="endEditFilter('inscrit')"
+                (blur)="endEditFilter('inscrit')">
+          <option [ngValue]="null" i18n>Tous</option>
+          <option [ngValue]="true" i18n>Oui</option>
+          <option [ngValue]="false" i18n>Non</option>
+        </select>
+      </div>
+    </div>
+    <div class="control is-small">
+      <button class="button is-small" (click)="clearFilter('inscrit')" title="Effacer">
+        <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!filters.editing?.inscrit && filters.filter_inscrit !== null" class="tags" style="margin-top:.15rem;"
+       (dblclick)="startEditFilter('inscrit', inscritSelect)">
+    <span class="tag is-success is-light is-small">
+      <span i18n>Inscrit :</span>&nbsp;
+      <span *ngIf="filters.filter_inscrit" i18n>Oui</span>
+      <span *ngIf="filters.filter_inscrit === false" i18n>Non</span>
+      <button class="delete is-small" (click)="clearFilter('inscrit')"></button>
+    </span>
+  </div>
+</th>
+
                           <th><span i18n>Action</span></th>
                         </tr>
                       </thead>

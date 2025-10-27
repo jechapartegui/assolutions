@@ -1,7 +1,7 @@
 
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError, MoreThanOrEqual } from 'typeorm';
 import { Session } from '../entities/seance.entity';
 import { LinkGroupService } from './linkgroup.service';
 
@@ -42,6 +42,32 @@ export class SessionService {
      return await  this.repo.find({ where: { seasonId }, relations: ['course', 'location', 'seanceProfesseurs', 'seanceProfesseurs.professeur', 'seanceProfesseurs.professeur.professor', 'seanceProfesseurs.professeur.professor.person'] });
      
   }
+
+async getSeanceCoursAfterDate(courseId: number, fromDate: Date): Promise<Session[]> {
+  const seances = await this.repo.find({
+    where: {
+      courseId,
+      date: MoreThanOrEqual(fromDate),
+    },
+    relations: [
+      'course',
+      'location',
+      'seanceProfesseurs',
+      'seanceProfesseurs.professeur',
+      'seanceProfesseurs.professeur.professor',
+      'seanceProfesseurs.professeur.professor.person',
+    ],
+    order: { date: 'ASC' }, // pratique pour un retour chronologique
+  });
+
+  await Promise.all(
+    seances.map(async (seance) => {
+      seance.groups = await this.linkgroup_serv.getGroupsForObject('séance', seance.id);
+    })
+  );
+
+  return seances;
+}
 
 
   async create(data: Partial<Session>): Promise<Session> {

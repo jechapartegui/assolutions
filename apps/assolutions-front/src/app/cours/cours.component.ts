@@ -463,6 +463,34 @@ SaveCaracteristique(caracteristique :caracteristique){
    
   }
 
+  ModifierSerie(): void {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Application des modifications à toutes les séances de la série`;
+    let o = errorService.Create(this.action, "", "Warning");
+    errorService.emitChange(o);
+    this.loading = true;
+    this.coursservice.UpdateSerieCours(this.editCours, new Date()).then((retour : KeyValuePairAny) => {
+      this.loading = false;
+      if(Number(retour.key) === Number(retour.value) ){
+      let o = errorService.OKMessage(this.action);
+      errorService.emitChange(o);
+      } else if(Number(retour.value) >0){
+        let o = errorService.Create(this.action, $localize`Nombre de modification : ` + retour.key.toString() + ` OK sur ` + retour.value, "Warning");
+         errorService.emitChange(o);
+      } else {
+        let o = errorService.UnknownError(this.action);
+        errorService.emitChange(o);
+      }
+    }).catch((err: HttpErrorResponse) => {
+      this.loading = false;
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+      return;
+    });
+
+  }
+
+
 
 
   Sort(sens: "NO" | "ASC" | "DESC", champ: string) {

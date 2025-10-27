@@ -2,12 +2,18 @@ import { BadRequestException, Injectable,  UnauthorizedException } from "@nestjs
 import { LienGroupe_VM } from "@shared/lib/groupe.interface";
 import { Cours_VM} from "@shared/lib/cours.interface";
 import { Course } from "../../entities/cours.entity";
+import { Session } from "../../entities/seance.entity";
 import { CourseService } from "../../crud/course.service";
 import { toPersonneLight_VM } from "../member/member.services";
+import { KeyValuePairAny } from "@shared/lib/autres.interface";
+import { SessionService } from "../../crud/session.service";
+import { PersonneLight_VM } from "@shared/lib/personne.interface";
+import { LinkGroupService } from "../../crud/linkgroup.service";
+import { LinkGroup } from "../../entities/lien_groupe.entity";
 
 @Injectable()
 export class CoursService {
-  constructor(private coursserv:CourseService) {}
+  constructor(private coursserv:CourseService, private seanceserv:SessionService, private linkgroupserv:LinkGroupService) {}
 
   async Get(id: number) : Promise<Cours_VM> {
     const pcours = await this.coursserv.get(id);
@@ -63,7 +69,162 @@ async Update(s: Cours_VM, project_id: number) {
 async Delete(id: number) {
 return await this.coursserv.delete(id);
 }
+
+async UpdateSerie(cours: Cours_VM, date: Date): Promise<KeyValuePairAny> {
+  const kvp: KeyValuePairAny = { key: 0, value: 0 };
+
+  if (!cours || cours.id < 1) {
+    throw new BadRequestException('INVALID_ITEM');
+  }
+  if (!date) {
+    date = new Date();
+  }
+
+  // Helpers
+  const normalizeJour = (j: string): string =>
+    (j || '').trim().toLowerCase();
+
+  // ISO: lun=1 ... dim=7
+  const isoDay = (d: Date): number => {
+    const js = d.getDay(); // 0..6 (dim..sam)
+    return js === 0 ? 7 : js;
+  };
+
+  const jourToIso: Record<string, number> = {
+    'lundi': 1,
+    'mardi': 2,
+    'mercredi': 3,
+    'jeudi': 4,
+    'vendredi': 5,
+    'samedi': 6,
+    'dimanche': 7,
+  };
+
+  const setDateToIsoWeekday = (base: Date, targetIsoDay: number): Date => {
+    const curIso = isoDay(base);
+    const delta = targetIsoDay - curIso; // même semaine (peut être négatif)
+    const d = new Date(base);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + delta);
+    return d;
+  };
+
+  const wantedIsoDay = jourToIso[normalizeJour(cours.jour_semaine)];
+  if (!wantedIsoDay) {
+    throw new BadRequestException('INVALID_JOUR_SEMAINE');
+  }
+
+  // Récupération des séances à mettre à jour
+  const seances: Session[] =
+    await this.seanceserv.getSeanceCoursAfterDate(cours.id, date);
+
+  kvp.value = seances.length;
+
+  for (const s of seances) {
+    // 1) Mise à jour des champs simples
+    s.locationId       = cours.lieu_id;
+    s.duration         = cours.duree;
+    s.showAttendance   = cours.afficher_present;
+    s.appointment      = cours.rdv;
+    s.label            = cours.nom;
+    s.limitMaxAge      = cours.est_limite_age_maximum;
+    s.limitMinAge      = cours.est_limite_age_minimum;
+    s.maxPlaces        = cours.place_maximum;
+    s.nominativeCall   = cours.convocation_nominative;
+    s.maxAge           = cours.age_maximum;
+    s.minAge           = cours.age_minimum;
+    s.limitPlaces      = cours.est_place_maximum;
+    s.startTime        = cours.heure;
+    s.trialAllowed     = cours.essai_possible;
+
+    // 2) Ajustement de la DATE au jour de semaine dans la même semaine que la date actuelle
+    //    (si déjà le bon jour, la date reste identique)
+    if (s.date) {
+      const current = new Date(s.date);
+      s.date = setDateToIsoWeekday(current, wantedIsoDay);
+    } else {
+      // Par sécurité, si s.date est vide, on base sur "date" passée en entrée
+      s.date = setDateToIsoWeekday(new Date(date), wantedIsoDay);
+    }
+
+    // 3) Sync des GROUPES (diff par groupId)
+    try {
+     // === Sync GROUPES par diff sur groupId ===
+const currentLinks = (s.groups ?? []) as Array<{ id: number; groupId: number }>;
+const targetIds = new Set<number>((cours.groupes ?? []).map(g => g.id));
+
+// liens à supprimer = liens existants dont le groupId n'est plus dans la cible
+const linksToRemove = currentLinks.filter(l => !targetIds.has(l.groupId));
+
+// ids de groupes à ajouter = groupIds cibles qui n'existent pas encore dans les liens
+const existingGroupIds = new Set<number>(currentLinks.map(l => l.groupId));
+const groupIdsToAdd = [...targetIds].filter(id => !existingGroupIds.has(id));
+
+// suppression par id de lien
+await Promise.all(
+  linksToRemove.map(l => this.linkgroupserv.delete(l.id))
+);
+
+// création par payload objet (ADAPTE les noms de champs si besoin)
+await Promise.all(
+  groupIdsToAdd.map(groupId =>
+    this.linkgroupserv.create({
+      objectType: 'seance',   // ou 'séance' si c'est vraiment ce que ton backend attend
+      objectId: s.id,
+      groupId,
+    })
+  )
+);
+
+// (optionnel) si tu veux maintenir s.groups à jour sans refetch :
+s.groups = [
+  ...currentLinks.filter(l => !linksToRemove.some(r => r.id === l.id)),
+  ...groupIdsToAdd.map(groupId => ({
+    id: 0,           // sera réel après refetch; ici juste pour cohérence locale
+    groupId,
+    nom: '',         // si tu as besoin du libellé, refetch après
+  })),
+];
+
+    } catch (e) {
+      // non bloquant : on continue la MAJ de la séance
+      // (tu peux logger si besoin)
+    }
+
+    // 4) Sync des PROFESSEURS via table de liaison SessionProfesseur
+    try {
+      const currentProfIds = new Set<number>(
+        (s.seanceProfesseurs ?? []).map(p => p.professeur.professorId)
+      );
+      const targetProfIds = new Set<number>(
+        (cours.professeursCours ?? []).map((p: PersonneLight_VM) => p.id)
+      );
+
+      const profsToAdd    = [...targetProfIds].filter(id => !currentProfIds.has(id));
+      const profsToRemove = [...currentProfIds].filter(id => !targetProfIds.has(id));
+
+      await Promise.all([
+        ...profsToAdd.map(id => this.seanceserv.addProfesseurToSession(s.id, id)),
+        ...profsToRemove.map(id => this.seanceserv.removeProfesseurFromSession(s.id, id)),
+      ]);
+    } catch (e) {
+      // non bloquant
+    }
+
+    // 5) Sauvegarde de la séance
+    try {
+      await this.seanceserv.Update(s);
+      kvp.key += 1;
+    } catch (e) {
+      // Tu peux logger l'erreur si nécessaire mais on n'interrompt pas la boucle
+    }
+  }
+
+  return kvp;
 }
+
+}
+
 
 export function toCours_VM(course: Course): Cours_VM {
   
