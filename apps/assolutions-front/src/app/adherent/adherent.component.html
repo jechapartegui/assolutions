@@ -55,18 +55,49 @@
                       <thead>
                         <tr>
                           <th></th>
-                          <th>
-                            <span>
-                              <span class="ligne">
-                                <span [ngClass]="filters.filter_nom ? 'has-text-info' : ''" i18n>Nom</span>
-                                <span style="cursor: pointer">
-                                  <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort"></i>
-                                  <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" class="fa-solid fa-sort-up"></i>
-                                  <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort-down"></i>
-                                </span>
-                              </span>
-                            </span>
-                          </th>
+                        <th
+  (dblclick)="startEditFilter('nom', nomFilterInput)"
+  title="Double-clic pour filtrer"
+  style="user-select:none;"
+>
+  <span class="ligne" *ngIf="!filters.editing?.nom">
+    <span [ngClass]="filters.filter_nom ? 'has-text-info' : ''" i18n>Nom</span>
+    <span style="cursor:pointer">
+      <i *ngIf="sort_nom === 'NO'"   (click)="Sort('ASC','nom')"  class="fa-solid fa-sort"></i>
+      <i *ngIf="sort_nom === 'ASC'"  (click)="Sort('DESC','nom')" class="fa-solid fa-sort-up"></i>
+      <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC','nom')"  class="fa-solid fa-sort-down"></i>
+    </span>
+  </span>
+
+  <div *ngIf="filters.editing?.nom" class="field has-addons is-small" style="margin-top:.15rem;">
+    <div class="control is-small">
+      <input #nomFilterInput
+             class="input is-small"
+             type="text"
+             i18n-placeholder
+             placeholder="Nom à filtrer"
+             [ngModel]="filters.filter_nom || ''"
+             (ngModelChange)="onFilterChange('nom', $event)"
+             (keydown.enter)="endEditFilter('nom')"
+             (keydown.escape)="cancelEditFilter('nom')"
+             (blur)="endEditFilter('nom')"
+             style="width:16rem; max-width:40vw;" />
+    </div>
+    <div class="control is-small">
+      <button class="button is-small" (click)="clearFilter('nom')" title="Effacer">
+        <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!filters.editing?.nom && filters.filter_nom" class="tags" style="margin-top:.15rem;"
+       (dblclick)="startEditFilter('nom', nomFilterInput)">
+    <span class="tag is-success is-light is-small">
+      <span i18n>Nom :</span>&nbsp;<span>{{ filters.filter_nom }}</span>
+      <button class="delete is-small" (click)="clearFilter('nom')"></button>
+    </span>
+  </div>
+</th>
                           <th>
                             <span>
                               <span class="ligne">

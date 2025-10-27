@@ -101,13 +101,79 @@ app-root {
    ========================= */
 .card{
   display: grid;
-  grid-template-rows: auto 1fr auto; /* header | content | footer */
+  grid-template-rows: auto 1fr auto; /* header | content | footer 
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 6px; */
   overflow: hidden;
   background: #fff;
   height: 100%; /* prend toute la hauteur de sa colonne */
 }
+
+/* Indique aux navigateurs que les deux modes sont prévus */
+:root { color-scheme: light dark; }
+
+/* Zebra léger par défaut sur TOUTES les tables Bulma
+   (sauf si .is-striped est déjà utilisée pour éviter le double-effet) */
+.table:not(.is-striped) tbody tr:nth-child(odd):not(.is-selected):not([class*="has-background-"]) {
+  background-color: rgba(0, 0, 0, 0.025);
+}
+
+/* Survol un peu plus visible si .is-hoverable est présente */
+.table.is-hoverable tbody tr:hover:not(.is-selected):not([class*="has-background-"]) {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Respecte la sélection Bulma */
+.table tbody tr.is-selected {
+  background-color: var(--bulma-link, #485fc7) !important;
+  color: #fff;
+}
+
+/* Mode sombre : nuances inversées, toujours sans classe additionnelle */
+@media (prefers-color-scheme: dark) {
+  .table:not(.is-striped) tbody tr:nth-child(odd):not(.is-selected):not([class*="has-background-"]) {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .table.is-hoverable tbody tr:hover:not(.is-selected):not([class*="has-background-"]) {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* === 2) Supprimer TOUTES les bordures héritées de Bulma === */
+/* Table + cellules */
+.table {
+  border: 0 !important;
+  border-collapse: collapse;              /* évite les interstices */
+  --bulma-table-border-color: transparent;/* neutralise les vars Bulma si utilisées */
+}
+.table th,
+.table td,
+.table thead th,
+.table thead td,
+.table tfoot th,
+.table tfoot td {
+  border: 0 !important;
+  box-shadow: none !important;            /* au cas où un effet simule une bordure */
+}
+
+/* Neutraliser les variantes qui réintroduisent des bordures */
+.table.is-bordered,
+.table.is-fullwidth,
+.table.is-narrow,
+.table.is-striped {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.table.is-bordered td,
+.table.is-bordered th {
+  border: 0 !important;
+}
+
+/* Supprime aussi la ligne d’en-tête souvent renforcée par Bulma */
+.table thead tr {
+  border: 0 !important;
+}
+
 
 /* Header/footer homogènes (liste & fiche) */
 .card > .card-header,

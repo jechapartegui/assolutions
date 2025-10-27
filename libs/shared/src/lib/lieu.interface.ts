@@ -1,7 +1,7 @@
 import { Adresse } from "./adresse.interface";
 
 export class Lieu_VM {
-    id: number;
-    nom: string;
-    adresse: Adresse;
+    id: number=0;
+    nom: string = "";
+    adresse: Adresse = new Adresse();
 }

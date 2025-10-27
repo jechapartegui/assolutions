@@ -164,10 +164,10 @@
       <div class="card card--scroller">
         <!-- Header -->
         <header class="card-header" style="align-items:center">
-  
-          <h2 *ngIf="editLieu.id==0" class="title is-2" i18n>Créer un lieu</h2>
-          <h2 *ngIf="editLieu.id>0" class="title is-2" i18n>Editer un lieu</h2>
-               
+                  <p class="card-header-title">
+          <span *ngIf="editLieu.id==0" i18n>Créer un lieu</span>
+          <span *ngIf="editLieu.id>0" i18n>Editer un lieu</span>
+               </p>
           </header>     
                 <!-- Content -->
         <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
@@ -175,14 +175,29 @@
           <!-- Colonne gauche : champs Professor (entity exacte) -->
           <div class="column is-full-tablet is-half-desktop">
             <div class="box is-light">
-              <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations administratives</h3>  
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations administratives</h3>  
+              <ng-container *ngIf="editLieu.id>0">
+      <btn *ngIf="!edit"
+        [type_button]="'EditerLight'" 
+        (click)="edit = !edit" 
+      ></btn>
+      <btn *ngIf="edit" [disabled]="editLieu.nom.length <5" (click)="Save(); edit = false;"
+        [type_button]="'SauvegarderLight'">
+      </btn> <btn *ngIf="edit" (click)="Cancel()"
+        [type_button]="'AnnulerLight'">
+      </btn>
+      </ng-container>
+      </div>
             <div class="field">
               <label class="label" i18n>Nom</label>
-              <input [class]="editLieu.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
+              <p *ngIf="!edit">{{editLieu.nom}}</p>
+              <input *ngIf="edit" [class]="editLieu.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
                 name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="editLieu.nom" required>
               <p class="help is-danger" *ngIf="editLieu.nom.length <5" i18n>Le nom du lieu doit au moins faire 5
                 caractères
               </p>
+              
             </div>
             </div>
           </div>
@@ -199,11 +214,9 @@
           <div class="columns is-mobile is-centered">
             <div class="column is-half">
               <div class="buttons" style="flex-wrap:nowrap">
-              <div class="buttons" style="flex-wrap:nowrap">
                 <btn [type_button]="'RetourSmall'"  (click)="Retour()"></btn>
-                <btn [type_button]="'SauvegarderSmall'" [disabled]="(editLieu.nom.length < 5 || !valid_address)" (click)="Save()" i18n>Sauvegarder</btn>          
+                <btn *ngIf="edit && editLieu.id<1" [type_button]="'SauvegarderSmall'" [disabled]="(editLieu.nom.length < 5 || !valid_address)" (click)="Save()" i18n>Sauvegarder</btn>          
           </div>
-      </div>
     </div>
   </div>
        </footer>

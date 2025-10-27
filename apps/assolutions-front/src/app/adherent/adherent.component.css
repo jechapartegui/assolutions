@@ -10,3 +10,12 @@
 
 /* Petites finitions */
 .is-truncated { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Compacter l’entête quand un tag de filtre est affiché */
+.table thead th .tags { margin-top: .1rem; }
+
+/* Taille mini partout */
+.table thead th .input.is-small { height: 2rem; }
+
+/* Empêche le header de “sauter” en hauteur */
+.table thead th { vertical-align: top; }

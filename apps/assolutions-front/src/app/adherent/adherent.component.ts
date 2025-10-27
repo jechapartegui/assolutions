@@ -38,6 +38,8 @@ export class AdherentComponent implements OnInit {
   @Input() public Personne:Personne_VM | null = null;
   @Output() essai = new EventEmitter<Personne_VM | null>;
   @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
+// Pour autofocus de l’input quand on ouvre l’édition
+@ViewChild('nomFilterInput') nomFilterInput?: ElementRef<HTMLInputElement>;
 
   // === États généraux ===
   public loading = false;
@@ -224,6 +226,50 @@ this.histo_adherent = JSON.stringify(this.thisAdherent);
   this.updateDenseMode();
   window.addEventListener('resize', this.updateDenseMode);
   }
+
+ private normalizeFilterValue(key: string, raw: any): any {
+  switch (key) {
+    case 'nom': {
+      const v = (raw ?? '').toString().trim();
+      return v.length ? v : null;
+    }
+    // case 'date': // exemple si tu ajoutes d’autres champs
+    //   return raw || null;
+    default: {
+      const v = (raw ?? '').toString().trim?.() ?? raw;
+      return v === '' ? null : v;
+    }
+  }
+}
+
+startEditFilter(key: string, input?: ElementRef<HTMLInputElement> | HTMLInputElement | null) {
+  this.filters.editing[key] = true;
+  setTimeout(() => {
+    const el = (input as any)?.nativeElement ? (input as any).nativeElement : input;
+    el?.focus?.();
+    el?.select?.();
+  }, 0);
+}
+
+onFilterChange(key: string, value: any) {
+  (this.filters as any)[`filter_${key}`] = this.normalizeFilterValue(key, value);
+  // Si tu es en OnPush et pipe pure: this.cdRef?.markForCheck();
+}
+
+endEditFilter(key: string) {
+  this.filters.editing[key] = false;
+}
+
+cancelEditFilter(key: string) {
+  // On ferme juste l’UI; la valeur a déjà filtré en live
+  this.filters.editing[key] = false;
+}
+
+clearFilter(key: string) {
+  (this.filters as any)[`filter_${key}`] = null;
+  this.filters.editing[key] = false;
+}
+
 
   ngOnDestroy() {
   window.removeEventListener('resize', this.updateDenseMode);
@@ -952,6 +998,15 @@ PreSave() {
   }
 }
 export class FilterAdherent {
+
+  public editing = {
+    nom: false,
+    date_avant: false,
+    date_apres: false,
+    sexe: false,
+    inscrit: false,
+    groupe: false,
+  };
   private _filter_nom: string | null = null;
   get filter_nom(): string | null {
     return this._filter_nom;

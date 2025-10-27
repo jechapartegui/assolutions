@@ -1,1 +1,27 @@
 
+/* 1) Le conteneur doit scroller (Bulma en fournit déjà un) */
+.table-container {
+  max-height: 60vh;           /* ajuste à ton besoin */
+  overflow: auto;             /* important pour activer sticky */
+}
+
+/* 2) En-tête collante (ligne 1 figée) */
+.table thead th,
+.table thead td {
+  position: sticky;
+  top: 0;
+  z-index: 2;                 /* au-dessus des cellules */
+  /* Fond solide pour ne pas voir les lignes défiler dessous */
+  background: var(--bulma-scheme-main, #ffffff);
+  /* Liseré discret en bas pour séparer visuellement */
+  box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+}
+
+/* Dark mode : fond et liseré adaptés */
+@media (prefers-color-scheme: dark) {
+  .table thead th,
+  .table thead td {
+    background: var(--bulma-scheme-main, #0f1115);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.12);
+  }
+}

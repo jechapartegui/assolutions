@@ -27,6 +27,7 @@ export class LieuComponent implements OnInit {
   lieux_all: Lieu_VM[] = [];  
   sort_nom: string;
   save :string="";
+  edit:boolean=false;
   constructor(public router: Router, public lieu_serv: LieuNestService, public store:AppStore, public GlobalService:GlobalService) { }
 trackById = (_: number, l: Lieu_VM) => l.id;
   ngOnInit(): void {
@@ -49,13 +50,25 @@ ExportExcel() {
 throw new Error('Method not implemented.');
 }
   Creer(): void {
-    this.editLieu = new Lieu_VM();
+        this.editLieu = new Lieu_VM();
+  this.edit = true;
+    this.save = JSON.stringify(this.editLieu);
+      }
+
+  CheckHisto():boolean{
+    let h = JSON.stringify(this.editLieu);
+    if(h != this.save && this.save !=""){
+      return true;
+    } else {
+      return false;
+    }
   }
  
   Save() {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter un lieu`;
-    if (this.editLieu) {
+    if(this.CheckHisto){
+ if (this.editLieu) {
       if (this.editLieu.id == 0) {
 
         this.lieu_serv.Add(this.editLieu).then((id) => {
@@ -63,7 +76,7 @@ throw new Error('Method not implemented.');
             this.editLieu.id = id;
             let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-            
+            this.edit = false;
             this.save = JSON.stringify(this.editLieu);
             this.UpdateListeLieu();
           } else {
@@ -94,16 +107,18 @@ throw new Error('Method not implemented.');
         });
       }
     }
+    }
+   
   }
   Retour(): void {
-    
-  let h = JSON.stringify(this.editLieu);
-  if(h != this.save && this.save !=""){
+  if(this.CheckHisto()){
     let confirm = window.confirm($localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`);
     if (confirm) {
       this.editLieu = null;
       this.UpdateListeLieu();
     }
+  } else {
+    this.editLieu = null;
   }
 }
 
@@ -191,6 +206,12 @@ SaveAdresse(thisAdresse :Adresse){
       errorService.emitChange(o);
     })
   }
+
+  Cancel(): void {  
+    let l = this.lieux.find(l => l.id == this.editLieu.id);
+    this.editLieu.nom = l.nom;
+  }
+
   Delete(lieu: Lieu_VM): void {
     const errorService = ErrorService.instance;
 
