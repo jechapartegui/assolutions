@@ -9,11 +9,13 @@ import { KeyValuePairAny } from "@shared/lib/autres.interface";
 import { SessionService } from "../../crud/session.service";
 import { PersonneLight_VM } from "@shared/lib/personne.interface";
 import { LinkGroupService } from "../../crud/linkgroup.service";
-import { LinkGroup } from "../../entities/lien_groupe.entity";
+import { ProfessorContractService } from "../../crud/professorcontract.service";
+import { SessionProfessorService } from "../../crud/seanceprofesseur.service";
+import { SessionProfessor } from "../../entities/seance-professeur.entity";
 
 @Injectable()
 export class CoursService {
-  constructor(private coursserv:CourseService, private seanceserv:SessionService, private linkgroupserv:LinkGroupService) {}
+  constructor(private coursserv:CourseService, private seanceserv:SessionService, private linkgroupserv:LinkGroupService, private profcont:ProfessorContractService, private sessionprofserv : SessionProfessorService) {}
 
   async Get(id: number) : Promise<Cours_VM> {
     const pcours = await this.coursserv.get(id);
@@ -176,15 +178,7 @@ await Promise.all(
   )
 );
 
-// (optionnel) si tu veux maintenir s.groups à jour sans refetch :
-s.groups = [
-  ...currentLinks.filter(l => !linksToRemove.some(r => r.id === l.id)),
-  ...groupIdsToAdd.map(groupId => ({
-    id: 0,           // sera réel après refetch; ici juste pour cohérence locale
-    groupId,
-    nom: '',         // si tu as besoin du libellé, refetch après
-  })),
-];
+
 
     } catch (e) {
       // non bloquant : on continue la MAJ de la séance
@@ -204,7 +198,7 @@ s.groups = [
       const profsToRemove = [...currentProfIds].filter(id => !targetProfIds.has(id));
 
       await Promise.all([
-        ...profsToAdd.map(id => this.seanceserv.addProfesseurToSession(s.id, id)),
+        ...profsToAdd.map(id => this.addProfesseurToSession(s.id, id)),
         ...profsToRemove.map(id => this.seanceserv.removeProfesseurFromSession(s.id, id)),
       ]);
     } catch (e) {
@@ -213,7 +207,7 @@ s.groups = [
 
     // 5) Sauvegarde de la séance
     try {
-      await this.seanceserv.Update(s);
+      await this.seanceserv.update(s.id, s);
       kvp.key += 1;
     } catch (e) {
       // Tu peux logger l'erreur si nécessaire mais on n'interrompt pas la boucle
@@ -222,9 +216,23 @@ s.groups = [
 
   return kvp;
 }
+  async addProfesseurToSession(id_s: number, id_p: number): Promise<SessionProfessor> {
+    let seance = await this.seanceserv.get(id_s);
+    let contract = await this.profcont.getProfessorContractByProfessorId(id_p, seance.seasonId);
+      if (!contract) {
+        throw new BadRequestException('PROFESSOR_CONTRACT_NOT_FOUND');
+      }
+      let session = new SessionProfessor();
+      session.seanceId = id_s;
+      session.professeurContractId = contract.id;
+      session.cout = Number(contract.remunerationType);
+      session.minutes = seance.duration || 0;
+      session.status = seance.status;
+      return this.sessionprofserv.create(session);
+  }
+
 
 }
-
 
 export function toCours_VM(course: Course): Cours_VM {
   

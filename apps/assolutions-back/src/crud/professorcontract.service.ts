@@ -6,10 +6,16 @@ import { ProfessorContract } from '../entities/contrat_prof.entity';
 
 @Injectable()
 export class ProfessorContractService {
+  
   constructor(
     @InjectRepository(ProfessorContract)
     private readonly repo: Repository<ProfessorContract>,
   ) {}
+  async getProfessorContractByProfessorId(professorId: number, saisonId: number): Promise<ProfessorContract> {
+      const item = await this.repo.findOne({ where: { professorId, saisonId } });
+    if (!item) throw new NotFoundException('PROFESSORCONTRACT_NOT_FOUND');
+    return item;
+  }
 
   async get(id: number): Promise<ProfessorContract> {
     const item = await this.repo.findOne({ where: { id } });

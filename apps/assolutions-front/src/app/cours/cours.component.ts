@@ -46,7 +46,13 @@ export class CoursComponent implements OnInit {
   liste_prof: Professeur_VM[];
   is_valid:boolean = false;
   save:string= "";
-  
+  // Ref pour focus (met uniquement celles que tu utilises dans le template)
+@ViewChild('nomFilterInput') nomFilterInput?: ElementRef<HTMLInputElement>;
+@ViewChild('jourSelect') jourSelect?: ElementRef<HTMLSelectElement>;
+@ViewChild('profSelect') profSelect?: ElementRef<HTMLSelectElement>;
+@ViewChild('lieuSelect') lieuSelect?: ElementRef<HTMLSelectElement>;
+@ViewChild('groupeSelect') groupeSelect?: ElementRef<HTMLSelectElement>;
+
   public liste_saison: Saison_VM[] = [];
   public active_saison: Saison_VM;
 
@@ -89,6 +95,7 @@ export class CoursComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les cours`;
     this.loading = true;
+    this.filters.editing = { nom:false, jour:false, prof:false, lieu:false, groupe:false };
     if (this.store.isLoggedIn) {
       this.saisonserv
               .GetAll()
@@ -185,6 +192,47 @@ export class CoursComponent implements OnInit {
       this.router.navigate(['/login']);
     }
   }
+
+  normalizeFilterValue(key: string, raw: any): any {
+  switch (key) {
+    case 'nom':
+    case 'groupe': {
+      const v = (raw ?? '').toString().trim();
+      return v || null;
+    }
+    case 'jour': {
+      const v = (raw ?? '').toString().trim();
+      return v || null; // ex: 'lundi' | null
+    }
+    case 'prof':
+    case 'lieu': {
+      // valeurs numériques (id) ou null
+      if (raw === null || raw === '' || Number.isNaN(+raw)) return null;
+      return +raw;
+    }
+    default: return raw;
+  }
+}
+
+startEditFilter(key: string, input?: ElementRef<any> | any) {
+  (this.filters as any).editing[key] = true;
+  setTimeout(() => {
+    const el = input?.nativeElement ?? input;
+    el?.focus?.();
+    el?.select?.();
+  }, 0);
+}
+onFilterChange(key: string, value: any) {
+  (this.filters as any)[`filter_${key}`] = this.normalizeFilterValue(key, value);
+}
+endEditFilter(key: string)   { (this.filters as any).editing[key] = false; }
+cancelEditFilter(key: string){ (this.filters as any).editing[key] = false; }
+clearFilter(key: string) {
+  (this.filters as any)[`filter_${key}`] = null;
+  (this.filters as any).editing[key] = false;
+}
+
+
   onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
     this.editCours.groupes = updatedGroupes;
     // Ici tu peux aussi déclencher d'autres actions, comme la sauvegarde ou la validation
@@ -696,6 +744,13 @@ SaveCaracteristique(caracteristique :caracteristique){
 }
 
 export class FilterCours {
+   public editing = {
+    nom: false,
+    prof:false,
+    jour: false,
+    lieu: false,
+    groupe: false,
+  };
   private _filter_nom: string | null = null;
   get filter_nom(): string | null {
     return this._filter_nom;
