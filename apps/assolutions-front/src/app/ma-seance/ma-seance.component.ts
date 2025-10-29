@@ -43,6 +43,7 @@ export class MaSeanceComponent implements OnInit {
   login:string = null;
   reponse:boolean = null;
   adherent:number = null;
+  vue_alpha:boolean = true;
    isLien = false;
   private _loadLoginDone = false;
 
@@ -492,13 +493,20 @@ Load() {
         Object.setPrototypeOf(p.person, Personne_VM.prototype);
       }
     });
+// Petit helper pour trier par libellé (sans accent, insensible à la casse)
+const sortByLibelle = (a: any, b: any) =>
+  a.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .localeCompare(
+      b.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    );
 
-    // Tes filtres existants
-    this.Inscrits  = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT);
-    this.Potentiels= res.filter(x => !x.statut_seance && !x.statut_inscription);
-    this.All       = res.filter(x => !x.statut_seance);
-    this.Absents   = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT);
-    this.Presents  = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT);
+// Tes filtres existants + tri
+this.Inscrits   = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT).sort(sortByLibelle);
+this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription).sort(sortByLibelle);
+this.All        = res.filter(x => !x.statut_seance).sort(sortByLibelle);
+this.Absents    = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT).sort(sortByLibelle);
+this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).sort(sortByLibelle);
+
 
     // 🔹 Lancer le fetch des photos pour tous les items visibles
     this.preloadPhotos(res);
@@ -799,6 +807,26 @@ closePreview(): void {
 getPhoto(p: any): string {
   return (p?.person?.photo || this.defaultAvatar) as string;
 }
+
+// Priorité : statut_seance (présent/absent) > statut_inscription
+iconClass(p: any): string {
+  // Si la séance a un statut explicite, on l’utilise d’abord
+  if (p?.statut_seance === SeanceStatus_VM.PRESENT)   return 'fa-thumbs-up has-text-success';
+  if (p?.statut_seance === SeanceStatus_VM.ABSENT)    return 'fa-thumbs-down has-text-danger';
+
+  // Sinon on retombe sur le statut d’inscription
+  switch ((p?.statut_inscription || '').toLowerCase()) {
+    case 'présent':
+    case 'present':  return 'fa-thumbs-up has-text-success';
+    case 'absent':   return 'fa-thumbs-down has-text-danger';
+    case 'essai':    return 'fa-question';
+    case 'convoqué':
+    case 'convque':
+    case 'convoque': return 'fa-hand-point-up has-text-info';
+    default:         return 'fa-ellipsis-h';
+  }
+}
+
 
 // 👇 robustes aux null/undefined
 contact_urgence(p?: any): string {

@@ -486,7 +486,15 @@
         <btn [type_button]="'RetourMobile'" (click)="uiMode!=='list' ? closePanel() : RetourListe()"></btn>
         <button class="button is-outlined is-primary btn-mobile btn-elevated" *ngIf="store.isProf()" 
                 (click)="toggleMobileOptions = !toggleMobileOptions">
-          <i class="fas fa-ellipsis-h"></i>&nbsp;<span>Options</span>
+          <i class="fas fa-ellipsis-h"></i>&nbsp;<span i18n>Options</span>
+        </button>
+         <button *ngIf="vue_alpha" class="button is-outlined is-primary btn-mobile btn-elevated"
+                (click)="vue_alpha = !vue_alpha">
+          <i class="fas fa-thumbs-up"></i>&nbsp;<span i18n>Vue par statut</span>
+        </button>
+         <button *ngIf="!vue_alpha" class="button is-outlined is-primary btn-mobile btn-elevated"
+                (click)="vue_alpha = !vue_alpha">
+          <i class="fas fa-arrow-down-a-z"></i>&nbsp;<span i18n>Vue alphabetique</span>
         </button>
         <div class="dropdown is-left" [class.is-active]="toggleMobileOptions">
           <div class="dropdown-menu">
@@ -654,16 +662,16 @@
                 </h6>
 
                 <span *ngIf="display_personne">
-                  <ng-template #mobileRow let-potentiel let-icon="icon">
+                 <ng-template #mobileRow let-potentiel>
   <div class="ligne">
     <span class="partie1">
       <span class="icon is-medium">
         <span *ngIf="store.isProf()"
               class="fa-stack fa-sm"
               (click)="openMenu(potentiel, $event)">
-          <i class="fas fa-stack-2x" [ngClass]="icon"></i>
+          <i class="fas fa-stack-2x" [ngClass]="iconClass(potentiel)"></i>
         </span>
-        <i *ngIf="!store.isProf()" class="fas fa-stack-2x" [ngClass]="icon" style="text-align:left;"></i>
+        <i *ngIf="!store.isProf()" class="fas fa-stack-2x" [ngClass]="iconClass(potentiel)" style="text-align:left;"></i>
       </span>
 
       <ul class="menu-icons"
@@ -677,29 +685,29 @@
       </ul>
 
       <figure class="image is-32x32 is-inline-block mr-2"
-        (click)="openPreview(potentiel, $event)"
-        style="cursor: zoom-in;">
-  <img class="is-rounded avatar"
-       [src]="potentiel?.person?.photo || defaultAvatar"
-       [alt]="'Photo de ' + (potentiel?.person?.libelle || potentiel?.person?.nom || '')"
-       (error)="onImgError($event)">
-</figure>
+              (click)="openPreview(potentiel, $event)"
+              style="cursor: zoom-in;">
+        <img class="is-rounded avatar"
+             [src]="potentiel?.person?.photo || defaultAvatar"
+             [alt]="'Photo de ' + (potentiel?.person?.libelle || potentiel?.person?.nom || '')"
+             (error)="onImgError($event)">
+      </figure>
 
-<span class="nom_personne"
-      (click)="openPreview(potentiel, $event)"
-      style="cursor: zoom-in;">
-  {{ potentiel.person.libelle }}
-</span>
+      <span class="nom_personne"
+            (click)="openPreview(potentiel, $event)"
+            style="cursor: zoom-in;">
+        {{ potentiel.person?.libelle }}
+      </span>
 
-<span class="contact-urgence"
-      [title]="contact_urgence_nom(potentiel)"
-      (click)="openPreview(potentiel, $event)"
-      style="cursor: zoom-in;">
-  {{ contact_urgence(potentiel) }}
-</span>
+      <span class="contact-urgence"
+            [title]="contact_urgence_nom(potentiel)"
+            (click)="openPreview(potentiel, $event)"
+            style="cursor: zoom-in;">
+        {{ contact_urgence(potentiel) }}
+      </span>
     </span>
 
-    <div *ngIf="store.isProf()" class="buttons has-addons"  style="flex-wrap: nowrap;" >
+    <div *ngIf="store.isProf()" class="buttons has-addons" style="flex-wrap: nowrap;">
       <button type="button" class="button is-outlined is-rounded is-primary"
               (click)="MAJInscription(potentiel, true)"
               [disabled]="!GetNbPersonne(Presents)">
@@ -711,6 +719,7 @@
       </button>
     </div>
   </div>
+
   <!-- MODALE DE PRÉVISUALISATION (zoom mobile) -->
 <!-- ✅ Modale unique et safe -->
 <ng-container *ngIf="previewPotentiel as p">
@@ -754,40 +763,48 @@
 
 </ng-template>
 
+<ng-container *ngIf="vue_alpha; else PasVuAlpha">
+<ng-container *ngFor="let potentiel of All">  
+     <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
+</ng-container>
+</ng-container>
+<ng-template #PasVuAlpha>
+
 <!-- Présent -->
 <ng-container *ngFor="let potentiel of All">
   <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'présent'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel, icon: 'fa-thumbs-up has-text-success' }"></ng-container>
+    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
   </ng-container>
 </ng-container>
 
 <!-- Essai -->
 <ng-container *ngFor="let potentiel of All">
   <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'essai'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel, icon: 'fa-question' }"></ng-container>
+    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
   </ng-container>
 </ng-container>
 
 <!-- Convoqué -->
 <ng-container *ngFor="let potentiel of All">
   <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'convoqué'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel, icon: 'fa-hand-point-up has-text-info' }"></ng-container>
+    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
   </ng-container>
 </ng-container>
 
 <!-- Absent -->
 <ng-container *ngFor="let potentiel of All">
   <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'absent'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel, icon: 'fa-thumbs-down has-text-danger' }"></ng-container>
+    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
   </ng-container>
 </ng-container>
 
 <!-- Non défini (prof uniquement) -->
 <ng-container *ngFor="let potentiel of All">
   <ng-container *ngIf="!potentiel.statut_seance && !potentiel.statut_inscription && store.isProf()">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel, icon: 'fa-ellipsis-h' }"></ng-container>
+    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
   </ng-container>
 </ng-container>
+</ng-template>
 
                     <h6  style="cursor:pointer;"
                 class="title is-6"

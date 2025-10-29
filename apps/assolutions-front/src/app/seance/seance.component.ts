@@ -106,6 +106,70 @@ export class SeanceComponent implements OnInit, OnDestroy {
         public global:StaticClass
   ) {}
 
+  @ViewChild('nomFilterInput') nomFilterInput?: ElementRef<HTMLInputElement>;
+@ViewChild('dateFromInput') dateFromInput?: ElementRef<HTMLInputElement>;
+@ViewChild('dateToInput')   dateToInput?: ElementRef<HTMLInputElement>;
+@ViewChild('lieuSelect')    lieuSelect?: ElementRef<HTMLSelectElement>;
+@ViewChild('groupeSelect')  groupeSelect?: ElementRef<HTMLSelectElement>;
+@ViewChild('profInput')     profInput?: ElementRef<HTMLInputElement>;
+@ViewChild('statutSelect')  statutSelect?: ElementRef<HTMLSelectElement>;
+@ViewChild('dateEditor') dateEditor?: ElementRef<HTMLDivElement>;
+
+onDateFocusOut(event: FocusEvent) {
+  // On laisse le temps au focus de bouger
+  setTimeout(() => {
+    const container = this.dateEditor?.nativeElement;
+    const active = document.activeElement as HTMLElement | null;
+    const stillInside = !!(container && active && container.contains(active));
+    if (!stillInside) {
+      this.endEditFilter('date'); // on ferme seulement si on sort du bloc
+    }
+  }, 0);
+}
+normalizeFilterValue(key: string, raw: any): any {
+  switch (key) {
+    case 'nom':
+    case 'lieu':
+    case 'groupe':
+    case 'prof': {
+      const v = (raw ?? '').toString().trim();
+      return v || null;
+    }
+    case 'date_apres':
+    case 'date_avant': {
+      const v = (raw ?? '').toString().trim();
+      return v || null; // "YYYY-MM-DD"
+    }
+    case 'statut': {
+      const v = (raw ?? '').toString().trim();
+      return v || null;
+    }
+    default: return raw;
+  }
+}
+startEditFilter(key: string, input?: any) {
+  (this.filters as any).editing[key] = true;
+  setTimeout(() => {
+    const el = input?.nativeElement ?? input;
+    el?.focus?.(); el?.select?.();
+  }, 0);
+}
+onFilterChange(key: string, value: any) {
+  (this.filters as any)[`filter_${key}`] = this.normalizeFilterValue(key, value);
+}
+endEditFilter(key: string)   { (this.filters as any).editing[key] = false; }
+cancelEditFilter(key: string){ (this.filters as any).editing[key] = false; }
+clearFilter(key: string) {
+  if (key === 'date') {
+    this.filters.filter_date_apres = null;
+    this.filters.filter_date_avant = null;
+  } else {
+    (this.filters as any)[`filter_${key}`] = null;
+  }
+  (this.filters as any).editing[key] = false;
+}
+
+
   async ngOnInit(): Promise<void> {
     
   window.addEventListener('resize', this.onResize);
@@ -1176,76 +1240,56 @@ private async copyToClipboard(text: string) {
 }
 
 export class FilterSeance {
+  public editing = {
+    nom: false,
+    prof: false,
+    date: false,
+    lieu: false,
+    groupe: false,
+    statut: false,
+  };
+
   private _filter_nom: string | null = null;
-  get filter_nom(): string | null {
-    return this._filter_nom;
+  get filter_nom(): string | null { return this._filter_nom; }
+  set filter_nom(value: string | null) { this._filter_nom = value; this.onFilterChange(); }
+
+  // ✅ bornes en STRING ISO "YYYY-MM-DD"
+  private _filter_date_apres: string | null = this.calcISO(-2, 0); // Du = aujourd'hui - 2 jours
+  private _filter_date_avant: string | null = this.calcISO(0, 2);  // Au = aujourd'hui + 2 mois
+
+  get filter_date_apres(): string | null { return this._filter_date_apres; }
+  set filter_date_apres(value: string | null) { this._filter_date_apres = value || null; this.onFilterChange(); }
+
+  get filter_date_avant(): string | null { return this._filter_date_avant; }
+  set filter_date_avant(value: string | null) { this._filter_date_avant = value || null; this.onFilterChange(); }
+
+  /** utilitaire: retourne 'YYYY-MM-DD' décalé de days/months */
+  private calcISO(daysDelta = 0, monthsDelta = 0): string {
+    const d = new Date();
+    if (daysDelta)  d.setDate(d.getDate() + daysDelta);
+    if (monthsDelta) d.setMonth(d.getMonth() + monthsDelta);
+    // toISOString() -> 'YYYY-MM-DDTHH:mm:ss.sssZ' ; on garde la partie date
+    return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+      .toISOString()
+      .slice(0, 10);
   }
-  set filter_nom(value: string | null) {
-    this._filter_nom = value;
-    this.onFilterChange();
-  }
-
-private _filter_date_avant: Date | null = this.calcDate(-2);   // aujourd'hui - 2 jours
-private _filter_date_apres: Date | null = this.calcDate(0, 2); // aujourd'hui + 2 mois
-
-get filter_date_apres(): Date | null {
-  return this._filter_date_apres;
-}
-set filter_date_apres(value: Date | null) {
-  this._filter_date_apres = value;
-  this.onFilterChange();
-}
-
-get filter_date_avant(): Date | null {
-  return this._filter_date_avant;
-}
-set filter_date_avant(value: Date | null) {
-  this._filter_date_avant = value;
-  this.onFilterChange();
-}
-
-/** utilitaire pour décaler une date */
-private calcDate(daysDelta = 0, monthsDelta = 0): Date {
-  const d = new Date();
-  if (daysDelta) d.setDate(d.getDate() + daysDelta);
-  if (monthsDelta) d.setMonth(d.getMonth() + monthsDelta);
-  return d;
-}
 
   private _filter_prof: string | null = null;
-  get filter_prof(): string | null {
-    return this._filter_prof;
-  }
-  set filter_prof(value: string | null) {
-    this._filter_prof = value;
-    this.onFilterChange();
-  }
+  get filter_prof(): string | null { return this._filter_prof; }
+  set filter_prof(value: string | null) { this._filter_prof = value; this.onFilterChange(); }
 
+  // Laisse prévue si tu veux un filtre par défaut ; sinon mets null
   private _filter_statut: StatutSeance | null = StatutSeance.prévue;
-  get filter_statut(): StatutSeance | null {
-    return this._filter_statut;
-  }
-  set filter_statut(value: StatutSeance | null) {
-    this._filter_statut = value;
-    this.onFilterChange();
-  }
+  get filter_statut(): StatutSeance | null { return this._filter_statut; }
+  set filter_statut(value: StatutSeance | null) { this._filter_statut = value; this.onFilterChange(); }
 
   private _filter_groupe: string | null = null;
-  get filter_groupe(): string | null {
-    return this._filter_groupe;
-  }
-  set filter_groupe(value: string | null) {
-    this._filter_groupe = value;
-    this.onFilterChange();
-  }
+  get filter_groupe(): string | null { return this._filter_groupe; }
+  set filter_groupe(value: string | null) { this._filter_groupe = value; this.onFilterChange(); }
+
   private _filter_lieu: string | null = null;
-  get filter_lieu(): string | null {
-    return this._filter_lieu;
-  }
-  set filter_lieu(value: string | null) {
-    this._filter_lieu = value;
-    this.onFilterChange();
-  }
+  get filter_lieu(): string | null { return this._filter_lieu; }
+  set filter_lieu(value: string | null) { this._filter_lieu = value; this.onFilterChange(); }
 
   private onFilterChange(): void {}
 }

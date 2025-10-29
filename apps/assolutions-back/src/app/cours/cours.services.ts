@@ -78,33 +78,17 @@ async UpdateSerie(cours: Cours_VM, date: Date): Promise<KeyValuePairAny> {
   if (!cours || cours.id < 1) {
     throw new BadRequestException('INVALID_ITEM');
   }
-  if (!date) {
-    date = new Date();
-  }
+  if (!date) date = new Date();
 
   // Helpers
-  const normalizeJour = (j: string): string =>
-    (j || '').trim().toLowerCase();
-
-  // ISO: lun=1 ... dim=7
-  const isoDay = (d: Date): number => {
-    const js = d.getDay(); // 0..6 (dim..sam)
-    return js === 0 ? 7 : js;
-  };
-
+  const normalizeJour = (j: string): string => (j || '').trim().toLowerCase();
+  const isoDay = (d: Date): number => (d.getDay() === 0 ? 7 : d.getDay()); // 1..7 (lun..dim)
   const jourToIso: Record<string, number> = {
-    'lundi': 1,
-    'mardi': 2,
-    'mercredi': 3,
-    'jeudi': 4,
-    'vendredi': 5,
-    'samedi': 6,
-    'dimanche': 7,
+    lundi: 1, mardi: 2, mercredi: 3, jeudi: 4, vendredi: 5, samedi: 6, dimanche: 7,
   };
-
   const setDateToIsoWeekday = (base: Date, targetIsoDay: number): Date => {
     const curIso = isoDay(base);
-    const delta = targetIsoDay - curIso; // même semaine (peut être négatif)
+    const delta = targetIsoDay - curIso; // même semaine
     const d = new Date(base);
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() + delta);
@@ -112,110 +96,96 @@ async UpdateSerie(cours: Cours_VM, date: Date): Promise<KeyValuePairAny> {
   };
 
   const wantedIsoDay = jourToIso[normalizeJour(cours.jour_semaine)];
-  if (!wantedIsoDay) {
-    throw new BadRequestException('INVALID_JOUR_SEMAINE');
-  }
+  if (!wantedIsoDay) throw new BadRequestException('INVALID_JOUR_SEMAINE');
 
-  // Récupération des séances à mettre à jour
-  const seances: Session[] =
-    await this.seanceserv.getSeanceCoursAfterDate(cours.id, date);
-
+  const seances: Session[] = await this.seanceserv.getSeanceCoursAfterDate(cours.id, date);
   kvp.value = seances.length;
 
   for (const s of seances) {
-    // 1) Mise à jour des champs simples
-    s.locationId       = cours.lieu_id;
-    s.duration         = cours.duree;
-    s.showAttendance   = cours.afficher_present;
-    s.appointment      = cours.rdv;
-    s.label            = cours.nom;
-    s.limitMaxAge      = cours.est_limite_age_maximum;
-    s.limitMinAge      = cours.est_limite_age_minimum;
-    s.maxPlaces        = cours.place_maximum;
-    s.nominativeCall   = cours.convocation_nominative;
-    s.maxAge           = cours.age_maximum;
-    s.minAge           = cours.age_minimum;
-    s.limitPlaces      = cours.est_place_maximum;
-    s.startTime        = cours.heure;
-    s.trialAllowed     = cours.essai_possible;
+    // 1) Calcul des nouvelles valeurs (patch strict, pas l’entité entière)
+    const newDate = s.date
+      ? setDateToIsoWeekday(new Date(s.date), wantedIsoDay)
+      : setDateToIsoWeekday(new Date(date), wantedIsoDay);
 
-    // 2) Ajustement de la DATE au jour de semaine dans la même semaine que la date actuelle
-    //    (si déjà le bon jour, la date reste identique)
-    if (s.date) {
-      const current = new Date(s.date);
-      s.date = setDateToIsoWeekday(current, wantedIsoDay);
-    } else {
-      // Par sécurité, si s.date est vide, on base sur "date" passée en entrée
-      s.date = setDateToIsoWeekday(new Date(date), wantedIsoDay);
-    }
+    const patch: Partial<Session> = {
+      locationId: cours.lieu_id,
+      duration: cours.duree,
+      showAttendance: !!cours.afficher_present,
+      appointment: cours.rdv,
+      label: cours.nom,
+      limitMaxAge: !!cours.est_limite_age_maximum,
+      limitMinAge: !!cours.est_limite_age_minimum,
+      maxPlaces: cours.place_maximum,
+      nominativeCall: !!cours.convocation_nominative,
+      maxAge: cours.age_maximum,
+      minAge: cours.age_minimum,
+      limitPlaces: !!cours.est_place_maximum,
+      startTime: cours.heure,
+      trialAllowed: !!cours.essai_possible,
+      date: newDate,
+    };
 
-    // 3) Sync des GROUPES (diff par groupId)
+    // a) MAJ des champs simples AVANT les liens (ordre déterministe)
+    await this.seanceserv.update(s.id, patch);
+
+    // 2) GROUPES — diff par groupId, suppression PUIS ajout (ordre déterministe)
     try {
-     // === Sync GROUPES par diff sur groupId ===
-const currentLinks = (s.groups ?? []) as Array<{ id: number; groupId: number }>;
-const targetIds = new Set<number>((cours.groupes ?? []).map(g => g.id));
-
-// liens à supprimer = liens existants dont le groupId n'est plus dans la cible
-const linksToRemove = currentLinks.filter(l => !targetIds.has(l.groupId));
-
-// ids de groupes à ajouter = groupIds cibles qui n'existent pas encore dans les liens
-const existingGroupIds = new Set<number>(currentLinks.map(l => l.groupId));
-const groupIdsToAdd = [...targetIds].filter(id => !existingGroupIds.has(id));
-
-// suppression par id de lien
-await Promise.all(
-  linksToRemove.map(l => this.linkgroupserv.delete(l.id))
-);
-
-// création par payload objet (ADAPTE les noms de champs si besoin)
-await Promise.all(
-  groupIdsToAdd.map(groupId =>
-    this.linkgroupserv.create({
-      objectType: 'seance',   // ou 'séance' si c'est vraiment ce que ton backend attend
-      objectId: s.id,
-      groupId,
-    })
-  )
-);
-
-
-
+      const currentLinks = (s.groups ?? []) as Array<{ id: number; groupId: number }>;
+      const targetIds = new Set<number>((cours.groupes ?? []).map(g => g.id)); // <-- groupId (pas id)
+      console.log(currentLinks, targetIds);
+      const linksToRemove = currentLinks.filter(l => !targetIds.has(l.groupId));
+      console.log(linksToRemove)
+      const existingGroupIds = new Set<number>(currentLinks.map(l => l.groupId));
+      const groupIdsToAdd = [...targetIds].filter(id => !existingGroupIds.has(id));
+      console.log(groupIdsToAdd);
+      // Suppressions d’abord
+      for (const l of linksToRemove) {
+        await this.linkgroupserv.delete(l.id);
+      }
+      // Ajouts ensuite
+      for (const groupId of groupIdsToAdd) {
+        await this.linkgroupserv.create({
+          objectType: 'séance', // adapte si nécessaire
+          objectId: s.id,
+          groupId,
+        });
+      }
     } catch (e) {
-      // non bloquant : on continue la MAJ de la séance
-      // (tu peux logger si besoin)
+      // non bloquant; log si besoin
     }
 
-    // 4) Sync des PROFESSEURS via table de liaison SessionProfesseur
+    // 3) PROFESSEURS — suppression PUIS ajout (ordre déterministe)
     try {
-      const currentProfIds = new Set<number>(
-        (s.seanceProfesseurs ?? []).map(p => p.professeur.professorId)
-      );
-      const targetProfIds = new Set<number>(
-        (cours.professeursCours ?? []).map((p: PersonneLight_VM) => p.id)
-      );
+      const currentSP = (s.seanceProfesseurs ?? []) as Array<{ id: number; professeur: { professorId: number } }>;
+      const currentProfIds = new Set<number>(currentSP.map(p => p.professeur.professorId));
+      const targetProfIds = new Set<number>((cours.professeursCours ?? []).map((p: PersonneLight_VM) => p.id));
 
-      const profsToAdd    = [...targetProfIds].filter(id => !currentProfIds.has(id));
-      const profsToRemove = [...currentProfIds].filter(id => !targetProfIds.has(id));
+      const profsToRemoveIds = [...currentProfIds].filter(id => !targetProfIds.has(id));
+      const profsToAddIds = [...targetProfIds].filter(id => !currentProfIds.has(id));
 
-      await Promise.all([
-        ...profsToAdd.map(id => this.addProfesseurToSession(s.id, id)),
-        ...profsToRemove.map(id => this.seanceserv.removeProfesseurFromSession(s.id, id)),
-      ]);
+      // Suppressions d’abord (par id de lien SessionProfesseur)
+      for (const sp of currentSP) {
+        if (profsToRemoveIds.includes(sp.professeur.professorId)) {
+          await this.sessionprofserv.delete(sp.id);
+        }
+      }
+      // Ajouts ensuite
+      for (const profId of profsToAddIds) {
+        await this.addProfesseurToSession(s.id, profId);
+      }
     } catch (e) {
-      // non bloquant
+      // non bloquant; log si besoin
     }
 
-    // 5) Sauvegarde de la séance
-    try {
-      await this.seanceserv.update(s.id, s);
-      kvp.key += 1;
-    } catch (e) {
-      // Tu peux logger l'erreur si nécessaire mais on n'interrompt pas la boucle
-    }
+    // (optionnel) Refetch si tu veux un s à jour pour l’itération courante
+    // s = await this.seanceserv.getById(s.id);
+
+    kvp.key += 1;
   }
 
   return kvp;
 }
+
   async addProfesseurToSession(id_s: number, id_p: number): Promise<SessionProfessor> {
     let seance = await this.seanceserv.get(id_s);
     let contract = await this.profcont.getProfessorContractByProfessorId(id_p, seance.seasonId);

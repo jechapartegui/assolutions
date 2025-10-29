@@ -404,6 +404,7 @@ autoSave(){
   this.checkall();
   if(this.is_valid){
   this.Save();
+  this.edit_prof = false;
   }
 }
 retour(){
@@ -720,6 +721,9 @@ SaveCaracteristique(caracteristique :caracteristique){
     
     async RemoveProf(item) {
       this.action = $localize`Supprimer un professeur de la liste`;    
+      let errorService = ErrorService.instance;
+      try {
+      
       if(this.editCours.id>0){
           await this.coursservice.DeleteCoursProf(this.editCours.id,item.id);
         }   
@@ -728,6 +732,13 @@ SaveCaracteristique(caracteristique :caracteristique){
           this.editCours.prof_principal_id = null;
         }
         this.MAJListeProf();
+          let o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+
+        } catch(err ) { 
+          let o = errorService.CreateError(this.action, err.toString());
+          errorService.emitChange(o);
+        };
      
         
     }

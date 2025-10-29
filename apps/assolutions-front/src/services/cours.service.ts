@@ -163,7 +163,7 @@ public AddCoursProf(cours_id:number, person_id:number): Promise<number>{
 }
 
 public DeleteCoursProf(cours_id:number, person_id:number): Promise<boolean>{
-   this.url = environment.maseance + 'api/cours_prof/delete/' + cours_id + '/' + person_id;
+   this.url = environment.maseance + 'api/cours_prof/delete/';
 const body = {
       cours_id: cours_id, 
       person_id: person_id

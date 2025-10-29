@@ -61,7 +61,11 @@ export class CoursProfService {
      if (!cours_id || !person_id) {
       throw new BadRequestException('INVALID_COURSE_PROFESSOR');
     }
-    const foundobjet =  this.courseprof_serv.getBy(cours_id, person_id);
+    const cours = await this.courseserv.get(cours_id);
+    if(!cours){
+      throw new BadRequestException('INVALID_COURSE');
+    }
+    const foundobjet =  this.courseprof_serv.getBy(cours_id, person_id, cours.seasonId);
      if (!foundobjet) {
       throw new BadRequestException('INVALID_COURSE_PROFESSOR');
     }

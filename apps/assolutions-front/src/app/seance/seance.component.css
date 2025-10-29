@@ -23,3 +23,5 @@
     flex-wrap: nowrap;
 }
 
+/* Tag sur 2 lignes bien compact */
+.tag--break .tagline { display:block; line-height:1.2; }

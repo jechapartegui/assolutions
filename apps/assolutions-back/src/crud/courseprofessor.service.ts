@@ -22,12 +22,13 @@ export class CourseProfessorService {
     return item;
   }
 
- async getBy(courseId: number, professorId: number): Promise<CourseProfessor> {
+ async getBy(courseId: number, professorId: number, saisonId): Promise<CourseProfessor> {
   const item = await this.repo.findOne({
     where: {
       courseId,
       contract: {
         professorId,
+        saisonId
       },
     },
     relations: [
