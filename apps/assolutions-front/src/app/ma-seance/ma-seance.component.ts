@@ -27,6 +27,7 @@ export class MaSeanceComponent implements OnInit {
     display_absent:boolean = true;
     add_adh_seance:boolean = false;
     display_present:boolean = true;
+    public multi: boolean = false;
   thisSeance: Seance_VM;
   afficher_admin: boolean = false;
   Autres: Adherent_VM[] = [];
@@ -481,18 +482,7 @@ saveInfoSeance(){
     this.router.navigate(['/seance'], { queryParams: { id: this.thisSeance.seance_id } });
   }
 
-Load() {
-  const errorService = ErrorService.instance;
-  this.action = $localize`Charger la séance`;
-
-  this.inscriptionserv.GetAllSeanceFull(this.id).then((res) => {
-
-    // Rétablir le prototype et autres pré-traitements
-    res.forEach(p => {
-      if (p?.person) {
-        Object.setPrototypeOf(p.person, Personne_VM.prototype);
-      }
-    });
+  SoftLoad(res: FullInscriptionSeance_VM[]) {
 // Petit helper pour trier par libellé (sans accent, insensible à la casse)
 const sortByLibelle = (a: any, b: any) =>
   a.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -506,7 +496,22 @@ this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription).sor
 this.All        = res.filter(x => !x.statut_seance).sort(sortByLibelle);
 this.Absents    = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT).sort(sortByLibelle);
 this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).sort(sortByLibelle);
+  }
 
+Load() {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Charger la séance`;
+
+  this.inscriptionserv.GetAllSeanceFull(this.id).then((res) => {
+
+    // Rétablir le prototype et autres pré-traitements
+    res.forEach(p => {
+      if (p?.person) {
+        Object.setPrototypeOf(p.person, Personne_VM.prototype);
+      }
+    });
+
+    this.SoftLoad(res);
 
     // 🔹 Lancer le fetch des photos pour tous les items visibles
     this.preloadPhotos(res);
@@ -565,8 +570,7 @@ this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).so
         inscription.id = id;
         let o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
-        this.Load();
-
+       
       }).catch((err: HttpErrorResponse) => {
         inscription.statut_seance = oldstatut
         let o = errorService.CreateError(this.action, err.message);
@@ -577,7 +581,10 @@ this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).so
       this.inscriptionserv.Update(inscription).then(() => {
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
+           if(this.multi){
           this.Load();
+        }
+
 
       }).catch((err: HttpErrorResponse) => {
         inscription.statut_seance = oldstatut

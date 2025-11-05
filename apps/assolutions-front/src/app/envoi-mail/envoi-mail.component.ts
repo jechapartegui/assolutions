@@ -524,42 +524,51 @@ this.ListeUserSelectionne.push(adh);
   }
 
 
-async EnvoyerTousLesMails() {
-    this.uiLock = true;
-    try {
+ async EnvoyerTousLesMails() {
+  this.uiLock = true;
+  try {
+    const total = this.ListeGeneree.length;
+    let OK = 0;
+    this.action = $localize`Envoyer les mails`;
 
-  const total = this.ListeGeneree.length;
-  let OK = 0;
-  this.action = $localize`Envoyer les mails`;
+    if (this.typemail === 'relance') {
+      this.variables = { DATE_DEBUT: this.date_debut, DATE_FIN: this.date_fin };
+    }
 
-  if (this.typemail === 'relance') {
-    this.variables = { DATE_DEBUT: this.date_debut, DATE_FIN: this.date_fin };
-    
-  }
     let userss = this.ListeUserSelectionne.map(x => x.id);
-      if(this.envoi_par_compte){
-         userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
-      }
-    this.mail_serv.EnvoyerMail(
+    if (this.envoi_par_compte) {
+      userss = [...new Set(this.ListeUserSelectionne.map(x => x.compte))];
+    }
+
+    // ⬇️ ATTEND la promesse
+    const mail: KeyValuePairAny[] = await this.mail_serv.EnvoyerMail(
       this.mail_a_generer,
       this.subject_mail_a_generer,
-      userss, this.variables,this.typemail, this.envoi_par_compte,      
+      userss,
+      this.variables,
+      this.typemail,
+      this.envoi_par_compte,
       false
-    ).then((mail: KeyValuePairAny[]) => {
-      this.log = '';
-      mail.forEach(m => {
-        OK++;
-        const nom = this.makeLabel(m.key);
-        const sujet = m?.value?.key ?? '';
-        this.log += `${nom} — ${sujet}\n`;
-      });
-      window.alert($localize`Nombre de mails envoyés : ` + OK.toString() + '/' + total.toString() + '\n' + this.log);
-    }).catch(/* ... */);
+    );
 
-    } finally {
-      this.uiLock = false;
+    this.log = '';
+    for (const m of mail) {
+      OK++;
+      const nom = this.makeLabel(m.key);
+      const sujet = m?.value?.key ?? '';
+      this.log += `${nom} — ${sujet}\n`;
     }
+    window.alert($localize`Nombre de mails envoyés : ` + OK + '/' + total + '\n' + this.log);
+
+  } catch (err) {
+    // gère l’erreur ici (et pas dans un .catch séparé)
+    // ErrorService.instance.emitChange(...);
+  } finally {
+    this.uiLock = false;
+    // Si ton composant est en OnPush :
+  }
 }
+
   makeLabel(p: any): string {
   if(this.envoi_par_compte){
     return p?? '';
