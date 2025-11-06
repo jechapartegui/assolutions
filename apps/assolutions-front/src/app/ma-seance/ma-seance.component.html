@@ -293,7 +293,7 @@
                   &nbsp;<span i18n>Présents</span>&nbsp;({{ Presents.length }}&nbsp;<span i18n>personnes</span>)
                 </h6>
        <span *ngIf="display_present">
-                <ng-container *ngFor="let potentiel of Presents">
+                <ng-container *ngFor="let potentiel of All">
                   <ng-container *ngIf="potentiel.statut_seance">
                     <ng-container *ngIf="potentiel.statut_seance === 'présent'">
                       <div class="ligne">
@@ -369,7 +369,7 @@
                 >)
               </h6>
               <span *ngIf="display_absent">
-              <ng-container *ngFor="let potentiel of Absents">
+              <ng-container *ngFor="let potentiel of All">
                 <ng-container *ngIf="potentiel.statut_seance">
                   <ng-container *ngIf="potentiel.statut_seance === 'absent'">
                     <div class="ligne">

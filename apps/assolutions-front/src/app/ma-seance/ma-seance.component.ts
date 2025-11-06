@@ -482,21 +482,6 @@ saveInfoSeance(){
     this.router.navigate(['/seance'], { queryParams: { id: this.thisSeance.seance_id } });
   }
 
-  SoftLoad(res: FullInscriptionSeance_VM[]) {
-// Petit helper pour trier par libellé (sans accent, insensible à la casse)
-const sortByLibelle = (a: any, b: any) =>
-  a.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-    .localeCompare(
-      b.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-    );
-
-// Tes filtres existants + tri
-this.Inscrits   = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT).sort(sortByLibelle);
-this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription).sort(sortByLibelle);
-this.All        = res.filter(x => !x.statut_seance).sort(sortByLibelle);
-this.Absents    = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT).sort(sortByLibelle);
-this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).sort(sortByLibelle);
-  }
 
 Load() {
   const errorService = ErrorService.instance;
@@ -510,8 +495,18 @@ Load() {
         Object.setPrototypeOf(p.person, Personne_VM.prototype);
       }
     });
+const sortByLibelle = (a: any, b: any) =>
+  a.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .localeCompare(
+      b.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    );
 
-    this.SoftLoad(res);
+// Tes filtres existants + tri
+this.Inscrits   = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT).sort(sortByLibelle);
+this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription).sort(sortByLibelle);
+this.All        = res.filter(x => !x.statut_seance).sort(sortByLibelle);
+this.Absents    = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT).sort(sortByLibelle);
+this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).sort(sortByLibelle);
 
     // 🔹 Lancer le fetch des photos pour tous les items visibles
     this.preloadPhotos(res);
