@@ -708,20 +708,22 @@
     </span>
 
     <div *ngIf="store.isProf()" class="buttons has-addons" style="flex-wrap: nowrap;">
-      <button type="button"  [ngClass]="{
-           'button is-rounded is-primary': potentiel.statut_seance === 'présent',
-          'button is-outlined is-rounded is-primary': potentiel.statut_seance !== 'présent'
-          }"
+      <button *ngIf="potentiel.statut_seance && potentiel.statut_seance === 'présent'"  type="button"  class="button is-rounded is-primary"
               (click)="MAJInscription(potentiel, true)"
               [disabled]="!GetNbPersonne()">
         <i class="fas fa-check"></i>
       </button>
-      <button type="button" 
-          [ngClass]="{
-            'button is-rounded is-danger': potentiel.statut_seance === 'absent',
-            'button is-outlined is-rounded is-danger': potentiel.statut_seance !== 'absent'
-          }"
-              (click)="MAJInscription(potentiel, false)">
+       <button *ngIf="!potentiel.statut_seance || potentiel.statut_seance !== 'présent'"  type="button"  class="button is-outlined is-rounded is-primary"
+              (click)="MAJInscription(potentiel, true)"
+              [disabled]="!GetNbPersonne()">
+        <i class="fas fa-check"></i>
+      </button>
+      <button type="button"  *ngIf="potentiel.statut_seance && potentiel.statut_seance === 'absent'" class="button is-rounded is-danger"
+              (click)="MAJInscription(potentiel, false)">       
+        <i class="fas fa-times"></i>
+      </button>
+       <button type="button"  *ngIf="!potentiel.statut_seance || potentiel.statut_seance !== 'absent'" class="button is-outlined  is-rounded is-danger"
+              (click)="MAJInscription(potentiel, false)">       
         <i class="fas fa-times"></i>
       </button>
     </div>

@@ -89,6 +89,8 @@ if (groupe) {
 
   }
   RemoveGroupe(item :LienGroupe_VM) {
+    console.log(item);
+    console.log(item.id_lien);
     const errorService = ErrorService.instance;
     this.action = $localize`Supprimer un groupe`;
     if (this.id_source > 0) {
