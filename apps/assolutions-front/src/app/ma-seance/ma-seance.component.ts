@@ -31,11 +31,7 @@ export class MaSeanceComponent implements OnInit {
   thisSeance: Seance_VM;
   afficher_admin: boolean = false;
   Autres: Adherent_VM[] = [];
-  Inscrits: FullInscriptionSeance_VM[] = [];
-  Potentiels: FullInscriptionSeance_VM[] = [];
   All: FullInscriptionSeance_VM[] = [];
-  Absents: FullInscriptionSeance_VM[] = [];
-  Presents: FullInscriptionSeance_VM[] = [];
   Notes:string="";
   variables: Record<string, any> = {};
   adherent_to: Adherent_VM = null;
@@ -501,12 +497,7 @@ const sortByLibelle = (a: any, b: any) =>
       b.person?.libelle?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     );
 
-// Tes filtres existants + tri
-this.Inscrits   = res.filter(x => !x.statut_seance && x.statut_inscription == InscriptionStatus_VM.PRESENT).sort(sortByLibelle);
-this.Potentiels = res.filter(x => !x.statut_seance && !x.statut_inscription).sort(sortByLibelle);
-this.All        = res.filter(x => !x.statut_seance).sort(sortByLibelle);
-this.Absents    = res.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT).sort(sortByLibelle);
-this.Presents   = res.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).sort(sortByLibelle);
+this.All        = res.sort(sortByLibelle);
 
     // 🔹 Lancer le fetch des photos pour tous les items visibles
     this.preloadPhotos(res);
@@ -662,9 +653,9 @@ AjouterAdherentsHorsGroupe() {
 
 }
 
-GetNbPersonne(liste: FullInscriptionSeance_VM[]): boolean {
+GetNbPersonne(): boolean {
   if (this.thisSeance.est_place_maximum) {
-    let ct = liste.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).length;
+    let ct = this.All.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).length;
     if (ct >= this.thisSeance.place_maximum) {
       return false;
     } else {
@@ -811,10 +802,7 @@ getPhoto(p: any): string {
 }
 
 // Priorité : statut_seance (présent/absent) > statut_inscription
-iconClass(p: any): string {
-  // Si la séance a un statut explicite, on l’utilise d’abord
-  if (p?.statut_seance === SeanceStatus_VM.PRESENT)   return 'fa-thumbs-up has-text-success';
-  if (p?.statut_seance === SeanceStatus_VM.ABSENT)    return 'fa-thumbs-down has-text-danger';
+iconClass(p: FullInscriptionSeance_VM): string {
 
   // Sinon on retombe sur le statut d’inscription
   switch ((p?.statut_inscription || '').toLowerCase()) {
@@ -857,8 +845,14 @@ openMenu(potentiel: any, ev: MouseEvent) {
     this.cdr.markForCheck?.();         // utile si OnPush
   }
 
-  getPresencePotentielle(potentiel: FullInscriptionSeance_VM[]): number {
-    return potentiel.filter(x => x.statut_inscription == InscriptionStatus_VM.PRESENT).length;
+  getPresencePotentielle(): number {
+    return this.All.filter(x => x.statut_inscription == InscriptionStatus_VM.PRESENT).length;
+  }
+    getPresent(): number {
+    return this.All.filter(x => x.statut_seance == SeanceStatus_VM.PRESENT).length;
+  }
+    getAbsent(): number {
+    return this.All.filter(x => x.statut_seance == SeanceStatus_VM.ABSENT ).length;
   }
 
   /** Optionnel : ferme après avoir choisi une action */
@@ -869,13 +863,8 @@ openMenu(potentiel: any, ev: MouseEvent) {
     this.cdr.markForCheck?.();
   }
  private closeAllMenus() {
-  console.log("close all menus");
     // si les menus n’existent que dans All, c’est suffisant
     this.All?.forEach(p => (p.isVisible = false));
-      this.Inscrits?.forEach(p => (p.isVisible = false));
-      this.Potentiels?.forEach(p => (p.isVisible = false));
-      this.Absents?.forEach(p => (p.isVisible = false));
-      this.Presents?.forEach(p => (p.isVisible = false));
   }
    @HostListener('document:click', ['$event'])
   onDocumentClick(_: MouseEvent) {

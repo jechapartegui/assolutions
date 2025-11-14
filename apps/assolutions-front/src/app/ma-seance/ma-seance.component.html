@@ -192,7 +192,7 @@
                     (click)="display_personne = !display_personne">
                   <i class="fas"
                      [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle(All)}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
+                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle()}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
                 </h6>
 
                 <span *ngIf="display_personne">
@@ -236,7 +236,7 @@
       <button type="button"
               class="button is-outlined is-rounded is-primary"
               (click)="MAJInscription(potentiel, true)"
-              [disabled]="!GetNbPersonne(Presents)">
+              [disabled]="!GetNbPersonne()">
         <i class="fas fa-check"></i>
       </button>
       <button type="button"
@@ -290,7 +290,7 @@
                     (click)="display_present = !display_present">
                   <i class="fas"
                      [ngClass]="display_present ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présents</span>&nbsp;({{ Presents.length }}&nbsp;<span i18n>personnes</span>)
+                  &nbsp;<span i18n>Présents</span>&nbsp;({{ getPresent() }}&nbsp;<span i18n>personnes</span>)
                 </h6>
        <span *ngIf="display_present">
                 <ng-container *ngFor="let potentiel of All">
@@ -363,7 +363,7 @@
               >
                 <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
                 <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
-                <span i18n>Absents</span>&nbsp;({{ Absents.length }}&nbsp;<span
+                <span i18n>Absents</span>&nbsp;({{ getAbsent() }}&nbsp;<span
                   i18n
                   >personnes</span
                 >)
@@ -410,7 +410,7 @@
                         <button
                           type="button"
                           class="button is-outlined is-rounded is-primary"
-                          [disabled]="!GetNbPersonne(Presents)"
+                          [disabled]="!GetNbPersonne()"
                           (click)="MAJInscription(potentiel, true)"
                         >
                           <i class="fas fa-check"></i>
@@ -658,7 +658,7 @@
                     (click)="display_personne = !display_personne">
                   <i class="fas"
                      [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle(All)}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
+                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle()}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
                 </h6>
 
                 <span *ngIf="display_personne">
@@ -708,12 +708,19 @@
     </span>
 
     <div *ngIf="store.isProf()" class="buttons has-addons" style="flex-wrap: nowrap;">
-      <button type="button" class="button is-outlined is-rounded is-primary"
+      <button type="button"  [ngClass]="{
+           'button is-rounded is-primary': potentiel.statut_seance === 'présent',
+          'button is-outlined is-rounded is-primary': potentiel.statut_seance !== 'présent'
+          }"
               (click)="MAJInscription(potentiel, true)"
-              [disabled]="!GetNbPersonne(Presents)">
+              [disabled]="!GetNbPersonne()">
         <i class="fas fa-check"></i>
       </button>
-      <button type="button" class="button is-outlined is-rounded is-danger"
+      <button type="button" 
+          [ngClass]="{
+            'button is-rounded is-danger': potentiel.statut_seance === 'absent',
+            'button is-outlined is-rounded is-danger': potentiel.statut_seance !== 'absent'
+          }"
               (click)="MAJInscription(potentiel, false)">
         <i class="fas fa-times"></i>
       </button>
@@ -816,14 +823,14 @@
               >
                 <i *ngIf="!display_present" class="fas fa-chevron-down"></i>
                 <i *ngIf="display_present" class="fas fa-chevron-up"></i> &nbsp;
-                <span i18n>Présents</span>&nbsp;({{ Presents.length }}&nbsp;<span
+                <span i18n>Présents</span>&nbsp;({{ getPresent() }}&nbsp;<span
                   i18n
                   >personnes</span
                 >)
               </h6>
                 </span>
              <span *ngIf="display_present">
-                <ng-container *ngFor="let potentiel of Presents">
+                <ng-container *ngFor="let potentiel of All">
                   <ng-container *ngIf="potentiel.statut_seance">
                     <ng-container *ngIf="potentiel.statut_seance === 'présent'">
                       <div class="ligne">
@@ -885,21 +892,20 @@
               </span>
               <h6  style="cursor:pointer;"
                 class="title is-6"
-                (click)="
-                  display_absent
+                (click)=" display_absent
                     ? (display_absent = false)
                     : (display_absent = true)
                 "
               >
                 <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
                 <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
-                <span i18n>Absents</span>&nbsp;({{ Absents.length }}&nbsp;<span
+                <span i18n>Absents</span>&nbsp;({{ getAbsent()}}&nbsp;<span
                   i18n
                   >personnes</span
                 >)
               </h6>
               <span *ngIf="display_absent">
-              <ng-container *ngFor="let potentiel of Absents">
+              <ng-container *ngFor="let potentiel of All">
                 <ng-container *ngIf="potentiel.statut_seance">
                   <ng-container *ngIf="potentiel.statut_seance === 'absent'">
                     <div class="ligne">
@@ -940,7 +946,7 @@
                         <button
                           type="button"
                           class="button is-outlined is-rounded is-primary"
-                          [disabled]="!GetNbPersonne(Presents)"
+                          [disabled]="!GetNbPersonne()"
                           (click)="MAJInscription(potentiel, true)"
                         >
                           <i class="fas fa-check"></i>
