@@ -178,3 +178,28 @@
 .modal-card { max-width: 520px; width: calc(100vw - 2rem); }
 
 }
+/* Sur mobile, on veut que le menu soit "dans le flux", sous la navbar */
+.mobile .navbar .dropdown {
+  position: static; /* plus de position relative qui sert de référence */
+}
+
+.mobile .navbar .dropdown-menu {
+  position: static;               /* plus d'absolu = plus de bug de placement */
+  transform: none !important;     /* au cas où Bulma ajoute un translate */
+  left: auto !important;
+  right: auto !important;
+  margin-top: 0.5rem;
+  width: 100%;                    /* prend la largeur dispo de la navbar */
+  z-index: 20;                    /* au-dessus du contenu en dessous */
+}
+
+.mobile .navbar .dropdown-content {
+  width: 100%;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.mobile .navbar .dropdown-item {
+  text-align: left;
+  padding: 0.75rem 1rem;
+}

@@ -159,28 +159,31 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
     }
   }
 
-  onKeyPress(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      if (this.VM.mdp_requis) {
-        this.validatePassword(this.VM.Password);
-        if (this.VM.isValid) {
-          this.Login();
-        }
-      } else {
-        this.validatePassword(this.VM.Password);
-        if (this.VM.isValid) {
-        this.PreLogin();
-        }
-      }
-    }
-  }
-  onKeyPressMdp(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
+onKeyPress(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    if (this.VM.mdp_requis) {
+      this.validatePassword(this.VM.Password);
       if (this.VM.isValid) {
         this.Login();
       }
+    } else {
+      this.validateLogin();
+      if (this.VM.isLoginValid) {
+        this.PreLogin();
+      }
     }
   }
+}
+
+onKeyPressMdp(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    this.validatePassword(this.VM.Password);
+    if (this.VM.isValid) {
+      this.Login();
+    }
+  }
+}
+
 
   async PreLogin() {
     this.action = $localize`Se connecter`;
@@ -340,6 +343,10 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
 
 
   ReinitMDP() {
+    let c = window.confirm($localize`Voulez-vous réinitialiser votre mot de passe ?`);
+    if (!c) {
+      return;
+    }
     this.action = $localize`Réinitialiser le mot de passe`;
     const errorService = ErrorService.instance;
     this.login_serv_nest

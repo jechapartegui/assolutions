@@ -14,7 +14,7 @@ import { SeanceprofService } from '../../services/seanceprof.service';
 import { KeyValuePair, KeyValuePairAny, ValidationItem } from '@shared/lib/autres.interface';
 import { LieuNestService } from '../../services/lieu.nest.service';
 import { Cours_VM } from '@shared/lib/cours.interface';
-import {  Seance_VM, SeanceProfesseur_VM, StatutSeance } from '@shared/lib/seance.interface';
+import {  calculerHeureFin, Seance_VM, SeanceProfesseur_VM, StatutSeance } from '@shared/lib/seance.interface';
 import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { Professeur_VM } from '@shared/lib/prof.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
@@ -730,7 +730,17 @@ clearFilter(key: string) {
       return $localize`Lieu non trouvé`;
     }
   }
-
+copierDansPressePapier(texte: string): void {
+    const errorService = ErrorService.instance;
+  navigator.clipboard.writeText(texte).then(() => {    
+    // Optionnel : Afficher un message, toast ou console.log
+          const o = errorService.OKMessage($localize`Adresse copiée :` + texte);
+      errorService.emitChange(o);
+    console.log( $localize`Adresse copiée :`, texte);
+  }).catch(err => {
+    console.error( $localize`Erreur de copie`, err);
+  });
+}
   Delete(seance: Seance_VM): void {
     const errorService = ErrorService.instance;
 
@@ -1045,6 +1055,9 @@ return $localize`Evénement`;
     };
     let list: Seance_VM[] = this.getFilteredSeances();
     this.excelService.exportAsExcelFile(list, 'liste_seance', headers);
+  }
+  calculerHeureFin(heure: string, duree: number): string {
+    return calculerHeureFin(heure, duree);
   }
   getFilteredSeances(): Seance_VM[] {
     return this.list_seance_VM.filter((seance) => {

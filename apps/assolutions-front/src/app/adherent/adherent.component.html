@@ -780,10 +780,15 @@
   </figure>
   <div class="media-content">
     <p class="title is-6 mb-1 is-truncated">
-      <a class="adherent-name" (click)="Read(adherent)">{{ adherent.libelle }}</a>
+      <a class="item-mobile-name" (click)="Read(adherent)">{{ adherent.libelle }}</a>
     </p>
     <p class="subtitle is-7 has-text-grey">
       {{ adherent.date_naissance | date:'dd/MM/yyyy' }} · {{ calculateAge(adherent.date_naissance) }} ans
+    </p>
+    <p class="tags">
+      <ng-container *ngFor="let gr of CurrentActiveInscriptionGroupe(adherent)">
+                                <span class="tag is-success">{{ gr.nom }}</span>
+                              </ng-container>
     </p>
   </div>
 </article>
