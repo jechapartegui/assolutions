@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { PasswordGuard } from '../guards/password.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { LieuService } from './lieu.services';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 
@@ -7,19 +7,19 @@ import { Lieu_VM } from '@shared/lib/lieu.interface';
 @Controller('lieu')
 export class LieuController {
   constructor(private readonly lieu_serv: LieuService) {}
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
     @Get('get/:id')
   async Get(@Param() { id }: { id: number }) {
     return this.lieu_serv.get(id);
   }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('getall')
   async GetAll(@Headers('projectid') projectId: number) {
     return this.lieu_serv.getAll(projectId);
   }
   
-   @UseGuards(PasswordGuard)
+   @UseGuards(JwtAuthGuard)
   @Get('getall_light')
   async GetAllLight(@Headers('projectid') projectId: number) {
     return this.lieu_serv.getAllLight(projectId);
@@ -36,7 +36,7 @@ export class LieuController {
   }
   
   
-      @UseGuards(PasswordGuard)
+      @UseGuards(JwtAuthGuard)
   @Post('delete')
   async Delete(@Body() body: { id: number}) {
     return this.lieu_serv.delete(body.id);

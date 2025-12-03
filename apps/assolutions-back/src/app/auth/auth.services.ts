@@ -15,6 +15,7 @@ import { ProfService } from '../prof/prof.services';
 import { QueryFailedError } from 'typeorm';
 import { MailerService } from '../mail/mailer.service';
 import { MailInput } from '@shared/lib/mail-input.interface';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
@@ -22,7 +23,7 @@ export class AuthService {
   private readonly pepper: string;
 
   constructor(
-    
+    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private compteserv:AccountService,
     private prof_serv:ProfService,
@@ -33,22 +34,58 @@ export class AuthService {
     this.pepper = this.configService.get<string>('PEPPER') ?? '';
   }
 
-  async prelogin(login: string): Promise<boolean> {
-    //test throw
-    const compte = await this.compteserv.getLogin(login);
-    console.warn(compte, login);
-    if (!compte) {
-      throw new UnauthorizedException('NO_ACCOUNT_FOUND');
-    }
-    if(!compte.isActive){
-      throw new UnauthorizedException('ACCOUNT_NOT_ACTIVE');
-    }
-   if(compte.password && compte.password.length>0){ 
-    return true;
-   } else {
-    return false;
-   }
+async login(
+  login: string,
+  password?: string
+): Promise<{ token: string; compte: Compte_VM }> {
+  if (!login) {
+    throw new BadRequestException('ACCOUNT_NOT_FOUND');
   }
+
+  // 1. On récupère le compte
+  const compte = await this.getLogin(login);
+  if (!compte) {
+    throw new BadRequestException('ACCOUNT_NOT_FOUND');
+  }
+
+  // 2. Vérifier si le compte a un mot de passe
+  //
+  // Ton test original était incorrect.
+  // Le bon test = vérifier si le champ password EXISTE et CONTIENT quelque chose
+  const hasPassword =
+    compte.password !== null &&
+    compte.password !== undefined &&
+    compte.password.trim() !== '';
+
+  if (hasPassword) {
+    // Le compte DOIT donner un mot de passe
+    if (!password) {
+      // NON : il ne faut PAS renvoyer "OK"
+      // → le front DOIT savoir que le mot de passe manque
+      throw new BadRequestException('PASSWORD_REQUIRED');
+    }
+
+    // Vérification du mot de passe
+    const ok = await this.validatepassword(login, password);
+    if (!ok) {
+      throw new BadRequestException('INCORRECT_PASSWORD');
+    }
+  }
+
+  // => Si le compte n’a PAS de mot de passe
+  // On ne met rien... c’est OK tout simplement.
+  // (pas besoin de else, pas besoin de GO → dans ce cas, on passe directement au token)
+
+  // 3. Générer le TOKEN JWT
+  const token = this.generateJwtForCompte(compte);
+
+  // 4. Retourner token + compte
+  return {
+    token,
+    compte,
+  };
+}
+
 
     async checkToken(login: string, token:string): Promise<boolean> {
   
@@ -80,6 +117,19 @@ export class AuthService {
       throw new UnauthorizedException('INCORRECT_PASSWORD');
     }
       return to_CompteVM(compte);
+  }
+
+  generateJwtForCompte(compte: Compte_VM): string {
+    // Ce qu’on met DANS le jeton (les infos utiles pour la session)
+    const contenuDuJeton = {
+      sub: compte.id,             // id du compte (standard: "subject")
+      login: compte.email,
+    };
+
+    // On "signe" le jeton avec le secret config du JwtModule
+    return this.jwtService.sign(contenuDuJeton, {
+      expiresIn: '30d', // durée de validité, ici 30 jours pour ton autologin
+    });
   }
 
 

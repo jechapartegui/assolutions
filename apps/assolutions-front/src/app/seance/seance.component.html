@@ -1090,55 +1090,66 @@
           <ng-container
             *ngFor="let seance of list_seance_VM | multifiltersSeance : filters"
           >
-              <article class="media">
-                <div class="media-content">
-                  <span class="title" (click)="Edit(seance)"
-                    ><strong
-                      >{{ seance.libelle }}&nbsp;{{
-                        seance.date_seance | date : 'dd/MM/yyyy'
-                      }} </strong
-                    ></span
-                  >
-                  <div>
-                    <ng-container *ngIf="seance.type_seance === 'ENTRAINEMENT'">
-                      <span i18n>Cours</span>
-                    </ng-container>
-                    <ng-container *ngIf="seance.type_seance === 'MATCH'">
-                      <span i18n>Match</span>
-                    </ng-container>
-                    <ng-container *ngIf="seance.type_seance === 'EVENEMENT'">
-                      <span i18n>Evénement</span>
-                    </ng-container>
-                    <ng-container *ngIf="seance.type_seance === 'SORTIE'">
-                      <span i18n>Sortie</span>
-                    </ng-container>
-                    - {{ seance.heure_debut }} ({{ seance.duree_seance }}
-                    <span i18n>&nbsp;min</span>)
-                    {{ trouverLieu(seance.lieu_id) }}
-                    <ng-container *ngIf="seance.statut == 'prévue'">
-                      <span class="tag is-info is-rounded is-light">
-                        <span class="icon has-text-info">
-                          <i class="fa-solid fa-calendar-check"></i>
-                        </span>
-                      </span>
-                    </ng-container>
-                    <ng-container *ngIf="seance.statut == 'réalisée'">
-                      <span class="tag is-primary is-rounded is-light">
-                        <span class="icon has-text-success">
-                          <i class="fa-solid fa-flag-checkered"></i>
-                        </span>
-                      </span>
-                    </ng-container>
-                    <ng-container *ngIf="seance.statut == 'annulée'">
-                      <span class="tag is-danger is-rounded is-light">
-                        <span class="icon has-text-danger">
-                          <i class="fa-solid fa-ban"></i>
-                        </span>
-                      </span>
-                    </ng-container>
-                  </div>
-                </div>
-              </article>
+            <article class="media">      
+              <div class="media-content">
+    <p class="title is-6 mb-1 is-truncated">
+        <ng-container [ngSwitch]="seance.type_seance">
+        <span *ngSwitchCase="'ENTRAINEMENT'" title="Cours">
+          <i class="fas fa-dumbbell icon-type-seance"></i> Cours
+        </span>
+        <span *ngSwitchCase="'MATCH'" title="Match">
+          <i class="fas fa-futbol icon-type-seance"></i> Match
+        </span>
+        <span *ngSwitchCase="'EVENEMENT'" title="Événement">
+          <i class="fas fa-star icon-type-seance"></i> Événement
+        </span>
+        <span *ngSwitchCase="'SORTIE'" title="Sortie">
+          <i class="fas fa-hiking icon-type-seance"></i> Sortie
+        </span>
+      </ng-container>
+      <a class="item-mobile-name" (click)="Edit(seance)">{{ seance.libelle }}</a>
+    </p>       
+    <p class="is-size-7 mb-1">
+    {{ seance.date_seance | date : 'dd/MM/yyyy' }} {{ seance.heure_debut }} -
+      {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}
+      ({{ seance.duree_seance | dureeHHMM }})
+    </p>
+
+    <div class="tags is-small mb-1">
+      <ng-container *ngFor="let gr of seance.seanceProfesseurs">
+        <span class="tag is-success" [title]="gr.personne.prenom + ' ' + gr.personne.nom">
+          <ng-container *ngIf="gr.personne.surnom">
+            {{ gr.personne.surnom }}
+          </ng-container>
+          <ng-container *ngIf="!gr.personne.surnom">
+            {{ gr.personne.prenom }} {{ gr.personne.nom }}
+          </ng-container>
+        </span>
+      </ng-container>
+    </div>
+
+    <p class="is-size-7">
+      <span
+        [title]="trouverLieu(seance.lieu_id)"
+        (click)="copierDansPressePapier(trouverLieu(seance.lieu_id))"
+        style="cursor: pointer"
+      >
+        {{ seance.lieu_nom }}
+      </span>
+    </p>
+  </div>
+
+  <!-- Bloc action à droite -->
+  <div class="media-right">
+   
+                          <btn *ngIf="seance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
+                            i18n-title
+                            title="Voir"
+                            [type_button]="'VoirLight'"
+                            (click)="VoirMaSeanceByID(seance.seance_id)"
+                          ></btn>
+  </div>
+            </article>
           </ng-container>
             </div>
         </ng-container>

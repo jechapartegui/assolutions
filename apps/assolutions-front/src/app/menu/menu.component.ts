@@ -38,6 +38,7 @@ export class MenuComponent implements OnInit {
     @ViewChild('scrollableContent', { static: false })
     scrollableContent!: ElementRef;
     showScrollToTop: boolean = false;
+  denseMode = false;
 
   public liste_prof_filter: KeyValuePair[];
   public liste_lieu_filter: string[];
@@ -185,6 +186,8 @@ export class MenuComponent implements OnInit {
           if(ms.seance.cours && ms.seance.cours >0) ms.seance.cours_nom = this.trouverCours(ms.seance);
         })
         //trier
+        this.updateDenseMode();
+  window.addEventListener('resize', this.updateDenseMode);
       });
   
     } catch (err: any) {
@@ -211,6 +214,14 @@ export class MenuComponent implements OnInit {
       this.loading = false;
     }
   }
+  ngOnDestroy() {
+  window.removeEventListener('resize', this.updateDenseMode);
+}
+
+updateDenseMode = () => {
+  // dense si largeur < 480px (à ajuster)
+  this.denseMode = window.innerWidth < 480;
+};
 
   getLibelleProfil(profil: string): string {
     return profil === 'ADH'

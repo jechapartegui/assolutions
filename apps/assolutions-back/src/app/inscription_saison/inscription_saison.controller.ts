@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { PasswordGuard } from '../guards/password.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { InscriptionSaisonService } from './inscription_saison.services';
 import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 
@@ -13,23 +13,23 @@ import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 @Controller('inscription_saison')
 export class InscriptionSaisonController {
   constructor(private readonly inscription_saison_serv: InscriptionSaisonService) {}
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('get/:id')
   async Get(@Param('id') id: number) {
     return this.inscription_saison_serv.Get(id);
   }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Get('get_all_rider/:rider_id')
 async GetAllRider(@Headers('projectid') projectId: number,@Param('rider_id') rider_id: number) {
   return this.inscription_saison_serv.GetAllRider(rider_id, projectId);
 }
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Get('get_all_saison/:saison_id')
 async GetAllSaison(@Param('saison_id') saison_id: number) {
   return this.inscription_saison_serv.GetAllSaison(saison_id);
 }
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Get('get_all_saison/:saison_id/:rider_id')
 async GetAllSeasonRider(@Param('saison_id') saison_id: number,@Param('rider_id') rider_id: number) {
   return this.inscription_saison_serv.GetAllSeasonRider(saison_id, rider_id);
@@ -46,7 +46,7 @@ async Update(@Body() inscription: InscriptionSaison_VM) {
 }
 
 
-    @UseGuards(PasswordGuard)
+    @UseGuards(JwtAuthGuard)
 @Post('delete')
 async Delete(@Body() body: { id: number}) {
   return this.inscription_saison_serv.Delete(body.id);

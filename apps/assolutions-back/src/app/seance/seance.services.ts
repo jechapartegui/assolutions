@@ -356,7 +356,7 @@ export function to_Seance_VM(entity: Session): Seance_VM {
   vm.est_limite_age_maximum = entity.limitMaxAge ? true : false;
   vm.est_place_maximum = entity.limitPlaces ? true : false;
   vm.groupes= (entity.groups ?? []).map(lg =>
-      new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.objectId)
+      new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.id)
     );
   return vm;
 }

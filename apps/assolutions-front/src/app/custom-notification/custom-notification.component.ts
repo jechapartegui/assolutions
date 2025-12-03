@@ -14,23 +14,30 @@ export class notification {
   templateUrl: './custom-notification.component.html',
   styleUrls: ['./custom-notification.component.scss'],
   animations: [
-    trigger("notification", [
-      state('void', style({ transform: 'translateX(100%)' })),
-      transition(':enter', animate('500ms ease-in-out', style({ transform: 'translateX(0%)' }))),
-      transition(':leave', animate('300ms ease-in', style({ transform: 'translateX(100%)' }))),
+  trigger('notification', [
+    state('void', style({ opacity: 0 })),
+    state('*', style({ opacity: 1 })),
+    transition(':enter', [
+      style({ opacity: 0 }),
+      animate('150ms ease-out', style({ opacity: 1 }))
     ]),
-    trigger('expandCollapse', [
-      state('open', style({
-        'height': '*',
-        'opacity': '1'
-      })),
-      state('close', style({
-        'height': '0px',
-        'opacity': '0'
-      })),
-      transition('open <=> close', animate(300))
-    ])
-  ]
+    transition(':leave', [
+      animate('150ms ease-in', style({ opacity: 0 }))
+    ]),
+  ]),
+  trigger('expandCollapse', [
+    state('open', style({
+      height: '*',
+      opacity: '1'
+    })),
+    state('close', style({
+      height: '0px',
+      opacity: '0'
+    })),
+    transition('open <=> close', animate(300))
+  ])
+]
+
 })
 export class NotifJechaComponent implements OnInit {
 

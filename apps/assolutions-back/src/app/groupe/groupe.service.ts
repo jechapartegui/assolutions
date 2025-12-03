@@ -5,6 +5,7 @@ import { GroupService } from '../../crud/group.service';
 import { Group } from '../../entities/groupe.entity';
 import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { KeyValuePair } from '@shared/lib/autres.interface';
+import { error } from 'console';
 
 @Injectable()
 export class GroupeService {
@@ -87,7 +88,8 @@ async add(s: Groupe_VM):Promise<number> {
      try{
     await this.liengroupe_serv.delete(id);
     return true;
-     } catch{
+     } catch(error:any) {
+      console.log(error);
       return false;
      }
   }

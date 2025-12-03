@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { PasswordGuard } from '../guards/password.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { InscriptionSeanceService } from './inscription_seance.services';
 import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/lib/inscription_seance.interface';
 
@@ -13,23 +13,23 @@ import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/lib/insc
 @Controller('inscription_seance')
 export class InscriptionSeanceController {
   constructor(private readonly inscription_seance_serv: InscriptionSeanceService) {}
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('get/:id')
   async Get(@Param('id') id: number) {
     return this.inscription_seance_serv.Get(id);
   }
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('get_full/:id')
   async GetFull(@Param('id') id: number) {
     return this.inscription_seance_serv.GetFull(id);
   }
-    @UseGuards(PasswordGuard)
+    @UseGuards(JwtAuthGuard)
   @Get('get_adherent_compte/:id/:id_seance')
   async GetAdherentCompte(@Param('id') id: string,@Param('id_seance') id_seance:number) {
     return this.inscription_seance_serv.GetAdherentCompte(id, id_seance);
   }
 
-      @UseGuards(PasswordGuard)
+      @UseGuards(JwtAuthGuard)
   @Get('get_adherent_personne/:id/:id_seance')
   async GetAdherentPersonne(@Param('id') id: number,@Param('id_seance') id_seance:number) {
     return this.inscription_seance_serv.GetAdherentPersonne(id, id_seance);
@@ -37,25 +37,25 @@ export class InscriptionSeanceController {
 
 
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Get('get_all_rider_saison/:rider_id/:saison_id')
 async GetAllRiderSaison(@Param('rider_id') rider_id: number, @Param('saison_id') saison_id: number) {
   return this.inscription_seance_serv.GetAllRiderSaison(rider_id, saison_id);
 }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Get('get_all_seance/:seance_id')
 async GetAllSeance(@Param('seance_id') seance_id: number) : Promise<InscriptionSeance_VM[]> {
   return this.inscription_seance_serv.GetAllSeance(seance_id);
 }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Get('get_all_seance_full/:seance_id')
 async GetAllSeanceFull(@Param('seance_id') seance_id: number) : Promise<FullInscriptionSeance_VM[]> {
   return this.inscription_seance_serv.GetAllSeanceFull(seance_id);
 }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
 @Post('faire_essai')
 async FaireEssai(@Body() { personId, sessionId }: { personId: number; sessionId: number }
   ) : Promise<number> {
@@ -73,7 +73,7 @@ async Update(@Body() inscription: InscriptionSeance_VM) {
 }
 
 
-    @UseGuards(PasswordGuard)
+    @UseGuards(JwtAuthGuard)
 @Post('delete')
 async Delete(@Body() body: { id: number}) {
   return this.inscription_seance_serv.Delete(body.id);

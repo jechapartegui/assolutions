@@ -121,7 +121,7 @@ export class LoginComponent implements OnInit {
           if(this.login_seance){
             this.VM.Login = this.login_seance;
             this.validateLogin();
-            this.PreLogin();
+            this.Login();
           }
           break; 
       }
@@ -158,7 +158,6 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       this.VM.isValid = this.VM.isLoginValid;
     }
   }
-
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       if (this.VM.mdp_requis) {
@@ -167,64 +166,20 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
           this.Login();
         }
       } else {
-        this.validatePassword(this.VM.Password);
-        if (this.VM.isValid) {
-        this.PreLogin();
-        }
-      }
-    }
-  }
-  onKeyPressMdp(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      if (this.VM.isValid) {
-        this.Login();
+       this.Login()
       }
     }
   }
 
-  async PreLogin() {
-    this.action = $localize`Se connecter`;
-    const errorService = ErrorService.instance;
-    this.login_serv_nest
-      .PreLogin(this.VM.Login)
-      .then((retour) => {
-        if (retour) {
-          this.VM.mdp_requis = true;
-          this.selectedLogin = true;
-        } else {
-          this.Login();
-        }
-
-        // Tu peux ensuite appeler une 2e méthode pour vérifier le mot de passe
-        // Exemple : this.LoginEtape2(email, password)
-      })
-      .catch((error: string) => {
-        if(error == "ACCOUNT_NOT_ACTIVE"){
-        let c = window.confirm($localize`Compte inactif : voulez-vous renvoyer un mail d'activation ?`);
-        if(c){
-          this.action = $localize`Envoi d'un mail d'activation`;
-          this.mailserv.MailActivation(this.VM.Login).then(() => {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-          }).catch((err: Error) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
-          return;
-        }
-        let o = errorService.Create(this.action, errorService.interpret_error(error), "Warning");
-        errorService.emitChange(o);
-        } else {
- if(this.context == "ESSAI" || this.context == "CREATE"){
-          this.PreCreerCompte();
-        } else {
-        let o = errorService.CreateError(this.action, error);
-        errorService.emitChange(o);
-        }
-        }
-         
-      });
+onKeyPressMdp(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    this.validatePassword(this.VM.Password);
+    if (this.VM.isValid) {
+      this.Login();
+    }
   }
+}
+
 
   SelectionnerCompteAdmin() {
     this.action = $localize`Se connecter en tant qu'admin`;
@@ -318,6 +273,10 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
           errorService.emitChange(o);
         });
       }).catch((error: Error) => {
+        if(error.message == "PASSWORD_REQUIRED"){
+          this.VM.mdp_requis = true;
+          return;
+        }
         if(this.context == "ESSAI" || this.context == "CREATE"){
           this.PreCreerCompte();
         } else {
@@ -340,6 +299,10 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
 
 
   ReinitMDP() {
+    let c = window.confirm($localize`Voulez-vous réinitialiser votre mot de passe ?`);
+    if (!c) {
+      return;
+    }
     this.action = $localize`Réinitialiser le mot de passe`;
     const errorService = ErrorService.instance;
     this.login_serv_nest

@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { PasswordGuard } from './guards/password.guard';
 
 import { AuthModule } from './auth/auth.module';
 import { MemberModule } from './member/member.module';
@@ -23,6 +22,7 @@ import { MessagesModule } from './messages/messages.module';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { join } from 'path';
 import { AdminModule } from './admin/admin.module';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -99,7 +99,7 @@ import { AdminModule } from './admin/admin.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: PasswordGuard,
+      useClass: JwtAuthGuard,
     },
   ],
 })

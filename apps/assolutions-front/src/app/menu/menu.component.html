@@ -412,14 +412,13 @@
              </div>
 
              <div class="mobile">
-              <div
-  *ngFor="let ms of rider.MesSeances | multifiltersMenu : rider.filters"
-  class="mobile-seance-row columns  is-mobile is-vcentered mb-2"
->
-  <!-- Bloc principal à gauche -->
-  <div class="column is-9">
-    <p class="is-size-7 mb-1">
-      <ng-container [ngSwitch]="ms.seance.type_seance">
+              
+            <div class="container-box">
+              <ng-container *ngFor="let ms of rider.MesSeances | multifiltersMenu : rider.filters">
+            <article class="media" [class.dense]="denseMode">      
+              <div class="media-content">
+    <p class="title is-6 mb-1 is-truncated">
+        <ng-container [ngSwitch]="ms.seance.type_seance">
         <span *ngSwitchCase="'ENTRAINEMENT'" title="Cours">
           <i class="fas fa-dumbbell icon-type-seance"></i> Cours
         </span>
@@ -433,9 +432,8 @@
           <i class="fas fa-hiking icon-type-seance"></i> Sortie
         </span>
       </ng-container>
-      :  <strong>{{ ms.seance.libelle }}</strong>
-    </p>
-
+      <a class="item-mobile-name" (click)="GotoSeance(ms.seance.seance_id)">{{ ms.seance.libelle }}</a>
+    </p>       
     <p class="is-size-7 mb-1">
     {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }} {{ ms.seance.heure_debut }} -
       {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
@@ -467,7 +465,7 @@
   </div>
 
   <!-- Bloc action à droite -->
-  <div class="column is-3 has-text-centered d-flex">
+  <div class="media-right">
     <ng-container *ngIf="ms.seance.statut === 'prévue' && rider.profil === 'ADH'">
       <span
         (click)="MAJInscription(ms, rider, null)"
@@ -536,9 +534,10 @@
       (click)="VoirMaSeance(ms.seance)"
     ></btn>
   </div>
+            </article>
+              </ng-container>
 </div>
 
-             </div>
             <p *ngIf="!rider.MesSeances || rider.MesSeances.length == 0">
               Pas de séances disponible
             </p>
@@ -835,6 +834,7 @@
         </div>
         </div>
         </footer>
+        </div>
         </div>
     </ng-container>   
   </ng-container>

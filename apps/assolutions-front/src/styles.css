@@ -1,3 +1,46 @@
+:root {
+  --font-text: "Poppins", sans-serif;           /* Texte principal */
+  --font-title-main: "League Spartan", sans-serif; /* Horizon (Canva) */
+  --font-title-alt: "Montserrat", sans-serif;   /* Titre alternatif */
+}
+
+/* Texte par défaut (Bulma utilise body, donc on override ici) */
+html,
+body {
+  font-family: var(--font-text);
+}
+
+/* -------------------------------------------------- */
+/* TITRES – en cohérence avec Bulma (.title / .subtitle) */
+/* -------------------------------------------------- */
+
+/* Titre principal (Bulma .title) */
+.title {
+  font-family: var(--font-title-main);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Variante “Horizon” explicite si tu veux une classe dédiée */
+.title-horizon {
+  font-family: var(--font-title-main);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Titre alternatif (ex : h2, sections secondaires) */
+.title-alt {
+  font-family: var(--font-title-alt);
+  font-weight: 600;
+}
+
+/* Sous-titres Bulma */
+.subtitle {
+  font-family: var(--font-text);
+  font-weight: 500;
+}
 /* =========================
    VISIBILITÉ RESPONSIVE
    ========================= */
@@ -223,6 +266,11 @@ app-root {
     margin: 0;
     background: #fff;
   }
+}
+
+.item-mobile-name{  
+  text-transform: uppercase;
+
 }
 
 /* =========================
@@ -466,4 +514,62 @@ body.dark .scroll-to-top{ background-color: #e6e7e9; color: #171923; }
 
 /* (Rappel) Aucune classe utilitaire existante (.stack, etc.) n’est modifiée. */
 
- 
+ /* Correction forcée largeur/hauteur login */
+.login-wrapper {
+  width: 100% !important;
+  min-height: 100vh !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  width: 100% !important;
+  max-width: 420px !important; /* largeur idéale */
+  min-height: auto !important;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* Empêche Bulma de shrink à cause d'une column */
+.login-wrapper .column {
+  flex: 0 0 auto !important;
+  max-width: 100% !important;
+}
+/* =========================
+   LAYOUT SPÉCIFIQUE PAGE LOGIN
+   ========================= */
+
+/* On centre la page login en plein écran */
+app-login .container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* La colonne qui contient la box : largeur raisonnable */
+app-login .columns {
+  width: 100%;
+  justify-content: center;
+}
+
+app-login .column {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 480px;         /* largeur max de la zone de login */
+}
+
+/* La box du login : on empêche la compression extrême */
+app-login .box {
+  width: min(90vw, 420px) !important;
+  min-width: 320px !important;   /* plus de “tube” étroit */
+  box-sizing: border-box;
+}
+
+/* Les champs doivent prendre toute la largeur dispo */
+app-login .box .input,
+app-login .box .select,
+app-login .box .button.btn-block-mobile {
+  width: 100% !important;
+}

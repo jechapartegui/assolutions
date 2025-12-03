@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import {  catchError, firstValueFrom, timeout } from 'rxjs';
-import { DatePipe } from '@angular/common';
 import { generatePassword } from '../class/password';
 import { KeyValuePair, ValidationItem } from '@shared/lib/autres.interface';
 import { ReglesAdresse, ReglesContact, ReglesFormulaire } from '../class/regles';
@@ -69,7 +68,7 @@ export class GlobalService {
 
  
   thisLanguage: "FR" | "EN";
-  constructor(private http: HttpClient, private datepipe: DatePipe, public store:AppStore) {
+  constructor(private http: HttpClient, public store:AppStore) {
     GlobalService.instance = this;
     
   }
@@ -88,28 +87,23 @@ public async GET(url: string, responseType: 'json'): Promise<any>;
 public async GET(url: string, responseType: 'text'): Promise<string>;
 public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<any> {
   try {
-    let date_ref = new Date();
-    let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd");
-    let _varid: string = "0";
-    let project_id: string = "-1";
+    let project_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
-    if (this.store.compte()) {
-  _varid = this.store.compte()!.id.toString();
-}
+    if (this.store.projet()) {
+      project_id = this.store.projet()!.id.toString();
+    }
 
-if (this.store.projet()) {
-  project_id = this.store.projet()!.id.toString();
-}
-
-    const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
-    const headers = new HttpHeaders()
+    let headers = new HttpHeaders()
       .set('content-type', 'application/json')
-      .set('password', expectedPassword)
-      .set('dateref', date_ref_string)
       .set('projectid', project_id)
-      .set('lang', this.getCurrentLanguage())
-      .set('userid', _varid);
+      .set('lang', this.getCurrentLanguage());
+
+    // ➕ On ajoute le JWT si présent
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
 
     const options: any = {
       headers,
@@ -121,7 +115,52 @@ if (this.store.projet()) {
         timeout(timeoutMilliseconds),
         catchError((error) => {
           if (error.name === 'TimeoutError') {
-            throw new Error('La requête a expiré en raison du délai dépassé.');
+            throw new Error('TIMEOUT_ERROR');
+          } else {
+            throw error;
+          }
+        })
+      )
+    );
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    if (error instanceof HttpErrorResponse) {
+      this.handleError(error);
+    } else {
+      throw new Error('UNKNOWN_ERROR');
+    }
+  }
+}
+
+
+
+ public async POST(url: string, body: any): Promise<any> {
+  try {
+    let project_id: string = '-1';
+    const timeoutMilliseconds = 1500000;
+
+    if (this.store.projet()) {
+      project_id = this.store.projet()!.id.toString();
+    }
+
+    let headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('projectid', project_id)
+      .set('lang', this.getCurrentLanguage());
+
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const response = await firstValueFrom(
+      this.http.post(url, body, { headers }).pipe(
+        timeout(timeoutMilliseconds),
+        catchError((error) => {
+          if (error.name === 'TimeoutError') {
+            throw new Error('TIMEOUT_ERROR');
           } else {
             throw error;
           }
@@ -140,75 +179,24 @@ if (this.store.projet()) {
   }
 }
 
-
-  public async POST(url: string, body: any): Promise<any> {
-    try {
-     let date_ref = new Date();
-      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
-      let _varid: string = "0";
-      let project_id: string = "-1";
-      const timeoutMilliseconds = 1500000;
-    if (this.store.compte()) {
-  _varid = this.store.compte()!.id.toString();
-}
-
-if (this.store.projet()) {
-  project_id = this.store.projet()!.id.toString();
-}
-
-      const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
-      const headers = new HttpHeaders()
-        .set('content-type', 'application/json')
-        .set('password', expectedPassword)
-        .set('dateref', date_ref_string)
-        .set('projectid', project_id)
-        .set('lang', this.getCurrentLanguage())
-        .set('userid', _varid)
-      const response = await firstValueFrom(
-        this.http.post(url, body, { headers }).pipe(
-          timeout(timeoutMilliseconds),
-          catchError((error) => {
-            if (error.name === 'TimeoutError') {
-              throw new Error('La requête a expiré en raison du délai dépassé.');
-            } else {
-              throw error; // Gérer d'autres erreurs ici
-            }
-          })
-        )
-      );
-      return response;
-    } catch (error) {
-      console.log(error);
-      if (error instanceof HttpErrorResponse) {
-        this.handleError(error);
-      } else {
-        throw new Error('Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.');
-      }
-    }
-  }
-  public async PUT(url: string, body: any): Promise<any> {
+ public async PUT(url: string, body: any): Promise<any> {
   try {
-    let date_ref = new Date();
-      let date_ref_string = this.datepipe.transform(date_ref, "yyyy-MM-dd")
-      let _varid: string = "0";
-      let project_id: string = "-1";
-      const timeoutMilliseconds = 1500000;
-     if (this.store.compte()) {
-  _varid = this.store.compte()!.id.toString();
-}
+    let project_id: string = '-1';
+    const timeoutMilliseconds = 1500000;
 
-if (this.store.projet()) {
-  project_id = this.store.projet()!.id.toString();
-}
+    if (this.store.projet()) {
+      project_id = this.store.projet()!.id.toString();
+    }
 
-      const expectedPassword = generatePassword(_varid, project_id, date_ref_string);
-      const headers = new HttpHeaders()
-        .set('content-type', 'application/json')
-        .set('password', expectedPassword)
-        .set('dateref', date_ref_string)
-        .set('projectid', project_id)
-        .set('lang', this.getCurrentLanguage())
-        .set('userid', _varid)
+    let headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('projectid', project_id)
+      .set('lang', this.getCurrentLanguage());
+
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
 
     const response = await firstValueFrom(
       this.http.put(url, body, { headers }).pipe(
@@ -233,6 +221,7 @@ if (this.store.projet()) {
     }
   }
 }
+
 
   private handleError(error: HttpErrorResponse): void {
     console.log(error);

@@ -1,18 +1,18 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { PasswordGuard } from '../guards/password.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CoursProfService } from './cours_prof.services';
 
 // src/auth/auth.controller.ts
 @Controller('cours_prof')
 export class CoursProfController {
   constructor(private readonly cp_serv: CoursProfService) {}
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
     @Get('get/:id')
   async Get(@Param() { id }: { id: number }) {
     return this.cp_serv.get(id);
   }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('getall/:id')
   async GetAll(@Param() { id }: { id: number }) {
     return this.cp_serv.getAll(id);
@@ -24,7 +24,7 @@ async Add(@Body() body: { cours_id: number; person_id: number }) {
 }
     
   
-      @UseGuards(PasswordGuard)
+      @UseGuards(JwtAuthGuard)
   @Post('delete')
   async Delete(@Body() body: { cours_id: number, person_id: number }) {
     return this.cp_serv.delete(body.cours_id, body.person_id);

@@ -1,42 +1,45 @@
-import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.services';
-import { PasswordGuard } from '../guards/password.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Compte_VM } from '@shared/lib/compte.interface';
 // src/auth/auth.controller.ts
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-    @UseGuards(PasswordGuard)
+    @UseGuards(JwtAuthGuard)
     @Get('get/:id')
   async Get(@Param() { id }: { id: number }) {
     return this.authService.get(id);
   }
-   @UseGuards(PasswordGuard)
+   @UseGuards(JwtAuthGuard)
     @Get('get_by_login/:login')
   async GetByLogin(@Param() { login }: { login: string }) {
     return this.authService.getLogin(login);
   }
 
-  @UseGuards(PasswordGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('getall')
   async GetAll(@Headers('projectid') projectId: number) {
     return this.authService.getAll(projectId);
   }
 
+@Post('login')
+async login(
+  @Body() body:  { email: string; password?: string }
+): Promise<{ token: string; compte: Compte_VM }> {
+  return this.authService.login(body.email, body.password);
+}
 
-  @Get('prelogin/:login')
-  async preLogin(@Param('login') login: string) : Promise<boolean> {
-    return this.authService.prelogin(login);
-  }
+@UseGuards(JwtAuthGuard)
+@Get('me')
+async me(@Req() req): Promise<{ compte: Compte_VM }> {
+  const userId = req.user.id;
+  const compte = await this.authService.get(userId);
+  return { compte };
+}
 
-  @Post('login')
-  async login(
-    @Body() { email, password }: { email: string; password: string }
-  ) : Promise<Compte_VM> {
-    return this.authService.validatepassword(email, password);
-  }
 
-    @Post('check_token')
+@Post('check_token')
   async check_token(
     @Body() { login, token }: { login: string; token: string }
   ) : Promise<boolean> {
@@ -64,13 +67,13 @@ async reinit_mdp(@Body('login') login: string): Promise<boolean> {
     }
     
     
-        @UseGuards(PasswordGuard)
+        @UseGuards(JwtAuthGuard)
     @Post('delete')
     async Delete(@Body() body: { id: number})  {
       return this.authService.delete(body.id);
     }
 
-    @UseGuards(PasswordGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('change_my_password')
     async ChangeMyPassword(@Headers('Userid') user_id: number,@Body() { newPassword }: { newPassword: string }) {
       return this.authService.ChangeMyPassword(user_id, newPassword);

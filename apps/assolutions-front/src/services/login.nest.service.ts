@@ -12,21 +12,7 @@ export class LoginNestService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
   }
-  public PreLogin(username: string){
-    this.url = environment.maseance + 'api/auth/prelogin/'+username.toLowerCase();
-    //  this.url = this.url + "login.php";
-    
-    return this.global.GET(this.url)
-      .then((response: any) => {
-        return response;
-      })
-      .catch((error: HttpErrorResponse) => {
-        console.error('Erreur brute', error);
-        const message = error?.message || 'Erreur inconnue';
-        console.error(message);        // Gestion de l'erreur
-        return Promise.reject(message);
-      });
-  }
+
   public Login(email: string, password: string): Promise<Compte_VM> {
     this.url = environment.maseance + 'api/auth/login';
     //  this.url = this.url + "login.php";
@@ -36,8 +22,9 @@ export class LoginNestService {
     };
 
     return this.global.POST(this.url, body)
-      .then((response: Compte_VM) => {
-        return response;
+    .then((response: { token: string; compte: Compte_VM }) => {      
+        localStorage.setItem('auth_token', response.token);
+        return response.compte;
       })
       .catch((error: HttpErrorResponse) => {
         console.error('Erreur brute', error);

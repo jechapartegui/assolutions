@@ -31,13 +31,24 @@ import { MailRecord } from '../../entities/mail-record.entity';
 import { ProjetService } from '../project/project.service';
 import { Project } from '../../entities/projet.entity';
 import { ProjectService } from '../../crud/project.service';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
+
 
 @Module({
-  imports: [
+  imports: [ 
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'CHANGE_ME_JE_SUIS_EN_CLAIR',
+      signOptions: { expiresIn: '30d' }, // durée du "login" (autologin)
+    }),
     ConfigModule,
     TypeOrmModule.forFeature([Account,MailRecord,Project,  RegistrationSeason, LinkGroup, Season, RegistrationSession, Professor, SessionProfessor, Session, Person,ProfessorContract]), // ✅ indispensable
   ],
-  providers: [AuthService, MailerService, ProjetService, ProjectService, SessionService,ProfessorService, AccountService, RegistrationSeasonService, SessionProfessorService, RegistrationSessionService, SeasonService, MemberService, ProfService, LinkGroupService, SeanceService, PersonService, ProfessorContractService],
+  providers: [
+    AuthService,
+    JwtStrategy,AuthService, MailerService, ProjetService, ProjectService, SessionService,ProfessorService, AccountService, RegistrationSeasonService, SessionProfessorService, RegistrationSessionService, SeasonService, MemberService, ProfService, LinkGroupService, SeanceService, PersonService, ProfessorContractService],
   controllers: [AuthController],
     exports: [AuthService], // 👈 ajoute ça
 })
