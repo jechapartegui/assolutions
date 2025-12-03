@@ -5,6 +5,7 @@
       <p class="has-text-grey" i18n>Chargement en cours…</p>
     </div>
   </ng-container>
+<<<<<<< HEAD
 
   <ng-container *ngIf="!loading">
     <div class="columns is-centered">
@@ -17,6 +18,56 @@
             <div class="login-logo">
               <span class="icon is-medium">
                 <i class="fas fa-user-circle"></i>
+=======
+  <ng-container *ngIf="!loading">
+    <div class="columns is-justify-content-center">
+      <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
+        <div class="box">
+          <h3 class="title is-3" i18n>Connexion</h3>
+          <h6 class="subtitle is-6">{{libelle_titre}}</h6>
+          <div class="field">
+            <p *ngIf="!selectedLogin" class="control has-icons-left has-icons-right">
+             <input
+  [class]="VM.isLoginValid ? 'input' : 'input is-danger'"
+  name="username"
+  autocomplete="username email"
+  (ngModelChange)="validateLogin()"
+  (keypress)="onKeyPress($event)"
+  (input)="validateLogin()"
+  [(ngModel)]="VM.Login"
+  type="email"
+  placeholder="Email"
+/>
+
+              <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+              </span>
+              <span *ngIf="VM.isLoginValid" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+              </span>
+            </p>
+            <p *ngIf="selectedLogin">{{VM.Login}} <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn></p>
+          </div>
+          <div *ngIf="VM.mdp_requis" class="field">
+          <h6 *ngIf="context == 'CREATE' && !VM.creer_compte" class="subtitle is-6" i18n>Ce compte est protégé par un mot de passe, merci de saisir le mot de passe projet pour créer un adhérent sur ce compte.</h6>
+            <p class="control has-icons-left has-icons-right">
+            <input
+  *ngIf="VM.mdp_requis"
+  [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
+  name="password"
+  autocomplete="current-password"
+  (ngModelChange)="validatePassword($event)"
+  [(ngModel)]="VM.Password"
+  (keypress)="onKeyPressMdp($event)"
+  type="password"
+  placeholder="Password"
+/>
+              <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+              </span>
+              <span *ngIf="VM.isPasswordValid" class="icon is-small is-right">
+                <i class="fas fa-check"></i>
+>>>>>>> 4dfa31a7fcc4eb1ca2be9bc43f1b33985bdd1478
               </span>
             </div>
             <h1 class="title is-4 mb-1" i18n>Connexion</h1>

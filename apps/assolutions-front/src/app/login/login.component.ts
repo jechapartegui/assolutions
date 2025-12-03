@@ -158,6 +158,7 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       this.VM.isValid = this.VM.isLoginValid;
     }
   }
+  
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       if (this.VM.mdp_requis) {
@@ -167,9 +168,11 @@ if (this.VM.isLoginValid && this.VM.isPasswordValid) {
         }
       } else {
        this.Login()
-      }
-    }
-  }
+ }
+}
+
+}
+
 
 onKeyPressMdp(event: KeyboardEvent) {
   if (event.key === 'Enter') {
