@@ -3,6 +3,7 @@ import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProjetView, Compte_VM } from '@shared/lib/compte.interface';
+import { Projet_VM } from '@shared/lib/projet.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,24 @@ export class LoginNestService {
   url = environment.maseance;
   constructor(public global: GlobalService) {
   }
+
+  // login.nest.service.ts
+
+public Me(): Promise<{ compte: Compte_VM, projets: ProjetView[] }> {
+  this.url = environment.maseance + 'api/auth/me';
+
+  return this.global.GET(this.url)
+    .then((response: { compte: Compte_VM; projets: ProjetView[] }) => {
+      // Ici, tu peux déjà pousser dans ton store si tu veux,
+      // ou le faire dans le composant qui appelle Me()
+      return response;
+    })
+    .catch((error: any) => {
+      console.error('Erreur /auth/me', error);
+      return Promise.reject(error);
+    });
+}
+
 
   public Login(email: string, password: string): Promise<Compte_VM> {
     this.url = environment.maseance + 'api/auth/login';

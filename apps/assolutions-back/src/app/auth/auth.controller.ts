@@ -1,7 +1,8 @@
 import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.services';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { Compte_VM } from '@shared/lib/compte.interface';
+import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
+import { Project } from '../../entities/projet.entity';
 // src/auth/auth.controller.ts
 @Controller('auth')
 export class AuthController {
@@ -32,10 +33,15 @@ async login(
 
 @UseGuards(JwtAuthGuard)
 @Get('me')
-async me(@Req() req): Promise<{ compte: Compte_VM }> {
+async me(@Req() req): Promise<{ compte: Compte_VM, projects: ProjetView[] }> {
   const userId = req.user.id;
   const compte = await this.authService.get(userId);
-  return { compte };
+  if(compte){
+    const projects = await this.authService.getProjects(compte.id);
+    return { compte, projects };
+  } else {
+    throw new BadRequestException('USER_NOT_FOUND');
+  }
 }
 
 

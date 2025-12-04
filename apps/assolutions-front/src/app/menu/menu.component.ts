@@ -63,23 +63,13 @@ export class MenuComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le menu`;
+    console.log("Charger le menu");
     if(this.store.appli() == "ADMIN"){
       this.router.navigate(['/menu-admin']);
       return;
     }
     this.loading = true;
     
-    if (!this.store.isLoggedIn) {
-      const o = errorService.CreateError(
-        this.action,
-        $localize`Accès impossible, vous n'êtes pas connecté`
-      );
-      this.loading = false;
-      errorService.emitChange(o);  
-        this.store.logout();
-      this.router.navigate(['/login']);
-      return;
-    }
   
     try {
       const today = new Date();

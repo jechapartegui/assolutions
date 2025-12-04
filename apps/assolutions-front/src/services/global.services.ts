@@ -88,15 +88,20 @@ public async GET(url: string, responseType: 'text'): Promise<string>;
 public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<any> {
   try {
     let project_id: string = '-1';
+    let user_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
     if (this.store.projet()) {
       project_id = this.store.projet()!.id.toString();
     }
+    if(this.store.compte()){
+      user_id = this.store.compte()!.id.toString();
+    }
 
     let headers = new HttpHeaders()
       .set('content-type', 'application/json')
       .set('projectid', project_id)
+      .set('userid', user_id)
       .set('lang', this.getCurrentLanguage());
 
     // ➕ On ajoute le JWT si présent
@@ -138,18 +143,22 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
 
  public async POST(url: string, body: any): Promise<any> {
   try {
-    let project_id: string = '-1';
+      let project_id: string = '-1';
+    let user_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
     if (this.store.projet()) {
       project_id = this.store.projet()!.id.toString();
     }
+    if(this.store.compte()){
+      user_id = this.store.compte()!.id.toString();
+    }
 
     let headers = new HttpHeaders()
       .set('content-type', 'application/json')
       .set('projectid', project_id)
+      .set('userid', user_id)
       .set('lang', this.getCurrentLanguage());
-
     const token = localStorage.getItem('auth_token');
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
@@ -181,16 +190,21 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
 
  public async PUT(url: string, body: any): Promise<any> {
   try {
-    let project_id: string = '-1';
+      let project_id: string = '-1';
+    let user_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
     if (this.store.projet()) {
       project_id = this.store.projet()!.id.toString();
     }
+    if(this.store.compte()){
+      user_id = this.store.compte()!.id.toString();
+    }
 
     let headers = new HttpHeaders()
       .set('content-type', 'application/json')
       .set('projectid', project_id)
+      .set('userid', user_id)
       .set('lang', this.getCurrentLanguage());
 
     const token = localStorage.getItem('auth_token');

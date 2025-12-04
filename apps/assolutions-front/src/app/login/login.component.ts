@@ -51,6 +51,8 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
         this.action = $localize`Chargement de la page`;
     const errorService = ErrorService.instance;
+    console.log(this.store.compte());
+    console.log(this.store.projet());
     this.route.queryParams.subscribe((params) => {
       if('context' in params){
         try {
@@ -339,6 +341,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     if (this.projets_select) {
        
         this.store.updateProjet(this.projets_select);
+        localStorage.setItem('selected_projet', this.projets_select.id.toString());
          try {
           const adh = await this.proj_serv.GetActiveSaison();
           this.store.updateSaisonActive(adh);
@@ -348,7 +351,6 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
           }
 
              if(this.context == "SEANCE"){
-              console.log("ici");
             this.essai.emit(this.VM.compte);
               console.log(this.VM.compte);
             return;

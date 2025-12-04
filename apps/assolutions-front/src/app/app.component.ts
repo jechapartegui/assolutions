@@ -8,6 +8,7 @@ import { GlobalService } from '../services/global.services';
 import { NavigationEnd, Router } from '@angular/router';
 import { AppStore } from './app.store';
 import { distinctUntilChanged, filter, map, startWith, Subscription } from 'rxjs';
+import { LoginNestService } from '../services/login.nest.service';
 
 @Component({
   standalone: false,
@@ -42,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(public GlobalService:GlobalService,
     public erroservice: ErrorService,
     public compte_serv:CompteService,
+    public loginserv:LoginNestService,
     public globals: StaticClass,
     public router:Router,
     public store:AppStore
@@ -53,7 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
   public selected_menu: "MATCH" | "CLUB" | "COMPETITION"= "MATCH";
   ngOnInit(): void {
-    console.log(this.router);
+
     this.sub = this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map(e => e.urlAfterRedirects.toLowerCase()),

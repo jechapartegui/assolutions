@@ -32,6 +32,7 @@ import { CoursPage } from './public/course-page-public.component';
 import { SeancesPage } from './public/seance-page-public.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 import { LoginProjetComponent } from './login-projet/login-projet.component';
+import { AuthGuard } from './auth.guard';
 
 
 
@@ -41,7 +42,11 @@ const routes: Routes = [
   // { path: '', redirectTo: 'defaut', pathMatch: 'full' }, // Redirection vers 'defaut' pour le path vide
   { path: '', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'login', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'menu', component: MenuComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  {
+    path: 'menu',
+    component: MenuComponent,
+    canActivate: [AuthGuard],
+  }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'cours', component: CoursComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'seance', component: SeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'adherent', component: AdherentComponent }, // Route 'defaut' qui affiche ImportRidersComponent
