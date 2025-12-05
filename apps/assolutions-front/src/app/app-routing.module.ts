@@ -47,11 +47,21 @@ const routes: Routes = [
     component: MenuComponent,
     canActivate: [AuthGuard],
   }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'cours', component: CoursComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'seance', component: SeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'adherent', component: AdherentComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'groupe', component: GroupeComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'ma-seance', component: MaSeanceComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'cours', component: CoursComponent ,
+    canActivate: [AuthGuard],
+  }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'seance', component: SeanceComponent,
+    canActivate: [AuthGuard],
+  },// Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'adherent', component: AdherentComponent ,
+    canActivate: [AuthGuard],
+  }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'groupe', component: GroupeComponent ,
+    canActivate: [AuthGuard],
+  }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'ma-seance', component: MaSeanceComponent,
+    canActivate: [AuthGuard],
+  }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'seances-essais', component: SeancesEssaisComponent }, // Route 'defaut' qui affiche ImportRidersComponent

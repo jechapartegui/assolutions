@@ -16,11 +16,11 @@ export class LoginNestService {
 
   // login.nest.service.ts
 
-public Me(): Promise<{ compte: Compte_VM, projets: ProjetView[] }> {
+public Me(): Promise<{ compte: Compte_VM, projects: ProjetView[] }> {
   this.url = environment.maseance + 'api/auth/me';
 
   return this.global.GET(this.url)
-    .then((response: { compte: Compte_VM; projets: ProjetView[] }) => {
+    .then((response: { compte: Compte_VM; projects: ProjetView[] }) => {
       // Ici, tu peux déjà pousser dans ton store si tu veux,
       // ou le faire dans le composant qui appelle Me()
       return response;

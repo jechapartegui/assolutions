@@ -48,14 +48,7 @@ export class MaSeanceComponent implements OnInit {
   constructor(public store:AppStore, public riderservice:AdherentService, public cdr:ChangeDetectorRef,
     private seanceserv: SeancesService, private router: Router, private route: ActivatedRoute, 
     private inscriptionserv: InscriptionSeanceService, private mailserv:MailService) {
-       effect(() => {
-    const logged = this.store.isLoggedIn();
-    const compte = this.store.compte();
-   if (!this._loadLoginDone && logged && compte) {
-      this._loadLoginDone = true;
-      this.LoadLogin(compte);
-    }
-  });
+
 
   }
 
@@ -63,10 +56,10 @@ async ngOnInit(): Promise<void> {
   const errorService = ErrorService.instance;
   this.action = $localize`Charger la séance`;
 
-  // 1) Récupérer les params de façon synchrone
+  // 1) Params
   const params = this.route.snapshot.queryParams as { [k: string]: string | undefined };
 
-  // 2) Gérer l'id de séance
+  // 2) ID de séance
   if (this.id === 0) {
     if (params['id']) {
       this.id = +params['id'];
@@ -77,70 +70,71 @@ async ngOnInit(): Promise<void> {
     }
   }
 
-  // 3) Déterminer le contexte "lien" avant tout chargement
-
+  // 3) Contexte "lien"
   if (params['login']) {
     this.isLien = true;
     this.login = params['login'];
-  
   }
   if (params['adherent']) {
     this.isLien = true;
-    this.adherent = +params['adherent'];   
+    this.adherent = +params['adherent'];
   }
-    if (params['adherent']) {
+  if (params['reponse'] !== undefined) {
     this.isLien = true;
-    this.adherent = +params['adherent'];   
-  }
-   if (params['reponse'] !== undefined) {
-    this.isLien = true;
-    // "0" => false, "1" => true ; si autre chose => null
     const r = params['reponse']!;
     this.reponse = r === '0' ? false : r === '1' ? true : null;
   }
 
-if (this.isLien && this.login && !this.adherent) {
-  this.inscriptionserv.GetAdherentCompte(this.login, this.id)
-    .then((liste) => {
-      (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
-      this.MesAdherents = liste ?? [];
-    })
-    .catch((error) => {
-      const n = errorService.CreateError(this.action, error);
-      errorService.emitChange(n);
-    });
-
-} else if (this.isLien && this.login && this.adherent) {
-  this.inscriptionserv.GetAdherentPersonne(this.adherent, this.id)
-  .then((liste) => {
-      (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
-      this.MesAdherents = liste ?? [];
-    })
-    .catch((error) => {
-      const n = errorService.CreateError(this.action, error);
-      errorService.emitChange(n);
-    });
-}
-
-  
-
-  // 4) Charger la séance
+  // 4) Charger la séance EN PREMIER
   try {
     const ss = await this.seanceserv.Get(this.id);
     this.thisSeance = ss;
     this.generateSeanceText();
-
-    // 5) Ne pas appeler Load() si on est dans le contexte "lien"
-    if (!this.isLien) {
-      this.Load();
-    } else {
-      // console.log("lien"); // si tu veux tracer
-    }
   } catch (error) {
     const n = errorService.CreateError(this.action, error);
     errorService.emitChange(n);
+    return;
+  }
+
+  // 5) Si on est loggé et qu’on a un compte, on peut maintenant appeler LoadLogin
+  const compte = this.store.compte();
+  if (this.store.isLoggedIn() && compte) {
+    await this.LoadLogin(compte);
+  }
+
+  // 6) Si tu as encore un cas "lien anonyme" sans login (à vérifier avec ton guard)
+  // tu peux garder les appels directs ici si vraiment nécessaire :
+  if (this.isLien && this.login && !this.adherent) {
+    this.inscriptionserv.GetAdherentCompte(this.login, this.id)
+      .then((liste) => {
+        (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+        this.MesAdherents = liste ?? [];
+      })
+      .catch((error) => {
+        const n = errorService.CreateError(this.action, error);
+        errorService.emitChange(n);
+      });
+
+  } else if (this.isLien && this.login && this.adherent) {
+    this.inscriptionserv.GetAdherentPersonne(this.adherent, this.id)
+      .then((liste) => {
+        (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+        this.MesAdherents = liste ?? [];
+        if(this.reponse != null){ 
+          
+      })
+      .catch((error) => {
+        const n = errorService.CreateError(this.action, error);
+        errorService.emitChange(n);
+      });
+  }
+
+  // 7) Chargement classique si pas lien
+  if (!this.isLien) {
+    this.Load();
   }
 }
+
 
 // Dans ta classe de composant
 defaultAvatar = '../../assets/photo_H.png';
@@ -207,7 +201,7 @@ AfficherMenu(){
      this.action = $localize`Charger les adhérents de mon compte`;
           this.login = compte.email;
           if(!this.adherent){
-            
+            console.log(this.thisSeance);
    this.inscriptionserv.GetAdherentCompte(this.login, this.thisSeance.seance_id).then((fis) =>{
             fis.forEach(p => Personne_VM.bakeLibelle(p.person));
             this.MesAdherents = fis;

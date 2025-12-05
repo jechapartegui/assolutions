@@ -11,6 +11,7 @@ import { Login_VM } from '../../class/login_vm';
 import { AppStore } from '../app.store';
 import { MailService } from '../../services/mail.service';
 import { MailInput } from '@shared/lib/mail-input.interface';
+import { ProjectContextService } from '../../services/project-context.service';
 
 @Component({
   standalone: false,
@@ -42,7 +43,8 @@ export class LoginComponent implements OnInit {
     public GlobalService: GlobalService,
     private proj_serv:ProjetService, 
     public store: AppStore,
-    public mailserv:MailService
+    public mailserv:MailService,
+    public projectContextService:ProjectContextService
   ) {
     this.VM.Login = environment.defaultlogin;
     this.VM.Password = environment.defaultpassword;
@@ -332,50 +334,46 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     this.projets_select = this.projets.find((x) => x.id == event);
   }
 
-  async ConnectToProject() {
-    this.action = $localize`Se connecter au projet`;
-    this.loading = true;
-    // Appel à la méthode Check_Login du service RidersService
-    const errorService = ErrorService.instance;
+async ConnectToProject() {
+  this.action = $localize`Se connecter au projet`;
+  this.loading = true;
+  const errorService = ErrorService.instance;
 
-    if (this.projets_select) {
-       
-        this.store.updateProjet(this.projets_select);
-        localStorage.setItem('selected_projet', this.projets_select.id.toString());
-         try {
-          const adh = await this.proj_serv.GetActiveSaison();
-          this.store.updateSaisonActive(adh);
-          
-          if (!adh) {
-            throw new Error($localize`Pas de saison active détectée sur le projet`);
-          }
-
-             if(this.context == "SEANCE"){
-            this.essai.emit(this.VM.compte);
-              console.log(this.VM.compte);
-            return;
-          }
-          // suite du traitement
-        } catch (err: any) {
-          this.loading = false;
-          let o = errorService.CreateError(this.action, err.message || 'Erreur inconnue');
-          errorService.emitChange(o);
-          this.store.logout();
-          this.router.navigate(['/login']);
-          return;
-        }
-        this.store.updateSelectedMenu('MENU');
-        this.router.navigate(['/menu']);
-      this.loading = false;
-    } else {
-      let o = errorService.CreateError(
-        this.action,
-        $localize`Pas de projet sélectionné`
-      );
-      errorService.emitChange(o);
-      this.loading = false;
-    }
+  if (!this.projets_select) {
+    const o = errorService.CreateError(
+      this.action,
+      $localize`Pas de projet sélectionné`
+    );
+    errorService.emitChange(o);
+    this.loading = false;
+    return;
   }
+
+  try {
+    await this.projectContextService.connectToProject(this.projets_select);
+
+    if (this.context === 'SEANCE') {
+      this.essai.emit(this.VM.compte);
+      this.loading = false;
+      return;
+    }
+
+    this.store.updateSelectedMenu('MENU');
+    await this.router.navigate(['/menu']);
+    this.loading = false;
+  } catch (err: any) {
+    this.loading = false;
+    const msg = err?.message || 'Erreur inconnue';
+    const o = errorService.CreateError(this.action, msg);
+    errorService.emitChange(o);
+
+    this.store.logout();
+    localStorage.removeItem('auth_token');
+    await this.router.navigate(['/login']);
+  }
+}
+
+
 
   async TestMail(){
     const MI = new MailInput();
