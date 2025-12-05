@@ -121,7 +121,7 @@ async ngOnInit(): Promise<void> {
         (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
         this.MesAdherents = liste ?? [];
         if(this.reponse != null){ 
-          
+        }
       })
       .catch((error) => {
         const n = errorService.CreateError(this.action, error);
