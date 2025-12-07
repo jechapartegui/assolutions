@@ -14,14 +14,14 @@ import { FullInscriptionSeance_VM, InscriptionSeance_VM } from '@shared/lib/insc
 export class InscriptionSeanceController {
   constructor(private readonly inscription_seance_serv: InscriptionSeanceService) {}
   @UseGuards(JwtAuthGuard)
-  @Get('get/:id')
-  async Get(@Param('id') id: number) {
-    return this.inscription_seance_serv.Get(id);
+  @Get('get/:personne_id/:seance_id')
+  async Get(@Param('personne_id') personne_id: number, @Param('seance_id') seance_id: number) {
+    return this.inscription_seance_serv.Get(personne_id, seance_id);
   }
   @UseGuards(JwtAuthGuard)
-  @Get('get_full/:id')
-  async GetFull(@Param('id') id: number) {
-    return this.inscription_seance_serv.GetFull(id);
+  @Get('get_full/:personne_id/:seance_id')
+  async GetFull(@Param('personne_id') personne_id: number, @Param('seance_id') seance_id: number) {
+    return this.inscription_seance_serv.GetFull(personne_id, seance_id);
   }
     @UseGuards(JwtAuthGuard)
   @Get('get_adherent_compte/:id/:id_seance')
@@ -58,12 +58,12 @@ async GetAllSeanceFull(@Param('seance_id') seance_id: number) : Promise<FullInsc
   @UseGuards(JwtAuthGuard)
 @Post('faire_essai')
 async FaireEssai(@Body() { personId, sessionId }: { personId: number; sessionId: number }
-  ) : Promise<number> {
+  ) : Promise<InscriptionSeance_VM> {
   return this.inscription_seance_serv.FaireEssai(personId, sessionId);
 }
 
 @Put('add')
-async Add(@Body() inscription: InscriptionSeance_VM) {
+async Add(@Body() inscription: InscriptionSeance_VM): Promise<InscriptionSeance_VM>  {
   return this.inscription_seance_serv.Add(inscription);
 }
 
@@ -75,8 +75,8 @@ async Update(@Body() inscription: InscriptionSeance_VM) {
 
     @UseGuards(JwtAuthGuard)
 @Post('delete')
-async Delete(@Body() body: { id: number}) {
-  return this.inscription_seance_serv.Delete(body.id);
+async Delete(@Body() body: { personne_id: number, seance_id: number})  {
+  return this.inscription_seance_serv.Delete(body.personne_id, body.seance_id);
 }
 
 }

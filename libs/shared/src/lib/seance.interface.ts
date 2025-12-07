@@ -6,7 +6,6 @@ export interface MesSeances_VM {
     seance:Seance_VM
     statutInscription?: 'présent' | 'absent' | 'convoqué' | 'essai'; // Peut être null -> optionnel
     statutPrésence?: 'présent' | 'absent'; // Peut être null -> optionnel
-    inscription_id?: number; // Peut être null -> optionnel
   }
   
   export interface AdherentSeance_VM {

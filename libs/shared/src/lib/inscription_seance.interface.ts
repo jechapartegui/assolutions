@@ -1,7 +1,6 @@
 import { Personne_VM } from "./personne.interface";
 
 export class InscriptionSeance_VM {
-   id = 0;
   rider_id = 0;
   seance_id = 0;
   date_inscription: Date | null = null;

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, PrimaryColumn } from 'typeorm';
 import { Person } from './personne.entity';
 import { Session } from './seance.entity';
 
@@ -14,19 +14,17 @@ export enum SeanceStatus {
   ABSENT = 'absent',
 }
 
+
 @Entity({ name: 'inscription_seance' })
 export class RegistrationSession {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ name: 'personne_id', type: 'int' })
+  @PrimaryColumn({ name: 'personne_id', type: 'int' })
   personId: number;
 
   @ManyToOne(() => Person, person => person.inscriptionsSeance, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'personne_id' })
   person: Person;
 
-  @Column({ name: 'seance_id', type: 'int' })
+  @PrimaryColumn({ name: 'seance_id', type: 'int' })
   seanceId: number;
 
   @ManyToOne(() => Session, seance => seance.inscriptionsPersonne, { onDelete: 'CASCADE' })

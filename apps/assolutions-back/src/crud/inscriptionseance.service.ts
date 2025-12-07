@@ -1,4 +1,3 @@
-
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
@@ -11,57 +10,80 @@ export class RegistrationSessionService {
     private readonly repo: Repository<RegistrationSession>,
   ) {}
 
-  async get(id: number): Promise<RegistrationSession> {
-    const item = await this.repo.findOne({ where: { id } });
+  async get(personId: number, seanceId: number): Promise<RegistrationSession> {
+    const item = await this.repo.findOne({ where: { personId, seanceId } });
     if (!item) throw new NotFoundException('REGISTRATION_SESSION_NOT_FOUND');
     return item;
   }
-  async getRiderSeance(personId : number, seanceId: number): Promise<RegistrationSession | null> {
-    return  await this.repo.findOne({ where: { seanceId, personId } });
+
+  async getRiderSeance(personId: number, seanceId: number): Promise<RegistrationSession | null> {
+    return this.repo.findOne({ where: { personId, seanceId } });
   }
 
   async getAll(): Promise<RegistrationSession[]> {
     return this.repo.find();
   }
-    async getAllSeance(seanceId:number): Promise<RegistrationSession[]> {
-    return this.repo.find({ 
-    relations: ['person', 'seance'],where: { seanceId } });
+
+  async getAllSeance(seanceId: number): Promise<RegistrationSession[]> {
+    return this.repo.find({
+      relations: ['person', 'seance'],
+      where: { seanceId },
+    });
   }
-    async getAllRiderSaison(personId:number,seasonId:number ): Promise<RegistrationSession[]> {
-  return this.repo.find({
-    relations: ['seance'],            // charge la relation
-    where: {
-      personId,              // ton champ personne_id
-      seance: {
-        seasonId            // la propriété de l’entité Session
-      }
-    }
-  });
-}
+
+  async getAllRiderSaison(personId: number, seasonId: number): Promise<RegistrationSession[]> {
+    return this.repo.find({
+      relations: ['seance'],
+      where: {
+        personId,
+        seance: {
+          seasonId,
+        },
+      },
+    });
+  }
 
   async create(data: Partial<RegistrationSession>): Promise<RegistrationSession> {
     try {
       const created = this.repo.create(data);
       return await this.repo.save(created);
     } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
+      if (err instanceof QueryFailedError) {
+        // par ex. violation de la contrainte unique (personId, seanceId)
+        throw new BadRequestException('INTEGRITY_ERROR');
+      }
       throw err;
     }
   }
 
-  async update(id: number, data: Partial<RegistrationSession>): Promise<RegistrationSession> {
-    await this.get(id);
+  async update(
+    personId: number,
+    seanceId: number,
+    data: Partial<RegistrationSession>,
+  ): Promise<RegistrationSession> {
+    // Vérifie l’existence d’abord
+    const existing = await this.get(personId, seanceId);
+
     try {
-      await this.repo.update({ id }, data);
+      // Option 1 : merge + save (plus safe avec clés composites)
+      const toUpdate = this.repo.merge(existing, data);
+      return await this.repo.save(toUpdate);
+
+      // Option 2 (si tu préfères update "sec" sans reload) :
+      // await this.repo.update({ personId, seanceId }, data);
+      // return this.get(personId, seanceId);
     } catch (err) {
-      if (err instanceof QueryFailedError) throw new BadRequestException('INTEGRITY_ERROR');
+      if (err instanceof QueryFailedError) {
+        throw new BadRequestException('INTEGRITY_ERROR');
+      }
       throw err;
     }
-    return this.get(id);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.get(id);
-    await this.repo.delete({ id });
+  async delete(personId: number, seanceId: number): Promise<void> {
+    // Vérifie d’abord que l’enregistrement existe
+    await this.get(personId, seanceId);
+
+    await this.repo.delete({ personId, seanceId });
   }
 }

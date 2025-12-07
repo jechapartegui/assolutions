@@ -38,3 +38,10 @@ SELECT setval(
 );
 
 mot de passe appli : emyy djxe qudl fxkg
+
+DELETE FROM inscription_seance a
+USING inscription_seance b
+WHERE 
+    a.personne_id = b.personne_id
+    AND a.seance_id = b.seance_id
+    AND a.id > b.id;

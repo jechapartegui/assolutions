@@ -16,8 +16,8 @@ export class InscriptionSeanceService {
     private personserv:PersonService
   ) {}
 
-  async Get(id: number) {
-     const pIS = await this.inscriptionseanceserv.get(id);
+  async Get(personId: number, seanceId: number) {
+     const pIS = await this.inscriptionseanceserv.get(personId, seanceId  );
        if (!pIS) {
          throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
        }
@@ -25,8 +25,8 @@ export class InscriptionSeanceService {
        return to_InscriptionSeances_VM(pIS);
 
   }
-   async GetFull(id: number) {
-    const pISS = await this.inscriptionseanceserv.get(id);
+   async GetFull(personId: number, seanceId: number) {
+    const pISS = await this.inscriptionseanceserv.get(personId, seanceId  );
     if (!pISS) {
       throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
     }
@@ -52,7 +52,7 @@ export class InscriptionSeanceService {
     }
     return pISS.filter(x => x.rider_id == id);
   }
-   async FaireEssai(personId : number, sessionId: number) {
+   async FaireEssai(personId : number, sessionId: number) : Promise<InscriptionSeance_VM> {
     if (!personId || !sessionId) {
       throw new BadRequestException('INVALID_PERSON_SESSION');
     }
@@ -62,8 +62,8 @@ export class InscriptionSeanceService {
     regsession.personId = personId;
     regsession.seanceId = sessionId;
     regsession.statutSeance = undefined;
-  const objet_insere = await this.inscriptionseanceserv.create(regsession);
-       return objet_insere.id;
+  const objet_insere = await this.inscriptionseanceserv.create(regsession);  
+       return to_InscriptionSeances_VM(objet_insere);
 }
    async GetAllRiderSaison(rider_id: number, saison_id:number) {
     const pISSs = await this.inscriptionseanceserv.getAllRiderSaison(rider_id, saison_id);
@@ -120,26 +120,26 @@ async GetAllSeanceFull(seance_id: number): Promise<FullInscriptionSeance_VM[]> {
 }
 
 
-  async Add(inscription: InscriptionSeance_VM) {
+  async Add(inscription: InscriptionSeance_VM) : Promise<InscriptionSeance_VM> {
     if (!inscription) {
          throw new BadRequestException('INVALID_REGISTRATION_SESSION');
        }
        const objet_base = toRegistrationSession(inscription);
      
        const objet_insere = await this.inscriptionseanceserv.create(objet_base);
-       return objet_insere.id;
+       return to_InscriptionSeances_VM(objet_insere);
 }
 async Update(inscription: InscriptionSeance_VM) {
   if (!inscription) {
          throw new BadRequestException('INVALID_REGISTRATION_SESSION');
        }
     const objet_base = toRegistrationSession(inscription);
-await this.inscriptionseanceserv.update(objet_base.id, objet_base);
+await this.inscriptionseanceserv.update(objet_base.personId, objet_base.seanceId, objet_base);
 }
 
-async Delete(id: number) {
+async Delete(personId: number, seanceId: number)  {
    try{
-    await this.inscriptionseanceserv.delete(id);
+    await this.inscriptionseanceserv.delete(personId, seanceId);
     return true;
      } catch{
       return false;
@@ -153,10 +153,9 @@ async Delete(id: number) {
 }
 export function to_InscriptionSeances_VM(obj: RegistrationSession): InscriptionSeance_VM {
   const item = new InscriptionSeance_VM();
-
-  item.id          = obj?.id ?? 0;                         // 0 si absent
-  item.rider_id    = obj?.personId ?? 0;
-  item.seance_id   = obj?.seanceId ?? 0;
+                     // 0 si absent
+  item.rider_id    = obj?.personId;
+  item.seance_id   = obj?.seanceId;
   item.date_inscription = obj?.dateInscription ?? null;    // null si absent
 
   item.statut_inscription =
@@ -175,7 +174,6 @@ export function to_InscriptionSeances_VM(obj: RegistrationSession): InscriptionS
 export function to_FullInscriptionSeance_VM(obj:RegistrationSession): FullInscriptionSeance_VM{
   const item = new FullInscriptionSeance_VM();
   item.date_inscription=obj.dateInscription;
-  item.id = obj.id;
   item.person = toPersonne_VM(obj.person);
   item.rider_id = obj.personId;
   item.seance_id = obj.seanceId;
@@ -188,7 +186,6 @@ export function to_FullInscriptionSeance_VM(obj:RegistrationSession): FullInscri
 export function toRegistrationSession(data:InscriptionSeance_VM) : RegistrationSession{
  const entity = new RegistrationSession();
  entity.dateInscription = data.date_inscription;
- entity.id = data.id ?? 0;
  entity.personId = data.rider_id;
  entity.seanceId = data.seance_id;
  entity.statutInscription = toInscriptionStatusEntity(data.statut_inscription);

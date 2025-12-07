@@ -184,8 +184,7 @@ async EssaiProjet(
       let ma_se : MesSeances_VM = { 
         seance : to_Seance_VM(ie.seance),
         statutInscription : ie.statutInscription,
-        statutPrésence : ie.statutSeance,
-        inscription_id : ie.id
+        statutPrésence : ie.statutSeance
       }
       ms.push(ma_se);
     });

@@ -46,14 +46,12 @@ async MySeance(
     const item: MesSeances_VM = {
       seance: s,
       statutPrésence: undefined,
-      statutInscription: undefined,
-      inscription_id: 0
+      statutInscription: undefined
     };
 
     // 2) Déjà inscrit ? On push direct (on ne filtre pas par âge/groupe si déjà inscrit)
     const ins = await this.inscriptionseance_serv.getRiderSeance(adherent_id, s.seance_id);
-    if (ins && typeof ins.id === 'number') {
-      item.inscription_id = ins.id ?? 0;
+    if (ins) {
       item.statutPrésence = ins.statutSeance;
       item.statutInscription = ins.statutInscription;
       results.push(item);
@@ -101,7 +99,6 @@ async MySeance(
         const myss:MesSeances_VM ={
           seance : to_Seance_VM(_session),
           statutInscription :undefined,
-          inscription_id :0,
           statutPrésence : undefined
         }
 filteredSeances.push(myss);
