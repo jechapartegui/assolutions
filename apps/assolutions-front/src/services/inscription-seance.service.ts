@@ -70,11 +70,10 @@ public GetAdherentPersonne(id:number, seance_id:number): Promise<FullInscription
     });
 }
 
-public FaireEssai(personId:number, sessionId:number): Promise<number> {
- this.url = environment.maseance + 'api/inscription_seance/faire_essai';
+public MAJ(InscriptionSeance_VM:InscriptionSeance_VM): Promise<number> {
+ this.url = environment.maseance + 'api/inscription_seance/maj';
 const body = {
-  personId :personId,
-  sessionId:sessionId
+  InscriptionSeance_VM :InscriptionSeance_VM
  }
 
     return this.global.POST(this.url, body)
@@ -131,43 +130,5 @@ public GetAllSeanceFull(seance_id:number): Promise<FullInscriptionSeance_VM[]> {
     });
 }
 
-public Add(inscription:InscriptionSeance_VM): Promise<number> {
-  this.url = environment.maseance + 'api/inscription_seance/add';
-
-  return this.global.PUT(this.url, inscription)
-    .then((response: number) => {
-      return response;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-public Update(inscription:InscriptionSeance_VM) {
-    this.url = environment.maseance + 'api/inscription_seance/update';
-
-  return this.global.PUT(this.url, inscription)
-    .then(() => {
-      return ;
-    })
-    .catch(error => {
-      // Gestion de l'erreur
-      return Promise.reject(error);
-    });
-}
-public Delete(id:number): Promise<boolean> {
- this.url = environment.maseance + 'api/inscription_seance/delete/';
-const body = {
-      id: id, 
-    };
-
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
-}
 }
 

@@ -119,35 +119,27 @@ async GetAllSeanceFull(seance_id: number): Promise<FullInscriptionSeance_VM[]> {
   return pISSs.map(x => to_FullInscriptionSeance_VM(x));
 }
 
-
-  async Add(inscription: InscriptionSeance_VM) : Promise<InscriptionSeance_VM> {
-    if (!inscription) {
+async MAJ(InscriptionSeance_VM: InscriptionSeance_VM) : Promise<boolean> {
+  try {
+     if (!InscriptionSeance_VM) {
          throw new BadRequestException('INVALID_REGISTRATION_SESSION');
        }
-       const objet_base = toRegistrationSession(inscription);
-     
-       const objet_insere = await this.inscriptionseanceserv.create(objet_base);
-       return to_InscriptionSeances_VM(objet_insere);
-}
-async Update(inscription: InscriptionSeance_VM) {
-  if (!inscription) {
-         throw new BadRequestException('INVALID_REGISTRATION_SESSION');
-       }
-    const objet_base = toRegistrationSession(inscription);
-await this.inscriptionseanceserv.update(objet_base.personId, objet_base.seanceId, objet_base);
-}
-
-async Delete(personId: number, seanceId: number)  {
-   try{
-    await this.inscriptionseanceserv.delete(personId, seanceId);
+    const objet_base = toRegistrationSession(InscriptionSeance_VM);
+    const a_supprimer: boolean = objet_base.statutInscription === undefined && objet_base.statutSeance === undefined;
+    const existing = await this.inscriptionseanceserv.get(objet_base.personId, objet_base.seanceId);
+    if (existing && !a_supprimer) {
+      await this.inscriptionseanceserv.update(objet_base.personId, objet_base.seanceId, objet_base);
+    } else if (existing && a_supprimer) {
+      await this.inscriptionseanceserv.delete(objet_base.personId, objet_base.seanceId);
+    } else {
+      await this.inscriptionseanceserv.create(objet_base);
+    } 
     return true;
-     } catch{
-      return false;
-     }
-}
-
-
-
+  } catch (error) {
+    return false
+  }
+   
+  }
  
 
 }

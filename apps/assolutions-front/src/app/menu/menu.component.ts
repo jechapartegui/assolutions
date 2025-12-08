@@ -13,7 +13,7 @@ import { LieuNestService } from '../../services/lieu.nest.service';
 import { KeyValuePair } from '@shared/lib/autres.interface';
 import { AdherentService } from '../../services/adherent.service';
 import { AdherentMenu } from '../../class/adherent-menu';
-import { InscriptionSeance_VM, InscriptionStatus_VM } from '@shared/lib/inscription_seance.interface';
+import { InscriptionSeance_VM, InscriptionStatus_VM, SeanceStatus_VM } from '@shared/lib/inscription_seance.interface';
 import { Professeur_VM } from '@shared/lib/prof.interface';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Cours_VM } from '@shared/lib/cours.interface';
@@ -268,7 +268,7 @@ copierDansPressePapier(texte: string): void {
     let ad = this.listelieu.find(x => x.id == id) 
     return ad!.nom + " " + ad!.adresse.Street + " " + ad!.adresse.PostCode + " " + ad!.adresse.City
   }
-calculerHeureFin(heure: string, duree: number): string {
+    calculerHeureFin(heure: string, duree: number): string {
   return calculerHeureFin(heure, duree);
 }
   nbSeanceInscrit(seance: MesSeances_VM[]): {OK:number, KO:number, aucun:number} {
@@ -277,10 +277,13 @@ calculerHeureFin(heure: string, duree: number): string {
     let aucun = 0;
     seance.forEach((s) => { 
       if(s.seance.statut == StatutSeance.prévue){
-      if(s.inscription_id == null || s.inscription_id == 0) {
+      if(s.statutInscription == null || s.statutInscription == undefined){ 
         aucun++;
       }
       else if (s.statutInscription == "présent") {
+        OK++;
+      } 
+      else if (s.statutInscription == "essai") {
         OK++;
       } 
       else if (s.statutInscription == "absent") {
@@ -414,105 +417,37 @@ return $localize`Evénement`;
 
   MAJInscription(messeance : MesSeances_VM, adherentmen : AdherentMenu, statut: boolean, afficher_message: boolean = true) {
     const errorService = ErrorService.instance;
+    let i :InscriptionSeance_VM = new InscriptionSeance_VM();
     let oldstatut = messeance.statutInscription || null;
-    let idinscription = messeance.inscription_id || null;
-    if (statut == null && oldstatut != null && idinscription) {
-      this.action =
-      adherentmen.libelle +
-        $localize` ne prévoit plus d'être présent à la séance ` +
-        messeance.seance.libelle;
-      this.inscriptionserv
-        .Delete(idinscription)
-        .then((ok) => {
-          if (ok) {
-            messeance.statutInscription = null;
-            messeance.inscription_id = null;
-            this.refreshRider(adherentmen); // 👈 FORCING change detection
-            this.cdr.detectChanges();
-            let o = errorService.OKMessage(this.action);
-           afficher_message ? errorService.emitChange(o) : null;
-          } else {
-            let o = errorService.UnknownError(this.action);
-           afficher_message ? errorService.emitChange(o) : null;
-          }
-        })
-        .catch((err: HttpErrorResponse) => {
-          messeance.statutInscription = oldstatut;
-          let o = errorService.CreateError(this.action, err.message);
-           afficher_message ? errorService.emitChange(o) : null;
-          return;
-        });
-      return;
-    } else {
-      const uneInscription: InscriptionSeance_VM = {
-        id: 0,
-        date_inscription: new Date(),
-        statut_inscription: statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT,
-        statut_seance: null,
-        rider_id: adherentmen.id,
-        seance_id: messeance.seance.seance_id
-      };
-      if (statut) {
-        this.action = 
-        adherentmen.libelle +
-        $localize` prévoit d'être présent à la séance ` +
-        messeance.seance.libelle;
-      } else {
-        this.action =
-        adherentmen.libelle +
-        $localize` ne prévoit plus d'être présent à la séance ` +
-        messeance.seance.libelle;
-      }
-      if (!idinscription) {
+    messeance.statutInscription = statut ? InscriptionStatus_VM.PRESENT : (statut = false) ? InscriptionStatus_VM.ABSENT : null;
+        this.refreshRider(adherentmen);
+        this.cdr.detectChanges();
+    i.date_inscription = new Date();
+    i.rider_id = adherentmen.id;
+    i.seance_id = messeance.seance.seance_id;
+    i.statut_inscription = statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT; 
+    i.statut_seance = messeance.statutPrésence == "absent" ?  SeanceStatus_VM.ABSENT : SeanceStatus_VM.PRESENT;
+    let statut_text = statut ? $localize`présent` : (statut = false) ? $localize`Absent` : $localize`Indéfini`; 
+    this.action = $localize`Nouveau statut d'inscription de ` + adherentmen.libelle + ` : ` + statut_text + ` pour la séance ` + messeance.seance.libelle;
 
-        this.inscriptionserv
-          .Add(uneInscription)
-          .then((id) => {
-           messeance.inscription_id = id;
-  messeance.statutInscription = statut
-    ? InscriptionStatus_VM.PRESENT
-    : InscriptionStatus_VM.ABSENT; // 👈 ajout clé
-  this.refreshRider(adherentmen);
-  this.cdr.detectChanges();
-  let o = errorService.OKMessage(this.action);
-           afficher_message ? errorService.emitChange(o) : null;
-          })
-          .catch((err: HttpErrorResponse) => {
-            messeance.statutInscription = oldstatut;
-            let o = errorService.CreateError(this.action, err.message);
-           afficher_message ? errorService.emitChange(o) : null;
-            return;
-          });
+    this.inscriptionserv.MAJ(i).then((res) =>{
+      if(res){  
+        let o = errorService.OKMessage(this.action);
+        afficher_message ? errorService.emitChange(o) : null;
       } else {
-        const update: InscriptionSeance_VM = {
-          id: idinscription,
-        date_inscription: new Date(),
-        statut_inscription: statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT,
-        statut_seance: null,
-        rider_id: adherentmen.id,
-        seance_id: messeance.seance.seance_id
-        };
-        this.inscriptionserv
-          .Update(update)
-          .then(() => {
-              messeance.statutInscription = statut
-    ? InscriptionStatus_VM.PRESENT
-    : InscriptionStatus_VM.ABSENT; // 👈 ajout clé
-  this.refreshRider(adherentmen);
-  this.cdr.detectChanges();
-  let o = errorService.OKMessage(this.action);
-           afficher_message ? errorService.emitChange(o) : null;
-            }
-          )
-          .catch((err: HttpErrorResponse) => {
-            messeance.statutInscription = oldstatut;
-            this.cdr.detectChanges();
-            let o = errorService.CreateError(this.action, err.message);
-           afficher_message ? errorService.emitChange(o) : null;
-            return;
-          });
+        let o = errorService.UnknownError(this.action);
+        afficher_message ? errorService.emitChange(o) : null;
+        messeance.statutInscription = oldstatut;
+        this.refreshRider(adherentmen);
+        this.cdr.detectChanges();
       }
-    }
+
+    }).catch((err) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+      messeance.statutInscription = oldstatut;
+      this.refreshRider(adherentmen);
+    })
     this.cdr.detectChanges();
   }
 

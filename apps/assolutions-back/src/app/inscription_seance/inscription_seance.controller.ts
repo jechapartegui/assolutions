@@ -56,27 +56,12 @@ async GetAllSeanceFull(@Param('seance_id') seance_id: number) : Promise<FullInsc
 }
 
   @UseGuards(JwtAuthGuard)
-@Post('faire_essai')
-async FaireEssai(@Body() { personId, sessionId }: { personId: number; sessionId: number }
-  ) : Promise<InscriptionSeance_VM> {
-  return this.inscription_seance_serv.FaireEssai(personId, sessionId);
-}
-
-@Put('add')
-async Add(@Body() inscription: InscriptionSeance_VM): Promise<InscriptionSeance_VM>  {
-  return this.inscription_seance_serv.Add(inscription);
-}
-
-@Put('update')
-async Update(@Body() inscription: InscriptionSeance_VM) {
-  return this.inscription_seance_serv.Update(inscription);
+@Post('MAJ')
+async MAJ(@Body() { InscriptionSeance_VM }: { InscriptionSeance_VM: InscriptionSeance_VM }
+  ) : Promise<boolean> {
+  return this.inscription_seance_serv.MAJ(InscriptionSeance_VM);
 }
 
 
-    @UseGuards(JwtAuthGuard)
-@Post('delete')
-async Delete(@Body() body: { personne_id: number, seance_id: number})  {
-  return this.inscription_seance_serv.Delete(body.personne_id, body.seance_id);
-}
 
 }

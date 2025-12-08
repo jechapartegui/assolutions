@@ -14,7 +14,6 @@ export class InscriptionSeance {
                   this.thisInscription = inscription;
             } else {
                 this.thisInscription = {
-                  id: 0,
                   date_inscription: null,
                   rider_id: rider_id,
                   seance_id: seance.seance_id,

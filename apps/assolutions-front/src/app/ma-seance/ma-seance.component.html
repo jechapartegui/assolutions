@@ -235,13 +235,13 @@
     <div class="buttons has-addons" *ngIf="store.isProf()">
       <button type="button"
               class="button is-outlined is-rounded is-primary"
-              (click)="MAJInscription(potentiel, true)"
+              (click)="MAJPresence(potentiel, true)"
               [disabled]="!GetNbPersonne()">
         <i class="fas fa-check"></i>
       </button>
       <button type="button"
               class="button is-outlined is-rounded is-danger"
-              (click)="MAJInscription(potentiel, false)">
+              (click)="MAJPresence(potentiel, false)">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -336,14 +336,14 @@
                           <button
                             type="button"
                             class="button is-rounded is-primary"
-                            (click)="MAJInscription(potentiel, null)"
+                            (click)="MAJPresence(potentiel, null)"
                           >
                             <i class="fas fa-check"></i>
                           </button>
                           <button
                             type="button"
                             class="button is-outlined is-rounded is-danger"
-                            (click)="MAJInscription(potentiel, false)"
+                            (click)="MAJPresence(potentiel, false)"
                           >
                             <i class="fas fa-times"></i>
                           </button>
@@ -411,14 +411,14 @@
                           type="button"
                           class="button is-outlined is-rounded is-primary"
                           [disabled]="!GetNbPersonne()"
-                          (click)="MAJInscription(potentiel, true)"
+                          (click)="MAJPresence(potentiel, true)"
                         >
                           <i class="fas fa-check"></i>
                         </button>
                         <button
                           type="button"
                           class="button is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, null)"
+                          (click)="MAJPresence(potentiel, null)"
                         >
                           <i class="fas fa-times"></i>
                         </button>
@@ -709,21 +709,21 @@
 
     <div *ngIf="store.isProf()" class="buttons has-addons" style="flex-wrap: nowrap;">
       <button *ngIf="potentiel.statut_seance && potentiel.statut_seance === 'présent'"  type="button"  class="button is-rounded is-primary"
-              (click)="MAJInscription(potentiel, true)"
+              (click)="MAJPresence(potentiel, true)"
               [disabled]="!GetNbPersonne()">
         <i class="fas fa-check"></i>
       </button>
        <button *ngIf="!potentiel.statut_seance || potentiel.statut_seance !== 'présent'"  type="button"  class="button is-outlined is-rounded is-primary"
-              (click)="MAJInscription(potentiel, true)"
+              (click)="MAJPresence(potentiel, true)"
               [disabled]="!GetNbPersonne()">
         <i class="fas fa-check"></i>
       </button>
       <button type="button"  *ngIf="potentiel.statut_seance && potentiel.statut_seance === 'absent'" class="button is-rounded is-danger"
-              (click)="MAJInscription(potentiel, false)">       
+              (click)="MAJPresence(potentiel, false)">       
         <i class="fas fa-times"></i>
       </button>
        <button type="button"  *ngIf="!potentiel.statut_seance || potentiel.statut_seance !== 'absent'" class="button is-outlined  is-rounded is-danger"
-              (click)="MAJInscription(potentiel, false)">       
+              (click)="MAJPresence(potentiel, false)">       
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -875,14 +875,14 @@
                           <button
                             type="button"
                             class="button is-rounded is-primary"
-                            (click)="MAJInscription(potentiel, null)"
+                            (click)="MAJPresence(potentiel, null)"
                           >
                             <i class="fas fa-check"></i>
                           </button>
                           <button
                             type="button"
                             class="button is-outlined is-rounded is-danger"
-                            (click)="MAJInscription(potentiel, false)"
+                            (click)="MAJPresence(potentiel, false)"
                           >
                             <i class="fas fa-times"></i>
                           </button>
@@ -949,14 +949,14 @@
                           type="button"
                           class="button is-outlined is-rounded is-primary"
                           [disabled]="!GetNbPersonne()"
-                          (click)="MAJInscription(potentiel, true)"
+                          (click)="MAJPresence(potentiel, true)"
                         >
                           <i class="fas fa-check"></i>
                         </button>
                         <button
                           type="button"
                           class="button is-rounded is-danger"
-                          (click)="MAJInscription(potentiel, null)"
+                          (click)="MAJPresence(potentiel, null)"
                         >
                           <i class="fas fa-times"></i>
                         </button>

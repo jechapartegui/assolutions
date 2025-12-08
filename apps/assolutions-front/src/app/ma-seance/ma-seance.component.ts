@@ -530,44 +530,35 @@ this.All        = res.sort(sortByLibelle);
     this.seanceText = ` ${dateDebStr}`;
   }
 
-  MAJInscription(inscription: FullInscriptionSeance_VM, statut: boolean) {
+  MAJPresence(inscription: FullInscriptionSeance_VM, statut: boolean) {
 
     const errorService = ErrorService.instance;
     let oldstatut = inscription.statut_seance;
     let libelleseab = this.thisSeance.libelle;
-    if (statut == true) {
-      inscription.statut_seance = SeanceStatus_VM.PRESENT;
-      this.action = inscription.person.libelle + $localize` est présent à la séance ` + libelleseab;
-    } else if (statut == false) {
-      inscription.statut_seance = SeanceStatus_VM.ABSENT;
-      this.action = inscription.person.libelle + $localize` est absent à la séance ` + libelleseab;
-    } else if (statut == null) {
-      inscription.statut_seance = null;
-    }
-    if (!inscription.id || inscription.id == 0) {
+   let statut_text = statut ? $localize`présent` : (statut = false) ? $localize`Absent` : $localize`Indéfini`; 
+    this.action = $localize`Nouveau statut d'inscription de ` + inscription.person.libelle + ` : ` + statut_text + ` pour la séance ` + libelleseab;
+    let i:InscriptionSeance_VM = {
+      rider_id: inscription.person.id,
+      seance_id: this.thisSeance.seance_id,
+      date_inscription: inscription.date_inscription,
+      statut_inscription: inscription.statut_inscription,
+      statut_seance: statut ? SeanceStatus_VM.PRESENT : (statut = false) ? SeanceStatus_VM.ABSENT : null
+    };
+    let messeance = inscription;
+    let adherentmen = inscription.person;
+    this.inscriptionserv.MAJ(i).then((res) =>{
+      if(!res){  
+        let o = errorService.UnknownError(this.action);
+        messeance.statut_seance = oldstatut;
+        this.cdr.detectChanges();
+      }
 
-      this.inscriptionserv.Add(inscription).then((id) => {
-        inscription.id = id;       
-      }).catch((err: HttpErrorResponse) => {
-        inscription.statut_seance = oldstatut
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        return;
-      })
-    } else {
-      this.inscriptionserv.Update(inscription).then(() => {
-           if(this.multi){
-          this.Load();
-        }
-
-
-      }).catch((err: HttpErrorResponse) => {
-        inscription.statut_seance = oldstatut
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        return;
-      })
-    }
+    }).catch((err) => {
+      let o = errorService.CreateError(this.action, err.message);
+      errorService.emitChange(o);
+        messeance.statut_seance = oldstatut;
+    })
+        this.cdr.detectChanges();
   }
 
   _contact_urgence(ins: FullInscriptionSeance_VM): string {
@@ -619,15 +610,13 @@ AjouterAdherentsHorsGroupe() {
 
     this.action = $localize`Convoquer ` + this.adherent_to.libelle;
       const conv: InscriptionSeance_VM = {
-              id: 0,
               rider_id: this.adherent_to.id,
               seance_id: this.thisSeance.seance_id,
               date_inscription: new Date(),
               statut_inscription: InscriptionStatus_VM.CONVOQUE,
               statut_seance: null
             };
-    this.inscriptionserv.Add(conv).then((id) => {
-      conv.id = id;
+    this.inscriptionserv.MAJ(conv).then((id) => {
       this.Load();
       this.adherent_to = null;
       let o = errorService.OKMessage(this.action);
