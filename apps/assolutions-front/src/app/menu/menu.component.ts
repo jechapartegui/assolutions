@@ -419,15 +419,15 @@ return $localize`Evénement`;
     const errorService = ErrorService.instance;
     let i :InscriptionSeance_VM = new InscriptionSeance_VM();
     let oldstatut = messeance.statutInscription || null;
-    messeance.statutInscription = statut ? InscriptionStatus_VM.PRESENT : (statut = false) ? InscriptionStatus_VM.ABSENT : null;
+    messeance.statutInscription = statut ? InscriptionStatus_VM.PRESENT : (statut == false) ? InscriptionStatus_VM.ABSENT : null;
         this.refreshRider(adherentmen);
         this.cdr.detectChanges();
     i.date_inscription = new Date();
     i.rider_id = adherentmen.id;
     i.seance_id = messeance.seance.seance_id;
     i.statut_inscription = statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT; 
-    i.statut_seance = messeance.statutPrésence == "absent" ?  SeanceStatus_VM.ABSENT : SeanceStatus_VM.PRESENT;
-    let statut_text = statut ? $localize`présent` : (statut = false) ? $localize`Absent` : $localize`Indéfini`; 
+    i.statut_seance = messeance.statutPrésence == "absent" ?  SeanceStatus_VM.ABSENT : (messeance.statutPrésence == "présent") ? SeanceStatus_VM.PRESENT : null;
+    let statut_text = statut ? $localize`présent` : (statut == false) ? $localize`Absent` : $localize`Indéfini`; 
     this.action = $localize`Nouveau statut d'inscription de ` + adherentmen.libelle + ` : ` + statut_text + ` pour la séance ` + messeance.seance.libelle;
 
     this.inscriptionserv.MAJ(i).then((res) =>{

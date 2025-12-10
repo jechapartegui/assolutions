@@ -11,6 +11,12 @@ import { ErrorService } from '../../services/error.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
+import {
+  FullInscriptionSeance_VM,
+  InscriptionSeance_VM,
+  InscriptionStatus_VM,
+  SeanceStatus_VM,
+} from '@shared/lib/inscription_seance.interface';
 import { MailService } from '../../services/mail.service';
 import { Seance_VM } from '@shared/index';
 import { AppStore } from '../app.store';
@@ -130,10 +136,17 @@ export class SeancesEssaisComponent implements OnInit {
                 errorService.emitChange(o);
               });
           }
+          let i = new InscriptionSeance_VM();
+          i.date_inscription = new Date();
+          i.statut_inscription = InscriptionStatus_VM.ESSAI;
+          i.statut_seance = null;
+          i.rider_id = id_personne;
+          i.seance_id = this.id_seance;
+          
           this.inscription_seance
-            .FaireEssai(id_personne, this.id_seance)
-            .then(async (id) => {
-              if (id && id > 0) {
+            .MAJ(i)
+            .then(async (_OK) => {
+              if (_OK) {
                 await this.mail_serv.EnvoiMailEssai(
                   id_personne,
                   this.id_seance
@@ -161,16 +174,16 @@ export class SeancesEssaisComponent implements OnInit {
                 id_personne = id;
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
-              })
-              .catch((err: HttpErrorResponse) => {
-                let o = errorService.CreateError(this.action, err.message);
-                errorService.emitChange(o);
-              });
-          }
+                          let i = new InscriptionSeance_VM();
+          i.date_inscription = new Date();
+          i.statut_inscription = InscriptionStatus_VM.ESSAI;
+          i.statut_seance = null;
+          i.rider_id = id_personne;
+          i.seance_id = this.id_seance;
           this.inscription_seance
-            .FaireEssai(id_personne, this.id_seance)
-            .then(async (id) => {
-              if (id && id > 0) {
+            .MAJ(i)
+           .then(async (_OK) => {
+              if (_OK) {
                 await this.mail_serv.EnvoiMailEssai(
                   id_personne,
                   this.id_seance
@@ -187,6 +200,13 @@ export class SeancesEssaisComponent implements OnInit {
               let o = errorService.CreateError(this.action, err.message);
               errorService.emitChange(o);
             });
+              })
+              .catch((err: HttpErrorResponse) => {
+                let o = errorService.CreateError(this.action, err.message);
+                errorService.emitChange(o);
+              });
+          }
+
         }
       }
     }

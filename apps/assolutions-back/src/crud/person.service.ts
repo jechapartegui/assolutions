@@ -1,5 +1,4 @@
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Person } from '../entities/personne.entity';
@@ -8,6 +7,7 @@ import { InscriptionStatus } from '../entities/inscription-seance.entity';
 
 @Injectable()
 export class PersonService {
+  private readonly logger = new Logger(PersonService.name);
   constructor(
     @InjectRepository(Person)
     private readonly repo: Repository<Person>,
@@ -21,15 +21,16 @@ export class PersonService {
 
   
 
- async getAllSaison(saisonId: number): Promise<Person[]> {
+async getAllSaison(saisonId: number): Promise<Person[]> {
+  const start = Date.now();
+  this.logger.log(`getAllSaison(${saisonId}) START`);
+
   const personnes = await this.repo.find({
     relations: ['account', 'inscriptions', 'inscriptions.saison'],
-    where: {
-      inscriptions: {
-        saisonId,
-      },
-    },
+    where: { inscriptions: { saisonId } },
   });
+  this.logger.debug(`getAllSaison(${saisonId}) - repo.find = ${Date.now() - start}ms (count=${personnes.length})`);
+
   
 
   // Remplir les groupes pour chaque inscription de chaque personne
@@ -81,13 +82,18 @@ async getEssai(
 
 
 async getAllCompte_number(accountId: number): Promise<Person[]> {
-  return this.repo.find({
+  const start = Date.now();
+  this.logger.log(`getAllCompte_number(${accountId}) START`);
+
+  const personnes = await this.repo.find({
     relations: ['account'],
-    where: {
-      accountId,
-    },
+    where: { accountId },
   });
+
+  this.logger.debug(`getAllCompte_number(${accountId}) - repo.find = ${Date.now() - start}ms (count=${personnes.length})`);
+  return personnes;
 }
+
 
 async getAllCompte(login: string): Promise<Person[]> {
   return this.repo.find({

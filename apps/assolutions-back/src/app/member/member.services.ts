@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { AdherentSeance_VM, MesSeances_VM } from '@shared/lib/seance.interface';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { Person } from '../../entities/personne.entity';
@@ -18,6 +18,7 @@ import { LinkGroupService } from '../../crud/linkgroup.service';
 
 @Injectable()
 export class MemberService {
+  private readonly logger = new Logger(MemberService.name);
   constructor(private seanceService:SeanceService,  
     private personserivce:PersonService,
     private accountserv:AccountService,
@@ -28,13 +29,35 @@ export class MemberService {
      private linkgroup_serv: LinkGroupService
   ) {}
 
-  async GetAll(saison_id: number): Promise<Adherent_VM[]> {
+async GetAll(saison_id: number): Promise<Adherent_VM[]> {
+  const start = Date.now();
+  this.logger.log(`GetAll(saison_id=${saison_id}) START`);
+
+  try {
+    const tDb = Date.now();
     const saison = await this.personserivce.getAllSaison(saison_id);
+    const dbDuration = Date.now() - tDb;
+    this.logger.debug(`GetAll(saison_id=${saison_id}) - getAllSaison DB = ${dbDuration}ms`);
+
     if (!saison) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
-    return saison.map(x => toAdherent_VM(x, x.inscriptions?? [], [], saison_id)).sort((a, b) => a.nom.localeCompare(b.nom));
+
+    const tMap = Date.now();
+    const result = saison
+      .map(x => toAdherent_VM(x, x.inscriptions ?? [], [], saison_id))
+      .sort((a, b) => a.nom.localeCompare(b.nom));
+    const mapDuration = Date.now() - tMap;
+    this.logger.debug(`GetAll(saison_id=${saison_id}) - mapping/sort = ${mapDuration}ms (count=${result.length})`);
+
+    return result;
+  } finally {
+    const total = Date.now() - start;
+    this.logger.log(`GetAll(saison_id=${saison_id}) TOTAL = ${total}ms`);
   }
+}
+
+
     async anniv(saison_id: number): Promise<string[]> {
  const saison = await this.GetAll(saison_id);
   if (!Array.isArray(saison)) return [];
@@ -60,85 +83,187 @@ export class MemberService {
     }
     return saison.map(x => toPersonne_VM(x));
   }
-  async GetMyInfo(id: number, project_id: number) {
+async GetMyInfo(id: number, project_id: number) {
+  const start = Date.now();
+  this.logger.log(`GetMyInfo(id=${id}, project=${project_id}) START`);
+
+  try {
+    const tSeason = Date.now();
     const saison_active = (await this.saison_serv.getActive(project_id)).id;
+    this.logger.debug(`GetMyInfo - getActive = ${Date.now() - tSeason}ms (saison_active=${saison_active})`);
+
+    const tPerson = Date.now();
     const pAdh = await this.personserivce.get(id);
+    this.logger.debug(`GetMyInfo - personserivce.get = ${Date.now() - tPerson}ms`);
+
     if (!pAdh) {
       throw new UnauthorizedException('NO_USER_FOUND');
     }
-    const iseason = await this.inscriptionsaisonservice.getPersonRegistrations(id, project_id);
-    const iseance = await this.inscriptionseanceservice.getAllRiderSaison(id, saison_active);
-    return toAdherent_VM(pAdh, iseason, iseance);
-  }
 
-  async GetMySeance(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
-    const saison_active = (await this.saison_serv.getActive(project_id)).id
-  
+    const tSeasonReg = Date.now();
+    const iseason = await this.inscriptionsaisonservice.getPersonRegistrations(id, project_id);
+    this.logger.debug(`GetMyInfo - getPersonRegistrations = ${Date.now() - tSeasonReg}ms`);
+
+    const tSessionReg = Date.now();
+    const iseance = await this.inscriptionseanceservice.getAllRiderSaison(id, saison_active);
+    this.logger.debug(`GetMyInfo - getAllRiderSaison = ${Date.now() - tSessionReg}ms`);
+
+    const tMap = Date.now();
+    const result = toAdherent_VM(pAdh, iseason, iseance);
+    this.logger.debug(`GetMyInfo - mapping = ${Date.now() - tMap}ms`);
+
+    return result;
+  } finally {
+    this.logger.log(`GetMyInfo(id=${id}, project=${project_id}) TOTAL = ${Date.now() - start}ms`);
+  }
+}
+
+
+async GetMySeance(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
+  const globalStart = Date.now();
+  this.logger.log(`GetMySeance(compte=${compte}, project=${project_id}) START`);
+
+  try {
+    const tSeason = Date.now();
+    const saison_active = (await this.saison_serv.getActive(project_id)).id;
+    this.logger.debug(`GetMySeance - getActive = ${Date.now() - tSeason}ms (saison_active=${saison_active})`);
+
     if (!saison_active) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
+
+    const tAdh = Date.now();
     const adhrents_saison = await this.GetAdherentProject(compte, saison_active, true);
-    
+    this.logger.debug(`GetMySeance - GetAdherentProject = ${Date.now() - tAdh}ms (count=${adhrents_saison.length})`);
+
+    const tEssai = Date.now();
     const essai_persons = await this.EssaiProjet(compte, saison_active, true);
+    this.logger.debug(`GetMySeance - EssaiProjet = ${Date.now() - tEssai}ms (count=${essai_persons.length})`);
+
     const retour: AdherentSeance_VM[] = [];
-  
+    let i = 0;
+
     for (const ad of adhrents_saison) {
+      const loopStart = Date.now();
       const age = calculateAge(ad.date_naissance);
       const groupe = ad.inscriptionsSaison[0].groupes.map(x => x.id);
+
+      const tSeances = Date.now();
       const mes_seances = await this.seanceService.MySeance(
         ad.id,
         age,
         saison_active,
         groupe
       );
-      const adherentSeance: AdherentSeance_VM = {
-       
-        mes_seances: mes_seances,
-        personne : ad
-      };
-  
-      retour.push(adherentSeance);
-    }
-    for(const es of essai_persons) {
-      if(!retour.find(x => x.personne.id === es.personne.id)) {
+      const seanceDuration = Date.now() - tSeances;
 
+      this.logger.debug(
+        `GetMySeance - MySeance(personne=${ad.id}, #${++i}) = ${seanceDuration}ms (age=${age}, nbSeances=${mes_seances.length})`
+      );
+
+      const adherentSeance: AdherentSeance_VM = {
+        mes_seances,
+        personne: ad,
+      };
+
+      retour.push(adherentSeance);
+
+      this.logger.debug(
+        `GetMySeance - loop personne=${ad.id} TOTAL = ${Date.now() - loopStart}ms`
+      );
+    }
+
+    for (const es of essai_persons) {
+      if (!retour.find(x => x.personne.id === es.personne.id)) {
         retour.push(es);
       }
     }
-    
-  
+
+    this.logger.log(
+      `GetMySeance(compte=${compte}, project=${project_id}) TOTAL = ${
+        Date.now() - globalStart
+      }ms (result=${retour.length})`
+    );
+
     return retour;
+  } catch (e) {
+    this.logger.error(
+      `GetMySeance(compte=${compte}, project=${project_id}) ERROR après ${
+        Date.now() - globalStart
+      }ms`,
+      (e as Error).stack
+    );
+    throw e;
   }
-  async GetMyProf(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
+}
+
+
+async GetMyProf(compte: number, project_id: number): Promise<AdherentSeance_VM[]> {
+  const globalStart = Date.now();
+  this.logger.log(`GetMyProf(compte=${compte}, project=${project_id}) START`);
+
+  try {
+    const tPerson = Date.now();
     const temp_adh = await this.personserivce.getAllCompte_number(compte);
-  
-    const saison_active = (await this.saison_serv.getActive(project_id)).id
-  
+    this.logger.debug(`GetMyProf - getAllCompte_number = ${Date.now() - tPerson}ms (count=${temp_adh.length})`);
+
+    const tSeason = Date.now();
+    const saison_active = (await this.saison_serv.getActive(project_id)).id;
+    this.logger.debug(`GetMyProf - getActive = ${Date.now() - tSeason}ms (saison_active=${saison_active})`);
+
     if (!saison_active) {
       throw new UnauthorizedException('NO_SEASON_FOUND');
     }
-  
+
+    const tProf = Date.now();
     const profs = await this.ProfSaison(temp_adh, saison_active);
+    this.logger.debug(`GetMyProf - ProfSaison = ${Date.now() - tProf}ms (count=${profs?.length ?? 0})`);
+
     if (!profs || profs.length === 0) {
+      this.logger.log(`GetMyProf - aucun prof trouvé`);
       return [];
     }
-  
+
     const retour: AdherentSeance_VM[] = [];
-  
+
     for (const ad of profs) {
+      const loopStart = Date.now();
+      const tSeances = Date.now();
       const mes_seances = await this.seanceService.MySeanceProf(
         ad.id,
         saison_active
       );
+      this.logger.debug(
+        `GetMyProf - MySeanceProf(personne=${ad.id}) = ${Date.now() - tSeances}ms (nbSeances=${mes_seances.length})`
+      );
+
       const profSeance: AdherentSeance_VM = {
-       personne : ad,
-        mes_seances: mes_seances
+        personne: ad,
+        mes_seances,
       };
-  
+
       retour.push(profSeance);
-    }    
+      this.logger.debug(`GetMyProf - loop personne=${ad.id} TOTAL = ${Date.now() - loopStart}ms`);
+    }
+
+    this.logger.log(
+      `GetMyProf(compte=${compte}, project=${project_id}) TOTAL = ${
+        Date.now() - globalStart
+      }ms (result=${retour.length})`
+    );
+
     return retour;
+  } catch (e) {
+    this.logger.error(
+      `GetMyProf(compte=${compte}, project=${project_id}) ERROR après ${
+        Date.now() - globalStart
+      }ms`,
+      (e as Error).stack
+    );
+    throw e;
   }
+}
+
 
   async GetAdherentProject(
   compte: number,

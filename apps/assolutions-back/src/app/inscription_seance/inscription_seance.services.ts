@@ -136,6 +136,7 @@ async MAJ(InscriptionSeance_VM: InscriptionSeance_VM) : Promise<boolean> {
     } 
     return true;
   } catch (error) {
+    console.error('Error in MAJ:', error);
     return false
   }
    
