@@ -1,16 +1,15 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectorRef,
   Component,
-  effect,
   ElementRef,
   HostListener,
-  Injectable,
   Input,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { ErrorService } from '../../services/error.service';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import { SeancesService } from '../../services/seance.service';
@@ -27,6 +26,7 @@ import { AppStore } from '../app.store';
 import { AdherentService } from '../../services/adherent.service';
 import { MailService } from '../../services/mail.service';
 import { Compte_VM, KeyValuePairAny } from '@shared/index';
+
 @Component({
   standalone: false,
   selector: 'app-ma-seance',
@@ -35,31 +35,53 @@ import { Compte_VM, KeyValuePairAny } from '@shared/index';
 })
 export class MaSeanceComponent implements OnInit {
   @Input() id: number = 0;
+
   @ViewChild('scrollableContent', { static: false })
   scrollableContent!: ElementRef;
-  showScrollToTop: boolean = false;
-  display_personne: boolean = true;
-  display_absent: boolean = true;
-  add_adh_seance: boolean = false;
-  display_present: boolean = true;
-  public multi: boolean = false;
-  thisSeance: Seance_VM;
-  afficher_admin: boolean = false;
+
+  showScrollToTop = false;
+
+  display_personne = true;
+  display_absent = true;
+  display_present = true;
+  add_adh_seance = false;
+  public multi = false;
+
+  thisSeance!: Seance_VM;
   Autres: Adherent_VM[] = [];
   All: FullInscriptionSeance_VM[] = [];
-  Notes: string = '';
+  MesAdherents: FullInscriptionSeance_VM[] = [];
+
+  Notes = '';
   variables: Record<string, any> = {};
-  adherent_to: Adherent_VM = null;
-  action: string;
-  seanceText: string;
-  login: string = null;
-  reponse: boolean = null;
-  adherent: number = null;
-  vue_alpha: boolean = true;
+
+  adherent_to: Adherent_VM | null = null;
+
+  action = '';
+  seanceText = '';
+
+  login: string | null = null;
+  reponse: boolean | null = null;
+  adherent: number | null = null;
+  vue_alpha = true;
   isLien = false;
   private _loadLoginDone = false;
 
-  MesAdherents: FullInscriptionSeance_VM[] = [];
+  // Mail / panneau latéral
+  optionsOpen = false;
+  toggleMobileOptions = false;
+  uiMode: 'list' | 'convocation' | 'annulation' | 'ajout' | 'note' = 'list';
+
+  selectedRecipients: FullInscriptionSeance_VM[] = [];
+  mailSubject = '';
+  mailBody = '';
+
+  // Preview fiche adhérent
+  previewPotentiel: FullInscriptionSeance_VM | null = null;
+
+  // Avatar par défaut
+  defaultAvatar = 'assets/photo_H.png';
+
   constructor(
     public store: AppStore,
     public riderservice: AdherentService,
@@ -71,17 +93,19 @@ export class MaSeanceComponent implements OnInit {
     private mailserv: MailService
   ) {}
 
+  // -------------------------------------------------------------------------
+  // INIT
+  // -------------------------------------------------------------------------
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
 
-    // 1) Params
     const params = this.route.snapshot.queryParams as {
       [k: string]: string | undefined;
     };
 
-    // 2) ID de séance
-    if (this.id === 0) {
+    // ID de séance
+    if (!this.id || this.id === 0) {
       if (params['id']) {
         this.id = +params['id'];
       } else {
@@ -91,22 +115,23 @@ export class MaSeanceComponent implements OnInit {
       }
     }
 
-    // 3) Contexte "lien"
-    if (params['login']) {
-      this.isLien = true;
-      this.login = params['login'];
-    }
-    if (params['adherent']) {
-      this.isLien = true;
-      this.adherent = +params['adherent'];
-    }
-    if (params['reponse'] !== undefined) {
-      this.isLien = true;
-      const r = params['reponse']!;
-      this.reponse = r === '0' ? false : r === '1' ? true : null;
-    }
+    // Contexte "lien"
+     // 3) Contexte "lien"
+  if (params['login']) {
+    this.isLien = true;
+    this.login = params['login'];
+  }
+  if (params['adherent']) {
+    this.isLien = true;
+    this.adherent = +params['adherent'];
+  }
+  if (params['reponse'] !== undefined) {
+    this.isLien = true;
+    const r = params['reponse']!;
+    this.reponse = r === '0' ? false : r === '1' ? true : null;
+  }
 
-    // 4) Charger la séance EN PREMIER
+    // Charger la séance
     try {
       const ss = await this.seanceserv.Get(this.id);
       this.thisSeance = ss;
@@ -116,16 +141,20 @@ export class MaSeanceComponent implements OnInit {
       errorService.emitChange(n);
       return;
     }
-
-    // 5) Si on est loggé et qu’on a un compte, on peut maintenant appeler LoadLogin
     const compte = this.store.compte();
-    if (this.store.isLoggedIn() && compte) {
-      await this.LoadLogin(compte);
+    this.Load();
+
+    // Si on est dans un contexte "lien", on attend que le compte se charge
+    if (this.isLien) {
+        if (!this._loadLoginDone && compte && compte.email) {
+          this._loadLoginDone = true;
+          this.LoadLogin(compte);
+        }
     }
 
-    // 6) Si tu as encore un cas "lien anonyme" sans login (à vérifier avec ton guard)
-    // tu peux garder les appels directs ici si vraiment nécessaire :
-    if (this.isLien && this.login && !this.adherent) {
+    // Cas très spécifique "lien anonyme" (sans compte attaché)
+    if (this.isLien && this.login && !this.adherent && !this._loadLoginDone) {
+      this._loadLoginDone = true;
       this.inscriptionserv
         .GetAdherentCompte(this.login, this.id)
         .then((liste) => {
@@ -133,392 +162,57 @@ export class MaSeanceComponent implements OnInit {
             Personne_VM.bakeLibelle(obj.person)
           );
           this.MesAdherents = liste ?? [];
-        })
-        .catch((error) => {
-          const n = errorService.CreateError(this.action, error);
-          errorService.emitChange(n);
-        });
-    } else if (this.isLien && this.login && this.adherent) {
-      this.inscriptionserv
-        .GetAdherentPersonne(this.adherent, this.id)
-        .then((liste) => {
-          (liste ?? []).forEach((obj: any) =>
-            Personne_VM.bakeLibelle(obj.person)
-          );
-          this.MesAdherents = liste ?? [];
-          if (this.reponse != null) {
-          }
+          this.cdr.detectChanges();
         })
         .catch((error) => {
           const n = errorService.CreateError(this.action, error);
           errorService.emitChange(n);
         });
     }
-
-    // 7) Chargement classique si pas lien
-    if (!this.isLien) {
-      this.Load();
-    }
   }
 
-  // Dans ta classe de composant
-  defaultAvatar = '../../assets/photo_H.png';
-
-  onImgError(evt: Event) {
-    (evt.target as HTMLImageElement).src = this.defaultAvatar;
+  ngAfterViewInit(): void {
+    this.waitForScrollableContainer();
   }
 
-  // Cache simple des URLs déjà récupérées
-  private photoCache = new Map<number, string>();
-  // Pour éviter de lancer 2 fois la même requête simultanée
-  private inFlight = new Set<number>();
-
-  // Lance le chargement des photos pour une liste de FullInscriptionSeance_VM
-  private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
-    for (const it of items) {
-      const id = it?.person?.id;
-      if (!id) continue;
-
-      // déjà présente ?
-      if (it.person.photo && it.person.photo.length > 0) continue;
-
-      // déjà en cache ?
-      const cached = this.photoCache.get(id);
-      if (cached) {
-        it.person.photo = cached;
-        continue;
+  // -------------------------------------------------------------------------
+  // SCROLL
+  // -------------------------------------------------------------------------
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer();
       }
-
-      // déjà en cours ?
-      if (this.inFlight.has(id)) continue;
-      this.inFlight.add(id);
-
-      // fire-and-forget
-      this.riderservice
-        .GetPhoto(id)
-        .then((photo) => {
-          const url = photo && photo.length > 0 ? photo : '';
-          if (url) {
-            this.photoCache.set(id, url);
-            it.person.photo = url;
-            // Si ChangeDetectionStrategy.OnPush :
-            // this.cdr.markForCheck();
-          } else {
-            // vide ⇒ on laisse l’avatar par défaut côté template
-          }
-        })
-        .catch(() => {
-          // on ignore l’erreur pour ne pas bloquer l’UI
-        })
-        .finally(() => {
-          this.inFlight.delete(id);
-        });
-    }
+    }, 100);
   }
 
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent?.nativeElement?.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    if (!this.scrollableContent) {
+      return;
+    }
+    this.scrollableContent.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // NAV
+  // -------------------------------------------------------------------------
   AfficherMenu() {
     this.router.navigate(['/menu']);
     this.store.updateSelectedMenu('MENU');
   }
-
-  LoadLogin(compte: Compte_VM) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger les adhérents de mon compte`;
-    this.login = compte.email;
-    if (!this.adherent) {
-      this.inscriptionserv
-        .GetAdherentCompte(this.login, this.thisSeance.seance_id)
-        .then((fis) => {
-          fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
-          this.MesAdherents = fis;
-          let statins = this.reponse
-            ? InscriptionStatus_VM.PRESENT
-            : (this.reponse == false ) ? InscriptionStatus_VM.ABSENT : null;
-          this.action = $localize`Mise à jour des présences`;
-          let errorglobal = false;
-          fis.forEach((ins) => {
-            ins.statut_inscription = statins;
-            this.cdr.detectChanges();
-            this.inscriptionserv
-              .MAJ(ins)
-              .then((ok_) => {
-                if (!ok_) {
-                  let n = errorService.UnknownError(this.action);
-                  errorService.emitChange(n);
-                  errorglobal = true;
-                }
-              })
-              .catch((error) => {
-                let n = errorService.CreateError(this.action, error);
-                errorService.emitChange(n);
-                errorglobal = true;
-              });
-          });
-          if (!errorglobal) {
-            let n = errorService.OKMessage(this.action);
-            errorService.emitChange(n);
-          }
-        });
-    } else {
-      this.inscriptionserv
-        .GetAdherentPersonne(this.adherent, this.thisSeance.seance_id)
-        .then((liste) => {
-          (liste ?? []).forEach((obj: any) =>
-            Personne_VM.bakeLibelle(obj.person)
-          );
-          this.MesAdherents = liste ?? [];
-          if (this.reponse != null) {
-              let statins = this.reponse
-            ? InscriptionStatus_VM.PRESENT
-            : (this.reponse == false ) ? InscriptionStatus_VM.ABSENT : null;
-            this.action = $localize`Mise à jour des présences`;
-            liste[0].statut_inscription = statins;
-          this.inscriptionserv
-              .MAJ(liste[0])
-              .then((ok_) => {
-                if (!ok_) {
-                  let n = errorService.UnknownError(this.action);
-                  errorService.emitChange(n);
-                }
-                 })
-              .catch((error) => {
-                let n = errorService.CreateError(this.action, error);
-                errorService.emitChange(n);
-              });
-
-          }
-        })
-        .catch((error) => {
-          let n = errorService.CreateError(this.action, error);
-          errorService.emitChange(n);
-        });
-    }
-  }
-
-  optionsOpen = false;
-  toggleMobileOptions = false;
-  uiMode: 'list' | 'convocation' | 'annulation' | 'ajout' | 'note' = 'list';
-
-  // Mail panel state
-  selectedRecipients: FullInscriptionSeance_VM[] = [];
-  mailSubject = '';
-  mailBody = '';
-
-  // Ouvre un panneau et prépare les presets
-  openPanel(mode: 'convocation' | 'annulation' | 'ajout' | 'note') {
-    this.uiMode = mode;
-    this.optionsOpen = false;
-    this.toggleMobileOptions = false;
-    this.Notes = ''; // reset notes
-    this.variables = {
-      SEANCE: this.thisSeance.libelle,
-      SEANCE_ID: this.thisSeance.seance_id,
-      PERSONNE_ID: this.selectedRecipients[0]?.rider_id ?? 0,
-      DATE: formatDDMMYYYY(this.thisSeance.date_seance),
-      ID: this.thisSeance.seance_id,
-      NOM: $localize`Prénom Nom`,
-      LIEU: this.thisSeance.lieu_nom ?? 'lieu non défini',
-      HEURE: this.thisSeance.heure_debut ?? 'heure non définie',
-      RDV: this.thisSeance.rdv ?? '',
-      DUREE:
-        this.thisSeance.duree_seance != null
-          ? `${this.thisSeance.duree_seance} min`
-          : 'durée non définie',
-      NOTES: this.Notes,
-    };
-
-    if (mode === 'convocation') {
-      const errorService = ErrorService.instance;
-      this.action = $localize`Chargement du template de convocation`;
-      this.selectedRecipients = this.All.filter(
-        (p) => p.statut_inscription === 'convoqué'
-      );
-      this.mailserv
-        .GetMail(mode)
-        .then((retour: KeyValuePairAny) => {
-          this.mailSubject = retour.key;
-          this.mailBody = retour.value;
-          this.Notes = ''; // reset notes
-        })
-        .catch((err: HttpErrorResponse) => {
-          // Par défaut : tous les "convoqué"
-          this.mailSubject = `[Convocation] ${this.thisSeance?.libelle ?? ''}`;
-          this.mailBody = `Bonjour,
-
-Vous êtes convoqué(e) pour la séance ${this.seanceText}.
-Merci de confirmer votre présence.
-
-Sportivement,`;
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-    } else if (mode === 'annulation') {
-      const errorService = ErrorService.instance;
-      this.action = $localize`Chargement du template d'annulation`;
-      this.selectedRecipients = [...this.All];
-      this.mailserv
-        .GetMail(mode)
-        .then((retour: KeyValuePairAny) => {
-          this.mailSubject = retour.key;
-          this.mailBody = retour.value;
-        })
-        .catch((err: HttpErrorResponse) => {
-          // Par défaut : tous les "convoqué"
-          this.mailSubject = `[Annulation] ${this.thisSeance?.libelle ?? ''}`;
-          this.mailBody = `Bonjour,
-
-La séance ${this.seanceText} est annulée.
-Désolé(e) pour la gêne occasionnée.`;
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-    }
-  }
-
-  closePanel() {
-    this.uiMode = 'list';
-  }
-
-  // Helpers sélection
-  isChecked(p: any, kind: 'convocation' | 'annulation') {
-    return this.selectedRecipients?.some((x) => x === p);
-  }
-  toggleRecipient(
-    p: any,
-    kind: 'convocation' | 'annulation',
-    checked: boolean
-  ) {
-    if (checked) {
-      if (!this.selectedRecipients.some((x) => x === p))
-        this.selectedRecipients.push(p);
-    } else {
-      this.selectedRecipients = this.selectedRecipients.filter((x) => x !== p);
-    }
-  }
-  checkAll(kind: 'convocation' | 'annulation', val: boolean) {
-    if (kind === 'convocation') {
-      this.selectedRecipients = val
-        ? this.All.filter((p) => p.statut_inscription === 'convoqué')
-        : [];
-    } else {
-      this.selectedRecipients = val ? [...this.All] : [];
-    }
-  }
-
-  // Envoi (branche sur ton service réel si dispo)
-  sendMail(kind: 'convocation' | 'annulation') {
-    if (kind == 'annulation') {
-      let c = window.confirm(
-        $localize`Voulez-vous passer le statut de la séance à Annulée ?`
-      );
-      if (c) {
-        this.action = $localize`Annuler la séance`;
-        this.thisSeance.statut = 'annulée';
-        this.seanceserv
-          .Update(this.thisSeance)
-          .then(() => {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
-      }
-    }
-    const errorService = ErrorService.instance;
-    this.action = $localize`Envoi du mail`;
-    // TODO: brancher ici ton service d’envoi / template réel
-    this.mailserv
-      .EnvoyerConvocationAnnulation(
-        kind,
-        this.selectedRecipients.map((x) => x.person.id),
-        this.Notes,
-        this.thisSeance.seance_id
-      )
-      .then(() => {
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    this.closePanel();
-  }
-
-  // Sauvegarde de la note de séance
-  saveInfoSeance() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Note sauvegardée`;
-
-    this.seanceserv
-      .Update(this.thisSeance)
-      .then(() => {
-        let o = errorService.OKMessage(this.action);
-        errorService.emitChange(o);
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-    this.closePanel();
-  }
-
-  MAJInscription(inscription: FullInscriptionSeance_VM, statut) {
-      const errorService = ErrorService.instance;
-        inscription.isVisible = false;
-      let i :InscriptionSeance_VM = new InscriptionSeance_VM();
-      let oldstatut = inscription.statut_inscription || null;
-      let statut_text =  $localize`Indéfini`;
-      switch (statut) {
-        default:
-          case null:
-            statut_text = $localize`Indéfini`;
-            inscription.statut_inscription = null;
-            break;
-            case "présent":
-            statut_text = $localize`présent`;
-            inscription.statut_inscription = InscriptionStatus_VM.PRESENT;
-            break;
-        case "absent":
-            statut_text = $localize`Absent`;
-            inscription.statut_inscription = InscriptionStatus_VM.ABSENT;
-            break;
-            case "essai":
-            statut_text = $localize`à l'essai`;
-            inscription.statut_inscription = InscriptionStatus_VM.ESSAI;
-            break;
-            case "convoqué":
-            statut_text = $localize`convoqué`;
-            inscription.statut_inscription = InscriptionStatus_VM.CONVOQUE;
-            break;
-      }
-          this.cdr.detectChanges();
-      i.date_inscription = new Date();
-      i.rider_id = inscription.person.id;
-      i.seance_id = this.thisSeance.seance_id;
-      i.statut_inscription = inscription.statut_inscription; 
-      i.statut_seance = inscription.statut_seance;
-      this.action = $localize`Nouveau statut d'inscription de ` + inscription.person.libelle + ` : ` + statut_text + ` pour la séance ` + this.thisSeance.libelle;
-  
-      this.inscriptionserv.MAJ(i).then((res) =>{
-        if(!res){  
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-          inscription.statut_inscription = oldstatut;
-          this.cdr.detectChanges();
-        }
-  
-      }).catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        inscription.statut_inscription = oldstatut;
-      })
-      this.cdr.detectChanges();
-    }
-
-
 
   RetourListe() {
     this.router.navigate(['/seance'], {
@@ -526,213 +220,292 @@ Désolé(e) pour la gêne occasionnée.`;
     });
   }
 
-  Load() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger la séance`;
+  // -------------------------------------------------------------------------
+  // CHARGEMENT SÉANCE
+  // -------------------------------------------------------------------------
+Load(): void {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Charger la séance`;
 
-    this.inscriptionserv
-      .GetAllSeanceFull(this.id)
-      .then((res) => {
-        // Rétablir le prototype et autres pré-traitements
-        res.forEach((p) => {
-          if (p?.person) {
-            Object.setPrototypeOf(p.person, Personne_VM.prototype);
-          }
-        });
-        const sortByLibelle = (a: any, b: any) =>
-          a.person?.libelle
-            ?.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .localeCompare(
-              b.person?.libelle
-                ?.normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .toLowerCase()
-            );
-
-        this.All = res.sort(sortByLibelle);
-
-        // 🔹 Lancer le fetch des photos pour tous les items visibles
-        this.preloadPhotos(res);
-
-        // Reste de ton code inchangé
-        this.riderservice
-          .GetAdherentAdhesion(this.store.saison_active().id)
-          .then((riders) => {
-            riders.forEach((p) => Personne_VM.bakeLibelle(p));
-            this.Autres = riders.filter(
-              (x) => !res.find((y) => y.person.id == x.id)
-            );
-
-            // Optionnel : photos pour Autres (si tu les affiches avec avatar)
-            // On passe par un wrapping pour réutiliser preloadPhotos
-            const fakeFull: FullInscriptionSeance_VM[] = this.Autres.map(
-              (p) => {
-                const f = new FullInscriptionSeance_VM();
-                (f as any).person = p as any; // p a déjà .id et .photo
-                return f;
-              }
-            );
-            this.preloadPhotos(fakeFull);
-          })
-          .catch((error) => {
-            let n = errorService.CreateError('Chargement', error);
-            errorService.emitChange(n);
-          });
-      })
-      .catch((error) => {
-        let n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
+  this.inscriptionserv
+    .GetAllSeanceFull(this.id)
+    .then((res: FullInscriptionSeance_VM[]) => {
+      // 🔹 Rétablir prototype Personne_VM + libellé
+      res.forEach((p) => {
+        if (p?.person) {
+          Object.setPrototypeOf(p.person, Personne_VM.prototype);
+          Personne_VM.bakeLibelle(p.person);
+        }
       });
-  }
+
+      // 🔹 Tri par libellé (sans accents, case-insensitive)
+      const sortByLibelle = (a: FullInscriptionSeance_VM, b: FullInscriptionSeance_VM) => {
+        const norm = (s: string | undefined | null) =>
+          (s ?? '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+
+        return norm(a.person?.libelle).localeCompare(norm(b.person?.libelle));
+      };
+
+      this.All = [...res].sort(sortByLibelle);
+
+      // 🔹 Préchargement des photos pour la liste principale
+      this.preloadPhotos(this.All);
+
+      // 🔹 Charger les autres adhérents (non inscrits à la séance)
+      return this.riderservice.GetAdherentAdhesion(this.store.saison_active().id);
+    })
+    .then((riders: Adherent_VM[]) => {
+      if (!riders) {
+        this.Autres = [];
+        return;
+      }
+
+      // Libellé pour les adhérents "autres"
+      riders.forEach((p) => Personne_VM.bakeLibelle(p as any));
+
+      // Ceux qui ne sont PAS dans All
+      this.Autres = riders.filter(
+        (x) => !this.All.find((y) => y.person?.id === x.id)
+      );
+
+      // 🔹 Si tu affiches un avatar aussi pour Autres, on peut aussi précharger :
+      const fakeFull: FullInscriptionSeance_VM[] = this.Autres.map((p) => {
+        const f = new FullInscriptionSeance_VM();
+        (f as any).person = p as any; // on injecte la personne dans un "Full"
+        return f;
+      });
+
+      this.preloadPhotos(fakeFull);
+
+      this.cdr.detectChanges();
+    })
+    .catch((error) => {
+      const n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    });
+}
+
+
 
   private generateSeanceText() {
+    const d = toDateSafe(this.thisSeance?.date_seance);
+    if (!d) {
+      this.seanceText = '';
+      return;
+    }
     const options: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     };
-    const ddb = new Date(this.thisSeance.date_seance);
-    const dateDebStr = ddb.toLocaleDateString('fr-FR', options);
+    const dateDebStr = d.toLocaleDateString('fr-FR', options);
     this.seanceText = ` ${dateDebStr}`;
   }
 
-  MAJPresence(inscription: FullInscriptionSeance_VM, statut: boolean) {
-    const errorService = ErrorService.instance;
-    let oldstatut = inscription.statut_seance;
-    let libelleseab = this.thisSeance.libelle;
-    let statut_text = statut
-      ? $localize`présent`
-      : (statut = false)
-      ? $localize`Absent`
-      : $localize`Indéfini`;
-    this.action =
-      $localize`Nouveau statut d'inscription de ` +
-      inscription.person.libelle +
-      ` : ` +
-      statut_text +
-      ` pour la séance ` +
-      libelleseab;
-    let i: InscriptionSeance_VM = {
-      rider_id: inscription.person.id,
-      seance_id: this.thisSeance.seance_id,
-      date_inscription: inscription.date_inscription,
-      statut_inscription: inscription.statut_inscription,
-      statut_seance: statut
-        ? SeanceStatus_VM.PRESENT
-        : (statut = false)
-        ? SeanceStatus_VM.ABSENT
-        : null,
-    };
-    let messeance = inscription;
-    this.inscriptionserv
-      .MAJ(i)
-      .then((res) => {
-        if (!res) {
-          let o = errorService.UnknownError(this.action);
-          messeance.statut_seance = oldstatut;
-          this.cdr.detectChanges();
+  private photoCache = new Map<number, string>();
+// Pour éviter de lancer 2 fois la même requête simultanée
+private inFlight = new Set<number>();
+
+// Lance le chargement des photos pour une liste de FullInscriptionSeance_VM
+private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
+  for (const it of items) {
+    const id = it?.person?.id;
+    if (!id) continue;
+
+    // déjà présente ?
+    if (it.person.photo && it.person.photo.length > 0) continue;
+
+    // déjà en cache ?
+    const cached = this.photoCache.get(id);
+    if (cached) { it.person.photo = cached; continue; }
+
+    // déjà en cours ?
+    if (this.inFlight.has(id)) continue;
+    this.inFlight.add(id);
+
+    // fire-and-forget
+    this.riderservice.GetPhoto(id)
+      .then(photo => {
+        const url = photo && photo.length > 0 ? photo : '';
+        if (url) {
+          this.photoCache.set(id, url);
+          it.person.photo = url;
+          // Si ChangeDetectionStrategy.OnPush :
+          // this.cdr.markForCheck();
+        } else {
+          // vide ⇒ on laisse l’avatar par défaut côté template
         }
       })
-      .catch((err) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        messeance.statut_seance = oldstatut;
+      .catch(() => {
+        // on ignore l’erreur pour ne pas bloquer l’UI
+      })
+      .finally(() => {
+        this.inFlight.delete(id);
       });
-    this.cdr.detectChanges();
   }
+}
 
-  _contact_urgence(ins: FullInscriptionSeance_VM): string {
-    let phone = '';
-    if (ins.person.contact_prevenir.length > 0) {
-      if (ins.person.contact_prevenir.find((x) => x.Type == 'PHONE')) {
-        phone = ins.person.contact_prevenir.find(
-          (x) => x.Type == 'PHONE'
-        ).Value;
-        return phone;
-      } else {
-        phone = ins.person.contact_prevenir[0].Value;
-      }
-    }
-    if (ins.person.contact.find((x) => x.Type == 'PHONE')) {
-      phone = ins.person.contact.find((x) => x.Type == 'PHONE').Value;
-      return phone;
-    }
-    if (phone.length > 0) {
-      return phone;
-    }
-    if (ins.person.contact.length > 0) {
-      return ins.person.contact[0].Value;
-    } else {
-      return '';
-    }
-  }
-  _contact_urgence_nom(ins: FullInscriptionSeance_VM): string {
-    let phone = '';
-    if (ins.person.contact_prevenir.length > 0) {
-      if (ins.person.contact_prevenir.find((x) => x.Type == 'PHONE')) {
-        phone = ins.person.contact_prevenir.find(
-          (x) => x.Type == 'PHONE'
-        ).Notes;
-        return phone;
-      } else {
-        phone = ins.person.contact_prevenir[0].Notes;
-      }
-    }
-    if (ins.person.contact.find((x) => x.Type == 'PHONE')) {
-      phone = ins.person.contact.find((x) => x.Type == 'PHONE').Notes;
-      return phone;
-    }
-    if (phone.length > 0) {
-      return phone;
-    } else {
-      return '';
-    }
-  }
-  AjouterAdherentsHorsGroupe() {
+  // -------------------------------------------------------------------------
+  // CONNEXION / LIEN
+  // -------------------------------------------------------------------------
+  LoadLogin(compte: Compte_VM) {
     const errorService = ErrorService.instance;
-    if (this.adherent_to) {
-      this.action = $localize`Convoquer ` + this.adherent_to.libelle;
-      const conv: InscriptionSeance_VM = {
-        rider_id: this.adherent_to.id,
-        seance_id: this.thisSeance.seance_id,
-        date_inscription: new Date(),
-        statut_inscription: InscriptionStatus_VM.CONVOQUE,
-        statut_seance: null,
-      };
+    this.action = $localize`Charger les adhérents de mon compte`;
+    this.login = compte.email;
+
+    // Réponse forcée (présent/absent) ?
+    const hasReponse = this.reponse !== null && this.reponse !== undefined;
+    const statInsAuto: InscriptionStatus_VM | null = !hasReponse
+      ? null
+      : this.reponse
+      ? InscriptionStatus_VM.PRESENT
+      : InscriptionStatus_VM.ABSENT;
+
+    if (!this.adherent) {
+      // Tous les adhérents liés à ce compte
       this.inscriptionserv
-        .MAJ(conv)
-        .then((id) => {
-          this.Load();
-          this.adherent_to = null;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
+        .GetAdherentCompte(this.login, this.thisSeance.seance_id)
+        .then((fis: FullInscriptionSeance_VM[]) => {
+          fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
+          this.MesAdherents = fis;
+
+          if (hasReponse && statInsAuto !== null && fis.length) {
+            this.action = $localize`Mise à jour des présences`;
+            let errorGlobal = false;
+
+            const promises = fis.map((ins) => {
+              const oldStatut = ins.statut_inscription;
+
+              ins.statut_inscription = statInsAuto;
+
+              const dto: InscriptionSeance_VM = {
+                rider_id: ins.person.id,
+                seance_id: this.thisSeance.seance_id,
+                date_inscription: ins.date_inscription ?? new Date(),
+                statut_inscription: ins.statut_inscription,
+                statut_seance: ins.statut_seance ?? null,
+              };
+
+              return this.inscriptionserv
+                .MAJ(dto)
+                .then((ok) => {
+                  if (!ok) {
+                    ins.statut_inscription = oldStatut;
+                    errorGlobal = true;
+                  }
+                })
+                .catch((err) => {
+                  ins.statut_inscription = oldStatut;
+                  errorGlobal = true;
+                  const n = errorService.CreateError(this.action, err);
+                  errorService.emitChange(n);
+                });
+            });
+
+            Promise.all(promises).then(() => {
+              if (!errorGlobal) {
+                const n = errorService.OKMessage(this.action);
+                errorService.emitChange(n);
+              }
+              // On force le rafraîchissement Angular
+              this.MesAdherents = [...this.MesAdherents];
+              this.All = this.All.map((x) => {
+                const updated = this.MesAdherents.find(
+                  (m) => m.person.id === x.person.id
+                );
+                return updated
+                  ? { ...x, statut_inscription: updated.statut_inscription }
+                  : x;
+              });
+              this.cdr.detectChanges();
+            });
+          } else {
+            this.cdr.detectChanges();
+          }
         })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-          return;
+        .catch((error) => {
+          const n = errorService.CreateError(this.action, error);
+          errorService.emitChange(n);
+        });
+    } else {
+      // Cas d'un seul adhérent ciblé (param ?adherent=)
+      this.inscriptionserv
+        .GetAdherentPersonne(this.adherent, this.thisSeance.seance_id)
+        .then((liste) => {
+          (liste ?? []).forEach((obj: any) =>
+            Personne_VM.bakeLibelle(obj.person)
+          );
+          this.MesAdherents = liste ?? [];
+
+          if (hasReponse && statInsAuto !== null && this.MesAdherents[0]) {
+            const ins = this.MesAdherents[0];
+            const oldStatut = ins.statut_inscription;
+
+            this.action = $localize`Mise à jour des présences`;
+            ins.statut_inscription = statInsAuto;
+
+            const dto: InscriptionSeance_VM = {
+              rider_id: ins.person.id,
+              seance_id: this.thisSeance.seance_id,
+              date_inscription: ins.date_inscription ?? new Date(),
+              statut_inscription: ins.statut_inscription,
+              statut_seance: ins.statut_seance ?? null,
+            };
+
+            this.inscriptionserv
+              .MAJ(dto)
+              .then((ok_) => {
+                if (!ok_) {
+                  ins.statut_inscription = oldStatut;
+                  const n = errorService.UnknownError(this.action);
+                  errorService.emitChange(n);
+                } else {
+                  const n = errorService.OKMessage(this.action);
+                  errorService.emitChange(n);
+                }
+                this.MesAdherents = [...this.MesAdherents];
+                this.All = this.All.map((x) =>
+                  x.person.id === ins.person.id
+                    ? { ...x, statut_inscription: ins.statut_inscription }
+                    : x
+                );
+                this.cdr.detectChanges();
+              })
+              .catch((error) => {
+                ins.statut_inscription = oldStatut;
+                const n = errorService.CreateError(this.action, error);
+                errorService.emitChange(n);
+              });
+          } else {
+            this.cdr.detectChanges();
+          }
+        })
+        .catch((error) => {
+          const n = errorService.CreateError(this.action, error);
+          errorService.emitChange(n);
         });
     }
   }
 
+  // -------------------------------------------------------------------------
+  // LOGIQUE SÉANCE
+  // -------------------------------------------------------------------------
   GetNbPersonne(): boolean {
     if (this.thisSeance.est_place_maximum) {
-      let ct = this.All.filter(
-        (x) => x.statut_seance == SeanceStatus_VM.PRESENT
+      const ct = this.All.filter(
+        (x) => x.statut_seance === SeanceStatus_VM.PRESENT
       ).length;
-      if (ct >= this.thisSeance.place_maximum) {
-        return false;
-      } else {
-        return true;
-      }
-    } else {
-      return true;
+      return ct < this.thisSeance.place_maximum;
     }
+    return true;
   }
+
   ChangerStatut(statut: string) {
     const errorService = ErrorService.instance;
+
     switch (statut) {
       case 'réalisée':
         this.action = $localize`Terminer la séance`;
@@ -746,121 +519,308 @@ Désolé(e) pour la gêne occasionnée.`;
         this.action = $localize`Annuler la séance`;
         this.thisSeance.statut = StatutSeance.annulée;
         break;
+      default:
+        return;
     }
+
     this.seanceserv
       .Update(this.thisSeance)
       .then((retour) => {
         if (retour) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-          if (statut == 'annulée') {
-            this.thisSeance.statut = StatutSeance.annulée;
-            let confirm_mess = window.confirm(
-              $localize`Voulez-vous envoyer un email à l'ensemble des participants potentiels de cette séance pour les prévenir de l'annulation ?`
-            );
-            if (confirm_mess) {
-              window.alert('Fontion non diposnible');
-            }
-          } else {
-            this.thisSeance.statut = StatutSeance.réalisée;
-          }
-        } else {
-          let o = errorService.UnknownError(this.action);
+          const o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
         }
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
-  Save() {
+
+  // -------------------------------------------------------------------------
+  // MAJ PRÉSENCE (boutons pouce vert / rouge)
+  // -------------------------------------------------------------------------
+  MAJPresence(inscription: FullInscriptionSeance_VM, statut: boolean | null) {
     const errorService = ErrorService.instance;
-    this.action = $localize`Sauvegarder la séance`;
-    this.seanceserv
-      .Update(this.thisSeance)
-      .then((retour: boolean) => {
-        if (retour) {
-          let o = errorService.OKMessage(this.action);
+
+    const oldSeance = inscription.statut_seance ?? null;
+    const oldInscription = inscription.statut_inscription ?? null;
+
+    let statutText = $localize`Indéfini`;
+    let newSeance: SeanceStatus_VM | null = null;
+    let newInscription: InscriptionStatus_VM | null = null;
+
+    if (statut === true) {
+      statutText = $localize`présent`;
+      newSeance = SeanceStatus_VM.PRESENT;
+      newInscription = InscriptionStatus_VM.PRESENT;
+    } else if (statut === false) {
+      statutText = $localize`Absent`;
+      newSeance = SeanceStatus_VM.ABSENT;
+      newInscription = InscriptionStatus_VM.ABSENT;
+    } else {
+      statutText = $localize`Indéfini`;
+      newSeance = null;
+      newInscription = null;
+    }
+
+    this.action =
+      $localize`Nouveau statut d'inscription de ` +
+      inscription.person.libelle +
+      ` : ` +
+      statutText +
+      ` pour la séance ` +
+      this.thisSeance.libelle;
+
+    // MAJ optimiste sur l'objet
+    inscription.statut_seance = newSeance;
+    inscription.statut_inscription = newInscription;
+
+    const dto: InscriptionSeance_VM = {
+      rider_id: inscription.person.id,
+      seance_id: this.thisSeance.seance_id,
+      date_inscription: inscription.date_inscription ?? new Date(),
+      statut_inscription: newInscription,
+      statut_seance: newSeance,
+    };
+
+    this.inscriptionserv
+      .MAJ(dto)
+      .then((res) => {
+        if (!res) {
+          // rollback
+          inscription.statut_seance = oldSeance;
+          inscription.statut_inscription = oldInscription;
+          const o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
         } else {
-          let o = errorService.UnknownError(this.action);
+          const o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
         }
+
+        // forcer changement pour Angular
+        this.All = this.All.map((x) =>
+          x.person.id === inscription.person.id ? inscription : x
+        );
+        this.MesAdherents = this.MesAdherents.map((x) =>
+          x.person.id === inscription.person.id ? inscription : x
+        );
+        this.cdr.detectChanges();
+      })
+      .catch((err) => {
+        inscription.statut_seance = oldSeance;
+        inscription.statut_inscription = oldInscription;
+        const o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        this.cdr.detectChanges();
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // MAJ statut d'inscription (menu 3 points)
+  // -------------------------------------------------------------------------
+  MAJInscription(inscription: FullInscriptionSeance_VM, statut: string | null) {
+    const errorService = ErrorService.instance;
+
+    inscription.isVisible = false;
+
+    const oldStatut = inscription.statut_inscription ?? null;
+
+    let statutText = $localize`Indéfini`;
+    switch (statut) {
+      case 'présent':
+        statutText = $localize`présent`;
+        inscription.statut_inscription = InscriptionStatus_VM.PRESENT;
+        break;
+      case 'absent':
+        statutText = $localize`Absent`;
+        inscription.statut_inscription = InscriptionStatus_VM.ABSENT;
+        break;
+      case 'essai':
+        statutText = $localize`à l'essai`;
+        inscription.statut_inscription = InscriptionStatus_VM.ESSAI;
+        break;
+      case 'convoqué':
+        statutText = $localize`convoqué`;
+        inscription.statut_inscription = InscriptionStatus_VM.CONVOQUE;
+        break;
+      default:
+        statutText = $localize`Indéfini`;
+        inscription.statut_inscription = null;
+        break;
+    }
+
+    const dto: InscriptionSeance_VM = {
+      rider_id: inscription.person.id,
+      seance_id: this.thisSeance.seance_id,
+      date_inscription: new Date(),
+      statut_inscription: inscription.statut_inscription,
+      statut_seance: inscription.statut_seance ?? null,
+    };
+
+    this.action =
+      $localize`Nouveau statut d'inscription de ` +
+      inscription.person.libelle +
+      ` : ` +
+      statutText +
+      ` pour la séance ` +
+      this.thisSeance.libelle;
+
+    this.inscriptionserv
+      .MAJ(dto)
+      .then((res) => {
+        if (!res) {
+          const o = errorService.UnknownError(this.action);
+          errorService.emitChange(o);
+          inscription.statut_inscription = oldStatut;
+        } else {
+          const o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+        }
+
+        this.All = this.All.map((x) =>
+          x.person.id === inscription.person.id ? inscription : x
+        );
+        this.MesAdherents = this.MesAdherents.map((x) =>
+          x.person.id === inscription.person.id ? inscription : x
+        );
+
+        this.cdr.detectChanges();
+      })
+      .catch((err) => {
+        const o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+        inscription.statut_inscription = oldStatut;
+        this.cdr.detectChanges();
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // COMPTEURS / FILTRES
+  // -------------------------------------------------------------------------
+  getPresent(): number {
+    return this.All.filter(
+      (x) => x.statut_inscription === InscriptionStatus_VM.PRESENT
+    ).length;
+  }
+
+  getAbsent(): number {
+    return this.All.filter(
+      (x) => x.statut_inscription === InscriptionStatus_VM.ABSENT
+    ).length;
+  }
+
+  getPresencePotentielle(): number {
+    return this.All.length;
+  }
+
+  IsPresent(adh: FullInscriptionSeance_VM): boolean {
+    return (
+      !!adh.statut_inscription &&
+      adh.statut_inscription === InscriptionStatus_VM.PRESENT
+    );
+  }
+
+  IsAbsent(adh: FullInscriptionSeance_VM): boolean {
+    return (
+      !!adh.statut_inscription &&
+      adh.statut_inscription === InscriptionStatus_VM.ABSENT
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // AJOUT ADHÉRENT HORS GROUPE
+  // -------------------------------------------------------------------------
+  AjouterAdherentsHorsGroupe() {
+    const errorService = ErrorService.instance;
+    if (!this.adherent_to) return;
+
+    this.action = $localize`Convoquer ` + this.adherent_to.libelle;
+    const conv: InscriptionSeance_VM = {
+      rider_id: this.adherent_to.id,
+      seance_id: this.thisSeance.seance_id,
+      date_inscription: new Date(),
+      statut_inscription: InscriptionStatus_VM.CONVOQUE,
+      statut_seance: null,
+    };
+
+    this.inscriptionserv
+      .MAJ(conv)
+      .then((id) => {
+        this.Load();
+        this.adherent_to = null;
+        const o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
-  ngAfterViewInit(): void {
-    this.waitForScrollableContainer();
+
+  // -------------------------------------------------------------------------
+  // MENUS CONTEXTUELS (3 points)
+  // -------------------------------------------------------------------------
+  openMenu(potentiel: any, ev: MouseEvent) {
+    ev.stopPropagation();
+    this.closeAllMenus();
+    potentiel.isVisible = true;
+    this.cdr.detectChanges();
   }
 
-  IsPresent(adh: FullInscriptionSeance_VM) {
-    if (
-      adh.statut_inscription &&
-      adh.statut_inscription == InscriptionStatus_VM.PRESENT
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  IsAbsent(adh: FullInscriptionSeance_VM) {
-    if (
-      adh.statut_inscription &&
-      adh.statut_inscription == InscriptionStatus_VM.ABSENT
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+  setStatusAndClose(
+    statut: 'présent' | 'absent' | 'essai' | 'convoqué' | null,
+    potentiel: FullInscriptionSeance_VM,
+    ev?: MouseEvent
+  ) {
+    ev?.stopPropagation();
+    this.MAJInscription(potentiel, statut);
+    potentiel.isVisible = false;
+    this.cdr.detectChanges();
   }
 
-  private waitForScrollableContainer(): void {
-    setTimeout(() => {
-      if (this.scrollableContent) {
-        this.scrollableContent.nativeElement.addEventListener(
-          'scroll',
-          this.onContentScroll.bind(this)
-        );
-      } else {
-        this.waitForScrollableContainer(); // Re-tente de le trouver
-      }
-    }, 100); // Réessaie toutes les 100 ms
+  private closeAllMenus() {
+    this.All.forEach((x) => (x.isVisible = false));
+    this.MesAdherents.forEach((x) => (x.isVisible = false));
   }
 
-  onContentScroll(): void {
-    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
-    this.showScrollToTop = scrollTop > 200;
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.closeAllMenus();
   }
 
-  scrollToTop(): void {
-    this.scrollableContent.nativeElement.scrollTo({
-      top: 0,
-      behavior: 'smooth', // Défilement fluide
-    });
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    this.closePanel();
+    this.closePreview();
+    this.closeAllMenus();
   }
-  previewPotentiel: any | null = null;
 
-  openPreview(potentiel: any, ev?: Event): void {
+
+onImgError(evt: Event) {
+  (evt.target as HTMLImageElement).src = this.defaultAvatar;
+}
+
+
+  // -------------------------------------------------------------------------
+  // PREVIEW FICHE
+  // -------------------------------------------------------------------------
+  openPreview(potentiel: FullInscriptionSeance_VM, ev?: Event) {
     ev?.stopPropagation();
     this.previewPotentiel = potentiel ?? null;
   }
 
-  closePreview(): void {
+  closePreview() {
     this.previewPotentiel = null;
   }
 
-  getPhoto(p: any): string {
+  getPhoto(p: FullInscriptionSeance_VM): string {
     return (p?.person?.photo || this.defaultAvatar) as string;
   }
 
-  // Priorité : statut_seance (présent/absent) > statut_inscription
   iconClass(p: FullInscriptionSeance_VM): string {
-    // Sinon on retombe sur le statut d’inscription
-    switch ((p?.statut_inscription || '').toLowerCase()) {
+    const s = (p?.statut_inscription ?? '').toString().toLowerCase();
+    switch (s) {
       case 'présent':
       case 'present':
         return 'fa-thumbs-up has-text-success';
@@ -869,26 +829,69 @@ Désolé(e) pour la gêne occasionnée.`;
       case 'essai':
         return 'fa-question';
       case 'convoqué':
-      case 'convque':
       case 'convoque':
+      case 'convque':
         return 'fa-hand-point-up has-text-info';
       default:
         return 'fa-ellipsis-h';
     }
   }
 
-  // 👇 robustes aux null/undefined
-  contact_urgence(p?: any): string {
+  // -------------------------------------------------------------------------
+  // CONTACT URGENCE
+  // -------------------------------------------------------------------------
+  private _contact_urgence(ins: FullInscriptionSeance_VM): string {
+    const p = ins.person;
+    if (!p) return '';
+
+    // 1) contact_prevenir / PHONE
+    const cpPhone = p.contact_prevenir?.find((x: any) => x.Type === 'PHONE');
+    if (cpPhone?.Value) return cpPhone.Value;
+
+    // 2) premier contact_prevenir
+    if (p.contact_prevenir?.length) {
+      return p.contact_prevenir[0].Value ?? '';
+    }
+
+    // 3) contact / PHONE
+    const cPhone = p.contact?.find((x: any) => x.Type === 'PHONE');
+    if (cPhone?.Value) return cPhone.Value;
+
+    // 4) premier contact
+    if (p.contact?.length) {
+      return p.contact[0].Value ?? '';
+    }
+
+    return '';
+  }
+
+  private _contact_urgence_nom(ins: FullInscriptionSeance_VM): string {
+    const p = ins.person;
+    if (!p) return '';
+
+    const cpPhone = p.contact_prevenir?.find((x: any) => x.Type === 'PHONE');
+    if (cpPhone?.Notes) return cpPhone.Notes;
+
+    if (p.contact_prevenir?.length) {
+      return p.contact_prevenir[0].Notes ?? '';
+    }
+
+    const cPhone = p.contact?.find((x: any) => x.Type === 'PHONE');
+    if (cPhone?.Notes) return cPhone.Notes;
+
+    return '';
+  }
+
+  contact_urgence(p?: FullInscriptionSeance_VM): string {
     if (!p?.person) return '';
-    // ... ta logique actuelle, mais retourne '' si rien
     try {
-      return this._contact_urgence(p); // si tu as une implémentation interne
+      return this._contact_urgence(p);
     } catch {
       return '';
     }
   }
 
-  contact_urgence_nom(p?: any): string {
+  contact_urgence_nom(p?: FullInscriptionSeance_VM): string {
     if (!p?.person) return '';
     try {
       return this._contact_urgence_nom(p);
@@ -897,79 +900,223 @@ Désolé(e) pour la gêne occasionnée.`;
     }
   }
 
-  openMenu(potentiel: any, ev: MouseEvent) {
-    ev.stopPropagation(); // évite la fermeture immédiate
-    this.closeAllMenus();
-    potentiel.isVisible = true;
-    this.cdr.markForCheck?.(); // utile si OnPush
+  // -------------------------------------------------------------------------
+  // PANNEAU MAIL
+  // -------------------------------------------------------------------------
+  openPanel(mode: 'convocation' | 'annulation' | 'ajout' | 'note') {
+    this.uiMode = mode;
+    this.optionsOpen = false;
+    this.toggleMobileOptions = false;
+    this.Notes = '';
+
+    this.variables = {
+      SEANCE: this.thisSeance.libelle,
+      SEANCE_ID: this.thisSeance.seance_id,
+      PERSONNE_ID: this.selectedRecipients[0]?.rider_id ?? 0,
+      DATE: formatDDMMYYYY(this.thisSeance.date_seance),
+      ID: this.thisSeance.seance_id,
+      NOM: $localize`Prénom Nom`,
+      LIEU: this.thisSeance.lieu_nom ?? 'lieu non définie',
+      HEURE: this.thisSeance.heure_debut ?? 'heure non définie',
+      RDV: this.thisSeance.rdv ?? '',
+      DUREE:
+        this.thisSeance.duree_seance != null
+          ? `${this.thisSeance.duree_seance} min`
+          : 'durée non définie',
+      NOTES: this.Notes,
+    };
+
+    if (mode === 'convocation') {
+      const errorService = ErrorService.instance;
+      this.action = $localize`Chargement du template de convocation`;
+      this.selectedRecipients = this.All.filter(
+        (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE
+      );
+
+      this.mailserv
+        .GetMail(mode)
+        .then((retour: KeyValuePairAny) => {
+          this.mailSubject = retour.key;
+          this.mailBody = retour.value;
+        })
+        .catch(() => {
+          this.mailSubject = `[Convocation] ${
+            this.thisSeance?.libelle ?? ''
+          }`;
+          this.mailBody = `Bonjour,
+
+Vous êtes convoqué(e) pour la séance ${this.seanceText}.
+Merci de confirmer votre présence.`;
+        });
+    } else if (mode === 'annulation') {
+      const errorService = ErrorService.instance;
+      this.action = $localize`Chargement du template d'annulation`;
+      this.selectedRecipients = [...this.All];
+
+      this.mailserv
+        .GetMail(mode)
+        .then((retour: KeyValuePairAny) => {
+          this.mailSubject = retour.key;
+          this.mailBody = retour.value;
+        })
+        .catch(() => {
+          this.mailSubject = `[Annulation] ${
+            this.thisSeance?.libelle ?? ''
+          }`;
+          this.mailBody = `Bonjour,
+
+La séance ${this.seanceText} est annulée.`;
+        });
+    } else {
+      // ajout / note
+      this.selectedRecipients = [];
+      this.mailSubject = '';
+      this.mailBody = '';
+    }
   }
 
-  getPresencePotentielle(): number {
-    return this.All.filter(
-      (x) => x.statut_inscription == InscriptionStatus_VM.PRESENT
-    ).length;
-  }
-  getPresent(): number {
-    return this.All.filter((x) => x.statut_seance == SeanceStatus_VM.PRESENT)
-      .length;
-  }
-  getAbsent(): number {
-    return this.All.filter((x) => x.statut_seance == SeanceStatus_VM.ABSENT)
-      .length;
+  closePanel() {
+    this.uiMode = 'list';
+    this.selectedRecipients = [];
+    this.optionsOpen = false;
+    this.toggleMobileOptions = false;
   }
 
-  /** Optionnel : ferme après avoir choisi une action */
-  setStatusAndClose(
-    status: any,
-    potentiel: FullInscriptionSeance_VM,
-    ev?: MouseEvent
+  isChecked(
+    p: FullInscriptionSeance_VM,
+    kind: 'convocation' | 'annulation'
+  ): boolean {
+    return this.selectedRecipients.some((x) => x.person.id === p.person.id);
+  }
+
+  toggleRecipient(
+    p: FullInscriptionSeance_VM,
+    kind: 'convocation' | 'annulation',
+    checked: boolean
   ) {
-    ev?.stopPropagation();
-    this.MAJInscription(potentiel, status);
-    this.closeAllMenus();
-    this.cdr.markForCheck?.();
-  }
-  private closeAllMenus() {
-    // si les menus n’existent que dans All, c’est suffisant
-    this.All?.forEach((p) => (p.isVisible = false));
-  }
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(_: MouseEvent) {
-    this.closeAllMenus();
+    if (checked) {
+      if (!this.isChecked(p, kind)) {
+        this.selectedRecipients = [...this.selectedRecipients, p];
+      }
+    } else {
+      this.selectedRecipients = this.selectedRecipients.filter(
+        (x) => x.person.id !== p.person.id
+      );
+    }
   }
 
-  /** Bonus : touche Échap pour fermer */
-  @HostListener('document:keydown.escape', ['$event'])
-  onEsc(_: KeyboardEvent) {
-    this.closeAllMenus();
+  checkAll(kind: 'convocation' | 'annulation', val: boolean) {
+    if (kind === 'convocation') {
+      this.selectedRecipients = val
+        ? this.All.filter(
+            (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE
+          )
+        : [];
+    } else {
+      // annulation => tout le monde
+      this.selectedRecipients = val ? [...this.All] : [];
+    }
+  }
+
+  sendMail(kind: 'convocation' | 'annulation') {
+    const errorService = ErrorService.instance;
+
+    if (kind === 'annulation') {
+      const c = window.confirm(
+        $localize`Voulez-vous passer le statut de la séance à Annulée ?`
+      );
+      if (!c) {
+        return;
+      }
+
+      this.action = $localize`Annuler la séance`;
+      this.thisSeance.statut = StatutSeance.annulée;
+      this.seanceserv
+        .Update(this.thisSeance)
+        .then(() => {
+          const o = errorService.OKMessage(this.action);
+          errorService.emitChange(o);
+        })
+        .catch((err: HttpErrorResponse) => {
+          const o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
+    }
+
+    this.action = $localize`Envoi du mail`;
+    this.mailserv
+      .EnvoyerConvocationAnnulation(
+        kind,
+        this.selectedRecipients.map((x) => x.person.id),
+        this.Notes,
+        this.thisSeance.seance_id
+      )
+      .then(() => {
+        const o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      })
+      .catch((err: HttpErrorResponse) => {
+        const o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+
+    this.closePanel();
+  }
+
+  saveInfoSeance() {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Note sauvegardée`;
+
+    this.seanceserv
+      .Update(this.thisSeance)
+      .then(() => {
+        const o = errorService.OKMessage(this.action);
+        errorService.emitChange(o);
+      })
+      .catch((err: HttpErrorResponse) => {
+        const o = errorService.CreateError(this.action, err.message);
+        errorService.emitChange(o);
+      });
+
+    this.closePanel();
   }
 }
-export function formatDDMMYYYY(input: unknown): string {
+
+// ---------------------------------------------------------------------------
+// HELPERS DATE
+// ---------------------------------------------------------------------------
+export function formatDDMMYYYY(
+  input: Date | string | null | undefined
+): string {
   const d = toDateSafe(input);
-  if (!d) return ''; // ou retourne '??/??/????'
+  if (!d) return '';
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
+
 export function toDateSafe(input: unknown): Date | null {
   if (!input) return null;
-  if (input instanceof Date) return new Date(input.getTime());
+
+  if (input instanceof Date) {
+    const d = new Date(input.getTime());
+    return isNaN(d.getTime()) ? null : d;
+  }
 
   if (typeof input === 'string') {
-    const s = input.trim();
-
-    // Cas le plus fréquent avec TypeORM Postgres "date" -> 'YYYY-MM-DD'
-    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    // Essaye YYYY-MM-DD
+    const m = input.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (m) {
-      const y = Number(m[1]),
-        mo = Number(m[2]) - 1,
-        d = Number(m[3]);
-      return new Date(y, mo, d); // évite les décalages de fuseau
+      const yyyy = +m[1];
+      const mm = +m[2] - 1;
+      const dd = +m[3];
+      const d = new Date(yyyy, mm, dd);
+      return isNaN(d.getTime()) ? null : d;
     }
 
-    // Sinon, tente un parse standard (ISO, etc.)
-    const ms = Date.parse(s);
+    // Sinon parse standard
+    const ms = Date.parse(input);
     if (!Number.isNaN(ms)) return new Date(ms);
 
     return null;
@@ -977,7 +1124,7 @@ export function toDateSafe(input: unknown): Date | null {
 
   if (typeof input === 'number') {
     const d = new Date(input);
-    return Number.isNaN(d.getTime()) ? null : d;
+    return isNaN(d.getTime()) ? null : d;
   }
 
   return null;
