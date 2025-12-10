@@ -5,36 +5,36 @@
   "scripts": {
     "clean": "node -e \"try{require('fs').rmSync('dist',{recursive:true,force:true})}catch(e){}\"",
     "clean:shared:src": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('..','..','libs','shared','src');if(fs.existsSync(d)){(function w(x){for(const e of fs.readdirSync(x,{withFileTypes:true})){const f=p.join(x,e.name);if(e.isDirectory()) w(f); else if(/\\.(js|js\\.map|d\\.ts)$/.test(f)) fs.rmSync(f)}})(d)}\"",
-
     "prebuild": "npm run clean && npm run clean:shared:src && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.json",
-
     "build": "npx tsc --showConfig -p tsconfig.build.json > .tsc.out && node -e \"const j=require('fs').readFileSync('.tsc.out','utf8');const c=JSON.parse(j);console.log('Resolved @shared/* ->', c.compilerOptions.paths['@shared/*']);\" && tsc -p tsconfig.build.json && node rewrite-shared-aliases.cjs && npm run assert:no-alias",
-
     "assert:no-alias": "node -e \"const fs=require('fs'),p=require('path');let bad=[];const w=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const f=p.join(d,e.name);if(e.isDirectory())return w(f);if(f.endsWith('.js')){const s=fs.readFileSync(f,'utf8');if(s.includes('@shared/')) bad.push(f);}});w('dist');if(bad.length){console.error('Leftover @shared in:',bad);process.exit(1);}else{console.log('✔ no @shared alias left in dist');}\"",
-
     "start": "node dist/main.js",
-
     "start:dev": "ts-node-dev --clear --respawn --transpile-only --project tsconfig.dev.json -r ./register-tsconfig-paths.cjs src/main.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.2",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.0.2",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10.0.2",
     "@nestjs/typeorm": "^11.0.0",
     "bottleneck": "^2.19.5",
-    "file-type": "^16.5.4",
     "crypto-js": "^4.2.0",
     "express": "^4.18.2",
+    "file-type": "^16.5.4",
     "mysql2": "^3.14.0",
     "nodemailer": "^7.0.5",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.3.25",
     "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
+    "@types/passport-jwt": "^4.0.1",
     "rimraf": "^6.0.1"
   }
 }
