@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ProjetService } from '../../services/projet.service';
 import { GlobalService } from '../../services/global.services';
 import { ErrorService } from '../../services/error.service';
-import { HttpErrorResponse } from '@angular/common/module.d-yNBsZ8gb';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   standalone: false,
