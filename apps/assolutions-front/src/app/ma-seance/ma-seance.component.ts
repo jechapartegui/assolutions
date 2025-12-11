@@ -548,20 +548,16 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
 
     let statutText = $localize`Indéfini`;
     let newSeance: SeanceStatus_VM | null = null;
-    let newInscription: InscriptionStatus_VM | null = null;
 
     if (statut === true) {
       statutText = $localize`présent`;
       newSeance = SeanceStatus_VM.PRESENT;
-      newInscription = InscriptionStatus_VM.PRESENT;
     } else if (statut === false) {
       statutText = $localize`Absent`;
       newSeance = SeanceStatus_VM.ABSENT;
-      newInscription = InscriptionStatus_VM.ABSENT;
     } else {
       statutText = $localize`Indéfini`;
       newSeance = null;
-      newInscription = null;
     }
 
     this.action =
@@ -574,13 +570,12 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
 
     // MAJ optimiste sur l'objet
     inscription.statut_seance = newSeance;
-    inscription.statut_inscription = newInscription;
 
     const dto: InscriptionSeance_VM = {
       rider_id: inscription.person.id,
       seance_id: this.thisSeance.seance_id,
       date_inscription: inscription.date_inscription ?? new Date(),
-      statut_inscription: newInscription,
+      statut_inscription: inscription.statut_inscription,
       statut_seance: newSeance,
     };
 
@@ -593,10 +588,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
           inscription.statut_inscription = oldInscription;
           const o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
-        } else {
-          const o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        }
+        } 
 
         // forcer changement pour Angular
         this.All = this.All.map((x) =>
@@ -711,7 +703,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
   }
 
   getPresencePotentielle(): number {
-    return this.All.length;
+    return this.All.filter(x => x.statut_inscription == InscriptionStatus_VM.PRESENT || x.statut_inscription == InscriptionStatus_VM.ESSAI).length;
   }
 
   IsPresent(adh: FullInscriptionSeance_VM): boolean {
