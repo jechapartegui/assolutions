@@ -71,6 +71,7 @@ import { MailTemplatePreviewComponent } from './mail-template-preview/mail-templ
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 import { LoginProjetComponent } from './login-projet/login-projet.component';
 import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
+import { InfoComponent } from './info/info.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -78,7 +79,7 @@ import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
     MenuComponent,
     AdherentComponent,
     GroupeComponent,
-    CoursComponent,
+    CoursComponent, InfoComponent,
     SeanceComponent, MailTemplatePreviewComponent, LoginProjetComponent,
     ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
     ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,

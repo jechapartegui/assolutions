@@ -33,6 +33,7 @@ import { SeancesPage } from './public/seance-page-public.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 import { LoginProjetComponent } from './login-projet/login-projet.component';
 import { AuthGuard } from './auth.guard';
+import { InfoComponent } from './info/info.component';
 
 
 
@@ -62,6 +63,8 @@ const routes: Routes = [
   { path: 'ma-seance', component: MaSeanceComponent,
     canActivate: [AuthGuard],
   }, // Route 'defaut' qui affiche ImportRidersComponent
+  { path: 'info', component: InfoComponent },
+
   { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
   { path: 'seances-essais', component: SeancesEssaisComponent }, // Route 'defaut' qui affiche ImportRidersComponent
