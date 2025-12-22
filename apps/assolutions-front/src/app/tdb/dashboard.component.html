@@ -100,10 +100,10 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let ms of g.items">
-                      <td style="cursor: pointer" (click)="GotoSeance(ms.seance.seance_id)">
-                        {{ ms.seance.libelle }}
+                      <td style="cursor: pointer" (click)="GotoSeance(ms.seance.id)">
+                        {{ ms.seance.nom }}
                       </td>
-                      <td style="cursor: pointer" (click)="GotoSeance(ms.seance.seance_id)">
+                      <td style="cursor: pointer" (click)="GotoSeance(ms.seance.id)">
                         {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
                         {{ ms.seance.heure_debut }} -
                         {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}

@@ -216,7 +216,7 @@ export class MaSeanceComponent implements OnInit {
 
   RetourListe() {
     this.router.navigate(['/seance'], {
-      queryParams: { id: this.thisSeance.seance_id },
+      queryParams: { id: this.thisSeance.id },
     });
   }
 
@@ -367,7 +367,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
     if (!this.adherent) {
       // Tous les adhérents liés à ce compte
       this.inscriptionserv
-        .GetAdherentCompte(this.login, this.thisSeance.seance_id)
+        .GetAdherentCompte(this.login, this.thisSeance.id)
         .then((fis: FullInscriptionSeance_VM[]) => {
           fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
           this.MesAdherents = fis;
@@ -383,7 +383,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
 
               const dto: InscriptionSeance_VM = {
                 rider_id: ins.person.id,
-                seance_id: this.thisSeance.seance_id,
+                seance_id: this.thisSeance.id,
                 date_inscription: ins.date_inscription ?? new Date(),
                 statut_inscription: ins.statut_inscription,
                 statut_seance: ins.statut_seance ?? null,
@@ -433,7 +433,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
     } else {
       // Cas d'un seul adhérent ciblé (param ?adherent=)
       this.inscriptionserv
-        .GetAdherentPersonne(this.adherent, this.thisSeance.seance_id)
+        .GetAdherentPersonne(this.adherent, this.thisSeance.id)
         .then((liste) => {
           (liste ?? []).forEach((obj: any) =>
             Personne_VM.bakeLibelle(obj.person)
@@ -449,7 +449,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
 
             const dto: InscriptionSeance_VM = {
               rider_id: ins.person.id,
-              seance_id: this.thisSeance.seance_id,
+              seance_id: this.thisSeance.id,
               date_inscription: ins.date_inscription ?? new Date(),
               statut_inscription: ins.statut_inscription,
               statut_seance: ins.statut_seance ?? null,
@@ -566,14 +566,14 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
       ` : ` +
       statutText +
       ` pour la séance ` +
-      this.thisSeance.libelle;
+      this.thisSeance.nom;
 
     // MAJ optimiste sur l'objet
     inscription.statut_seance = newSeance;
 
     const dto: InscriptionSeance_VM = {
       rider_id: inscription.person.id,
-      seance_id: this.thisSeance.seance_id,
+      seance_id: this.thisSeance.id,
       date_inscription: inscription.date_inscription ?? new Date(),
       statut_inscription: inscription.statut_inscription,
       statut_seance: newSeance,
@@ -644,7 +644,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
 
     const dto: InscriptionSeance_VM = {
       rider_id: inscription.person.id,
-      seance_id: this.thisSeance.seance_id,
+      seance_id: this.thisSeance.id,
       date_inscription: new Date(),
       statut_inscription: inscription.statut_inscription,
       statut_seance: inscription.statut_seance ?? null,
@@ -656,7 +656,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
       ` : ` +
       statutText +
       ` pour la séance ` +
-      this.thisSeance.libelle;
+      this.thisSeance.nom;
 
     this.inscriptionserv
       .MAJ(dto)
@@ -730,7 +730,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
     this.action = $localize`Convoquer ` + this.adherent_to.libelle;
     const conv: InscriptionSeance_VM = {
       rider_id: this.adherent_to.id,
-      seance_id: this.thisSeance.seance_id,
+      seance_id: this.thisSeance.id,
       date_inscription: new Date(),
       statut_inscription: InscriptionStatus_VM.CONVOQUE,
       statut_seance: null,
@@ -902,11 +902,11 @@ onImgError(evt: Event) {
     this.Notes = '';
 
     this.variables = {
-      SEANCE: this.thisSeance.libelle,
-      SEANCE_ID: this.thisSeance.seance_id,
+      SEANCE: this.thisSeance.nom,
+      id: this.thisSeance.id,
       PERSONNE_ID: this.selectedRecipients[0]?.rider_id ?? 0,
       DATE: formatDDMMYYYY(this.thisSeance.date_seance),
-      ID: this.thisSeance.seance_id,
+      ID: this.thisSeance.id,
       NOM: $localize`Prénom Nom`,
       LIEU: this.thisSeance.lieu_nom ?? 'lieu non définie',
       HEURE: this.thisSeance.heure_debut ?? 'heure non définie',
@@ -933,7 +933,7 @@ onImgError(evt: Event) {
         })
         .catch(() => {
           this.mailSubject = `[Convocation] ${
-            this.thisSeance?.libelle ?? ''
+            this.thisSeance?.nom ?? ''
           }`;
           this.mailBody = `Bonjour,
 
@@ -953,7 +953,7 @@ Merci de confirmer votre présence.`;
         })
         .catch(() => {
           this.mailSubject = `[Annulation] ${
-            this.thisSeance?.libelle ?? ''
+            this.thisSeance?.nom ?? ''
           }`;
           this.mailBody = `Bonjour,
 
@@ -1041,7 +1041,7 @@ La séance ${this.seanceText} est annulée.`;
         kind,
         this.selectedRecipients.map((x) => x.person.id),
         this.Notes,
-        this.thisSeance.seance_id
+        this.thisSeance.id
       )
       .then(() => {
         const o = errorService.OKMessage(this.action);

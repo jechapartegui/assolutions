@@ -1,9 +1,8 @@
+import { corelistobject } from "./corelistobject.interface";
 import { LienGroupe_VM } from "./groupe.interface";
 import { PersonneLight_VM } from "./personne.interface";
 
-export class Cours_VM {
-  id: number = 0;
-  nom: string;
+export class Cours_VM extends corelistobject {
   jour_semaine: string;
   heure: string= "11:00";
   duree: number = 0;

@@ -57,13 +57,13 @@ export function seancesVmToEvents(seances: Seance_VM[]): CalendarEvent[] {
 
   return seances.map(s => ({
     type:"seance",
-    id: s.seance_id,
+    id: s.id,
     date: formatISO(s.date_seance),
     start: s.heure_debut,
     end: addMinutesToTime(s.heure_debut, s.duree_seance || 0),
       subtitle: s.heure_debut + ' - ' + addMinutesToTime(s.heure_debut, s.duree_seance || 0),
       location: s.lieu_nom || '',
-    title: s.libelle || s.cours_nom || 'Séance',
+    title: s.nom || s.cours_nom || 'Séance',
     essai_possible: s.essai_possible || false,
     status: mapStatut(s.statut)
   }));

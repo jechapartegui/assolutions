@@ -37,7 +37,7 @@ export class ProfComponent implements OnInit {
     let S = new SeanceProfesseur_VM();
     S.minutes = this.thisSeance.duree_seance;
     S.personne = newValue.person;
-    S.seance_id = this.thisSeance.seance_id;
+    S.seance_id = this.thisSeance.id;
     S.statut = this.thisSeance.statut;
     S.cout = newValue.taux;
     

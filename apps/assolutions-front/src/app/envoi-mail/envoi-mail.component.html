@@ -120,7 +120,7 @@
                 <div class="select is-fullwidth">
                   <select id="seance_annulee" style="font-size: smaller" [(ngModel)]="seance_annul_convoc">
                     <ng-container *ngFor="let pr of seance_periode">
-                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
+                      <option [ngValue]="pr">{{ pr.nom }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
                     </ng-container>
                   </select>
                 </div>
@@ -138,7 +138,7 @@
                   <div class="tags are-medium">
                     <ng-container *ngFor="let seance of liste_seance_serie">
                       <span class="tag is-info is-medium">
-                        {{ seance.libelle }}&nbsp; {{ seance.date_seance | date : 'dd/MM/yyyy' }}
+                        {{ seance.nom }}&nbsp; {{ seance.date_seance | date : 'dd/MM/yyyy' }}
                         <button (click)="RemoveSeanceSerie(seance)" class="delete is-small"></button>
                       </span>
                     </ng-container>
@@ -214,7 +214,7 @@
                 <div class="select is-fullwidth">
                   <select id="seance" style="font-size: smaller" [(ngModel)]="seance_selectionnee">
                     <ng-container *ngFor="let pr of seance_periode">
-                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
+                      <option [ngValue]="pr">{{ pr.nom }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
                     </ng-container>
                   </select>
                 </div>

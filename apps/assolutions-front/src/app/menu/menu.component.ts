@@ -323,8 +323,8 @@ copierDansPressePapier(texte: string): void {
         rider.sort_lieu = 'NO';
         rider.sort_cours = 'NO';
         liste_seance_VM.sort((a, b) => {
-          const nomA = a.seance.libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.seance.libelle.toUpperCase();
+          const nomA = a.seance.nom.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.seance.nom.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -424,11 +424,11 @@ return $localize`Evénement`;
         this.cdr.detectChanges();
     i.date_inscription = new Date();
     i.rider_id = adherentmen.id;
-    i.seance_id = messeance.seance.seance_id;
+    i.seance_id = messeance.seance.id;
     i.statut_inscription = statut ? InscriptionStatus_VM.PRESENT : InscriptionStatus_VM.ABSENT; 
     i.statut_seance = messeance.statutPrésence == "absent" ?  SeanceStatus_VM.ABSENT : (messeance.statutPrésence == "présent") ? SeanceStatus_VM.PRESENT : null;
     let statut_text = statut ? $localize`présent` : (statut == false) ? $localize`Absent` : $localize`Indéfini`; 
-    this.action = $localize`Nouveau statut d'inscription de ` + adherentmen.libelle + ` : ` + statut_text + ` pour la séance ` + messeance.seance.libelle;
+    this.action = $localize`Nouveau statut d'inscription de ` + adherentmen.libelle + ` : ` + statut_text + ` pour la séance ` + messeance.seance.nom;
 
     this.inscriptionserv.MAJ(i).then((res) =>{
       if(res){  

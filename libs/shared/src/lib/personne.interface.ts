@@ -1,8 +1,7 @@
 import { Adresse } from "./adresse.interface";
+import { corelistobject } from "./corelistobject.interface";
 
-export class PersonneLight_VM {
-     id:number =0;
-     nom:string = "";
+export class PersonneLight_VM extends corelistobject {
      prenom:string = "";
      surnom:string = "";
      date_naissance:Date = new Date();

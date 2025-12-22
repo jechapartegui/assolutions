@@ -23,7 +23,7 @@ export class MultifiltersSeancePipe implements PipeTransform {
 
     return items.filter((item) => {
       // nom
-      const okNom = !nomLC || (item.libelle ?? '').toLowerCase().includes(nomLC);
+      const okNom = !nomLC || (item.nom ?? '').toLowerCase().includes(nomLC);
 
       // date séance en ISO court
       const dIso = item.date_seance ? new Date(item.date_seance).toISOString().slice(0, 10) : '';

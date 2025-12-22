@@ -37,7 +37,7 @@ return items.filter((item) => {
     });
 
   return (
-    (!filters.filter_nom || norm(s.libelle).includes(norm(filters.filter_nom))) &&
+    (!filters.filter_nom || norm(s.nom).includes(norm(filters.filter_nom))) &&
     (!filters.filter_lieu || norm(s.lieu_nom).includes(norm(filters.filter_lieu))) &&
     (!filters.filter_date_avant || (filters.filter_date_avant && dateSeance >= new Date(filters.filter_date_avant))) &&
     (!filters.filter_date_apres || (filters.filter_date_apres && dateSeance <= new Date(filters.filter_date_apres))) &&

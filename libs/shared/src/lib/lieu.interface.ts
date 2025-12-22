@@ -1,7 +1,6 @@
 import { Adresse } from "./adresse.interface";
+import { corelistobject } from "./corelistobject.interface";
 
-export class Lieu_VM {
-    id: number=0;
-    nom: string = "";
+export class Lieu_VM extends corelistobject {
     adresse: Adresse = new Adresse();
 }

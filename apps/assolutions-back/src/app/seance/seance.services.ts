@@ -50,7 +50,7 @@ async MySeance(
     };
 
     // 2) Déjà inscrit ? On push direct (on ne filtre pas par âge/groupe si déjà inscrit)
-    const ins = await this.inscriptionseance_serv.getRiderSeance(adherent_id, s.seance_id);
+    const ins = await this.inscriptionseance_serv.getRiderSeance(adherent_id, s.id);
     if (ins) {
       item.statutPrésence = ins.statutSeance;
       item.statutInscription = ins.statutInscription;
@@ -215,19 +215,19 @@ async AddRange(
     if (currentDate.getDay() === targetDow) {
       const newSeance: Seance_VM = { ...seance, date_seance: new Date(currentDate) }; // Date JS native
       const saved = await this.Add(newSeance);
-      newSeance.seance_id = saved.seance_id;
+      newSeance.id = saved.id;
 
       if (newSeance.groupes?.length) {
         for (const lig of newSeance.groupes) {
           const lig_g = new LinkGroup();
           lig_g.groupId = lig.id;
-          lig_g.objectId = saved.seance_id;
+          lig_g.objectId = saved.id;
           lig_g.objectType = "séance";
           await this.liengroup_serv.create(lig_g);
         }
       }
       if (newSeance.seanceProfesseurs?.length) {
-        await this.UpdateSeanceProf(Number(newSeance.seance_id), newSeance.seanceProfesseurs);
+        await this.UpdateSeanceProf(Number(newSeance.id), newSeance.seanceProfesseurs);
       }
       seances.push(newSeance);
     }
@@ -323,11 +323,10 @@ export function endOfDay(date: Date): Date {
 
 export function to_Seance_VM(entity: Session): Seance_VM {
   const vm = new Seance_VM();
-
-  vm.seance_id = entity.id;
+  vm.id = entity.id;
   vm.saison_id = entity.seasonId;
   vm.cours = entity.courseId ?? 0;
-  vm.libelle = entity.label ?? '';
+  vm.nom = entity.label ?? '';
   vm.type_seance = entity.type;
   vm.date_seance = entity.date;
   vm.heure_debut = entity.startTime;
@@ -355,6 +354,9 @@ export function to_Seance_VM(entity: Session): Seance_VM {
   vm.groupes= (entity.groups ?? []).map(lg =>
       new LienGroupe_VM(lg.groupId, lg.group?.name ?? '', lg.id)
     );
+    
+    vm.createdAt = entity.createdAt?.toISOString?.() ?? (entity.createdAt as any);
+    vm.updatedAt = entity.updatedAt?.toISOString?.() ?? (entity.updatedAt as any);
   return vm;
 }
 
@@ -362,10 +364,10 @@ export function to_Seance_VM(entity: Session): Seance_VM {
 export function toSession(vm: Seance_VM): Session {
   const entity = new Session();
 
-  entity.id = vm.seance_id ?? 0; // Assurez-vous que l'ID est défini, sinon utilisez 0
+  entity.id = vm.id ?? 0; // Assurez-vous que l'ID est défini, sinon utilisez 0
   entity.seasonId = vm.saison_id;
   entity.courseId = vm.cours && vm.cours !== 0 ? vm.cours : undefined;
-  entity.label = vm.libelle;
+  entity.label = vm.nom;
   entity.type = vm.type_seance;
   entity.date = new Date(vm.date_seance);
   entity.startTime = vm.heure_debut;

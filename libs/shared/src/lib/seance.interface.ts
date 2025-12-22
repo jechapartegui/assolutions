@@ -1,3 +1,4 @@
+import { corelistobject } from "./corelistobject.interface";
 import { LienGroupe_VM } from "./groupe.interface";
 import { Personne_VM, PersonneLight_VM } from "./personne.interface";
 
@@ -15,11 +16,9 @@ export interface MesSeances_VM {
 
 // shared/models/seance.dto.ts
 
-export class Seance_VM {
-  seance_id: number = 0;
-  saison_id: number;
+export class Seance_VM extends corelistobject {
+  saison_id: number = 0;
   cours: number= 0;
-  libelle: string="";
   type_seance: 'ENTRAINEMENT' | 'MATCH' | 'SORTIE' | 'EVENEMENT';
   date_seance: Date = new Date();
   heure_debut: string ="11:00";

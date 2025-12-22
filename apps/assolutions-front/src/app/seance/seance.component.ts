@@ -365,7 +365,7 @@ clearFilter(key: string) {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
     this.seancesservice
-      .Get(seance.seance_id)
+      .Get(seance.id)
       .then((ss) => {
         this.editSeance = ss
         this.edit_nom = false;
@@ -395,7 +395,7 @@ clearFilter(key: string) {
       this.editSeance.age_maximum = newValue.age_maximum;
       this.editSeance.est_limite_age_maximum = newValue.est_limite_age_maximum;
       this.editSeance.est_limite_age_minimum = newValue.est_limite_age_minimum;
-      this.editSeance.libelle = newValue.nom;
+      this.editSeance.nom = newValue.nom;
       this.editSeance.saison_id = newValue.saison_id;
       this.editSeance.heure_debut = newValue.heure;
       this.editSeance.convocation_nominative = newValue.convocation_nominative;
@@ -463,13 +463,13 @@ clearFilter(key: string) {
       this.rProf.key = false;
       this.rProf.value = $localize`Un encadrant est nécessaire pour le cours`;
     }
-    if(!this.editSeance.libelle){
+    if(!this.editSeance.nom){
       this.rNom.key = false;
       this.rNom.value = $localize`Un nom doit être saisi`
       this.is_valid = false;
       return;
     }
-    if(this.editSeance.libelle.length <4){
+    if(this.editSeance.nom.length <4){
       this.rNom.key = false;
       this.rNom.value = $localize`Le nom doit faire au moins 4 caractères`
       this.is_valid = false;
@@ -502,7 +502,7 @@ clearFilter(key: string) {
       }
     }
      this.checkall();
-    if(this.is_valid && this.editSeance.seance_id > 0){
+    if(this.is_valid && this.editSeance.id > 0){
     this.Save();
     }
   }
@@ -538,7 +538,7 @@ clearFilter(key: string) {
       this.editSeance.afficher_present = caracteristique.afficher_present;
     }
      this.checkall();
-    if(this.is_valid && this.editSeance.seance_id > 0){
+    if(this.is_valid && this.editSeance.id > 0){
     this.Save();
     }
   }
@@ -558,9 +558,9 @@ clearFilter(key: string) {
     }
     let id: number;
     if (seance) {
-      id = seance.seance_id;
+      id = seance.id;
     } else if (this.editSeance) {
-      id = this.editSeance.seance_id;
+      id = this.editSeance.id;
     } else {
       return;
     }
@@ -581,11 +581,11 @@ clearFilter(key: string) {
           await this.seancesservice.Update(SVM)
             .then((ok) => {
               if (ok) {
-               list_s.push({ key: SVM.seance_id, value: true });
+               list_s.push({ key: SVM.id, value: true });
               } else {
-               list_s.push({ key: SVM.seance_id, value: false });
+               list_s.push({ key: SVM.id, value: false });
               }}).catch(() => {
-               list_s.push({ key: SVM.seance_id, value: false });
+               list_s.push({ key: SVM.id, value: false });
               });
               
         }
@@ -751,9 +751,9 @@ copierDansPressePapier(texte: string): void {
       this.action = $localize`Supprimer une séance`;
       if (seance) {
         this.seancesservice
-          .Delete(seance.seance_id)
+          .Delete(seance.id)
           .then(() => {
-                this.spservice.Update(seance.seance_id, []);  
+                this.spservice.Update(seance.id, []);  
                 this.editSeance = null;            
               this.UpdateListeSeance();
               let o = errorService.OKMessage(this.action);
@@ -780,7 +780,7 @@ copierDansPressePapier(texte: string): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Ajouter une séance`;
     if (this.editSeance) {
-      if (this.editSeance.seance_id == 0) {
+      if (this.editSeance.id == 0) {
         if (this.editMode_serie) {
           this.action = $localize`Ajouter une série de séances`;
           this.seancesservice
@@ -818,11 +818,11 @@ copierDansPressePapier(texte: string): void {
           this.seancesservice
             .Add(this.editSeance)
             .then((retour) => {
-              if (retour.seance_id > 0) {
-                this.editSeance.seance_id   = retour.seance_id;
-                  this.spservice.Update(Number(retour.seance_id), this.editSeance.seanceProfesseurs);
+              if (retour.id > 0) {
+                this.editSeance.id   = retour.id;
+                  this.spservice.Update(Number(retour.id), this.editSeance.seanceProfesseurs);
                 this.editSeance.groupes.forEach((gr: LienGroupe_VM) => {
-                  this.grServ.AddLien(Number(retour.seance_id), 'séance', Number(gr.id));
+                  this.grServ.AddLien(Number(retour.id), 'séance', Number(gr.id));
                 });
                 this.edit_nom = false;
                 this.edit_prof = false;
@@ -887,7 +887,7 @@ copierDansPressePapier(texte: string): void {
       }
     }
     this.seancesservice
-      .Get(this.editSeance.seance_id)
+      .Get(this.editSeance.id)
       .then((c) => {
         this.editSeance = c;
         let o = errorService.OKMessage(this.action);
@@ -928,8 +928,8 @@ copierDansPressePapier(texte: string): void {
         this.sort_lieu = 'NO';
         this.sort_cours = 'NO';
         this.list_seance_VM.sort((a, b) => {
-          const nomA = a.libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.libelle.toUpperCase();
+          const nomA = a.nom.toUpperCase(); // Ignore la casse lors du tri
+          const nomB = b.nom.toUpperCase();
           let comparaison = 0;
           if (nomA > nomB) {
             comparaison = 1;
@@ -1063,7 +1063,7 @@ return $localize`Evénement`;
     return this.list_seance_VM.filter((seance) => {
       return (
         (!this.filters.filter_nom ||
-          seance.libelle
+          seance.nom
             .toLowerCase()
             .includes(this.filters.filter_nom.toLowerCase())) &&
         (!this.filters.filter_lieu ||
@@ -1137,13 +1137,13 @@ return $localize`Evénement`;
         const indexToUpdate = this.listeprof.find(cc => cc.person.id === +this.current_prof_id);
           const seanceprof = new SeanceProfesseur_VM();
           seanceprof.personne =  indexToUpdate.person;
-          seanceprof.seance_id = this.editSeance.seance_id;
+          seanceprof.seance_id = this.editSeance.id;
           seanceprof.minutes = this.editSeance.duree_seance;
           seanceprof.statut = this.editSeance.statut;
           //cout = durée * tx horaire : contrat
           this.editSeance.seanceProfesseurs.push(seanceprof);
-          if(this.editSeance.seance_id>0){
-            await this.spservice.Update(this.editSeance.seance_id, this.editSeance.seanceProfesseurs);
+          if(this.editSeance.id>0){
+            await this.spservice.Update(this.editSeance.id, this.editSeance.seanceProfesseurs);
           }   
           
           this.current_prof_id = null;
@@ -1156,8 +1156,8 @@ return $localize`Evénement`;
         this.action = $localize`Supprimer un professeur de la liste`;      
         this.editSeance.seanceProfesseurs = this.editSeance.seanceProfesseurs.filter(e => e.personne.id !== item.personne.id);
      
-        if(this.editSeance.seance_id>0){
-            await this.spservice.Update(this.editSeance.seance_id, this.editSeance.seanceProfesseurs);
+        if(this.editSeance.id>0){
+            await this.spservice.Update(this.editSeance.id, this.editSeance.seanceProfesseurs);
           }   
              this.MAJListeProf();
        
@@ -1193,7 +1193,7 @@ private shortBase(): string {
 
 /** Code bref et stable par séance (base62) */
 private shortCodeForSeance(): string {
-  const id = this.editSeance?.seance_id ?? 0;
+  const id = this.editSeance?.id ?? 0;
   const d  = this.editSeance?.date_seance ? new Date(this.editSeance.date_seance).getTime() : 0;
   // mélange simple: (id << 8) ^ (timestamp jour)
   const day = Math.floor(d / 86400000);
@@ -1212,7 +1212,7 @@ private base62(n: number): string {
 
 /** Fabrique le texte à coller dans WhatsApp */
 generatePoll(mode: 'avec' | 'seul') {
-  const libelle = this.editSeance?.libelle ?? 'Séance';
+  const libelle = this.editSeance?.nom ?? 'Séance';
   const type_seance = this.editSeance?.type_seance ?? 'Evenement';
   const lieu    = (this.editSeance as any)?.lieu ?? '';
   const dateStr = this.editSeance?.date_seance
@@ -1224,7 +1224,7 @@ generatePoll(mode: 'avec' | 'seul') {
   const titre = `${libelle} ${lieu ? 'à ' + lieu : ''} le ${dateStr}${heure ? ' à ' + heure : ''} ${rdv}.`;
   let message = `${type_seance} ${titre} Vous venez ?`;
 
-  const id = this.editSeance?.seance_id ?? 0;
+  const id = this.editSeance?.id ?? 0;
 
   if (mode === 'avec') {
     const yes = this.global.shortLinkSeanceWithAnswer(id, true);

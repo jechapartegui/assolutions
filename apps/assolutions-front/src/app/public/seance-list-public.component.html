@@ -11,8 +11,8 @@
       </div>
 
       <div class="main">
-        <div class="title" [title]="s.libelle || s.cours_nom">
-          <strong>{{ s.libelle || s.cours_nom }}</strong>
+        <div class="title" [title]="s.nom || s.cours_nom">
+          <strong>{{ s.nom || s.cours_nom }}</strong>
         </div>
         <div class="meta">
           <span class="pill">{{ GetType(s.type_seance) }}</span>
@@ -31,7 +31,7 @@
       </div>
 
       <div class="actions" *ngIf="s.essai_possible">
-        <button class="button is-info is-rounded is-small is-outlined" (click)="Essayer(s.seance_id)">
+        <button class="button is-info is-rounded is-small is-outlined" (click)="Essayer(s.id)">
           <span i18n>Essai</span>
         </button>
       </div>

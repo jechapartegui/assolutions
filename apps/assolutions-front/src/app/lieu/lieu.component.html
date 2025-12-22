@@ -1,26 +1,28 @@
 <div class="container">
-      <ng-container *ngIf="loading">
-        <progress
-          class="progress is-large is-info"
-          style="margin-top: 60px"
-          max="100"
-        >
-          60%
-        </progress>
-        <p>Chargement en cours</p>
-      </ng-container>
-      <ng-container *ngIf="!loading">
-        <ng-container *ngIf="!editLieu; else lieuDetail">
-          <div class="columns page-fill" *ngIf="lieux">
+<ng-container *ngIf="loading && (!Liste || Liste.length === 0)">
+  <progress class="progress is-large is-info" style="margin-top: 60px" max="100">60%</progress>
+  <p>Chargement en cours</p>
+</ng-container>
+      <ng-container *ngIf="!(loading && (!Liste || Liste.length === 0))">
+        <ng-container *ngIf="!Item; else lieuDetail">
+          <div class="columns page-fill" *ngIf="Liste">
             <div class="column">
               <div class="card card--scroller">
                 <header class="card-header" style="align-items: center">
           <p class="card-header-title" i18n>Liste des lieux</p>
-       
+<span *ngIf="store.LieuHasRemoteNewerData()" class="tag is-warning is-light" style="margin-left: 10px">
+  Nouvelles données dispo
+</span>
+<span *ngIf="refreshing" class="tag is-info is-light" style="margin-left:10px">
+  Mise à jour…
+</span>
+<btn *ngIf="store.LieuHasRemoteNewerData()"
+     [type_button]="'ReloadLight'"
+     (click)="RefreshLieu({apply:true})"></btn>
         </header>
         <div class="card-content" #scrollableContent>
                   <div class="content">
-            <table class="table" style="width: 100%;font-size:smaller" *ngIf="lieux && lieux.length> 0">
+            <table class="table" style="width: 100%;font-size:smaller" *ngIf="Liste && Liste.length> 0">
               <thead>
                 <tr>
                   <th><span class="th_filtre">
@@ -46,7 +48,7 @@
               </thead>
               <tbody>
                 <tr
-                  *ngFor="let lieu of lieux; trackBy: trackById">
+                  *ngFor="let lieu of Liste; trackBy: trackById">
                   <td>
                     {{lieu.nom}}
                   </td>
@@ -74,7 +76,7 @@
                 </tr>
               </tbody>
             </table>
-            <p *ngIf="!lieux || lieux.length ==0">Pas de lieu disponible</p>
+            <p *ngIf="!Liste || Liste.length ==0">Pas de lieu disponible</p>
           </div>
         </div>
      <footer class="card-footer">
@@ -119,7 +121,7 @@
                                   style="width: fit-content; font-size: smaller"
                                   class="input is-small"
                                   i18n-placeholder
-                                  placeholder="Nom du cours"
+                                  placeholder="Nom du lieu"
                                   type="text"
                                   (ngModelChange)="Filter($event)"
                                   [(ngModel)]="filter_nom"
@@ -165,8 +167,8 @@
         <!-- Header -->
         <header class="card-header" style="align-items:center">
                   <p class="card-header-title">
-          <span *ngIf="editLieu.id==0" i18n>Créer un lieu</span>
-          <span *ngIf="editLieu.id>0" i18n>Editer un lieu</span>
+          <span *ngIf="Item.id==0" i18n>Créer un lieu</span>
+          <span *ngIf="Item.id>0" i18n>Editer un lieu</span>
                </p>
           </header>     
                 <!-- Content -->
@@ -177,12 +179,12 @@
             <div class="box is-light">
     <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations administratives</h3>  
-              <ng-container *ngIf="editLieu.id>0">
+              <ng-container *ngIf="Item.id>0">
       <btn *ngIf="!edit"
         [type_button]="'EditerLight'" 
         (click)="edit = !edit" 
       ></btn>
-      <btn *ngIf="edit" [disabled]="editLieu.nom.length <5" (click)="Save(); edit = false;"
+      <btn *ngIf="edit" [disabled]="Item.nom.length <5" (click)="Save(); edit = false;"
         [type_button]="'SauvegarderLight'">
       </btn> <btn *ngIf="edit" (click)="Cancel()"
         [type_button]="'AnnulerLight'">
@@ -191,10 +193,10 @@
       </div>
             <div class="field">
               <label class="label" i18n>Nom</label>
-              <p *ngIf="!edit">{{editLieu.nom}}</p>
-              <input *ngIf="edit" [class]="editLieu.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
-                name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="editLieu.nom" required>
-              <p class="help is-danger" *ngIf="editLieu.nom.length <5" i18n>Le nom du lieu doit au moins faire 5
+              <p *ngIf="!edit">{{Item.nom}}</p>
+              <input *ngIf="edit" [class]="Item.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
+                name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="Item.nom" required>
+              <p class="help is-danger" *ngIf="Item.nom.length <5" i18n>Le nom du lieu doit au moins faire 5
                 caractères
               </p>
               
@@ -203,8 +205,8 @@
           </div>
             <div class="column is-full-tablet is-half-desktop">
                     <app-address
-                                 [id]="editLieu.id"
-                                 [thisAdresse]="editLieu.adresse"
+                                 [id]="Item.id"
+                                 [thisAdresse]="Item.adresse"
                                  [Regles]="(GlobalService.getRegleLieuAdresse())"
                                  (InfoAdresseChange)="SaveAdresse($event)"
                                  (valid)="valid_adresse($event)"></app-address>                    
@@ -215,7 +217,7 @@
             <div class="column is-half">
               <div class="buttons" style="flex-wrap:nowrap">
                 <btn [type_button]="'RetourSmall'"  (click)="Retour()"></btn>
-                <btn *ngIf="edit && editLieu.id<1" [type_button]="'SauvegarderSmall'" [disabled]="(editLieu.nom.length < 5 || !valid_address)" (click)="Save()" i18n>Sauvegarder</btn>          
+                <btn *ngIf="edit && Item.id<1" [type_button]="'SauvegarderSmall'" [disabled]="(Item.nom.length < 5 || !valid_address)" (click)="Save()" i18n>Sauvegarder</btn>          
           </div>
     </div>
   </div>

@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Lieu_VM } from "@shared/lib/lieu.interface";
 import { KeyValuePair } from "@shared/lib/autres.interface";
 import { LocationService } from "../../crud/location.service";
 import { Location } from "../../entities/lieu.entity";
 import { Adresse } from "@shared/lib/adresse.interface";
+import { Lieu_VM } from "@shared/lib/lieu.interface";
 
 @Injectable()
 export class LieuService {
@@ -81,6 +81,8 @@ export function toLieu_VM(location: Location): Lieu_VM {
     id:         location.id,
     nom:        location.name,
     adresse,    // objet de type Adresse
+    createdAt: location.createdAt?.toISOString?.() ?? (location.createdAt as any),
+    updatedAt: location.updatedAt?.toISOString?.() ?? (location.updatedAt as any),
   };
 }
 

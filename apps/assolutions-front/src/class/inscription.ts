@@ -16,7 +16,7 @@ export class InscriptionSeance {
                 this.thisInscription = {
                   date_inscription: null,
                   rider_id: rider_id,
-                  seance_id: seance.seance_id,
+                  seance_id: seance.id,
                   statut_inscription: null,
                   statut_seance: null,
                   };

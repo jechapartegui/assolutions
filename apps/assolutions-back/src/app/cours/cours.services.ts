@@ -132,9 +132,7 @@ async UpdateSerie(cours: Cours_VM, date: Date): Promise<KeyValuePairAny> {
     try {
       const currentLinks = (s.groups ?? []) as Array<{ id: number; groupId: number }>;
       const targetIds = new Set<number>((cours.groupes ?? []).map(g => g.id)); // <-- groupId (pas id)
-      console.log(currentLinks, targetIds);
       const linksToRemove = currentLinks.filter(l => !targetIds.has(l.groupId));
-      console.log(linksToRemove)
       const existingGroupIds = new Set<number>(currentLinks.map(l => l.groupId));
       const groupIdsToAdd = [...targetIds].filter(id => !existingGroupIds.has(id));
       console.log(groupIdsToAdd);
@@ -229,7 +227,9 @@ export function toCours_VM(course: Course): Cours_VM {
     est_place_maximum:    course.maxPlaces != null,
     essai_possible: course.trialAllowed,
     // Champ enrichi
-    lieu_nom: course.location?.name|| '',
+    lieu_nom: course.location?.name|| '',    
+    createdAt: course.createdAt?.toISOString?.() ?? (course.createdAt as any),
+    updatedAt: course.updatedAt?.toISOString?.() ?? (course.updatedAt as any),
 
     // Professeurs liés
     professeursCours: (course.professors ?? []).map(cp => ( toPersonneLight_VM(cp.contract.professor.person))),

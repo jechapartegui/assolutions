@@ -209,7 +209,7 @@ export class DashboardComponent implements OnInit {
       const c = this.listeCours.find((x) => x.id === s.cours);
       return c?.nom ?? $localize`Cours non trouvé`;
     } else {
-      return s.libelle
+      return s.nom
     }
   }
 

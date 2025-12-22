@@ -124,6 +124,7 @@ async login(
     const contenuDuJeton = {
       sub: compte.id,             // id du compte (standard: "subject")
       login: compte.email,
+      
     };
 
     // On "signe" le jeton avec le secret config du JwtModule

@@ -263,8 +263,8 @@ async mail_relance(
       if (!p) continue;
       if (!p.account?.login || p.account.login.trim().length === 0) continue;
      const dataSeance = {
-            SEANCE: s.libelle ?? 'séance',
-            SEANCE_ID: s.seance_id ?? 0,
+            SEANCE: s.nom ?? 'séance',
+            SEANCE_ID: s.id ?? 0,
             PERSONNE_ID: p?.id ?? 0,
             DATE: formatDDMMYYYY(s.date_seance),
             LIEU: s.lieu_nom ?? 'lieu non défini',

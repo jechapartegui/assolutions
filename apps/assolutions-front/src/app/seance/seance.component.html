@@ -308,7 +308,7 @@
                       "
                     >
                       <td>
-                        {{ seance.libelle }}
+                        {{ seance.nom }}
                       </td>
                       <td>
                         <ng-container
@@ -393,7 +393,7 @@
                             i18n-title
                             title="Voir"
                             [type_button]="'VoirLight'"
-                            (click)="VoirMaSeanceByID(seance.seance_id)"
+                            (click)="VoirMaSeanceByID(seance.id)"
                           ></btn>
                           <btn
                             i18n-title
@@ -1107,7 +1107,7 @@
           <i class="fas fa-hiking icon-type-seance"></i> Sortie
         </span>
       </ng-container>
-      <a class="item-mobile-name" (click)="Edit(seance)">{{ seance.libelle }}</a>
+      <a class="item-mobile-name" (click)="Edit(seance)">{{ seance.nom }}</a>
     </p>       
     <p class="is-size-7 mb-1">
     {{ seance.date_seance | date : 'dd/MM/yyyy' }} {{ seance.heure_debut }} -
@@ -1142,11 +1142,11 @@
   <!-- Bloc action à droite -->
   <div class="media-right">
    
-                          <btn *ngIf="seance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
+                          <btn *ngIf="seance.id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
                             i18n-title
                             title="Voir"
                             [type_button]="'VoirLight'"
-                            (click)="VoirMaSeanceByID(seance.seance_id)"
+                            (click)="VoirMaSeanceByID(seance.id)"
                           ></btn>
   </div>
             </article>
@@ -1163,21 +1163,21 @@
       <header class="card-header" style="align-items: center">
         <span class="fullscreen">
         <p class="card-header-title subtitle is-6"
-                *ngIf="editSeance.seance_id == 0 && editMode_serie"
+                *ngIf="editSeance.id == 0 && editMode_serie"
                 i18n
               >
                 Créer une série de séances
               </p>
               <p
                 class="card-header-title"
-                *ngIf="editSeance.seance_id == 0 && !editMode_serie"
+                *ngIf="editSeance.id == 0 && !editMode_serie"
                 i18n
               >
                 Créer une séance
               </p>
               <p
                 class="card-header-title"
-                *ngIf="editSeance.seance_id > 0"
+                *ngIf="editSeance.id > 0"
                 i18n
               >
                 Editer une séance
@@ -1189,23 +1189,23 @@
               [type_button]="'RetourMobile'"
               (click)="RetourListe()"
             ></btn>
-            <btn *ngIf="editSeance.seance_id < 1"
+            <btn *ngIf="editSeance.id < 1"
             [disabled]="!is_valid"
               [type_button]="'SauvegarderMobile'"
               (click)="Save()"
             ></btn>
-                                <ng-container *ngIf="editSeance.seance_id >0 && editSeance.afficher_present && !store.isProf; else prof">
+                                <ng-container *ngIf="editSeance.id >0 && editSeance.afficher_present && !store.isProf; else prof">
   <btn [type_button]="'VoirMobile'"
                       (click)="VoirMaSeance()"
                     ></btn>
                     </ng-container>
                     <ng-template #prof>    
                      <btn
-                     *ngIf="editSeance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
+                     *ngIf="editSeance.id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
                     [type_button]="'VoirMobile'"
                       (click)="VoirMaSeance()"
                     ></btn> 
-<div  *ngIf="editSeance.seance_id >0" class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
+<div  *ngIf="editSeance.id >0" class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
   <div class="dropdown-trigger">
     <button
       class="button is-success is-outlined btn-mobile btn-elevated btn-compact"
@@ -1238,7 +1238,7 @@
                   <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
       <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations essentielles
                   </h3>
-                    <ng-container *ngIf="editSeance.seance_id > 0 && !readonly">
+                    <ng-container *ngIf="editSeance.id > 0 && !readonly">
                       <btn
                         *ngIf="!edit_nom"
                         class="mx-1"
@@ -1267,13 +1267,13 @@
                   </div>
 
                 <ng-container
-                  *ngIf="editSeance.seance_id > 0; else NouvelleSeance"
+                  *ngIf="editSeance.id > 0; else NouvelleSeance"
                 >
                   <ng-container *ngIf="edit_nom; else affichageNom">
                     <input
                       class="input"
                       [ngClass]="{ 'is-danger': !rNom.key }"
-                      [(ngModel)]="editSeance.libelle"
+                      [(ngModel)]="editSeance.nom"
                     />
                     <p *ngIf="!rNom.key" class="help is-danger is-small">
                       {{ rNom.value }}
@@ -1311,7 +1311,7 @@
                     </ng-container>
                   </ng-container>
                   <ng-template #affichageNom>
-                      <p ><strong i18n>Libellé : </strong>{{ editSeance.libelle }}</p>
+                      <p ><strong i18n>Libellé : </strong>{{ editSeance.nom }}</p>
                       <p ><strong i18n>Type de séance : </strong>{{ GetType(editSeance.type_seance)}}</p>
                       <p *ngIf="editSeance.cours"><strong i18n>Cours : </strong>{{ GetCours(editSeance.cours) }}</p>
                       <p ><strong i18n>Statut : </strong>
@@ -1337,7 +1337,7 @@
                       <input
                         class="input"
                         [ngClass]="{ 'is-danger': !rNom.key }"
-                        [(ngModel)]="editSeance.libelle"
+                        [(ngModel)]="editSeance.nom"
                         (ngModelChange)="checkall()"
                       />
                     </div>
@@ -1400,7 +1400,7 @@
                   [date_debut]="date_debut_serie"
                   [date_fin]="date_fin_serie"
                   [rdv]="editSeance.rdv"
-                  [ID]="editSeance.seance_id"
+                  [ID]="editSeance.id"
                   [lieu_id]="editSeance.lieu_id"
                   [Regles]="GlobalService.getRegles().SeanceSerie_DateLieu"
                   (datelieuChange)="SaveDateLieu($event)"
@@ -1416,7 +1416,7 @@
                   [serie]="editMode_serie"
                   [date]="editSeance.date_seance"
                   [rdv]="editSeance.rdv"
-                  [ID]="editSeance.seance_id"
+                  [ID]="editSeance.id"
                   [readonly]="readonly"
                   [lieu_id]="editSeance.lieu_id"
                   [Regles]="GlobalService.getRegles().Seance_DateLieu"
@@ -1436,7 +1436,7 @@
                   [age_min_valeur]="editSeance.age_minimum"
                   [afficher_present]="editSeance.afficher_present"
                   [essai_possible]="editSeance.essai_possible"
-                  [ID]="editSeance.seance_id"
+                  [ID]="editSeance.id"
                   [readonly]="readonly"
                   [Regles]="GlobalService.getRegles().Seance_Parametres"
                   (valueChange)="SaveCaracteristique($event)"
@@ -1454,7 +1454,7 @@
                     >
                       Sélection des encadrants
                     </h3>
-                    <ng-container *ngIf="editSeance.seance_id > 0 && !readonly">
+                    <ng-container *ngIf="editSeance.id > 0 && !readonly">
                       <btn
                         *ngIf="!edit_prof"
                         [type_button]="'EditerLight'"
@@ -1548,7 +1548,7 @@
               <div  *ngIf="store.isLoggedIn && store.hasProjet && store.isProf" class="column is-full-tablet is-half-desktop">
                 <app-groupe-detail
                   (groupesUpdated)="onGroupesUpdated($event)"
-                  [id_source]="editSeance.seance_id"
+                  [id_source]="editSeance.id"
                   [objet_source]="'séance'"
                   [edit]="!readonly"
                   [title]="titre_groupe"
@@ -1565,23 +1565,23 @@
                   <div class="buttons" style="flex-wrap: nowrap">
                     <btn [type_button]="'RetourSmall'" (click)="RetourListe()"></btn>
                     <btn
-                      *ngIf="editSeance.seance_id < 1"
+                      *ngIf="editSeance.id < 1"
                       [disabled]="!is_valid"
                       [type_button]="'SauvegarderSmall'"
                       (click)="Save()"
                     ></btn>
-                    <ng-container *ngIf="editSeance.seance_id >0 && editSeance.afficher_present && !store.isProf; else prof">
+                    <ng-container *ngIf="editSeance.id >0 && editSeance.afficher_present && !store.isProf; else prof">
   <btn [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
                     ></btn>
                     </ng-container>
                     <ng-template #prof>    
                      <btn
-                     *ngIf="editSeance.seance_id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
+                     *ngIf="editSeance.id >0 && store.isLoggedIn && store.hasProjet && store.isProf"
                     [type_button]="'VoirSmall'"
                       (click)="VoirMaSeance()"
                     ></btn> 
-<div  *ngIf="editSeance.seance_id >0" class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
+<div  *ngIf="editSeance.id >0" class="dropdown is-right" [class.is-up]="isDesktopDropUp" [class.is-active]="pollOpen">
   <div class="dropdown-trigger">
     <button
       class="button is-success is-outlined btn-mobile btn-elevated btn-compact"

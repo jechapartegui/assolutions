@@ -238,7 +238,7 @@ ValiderSeance() {
         this.ouvert_param = false;
         this.ouvert_audience = true;
         this.variables = {
-          SEANCE_ID: this.seance_selectionnee.seance_id,
+          SEANCE_ID: this.seance_selectionnee.id,
         };
     
     this.uiLock = false;
@@ -253,7 +253,7 @@ ValiderSerieSeance() {
         this.ouvert_param = false;
         this.ouvert_audience = true;
         this.variables = {
-          SERIE_SEANCE: this.liste_seance_serie.map(x => x.seance_id).join(', '),
+          SERIE_SEANCE: this.liste_seance_serie.map(x => x.id).join(', '),
           CHAMPIONNAT: this.sujet_serie_seance.trim()
         };
     
@@ -262,7 +262,7 @@ ValiderSerieSeance() {
 RemoveSeanceSerie(_t146: Seance_VM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Séance retirée`;
-  this.liste_seance_serie = this.liste_seance_serie.filter(x => x.seance_id !== _t146.seance_id);
+  this.liste_seance_serie = this.liste_seance_serie.filter(x => x.id !== _t146.id);
   let o = errorService.OKMessage(this.action);
   errorService.emitChange(o); 
 }
@@ -270,7 +270,7 @@ AjouterSeanceSerie() {
     const errorService = ErrorService.instance;
     this.action = $localize`Séance ajoutée`;
   if (!this.seance_annul_convoc) return;
-  if (!this.liste_seance_serie.find(x => x.seance_id === this.seance_annul_convoc.seance_id)) {
+  if (!this.liste_seance_serie.find(x => x.id === this.seance_annul_convoc.id)) {
     this.liste_seance_serie.push(this.seance_annul_convoc);
     let o = errorService.OKMessage(this.action);
     errorService.emitChange(o);
@@ -451,7 +451,7 @@ return     this.mail_serv.SauvegarderTemplate(
 
   AddSeanceTous() {    
     if(!this.seance_selectionnee) return;
-     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.seance_id).then((res) => {
+     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.id).then((res) => {
          res.forEach(p => {
         if (p?.person) {
           Object.setPrototypeOf(p.person, Personne_VM.prototype);
@@ -469,7 +469,7 @@ this.ListeUserSelectionne.push(adh);
       });
     }
   AddSeancePresent() {  if(!this.seance_selectionnee) return;
-     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.seance_id).then((res) => {
+     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.id).then((res) => {
          res.forEach(p => {
           if(p.statut_inscription === InscriptionStatus_VM.PRESENT){
         if (p?.person) {
@@ -487,7 +487,7 @@ this.ListeUserSelectionne.push(adh);
       } })
       });}
   AddSeanceConvoque() {  if(!this.seance_selectionnee) return;
-     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.seance_id).then((res) => {
+     this.inscriptionserv.GetAllSeanceFull(this.seance_selectionnee.id).then((res) => {
          res.forEach(p => {
           if(p.statut_inscription === InscriptionStatus_VM.CONVOQUE){
         if (p?.person) {
