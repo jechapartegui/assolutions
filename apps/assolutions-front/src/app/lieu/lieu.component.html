@@ -8,23 +8,37 @@
           <div class="columns page-fill" *ngIf="Liste">
             <div class="column">
               <div class="card card--scroller">
-                <header class="card-header" style="align-items: center">
-          <p class="card-header-title" i18n>Liste des lieux</p>
-<span *ngIf="store.LieuHasRemoteNewerData()" class="tag is-warning is-light" style="margin-left: 10px">
-  Nouvelles données dispo
-</span>
-<span *ngIf="refreshing" class="tag is-info is-light" style="margin-left:10px">
-  Mise à jour…
-</span>
-<btn *ngIf="store.LieuHasRemoteNewerData()"
-     [type_button]="'ReloadLight'"
-     (click)="RefreshLieu({apply:true})"></btn>
-        </header>
+               <header class="card-header" style="align-items: center">
+  <p class="card-header-title" i18n>Liste des lieux</p>
+
+  <span *ngIf="store.LieuHasRemoteNewerData()" class="tag is-warning is-light" style="margin-left: 10px">
+    Nouvelles données dispo
+  </span>
+
+  <span *ngIf="needsReload" class="tag is-danger is-light" style="margin-left: 10px">
+    Recharge conseillée
+  </span>
+
+  <span *ngIf="refreshing" class="tag is-info is-light" style="margin-left:10px">
+    Mise à jour…
+  </span>
+
+  <btn *ngIf="store.LieuHasRemoteNewerData() || needsReload"
+       [type_button]="'ReloadLight'"
+       (click)="needsReload=false; RefreshLieu({apply:true})"></btn>
+</header>
+
         <div class="card-content" #scrollableContent>
                   <div class="content">
             <table class="table" style="width: 100%;font-size:smaller" *ngIf="Liste && Liste.length> 0">
               <thead>
                 <tr>
+                  <th style="width: 2rem;">
+  <input type="checkbox"
+         [checked]="Liste?.length && selectedIds.size === Liste.length"
+         (change)="toggleSelectAll($any($event.target).checked)" />
+</th>
+
                   <th><span class="th_filtre">
                       <span class="ligne">
                         <span style="font-size: smaller;" i18n>Nom</span>
@@ -49,6 +63,12 @@
               <tbody>
                 <tr
                   *ngFor="let lieu of Liste; trackBy: trackById">
+                  <td style="width: 2rem;">
+  <input type="checkbox"
+         [checked]="isSelected(lieu.id)"
+         (change)="toggleSelection(lieu.id, $any($event.target).checked)" />
+</td>
+
                   <td>
                     {{lieu.nom}}
                   </td>
@@ -82,6 +102,25 @@
      <footer class="card-footer">
                   <div class="columns">
                     <div class="column">
+                       <ng-container *ngIf="hasSelection; else normalActions">
+                        <span *ngIf="bulkWorking" class="tag is-info is-light" style="margin-left:10px">
+  {{ bulkLabel || 'Traitement en cours…' }}
+</span>
+<div *ngIf="!bulkWorking" class="buttons" style="flex-wrap: nowrap">
+      <btn title="Supprimer sélection"
+           [type_button]="'SupprimerSmall'"
+           (click)="supprimerListe()"></btn>
+
+      <btn title="Copier sélection"
+           [type_button]="'CopierSmall'"
+           (click)="copierListe()"></btn>
+
+      <btn title="Annuler sélection"
+           [type_button]="'AnnulerSmall'"
+           (click)="clearSelection()"></btn>
+    </div>
+                       </ng-container>
+                       <ng-template #normalActions> 
                       <div *ngIf="!afficher_filtre" class="buttons">
                         <btn
                           [type_button]="'CreerSmall'"
@@ -153,6 +192,8 @@
                           </div>
                         </div>
                       </div>
+</ng-template>
+
                     </div>
                   </div>
                 </footer>

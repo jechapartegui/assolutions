@@ -83,18 +83,19 @@ public Update(l:Lieu_VM): Promise<boolean> {
       return Promise.reject(error);
     });
 }
-public Delete(id:number): Promise<boolean> {
+public Delete(id: number): Promise<boolean> {
   this.url = environment.maseance + 'api/lieu/delete/';
-const body = {
-      id: id, 
-    };
+  const body = { id };
 
-    return this.global.POST(this.url, body)
-      .then((response: boolean) => {
-        return response;
-      })
-      .catch(error => {
-        return Promise.reject(error);
-      });
+  return this.global.POST(this.url, body)
+    .then((response: boolean) => {
+      if (response !== true) {
+        // IMPORTANT : transforme "false" en erreur exploitable par le component
+        return Promise.reject('Suppression refusée par le serveur');
+      }
+      return true;
+    })
+    .catch(error => Promise.reject(error));
 }
+
 }

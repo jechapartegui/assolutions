@@ -22,7 +22,10 @@ export class LieuComponent implements OnInit {
   filter_nom = '';
   action: string = '';
   public loading: boolean = false;
-  refreshing = false;
+  refreshing = false;needsReload = false;
+
+bulkWorking = false;
+bulkLabel = ''; // optionnel: "Suppression…" / "Copie…"
 
   @ViewChild('scrollableContent', { static: false })
   scrollableContent!: ElementRef<HTMLDivElement>;
@@ -57,7 +60,9 @@ export class LieuComponent implements OnInit {
     try {
       const remote = await this.lieu_serv.GetAll();
 
-      if (opts.apply) this.store.applyLieu(remote);
+      if (opts.apply) {
+        this.store.applyLieu(remote);
+this.clearSelection();}
       else this.store.markRemoteLieu(remote);
 
       this.RebuildListeFromStore();
@@ -212,33 +217,241 @@ Sort(sens: "NO" | "ASC" | "DESC", champ: string) {
     this.Item.nom = l.nom;
   }
 
-  async Delete(item: Lieu_VM) {
-    const errorService = ErrorService.instance;
-    const confirmation = window.confirm(
-      $localize`Voulez-vous supprimer ce lieu ? ...`
-    );
-    if (!confirmation) return;
+async Delete(item: Lieu_VM) {
+  const errorService = ErrorService.instance;
 
-    const backup = [...this.store.Lieu().Liste];
-    this.store.removeLieuLocal(item.id);
+  const confirmation = window.confirm(
+    $localize`Voulez-vous supprimer ce lieu ?`
+  );
+  if (!confirmation) return;
+
+  // backup (rollback simple)
+  const backup = { ...item };
+
+  // optimistic : on enlève de suite
+  this.store.removeLieuLocal(item.id);
+  this.RebuildListeFromStore();
+
+  try {
+    await this.lieu_serv.Delete(item.id);
+
+    errorService.emitChange(
+      errorService.OKMessage($localize`Lieu supprimé.`)
+    );
+
+    // refresh silencieux (optionnel)
+    this.RefreshLieu({ apply: false });
+
+  } catch (err: any) {
+    // rollback
+    this.store.upsertLieuLocal(backup);
     this.RebuildListeFromStore();
 
-    try {
-      await this.lieu_serv.Delete(item.id);
-      errorService.emitChange(
-        errorService.OKMessage($localize`Supprimer un lieu`)
-      );
-      this.RefreshLieu({ apply: false });
-    } catch (err: any) {
-      // rollback simple
-      this.store.applyLieu(backup);
+    // message unique, clair
+    const msg = err?.message ?? `${err}`;
+    errorService.emitChange(
+      errorService.CreateError(
+        $localize`Suppression impossible`,
+        $localize`Ce lieu est probablement utilisé ailleurs.`
+      )
+    );
+
+    console.warn('Delete KO:', msg);
+
+    // proposer resync
+    this.needsReload = true;
+
+    // si tu veux resync automatique plutôt que laisser le bouton:
+    // await this.RefreshLieu({ apply: true });
+  }
+}
+
+
+  // Sélection (IDs)
+selectedIds = new Set<number>();
+
+// (Optionnel) pratique pour le template
+get hasSelection(): boolean {
+  return this.selectedIds.size > 0;
+}
+
+// Toggle 1 item
+toggleSelection(lieuId: number, checked: boolean) {
+  if (checked) this.selectedIds.add(lieuId);
+  else this.selectedIds.delete(lieuId);
+}
+
+// Checkbox state
+isSelected(lieuId: number): boolean {
+  return this.selectedIds.has(lieuId);
+}
+
+// Clear selection
+clearSelection() {
+  this.selectedIds.clear();
+}
+
+// Récupérer les items sélectionnés (ce que tu demandes)
+getItemsSelected(): Lieu_VM[] {
+  const selected = this.selectedIds;
+  return (this.Liste ?? []).filter(x => selected.has(x.id));
+}
+
+// (Optionnel) sélectionner/désélectionner toute la liste visible
+toggleSelectAll(checked: boolean) {
+  this.selectedIds.clear();
+  if (checked) {
+    for (const l of (this.Liste ?? [])) this.selectedIds.add(l.id);
+  }
+}
+async supprimerListe() {
+  const errorService = ErrorService.instance;
+  const items = this.getItemsSelected();
+  if (items.length === 0) return;
+
+  const confirmation = window.confirm(
+    $localize`Supprimer ${items.length} lieu(x) sélectionné(s) ?`
+  );
+  if (!confirmation) return;
+
+  this.bulkWorking = true;
+  this.bulkLabel = $localize`Suppression en cours…`;
+
+  // backup pour rollback partiel
+  const backupById = new Map<number, Lieu_VM>();
+  for (const it of items) backupById.set(it.id, { ...it });
+
+  try {
+    // optimistic : on enlève tout de suite
+    for (const it of items) this.store.removeLieuLocal(it.id);
+    this.clearSelection();
+    this.RebuildListeFromStore();
+
+    const ok: number[] = [];
+    const ko: { id: number; nom: string; reason: string }[] = [];
+
+    for (const it of items) {
+      try {
+        await this.lieu_serv.Delete(it.id);
+        ok.push(it.id);
+      } catch (err: any) {
+        ko.push({
+          id: it.id,
+          nom: it.nom,
+          reason: err?.message ?? `${err}`,
+        });
+      }
+    }
+
+    // KO => rollback partiel + message + reload conseillé
+    if (ko.length > 0) {
+      for (const fail of ko) {
+        const restore = backupById.get(fail.id);
+        if (restore) this.store.upsertLieuLocal(restore);
+      }
       this.RebuildListeFromStore();
+
+      // 1 seul message (pas spam)
+      
+      // tu peux aussi afficher un message plus friendly si tu détectes “foreign key”
       errorService.emitChange(
         errorService.CreateError(
-          $localize`Supprimer un lieu`,
-          err?.message ?? `${err}`
+          $localize`Suppression partielle`,
+          $localize`${ok.length} supprimé(s), ${ko.length} refusé(s) (probablement utilisé(s) ailleurs).`
         )
       );
+
+    // proposer resync
+       this.needsReload = true;
+      // et là : re-check silencieux OU reload complet
+      // perso : apply:true (tu remets l’écran 100% conforme serveur)
+      await this.RefreshLieu({ apply: true });
+      return;
+    }
+
+    // Tout OK
+    errorService.emitChange(
+      errorService.OKMessage($localize`${ok.length} lieu(x) supprimé(s).`)
+    );
+
+    // refresh silencieux (optionnel)
+    this.RefreshLieu({ apply: false });
+
+  } finally {
+    this.bulkWorking = false;
+    this.bulkLabel = '';
+  }
+}
+
+
+
+async copierListe() {
+  const errorService = ErrorService.instance;
+  const items = this.getItemsSelected();
+
+  if (items.length === 0) return;
+
+  const confirmation = window.confirm(
+    $localize`Copier ${items.length} lieu(x) sélectionné(s) ?`
+  );
+  if (!confirmation) return;
+
+  // UI: tu peux garder la sélection ou la vider (perso je vide)
+  this.clearSelection();
+
+  const created: Lieu_VM[] = [];
+  const ko: { nom: string; reason: string }[] = [];
+
+  // traitement séquentiel = stable
+  for (const it of items) {
+    // Copie sans ID + reset dates
+    const copy: Lieu_VM = {
+      ...structuredClone(it), // si pas supporté chez toi: JSON.parse(JSON.stringify(it))
+      id: 0,
+      createdAt: undefined,
+      updatedAt: undefined,
+
+      // optionnel: suffixer le nom
+      nom: `${it.nom} (copie)`,
+    };
+
+    try {
+      const newId = await this.lieu_serv.Add(copy);
+
+      if (!newId || newId <= 0) {
+        ko.push({ nom: it.nom, reason: 'ID invalide retourné par le serveur' });
+        continue;
+      }
+
+      copy.id = newId;
+
+      // Optimistic store: on ajoute la copie immédiatement
+      this.store.upsertLieuLocal(copy);
+      created.push(copy);
+      this.RebuildListeFromStore();
+    } catch (err: any) {
+      ko.push({ nom: it.nom, reason: err?.message ?? `${err}` });
     }
   }
+
+  // message unique de synthèse
+  if (ko.length === 0) {
+    errorService.emitChange(
+      errorService.OKMessage($localize`${created.length} lieu(x) copié(s).`)
+    );
+  } else {
+    console.warn('Bulk copy KO:', ko);
+    errorService.emitChange(
+      errorService.CreateError(
+        $localize`Copie partielle`,
+        $localize`${created.length} copié(s), ${ko.length} en échec.`
+      )
+    );
+  }
+
+  // Refresh silencieux unique (pour récupérer updatedAt/createdAt serveur, etc.)
+  this.RefreshLieu({ apply: false });
+}
+
+
 }
