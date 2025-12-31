@@ -1,8 +1,19 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  NgZone,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AdherentService } from '../../services/adherent.service';
+import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
@@ -10,67 +21,82 @@ import { GroupeService } from '../../services/groupe.service';
 import { InscriptionSaisonService } from '../../services/inscription-saison.service';
 import { MailService } from '../../services/mail.service';
 import { SaisonService } from '../../services/saison.service';
+
 import { AdherentExport, Adherent_VM } from '@shared/lib/member.interface';
-import { KeyValuePair } from '@shared/lib/autres.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
 import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
 import { Adresse } from '@shared/lib/adresse.interface';
 import { InscriptionSaison_VM } from '@shared/lib/inscription_saison.interface';
 import { ItemContact, Personne_VM } from '@shared/lib/personne.interface';
-import { AppStore } from '../app.store';
-import { CompteService } from '../../services/compte.service';
 import { Compte_VM } from '@shared/lib/compte.interface';
+
+import { AppStore } from '../app.store';
 import { MultifiltersAdherentPipe } from '../../filters/multifilters-adherent.pipe';
+
 
 @Component({
   standalone: false,
   selector: 'app-adherent',
   templateUrl: './adherent.component.html',
   styleUrls: ['./adherent.component.css'],
-    providers: [MultifiltersAdherentPipe],
+  providers: [MultifiltersAdherentPipe],
 })
-export class AdherentComponent implements OnInit {
-
+export class AdherentComponent implements OnInit, OnDestroy {
   // === Inputs / ViewChild ===
   @Input() public context: 'ECRAN_MENU' | 'ECRAN_LISTE' | 'ESSAI' = 'ECRAN_LISTE';
-  @Input() public id: number;
+  @Input() public id: number = 0;
   @Input() public login_adherent: string = '';
-  @Input() public Personne:Personne_VM | null = null;
-  @Output() essai = new EventEmitter<Personne_VM | null>;
+  @Input() public Personne: Personne_VM | null = null;
+
+  @Output() essai = new EventEmitter<Personne_VM | null>();
+
   @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
-// Pour autofocus de l’input quand on ouvre l’édition
-@ViewChild('nomFilterInput') nomFilterInput?: ElementRef<HTMLInputElement>;
-@ViewChild('inscritSelect') inscritSelect?: ElementRef<HTMLInputElement>;
-@ViewChild('groupeSelect') groupeSelect?: ElementRef<HTMLInputElement>;
-@ViewChild('sexeSelect') sexeSelect?: ElementRef<HTMLInputElement>;
-@ViewChild('dateFromInput') dateFromInput?: ElementRef<HTMLInputElement>;
+
+  // autofocus filtres (si présents dans le template)
+  @ViewChild('nomFilterInput') nomFilterInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('inscritSelect') inscritSelect?: ElementRef<HTMLInputElement>;
+  @ViewChild('groupeSelect') groupeSelect?: ElementRef<HTMLInputElement>;
+  @ViewChild('sexeSelect') sexeSelect?: ElementRef<HTMLInputElement>;
+  @ViewChild('dateFromInput') dateFromInput?: ElementRef<HTMLInputElement>;
 
   // === États généraux ===
-  public loading = false;
-  public action = '';
+  public loading: boolean = false;
+  public refreshing: boolean = false;
+  public needsReload: boolean = false;
+
+  public bulkWorking: boolean = false;
+  public bulkLabel: string = '';
+
+  public action: string = '';
   public showScrollToTop = false;
   public dropdownActive = false;
-  public select_account:boolean = false;
+  public select_account: boolean = false;
 
-  // === Données de l’adhérent ===
-  public thisAdherent: Adherent_VM = null;
-  public thisAccount: Compte_VM = null;
+  // === Données adhérent / écran ===
+  public thisAdherent: Adherent_VM | null = null;
+  public thisAccount: Compte_VM | null = null;
   public photoAdherent: string | null = null;
-  public histo_adherent: string;
+  public histo_adherent: string = '';
+
+  // ✅ Liste harmonisée (comme ton HTML)
+  public Liste: Adherent_VM[] = [];
+  // ✅ Alias conservé car ton code historique l’utilise partout
   public liste_adherents_VM: Adherent_VM[] = [];
-  public ListePersonne:Personne_VM[] = [];
-  public personne:Personne_VM = null;
 
-  // === Groupes et saisons ===
+  public ListePersonne: Personne_VM[] = [];
+  public personne: Personne_VM | null = null;
+
+  // === Groupes / saisons ===
   public liste_groupe: Groupe_VM[] = [];
-  public liste_groupe_filter: Groupe_VM[];
+  public liste_groupe_filter: Groupe_VM[] = [];
   public titre_groupe = $localize`Groupe de l'adhérent`;
-  public liste_saison: Saison_VM[] = [];
-  public active_saison: Saison_VM;
 
-  // === Filtres / tris ===
+  public liste_saison: Saison_VM[] = [];
+  public active_saison!: Saison_VM;
+
+  // === Filtres / tri (UI) ===
   public filters: FilterAdherent = new FilterAdherent();
-  public selected_filter: string;
+  public selected_filter: string = '';
   public sort_nom = 'NO';
   public sort_date = 'NO';
   public sort_sexe = 'NO';
@@ -78,39 +104,43 @@ export class AdherentComponent implements OnInit {
   public selected_sort_sens: any;
   public afficher_tri = false;
   public afficher_filtre = false;
-  public editmongroupe:boolean = false;
+  public editmongroupe: boolean = false;
 
-  // === Texte et traduction ===
+  // === Textes ===
   public titre_contact = $localize`Contacts de l'adhérent`;
   public titre_contact_prevenir = $localize`Contacts à prévenir de l'adhérent`;
   public libelle_inscription = $localize`Inscrire`;
   public libelle_inscription_avec_paiement = $localize`Saisir inscription et paiement`;
   public libelle_retirer_inscription = $localize`Retirer l'inscription`;
 
-  // === Verification ===
+  // === Validations ===
   public adherentValide: boolean = false;
-  public AdresseValide: boolean;
-  public ContactValide: boolean;
-  public ContactUrgenceValide: boolean;
+  public AdresseValide: boolean = false;
+  public ContactValide: boolean = false;
+  public ContactUrgenceValide: boolean = false;
 
   // === Inscription / adhésion ===
   public afficher_inscription = false;
-  public adherent_inscription: Adherent_VM;
-  public saison_inscription: Saison_VM;
-  public paiement_adhesion: boolean;
-  public type_inscription: boolean;
+  public adherent_inscription!: Adherent_VM;
+  public saison_inscription!: Saison_VM;
+  public paiement_adhesion!: boolean;
+  public type_inscription!: boolean;
 
-  // === Données liées au compte ===
-  public existing_login: boolean;
-  public compte_to_force: boolean = false;
-
-  // === État de l’édition UI ===
-  public edit_info_adresse = false;
-  public edit_info_perso = false;
+  // === Divers UI ===
   denseMode = false;
-private readonly defaultPhotoUrl = 'assets/photo_H.png';
+  private readonly defaultPhotoUrl = 'assets/photo_H.png';
+  defaultAvatar = '../../assets/photo_H.png';
 
-  // === Constructeur ===
+  // === Sélection (bulk actions) ===
+  selectedIds = new Set<number>();
+  get hasSelection(): boolean {
+    return this.selectedIds.size > 0;
+  }
+
+  // Cache photo
+  private photoCache = new Map<number, string>();
+  private inFlight = new Set<number>();
+
   constructor(
     public mail_serv: MailService,
     public inscription_saison_serv: InscriptionSaisonService,
@@ -119,310 +149,976 @@ private readonly defaultPhotoUrl = 'assets/photo_H.png';
     private router: Router,
     private saisonserv: SaisonService,
     private ridersService: AdherentService,
-    private compteserv:CompteService,
+    private compteserv: CompteService,
     private grServ: GroupeService,
     private route: ActivatedRoute,
-    public store:AppStore,
-        private multiFiltersAdherent: MultifiltersAdherentPipe
-    
+    public store: AppStore,
+    public zone: NgZone,
+    private multiFiltersAdherent: MultifiltersAdherentPipe
   ) {}
+
+  // =============== LIFECYCLE ===============
   ngOnInit(): void {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la page`;
-    if(this.context == 'ESSAI'){
-      if(this.Personne) {
-this.thisAdherent = Object.assign(new Adherent_VM(), this.Personne);
-this.thisAdherent.inscrit = false;
-this.thisAdherent.inscriptionsSaison = [];
-this.thisAdherent.inscriptionsSeance = [];
-this.histo_adherent = JSON.stringify(this.thisAdherent);
 
-      }else {
-        
-      this.thisAdherent = new Adherent_VM();
-      if(this.login_adherent){
-        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.login_adherent, Notes: '', Pref: true}];
+    // Mode ESSAI : pas de store / pas de fetch
+    if (this.context === 'ESSAI') {
+      if (this.Personne) {
+        this.thisAdherent = Object.assign(new Adherent_VM(), this.Personne);
+        this.thisAdherent.inscrit = false;
+        this.thisAdherent.inscriptionsSaison = [];
+        this.thisAdherent.inscriptionsSeance = [];
+        Adherent_VM.bakeLibelle(this.thisAdherent);
+        this.histo_adherent = JSON.stringify(this.thisAdherent);
+      } else {
+        this.thisAdherent = new Adherent_VM();
+        if (this.login_adherent) {
+          this.thisAdherent.contact = [
+            { Type: 'EMAIL', Value: this.login_adherent, Notes: '', Pref: true },
+          ];
+        }
+        this.id = 0;
+        Adherent_VM.bakeLibelle(this.thisAdherent);
+        this.histo_adherent = JSON.stringify(this.thisAdherent);
       }
-      this.id = 0;
-      }
-this.histo_adherent = JSON.stringify(this.thisAdherent);
       return;
     }
+
     this.loading = true;
 
-    if (this.store.isLoggedIn()) {
-      this.saisonserv
-        .GetAll()
-        .then((sa) => {
-          if (sa.length == 0) {
-            this.loading = false;
-            let o = errorService.CreateError(
+    if (!this.store.isLoggedIn()) {
+      this.loading = false;
+      errorService.emitChange(
+        errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`)
+      );
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // saisons + contexte + chargement
+    this.saisonserv
+      .GetAll()
+      .then(async (sa) => {
+        if (!sa || sa.length === 0) {
+          this.loading = false;
+          errorService.emitChange(
+            errorService.CreateError(
               $localize`Récupérer les saisons`,
               $localize`Il faut au moins une saison pour créer un cours`
-            );
+            )
+          );
+          if (this.store.appli() === 'ADMIN') {
+            this.router.navigate(['/saison']);
+            this.store.updateSelectedMenu('SAISON');
+          } else {
+            this.router.navigate(['/menu']);
+            this.store.updateSelectedMenu('MENU');
+          }
+          return;
+        }
+
+        this.liste_saison = sa;
+        this.active_saison = this.liste_saison.find((x) => x.active) ?? this.liste_saison[0];
+
+        if (this.active_saison && !this.store.saison_active()) {
+          this.store.updateSaisonActive(this.active_saison);
+        }
+
+        this.route.queryParams.subscribe((params) => {
+          if ('id' in params) {
+            this.id = Number(params['id']);
+            this.context = 'ECRAN_MENU';
+          }
+        });
+
+        // si liste : charge immédiatement en apply:true (sinon “liste vide”)
+        if (this.context === 'ECRAN_LISTE') {
+          this.afficher_filtre = false;
+          await this.UpdateListeAdherents({ apply: true });
+        }
+
+        if (this.id > 0) {
+          await this.ChargerAdherent();
+        }
+
+        this.loading = false;
+        errorService.emitChange(errorService.OKMessage(this.action));
+      })
+      .catch((err: HttpErrorResponse) => {
+        this.loading = false;
+        errorService.emitChange(
+          errorService.CreateError($localize`Récupérer les saisons`, err.message)
+        );
+        this.router.navigate(['/menu']);
+        this.store.updateSelectedMenu('MENU');
+      });
+
+    this.updateDenseMode();
+    window.addEventListener('resize', this.updateDenseMode);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('resize', this.updateDenseMode);
+  }
+
+  updateDenseMode = () => {
+    this.denseMode = window.innerWidth < 480;
+  };
+
+  // =============== FILTRES (inline edit) ===============
+  normalizeFilterValue(key: string, raw: any): any {
+    const toBool = (v: any): boolean | null => {
+      if (v === null || v === undefined || v === '') return null;
+      if (v === true || v === false) return v;
+      const s = String(v).toLowerCase();
+      if (s === 'true' || s === '1' || s === 'oui') return true;
+      if (s === 'false' || s === '0' || s === 'non') return false;
+      return null;
+    };
+
+    switch (key) {
+      case 'nom':
+      case 'groupe': {
+        const v = (raw ?? '').toString().trim();
+        return v.length ? v : null;
+      }
+      case 'date_apres':
+      case 'date_avant': {
+        const v = (raw ?? '').toString().trim();
+        return v.length ? v : null;
+      }
+      case 'sexe':
+      case 'inscrit': {
+        return toBool(raw);
+      }
+      default:
+        return raw;
+    }
+  }
+
+  startEditFilter(
+    key: string,
+    input?:
+      | ElementRef<HTMLInputElement | HTMLSelectElement>
+      | (HTMLInputElement | HTMLSelectElement)
+      | null
+  ) {
+    this.filters.editing[key] = true;
+    setTimeout(() => {
+      const el = (input as any)?.nativeElement ? (input as any).nativeElement : input;
+      el?.focus?.();
+      (el as HTMLInputElement)?.select?.();
+    }, 0);
+  }
+
+  onFilterChange(key: string, value: any) {
+    const normalized = this.normalizeFilterValue(key, value);
+    (this.filters as any)[`filter_${key}`] = normalized;
+  }
+
+  endEditFilter(key: string) {
+    this.filters.editing[key] = false;
+  }
+  cancelEditFilter(key: string) {
+  this.filters.editing[key] = false;
+}
+
+  clearFilter(key: string) {
+    if (key === 'date') {
+      this.filters.filter_date_apres = null;
+      this.filters.filter_date_avant = null;
+    } else {
+      (this.filters as any)[`filter_${key}`] = null;
+    }
+    this.filters.editing[key] = false;
+  }
+
+  ReinitFiltre() {
+    this.filters.filter_date_apres = null;
+    this.filters.filter_date_avant = null;
+    this.filters.filter_groupe = null;
+    this.filters.filter_inscrit = null;
+    this.filters.filter_nom = null;
+    this.filters.filter_sexe = null;
+  }
+
+  // =============== LISTE / STORE SYNC ===============
+  async UpdateListeAdherents(opts: { apply: boolean } = { apply: false }) {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Récupérer les adhérents`;
+    this.needsReload = false;
+
+    const firstLoad = !this.Liste || this.Liste.length === 0;
+
+    if (opts.apply && firstLoad) this.loading = true;
+    else this.refreshing = true;
+
+    try {
+      // 1) groupes (comme avant)
+      const groupes = await this.grServ.GetAll(this.active_saison.id);
+      this.liste_groupe = groupes ?? [];
+      this.liste_groupe_filter = this.liste_groupe;
+
+      // 2) adhérents
+      const remote = await this.ridersService.GetAdherentAdhesion(this.active_saison.id);
+
+      // bake libelle + assure classe
+      const baked = (remote ?? []).map((d: any) => {
+        const a = Object.assign(new Adherent_VM(), d);
+        Adherent_VM.bakeLibelle(a);
+        return a;
+      });
+
+      // store : apply (1er affichage) ou markRemote (badge “nouvelles données”)
+      if (opts.apply) (this.store as any).applyAdherent?.(baked);
+      else (this.store as any).markRemoteAdherent?.(baked);
+
+      // si ton store n’a pas ces méthodes : on met direct en local quand même
+      if (!(this.store as any).applyAdherent && opts.apply) {
+        this.liste_adherents_VM = baked;
+        this.Liste = baked;
+      } else {
+        this.RebuildListeFromStore();
+      }
+
+      // preload photos sur ce qui est visible
+      this.preloadPhotos(this.Liste);
+    } catch (err: any) {
+      errorService.emitChange(
+        errorService.CreateError(this.action, err?.message ?? `${err}`)
+      );
+    } finally {
+      this.loading = false;
+      this.refreshing = false;
+    }
+  }
+
+  private RebuildListeFromStore() {
+    const all: Adherent_VM[] = (this.store as any).Adherent?.().Liste ?? [];
+
+    const baked = (all ?? []).map((d: any) => {
+      const a = Object.assign(new Adherent_VM(), d);
+      Adherent_VM.bakeLibelle(a);
+      return a;
+    });
+
+    this.liste_adherents_VM = baked;
+    this.Liste = baked;
+  }
+
+  // =============== SELECTION ===============
+  toggleSelection(adherentId: number, checked: boolean) {
+    if (checked) this.selectedIds.add(adherentId);
+    else this.selectedIds.delete(adherentId);
+  }
+
+  isSelected(adherentId: number): boolean {
+    return this.selectedIds.has(adherentId);
+  }
+
+  clearSelection() {
+    this.selectedIds.clear();
+  }
+
+  toggleSelectAll(checked: boolean) {
+    this.selectedIds.clear();
+    if (checked) {
+      for (const a of this.Liste ?? []) this.selectedIds.add(a.id);
+    }
+  }
+
+  getItemsSelected(): Adherent_VM[] {
+    const ids = this.selectedIds;
+    return (this.Liste ?? []).filter((x) => ids.has(x.id));
+  }
+
+  // =============== DELETE (robuste + optimiste) ===============
+  private async deleteOneAdherentServerSide(item: Adherent_VM): Promise<void> {
+    // 1) supprimer inscriptions saison + liens de groupes (si présents)
+    if (item.inscriptionsSaison?.length) {
+      // delete inscriptions
+      for (const iss of item.inscriptionsSaison) {
+        try {
+          if (iss?.id) await this.inscription_saison_serv.Delete(iss.id);
+        } catch {
+          // on continue, le vrai blocage est souvent le delete final
+        }
+      }
+
+      // delete liens groupes sur l’inscription active si tu as ça
+      const active = item.inscriptionsSaison.find((x) => x.active);
+      if (active?.groupes?.length) {
+        for (const gr of active.groupes) {
+          try {
+            if (gr?.id_lien) await this.grServ.DeleteLien(gr.id_lien);
+          } catch {
+            // idem, on laisse continuer
+          }
+        }
+      }
+    }
+
+    // 2) delete adhérent
+    await this.ridersService.Delete(item.id);
+  }
+
+  Archiver(boo:boolean = true){
+  this.action = $localize`Archiver la personne`;
+  const errorService = ErrorService.instance;
+  let message = $localize`Voulez-vous archiver l'adhérent ?`;
+  if(!boo){
+    message = $localize`Voulez-vous désarchiver l'adhérent ?`;}
+  let confirm = window.confirm(message);
+  this.thisAdherent.archive = boo;
+  if (confirm) {
+    this.ridersService
+      .Update(this.thisAdherent)
+        .then((retour) => {
+          if (retour) {
+            let o = errorService.OKMessage(this.action);
             errorService.emitChange(o);
-            if (this.store.appli() === 'ADMIN') {
-              this.router.navigate(['/saison']);
-              this.store.updateSelectedMenu("SAISON");
-            } else {
-              this.router.navigate(['/menu']);
-              this.store.updateSelectedMenu("MENU");
+            this.histo_adherent = JSON.stringify(this.thisAdherent);
+          } else {
+            let o = errorService.UnknownError(this.action);
+            errorService.emitChange(o);
+          }
+        })
+        .catch((err: HttpErrorResponse) => {
+          let o = errorService.CreateError(this.action, err.message);
+          errorService.emitChange(o);
+        });
+      }
 
-            }
-            return;
-          }
-          this.liste_saison = sa;
-          this.active_saison = this.liste_saison.filter(
-            (x) => x.active == true
-          )[0];
-          if(this.active_saison && !this.store.saison_active()){
-            this.store.updateSaisonActive(this.active_saison);
-          }
-          this.route.queryParams.subscribe((params) => {
-            if ('id' in params) {
-              this.id = params['id'];
-              this.context = 'ECRAN_MENU';
-            }
-          });
-          if (this.context == 'ECRAN_LISTE') {
-            if (
-              this.store.appli() === 'APPLI' &&
-              this.store.isProf() === false
-            ) {
-              this.loading = false;
-              this.router.navigate(['/menu']);
-              this.store.updateSelectedMenu("MENU");
-              return;
-            }
-          }
-            if (this.id > 0) {
-              this.ChargerAdherent();
-            }
-          if (this.context == 'ECRAN_LISTE') {
-            this.afficher_filtre = false;
-            this.UpdateListeAdherents();
-          }
+}
+GotoImport() {
+    this.router.navigate(['/import']);
+  }
 
+Inscrire(){
+  this.action = $localize`Inscrire la personne`;
+    const errorService = ErrorService.instance;
+    const iss = new InscriptionSaison_VM();
+    iss.rider_id = this.thisAdherent.id;
+    iss.active = true;
+    iss.saison_id = this.store.saison_active().id;
+    this.inscription_saison_serv.Add(iss).then((id) =>{
+      if(id){
+ this.ridersService.Get(this.thisAdherent.id).then((adh) =>{
+          this.thisAdherent = adh;
           let o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
         })
-        .catch((err: HttpErrorResponse) => {
-          this.loading = false;
-          let o = errorService.CreateError(
-            $localize`récupérer les saisons`,
-            err.message
-          );
+      } else {
+       
+          let o = errorService.UnknownError(this.action);
           errorService.emitChange(o);
-          this.router.navigate(['/menu']);
-              this.store.updateSelectedMenu("MENU");
-          return;
-        });
-    } else {
-      this.loading = false;
-      let o = errorService.CreateError(
-        this.action,
-        $localize`Accès impossible, vous n'êtes pas connecté`
-      );
-      errorService.emitChange(o);
-      this.router.navigate(['/login']);
-    }
-    
-  this.updateDenseMode();
-  window.addEventListener('resize', this.updateDenseMode);
-  }
-
- normalizeFilterValue(key: string, raw: any): any {
-  const toBool = (v: any): boolean | null => {
-    if (v === null || v === undefined || v === '') return null;
-    if (v === true || v === false) return v;
-    const s = String(v).toLowerCase();
-    if (s === 'true' || s === '1' || s === 'oui' || s === 'homme') return true;
-    if (s === 'false' || s === '0' || s === 'non' || s === 'femme') return false;
-    return null;
-  };
-
-  switch (key) {
-    case 'nom':
-    case 'groupe': {
-      const v = (raw ?? '').toString().trim();
-      return v.length ? v : null;
-    }
-    case 'date_apres':
-    case 'date_avant': {
-      const v = (raw ?? '').toString().trim();
-      // accepte "" -> null, sinon YYYY-MM-DD tel quel
-      return v.length ? v : null;
-    }
-    case 'sexe':
-    case 'inscrit': {
-      return toBool(raw);
-    }
-    default: return raw;
-  }
-}
-
-startEditFilter(key: string, input?: ElementRef<HTMLInputElement | HTMLSelectElement> | (HTMLInputElement | HTMLSelectElement) | null) {
-  this.filters.editing[key] = true;
-  setTimeout(() => {
-    const el = (input as any)?.nativeElement ? (input as any).nativeElement : input;
-    el?.focus?.();
-    (el as HTMLInputElement)?.select?.();
-  }, 0);
-}
-
-onFilterChange(key: string, value: any) {
-  // mapping générique: filter_${key}
-  const normalized = this.normalizeFilterValue(key, value);
-  if (key === 'date') {
-    // non utilisé ici, on passe 'date_apres' et 'date_avant' directement depuis le template
-  } else {
-    (this.filters as any)[`filter_${key}`] = normalized;
-  }
-}
-
-endEditFilter(key: string) {
-  this.filters.editing[key] = false;
-  console.log(this.filters.editing);
-}
-
-cancelEditFilter(key: string) {
-  this.filters.editing[key] = false;
-}
-
-clearFilter(key: string) {
-  if (key === 'date') {
-    this.filters.filter_date_apres = null;
-    this.filters.filter_date_avant = null;
-  } else {
-    (this.filters as any)[`filter_${key}`] = null;
-  }
-  this.filters.editing[key] = false;
-}
-
-
-
-  ngOnDestroy() {
-  window.removeEventListener('resize', this.updateDenseMode);
-}
-
-updateDenseMode = () => {
-  // dense si largeur < 480px (à ajuster)
-  this.denseMode = window.innerWidth < 480;
-};
-
-  defaultAvatar = '../../assets/photo_H.png';
-  
-  onImgError(evt: Event) {
-    (evt.target as HTMLImageElement).src = this.defaultAvatar;
-  }
-  
-  // Cache simple des URLs déjà récupérées
-  private photoCache = new Map<number, string>();
-  // Pour éviter de lancer 2 fois la même requête simultanée
-  private inFlight = new Set<number>();
-  
-  // Lance le chargement des photos pour une liste de FullInscriptionSeance_VM
-  private preloadPhotos(items: Adherent_VM[]): void {
-    for (const it of items) {
-      const id = it?.id;
-      if (!id) continue;
-  
-      // déjà présente ?
-      if (it.photo && it.photo.length > 0) continue;
-  
-      // déjà en cache ?
-      const cached = this.photoCache.get(id);
-      if (cached) { it.photo = cached; continue; }
-  
-      // déjà en cours ?
-      if (this.inFlight.has(id)) continue;
-      this.inFlight.add(id);
-  
-      // fire-and-forget
-this.ridersService.GetPhoto(id)
-  .then(photoBase64 => {
-    const url = this.createBlobUrl(photoBase64);  // ✅ convertit base64 -> blob URL utilisable par <img>
-    if (url && url !== this.defaultPhotoUrl) {
-      this.photoCache.set(id, url);
-      it.photo = url;
-      // this.cdr?.markForCheck(); // si jamais tu passes le composant en OnPush
-    } else {
-      // createBlobUrl a retourné l'avatar par défaut -> on laisse le template gérer
-    }
-  })
-  .catch(() => { /* on ignore l’erreur */ })
-  .finally(() => this.inFlight.delete(id));
-    }
-  }
-
-  onGroupesUpdated(updatedGroupes: LienGroupe_VM[]) {
-    this.thisAdherent.inscriptionsSaison.find(x => x.active).groupes = updatedGroupes;
-  }
-
-  UpdateListeAdherents() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Récupérer les adhérents`;
-
-    this.grServ
-      .GetAll()
-      .then((groupes) => {
-        this.liste_groupe = groupes;
-        this.liste_groupe_filter = groupes;
-        this.ridersService
-          .GetAdherentAdhesion(this.active_saison.id)
-          .then((adh) => {
-              // 🔹 Lancer le fetch des photos pour tous les items visibles
-            this.liste_adherents_VM = adh.map(data =>
-  Object.assign(new Adherent_VM(), data)
-);
-   this.preloadPhotos(this.liste_adherents_VM); // ✅ ici plutôt que sur 'adh'
-            this.loading = false;
-          })
-          .catch((err: HttpErrorResponse) => {
-            this.loading = false;
+      }
+    })   .catch((err: HttpErrorResponse) => {
             let o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
             return;
           });
-      })
-      .catch((err: HttpErrorResponse) => {
-        this.loading = false;
-        let o = errorService.CreateError(
-          $localize`Récupérer les groupes`,
-          err.message
-        );
-        errorService.emitChange(o);
-        this.router.navigate(['/groupe']);
-              this.store.updateSelectedMenu("GROUPE");
-        return;
-      });
+
+}
+  async Delete(item: Adherent_VM) {
+    const errorService = ErrorService.instance;
+    const action = $localize`Supprimer un adhérent`;
+
+    const confirmation = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
+    if (!confirmation) return;
+
+    // backup pour rollback
+    const backup = Object.assign(new Adherent_VM(), item);
+
+    // optimistic UI
+    (this.store as any).removeAdherentLocal?.(item.id);
+    if (!(this.store as any).removeAdherentLocal) {
+      this.Liste = (this.Liste ?? []).filter((x) => x.id !== item.id);
+      this.liste_adherents_VM = this.Liste;
+    } else {
+      this.RebuildListeFromStore();
+    }
+
+    try {
+      await this.deleteOneAdherentServerSide(item);
+
+      errorService.emitChange(errorService.OKMessage(action));
+
+      // refresh silencieux : juste badge si diff
+      this.UpdateListeAdherents({ apply: false });
+    } catch (err: any) {
+      // rollback
+      (this.store as any).upsertAdherentLocal?.(backup);
+      if (!(this.store as any).upsertAdherentLocal) {
+        this.Liste = [backup, ...(this.Liste ?? [])];
+        this.liste_adherents_VM = this.Liste;
+      } else {
+        this.RebuildListeFromStore();
+      }
+
+      // ✅ message visible + proposition reload
+      this.needsReload = true;
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Suppression impossible`,
+          $localize`L'adhérent est probablement utilisé ailleurs (inscriptions, paiements, etc.). Recharge conseillée.`
+        )
+      );
+    }
   }
+
+  async supprimerListe() {
+    const errorService = ErrorService.instance;
+    const items = this.getItemsSelected();
+    if (!items.length) return;
+
+    const confirmation = window.confirm(
+      $localize`Supprimer ${items.length} adhérent(s) sélectionné(s) ?`
+    );
+    if (!confirmation) return;
+
+    this.bulkWorking = true;
+    this.bulkLabel = $localize`Suppression en cours…`;
+    this.needsReload = false;
+
+    // backup par id (rollback partiel)
+    const backupById = new Map<number, Adherent_VM>();
+    for (const it of items) backupById.set(it.id, Object.assign(new Adherent_VM(), it));
+
+    // optimistic UI : on enlève tout
+    for (const it of items) (this.store as any).removeAdherentLocal?.(it.id);
+    if (!(this.store as any).removeAdherentLocal) {
+      const ids = new Set(items.map((x) => x.id));
+      this.Liste = (this.Liste ?? []).filter((x) => !ids.has(x.id));
+      this.liste_adherents_VM = this.Liste;
+    } else {
+      this.RebuildListeFromStore();
+    }
+    this.clearSelection();
+
+    const ok: number[] = [];
+    const ko: { id: number; libelle: string; reason: string }[] = [];
+
+    try {
+      // ✅ try/catch item par item (ce que tu voulais)
+      for (const it of items) {
+        try {
+          await this.deleteOneAdherentServerSide(it);
+          ok.push(it.id);
+        } catch (err: any) {
+          ko.push({
+            id: it.id,
+            libelle: it.libelle ?? `${it.prenom ?? ''} ${it.nom ?? ''}`.trim(),
+            reason: err?.message ?? `${err}`,
+          });
+        }
+      }
+
+      // rollback seulement pour ceux en KO
+      if (ko.length) {
+        for (const fail of ko) {
+          const restore = backupById.get(fail.id);
+          if (restore) (this.store as any).upsertAdherentLocal?.(restore);
+        }
+
+        if (!(this.store as any).upsertAdherentLocal) {
+          const restoreList = ko
+            .map((k) => backupById.get(k.id))
+            .filter(Boolean) as Adherent_VM[];
+          this.Liste = [...restoreList, ...(this.Liste ?? [])];
+          this.liste_adherents_VM = this.Liste;
+        } else {
+          this.RebuildListeFromStore();
+        }
+
+        this.needsReload = true;
+        errorService.emitChange(
+          errorService.CreateError(
+            $localize`Suppression partielle`,
+            $localize`${ok.length} supprimé(s), ${ko.length} échec(s). Recharge conseillée.`
+          )
+        );
+        return;
+      }
+
+      errorService.emitChange(
+        errorService.OKMessage($localize`${ok.length} adhérent(s) supprimé(s).`)
+      );
+
+      // refresh silencieux
+      this.UpdateListeAdherents({ apply: false });
+    } finally {
+      this.bulkWorking = false;
+      this.bulkLabel = '';
+    }
+  }
+
+  // =============== COPIE (robuste + inscriptions saison + groupes) ===============
+  private deepClone<T>(x: T): T {
+    return JSON.parse(JSON.stringify(x));
+  }
+
+  private buildAdherentCopy(src: Adherent_VM): Adherent_VM {
+    const copy = Object.assign(new Adherent_VM(), this.deepClone(src));
+
+    copy.id = 0;
+    copy.surnom = (copy.surnom ? copy.surnom + ' ' : '') + $localize`(copie)`;
+
+    // reset flags
+    copy.archive = false;
+    copy.inscrit = false;
+
+    // on ne copie PAS les inscriptions séance (t’as dit : individuel)
+    copy.inscriptionsSeance = [];
+
+    // on va recréer une inscription saison + groupes côté back, donc on vide côté VM
+    copy.inscriptionsSaison = [];
+
+    Adherent_VM.bakeLibelle(copy);
+    return copy;
+  }
+
+  private async copyInscriptionSaisonAndGroups(src: Adherent_VM, newAdherentId: number): Promise<void> {
+    // 1) inscription saison active uniquement
+    const active = src.inscriptionsSaison?.find((x) => x.active);
+    if (!active) return;
+
+    const iss = new InscriptionSaison_VM();
+    iss.rider_id = newAdherentId;
+    iss.active = true;
+    iss.saison_id = active.saison_id;
+
+    const newIssId = await this.inscription_saison_serv.Add(iss);
+
+    // 2) groupes de l’inscription active
+    const groupes = active.groupes ?? [];
+    if (!groupes.length) return;
+
+    // ⚠️ On ne connaît pas ton endpoint exact d’ajout de lien de groupe.
+    // Je tente en “soft” via any : adapte si besoin (AddLien / AddGroupLink / etc.)
+    for (const g of groupes) {
+      const maybeFn =
+        (this.grServ as any).AddLien ||
+        (this.grServ as any).AddGroupLink ||
+        (this.grServ as any).AddLienGroupe;
+
+      if (maybeFn) {
+        await maybeFn.call(this.grServ, {
+          inscriptionSaisonId: newIssId,
+          groupId: g.id,
+        });
+      } else {
+        // Si tu n’as pas encore l’endpoint : au moins on ne casse pas la copie
+        // (tu pourras compléter plus tard)
+      }
+    }
+  }
+
+  async copierListe() {
+    const errorService = ErrorService.instance;
+    const action = $localize`Copie d'adhérents`;
+
+    const items = this.getItemsSelected();
+    if (!items.length) return;
+
+    this.bulkWorking = true;
+    this.bulkLabel = $localize`Copie en cours…`;
+    this.needsReload = false;
+
+    const created: Adherent_VM[] = [];
+    const ko: { srcId: number; reason: string }[] = [];
+
+    try {
+      for (const src of items) {
+        try {
+          const copy = this.buildAdherentCopy(src);
+
+          // 1) création adhérent
+          const newId = await this.ridersService.Add(copy);
+          copy.id = newId;
+
+          // 2) copie inscription saison + groupes (tu as dit important)
+          await this.copyInscriptionSaisonAndGroups(src, newId);
+
+          created.push(copy);
+        } catch (err: any) {
+          ko.push({ srcId: src.id, reason: err?.message ?? `${err}` });
+        }
+      }
+
+      if (created.length) {
+        // optimistic UI : on injecte direct en haut
+        // (si tu veux plutôt repasser par store, on peut)
+        this.zone.run(() => {
+          const baked = created.map((a) => {
+            Adherent_VM.bakeLibelle(a);
+            return a;
+          });
+          this.Liste = [...baked, ...(this.Liste ?? [])];
+          this.liste_adherents_VM = this.Liste;
+          this.clearSelection();
+          this.preloadPhotos(baked);
+        });
+      }
+
+      if (ko.length) {
+        this.needsReload = true;
+        errorService.emitChange(
+          errorService.CreateError(
+            $localize`Copie partielle`,
+            $localize`${created.length} copié(s), ${ko.length} échec(s). Recharge conseillée.`
+          )
+        );
+        return;
+      }
+
+      errorService.emitChange(
+        errorService.OKMessage($localize`${created.length} adhérent(s) copié(s).`)
+      );
+
+      // refresh silencieux
+      this.UpdateListeAdherents({ apply: false });
+    } finally {
+      this.bulkWorking = false;
+      this.bulkLabel = '';
+    }
+  }
+
+  // =============== DIVERS / OUTILS ===============
   calculateAge(dateNaissance: Date): number {
     const today = new Date();
     const birthDate = new Date(dateNaissance);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
     return age;
   }
 
-  EditerBloc(bloc: string) {
-    switch (bloc) {
-      case 'info_adresse':
-        this.edit_info_adresse = !this.edit_info_adresse;
-        break;
-      case 'info_perso':
-        this.edit_info_perso = !this.edit_info_perso;
-        break;
+  onImgError(evt: Event) {
+    (evt.target as HTMLImageElement).src = this.defaultAvatar;
+  }
+
+  private preloadPhotos(items: Adherent_VM[]): void {
+    for (const it of items) {
+      const id = it?.id;
+      if (!id) continue;
+
+      if (it.photo && it.photo.length > 0) continue;
+
+      const cached = this.photoCache.get(id);
+      if (cached) {
+        it.photo = cached;
+        continue;
+      }
+
+      if (this.inFlight.has(id)) continue;
+      this.inFlight.add(id);
+
+      this.ridersService
+        .GetPhoto(id)
+        .then((photoBase64) => {
+          const url = this.createBlobUrl(photoBase64);
+          if (url && url !== this.defaultPhotoUrl) {
+            this.photoCache.set(id, url);
+            it.photo = url;
+          }
+        })
+        .catch(() => {})
+        .finally(() => this.inFlight.delete(id));
     }
   }
 
-  getActiveSaison(): string {
+  createBlobUrl(base64Data: string | null | undefined): string {
+    try {
+      if (!base64Data || base64Data.trim() === '') throw new Error('Base64 vide');
+
+      const parts = base64Data.split(',');
+      if (parts.length < 2) throw new Error('Format Base64 invalide');
+
+      const byteString = atob(parts[1]);
+      const mimeString = parts[0].split(':')[1].split(';')[0];
+
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+
+      const blob = new Blob([ab], { type: mimeString });
+      return URL.createObjectURL(blob);
+    } catch {
+      return this.defaultPhotoUrl;
+    }
+  }
+
+  toValueContactPref(cont: ItemContact[]) {
+    if (!cont || cont.length === 0) return $localize`Aucun contact`;
+    const pref = cont.find((x) => x.Pref === true);
+    return pref ? pref.Value : cont[0].Value;
+  }
+
+  valid_adherent(isValid: boolean): void {
+    this.adherentValide = isValid;
+  }
+  valid_adresse(isValid: boolean): void {
+    this.AdresseValide = isValid;
+  }
+  valid_contact(isValid: boolean): void {
+    this.ContactValide = isValid;
+  }
+  valid_contact_urgence(isValid: boolean): void {
+    this.ContactUrgenceValide = isValid;
+  }
+
+  // =============== METIERS (inchangés / tes flows) ===============
+  async ChargerAdherent() {
+    this.thisAdherent = null;
+    const errorService = ErrorService.instance;
+    this.action = $localize`Récupérer l'adhérent`;
+
+    try {
+      if (!this.liste_groupe || this.liste_groupe.length === 0) {
+        this.liste_groupe = await this.grServ.GetAll(this.active_saison.id);
+      }
+
+      const adh = await this.ridersService.Get(this.id);
+      if (!adh) {
+        this.loading = false;
+        errorService.emitChange(
+          errorService.CreateError(this.action, $localize`Aucun adhérent trouvé`)
+        );
+        this.router.navigate(['/menu']);
+        this.store.updateSelectedMenu('MENU');
+        return;
+      }
+
+      Adherent_VM.bakeLibelle(adh);
+      this.histo_adherent = JSON.stringify(adh);
+      this.thisAdherent = adh;
+      this.loading = false;
+
+      this.ridersService.GetPhoto(this.id).then((photoBase64) => {
+        this.photoAdherent = this.createBlobUrl(photoBase64);
+      });
+    } catch (err: any) {
+      this.loading = false;
+      errorService.emitChange(
+        errorService.CreateError(this.action, err?.message ?? $localize`Erreur inconnue`)
+      );
+      this.router.navigate(['/menu']);
+      this.store.updateSelectedMenu('MENU');
+    }
+  }
+
+  Read(adh: Adherent_VM) {
+    this.id = adh.id;
+    this.ChargerAdherent();
+  }
+
+  isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
+    return !!adh.inscriptionsSaison?.some((x) => x.saison_id === saison_id);
+  }
+
+  CurrentActiveInscriptionGroupe(adh: Adherent_VM): LienGroupe_VM[] {
+    const active = adh.inscriptionsSaison?.find((x) => x.active);
+    return active?.groupes ?? [];
+  }
+
+  CurrentInactiveInscriptionGroupe(adh: Adherent_VM): LienGroupe_VM[] {
+    const active = adh.inscriptionsSaison?.find((x) => x.active);
+    const list_id_group = active?.groupes?.map((n) => n.id) ?? [];
+    return this.liste_groupe
+      .filter((x) => !list_id_group.includes(Number(x.id)))
+      .map((x) => new LienGroupe_VM(x.id, x.nom, 0));
+  }
+
+  SaveAdresse(thisAdresse: Adresse) {
+    if (!this.thisAdherent) return;
+    this.thisAdherent.adresse = thisAdresse;
+    this.PreSave();
+  }
+
+  onPhotoSelectedFromChild(base64Photo: string): void {
+    this.photoAdherent = base64Photo;
+    if (this.id > 0 && this.thisAdherent) {
+      this.ridersService.UpdatePhoto(this.thisAdherent.id, base64Photo).catch(() => {});
+    }
+  }
+
+  PreSave() {
+    if (
+      this.adherentValide &&
+      this.AdresseValide &&
+      this.ContactValide &&
+      this.ContactUrgenceValide &&
+      this.thisAdherent?.id &&
+      this.thisAdherent.id > 0
+    ) {
+      this.Save();
+    }
+  }
+
+  async Save() {
+    if (this.context === 'ESSAI') {
+      this.essai.emit(this.thisAdherent as any);
+      return;
+    }
+
+    const errorService = ErrorService.instance;
+    this.action = $localize`Sauvegarder l'adhérent`;
+    if (!this.thisAdherent) return;
+
+    if (this.thisAdherent.id === 0) {
+      if (!this.thisAccount) {
+        errorService.emitChange(
+          errorService.CreateError(this.action, $localize`Aucun compte sélectionné`)
+        );
+        return;
+      }
+
+      // création compte si nécessaire + mail
+      if (this.thisAccount.id === 0) {
+        this.action = $localize`Ajout et envoi du mail de création de compte`;
+        try {
+          const idCompte = await this.compteserv.Add(this.thisAccount);
+          this.thisAccount.id = idCompte;
+          this.thisAdherent.compte = idCompte;
+          await this.mail_serv.MailActivation(this.thisAccount.email);
+          errorService.emitChange(errorService.OKMessage(this.action));
+        } catch (err: any) {
+          errorService.emitChange(
+            errorService.CreateError(this.action, err?.message ?? `${err}`)
+          );
+          return;
+        }
+      }
+
+      // création adhérent
+      this.action = $localize`Ajout de l'adhérent`;
+      this.ridersService
+        .Add(this.thisAdherent)
+        .then((id) => {
+          this.thisAdherent!.id = id;
+          if (this.photoAdherent) this.ridersService.UpdatePhoto(id, this.photoAdherent).catch(() => {});
+          this.id = id;
+          errorService.emitChange(errorService.OKMessage(this.action));
+          this.histo_adherent = JSON.stringify(this.thisAdherent);
+        })
+        .catch((err: HttpErrorResponse) => {
+          errorService.emitChange(errorService.CreateError(this.action, err.message));
+        });
+    } else {
+      this.ridersService
+        .Update(this.thisAdherent)
+        .then((retour) => {
+          if (retour) {
+            errorService.emitChange(errorService.OKMessage(this.action));
+            this.histo_adherent = JSON.stringify(this.thisAdherent);
+          } else {
+            errorService.emitChange(errorService.UnknownError(this.action));
+          }
+        })
+        .catch((err: HttpErrorResponse) => {
+          errorService.emitChange(errorService.CreateError(this.action, err.message));
+        });
+    }
+  }
+
+  Retour(): void {
+    const ret_adh = JSON.stringify(this.thisAdherent);
+    if (this.histo_adherent !== ret_adh) {
+      const confirm = window.confirm(
+        $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
+      );
+      if (!confirm) return;
+    }
+
+    if (this.context === 'ECRAN_LISTE') {
+      this.thisAdherent = null;
+      this.UpdateListeAdherents({ apply: false });
+    } else if (this.context === 'ESSAI') {
+      this.thisAdherent = null;
+      this.essai.emit(null);
+    } else {
+      this.router.navigate(['/menu']);
+      this.store.updateSelectedMenu('MENU');
+    }
+  }
+
+  // Export : on exporte la liste filtrée (comme ton HTML)
+  ExportExcel() {
+    const headers = {
+      ID: 'ID',
+      Nom: 'Nom',
+      Prenom: 'Prénom',
+      DDN: 'Date de naissance',
+      Sexe: 'Sexe',
+      Street: 'Numéro et voie',
+      PostCode: 'Code postal',
+      City: 'Ville',
+      Country: 'Pays',
+      Surnom: 'Surnom',
+      Login: 'Login',
+      Mail: 'Email',
+      MailPref: 'Contact préféré email ?',
+      Phone: 'Téléphone',
+      PhonePref: 'Contact préféré téléphone ?',
+      MailUrgence: 'Mail si urgence',
+      NomMailUrgence: 'Contact mail si urgence',
+      PhoneUrgence: 'Téléphone si urgence',
+      NomPhoneUrgence: 'Contact téléphone si urgence',
+      Inscrit: 'Inscrit',
+    };
+
+    const list = this.multiFiltersAdherent.transform(
+      this.liste_adherents_VM,
+      this.filters as any,
+      this.active_saison?.id
+    );
+
+    this.excelService.exportAsExcelFile(
+      list.map((x) => new AdherentExport(x)),
+      'liste_adherent',
+      headers
+    );
+  }
+
+  // Scroll UI
+  ngAfterViewInit(): void {
+    this.waitForScrollableContainer();
+  }
+
+  private waitForScrollableContainer(): void {
+    setTimeout(() => {
+      if (this.scrollableContent) {
+        this.scrollableContent.nativeElement.addEventListener(
+          'scroll',
+          this.onContentScroll.bind(this)
+        );
+      } else {
+        this.waitForScrollableContainer();
+      }
+    }, 100);
+  }
+
+  onContentScroll(): void {
+    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
+    this.showScrollToTop = scrollTop > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  toggleDropdown() {
+    this.dropdownActive = !this.dropdownActive;
+  }
+
+  handleAction(_action: string) {
+    this.dropdownActive = false;
+  }
+   getActiveSaison(): string {
     let s = this.liste_saison.find((x) => x == this.active_saison);
     if (s) {
       return s.nom;
@@ -430,32 +1126,6 @@ this.ridersService.GetPhoto(id)
       return '';
     }
   }
-toValueContactPref(cont: ItemContact[]) {
-  if(!cont || cont.length == 0) {
-    return $localize`Aucun contact`;
-  } else {
-    if(cont.find(x => x.Pref === true)){
-    return cont.find(x => x.Pref === true)?.Value;
-    } else {
-      return cont[0].Value;
-    }
-  }
-}
-
-valid_adherent(isValid: boolean): void {
-  this.adherentValide = isValid;
-}
-valid_adresse(isValid: boolean): void {
-  this.AdresseValide = isValid;
-}
-valid_contact(isValid: boolean): void {
-  this.ContactValide = isValid;
-}
-valid_contact_urgence(isValid: boolean): void {
-  this.ContactUrgenceValide = isValid;
-}
-
-
   async Create(compte_VM:Compte_VM) {
     this.thisAccount  = compte_VM;
     // nouveau compte -- ancien compte
@@ -473,7 +1143,7 @@ valid_contact_urgence(isValid: boolean): void {
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
       } else {
-        this.ListePersonne = this.ListePersonne.filter(y => !this.liste_adherents_VM.filter(x => x.inscrit).map(x => x.id).includes(y.id));
+        this.ListePersonne = this.ListePersonne.filter(y => !this.Liste.filter(x => x.inscrit).map(x => x.id).includes(y.id));
           if(this.ListePersonne.length == 0){
         this.id = 0;
         this.thisAdherent = new Adherent_VM();
@@ -517,578 +1187,59 @@ retourListePersonne(){
      this.thisAdherent = null;
       this.UpdateListeAdherents();
 }
+Sort(sens: 'NO' | 'ASC' | 'DESC', champ: string) {
+  // tu peux garder tes vars sort_nom/sort_date/sort_sexe existantes
+  if (champ === 'nom') this.sort_nom = sens;
+  if (champ === 'date') this.sort_date = sens;
+  if (champ === 'sexe') this.sort_sexe = sens;
 
-Archiver(boo:boolean = true){
-  this.action = $localize`Archiver la personne`;
-  const errorService = ErrorService.instance;
-  let message = $localize`Voulez-vous archiver l'adhérent ?`;
-  if(!boo){
-    message = $localize`Voulez-vous désarchiver l'adhérent ?`;}
-  let confirm = window.confirm(message);
-  this.thisAdherent.archive = boo;
-  if (confirm) {
-    this.ridersService
-      .Update(this.thisAdherent)
-        .then((retour) => {
-          if (retour) {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            this.histo_adherent = JSON.stringify(this.thisAdherent);
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-      }
+  // IMPORTANT: comme tu filtres via pipe dans le HTML, on trie la liste "brute"
+  const dir = sens === 'ASC' ? 1 : sens === 'DESC' ? -1 : 0;
+  if (dir === 0) return;
 
+  this.Liste = [...this.Liste].sort((a, b) => {
+    if (champ === 'nom') {
+      const A = (a.libelle ?? '').toUpperCase();
+      const B = (b.libelle ?? '').toUpperCase();
+      return (A > B ? 1 : A < B ? -1 : 0) * dir;
+    }
+    if (champ === 'date') {
+      const A = a.date_naissance ?? '';
+      const B = b.date_naissance ?? '';
+      return (A > B ? 1 : A < B ? -1 : 0) * dir;
+    }
+    if (champ === 'sexe') {
+      const A = a.sexe ? 1 : 0;
+      const B = b.sexe ? 1 : 0;
+      return (A - B) * dir;
+    }
+    return 0;
+  });
+}
 }
 
-Inscrire(){
-  this.action = $localize`Inscrire la personne`;
-    const errorService = ErrorService.instance;
-    const iss = new InscriptionSaison_VM();
-    iss.rider_id = this.thisAdherent.id;
-    iss.active = true;
-    iss.saison_id = this.store.saison_active().id;
-    this.inscription_saison_serv.Add(iss).then((id) =>{
-      if(id){
- this.ridersService.Get(this.thisAdherent.id).then((adh) =>{
-          this.thisAdherent = adh;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-        })
-      } else {
-       
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-      }
-    })   .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-            return;
-          });
+export type SortSens = 'NO' | 'ASC' | 'DESC';
 
-}
-
-  
-
-  Read(adh: Adherent_VM) {
-    this.id = adh.id;
-    this.ChargerAdherent();
-  }
-
-
-  getSaison(id: number): string {
-    return this.liste_saison.filter((x) => x.id == id)[0].nom;
-  }
-createBlobUrl(base64Data: string | null | undefined): string {
-  try {
-    if (!base64Data || base64Data.trim() === '') {
-      throw new Error('Base64 vide');
-    }
-
-    // si format "data:mime;base64,xxxx"
-    const parts = base64Data.split(',');
-    if (parts.length < 2) {
-      throw new Error('Format Base64 invalide');
-    }
-
-    const byteString = atob(parts[1]);
-    const mimeString = parts[0].split(':')[1].split(';')[0];
-
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-
-    const blob = new Blob([ab], { type: mimeString });
-    return URL.createObjectURL(blob);
-
-  } catch (e) {
-    console.warn('Photo invalide, utilisation de la photo par défaut', e);
-    return this.defaultPhotoUrl;
-  }
-}
-
-isInscrtitionActive(adh: Adherent_VM, saison_id: number): boolean {
-  if (adh.inscriptionsSaison) {
-    return adh.inscriptionsSaison.some(
-      (x) => x.saison_id == saison_id
-    );
-  } else
-    return false;
-}
-
-  async ChargerAdherent() {
-    this.thisAdherent = null;
-    const errorService = ErrorService.instance;
-    this.action = $localize`Récupérer l'adhérent`;
-    try {
-      if(!this.liste_groupe || this.liste_groupe.length==0){
-        this.liste_groupe = await this.grServ.GetAll(this.active_saison.id);
-      }
-      const adh = await this.ridersService.Get(this.id);
-      if (!adh) {
-        this.loading = false;
-
-        let o = errorService.CreateError(
-          this.action,
-          $localize`Aucun adhérent trouvé`
-        );
-        errorService.emitChange(o);
-        this.router.navigate(['/menu']);
-              this.store.updateSelectedMenu("MENU");
-        return;
-      } else {
-        Adherent_VM.bakeLibelle(adh);
-        this.histo_adherent = JSON.stringify(adh);
-        this.thisAdherent = adh;
-        
-        this.loading = false;
-        this.ridersService.GetPhoto(this.id).then((PhotBase64) =>{
-           this.photoAdherent =this.createBlobUrl(PhotBase64); // pour Angular
-        })
-      }
-    } catch (err: any) {
-      this.loading = false;
-      let o = errorService.CreateError(
-        this.action,
-        err.message || $localize`Erreur inconnue`
-      );
-      errorService.emitChange(o);
-      this.router.navigate(['/menu']);
-              this.store.updateSelectedMenu("MENU");
-    }
-
-    if (
-      this.store.appli() == 'APPLI' &&
-      this.store.isProf() == false
-    ) {
-      return;
-    } else if (
-      this.store.appli() == 'APPLI' && this.store.isProf()
-    ) {
-      return;
-    } else if (this.store.appli() == 'ADMIN') {
-      return;
-    }
-  }
-
-  Delete(adh: Adherent_VM) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Supprimer l'adhérent`;
-    let confirm = window.confirm($localize`Voulez-vous supprimer l'adhérent ?`);
-    if (confirm) {
-      if (adh.inscriptionsSaison) {
-        adh.inscriptionsSaison.forEach((adhesion) => {
-          this.inscription_saison_serv.Delete(adhesion.id);
-        });
-      }
-      if (adh.inscriptionsSaison[0]) {
-        adh.inscriptionsSaison[0].groupes.forEach((gr) => {
-          this.grServ.DeleteLien(gr.id_lien);
-        });
-      }
-      this.ridersService
-        .Delete(adh.id)
-        .then((retour) => {
-          if (retour) {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            this.UpdateListeAdherents();
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-    }
-  }
-  SaveAdresse(thisAdresse :Adresse){
-    this.thisAdherent.adresse = thisAdresse;
-    this.PreSave();
-  }
-
-onPhotoSelectedFromChild(base64Photo: string): void {
-  this.photoAdherent = base64Photo; // utile si tu veux que ça déclenche un Save() aussi
-  if(this.id > 0 ){
-    this.ridersService.UpdatePhoto(this.thisAdherent.id, base64Photo).then((test) =>{
-      console.log('Photo mise à jour avec succès', test);
-    }).catch((error) => {
-      console.error('Erreur lors de la mise à jour de la photo', error);
-
-    }); // ✅ Appel de ta méthode avec un objet
-  }
-}
-
-PreSave() {
-  if(this.adherentValide && this.AdresseValide && this.ContactValide && this.ContactUrgenceValide && this.thisAdherent.id >0) {
-   
-    this.Save();
-  }
-}
-
-  async Save() {
-     if(this.context == "ESSAI"){
-      this.essai.emit(this.thisAdherent);
-      return;
-    }
-    const errorService = ErrorService.instance;
-    this.action = $localize`Sauvegarder l'adhérent`;
-    if (this.thisAdherent.id == 0) {
-      if(!this.thisAccount){
-          let o = errorService.CreateError(this.action, $localize`Aucun compte sélectionné`);
-          errorService.emitChange(o);
-          return;
-      } else {
-        if(this.thisAccount.id == 0) {
-    this.action = $localize`Ajout et envoi du mail de création de compte`;
-          await   this.compteserv.Add(this.thisAccount).then((id) =>{
-            this.thisAccount.id = id;
-          this.thisAdherent.compte = id;
-          this.mail_serv.MailActivation(this.thisAccount.email).then(() => {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            
-          }).catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-         }).catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-          return;
-        });
-          }
-        }
-    this.action = $localize`Ajout de l'adhérent`;
-      this.ridersService
-        .Add(this.thisAdherent)
-        .then((id) => {
-          this.thisAdherent.id = id;
-          this.ridersService.UpdatePhoto(this.thisAdherent.id, this.photoAdherent)
-          this.id = id;
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-          this.histo_adherent = JSON.stringify(this.thisAdherent);
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-    } else {
-      this.ridersService
-        .Update(this.thisAdherent)
-        .then((retour) => {
-          if (retour) {
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            this.histo_adherent = JSON.stringify(this.thisAdherent);
-          } else {
-            let o = errorService.UnknownError(this.action);
-            errorService.emitChange(o);
-          }
-        })
-        .catch((err: HttpErrorResponse) => {
-          let o = errorService.CreateError(this.action, err.message);
-          errorService.emitChange(o);
-        });
-    }
-  }
-
-  Retour(): void {
-    const ret_adh = JSON.stringify(this.thisAdherent);
-    if (this.histo_adherent != ret_adh) {
-      let confirm = window.confirm(
-        $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
-      );
-      if (!confirm) {
-        return;
-      }
-    }
-    if (this.context == 'ECRAN_LISTE') {
-      this.thisAdherent = null;
-      this.UpdateListeAdherents();
-    } else  if (this.context == 'ESSAI') {
-      this.thisAdherent = null;
-      this.essai.emit(null);
-    } else {
-      this.router.navigate(['/menu']);
-      this.store.updateSelectedMenu("MENU");
-    }
-  }
-
-  Sort(sens: 'NO' | 'ASC' | 'DESC', champ: string) {
-    switch (champ) {
-      case 'nom':
-        this.sort_nom = sens;
-        this.sort_date = 'NO';
-        this.sort_sexe = 'NO';
-        this.liste_adherents_VM.sort((a, b) => {
-          const nomA = a.libelle.toUpperCase();
-          const nomB = b.libelle.toUpperCase();
-          let comparaison = 0;
-          if (nomA > nomB) {
-            comparaison = 1;
-          } else if (nomA < nomB) {
-            comparaison = -1;
-          }
-
-          return this.sort_nom === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-      case 'sexe':
-        this.sort_sexe = sens;
-        this.sort_date = 'NO';
-        this.sort_nom = 'NO';
-        this.liste_adherents_VM.sort((a, b) => {
-          const lieuA = a.sexe;
-          const lieuB = b.sexe;
-
-          let comparaison = 0;
-          if (lieuA > lieuB) {
-            comparaison = 1;
-          } else if (lieuA < lieuB) {
-            comparaison = -1;
-          }
-
-          return this.sort_sexe === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-      case 'date':
-        this.sort_sexe = 'NO';
-        this.sort_date = sens;
-        this.sort_nom = 'NO';
-        this.liste_adherents_VM.sort((a, b) => {
-          let dateA = a.date_naissance;
-          let dateB = b.date_naissance;
-
-          let comparaison = 0;
-          if (dateA > dateB) {
-            comparaison = 1;
-          } else if (dateA < dateB) {
-            comparaison = -1;
-          }
-
-          return this.sort_date === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-    }
-    this.liste_adherents_VM = [...this.liste_adherents_VM];
-  }
-  ReinitFiltre() {
-    this.filters.filter_date_apres = null;
-    this.filters.filter_date_avant = null;
-    this.filters.filter_groupe = null;
-    this.filters.filter_inscrit = null;
-    this.filters.filter_nom = null;
-    this.filters.filter_sexe = null;
-  }
-  GotoImport() {
-    this.router.navigate(['/import']);
-  }
-
-  ExportExcel() {
-    let headers = {
-      ID: 'ID',
-      Nom: 'Nom',
-      Prenom: 'Prénom',
-      DDN: 'Date de naissance',
-      Sexe: 'Sexe',
-      Street: 'Numéro et voie',
-      PostCode: 'Code postal',
-      City: 'Ville',
-      Country: 'Pays',
-      Surnom: 'Surnom',
-      Login: 'Login',
-      Mail: 'Email',
-      MailPref: 'Contact préféré email ?',
-      Phone: 'Téléphone',
-      PhonePref: 'Contact préféré téléphone ?',
-      MailUrgence: 'Mail si urgence',
-      NomMailUrgence: 'Contact mail si urgence',
-      PhoneUrgence: 'Téléphone si urgence',
-      NomPhoneUrgence: 'Contact téléphone si urgence',
-      Inscrit: 'Inscrit',
-    };
-     // même filtrage que dans le HTML
-  const list = this.multiFiltersAdherent.transform(
-    this.liste_adherents_VM,
-    this.filters,
-    this.active_saison?.id
-  );
-
-  this.excelService.exportAsExcelFile(
-    list.map(x => new AdherentExport(x)),
-    'liste_adherent',
-    headers
-  );
-  }
-
-  StatutMAJ(ad: Adherent_VM) {
-    let n = this.liste_adherents_VM.find((x) => x.id == ad.id);
-    if (n) {
-      return true;
-    }
-    let u = this.liste_adherents_VM.find(
-      (x) => x.nom == ad.nom && x.prenom == ad.prenom && x.date_naissance == ad.date_naissance
-    );
-    if (u) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  isRegistredSaison(saison_id: number) {
-    let u = this.thisAdherent.inscriptionsSaison.find((x) => x.saison_id == saison_id);
-    if (u) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  
-
-  ngAfterViewInit(): void {
-    this.waitForScrollableContainer();
-  }
-
-  private waitForScrollableContainer(): void {
-    setTimeout(() => {
-      if (this.scrollableContent) {
-        this.scrollableContent.nativeElement.addEventListener(
-          'scroll',
-          this.onContentScroll.bind(this)
-        );
-      } else {
-        this.waitForScrollableContainer();
-      }
-    }, 100);
-  }
-
-  onContentScroll(): void {
-    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
-    this.showScrollToTop = scrollTop > 200;
-  }
-
-  scrollToTop(): void {
-    this.scrollableContent.nativeElement.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  }
-
-  toggleDropdown() {
-    this.dropdownActive = !this.dropdownActive;
-  }
-
-  handleAction(action: string) {
-    this.dropdownActive = false;
-  }
-  CurrentActiveInscriptionGroupe(adh:Adherent_VM): LienGroupe_VM[]{
-    if(!adh.inscriptionsSaison || adh.inscriptionsSaison.length == 0){
-      return [];
-    }
-    if(adh.inscriptionsSaison.find(x => x.active == true)){
-      return adh.inscriptionsSaison.find(x => x.active == true).groupes;
-    } else {
-      return [];
-    }
-  }
-    CurrentInactiveInscriptionGroupe(adh:Adherent_VM): LienGroupe_VM[]{
-
-    if(!adh.inscriptionsSaison || adh.inscriptionsSaison.length == 0){
-      return this.liste_groupe.map(x => new LienGroupe_VM(x.id, x.nom, 0));
-    }
-    if(adh.inscriptionsSaison.find(x => x.active == true)){
-      const list_id_group = adh.inscriptionsSaison.find(x => x.active == true).groupes.map(n => n.id);
-      return this.liste_groupe.filter( x => !list_id_group.includes(Number(x.id))).map(x => new LienGroupe_VM(x.id, x.nom, 0));
-
-    } else {
-      return this.liste_groupe.map(x => new LienGroupe_VM(x.id, x.nom, 0));
-    }
-  }
-
-  Fermer(avecreload: boolean = false) {
-    this.afficher_inscription = false;
-    if (avecreload) {
-      this.loading = true;
-      this.UpdateListeAdherents();
-    }
-  }
-}
 export class FilterAdherent {
+  filter_nom: string | null = null;
+  filter_groupe: string | null = null;
+  filter_inscrit: boolean | null = true;
+  filter_sexe: boolean | null = null;
+  filter_date_apres: string | null = null;
+  filter_date_avant: string | null = null;
 
-  public editing = {
+  editing: {
+    nom: boolean;
+    date: boolean;
+    sexe: boolean;
+    groupe: boolean;
+    inscrit: boolean;
+  } = {
     nom: false,
-    date:false,
+    date: false,
     sexe: false,
-    inscrit: false,
     groupe: false,
+    inscrit: false,
   };
-  private _filter_nom: string | null = null;
-  get filter_nom(): string | null {
-    return this._filter_nom;
-  }
-  set filter_nom(value: string | null) {
-    this._filter_nom = value;
-    this.onFilterChange();
-  }
-
-  private _filter_date_avant: Date | null = null;
-  get filter_date_avant(): Date | null {
-    return this._filter_date_avant;
-  }
-  set filter_date_avant(value: Date | null) {
-    this._filter_date_avant = value;
-    this.onFilterChange();
-  }
-
-  private _filter_date_apres: Date | null = null;
-  get filter_date_apres(): Date | null {
-    return this._filter_date_apres;
-  }
-  set filter_date_apres(value: Date | null) {
-    this._filter_date_apres = value;
-    this.onFilterChange();
-  }
-
-  private _filter_sexe: boolean | null = null;
-  get filter_sexe(): boolean | null {
-    return this._filter_sexe;
-  }
-  set filter_sexe(value: boolean | null) {
-    this._filter_sexe = value;
-    this.onFilterChange();
-  }
-
-  private _filter_inscrit: boolean | null = true;
-  get filter_inscrit(): boolean | null {
-    return this._filter_inscrit;
-  }
-  set filter_inscrit(value: boolean | null) {
-    this._filter_inscrit = value;
-    this.onFilterChange();
-  }
-
-  private _filter_groupe: string | null = null;
-  get filter_groupe(): string | null {
-    return this._filter_groupe;
-  }
-  set filter_groupe(value: string | null) {
-    this._filter_groupe = value;
-    this.onFilterChange();
-  }
-
-  private onFilterChange(): void {}
 }
+

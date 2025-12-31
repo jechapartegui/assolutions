@@ -319,17 +319,15 @@
                                </ng-container>
                     </td>
                     <td>
-                      <btn *ngIf="rider.profil == 'PROF'"
-                      [type_button]="'VoirLight'"
+                      <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherent">
+ <btn [type_button]="'VoirLight'"
                       (click)="VoirMaSeance(ms.seance)">
-                    </btn>
-                      <ng-container
-                        *ngIf="ms.seance.statut == 'prévue' && rider.profil == 'ADH'"
-                      >                       
+                      </btn>
+                      </ng-container>
+                     <ng-template #ProfilAdherent>
+                      <ng-container *ngIf="ms.seance.statut == 'prévue'">                       
                       <span class="d-flex">
-                          <span
-                            (click)="
-                               MAJInscription(ms, rider, null)
+                          <span  (click)="MAJInscription(ms, rider, null)
                             "
                             *ngIf="
                               ms.statutInscription ==
@@ -405,6 +403,7 @@
                           </span>
                           </span>
                       </ng-container>
+                      </ng-template>
                     </td>
                   </tr>
                 </tbody>

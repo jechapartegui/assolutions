@@ -39,21 +39,42 @@
           <div class="columns page-fill">
             <div class="column">
               <div class="card card--scroller">
-                <header class="card-header" style="align-items: center">
-                  <p class="card-header-title"
-                     *ngIf="liste_adherents_VM | multifiltersAdherent : filters : active_saison.id as filteredApplis">
+                           <header class="card-header" style="align-items: center">
+    <p class="card-header-title"
+                     *ngIf="Liste | multifiltersAdherent : filters : active_saison.id as filteredApplis">
                     <span i18n>Liste des adhérents</span>&nbsp;({{ filteredApplis.length }})&nbsp;-&nbsp;
                     <span i18n>Saison</span>&nbsp;{{ getActiveSaison() }}
                   </p>
-                </header>
+
+  <span *ngIf="store.AdherentHasRemoteNewerData()" class="tag is-warning is-light" style="margin-left: 10px">
+    Nouvelles données dispo
+  </span>
+
+  <span *ngIf="needsReload" class="tag is-danger is-light" style="margin-left: 10px">
+    Recharge conseillée
+  </span>
+
+  <span *ngIf="refreshing" class="tag is-info is-light" style="margin-left:10px">
+    Mise à jour…
+  </span>
+
+  <btn *ngIf="store.AdherentHasRemoteNewerData() || needsReload"
+       [type_button]="'ReloadLight'"
+       (click)="needsReload=false; UpdateListeAdherents({apply:true})"></btn>
+</header>
 
                 <!-- Le contenu de la liste scrolle au besoin -->
                 <div class="card-content" #scrollableContent>
                   <div class="content">
                     <table class="table" style="width: 100%"
-                           *ngIf="liste_adherents_VM && liste_adherents_VM.length > 0">
+                           *ngIf="Liste && Liste.length > 0">
                       <thead>
                         <tr>
+                            <th style="width: 2rem;">
+  <input type="checkbox"
+         [checked]="Liste?.length && selectedIds.size === Liste.length"
+         (change)="toggleSelectAll($any($event.target).checked)" />
+</th>
                           <th></th>
                         <th
   (dblclick)="startEditFilter('nom', nomFilterInput)"
@@ -298,7 +319,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let adherent of liste_adherents_VM | multifiltersAdherent : filters : active_saison.id">
+                        <tr *ngFor="let adherent of Liste | multifiltersAdherent : filters : active_saison.id">
+                            <td style="width: 2rem;">
+  <input type="checkbox"
+         [checked]="isSelected(adherent.id)"
+         (change)="toggleSelection(adherent.id, $any($event.target).checked)" />
+</td>
                           <td> <figure class="image is-32x32 is-inline-block mr-2">
     <img
       class="is-rounded" style="width:auto; height:44px"
@@ -345,7 +371,7 @@
                       </tbody>
                     </table>
 
-                    <p *ngIf="!liste_adherents_VM || liste_adherents_VM.length == 0" i18n>Pas d'adhérents disponible</p>
+                    <p *ngIf="!Liste || Liste.length == 0" i18n>Pas d'adhérents disponible</p>
 
                     <button class="scroll-to-top" *ngIf="showScrollToTop" (click)="scrollToTop()" title="Revenir en haut">↑</button>
                   </div>
@@ -353,7 +379,25 @@
 
                 <footer class="card-footer">
                   <div class="columns">
-                    <div class="column">
+                    <div class="column"><ng-container *ngIf="hasSelection; else normalActions">
+                        <span *ngIf="bulkWorking" class="tag is-info is-light" style="margin-left:10px">
+  {{ bulkLabel || 'Traitement en cours…' }}
+</span>
+<div *ngIf="!bulkWorking" class="buttons" style="flex-wrap: nowrap">
+      <btn title="Supprimer sélection"
+           [type_button]="'SupprimerSmall'"
+           (click)="supprimerListe()"></btn>
+
+      <btn title="Copier sélection"
+           [type_button]="'CopierSmall'"
+           (click)="copierListe()"></btn>
+
+      <btn title="Annuler sélection"
+           [type_button]="'AnnulerSmall'"
+           (click)="clearSelection()"></btn>
+    </div>
+                       </ng-container>
+                       <ng-template #normalActions> 
                       <div *ngIf="!afficher_filtre" class="buttons">
                         <btn [type_button]="'CreerSmall'" (click)="select_account = true;"></btn>
                         <btn [type_button]="'FiltrerSmall'" (click)="afficher_filtre ? (afficher_filtre=false) : (afficher_filtre=true)"></btn>
@@ -497,6 +541,7 @@
                           </div>
                         </div>
                       </div>
+                      </ng-template>  
                     </div>
                   </div>
                 </footer>
@@ -767,7 +812,7 @@
             </nav>
 
             <div class="container-box">
-              <ng-container *ngFor="let adherent of liste_adherents_VM | multifiltersAdherent : filters : active_saison.id">
+              <ng-container *ngFor="let adherent of Liste | multifiltersAdherent : filters : active_saison.id">
             <article class="media adherent-item" [class.dense]="denseMode">
   <figure class="media-left">
     <p class="image">

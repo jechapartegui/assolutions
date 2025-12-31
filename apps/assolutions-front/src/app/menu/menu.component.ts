@@ -476,9 +476,9 @@ return $localize`Evénement`;
     adh.filters = new FilterMenu();
   }
 
-  VoirMaSeance(seance: any) {
+  VoirMaSeance(seance: Seance_VM) {
     this.router.navigate(['/ma-seance'], {
-      queryParams: { id: seance.seance_id },
+      queryParams: { id: seance.id },
     });
   }
 

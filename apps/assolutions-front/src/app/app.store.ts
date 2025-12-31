@@ -27,7 +27,7 @@ export class AppStore {
   readonly LieuHasRemoteNewerData = computed(() => this.Lieu().hasRemoteNewerData);
 
   //Adherent
-  readonly Adherent = signal<ListState<Lieu_VM>>(initListState<Adherent_VM>());
+  readonly Adherent = signal<ListState<Adherent_VM>>(initListState<Adherent_VM>());
   // Optionnel : pour exposer directement la liste (sinon tu feras store.Lieu().Liste)
   readonly AdherentListe = computed(() => this.Adherent().Liste);
   readonly AdherentHasRemoteNewerData = computed(() => this.Adherent().hasRemoteNewerData);
