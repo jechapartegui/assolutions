@@ -78,7 +78,7 @@ export class DashboardComponent implements OnInit {
       const end = new Date(today);
 
       // Adhérents
-      if (this.store.projet().adherent || this.store.projet().essai) {
+      if (this.store.selectedProject().adherent || this.store.selectedProject().essai) {
         const seancesAdh = await this.GetMySeances();
         const ridersAdh = seancesAdh.map((x) => {
           const r = new AdherentMenu(x);
@@ -92,7 +92,7 @@ export class DashboardComponent implements OnInit {
       }
 
       // Profs
-      if (this.store.projet().prof) {
+      if (this.store.selectedProject().prof) {
         const seancesProf = await this.GetProfSeances();
         const ridersProf = seancesProf.map((x) => {
           const r = new AdherentMenu(x);
@@ -146,7 +146,7 @@ export class DashboardComponent implements OnInit {
           ? errorService.CreateError(this.action, err.message)
           : err;
       errorService.emitChange(o);
-      if (this.store.appli() !== 'ADMIN') {
+      if (this.store.mode() !== 'ADMIN') {
         this.store.logout();
         this.router.navigate(['/login']);
       }

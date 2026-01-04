@@ -5,20 +5,58 @@ import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Projet_VM } from '@shared/lib/projet.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
 
+export type AppMode = "APPLI" | "ADMIN";
+
+export type ProjectRights = {
+  adherent: boolean;
+  prof: boolean;
+  essai: boolean;
+};
+
+export type Session = {
+  token: string;
+  mode: AppMode;                 // APPLI ou ADMIN (admin => menu/admin routes)
+  compte: Compte_VM;
+  projects: ProjetView[];        // liste de choix
+  selectedProjectId: number | null;
+  rights: ProjectRights | null;  // droits du projet sélectionné (ProjectView)
+};
+
+
 @Injectable({ providedIn: 'root' })
 export class AppStore {
   // State
-  readonly isLoggedIn = signal(false);
-  readonly projet = signal<ProjetView | null>(null);
-  readonly compte = signal<Compte_VM | null>(null);
-  readonly projetVM = signal<Projet_VM | null>(null);
-  readonly listprojet = signal<ProjetView[] | null>(null);
-  readonly appli = signal<"APPLI" | "ADMIN">("APPLI");
-  readonly selectedMenu = signal<MenuType>('MENU');
-  readonly saison_active = signal<Saison_VM>(null); 
-  // Derivés
-  readonly hasProjet = computed(() => !!this.projet());
-  readonly isProf = computed(() => !!this.projet()?.prof);
+// app.store.ts
+readonly session = signal<Session | null>(null);
+readonly selectedMenu =signal<MenuType>("MENU");
+
+// ✅ computed
+readonly isLoggedIn = computed(() => !!this.session());
+readonly mode = computed(() => this.session()?.mode ?? "APPLI");
+readonly compte = computed(() => this.session()?.compte ?? null);
+readonly projects = computed(() => this.session()?.projects ?? []);
+readonly selectedProject = computed(() => {
+  const s = this.session();
+  if (!s?.selectedProjectId) return null;
+  return s.projects.find(p => p.id === s.selectedProjectId) ?? null;
+});
+
+readonly saison_active = computed(() => {
+  const s = this.session();
+  if (!s?.selectedProjectId) return null;
+  return s.projects.find(p => p.id === s.selectedProjectId).saison_active ?? null;
+});
+readonly rights = computed(() => this.selectedProject() ? {
+  adherent: !!this.selectedProject()?.adherent,
+  prof: !!this.selectedProject()?.prof,
+  essai: !!this.selectedProject()?.essai,
+} : null);
+
+readonly isAdmin = computed(() => this.mode() === "ADMIN");
+readonly isProf = computed(() => !!this.rights()?.prof);
+readonly canEssai = computed(() => !!this.rights()?.essai);
+readonly hasProjet = computed(() => !!this.session()?.projects && this.session()!.projects.length > 0);
+
 
   //Lieu
   readonly Lieu = signal<ListState<Lieu_VM>>(initListState<Lieu_VM>());
@@ -44,6 +82,9 @@ export class AppStore {
   readonly CoursListe = computed(() => this.Cours().Liste);
   readonly CoursHasRemoteNewerData = computed(() => this.Cours().hasRemoteNewerData);
 
+  updateSelectedMenu(menu: MenuType) {
+    this.selectedMenu.set(menu);
+  }
   //zone lieu 
   // 1) set loading
 setLieuLoading(isLoading: boolean) {
@@ -243,46 +284,34 @@ removeCoursLocal(id: number) {
   this.Cours.update(s => ({ ...s, Liste: s.Liste.filter(x => x.id !== id) }));
 } 
 
-  // Actions
-  login(compte: Compte_VM) { this.isLoggedIn.set(true); this.compte.set(compte); }
-  logout() {
-    this.isLoggedIn.set(false);
-    this.projet.set(null);
-    this.compte.set(null);
-  }
-  login_projet(prok: Projet_VM)   { 
-    this.isLoggedIn.set(true); 
-    this.updateSaisonActive(prok.saison_active);
-    this.projetVM.set(prok);
- const pv:ProjetView ={
-      id : prok.id,
-      nom : prok.nom,
-      adherent : true,
-      prof : true,
-      essai : true
-    }
-    this.updateProjet(pv);
-   }
-  logout_projet() {
-    this.isLoggedIn.set(false);
-    this.projet.set(null);
-    this.compte.set(null);
-  }
+setSession(s: Session) {
+  this.session.set(s);
+  localStorage.setItem("auth_token", s.token);
+  localStorage.setItem("auth_mode", s.mode);
+  localStorage.setItem("selected_projet", String(s.selectedProjectId ?? ""));
+}
 
-  updateProjet(p: ProjetView | null) { this.projet.set(p); }
-  updateListeProjet(p: ProjetView[] | null) { this.listprojet.set(p); }
+clearSession() {
+  this.session.set(null);
+  localStorage.removeItem("auth_token");
+  localStorage.removeItem("auth_mode");
+  localStorage.removeItem("selected_projet");
+}
 
-  updateappli(p : "APPLI" | "ADMIN"){
-    this.appli.set(p);
-  }
+setProjects(projects: ProjetView[]) {
+  const s = this.session();
+  if (!s) return;
+  this.session.set({ ...s, projects });
+}
 
-  // Action pour mettre à jour le menu
-  updateSelectedMenu(menu: MenuType) {
-    this.selectedMenu.set(menu);
-  }
-  updateSaisonActive(p:Saison_VM){
-    this.saison_active.set(p);
-  }
+selectProject(projectId: number) {
+  const s = this.session();
+  if (!s) return;
+  this.session.set({ ...s, selectedProjectId: projectId });
+  localStorage.setItem("selected_projet", String(projectId));
+}
+
+
 }
 
 export interface ListState<T> {

@@ -51,7 +51,7 @@ export class SeancesEssaisComponent implements OnInit {
     //const errorService = ErrorService.instance;
       const errorService = ErrorService.instance;
       this.action = $localize`Inscription à l'essai`;
-    if(!this.store.projet()){
+    if(!this.store.hasProjet()){
        let o = errorService.CreateError(this.action, $localize`Vous n'êtes pas connecté à un club, veuillez repartir de la liste des séances`);
                   errorService.emitChange(o);
                   
@@ -190,7 +190,7 @@ export class SeancesEssaisComponent implements OnInit {
                 );
                 let o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
-                  this.router.navigate(['/liste-seances-public?id=' + this.store.projet().id]);
+                  this.router.navigate(['/liste-seances-public?id=' + this.store.selectedProject().id]);
               } else {
                 let o = errorService.UnknownError(this.action);
                 errorService.emitChange(o);

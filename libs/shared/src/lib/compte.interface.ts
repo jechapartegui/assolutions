@@ -1,4 +1,5 @@
 import { Adherent_VM } from "./member.interface";
+import { Saison_VM } from "./saison.interface";
 
 export class Compte_VM {
     id: number = 0;
@@ -31,4 +32,5 @@ export class Compte_VM {
     adherent: boolean;
     prof: boolean;
     essai:boolean;
+    saison_active:Saison_VM | null;
   };

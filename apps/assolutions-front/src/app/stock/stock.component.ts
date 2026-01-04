@@ -64,7 +64,7 @@ export class StockComponent implements OnInit {
     this.action = $localize`Charger les stocks`;
     this.loading = true;
     if (this.store.isLoggedIn) {
-      if (this.store.appli() === 'APPLI') {
+      if (this.store.mode() === 'APPLI') {
         this.loading = false;
         this.router.navigate(['/menu']);
             this.store.updateSelectedMenu("MENU");

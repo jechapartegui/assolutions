@@ -91,8 +91,8 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
     let user_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
-    if (this.store.projet()) {
-      project_id = this.store.projet()!.id.toString();
+    if (this.store.selectedProject()) {
+      project_id = this.store.selectedProject()!.id.toString();
     }
     if(this.store.compte()){
       user_id = this.store.compte()!.id.toString();
@@ -147,8 +147,8 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
     let user_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
-    if (this.store.projet()) {
-      project_id = this.store.projet()!.id.toString();
+     if (this.store.selectedProject()) {
+      project_id = this.store.selectedProject()!.id.toString();
     }
     if(this.store.compte()){
       user_id = this.store.compte()!.id.toString();
@@ -194,8 +194,8 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
     let user_id: string = '-1';
     const timeoutMilliseconds = 1500000;
 
-    if (this.store.projet()) {
-      project_id = this.store.projet()!.id.toString();
+    if (this.store.selectedProject()) {
+      project_id = this.store.selectedProject()!.id.toString();
     }
     if(this.store.compte()){
       user_id = this.store.compte()!.id.toString();

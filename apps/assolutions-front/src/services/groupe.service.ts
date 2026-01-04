@@ -34,7 +34,7 @@ export class GroupeService {
     if(saison_id ===0){
     saison_id = this.store.saison_active().id;
   }
-  if(this.store.isProf() == false && this.store.appli() !== "ADMIN"){
+  if(this.store.isProf() == false && this.store.mode() !== "ADMIN"){
     this.url = environment.maseance + 'api/groupe/getall/'  + saison_id;
   } else {
     this.url = environment.maseance + 'api/groupe/getalladmin/'  + saison_id;
