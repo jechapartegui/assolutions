@@ -108,7 +108,7 @@ export class CoursComponent implements OnInit {
                   );
                   errorService.emitChange(o);
                   if (
-                    this.store.appli() === 'ADMIN'                  ) {
+                    this.store.mode() === 'ADMIN'                  ) {
                     this.router.navigate(['/saison']);
                     this.store.updateSelectedMenu("SAISON");
                   } else {
@@ -149,7 +149,7 @@ export class CoursComponent implements OnInit {
               let o = errorService.CreateError($localize`Récupérer les lieux`, $localize`Il faut au moins un lieu pour créer un cours`);
               errorService.emitChange(o);
               this.loading = false;
-              if (this.store.appli() === "ADMIN") {
+              if (this.store.mode() === "ADMIN") {
                 this.router.navigate(['/lieu']);
                     this.store.updateSelectedMenu("LIEU");
 

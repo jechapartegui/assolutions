@@ -363,7 +363,7 @@
                           <td>
                             <div class="buttons" style="flex-wrap: nowrap">
                               <btn i18n-title title="Supprimer" [type_button]="'SupprimerLight'"
-                                   *ngIf="store.appli() === 'ADMIN'" (click)="Delete(adherent)"></btn>
+                                   *ngIf="store.mode() === 'ADMIN'" (click)="Delete(adherent)"></btn>
                               <btn i18n-title title="Voir" [type_button]="'VoirLight'" (click)="Read(adherent)"></btn>
                             </div>
                           </td>
@@ -402,9 +402,9 @@
                         <btn [type_button]="'CreerSmall'" (click)="select_account = true;"></btn>
                         <btn [type_button]="'FiltrerSmall'" (click)="afficher_filtre ? (afficher_filtre=false) : (afficher_filtre=true)"></btn>
                         <btn [type_button]="'ExporterSmall'" (click)="ExportExcel()"></btn>
-                        <btn *ngIf="store.appli() === 'ADMIN'" [type_button]="'ImporterSmall'" (click)="GotoImport()"></btn>
+                        <btn *ngIf="store.mode() === 'ADMIN'" [type_button]="'ImporterSmall'" (click)="GotoImport()"></btn>
 
-                        <div class="field is-horizontal" *ngIf="store.appli() === 'ADMIN'">
+                        <div class="field is-horizontal" *ngIf="store.mode() === 'ADMIN'">
                           <div class="field-label is-normal is-two-quarter">
                             <label class="label" style="white-space: nowrap" i18n>Saison affichée</label>
                           </div>
@@ -808,7 +808,7 @@
             <nav class="navbar is-fixed-top">
               <btn [type_button]="'FiltrerMobile'" (click)="afficher_filtre = true"></btn>
               <btn [type_button]="'TrierMobile'" (click)="afficher_tri = true"></btn>
-              <btn *ngIf="store.appli()  === 'ADMIN'" [type_button]="'CreerMobile'" (click)="select_account = true"></btn>
+              <btn *ngIf="store.mode()  === 'ADMIN'" [type_button]="'CreerMobile'" (click)="select_account = true"></btn>
             </nav>
 
             <div class="container-box">

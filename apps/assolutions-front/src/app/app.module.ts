@@ -69,7 +69,6 @@ import { CourseListPublicComponent } from './public/course-list-public.component
 import { OrEmptyPipe } from '../filters/orempty.pipe';
 import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
-import { LoginProjetComponent } from './login-projet/login-projet.component';
 import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
 import { InfoComponent } from './info/info.component';
 @NgModule({
@@ -80,7 +79,7 @@ import { InfoComponent } from './info/info.component';
     AdherentComponent,
     GroupeComponent,
     CoursComponent, InfoComponent,
-    SeanceComponent, MailTemplatePreviewComponent, LoginProjetComponent,
+    SeanceComponent, MailTemplatePreviewComponent, 
     ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
     ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,
     NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,

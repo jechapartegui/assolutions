@@ -208,7 +208,7 @@ export class AdherentComponent implements OnInit, OnDestroy {
               $localize`Il faut au moins une saison pour créer un cours`
             )
           );
-          if (this.store.appli() === 'ADMIN') {
+          if (this.store.mode() === 'ADMIN') {
             this.router.navigate(['/saison']);
             this.store.updateSelectedMenu('SAISON');
           } else {

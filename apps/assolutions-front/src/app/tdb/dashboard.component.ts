@@ -67,7 +67,7 @@ export class DashboardComponent implements OnInit {
       if (!this.store.isLoggedIn) {
         const o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
         errorService.emitChange(o);
-        this.store.logout();
+        this.store.clearSession();
         this.router.navigate(['/login']);
         return;
       }
@@ -147,7 +147,7 @@ export class DashboardComponent implements OnInit {
           : err;
       errorService.emitChange(o);
       if (this.store.mode() !== 'ADMIN') {
-        this.store.logout();
+        this.store.clearSession();
         this.router.navigate(['/login']);
       }
     } finally {

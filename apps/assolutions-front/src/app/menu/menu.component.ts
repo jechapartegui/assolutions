@@ -64,7 +64,7 @@ export class MenuComponent implements OnInit {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le menu`;
     console.log("Charger le menu");
-    if(this.store.appli() == "ADMIN"){
+    if(this.store.mode() == "ADMIN"){
       this.router.navigate(['/menu-admin']);
       return;
     }
@@ -83,7 +83,7 @@ export class MenuComponent implements OnInit {
         this.anniversaire = anniv
       });
       // Partie adhérent
-      if (this.store.projet().adherent || this.store.projet().essai) {
+      if (this.store.selectedProject().adherent || this.store.selectedProject().essai) {
         this.action = $localize`Récupérer les adhérents`;
         const seancesAdh = await this.GetMySeance();
         const ridersAdh = seancesAdh.map((x) => {
@@ -109,7 +109,7 @@ export class MenuComponent implements OnInit {
       }
   
       // Partie prof
-      if (this.store.projet().prof) {
+      if (this.store.selectedProject().prof) {
         this.action = $localize`Récupérer les professeurs`;
         const seancesProf = await this.GetProfSeance();
         const ridersProf = seancesProf.map((x) => {
@@ -188,16 +188,16 @@ export class MenuComponent implements OnInit {
           : err;
   
       errorService.emitChange(o);
-      if(this.store.appli() === 'ADMIN'){
+      if(this.store.mode() === 'ADMIN'){
         
       if (o.message.includes('professeur')) {
         this.router.navigate(['/adherent']);
-      } else if (o.message.includes('lieu') && this.store.appli() === 'ADMIN') {
+      } else if (o.message.includes('lieu') && this.store.mode() === 'ADMIN') {
         this.router.navigate(['/lieu']);
         this.store.updateSelectedMenu("LIEU");
       }
     } else {
-     this.store.logout();
+     this.store.clearSession();
       this.router.navigate(['/login']);
     }
     } finally {

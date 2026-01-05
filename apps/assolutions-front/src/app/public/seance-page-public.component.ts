@@ -7,6 +7,7 @@ import { SeancesService } from '../../services/seance.service';
 import { AppStore } from '../app.store';
 import { SaisonService } from '../../services/saison.service';
 import { ProjetView } from '@shared/lib/compte.interface';
+import { ProjetService } from '../../services/projet.service';
 
 
 @Component({ standalone:false, selector: 'app-seances-page', templateUrl: './seances-page-public.component.html' })
@@ -21,7 +22,7 @@ export class SeancesPage {
     private route: ActivatedRoute,
     public router: Router,
     public seanceserv: SeancesService,
-    public saisonserv:SaisonService,
+    public projetserv:ProjetService,
     public store:AppStore
   ) {
        this.route.queryParams.subscribe((params) => {
@@ -38,19 +39,9 @@ export class SeancesPage {
       this.isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
       if (this.isSmallScreen) this.view.set('list');
     }
-    const PV:ProjetView= {
-      id : this.projet,
-      nom:"",
-      adherent:false,
-      prof  :false,
-      essai:false,
-    }
-    this.store.updateProjet(PV);
-// quelque part dans ton composant/service d’amorçage
-this.saisonserv.GetAll().then(saisons => {
-  this.store.updateSaisonActive(saisons.find(s => s.active));
-
-  this.seanceserv.GetSeancePublic(this.store.saison_active().id).then(s => {
+    
+this.projetserv.GetActiveSaison(this.projet).then(s => 
+  this.seanceserv.GetSeancePublic(s.id).then(s => {
     const toDate = (x:any) => x instanceof Date ? x : new Date(x);
 
     // "hier" à 00:00 local
@@ -67,8 +58,12 @@ this.saisonserv.GetAll().then(saisons => {
       .filter(x => ymd(x.date_seance) >= ymdCut);
 
     this.seances.set(parsed);
-  });
-});
+  })
+
+);
+// quelque part dans ton composant/service d’amorçage
+
+  
 
   }
 

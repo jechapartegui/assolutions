@@ -201,7 +201,7 @@
                                 i18n-title
                                 title="Supprimer"
                                 [type_button]="'SupprimerLight'"
-                                *ngIf="store.appli() === 'ADMIN'"
+                                *ngIf="store.mode() === 'ADMIN'"
                                 (click)="Delete(adherent)"
                               ></btn>
                               <btn

@@ -54,7 +54,7 @@ export class SaisonComponent {
       this.loading = true;
       this.action = $localize`Charger les séances`;
       if (this.store.isLoggedIn) {
-        if (this.store.appli() === 'APPLI') {
+        if (this.store.mode() === 'APPLI') {
           this.router.navigate(['/menu']);
             this.store.updateSelectedMenu("MENU");
           this.loading = false;

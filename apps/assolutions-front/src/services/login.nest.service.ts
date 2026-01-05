@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { GlobalService } from './global.services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ProjetView, Compte_VM } from '@shared/lib/compte.interface';
+import { ProjetView, Compte_VM, PreLoginResponse, MeResponse } from '@shared/lib/compte.interface';
 import { Projet_VM } from '@shared/lib/projet.interface';
 
 @Injectable({
@@ -31,8 +31,27 @@ public Me(): Promise<{ compte: Compte_VM, projects: ProjetView[] }> {
     });
 }
 
+public PreLogin(email: string): Promise<PreLoginResponse> {
+    this.url = environment.maseance + 'api/auth/preogin';
+    //  this.url = this.url + "login.php";
+    const body = {
+      email: email.toLowerCase()
+    };
 
-  public Login(email: string, password: string): Promise<Compte_VM> {
+    return this.global.POST(this.url, body)
+    .then((response: PreLoginResponse) => {    
+        return response;
+      })
+      .catch((error: HttpErrorResponse) => {
+        console.error('Erreur brute', error);
+        const message = error?.message || 'Erreur inconnue';
+        console.error(message);        // Gestion de l'erreur
+        return Promise.reject(message);
+      });
+  }
+
+
+  public Login(email: string, password: string): Promise<MeResponse> {
     this.url = environment.maseance + 'api/auth/login';
     //  this.url = this.url + "login.php";
     const body = {
@@ -41,9 +60,9 @@ public Me(): Promise<{ compte: Compte_VM, projects: ProjetView[] }> {
     };
 
     return this.global.POST(this.url, body)
-    .then((response: { token: string; compte: Compte_VM }) => {      
+    .then((response: MeResponse) => {      
         localStorage.setItem('auth_token', response.token);
-        return response.compte;
+        return response;
       })
       .catch((error: HttpErrorResponse) => {
         console.error('Erreur brute', error);

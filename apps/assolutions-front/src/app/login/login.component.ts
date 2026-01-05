@@ -5,13 +5,12 @@ import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
-import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
+import { Compte_VM, PreLoginResponse, ProjetView } from '@shared/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
 import { AppStore } from '../app.store';
 import { MailService } from '../../services/mail.service';
 import { MailInput } from '@shared/lib/mail-input.interface';
-import { ProjectContextService } from '../../services/project-context.service';
 
 @Component({
   standalone: false,
@@ -43,8 +42,7 @@ export class LoginComponent implements OnInit {
     public GlobalService: GlobalService,
     private proj_serv:ProjetService, 
     public store: AppStore,
-    public mailserv:MailService,
-    public projectContextService:ProjectContextService
+    public mailserv:MailService
   ) {
     this.VM.Login = environment.defaultlogin;
     this.VM.Password = environment.defaultpassword;
@@ -53,8 +51,6 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
         this.action = $localize`Chargement de la page`;
     const errorService = ErrorService.instance;
-    console.log(this.store.compte());
-    console.log(this.store.projet());
     this.route.queryParams.subscribe((params) => {
       if('context' in params){
         try {
@@ -69,7 +65,6 @@ export class LoginComponent implements OnInit {
       switch (this.context) {
         case "ACTIVATE":
         case "REINIT":
-          console.log("passage");
             const token = params['token'];
             const user = params['user'];
             if(!token){
@@ -110,7 +105,7 @@ export class LoginComponent implements OnInit {
               }
             }).catch((error: Error) => {
           let o = errorService.CreateError(this.action, error.message);
-            this.store.logout();
+            this.store.clearSession();
           errorService.emitChange(o);
         });
           break; 
@@ -130,9 +125,9 @@ export class LoginComponent implements OnInit {
           break; 
       }
       if (!this.VM.Login) {
-  this.VM.Login = environment.defaultlogin ?? '';
-  this.validateLogin();
-}  
+        this.VM.Login = environment.defaultlogin ?? '';
+        this.validateLogin();
+    }  
     });
   }
 
@@ -153,7 +148,7 @@ export class LoginComponent implements OnInit {
 
   valide(){
     if(this.VM.mdp_requis){
-if (this.VM.isLoginValid && this.VM.isPasswordValid) {
+    if (this.VM.isLoginValid && this.VM.isPasswordValid) {
       this.VM.isValid = true;
     } else {
       this.VM.isValid = false;
@@ -186,6 +181,8 @@ onKeyPressMdp(event: KeyboardEvent) {
     }
   }
 }
+
+
 
 
   SelectionnerCompteAdmin() {
@@ -247,6 +244,19 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     }
   }
 
+  async PreLogin(){
+    this.action = $localize`Checker les informations de connexion`;
+    const errorService = ErrorService.instance;
+    this.login_serv_nest.PreLogin(this.VM.Login).then((response:PreLoginResponse) => {
+      this.VM.mdp_requis = response.password_required;
+      this.store.setmode(response.mode);
+    }).catch((error: Error) => {
+      let o = errorService.CreateError(this.action, error.message);
+        this.store.clearSession();
+      errorService.emitChange(o); 
+    });
+  }
+
   async Login() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
@@ -256,9 +266,9 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
             this.essai.emit(compte_vm);
             return;
           }
-             this.store.login(compte_vm);
+             this.store.l(compte_vm);
           this.VM.compte = compte_vm;
-        this.store.updateappli('APPLI');
+        this.store.upda('APPLI');
         this.store.updateSelectedMenu('MENU');
       this.action = $localize`Rechercher des projets`;
         this.login_serv_nest.GetProject(compte_vm.id).then((projets : ProjetView[]) => {
@@ -271,12 +281,12 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
             this.projets_select = this.projets[0];
           } else {
             let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
-            this.store.logout();
+            this.store.clearSession();
             errorService.emitChange(o);
           }
         }).catch((error: Error) => {
           let o = errorService.CreateError(this.action, error.message);
-            this.store.logout();
+            this.store.clearSession();
           errorService.emitChange(o);
         });
       }).catch((error: Error) => {
@@ -288,7 +298,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
           this.PreCreerCompte();
         } else {
         let o = errorService.CreateError(this.action, error);
-            this.store.logout();
+            this.store.clearSession();
         errorService.emitChange(o);
 
         }
@@ -297,7 +307,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
-    this.store.logout();
+    this.store.clearSession();
     let o = errorService.OKMessage(this.action);
     errorService.emitChange(o);
     this.router.navigate(['/login']);
@@ -367,7 +377,7 @@ async ConnectToProject() {
     const o = errorService.CreateError(this.action, msg);
     errorService.emitChange(o);
 
-    this.store.logout();
+    this.store.clearSession();
     localStorage.removeItem('auth_token');
     await this.router.navigate(['/login']);
   }

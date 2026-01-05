@@ -35,9 +35,9 @@ edit: boolean = false;
   }
 
   Load(){
-  if(this.store.projet().id){
-    this.proj_serv.Get(this.store.projet().id).then(res=>{
-      this.id = this.store.projet().id;
+  if(this.store.selectedProject().id){
+    this.proj_serv.Get(this.store.selectedProject().id).then(res=>{
+      this.id = this.store.selectedProject().id;
       this.thisProject=res;
       this.CheckProjet();
     });

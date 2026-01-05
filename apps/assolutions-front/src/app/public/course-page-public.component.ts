@@ -7,6 +7,7 @@ import { ProjetView } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SaisonService } from '../../services/saison.service';
+import { ProjetService } from '../../services/projet.service';
 
 @Component({ standalone:false, selector: 'app-cours-page-public', templateUrl: './course-page-public-component.html' })
 export class CoursPage implements OnInit {
@@ -18,6 +19,7 @@ public cours = signal<Cours_VM[]>([]);
   constructor(public coursserv: CoursService, public store:AppStore,
     private route: ActivatedRoute,
         public saisonserv:SaisonService,
+        public projetserv:ProjetService,
     public router: Router,) {}
 
   ngOnInit(): void {
@@ -27,19 +29,8 @@ public cours = signal<Cours_VM[]>([]);
             }
           });
     // Charge les cours
-    const PV:ProjetView= {
-          id : this.projet,
-          nom:"",
-          adherent:false,
-          prof  :false,
-          essai:false,
-        }
-        this.store.updateProjet(PV);
-    // quelque part dans ton composant/service d’amorçage
-    this.saisonserv.GetAll().then(saisons => {
-      this.store.updateSaisonActive(saisons.find(s => s.active));    
-    this.coursserv.GetAll(this.store.saison_active().id).then((c)=> this.cours.set(c));
-    });
+this.projetserv.GetActiveSaison(this.projet).then(s =>   
+    this.coursserv.GetAll(s.id).then((c)=> this.cours.set(c)));
 
     // Force mobile -> liste
     if (typeof window !== 'undefined') {

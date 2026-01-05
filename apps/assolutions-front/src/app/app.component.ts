@@ -77,7 +77,7 @@ export class AppComponent implements OnInit, OnDestroy {
   LogOut() {
     const errorService = ErrorService.instance;
     this.action = $localize`Se déconnecter`;
-    this.store.logout();
+    this.store.clearSession();
     this.router.navigate(['/login']);
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);

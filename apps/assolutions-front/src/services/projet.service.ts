@@ -6,7 +6,7 @@ import { KeyValuePair } from '@shared/lib/autres.interface';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Groupe_VM } from '@shared/lib/groupe.interface';
 import { Saison_VM } from '@shared/lib/saison.interface';
-import { Projet_VM } from '@shared/index';
+import { Projet_VM, ProjetView } from '@shared/index';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
@@ -22,8 +22,8 @@ export class ProjetService {
 
 
 
-  public GetActiveSaison(): Promise<Saison_VM> {
-      this.url = environment.maseance + 'api/saison/active_saison/';
+  public GetActiveSaison(project_id:number): Promise<Saison_VM> {
+      this.url = environment.maseance + 'api/saison/active_saison/' + project_id;
   
     return this.global.GET(this.url)
         .then((response: Saison_VM) => {

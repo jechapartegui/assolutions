@@ -1,26 +1,9 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Adherent_VM, Cours_VM, Seance_VM } from '@shared/index';
-import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
+import { AppMode, Compte_VM, ProjetView, Session } from '@shared/lib/compte.interface';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
-import { Projet_VM } from '@shared/lib/projet.interface';
-import { Saison_VM } from '@shared/lib/saison.interface';
 
-export type AppMode = "APPLI" | "ADMIN";
 
-export type ProjectRights = {
-  adherent: boolean;
-  prof: boolean;
-  essai: boolean;
-};
-
-export type Session = {
-  token: string;
-  mode: AppMode;                 // APPLI ou ADMIN (admin => menu/admin routes)
-  compte: Compte_VM;
-  projects: ProjetView[];        // liste de choix
-  selectedProjectId: number | null;
-  rights: ProjectRights | null;  // droits du projet sélectionné (ProjectView)
-};
 
 
 @Injectable({ providedIn: 'root' })
@@ -33,6 +16,7 @@ readonly selectedMenu =signal<MenuType>("MENU");
 // ✅ computed
 readonly isLoggedIn = computed(() => !!this.session());
 readonly mode = computed(() => this.session()?.mode ?? "APPLI");
+
 readonly compte = computed(() => this.session()?.compte ?? null);
 readonly projects = computed(() => this.session()?.projects ?? []);
 readonly selectedProject = computed(() => {

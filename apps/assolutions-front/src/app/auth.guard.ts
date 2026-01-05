@@ -3,7 +3,6 @@ import { catchError, from, map, mergeMap, Observable, of } from "rxjs";
 import { AppStore } from "./app.store";
 import { LoginNestService } from "../services/login.nest.service";
 import { Injectable } from "@angular/core";
-import { ProjectContextService } from "../services/project-context.service";
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
@@ -12,8 +11,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private loginService: LoginNestService,
     private store: AppStore,
-    private router: Router,
-    private projectContext:ProjectContextService
+    private router: Router
   ) {}
 
   canActivate(

@@ -182,7 +182,7 @@ clearFilter(key: string) {
     const thisseance = await this.seancesservice.Get(id);
     this.editSeance = thisseance;
         this.histo_seance = JSON.stringify(this.editSeance);
-        if(this.store.isProf() == false && this.store.appli() == "APPLI"){
+        if(this.store.isProf() == false && this.store.mode() == "APPLI"){
     this.readonly = true;
         } else {
           this.readonly = false;
@@ -236,7 +236,7 @@ clearFilter(key: string) {
                     );
                     errorService.emitChange(o);
                     this.loading = false;
-                    if (this.store.appli() === 'ADMIN') {
+                    if (this.store.mode() === 'ADMIN') {
                       this.router.navigate(['/lieu']);
             this.store.updateSelectedMenu("LIEU");
                     }
@@ -254,7 +254,7 @@ clearFilter(key: string) {
                         );
                         errorService.emitChange(o);
                         this.loading = false;
-                        if (this.store.appli() === 'ADMIN') {
+                        if (this.store.mode() === 'ADMIN') {
                           this.router.navigate(['/saison']);
                           this.store.updateSelectedMenu("SAISON");
                         }

@@ -42,7 +42,7 @@ export class CompteComponent implements OnInit {
 
     if (this.store.isLoggedIn) {
 
-      if ((this.store.appli() === "APPLI")) {
+      if ((this.store.mode() === "APPLI")) {
         this.router.navigate(['/menu']);
         return;
       }

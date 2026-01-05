@@ -66,7 +66,7 @@ throw new Error('Method not implemented.');
     this.action = $localize`Charger les professeurs`;
     this.loading = true;
     if (this.store.isLoggedIn) {
-      if ((this.store.appli() === "APPLI")) {
+      if ((this.store.mode() === "APPLI")) {
         this.router.navigate(['/menu']);
         this.loading = false;
         return;
@@ -77,7 +77,7 @@ throw new Error('Method not implemented.');
         if (sa.length == 0) {
           let o = errorService.CreateError($localize`Récupérer les saisons`, $localize`Il faut au moins une saison pour créer un cours`);
           errorService.emitChange(o);
-          if (this.store.appli() === "ADMIN") {
+          if (this.store.mode() === "ADMIN") {
             this.router.navigate(['/saison']);
             this.loading = false;
 
