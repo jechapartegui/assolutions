@@ -255,7 +255,7 @@ Load(): void {
       this.preloadPhotos(this.All);
 
       // 🔹 Charger les autres adhérents (non inscrits à la séance)
-      return this.riderservice.GetAdherentAdhesion(this.store.saison_active().id);
+      return this.riderservice.GetAdherentAdhesion(this.store.saison_active_id());
     })
     .then((riders: Adherent_VM[]) => {
       if (!riders) {

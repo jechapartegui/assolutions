@@ -255,7 +255,7 @@ clearFilter(key: string) {
         return;
       })
     } else {
-      this.coursservice.GetAll(this.store.saison_active().id).then((c) => {
+      this.coursservice.GetAll(this.store.saison_active_id()).then((c) => {
         this.listeCours = c;
         this.loading = false;
       }).catch((err: HttpErrorResponse) => {

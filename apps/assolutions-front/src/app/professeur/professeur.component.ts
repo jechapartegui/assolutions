@@ -115,7 +115,7 @@ throw new Error('Method not implemented.');
     this.prof_serv.GetProfAll().then((cpt) => {
       this.ListeProf = cpt;      
         this.action = $localize`Récupérer les adhérents`;
-        this.ridersService.GetAdherentAdhesion(this.store.saison_active().id).then((adhs) => {
+        this.ridersService.GetAdherentAdhesion(this.store.saison_active_id()).then((adhs) => {
           this.liste_adherents_VM = adhs;
           this.loading = false;
         }).catch((error: HttpErrorResponse) => {
@@ -158,7 +158,7 @@ throw new Error('Method not implemented.');
     this.newContrat = {
       type_contrat: '',
       type_remuneration: '',
-      saison_id: this.store.saison_active().id,
+      saison_id: this.store.saison_active_id(),
       date_debut: this.store.saison_active().date_debut,
       date_fin: null
     };

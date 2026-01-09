@@ -68,7 +68,7 @@ export class AdherentService {
   }
 
   GetAllSeance(): Promise<Seance_VM[]> {
-    let saison_id = this.store.saison_active().id;
+    let saison_id = this.store.saison_active_id();
     this.url = environment.maseance + 'api/member/getallseance/' + saison_id;
 
     return this.global.GET(this.url)

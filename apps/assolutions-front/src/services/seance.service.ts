@@ -105,7 +105,7 @@ export class SeancesService {
   }
 
 
-  public GetSeances(saison:number  = this.store.saison_active().id): Promise<Seance_VM[]> {
+  public GetSeances(saison:number  = this.store.saison_active_id()): Promise<Seance_VM[]> {
    this.url = environment.maseance +  "api/seance/getall/" + saison;
     return this.global.GET(this.url)
       .then((response: Seance_VM[]) => {
@@ -118,7 +118,7 @@ export class SeancesService {
   }
 
   public GetPlageDate(date_debut:string, date_fin:string): Promise<Seance_VM[]> {
-    this.url = environment.maseance +  "api/seance/getbydate/" + this.store.saison_active().id + "/" + date_debut + "/" + date_fin;
+    this.url = environment.maseance +  "api/seance/getbydate/" + this.store.saison_active_id() + "/" + date_debut + "/" + date_fin;
     //  this.url = this.url + "login.php";
 
     return this.global.GET(this.url)

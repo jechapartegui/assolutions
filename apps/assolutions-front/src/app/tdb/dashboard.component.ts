@@ -78,7 +78,7 @@ export class DashboardComponent implements OnInit {
       const end = new Date(today);
 
       // Adhérents
-      if (this.store.selectedProject().adherent || this.store.selectedProject().essai) {
+      if (this.store.selectedProject().rights.adherent || this.store.selectedProject().rights.essai) {
         const seancesAdh = await this.GetMySeances();
         const ridersAdh = seancesAdh.map((x) => {
           const r = new AdherentMenu(x);
@@ -92,7 +92,7 @@ export class DashboardComponent implements OnInit {
       }
 
       // Profs
-      if (this.store.selectedProject().prof) {
+      if (this.store.selectedProject().rights.prof) {
         const seancesProf = await this.GetProfSeances();
         const ridersProf = seancesProf.map((x) => {
           const r = new AdherentMenu(x);
@@ -120,7 +120,7 @@ export class DashboardComponent implements OnInit {
       this.listelieu = lieux;
       this.liste_lieu_filter = lieux.map((l) => l.nom);
 
-      this.listeCours = await this.coursservice.GetAll(this.store.saison_active().id);
+      this.listeCours = await this.coursservice.GetAll(this.store.saison_active_id());
 
       // enrichissements riders (photo + libellés cours/lieu)
       this.Riders.forEach((r) => {

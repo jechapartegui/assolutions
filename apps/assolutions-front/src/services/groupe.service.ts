@@ -32,7 +32,7 @@ export class GroupeService {
   }
   public GetAll(saison_id:number =0): Promise<Groupe_VM[]> {
     if(saison_id ===0){
-    saison_id = this.store.saison_active().id;
+    saison_id = this.store.saison_active_id();
   }
   if(this.store.isProf() == false && this.store.mode() !== "ADMIN"){
     this.url = environment.maseance + 'api/groupe/getall/'  + saison_id;
@@ -56,7 +56,7 @@ export class GroupeService {
   public Add(gr:KeyValuePair, saison_id:number =0): Promise<number> {
   this.url = environment.maseance + 'api/groupe/add';
   if(saison_id ===0){
-    saison_id = this.store.saison_active().id
+    saison_id = this.store.saison_active_id()
   }
  const l = {
     saison_id: saison_id,

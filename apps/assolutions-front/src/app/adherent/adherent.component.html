@@ -859,15 +859,15 @@
    </span><span class="mobile">
         <div class="buttons">
           <btn [type_button]="'RetourMobile'" (click)="Retour()"></btn>
-          <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0"
+          <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active_id()) && thisAdherent.id >0"
                [type_button]="'InscrireMobile'" (click)="Inscrire()"></btn>
           <btn *ngIf="thisAdherent.id < 1"
                [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"
                [type_button]="'SauvegarderMobile'"
                (click)="Save()"></btn>
-      <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0 && !thisAdherent.archive"
+      <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active_id()) && thisAdherent.id >0 && !thisAdherent.archive"
                [type_button]="'ArchiverMobile'" (click)="Archiver()"></btn> 
-      <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0 && thisAdherent.archive"
+      <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active_id()) && thisAdherent.id >0 && thisAdherent.archive"
                [type_button]="'DesarchiverMobile'" (click)="Archiver(false)"></btn> 
                
         </div>
@@ -957,11 +957,11 @@
                     <div class="column">
           <div class="buttons">
             <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
-            <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0"
+            <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active_id()) && thisAdherent.id >0"
                  [type_button]="'InscrireSmall'" (click)="Inscrire()"></btn>
-                   <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0  && !thisAdherent.archive"
+                   <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active_id()) && thisAdherent.id >0  && !thisAdherent.archive"
                  [type_button]="'ArchiverSmall'" (click)="Archiver()"></btn>
-                   <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active().id) && thisAdherent.id >0  && thisAdherent.archive"
+                   <btn *ngIf="store.isLoggedIn() && store.isProf() && !isInscrtitionActive(thisAdherent, store.saison_active_id()) && thisAdherent.id >0  && thisAdherent.archive"
                  [type_button]="'DesarchiverSmall'" (click)="Archiver(false)"></btn>
             <btn *ngIf="thisAdherent.id < 1"
                  [disabled]="!adherentValide || !AdresseValide || !ContactValide || !ContactUrgenceValide"

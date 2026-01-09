@@ -73,7 +73,7 @@ public async getall_liste(ad: string[]): Promise<GenericLink_VM[]> {
   }
 
   if (ad.includes('rider')) {
-    const riders = await this.adherent_serv.GetAdherentAdhesion(this.store.saison_active().id);
+    const riders = await this.adherent_serv.GetAdherentAdhesion(this.store.saison_active_id());
     list.push(
       ...riders.map(x => ({
         type: 'rider',

@@ -49,7 +49,7 @@ export class InscriptionComponent implements OnInit {
      const iss = new InscriptionSaison_VM();
         iss.rider_id = this.thisAdherent.id;
         iss.active = true;
-        iss.saison_id = this.store.saison_active().id;
+        iss.saison_id = this.store.saison_active_id();
     this.inscription.Add(iss).then((result) => {  
       let o = errorService.OKMessage(this.action);
       errorService.emitChange(o);

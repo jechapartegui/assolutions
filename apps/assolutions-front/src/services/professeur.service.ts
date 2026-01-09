@@ -66,7 +66,7 @@ export class ProfesseurService {
       });
   }
   public GetProf(): Promise<Professeur_VM[]> {
-    let saison_id= this.store.saison_active().id;
+    let saison_id= this.store.saison_active_id();
   this.url = environment.maseance + 'api/prof/get_prof_saison/' + saison_id;
     //  this.url = this.url + "login.php";
    

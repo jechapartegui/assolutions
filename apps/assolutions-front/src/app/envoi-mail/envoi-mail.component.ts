@@ -170,7 +170,7 @@ canGoTo(step: Etape): boolean {
   };
 } 
   
-    this.adh_serv.GetAdherentAdhesion(this.store.saison_active().id).then(list => {
+    this.adh_serv.GetAdherentAdhesion(this.store.saison_active_id()).then(list => {
                     this.liste_adherent = list.map(data =>
   Object.assign(new Adherent_VM(), data)
 );

@@ -12,10 +12,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Adherent_VM } from '@shared/lib/member.interface';
 import { InscriptionSeanceService } from '../../services/inscription-seance.service';
 import {
-  FullInscriptionSeance_VM,
   InscriptionSeance_VM,
   InscriptionStatus_VM,
-  SeanceStatus_VM,
 } from '@shared/lib/inscription_seance.interface';
 import { MailService } from '../../services/mail.service';
 import { Seance_VM } from '@shared/index';

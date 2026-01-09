@@ -5,7 +5,7 @@ import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
 import { LoginNestService } from '../../services/login.nest.service';
-import { Compte_VM, PreLoginResponse, ProjetView } from '@shared/lib/compte.interface';
+import { Compte_VM, MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
 import { ProjetService } from '../../services/projet.service';
 import { Login_VM } from '../../class/login_vm';
 import { AppStore } from '../app.store';
@@ -183,34 +183,6 @@ onKeyPressMdp(event: KeyboardEvent) {
 }
 
 
-
-
-  SelectionnerCompteAdmin() {
-    this.action = $localize`Se connecter en tant qu'admin`;
-    const errorService = ErrorService.instance;
-    this.proj_serv.CheckMDP(this.VM.Password).then((ok:boolean) => {
-      if(ok){
-        this.compte_serv.getAccountLogin(this.VM.Login).then((compte:Compte_VM) => {          
-          this.essai.emit(compte);
-          return;
-        }).catch((error: Error) => {
-          let o = errorService.CreateError(this.action, error.message);
-          errorService.emitChange(o);
-          return;
-        });
-      } else {
-        let o = errorService.CreateError(this.action, $localize`Mot de passe administrateur incorrect`);
-          errorService.emitChange(o);
-          return;
-      }
-
-    }).catch((error: Error) => {
-          let o = errorService.CreateError(this.action, error.message);
-            this.store.logout();
-          errorService.emitChange(o);
-        });
-  }
-
   PreCreerCompte(){
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
@@ -244,65 +216,108 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
     }
   }
 
-  async PreLogin(){
-    this.action = $localize`Checker les informations de connexion`;
-    const errorService = ErrorService.instance;
-    this.login_serv_nest.PreLogin(this.VM.Login).then((response:PreLoginResponse) => {
-      this.VM.mdp_requis = response.password_required;
-      this.store.setmode(response.mode);
-    }).catch((error: Error) => {
-      let o = errorService.CreateError(this.action, error.message);
-        this.store.clearSession();
-      errorService.emitChange(o); 
-    });
-  }
-
   async Login() {
+    //action globale de connexion ==> gérer tous les scénarios
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
-    this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((compte_vm:Compte_VM) => {
-       
-          if(this.context == "ESSAI" || this.context == "CREATE"){
-            this.essai.emit(compte_vm);
-            return;
-          }
-             this.store.l(compte_vm);
-          this.VM.compte = compte_vm;
-        this.store.upda('APPLI');
-        this.store.updateSelectedMenu('MENU');
-      this.action = $localize`Rechercher des projets`;
-        this.login_serv_nest.GetProject(compte_vm.id).then((projets : ProjetView[]) => {
-          this.projets = projets;
-          this.store.updateListeProjet(this.projets);
-          if (this.projets.length == 1) {
-            this.projets_select = this.projets[0];
-            this.ConnectToProject();
-          } else  if (this.projets.length > 1) {
-            this.projets_select = this.projets[0];
-          } else {
-            let o = errorService.CreateError(this.action, $localize`Aucun projet trouvé`);
-            this.store.clearSession();
-            errorService.emitChange(o);
-          }
-        }).catch((error: Error) => {
-          let o = errorService.CreateError(this.action, error.message);
-            this.store.clearSession();
-          errorService.emitChange(o);
-        });
-      }).catch((error: Error) => {
-        if(error.message == "PASSWORD_REQUIRED"){
-          this.VM.mdp_requis = true;
-          return;
-        }
-        if(this.context == "ESSAI" || this.context == "CREATE"){
-          this.PreCreerCompte();
-        } else {
-        let o = errorService.CreateError(this.action, error);
-            this.store.clearSession();
-        errorService.emitChange(o);
+    if(this.VM.check_login.key == false){
+      this.action = $localize`Validation de l'email`;
+      this.login_serv_nest.PreLogin(this.VM.Login).then((prelogin:PreLoginResponse) => {
+        this.VM.check_login = {key:true, value:""};
+        this.VM.mode = prelogin.mode;
+        this.VM.mdp_requis = prelogin.password_required;
+        if(!this.VM.mdp_requis && this.VM.mode == "APPLI"){
+          this.login_serv_nest.Login(this.VM.Login, null).then((mr:MeResponse) => {
+            this.VM.compte = mr.compte;
+            this.VM.projets = mr.projects;
+            const s:Session = {
+              token: mr.token,
+              mode: this.VM.mode,
+              compte: mr.compte,
+              projects: mr.projects,
+              selectedProjectId: mr.projects.length == 1 ? mr.projects[0].id : null,
+              rights : mr.projects.length == 1 ? mr.projects[0].rights : null,
+            };
+            this.store.setSession(s);
+            if(s.projects.length > 1){
+              //cas avec plusieurs projets
+              this.projets = s.projects;
+              return;              
+            } else {
+            this.store.selectProject(s.selectedProjectId);
+            this.store.updateSelectedMenu('MENU');
+            this.router.navigate(['/menu']);
 
-        }
-      });      
+            }
+        }).catch((error: Error) => {
+            let o = errorService.CreateError(this.action, error.message);
+            errorService.emitChange(o);
+            this.store.clearSession();
+            this.VM.check_login = {key:false, value:error.message};
+            return
+        });
+      }  
+     }).catch((error: Error) => {
+              let o = errorService.CreateError(this.action, error.message);
+              errorService.emitChange(o);
+        this.VM.check_login = {key:false, value:error.message};
+      return;
+            });
+    } else {
+      //saisie du mot de passe ou re-saisie
+        this.login_serv_nest.Login(this.VM.Login, this.VM.Password).then((mr:MeResponse) => {
+          if(this.VM.mode == "APPLI"){
+           this.VM.compte = mr.compte;
+            this.VM.projets = mr.projects;
+            const s:Session = {
+              token: mr.token,
+              mode: this.VM.mode,
+              compte: mr.compte,
+              projects: mr.projects,
+              selectedProjectId: mr.projects.length == 1 ? mr.projects[0].id : null,
+              rights : mr.projects.length == 1 ? mr.projects[0].rights : null,
+            };
+            this.store.setSession(s);
+            if(s.projects.length > 1){
+              //cas avec plusieurs projets
+              this.projets = s.projects;
+              return;
+              
+            } else {
+            this.store.selectProject(s.selectedProjectId);
+            this.store.updateSelectedMenu('MENU');
+            this.router.navigate(['/menu']);
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+            return;
+            }
+          
+          } else {
+              //mode admin
+               const s:Session = {
+              token: mr.token,
+              mode: this.VM.mode,
+              compte: mr.compte,
+              projects: mr.projects,
+              selectedProjectId: mr.projects[0].id,
+              rights : null,
+            };
+            this.store.updateSelectedMenu('MENU-ADMIN');
+              this.router.navigate(['/admin']);
+              let o = errorService.OKMessage(this.action);
+              errorService.emitChange(o);
+              return;
+            }
+        }).catch((error: Error) => {
+            let o = errorService.CreateError(this.action, error.message);
+            errorService.emitChange(o);
+        this.VM.check_login = {key:true, value:error.message};
+            return
+        })
+    
+    }
+
+ 
   }
   LogOut() {
     this.action = $localize`Se déconnecter`;
@@ -346,7 +361,6 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
 
 async ConnectToProject() {
   this.action = $localize`Se connecter au projet`;
-  this.loading = true;
   const errorService = ErrorService.instance;
 
   if (!this.projets_select) {
@@ -355,24 +369,17 @@ async ConnectToProject() {
       $localize`Pas de projet sélectionné`
     );
     errorService.emitChange(o);
-    this.loading = false;
     return;
   }
 
   try {
-    await this.projectContextService.connectToProject(this.projets_select);
-
-    if (this.context === 'SEANCE') {
-      this.essai.emit(this.VM.compte);
-      this.loading = false;
-      return;
-    }
-
-    this.store.updateSelectedMenu('MENU');
-    await this.router.navigate(['/menu']);
-    this.loading = false;
+   this.store.selectProject(this.projets_select.id);
+            this.store.updateSelectedMenu('MENU');
+            this.router.navigate(['/menu']);
+            let o = errorService.OKMessage(this.action);
+            errorService.emitChange(o);
+            return;
   } catch (err: any) {
-    this.loading = false;
     const msg = err?.message || 'Erreur inconnue';
     const o = errorService.CreateError(this.action, msg);
     errorService.emitChange(o);
@@ -383,7 +390,31 @@ async ConnectToProject() {
   }
 }
 
+ SelectionnerCompteAdmin() {
+    this.action = $localize`Se connecter en tant qu'admin`;
+    const errorService = ErrorService.instance;
+    this.proj_serv.CheckMDP(this.VM.Password).then((ok:boolean) => {
+      if(ok){
+        this.compte_serv.getAccountLogin(this.VM.Login).then((compte:Compte_VM) => {          
+          this.essai.emit(compte);
+          return;
+        }).catch((error: Error) => {
+          let o = errorService.CreateError(this.action, error.message);
+          errorService.emitChange(o);
+          return;
+        });
+      } else {
+        let o = errorService.CreateError(this.action, $localize`Mot de passe administrateur incorrect`);
+          errorService.emitChange(o);
+          return;
+      }
 
+    }).catch((error: Error) => {
+          let o = errorService.CreateError(this.action, error.message);
+            this.store.clearSession();
+          errorService.emitChange(o);
+        });
+  }
 
   async TestMail(){
     const MI = new MailInput();

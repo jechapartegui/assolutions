@@ -79,11 +79,11 @@ export class MenuComponent implements OnInit {
       nextMonth.setMonth(today.getMonth() + 1);
   
       this.Riders = [];
-      this.riderservice.Anniversaire(this.store.saison_active().id).then((anniv) => {  
+      this.riderservice.Anniversaire(this.store.saison_active_id()).then((anniv) => {  
         this.anniversaire = anniv
       });
       // Partie adhérent
-      if (this.store.selectedProject().adherent || this.store.selectedProject().essai) {
+      if (this.store.selectedProject().rights.adherent || this.store.selectedProject().rights.essai) {
         this.action = $localize`Récupérer les adhérents`;
         const seancesAdh = await this.GetMySeance();
         const ridersAdh = seancesAdh.map((x) => {
@@ -109,7 +109,7 @@ export class MenuComponent implements OnInit {
       }
   
       // Partie prof
-      if (this.store.selectedProject().prof) {
+      if (this.store.selectedProject().rights.prof) {
         this.action = $localize`Récupérer les professeurs`;
         const seancesProf = await this.GetProfSeance();
         const ridersProf = seancesProf.map((x) => {
@@ -159,7 +159,7 @@ export class MenuComponent implements OnInit {
       this.listelieu = lieux;
       this.liste_lieu_filter = lieux.map((x) => x.nom);
   
-      this.listeCours = await this.coursservice.GetAll(this.store.saison_active().id);
+      this.listeCours = await this.coursservice.GetAll(this.store.saison_active_id());
 
       this.Riders.forEach((rider) => {
         this.riderservice.GetPhoto(rider.id).then((profil) => {

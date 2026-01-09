@@ -39,10 +39,10 @@ export class GroupeComponent implements OnInit {
       
       // Chargez la liste des cours
 
-      this.groupeserv.GetAll(this.store.saison_active().id).then((result) => {
+      this.groupeserv.GetAll(this.store.saison_active_id()).then((result) => {
 
         this.liste_groupe = result;
-        this.adhserv.GetAdherentAdhesion(this.store.saison_active().id).then((riders) => {
+        this.adhserv.GetAdherentAdhesion(this.store.saison_active_id()).then((riders) => {
          riders.forEach(p => Personne_VM.bakeLibelle(p));
           this.liste_adherent = riders.filter(x => x.inscriptionsSaison && x.inscriptionsSaison.length > 0);
         }).catch((error) => {
@@ -119,7 +119,7 @@ export class GroupeComponent implements OnInit {
           newGroupe.prive = false;
           newGroupe.display = true;
           newGroupe.whatsapp = "";  
-          newGroupe.saison_id = this.store.saison_active().id;
+          newGroupe.saison_id = this.store.saison_active_id();
           newGroupe.id = id;
           newGroupe.nom = this.nom_groupe;
 

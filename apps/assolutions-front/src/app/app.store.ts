@@ -12,6 +12,8 @@ export class AppStore {
 // app.store.ts
 readonly session = signal<Session | null>(null);
 readonly selectedMenu =signal<MenuType>("MENU");
+readonly public_saison_active_id = signal<number | null>(null);
+readonly public_projet_id = signal<number | null>(null);
 
 // ✅ computed
 readonly isLoggedIn = computed(() => !!this.session());
@@ -25,15 +27,27 @@ readonly selectedProject = computed(() => {
   return s.projects.find(p => p.id === s.selectedProjectId) ?? null;
 });
 
+readonly selectedProjectId = computed(() => {
+  const s = this.session();
+  if (!s?.selectedProjectId) return this.public_projet_id();
+  return s.projects.find(p => p.id === s.selectedProjectId) ?? this.public_projet_id();
+});
+
+readonly saison_active_id = computed(() => {
+  const s = this.session();
+  if (!s?.selectedProjectId) return this.public_saison_active_id();
+  return s.projects.find(p => p.id === s.selectedProjectId).saison_active.id ?? this.public_saison_active_id();
+});
+
 readonly saison_active = computed(() => {
   const s = this.session();
   if (!s?.selectedProjectId) return null;
   return s.projects.find(p => p.id === s.selectedProjectId).saison_active ?? null;
 });
 readonly rights = computed(() => this.selectedProject() ? {
-  adherent: !!this.selectedProject()?.adherent,
-  prof: !!this.selectedProject()?.prof,
-  essai: !!this.selectedProject()?.essai,
+  adherent: !!this.selectedProject()?.rights.adherent,
+  prof: !!this.selectedProject()?.rights.prof,
+  essai: !!this.selectedProject()?.rights.essai,
 } : null);
 
 readonly isAdmin = computed(() => this.mode() === "ADMIN");
@@ -74,7 +88,7 @@ readonly hasProjet = computed(() => !!this.session()?.projects && this.session()
 setLieuLoading(isLoading: boolean) {
   this.Lieu.update(s => ({ ...s, isLoading, error: null }));
 }
-setAdhrentLoading(isLoading: boolean) {
+setAdherentLoading(isLoading: boolean) {
   this.Adherent.update(s => ({ ...s, isLoading, error: null }));
 }
 setSeanceLoading(isLoading: boolean) {
@@ -148,7 +162,7 @@ markRemoteSeance(remote: Seance_VM[]) {
 }
 markRemoteCours(remote: Cours_VM[]) {
   const fp = fingerprintCore(remote ?? []);
-  this.Lieu.update(s => {
+  this.Cours.update(s => {
     if (s.remoteFingerprint === fp) {
       return {
         ...s,
@@ -294,6 +308,24 @@ selectProject(projectId: number) {
   this.session.set({ ...s, selectedProjectId: projectId });
   localStorage.setItem("selected_projet", String(projectId));
 }
+updateSaisonActive(saisonId: number) {
+  const s = this.session();
+  if (!s || s.selectedProjectId == null) return;
+
+  const projects: ProjetView[] = s.projects.map(p => {
+    if (p.id !== s.selectedProjectId) return p;
+
+    // si saison_active existe -> on met à jour l'id
+    if (p.saison_active) {
+      return { ...p, saison_active: { ...p.saison_active, id: saisonId } };
+    }
+
+    // si elle est null -> on ne peut pas créer un Saison_VM complet => on laisse null
+    return p;
+  });
+
+  this.session.set({ ...s, projects });
+}
 
 
 }
@@ -329,6 +361,6 @@ function fingerprintCore(items: { id: number; updatedAt?: string }[]) {
 
 export type MenuType =
   | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE' | 'SAISON' | 'LIEU'
-  | 'MENU' | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL' | 'PROJETINFO'
+  | 'MENU' | 'MENU-ADMIN' |'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL' | 'PROJETINFO'
   | 'PROJETMAIL' | 'COMPTA' | 'CB' | 'FACTURE' | 'ENVOIMAIL'
   | 'ADMINISTRATEUR' | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR';

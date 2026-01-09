@@ -205,7 +205,7 @@ export class AdherentComponent implements OnInit, OnDestroy {
           errorService.emitChange(
             errorService.CreateError(
               $localize`Récupérer les saisons`,
-              $localize`Il faut au moins une saison pour créer un cours`
+              $localize`Il faut au moins une saison`
             )
           );
           if (this.store.mode() === 'ADMIN') {
@@ -220,10 +220,6 @@ export class AdherentComponent implements OnInit, OnDestroy {
 
         this.liste_saison = sa;
         this.active_saison = this.liste_saison.find((x) => x.active) ?? this.liste_saison[0];
-
-        if (this.active_saison && !this.store.saison_active()) {
-          this.store.updateSaisonActive(this.active_saison);
-        }
 
         this.route.queryParams.subscribe((params) => {
           if ('id' in params) {
@@ -501,7 +497,7 @@ Inscrire(){
     const iss = new InscriptionSaison_VM();
     iss.rider_id = this.thisAdherent.id;
     iss.active = true;
-    iss.saison_id = this.store.saison_active().id;
+    iss.saison_id = this.store.saison_active_id();
     this.inscription_saison_serv.Add(iss).then((id) =>{
       if(id){
  this.ridersService.Get(this.thisAdherent.id).then((adh) =>{

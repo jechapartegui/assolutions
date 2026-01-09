@@ -29,9 +29,7 @@ export class Compte_VM {
   export type ProjetView = {
     id: number;
     nom: string;
-    adherent: boolean;
-    prof: boolean;
-    essai:boolean;
+   rights: ProjectRights;
     saison_active:Saison_VM | null;
   };
 

@@ -57,7 +57,7 @@ this.save = JSON.stringify(ddl);
             this.lieux = lieux;
         });
         if(this.Regles.date_dans_saison){
-            await this.saison_serv.Get(this.store.saison_active().id).then((saison) => {
+            await this.saison_serv.Get(this.store.saison_active_id()).then((saison) => {
                 this.date_min = saison.date_debut;
                 this.date_max = saison.date_fin;
             })

@@ -1,4 +1,5 @@
-import { Compte_VM } from "@shared/lib/compte.interface";
+import { ValidationItem } from "@shared/index";
+import { AppMode, Compte_VM, ProjetView } from "@shared/lib/compte.interface";
 
 export class Login_VM{
     public compte:Compte_VM;
@@ -10,6 +11,9 @@ export class Login_VM{
     public isPasswordValid:boolean;
     public isValid:boolean;
     public creer_compte:boolean = false;
+    public mode:AppMode;
+    public projets:ProjetView[] = [];
+    public check_login:ValidationItem = {key:false, value:""};
 
     
 }
