@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { Adresse } from '@shared/lib/adresse.interface';
 import { toSaison_VM } from '../saison/saison.services';
 import { Season } from '../../entities/saison.entity';
+import { ProjetView } from '@shared/lib/compte.interface';
   
   
   @Injectable()
@@ -43,17 +44,12 @@ import { Season } from '../../entities/saison.entity';
         return true;
       }
 
-      async login(username:string, password:string) : Promise<Projet_VM> {
-        const pr = await this.projectSer.getByLogin(username);
+      async login(compte:number) : Promise<ProjetView[]> {
+        const pr = await this.projectSer.getByLogin(compte);
         if(!pr){
           throw new UnauthorizedException('INCORRECT_LOGIN');
         }
-        const storedPassword = (await pr).password;
-         const hashed = hashPasswordWithPepper(password, this.pepper);
-            if (storedPassword !== hashed) {
-              throw new UnauthorizedException('INCORRECT_PASSWORD');
-            }
-        return to_Project_VM(pr);
+        return [toProjectView(pr)];
       }
       async Add(s: Projet_VM) {
         if (!s) {
@@ -85,6 +81,20 @@ import { Season } from '../../entities/saison.entity';
         return this.projectSer.update(pr.id, pr);
       }
     
+    }
+
+    export function toProjectView(entity: Project): ProjetView {
+      const vm:ProjetView ={
+        id: entity.id,
+        nom: entity.name,
+        rights: {
+          adherent:true,
+          prof:true,
+          essai:false
+        },
+        saison_active: entity.seasons && entity.seasons.length >0 && entity.seasons.find(x => x.isActive) ? toSaison_VM(entity.seasons.find(x => x.isActive)) : null
+      };
+      return vm;
     }
 
     export function to_Project_VM(entity: Project): Projet_VM {

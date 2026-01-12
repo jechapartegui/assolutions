@@ -32,7 +32,7 @@ public Me(): Promise<MeResponse> {
 }
 
 public PreLogin(email: string): Promise<PreLoginResponse> {
-    this.url = environment.maseance + 'api/auth/preogin';
+    this.url = environment.maseance + 'api/auth/prelogin';
     //  this.url = this.url + "login.php";
     const body = {
       email: email.toLowerCase()

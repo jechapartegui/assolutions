@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.services';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
+import { Compte_VM, MeResponse, PreLoginResponse, ProjetView } from '@shared/lib/compte.interface';
 import { Project } from '../../entities/projet.entity';
 // src/auth/auth.controller.ts
 @Controller('auth')
@@ -24,16 +24,23 @@ export class AuthController {
     return this.authService.getAll(projectId);
   }
 
+  @Post('prelogin')
+async prelogin(
+  @Body() body:  { email: string}
+): Promise<PreLoginResponse> {
+  return this.authService.prelogin(body.email);
+}
+
 @Post('login')
 async login(
   @Body() body:  { email: string; password?: string }
-): Promise<{ token: string; compte: Compte_VM }> {
+): Promise<MeResponse> {
   return this.authService.login(body.email, body.password);
 }
 
 @UseGuards(JwtAuthGuard)
 @Get('me')
-async me(@Req() req): Promise<{ compte: Compte_VM, projects: ProjetView[] }> {
+async me(@Req() req): Promise<MeResponse> {
   const userId = req.user.id;
   const compte = await this.authService.get(userId);
   if(compte){

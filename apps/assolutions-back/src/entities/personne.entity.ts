@@ -1,9 +1,10 @@
-import { ItemContact } from "@shared/lib/personne.interface";
+
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from "typeorm";
 import { Account } from "./compte.entity";
 import { RegistrationSeason } from "./inscription-saison.entity";
 import { RegistrationSession } from "./inscription-seance.entity";
 import { Professor } from "./professeur.entity";
+import { ItemContact } from "@shared/lib/personne.interface";
 
 @Entity({ name: 'personne' })
 export class Person {

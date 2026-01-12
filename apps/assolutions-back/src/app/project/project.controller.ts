@@ -15,14 +15,7 @@ export class ProjetController {
     return this.projserv.checkpsw(projectId, password);
   }
 
-    @UseGuards(JwtAuthGuard)
-  @Post('login')
-  async login(
-    @Body() { email, password }: { email: string; password: string }
-  ) : Promise<Projet_VM> {
-    return this.projserv.login(email, password);
-  }
-
+ 
     @UseGuards(JwtAuthGuard)
        @Get('get/:id')
        async Get(@Param() { id }: { id: number }) {

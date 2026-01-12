@@ -8,6 +8,7 @@ import { ProfessorContractService } from "../../crud/professorcontract.service";
 import { AccountService } from "../../crud/account.service";
 import { ProjetView } from "@shared/lib/compte.interface";
 import { ContratLight_VM, Professeur_VM} from "@shared/lib/prof.interface";
+import { toSaison_VM } from "../saison/saison.services";
 
 @Injectable()
 export class ProfService {
@@ -55,9 +56,12 @@ async getProfContratActif(compte_id: number): Promise<ProjetView[]> {
       retour.push({
         id: c.saison.projectId,
         nom: c.saison.project.name,
+      rights : {
         prof: true,
         adherent: false,
         essai: false,
+      },
+      saison_active : toSaison_VM(c.saison)
       });
     }
   }

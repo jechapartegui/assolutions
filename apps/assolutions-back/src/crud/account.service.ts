@@ -5,6 +5,7 @@ import { In, Repository } from 'typeorm';
 import { Account } from '../entities/compte.entity';
 import { Person } from '../entities/personne.entity';
 import { ProjetView } from '@shared/lib/compte.interface';
+import { toSaison_VM } from '../app/saison/saison.services';
 
 @Injectable()
 export class AccountService {
@@ -81,9 +82,12 @@ export class AccountService {
  const pv:ProjetView ={
       id : p_i.saison.projectId,
       nom : p_i.saison.project.name,
+      rights : {
       adherent : true,
       prof : false,
       essai : false
+      },
+      saison_active : toSaison_VM(p_i.saison)
     }
     retour.push(pv);
     })
@@ -95,9 +99,11 @@ export class AccountService {
       const pv:ProjetView ={
       id : p_e.seance.season.projectId,
       nom : p_e.seance.season.project.name,
+        rights : {
       adherent : false,
       essai: true,
-      prof : false
+      prof : false },
+      saison_active : toSaison_VM(p_e.seance.season)
      }
     retour.push(pv);
     })
@@ -132,3 +138,4 @@ async create(data: Partial<Account>): Promise<Account> {
     await this.repo.remove(entity);
   }
 }
+

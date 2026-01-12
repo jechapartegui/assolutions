@@ -1,5 +1,3 @@
-import { Adresse } from "@shared/lib/adresse.interface";
-import { ItemContact } from "@shared/lib/personne.interface";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,8 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { Season } from "./saison.entity";
+import { Account } from "./compte.entity";
+import { Adresse } from "@shared/lib/adresse.interface";
+import { ItemContact } from "@shared/lib/personne.interface";
 
 /**
  * Représente un login de projet (projet_login) avec ses informations de connexion et de contact.
@@ -61,6 +64,12 @@ export class Project {
   @Column({ name: "password" })
   password: string;
 
+  @Column({ name: "compte", type: 'int', nullable: false })
+  compte: number;
+
+    @ManyToOne(() => Account, { onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'compte' })
+    account: Account;
   
   /** Jeton d'activation après inscription */
 @Column({ name: 'activation_token', type: 'text', nullable: true, default: null })

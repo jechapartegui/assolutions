@@ -18,8 +18,8 @@ export class ProjectService {
     return item;
   }
 
-    async getByLogin(login: string): Promise<Project> {
-    const item = await this.repo.findOne({ where: { login },
+    async getByLogin(compte: number): Promise<Project> {
+    const item = await this.repo.findOne({ where: { compte },
       relations: ['seasons'], });
     return item;
   }

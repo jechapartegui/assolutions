@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
-import { Compte_VM, ProjetView } from '@shared/lib/compte.interface';
 import { AccountService } from '../../crud/account.service';
 import { Account } from '../../entities/compte.entity';
 import { SeasonService } from '../../crud/season.service';
@@ -16,6 +15,9 @@ import { QueryFailedError } from 'typeorm';
 import { MailerService } from '../mail/mailer.service';
 import { MailInput } from '@shared/lib/mail-input.interface';
 import { JwtService } from '@nestjs/jwt';
+import { ProjectService } from '../../crud/project.service';
+import { PersonService } from '../../crud/person.service';
+import { AppMode, Compte_VM, MeResponse, PreLoginResponse, ProjetView } from '@shared/lib/compte.interface';
 
 
 @Injectable()
@@ -29,15 +31,58 @@ export class AuthService {
     private prof_serv:ProfService,
     private season_serv:SeasonService,
     private member_serv:MemberService,
-    public mailer:MailerService
+    public mailer:MailerService,
+    private projserv:ProjectService,
+    private personserv:PersonService
   ) {
     this.pepper = this.configService.get<string>('PEPPER') ?? '';
+  }
+
+  async prelogin(
+    login: string
+  ): Promise<PreLoginResponse> {
+    if (!login) {
+      throw new BadRequestException('ACCOUNT_NOT_FOUND');
+    }
+      const compte = await this.getLogin(login);
+  if (!compte) {
+    throw new BadRequestException('ACCOUNT_NOT_FOUND');
+  }
+
+    const hasPassword =
+    compte.password !== null &&
+    compte.password !== undefined &&
+    compte.password.trim() !== '';
+    if(!compte.actif){
+      throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
+    }
+    const hasprojet = this.projserv.getByLogin(compte.id);
+    if(hasprojet){
+      return {
+        password_required: hasPassword,
+        mode: "ADMIN"
+      };
+    } else {
+      const hasperson = this.personserv.getAllCompte_number(compte.id);
+      if(hasperson){
+        return {
+          password_required: hasPassword,
+          mode: "APPLI" 
+        };
+      } else {
+        throw new BadRequestException('ACCOUNT_NOT_ASSOCIATED');
+      }
+    }
+    
+   
+
+
   }
 
 async login(
   login: string,
   password?: string
-): Promise<{ token: string; compte: Compte_VM }> {
+): Promise<MeResponse> {
   if (!login) {
     throw new BadRequestException('ACCOUNT_NOT_FOUND');
   }
@@ -72,6 +117,24 @@ async login(
     }
   }
 
+  let mo: AppMode = null;
+  let projv: ProjetView[] = [];
+   
+     if(!compte.actif){
+      throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
+    }
+    const hasprojet = this.projserv.getByLogin(compte.id);
+    if(hasprojet){
+     mo = "ADMIN";
+    } else {
+      const hasperson = this.personserv.getAllCompte_number(compte.id);
+      if(hasperson){
+        mo = "APPLI";
+      } else {
+        throw new BadRequestException('ACCOUNT_NOT_ASSOCIATED');
+      }
+    }
+
   // => Si le compte n’a PAS de mot de passe
   // On ne met rien... c’est OK tout simplement.
   // (pas besoin de else, pas besoin de GO → dans ce cas, on passe directement au token)
@@ -83,6 +146,8 @@ async login(
   return {
     token,
     compte,
+    mode: mo,
+    projects: projv
   };
 }
 
@@ -141,18 +206,20 @@ async login(
     const profs:ProjetView[] = await this.prof_serv.getProfContratActif(compteId);
     // 2. Crée une map pour fusionner les projets par ID
     if(!adhesions && !profs) {
-      return [];
+    const projets:ProjetView[] = await this.projserv.login(compteId);
+    if(projets && projets.length > 0){
+      return projets;
     }
+  }
   const map = new Map<number, ProjetView>();
 
   // 3. Ajoute les projets venant des adhésions
-  for (const proj of adhesions) {
+  for (const proj of adhesions) {   
     map.set(proj.id, {
       id: proj.id,
       nom: proj.nom,
-      adherent: proj.adherent,
-      essai: proj.essai, // true ou false selon la donnée
-      prof: false,       // pas encore connu
+      rights: proj.rights,
+      saison_active: proj.saison_active,
     });
   }
 
@@ -160,14 +227,13 @@ async login(
   for (const proj of profs) {
     if (map.has(proj.id)) {
       const existing = map.get(proj.id)!;
-      existing.prof = true; // on complète l'entrée existante
+      existing.rights.prof = true; // on complète l'entrée existante
     } else {
       map.set(proj.id, {
         id: proj.id,
         nom: proj.nom,
-        adherent: false,
-        essai: false,
-        prof: true,
+        rights: proj.rights,
+        saison_active: proj.saison_active
       });
     }
   }
