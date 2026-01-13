@@ -453,7 +453,7 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
 
       const boucleContent = mes_seances
         .map((s: any) => {
-           const seanceId = s?.seance?.seance_id ?? 0;
+           const seanceId = s?.seance?.id ?? 0;
   const login = encodeURIComponent(p.account?.login ?? '');
   const adherentId = p?.id ?? 0;
 
