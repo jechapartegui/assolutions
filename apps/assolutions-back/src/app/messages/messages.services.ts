@@ -458,7 +458,7 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
   const adherentId = p?.id ?? 0;
 
   const dataSeance = {
-    SEANCE: s?.seance?.name ?? 'séance',
+    SEANCE: s?.seance?.nom ?? 'séance',
     SEANCE_ID: seanceId,
     PERSONNE_ID: adherentId,
     DATE: formatDDMMYYYY(s?.seance?.date_seance),
