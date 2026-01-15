@@ -29,8 +29,8 @@ readonly selectedProject = computed(() => {
 
 readonly selectedProjectId = computed(() => {
   const s = this.session();
-  if (!s?.selectedProjectId) return this.public_projet_id();
-  return s.projects.find(p => p.id === s.selectedProjectId) ?? this.public_projet_id();
+  if (!s?.selectedProjectId) return this.public_projet_id(); 
+  return s?.selectedProjectId;
 });
 
 readonly saison_active_id = computed(() => {
@@ -287,6 +287,8 @@ setSession(s: Session) {
   localStorage.setItem("auth_token", s.token);
   localStorage.setItem("auth_mode", s.mode);
   localStorage.setItem("selected_projet", String(s.selectedProjectId ?? ""));
+  console.log(this.selectedProjectId());
+  console.log(this.session());
 }
 
 clearSession() {

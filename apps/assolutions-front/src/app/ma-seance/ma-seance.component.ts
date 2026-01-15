@@ -692,13 +692,13 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
   // -------------------------------------------------------------------------
   getPresent(): number {
     return this.All.filter(
-      (x) => x.statut_inscription === InscriptionStatus_VM.PRESENT
+      (x) => x.statut_seance === SeanceStatus_VM.PRESENT
     ).length;
   }
 
   getAbsent(): number {
     return this.All.filter(
-      (x) => x.statut_inscription === InscriptionStatus_VM.ABSENT
+      (x) => x.statut_seance === SeanceStatus_VM.ABSENT
     ).length;
   }
 

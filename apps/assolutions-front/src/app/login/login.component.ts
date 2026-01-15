@@ -227,7 +227,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
         this.VM.mode = prelogin.mode;
         this.VM.mdp_requis = prelogin.password_required;
         if(!this.VM.mdp_requis && this.VM.mode == "APPLI"){
-          this.login_serv_nest.Login(this.VM.Login, null).then((mr:MeResponse) => {
+          this.login_serv_nest.Login(this.VM.Login, null).then(async (mr:MeResponse) => {
             this.VM.compte = mr.compte;
             this.VM.projets = mr.projects;
             const s:Session = {
@@ -238,7 +238,7 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
               selectedProjectId: mr.projects.length == 1 ? mr.projects[0].id : null,
               rights : mr.projects.length == 1 ? mr.projects[0].rights : null,
             };
-            this.store.setSession(s);
+            await this.store.setSession(s);
             if(s.projects.length > 1){
               //cas avec plusieurs projets
               this.projets = s.projects;

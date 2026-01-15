@@ -41,14 +41,8 @@ async login(
 @UseGuards(JwtAuthGuard)
 @Get('me')
 async me(@Req() req): Promise<MeResponse> {
-  const userId = req.user.id;
-  const compte = await this.authService.get(userId);
-  if(compte){
-    const projects = await this.authService.getProjects(compte.id);
-    return { compte, projects };
-  } else {
-    throw new BadRequestException('USER_NOT_FOUND');
-  }
+  const userId = req.user.sub ?? req.user.id; 
+  return this.authService.me(userId);;
 }
 
 

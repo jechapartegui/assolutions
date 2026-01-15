@@ -356,11 +356,11 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
 
       const boucleContent = liste_seance
         .map((s: any) => {
-           const seanceId = s?.seance_id ?? 0;
+           const seanceId = s?.id ?? 0;
   const login = encodeURIComponent(p.account?.login ?? '');
   const adherentId = p?.id ?? 0;
   const dataSeance_serie = {
-    SEANCE: s?.libelle ?? 'séance',
+    SEANCE: s?.nom ?? 'séance',
     SEANCE_ID: seanceId,
     PERSONNE_ID: adherentId,
     DATE: formatDDMMYYYY(s?.date_seance),
@@ -453,12 +453,12 @@ const liste_seance: Seance_VM[] = seances.filter((s): s is Seance_VM => !!s);
 
       const boucleContent = mes_seances
         .map((s: any) => {
-           const seanceId = s?.seance?.seance_id ?? 0;
+           const seanceId = s?.seance?.id ?? 0;
   const login = encodeURIComponent(p.account?.login ?? '');
   const adherentId = p?.id ?? 0;
 
   const dataSeance = {
-    SEANCE: s?.seance?.libelle ?? 'séance',
+    SEANCE: s?.seance?.nom ?? 'séance',
     SEANCE_ID: seanceId,
     PERSONNE_ID: adherentId,
     DATE: formatDDMMYYYY(s?.seance?.date_seance),

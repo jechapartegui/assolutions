@@ -15,9 +15,10 @@ import { QueryFailedError } from 'typeorm';
 import { MailerService } from '../mail/mailer.service';
 import { MailInput } from '@shared/lib/mail-input.interface';
 import { JwtService } from '@nestjs/jwt';
-import { ProjectService } from '../../crud/project.service';
 import { PersonService } from '../../crud/person.service';
 import { AppMode, Compte_VM, MeResponse, PreLoginResponse, ProjetView } from '@shared/lib/compte.interface';
+import { ProjectService } from '../../crud/project.service';
+import { ProjetService } from '../project/project.service';
 
 
 @Injectable()
@@ -32,7 +33,8 @@ export class AuthService {
     private season_serv:SeasonService,
     private member_serv:MemberService,
     public mailer:MailerService,
-    private projserv:ProjectService,
+    private projserv:ProjetService,
+    private projcserv:ProjectService,
     private personserv:PersonService
   ) {
     this.pepper = this.configService.get<string>('PEPPER') ?? '';
@@ -56,7 +58,8 @@ export class AuthService {
     if(!compte.actif){
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
-    const hasprojet = this.projserv.getByLogin(compte.id);
+    const hasprojet = await this.projcserv.getByLogin(compte.id);
+      console.warn("hasprojet", hasprojet);
     if(hasprojet){
       return {
         password_required: hasPassword,
@@ -77,6 +80,40 @@ export class AuthService {
    
 
 
+  }
+
+  async me(userid: number): Promise<MeResponse> {
+    if (!userid) {
+    throw new BadRequestException('ACCOUNT_NOT_FOUND');
+  }
+    const compte = await this.get(userid);
+    if (!compte) {
+    throw new BadRequestException('ACCOUNT_NOT_FOUND');
+  }
+  let mo: AppMode = null;
+  let projv: ProjetView[] = [];
+   
+     if(!compte.actif){
+      throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
+    }
+      const hasprojet = await  this.projcserv.getByLogin(compte.id);
+    if(hasprojet){
+     mo = "ADMIN";
+    } else {
+      const hasperson = await  this.personserv.getAllCompte_number(compte.id);
+      if(hasperson){
+        mo = "APPLI";
+      } else {
+        throw new BadRequestException('ACCOUNT_NOT_ASSOCIATED');
+      }
+    }
+    const token ="";
+    return {
+    token,
+    compte,
+    mode: mo,
+    projects: projv
+  };
   }
 
 async login(
@@ -123,13 +160,14 @@ async login(
      if(!compte.actif){
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
-    const hasprojet = this.projserv.getByLogin(compte.id);
+    const hasprojet = await  this.projcserv.getByLogin(compte.id);
     if(hasprojet){
      mo = "ADMIN";
     } else {
-      const hasperson = this.personserv.getAllCompte_number(compte.id);
+      const hasperson = await  this.personserv.getAllCompte_number(compte.id);
       if(hasperson){
         mo = "APPLI";
+        projv = await this.getProjects(compte.id);
       } else {
         throw new BadRequestException('ACCOUNT_NOT_ASSOCIATED');
       }
