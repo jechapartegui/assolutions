@@ -51,18 +51,14 @@ export class AuthService {
     throw new BadRequestException('ACCOUNT_NOT_FOUND');
   }
 
-    const hasPassword =
-    compte.password !== null &&
-    compte.password !== undefined &&
-    compte.password.trim() !== '';
+    const hasPassword = await this.compteserv.hasPassword(compte.id);
     if(!compte.actif){
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
     const hasprojet = await this.projcserv.getByLogin(compte.id);
-      console.warn("hasprojet", hasprojet);
     if(hasprojet){
       return {
-        password_required: hasPassword,
+        password_required: true,
         mode: "ADMIN"
       };
     } else {
@@ -90,13 +86,14 @@ export class AuthService {
     if (!compte) {
     throw new BadRequestException('ACCOUNT_NOT_FOUND');
   }
-  let mo: AppMode = null;
+   let mo: AppMode = null;
   let projv: ProjetView[] = [];
    
      if(!compte.actif){
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
-      const hasprojet = await  this.projcserv.getByLogin(compte.id);
+    const hasprojet = await  this.projcserv.getByLogin(compte.id);
+        projv = await this.getProjects(compte.id);
     if(hasprojet){
      mo = "ADMIN";
     } else {
@@ -134,10 +131,9 @@ async login(
   //
   // Ton test original était incorrect.
   // Le bon test = vérifier si le champ password EXISTE et CONTIENT quelque chose
-  const hasPassword =
-    compte.password !== null &&
-    compte.password !== undefined &&
-    compte.password.trim() !== '';
+  
+
+    const hasPassword = await this.compteserv.hasPassword(compte.id);
 
   if (hasPassword) {
     // Le compte DOIT donner un mot de passe
@@ -161,13 +157,13 @@ async login(
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
     const hasprojet = await  this.projcserv.getByLogin(compte.id);
+        projv = await this.getProjects(compte.id);
     if(hasprojet){
      mo = "ADMIN";
     } else {
       const hasperson = await  this.personserv.getAllCompte_number(compte.id);
       if(hasperson){
         mo = "APPLI";
-        projv = await this.getProjects(compte.id);
       } else {
         throw new BadRequestException('ACCOUNT_NOT_ASSOCIATED');
       }
@@ -242,9 +238,12 @@ async login(
     // 1. Récupère les adhérents liés au compte
     const adhesions:ProjetView[] = await this.compteserv.getAdhesion(compteId);
     const profs:ProjetView[] = await this.prof_serv.getProfContratActif(compteId);
+    console.log("adhesions", adhesions);
+    console.log("profs", profs);
     // 2. Crée une map pour fusionner les projets par ID
-    if(!adhesions && !profs) {
+    if((!adhesions || adhesions.length == 0) && (!profs || profs.length == 0)) {
     const projets:ProjetView[] = await this.projserv.login(compteId);
+    console.log("projets", projets);
     if(projets && projets.length > 0){
       return projets;
     }

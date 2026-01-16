@@ -302,8 +302,9 @@ message = $localize`Voulez-vous confirmer la création d'un compte avec mot de p
               selectedProjectId: mr.projects[0].id,
               rights : null,
             };
+            this.store.setSession(s);
             this.store.updateSelectedMenu('MENU-ADMIN');
-              this.router.navigate(['/admin']);
+              this.router.navigate(['/menu-admin']);
               let o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
               return;

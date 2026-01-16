@@ -287,8 +287,6 @@ setSession(s: Session) {
   localStorage.setItem("auth_token", s.token);
   localStorage.setItem("auth_mode", s.mode);
   localStorage.setItem("selected_projet", String(s.selectedProjectId ?? ""));
-  console.log(this.selectedProjectId());
-  console.log(this.session());
 }
 
 clearSession() {

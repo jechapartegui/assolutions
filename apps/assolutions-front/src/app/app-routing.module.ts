@@ -38,63 +38,63 @@ import { InfoComponent } from './info/info.component';
 
 
 
-const routes: Routes = [
-  // { path: '', redirectTo: 'defaut', pathMatch: 'full' }, // Redirection vers 'defaut' pour le path vide
-  { path: '', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'login', component: LoginComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  {
-    path: 'menu',
-    component: MenuComponent,
-    canActivate: [AuthGuard],
-  }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'cours', component: CoursComponent ,
-    canActivate: [AuthGuard],
-  }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'seance', component: SeanceComponent,
-    canActivate: [AuthGuard],
-  },// Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'adherent', component: AdherentComponent ,
-    canActivate: [AuthGuard],
-  }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'groupe', component: GroupeComponent ,
-    canActivate: [AuthGuard],
-  }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'ma-seance', component: MaSeanceComponent,
-    canActivate: [AuthGuard],
-  }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'info', component: InfoComponent },
+import type { AppMode } from '@shared/lib/compte.interface';
 
-  { path: 'professeur', component: ProfesseurComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'compte', component: CompteComponent }, // Route 'defaut' qui affiche ImportRidersComponent
-  { path: 'seances-essais', component: SeancesEssaisComponent }, // Route 'defaut' qui affiche ImportRidersComponent
+// Raccourcis
+const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
+const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
+const LOGGED_ANY = { auth: {} };
+
+const routes: Routes = [
+  { path: '', component: LoginComponent },
+  { path: 'login', component: LoginComponent },
+
+  // APPLI
+  { path: 'menu', component: MenuComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
+  { path: 'tableau-de-bord', component: DashboardComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
+  { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
+
+  // PROF (APPLI + ADMIN)
+  { path: 'cours', component: CoursComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
+  { path: 'seance', component: SeanceComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
+  { path: 'groupe', component: GroupeComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
+
+  // Logged (tous droits, APPLI + ADMIN)
+  { path: 'ma-seance', component: MaSeanceComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
+  { path: 'adherent', component: AdherentComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
+
+  // ADMIN
+  { path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'saison', component: SaisonComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'professeur', component: ProfesseurComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'compte', component: CompteComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'lieu', component: LieuComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'comptabilite', component: ComptabiliteComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'compte-bancaire', component: CompteBancaireComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'factures', component: FacturesComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'envoi-mail', component: EnvoiMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'projet-info', component: ProjetInfoComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'projet-mail', component: ProjetMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'suivi-mail', component: SuiviMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'administrateurs', component: AdministrateursComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'stock', component: StockComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'import', component: ImportComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'gestion-liste', component: GestionListeComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'operations', component: OperationsComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+
+  // Public / rien
+  { path: 'info', component: InfoComponent },
+  { path: 'seances-essais', component: SeancesEssaisComponent },
   { path: 'reinit-mdp', component: ReinitMdpComponent },
-  { path: 'saison', component: SaisonComponent },
-  { path: 'lieu', component: LieuComponent },
-  { path: 'comptabilite', component: ComptabiliteComponent },
-  { path: 'tableau-de-bord', component: DashboardComponent },
-  { path: 'compte-bancaire', component: CompteBancaireComponent },
-  { path: 'factures', component: FacturesComponent },
-  { path: 'envoi-mail', component: EnvoiMailComponent },
-  { path: 'projet-info', component: ProjetInfoComponent },
-  { path: 'projet-mail', component: ProjetMailComponent },
-  { path: 'suivi-mail', component: SuiviMailComponent },
-  { path: 'administrateurs', component: AdministrateursComponent },
-  { path: 'stock', component: StockComponent },
-  { path: 'import', component: ImportComponent },
-  { path: 'gestion-liste', component: GestionListeComponent },
-  { path: 'operations', component: OperationsComponent },
-  { path: 'clementine', component: ClementineComponent }, 
-  { path: 'menu-admin', component: MenuAdminComponent }, 
+  { path: 'clementine', component: ClementineComponent },
   { path: 'liste-cours-public', component: CoursPage },
   { path: 'liste-seances-public', component: SeancesPage },
-  {path:'menu-admin',component:MenuAdminComponent},
-  {path:'tdb',component:DashboardComponent},
-{ path: 's/:slug', component: ShortLinkRedirectComponent },
-{ path: 's/:code/:answer', component: ShortLinkRedirectComponent }, // legacy (facultatif)
+  { path: 's/:slug', component: ShortLinkRedirectComponent },
+  { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
 
-
-
+  { path: '**', redirectTo: 'login' },
 ];
+
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

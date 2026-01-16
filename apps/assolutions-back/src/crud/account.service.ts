@@ -22,6 +22,12 @@ export class AccountService {
     const item = await this.repo.findOne({ where: { login } });
     return item;
   }
+
+  async hasPassword(id: number): Promise<boolean> {
+    const item = await this.repo.findOne({ where: { id } });
+    if (!item) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    return item.password !== null && item.password !== undefined && item.password.trim() !== '';
+  }
      async getToken(login: string, activationToken:string): Promise<Account> {
     const item = await this.repo.findOne({ where: { login, activationToken } });
     if (!item) throw new NotFoundException('INCORRECT_TOKEN');
