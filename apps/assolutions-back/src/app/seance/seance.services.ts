@@ -134,7 +134,7 @@ filteredSeances.push(myss);
  async GetByDate(
   saison_id: number,
   date_debut?: string,
-  date_fin?: string
+  date_fin?: string, essai_possible: boolean = false
 ): Promise<Seance_VM[]> {
   const dateDebut = date_debut ? startOfDay(new Date(date_debut)) : null;
   const dateFin = date_fin ? endOfDay(new Date(date_fin)) : null;
@@ -155,6 +155,9 @@ filteredSeances.push(myss);
 
   if (dateFin) {
     seances = seances.filter(seance => new Date(seance.date_seance) <= dateFin);
+  }
+   if (essai_possible) {
+    seances = seances.filter(seance => seance.essai_possible === true);
   }
 
   return seances;

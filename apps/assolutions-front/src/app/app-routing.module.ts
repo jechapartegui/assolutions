@@ -28,8 +28,6 @@ import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
 import { OperationsComponent } from './operations/operations.component';
 import { ClementineComponent } from './clementine/clementine.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
-import { CoursPage } from './public/course-page-public.component';
-import { SeancesPage } from './public/seance-page-public.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 import { AuthGuard } from './auth.guard';
 import { InfoComponent } from './info/info.component';
@@ -87,8 +85,6 @@ const routes: Routes = [
   { path: 'seances-essais', component: SeancesEssaisComponent },
   { path: 'reinit-mdp', component: ReinitMdpComponent },
   { path: 'clementine', component: ClementineComponent },
-  { path: 'liste-cours-public', component: CoursPage },
-  { path: 'liste-seances-public', component: SeancesPage },
   { path: 's/:slug', component: ShortLinkRedirectComponent },
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
 

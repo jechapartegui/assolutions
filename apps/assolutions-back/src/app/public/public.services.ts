@@ -64,6 +64,6 @@ export class PublicPlanningService {
     }
 
     // tu as déjà: seance_serv.GetByDate(saison_id, date_debut, date_fin)
-    return this.seanceService.GetByDate(saisonId.id, from, to);
+    return this.seanceService.GetByDate(saisonId.id, from, to, true);
   }
 }

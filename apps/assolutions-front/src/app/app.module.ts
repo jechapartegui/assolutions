@@ -61,11 +61,6 @@ import { DureeHHMMPipe } from '../pipe/duree.pipe';
 import { InfoPersoComponent } from './component/Infoperso/infoperso.component';
 import { DateLieuComponent } from './component/datelieu/datelieu.component';
 import { CaracSeanceComponent } from './component/caracteristique_seance/caracteristique_seance.component';
-import { WeekCalendarComponent } from './public/week-calendrar.component';
-import { CoursPage } from './public/course-page-public.component';
-import { SeancesPage } from './public/seance-page-public.component';
-import { SeanceListComponent } from './public/seance-list-public.component';
-import { CourseListPublicComponent } from './public/course-list-public.component';
 import { OrEmptyPipe } from '../filters/orempty.pipe';
 import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
@@ -82,8 +77,8 @@ import { CreerCompteComponent } from './creer-compte/creer-compte.component';
     CoursComponent, InfoComponent,
     SeanceComponent, MailTemplatePreviewComponent, 
     ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
-    ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe, CreerCompteComponent,
-    NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,
+    ProfComponent,RangePipe,  OrEmptyPipe, CreerCompteComponent,
+    NotifJechaComponent,  AdministrateursComponent, 
     ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, MultifiltersFFPipe,
    GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
