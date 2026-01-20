@@ -27,7 +27,7 @@
       </ng-container>
 
       <ng-template #PasPersonne>
-        <app-login [context]="'CREATE'" (essai)="Create($event)"></app-login>
+        <app-creer-compte (creer)="Create($event)"></app-creer-compte>
         <btn [type_button]="'RetourSmall'" *ngIf="ListePersonne" (click)="retourListePersonne()" i18n></btn>
       </ng-template>
     </ng-container>

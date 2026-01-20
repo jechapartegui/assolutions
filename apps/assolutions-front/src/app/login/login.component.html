@@ -8,9 +8,7 @@
 
   <ng-container *ngIf="!loading">
     <div class="columns is-centered">
-      <div
-        class="column is-11-mobile is-8-tablet is-5-desktop is-4-widescreen"
-      >
+      <div class="column is-11-mobile is-8-tablet is-5-desktop is-4-widescreen">
         <div class="box login-card">
           <!-- HEADER -->
           <header class="login-header has-text-centered">
@@ -31,10 +29,7 @@
             <div class="field">
               <label class="label is-small" for="loginEmail" i18n>Email</label>
 
-              <p
-                *ngIf="!selectedLogin"
-                class="control has-icons-left has-icons-right"
-              >
+              <p *ngIf="!selectedLogin" class="control has-icons-left has-icons-right">
                 <input
                   id="loginEmail"
                   [class]="VM.isLoginValid ? 'input' : 'input is-danger'"
@@ -49,10 +44,7 @@
                 <span class="icon is-small is-left">
                   <i class="fas fa-envelope"></i>
                 </span>
-                <span
-                  *ngIf="VM.isLoginValid"
-                  class="icon is-small is-right has-text-success"
-                >
+                <span *ngIf="VM.isLoginValid" class="icon is-small is-right has-text-success">
                   <i class="fas fa-check"></i>
                 </span>
               </p>
@@ -62,27 +54,13 @@
                 class="is-flex is-justify-content-space-between is-align-items-center"
               >
                 <span>{{ VM.Login }}</span>
-                <btn
-                  [type_button]="'AnnulerSmallLight'"
-                  (click)="selectedLogin=false; VM.mdp_requis=false"
-                ></btn>
+                <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn>
               </p>
             </div>
 
             <!-- Mot de passe -->
             <div *ngIf="VM.mdp_requis" class="field">
-              <h6
-                *ngIf="context == 'CREATE' && !VM.creer_compte"
-                class="subtitle is-6 has-text-grey mb-2"
-                i18n
-              >
-                Ce compte est protégé par un mot de passe, merci de saisir le
-                mot de passe projet pour créer un adhérent sur ce compte.
-              </h6>
-
-              <label class="label is-small" for="loginPassword" i18n
-                >Mot de passe</label
-              >
+              <label class="label is-small" for="loginPassword" i18n>Mot de passe</label>
               <p class="control has-icons-left has-icons-right">
                 <input
                   id="loginPassword"
@@ -98,20 +76,12 @@
                 <span class="icon is-small is-left">
                   <i class="fas fa-lock"></i>
                 </span>
-                <span
-                  *ngIf="VM.isPasswordValid"
-                  class="icon is-small is-right has-text-success"
-                >
+                <span *ngIf="VM.isPasswordValid" class="icon is-small is-right has-text-success">
                   <i class="fas fa-check"></i>
                 </span>
               </p>
-              <p
-                class="help is-danger"
-                *ngIf="!VM.isPasswordValid"
-                i18n
-              >
-                Le mot de passe doit contenir au moins 8 caractères et un
-                nombre.
+              <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
+                Le mot de passe doit contenir au moins 8 caractères et un nombre.
               </p>
             </div>
 
@@ -119,19 +89,11 @@
             <ng-container *ngIf="projets">
               <ng-container *ngIf="projets.length > 1">
                 <div class="field">
-                  <label for="projet" class="label is-small" i18n
-                    >Projet</label
-                  >
+                  <label for="projet" class="label is-small" i18n>Projet</label>
                   <div class="control">
                     <div class="select is-fullwidth">
-                      <select
-                        id="projet"
-                        [(ngModel)]="projets_select"
-                        i18n-placeholder
-                      >
-                        <option [ngValue]="null" selected i18n>
-                          Aucune sélection
-                        </option>
+                      <select id="projet" [(ngModel)]="projets_select" i18n-placeholder>
+                        <option [ngValue]="null" selected i18n>Aucune sélection</option>
                         <ng-container *ngFor="let tt of projets">
                           <option [ngValue]="tt">{{ tt.nom }}</option>
                         </ng-container>
@@ -150,118 +112,28 @@
                 <!-- Cas standard (sans projets) -->
                 <div class="field" *ngIf="!projets">
                   <p class="control stack-3">
-                    <!-- Se connecter -->
                     <button
-                      *ngIf="
-                        (!store.isLoggedIn()) &&
-                        !VM.creer_compte &&
-                        !VM.mdp_requis
-                      "
+                      *ngIf="(!store.isLoggedIn()) && !VM.mdp_requis"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="Login() && !VM.creer_compte"
+                      (click)="Login()"
                       i18n
                     >
                       Se connecter
                     </button>
 
-                    <!-- Sélection compte (admin connecté) -->
                     <button
-                      *ngIf="
-                        (store.isLoggedIn()) &&
-                        !VM.creer_compte &&
-                        context == 'CREATE' &&
-                        !VM.mdp_requis
-                      "
+                      *ngIf="VM.mdp_requis && !store.isLoggedIn()"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="Login() && !VM.creer_compte"
-                      i18n
-                    >
-                      Selectionner ce compte
-                    </button>
-
-                    <!-- Sélection compte admin -->
-                    <button
-                      *ngIf="
-                        (store.isLoggedIn()) &&
-                        !VM.creer_compte &&
-                        context == 'CREATE' &&
-                        VM.mdp_requis
-                      "
-                      [disabled]="!VM.isValid"
-                      class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="SelectionnerCompteAdmin()"
-                      i18n
-                    >
-                      Selectionner ce compte en tant qu'admin
-                    </button>
-
-                    <!-- Création compte avec/sans mdp (non loggé) -->
-                    <button
-                      *ngIf="(!store.isLoggedIn()) && VM.creer_compte"
-                      [disabled]="!VM.isPasswordValid || !VM.isLoginValid"
-                      class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="CreerCompte(true)"
-                      i18n
-                    >
-                      Créer un compte avec mot de passe
-                    </button>
-
-                    <button
-                      *ngIf="(!store.isLoggedIn()) && VM.creer_compte"
-                      [disabled]="!VM.isLoginValid"
-                      class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="CreerCompte(false)"
-                      i18n
-                    >
-                      Créer un compte sans mot de passe
-                    </button>
-
-                    <!-- Création compte (context CREATE) -->
-                    <button
-                      *ngIf="context == 'CREATE' && VM.creer_compte"
-                      [disabled]="!VM.isPasswordValid || !VM.isLoginValid"
-                      class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="CreerCompte(true)"
-                      i18n
-                    >
-                      Créer un compte avec mot de passe
-                    </button>
-
-                    <button
-                      *ngIf="context == 'CREATE' && VM.creer_compte"
-                      [disabled]="!VM.isLoginValid"
-                      class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="CreerCompte(false)"
-                      i18n
-                    >
-                      Créer un compte sans mot de passe
-                    </button>
-
-                    <!-- Validation mdp -->
-                    <button
-                      *ngIf="
-                        VM.mdp_requis &&
-                        !store.isLoggedIn() &&
-                        !VM.creer_compte
-                      "
-                      [disabled]="!VM.isValid"
-                      class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-                      (click)="Login() && !VM.creer_compte"
+                      (click)="Login()"
                       i18n
                     >
                       Valider le mot de passe
                     </button>
 
-                    <!-- Lien réinitialisation -->
                     <button
-                      *ngIf="
-                        VM.isLoginValid &&
-                        !VM.creer_compte &&
-                        context != 'CREATE' &&
-                        context != 'ESSAI'
-                      "
+                      *ngIf="VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ESSAI'"
                       type="button"
                       class="btn-link has-text-centered"
                       (click)="ReinitMDP()"
@@ -269,6 +141,15 @@
                     >
                       Réinitialiser le mot de passe
                     </button>
+
+                    <!-- lien vers création -->
+                    <a
+                      class="btn-link has-text-centered"
+                      [routerLink]="['/creer-compte']"
+                      i18n
+                    >
+                      Créer un compte
+                    </a>
                   </p>
                 </div>
 

@@ -71,6 +71,7 @@ import { MailTemplatePreviewComponent } from './mail-template-preview/mail-templ
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
 import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
 import { InfoComponent } from './info/info.component';
+import { CreerCompteComponent } from './creer-compte/creer-compte.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -81,7 +82,7 @@ import { InfoComponent } from './info/info.component';
     CoursComponent, InfoComponent,
     SeanceComponent, MailTemplatePreviewComponent, 
     ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
-    ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe,
+    ProfComponent,RangePipe, CoursPage, SeancesPage, OrEmptyPipe, CreerCompteComponent,
     NotifJechaComponent,  AdministrateursComponent, WeekCalendarComponent, SeanceListComponent, CourseListPublicComponent,
     ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,
     MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, MultifiltersFFPipe,

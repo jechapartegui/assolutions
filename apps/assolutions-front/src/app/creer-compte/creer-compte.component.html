@@ -1,0 +1,108 @@
+<div class="login-wrapper">
+  <div class="columns is-centered">
+    <div class="column is-11-mobile is-8-tablet is-5-desktop is-4-widescreen">
+      <div class="box login-card">
+        <!-- HEADER -->
+        <header class="login-header has-text-centered">
+          <div class="login-logo">
+            <span class="icon is-medium">
+              <i class="fas fa-user-plus"></i>
+            </span>
+          </div>
+          <h1 class="title is-4 mb-1" i18n>Créer un compte</h1>
+          <p class="subtitle is-6 has-text-grey">
+            {{ libelle_titre }}
+          </p>
+        </header>
+
+        <!-- FORM -->
+        <section class="login-body">
+          <!-- Email -->
+          <div class="field">
+            <label class="label is-small" for="createEmail" i18n>Email</label>
+            <p class="control has-icons-left has-icons-right">
+              <input
+                id="createEmail"
+                [class]="VM.isLoginValid ? 'input' : 'input is-danger'"
+                type="email"
+                placeholder="vous@exemple.fr"
+                i18n-placeholder
+                [(ngModel)]="VM.Login"
+                (ngModelChange)="validateLogin()"
+                (input)="validateLogin()"
+                (keypress)="onKeyPress($event)"
+              />
+              <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+              </span>
+              <span *ngIf="VM.isLoginValid" class="icon is-small is-right has-text-success">
+                <i class="fas fa-check"></i>
+              </span>
+            </p>
+          </div>
+
+          <!-- Choix mot de passe -->
+          <div class="field">
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                [checked]="VM.mdp_requis"
+                (change)="togglePasswordRequired($event.target.checked)"
+              />
+              <span i18n>Protéger le compte avec un mot de passe</span>
+            </label>
+          </div>
+
+          <!-- Mot de passe -->
+          <div *ngIf="VM.mdp_requis" class="field">
+            <label class="label is-small" for="createPassword" i18n>Mot de passe</label>
+            <p class="control has-icons-left has-icons-right">
+              <input
+                id="createPassword"
+                [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
+                type="password"
+                placeholder="••••••••"
+                i18n-placeholder
+                [(ngModel)]="VM.Password"
+                (ngModelChange)="validatePassword($event)"
+                (keypress)="onKeyPress($event)"
+              />
+              <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+              </span>
+              <span *ngIf="VM.isPasswordValid" class="icon is-small is-right has-text-success">
+                <i class="fas fa-check"></i>
+              </span>
+            </p>
+            <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
+              Le mot de passe doit contenir au moins 8 caractères et un nombre.
+            </p>
+          </div>
+        </section>
+
+        <!-- ACTIONS -->
+        <footer class="login-footer">
+          <p class="control stack-3">
+            <button
+              class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+              [disabled]="!VM.isValid"
+              (click)="CreerCompte()"
+              i18n
+            >
+              Créer le compte
+            </button>
+
+            <button
+              type="button"
+              class="btn-link has-text-centered"
+              (click)="RetourLogin()"
+              i18n
+            >
+              J’ai déjà un compte
+            </button>
+          </p>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
