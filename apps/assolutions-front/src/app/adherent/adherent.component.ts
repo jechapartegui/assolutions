@@ -175,7 +175,7 @@ export class AdherentComponent implements OnInit, OnDestroy {
         this.thisAdherent = new Adherent_VM();
         if (this.login_adherent) {
           this.thisAdherent.contact = [
-            { Type: 'EMAIL', Value: this.login_adherent, Notes: '', Pref: true },
+            { Type: 'EMAIL', Value: this.login_adherent, Info: '', Pref: true, Diffusion: true, id: 0 },
           ];
         }
         this.id = 0;
@@ -1134,7 +1134,7 @@ Inscrire(){
   );
       if(this.ListePersonne.length == 0){
         this.thisAdherent = new Adherent_VM();  
-        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];      
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Info: '', Pref: true, Diffusion: true, id:0}];    
         this.id = 0;
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
@@ -1145,14 +1145,14 @@ Inscrire(){
         this.thisAdherent = new Adherent_VM();
         this.thisAdherent.compte = this.thisAccount.id;
         this.select_account = false;
-        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];    
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Info: '', Pref: true, Diffusion: true, id:0}];    
       }
       }
     } else {
         this.id = 0;
         this.select_account = false;
         this.thisAdherent = new Adherent_VM();
-        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];    
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Info: '', Pref: true, Diffusion: true, id:0}];   
     }   
   }
 
@@ -1160,7 +1160,7 @@ Inscrire(){
      this.thisAdherent = new Adherent_VM();
         this.id = 0;
         this.thisAdherent.compte = this.thisAccount.id;
-        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Notes: '', Pref: true}];   
+        this.thisAdherent.contact = [{Type: 'EMAIL', Value: this.thisAccount.email, Info: '', Pref: true, Diffusion: true, id:0}];   
         this.histo_adherent = JSON.stringify(this.thisAdherent);
         this.select_account = false;
         this.ListePersonne = null;

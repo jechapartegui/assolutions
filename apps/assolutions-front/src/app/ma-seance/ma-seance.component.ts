@@ -862,15 +862,14 @@ onImgError(evt: Event) {
     if (!p) return '';
 
     const cpPhone = p.contact_prevenir?.find((x: any) => x.Type === 'PHONE');
-    if (cpPhone?.Notes) return cpPhone.Notes;
+    if (cpPhone?.Info) return cpPhone.Info;
 
     if (p.contact_prevenir?.length) {
-      return p.contact_prevenir[0].Notes ?? '';
+      return p.contact_prevenir[0].Info ?? '';
     }
 
     const cPhone = p.contact?.find((x: any) => x.Type === 'PHONE');
-    if (cPhone?.Notes) return cPhone.Notes;
-
+    if (cPhone?.Info) return cPhone.Info;
     return '';
   }
 

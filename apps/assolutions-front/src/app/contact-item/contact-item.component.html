@@ -42,7 +42,7 @@
           </td>
           <td>
             <input maxlength="20" class="input is-small" title="Notes supplémentaires" style="width:100px"
-                   [(ngModel)]="thisContact.Notes" (blur)="autoSave()">
+                   [(ngModel)]="thisContact.Info" (blur)="autoSave()">
           </td>
           <td>
             <btn [disabled]="!IsValid(thisContact)" [type_button]="'SauvegarderSmallLight'" (click)="Save()"></btn>
@@ -71,7 +71,7 @@
         <span *ngIf="cont.Type=='FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
         <span *ngIf="cont.Type=='TWITTER'"><i class="fab fa-twitter-square"></i></span>
         <span class="ml-1">{{cont.Value}}</span>
-        <span class="ml-1">{{cont.Notes}}</span>
+        <span class="ml-1">{{cont.Info}}</span>
       </div>
     </div>
   </ng-container>

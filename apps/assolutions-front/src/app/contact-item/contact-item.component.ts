@@ -64,10 +64,12 @@ export class ContactItemComponent implements OnInit {
       stype = 'PHONE';
     }
     this.thisContact = {
+    id: 0,
     Type: stype,
     Value: '',
-    Notes: '',
-    Pref: false
+    Info: '',
+    Pref: false,
+    Diffusion: false
   };
   }
 

@@ -6,6 +6,8 @@ import { toPersonne_VM } from "../member/member.services";
 import { SessionService } from "../../crud/session.service";
 import { LinkGroupService } from "../../crud/linkgroup.service";
 import { PersonService } from "../../crud/person.service";
+import { ContactsService } from "../../crud/contacts.servivce";
+import { Contact } from "../../entities/contacts.entity";
 
 @Injectable()
 export class InscriptionSeanceService {
@@ -13,7 +15,8 @@ export class InscriptionSeanceService {
     private inscriptionseanceserv:RegistrationSessionService,
     private seanceserv: SessionService,
     private linkgroup_serv: LinkGroupService,
-    private personserv:PersonService
+    private personserv:PersonService,
+    private contactsserv: ContactsService,
   ) {}
 
   async Get(personId: number, seanceId: number) {
@@ -30,8 +33,8 @@ export class InscriptionSeanceService {
     if (!pISS) {
       throw new UnauthorizedException('REGISTRATION_SESSION_NOT_FOUND');
     }
-   
-    return to_FullInscriptionSeance_VM(pISS);
+    const contact = await this.contactsserv.getAll(personId, 'rider');
+    return to_FullInscriptionSeance_VM(pISS, contact);
 
   }
    async GetAdherentCompte(id: string,id_seance:number) {
@@ -116,7 +119,15 @@ async GetAllSeanceFull(seance_id: number): Promise<FullInscriptionSeance_VM[]> {
     pISSs.push(rs);
   }
 
-  return pISSs.map(x => to_FullInscriptionSeance_VM(x));
+  return await Promise.all(
+  pISSs.map(async x =>
+    to_FullInscriptionSeance_VM(
+      x,
+      await this.contactsserv.getAll(x.personId, 'rider'),
+    ),
+  ),
+);
+
 }
 
 async MAJ(InscriptionSeance_VM: InscriptionSeance_VM) : Promise<boolean> {
@@ -164,10 +175,10 @@ export function to_InscriptionSeances_VM(obj: RegistrationSession): InscriptionS
   return item;
 }
 
-export function to_FullInscriptionSeance_VM(obj:RegistrationSession): FullInscriptionSeance_VM{
+export function to_FullInscriptionSeance_VM(obj:RegistrationSession, contact: Contact[]): FullInscriptionSeance_VM{
   const item = new FullInscriptionSeance_VM();
   item.date_inscription=obj.dateInscription;
-  item.person = toPersonne_VM(obj.person);
+  item.person = toPersonne_VM(obj.person, contact);
   item.rider_id = obj.personId;
   item.seance_id = obj.seanceId;
   item.isVisible = false;

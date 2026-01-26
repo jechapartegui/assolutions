@@ -31,16 +31,18 @@ import { RegistrationSession } from '../../entities/inscription-seance.entity';
 import { Season } from '../../entities/saison.entity';
 import { ProjectService } from '../../crud/project.service';
 import { Project } from '../../entities/projet.entity';
+import { Contact } from '../../entities/contacts.entity';
+import { ContactsService } from '../../crud/contacts.servivce';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([
 Session, Person, LinkGroup, SessionProfessor, Group, Professor, Account, ProfessorContract,
-Season, RegistrationSession, RegistrationSeason, Project
+Season, RegistrationSession, RegistrationSeason, Project, Contact
     ]),
   ],
-  providers: [SessionService,LinkGroupService,  ProjectService, ProfessorService, AccountService,  GroupService,  SessionProfessorService, MemberService, ProjetService, SeanceService, GroupeService, ProfService, PersonService, ProfessorContractService, RegistrationSessionService, RegistrationSeasonService, SeasonService],
+  providers: [SessionService,LinkGroupService, ContactsService,  ProjectService, ProfessorService, AccountService,  GroupService,  SessionProfessorService, MemberService, ProjetService, SeanceService, GroupeService, ProfService, PersonService, ProfessorContractService, RegistrationSessionService, RegistrationSeasonService, SeasonService],
   controllers: [MemberController],
   exports: [MemberService], // 👈 ajoute ça
 })

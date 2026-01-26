@@ -85,9 +85,10 @@ export class Personne_VM extends PersonneLight_VM {
 
 
 export interface ItemContact {
-
+  id: number;
   Type: string;
   Value: string;
-  Notes: string;
-  Pref: boolean;
+  Info: string;
+  Pref:boolean
+  Diffusion: boolean;
 }

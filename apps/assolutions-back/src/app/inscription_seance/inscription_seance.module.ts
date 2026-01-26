@@ -11,14 +11,16 @@ import { Session } from '../../entities/seance.entity';
 import { LinkGroup } from '../../entities/lien_groupe.entity';
 import { Person } from '../../entities/personne.entity';
 import { PersonService } from '../../crud/person.service';
+import { Contact } from '../../entities/contacts.entity';
+import { ContactsService } from '../../crud/contacts.servivce';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([RegistrationSession, Session, LinkGroup, Person
+    TypeOrmModule.forFeature([RegistrationSession, Session, LinkGroup, Person, Contact
     ]),
   ],
-  providers: [RegistrationSessionService, InscriptionSeanceService, SessionService, LinkGroupService, PersonService],
+  providers: [RegistrationSessionService, InscriptionSeanceService, SessionService, LinkGroupService, PersonService, ContactsService],
   controllers: [InscriptionSeanceController],
   exports: [InscriptionSeanceService], // 👈 ajoute ça
 })

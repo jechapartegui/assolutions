@@ -34,6 +34,8 @@ import { ProjectService } from '../../crud/project.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
+import { Contact } from '../../entities/contacts.entity';
+import { ContactsService } from '../../crud/contacts.servivce';
 
 
 @Module({
@@ -44,10 +46,10 @@ import { JwtStrategy } from './jwt.strategy';
       signOptions: { expiresIn: '30d' }, // durée du "login" (autologin)
     }),
     ConfigModule,
-    TypeOrmModule.forFeature([Account,MailRecord,Project,  RegistrationSeason, LinkGroup, Season, RegistrationSession, Professor, SessionProfessor, Session, Person,ProfessorContract]), // ✅ indispensable
+    TypeOrmModule.forFeature([Account,MailRecord,Project,  RegistrationSeason, LinkGroup, Season, RegistrationSession, Professor, SessionProfessor, Session, Person,ProfessorContract, Contact]), // ✅ indispensable
   ],
   providers: [
-    AuthService,
+    AuthService, ContactsService,
     JwtStrategy,AuthService, MailerService, ProjetService, ProjectService, SessionService,ProfessorService, AccountService, RegistrationSeasonService, SessionProfessorService, RegistrationSessionService, SeasonService, MemberService, ProfService, LinkGroupService, SeanceService, PersonService, ProfessorContractService],
   controllers: [AuthController],
     exports: [AuthService], // 👈 ajoute ça
