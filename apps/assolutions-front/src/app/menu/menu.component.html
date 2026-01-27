@@ -10,6 +10,55 @@
     <p>Chargement en cours</p>
   </ng-container>
   <ng-container *ngIf="!loading">
+    <!-- Contact club -->
+<div class="mb-3">
+  <button
+    class="button is-link is-light"
+    type="button"
+    (click)="toggleContactClub()"
+  >
+    <span class="icon">
+      <i class="fas fa-envelope"></i>
+    </span>
+    <span i18n>Contacter le club</span>
+  </button>
+</div>
+
+<div *ngIf="showContactClub" class="box contact-box">
+  <div class="field">
+    <label class="label" i18n>Votre message</label>
+    <div class="control">
+      <textarea
+        class="textarea"
+        rows="8"
+        [(ngModel)]="contactClubMessage"
+        i18n-placeholder
+        placeholder="Écrivez votre message ici…"
+      ></textarea>
+    </div>
+    <p class="help" i18n>Les retours à la ligne seront conservés.</p>
+  </div>
+
+  <div class="field">
+    <label class="label" i18n>Aperçu</label>
+    <div class="contact-preview">
+      {{ contactClubMessage || '…' }}
+    </div>
+  </div>
+
+  <div class="buttons is-right mt-3">
+    <button class="button is-success" type="button" (click)="envoyerContactClub()">
+      <span class="icon"><i class="fas fa-paper-plane"></i></span>
+      <span i18n>Envoyer</span>
+    </button>
+
+    <button class="button" type="button" (click)="annulerContactClub()">
+      <span class="icon"><i class="fas fa-xmark"></i></span>
+      <span i18n>Annuler</span>
+    </button>
+  </div>
+</div>
+
     <br />
        <ng-container *ngIf="Riders">
 <div class="riders-scroll-container">

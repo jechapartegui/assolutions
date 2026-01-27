@@ -172,3 +172,21 @@
 .is-flex-wrap-nowrap {
   flex-wrap: nowrap;
 }
+/* ====================
+   CONTACT CLUB
+   ==================== */
+
+.contact-box {
+  border-left: 4px solid var(--bulma-link, #3273dc);
+}
+
+.contact-preview {
+  white-space: pre-wrap;   /* <<< conserve les retours à la ligne */
+  word-break: break-word;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 0.95rem;
+}
