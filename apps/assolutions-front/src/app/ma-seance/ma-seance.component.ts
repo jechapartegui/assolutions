@@ -46,7 +46,7 @@ export class MaSeanceComponent implements OnInit {
   display_present = true;
   add_adh_seance = false;
   public multi = false;
-
+libellechargeradherent:string = '';
   thisSeance!: Seance_VM;
   Autres: Adherent_VM[] = [];
   All: FullInscriptionSeance_VM[] = [];
@@ -354,6 +354,7 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
   LoadLogin(compte: Compte_VM) {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger les adhérents de mon compte`;
+    this.libellechargeradherent = $localize`Chargement des adhérents liés à mon compte...`;
     this.login = compte.email;
 
     // Réponse forcée (présent/absent) ?
@@ -371,6 +372,9 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
         .then((fis: FullInscriptionSeance_VM[]) => {
           fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
           this.MesAdherents = fis;
+          if(!fis || fis.length === 0) {
+            this.libellechargeradherent = $localize`Aucun adhérent lié à ce compte n'est inscrit à cette séance.`;
+          }
 
           if (hasReponse && statInsAuto !== null && fis.length) {
             this.action = $localize`Mise à jour des présences`;
@@ -642,12 +646,11 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
         break;
     }
 
-    const dto: InscriptionSeance_VM = {
+    const dto: any = {
       rider_id: inscription.person.id,
       seance_id: this.thisSeance.id,
       date_inscription: new Date(),
-      statut_inscription: inscription.statut_inscription,
-      statut_seance: inscription.statut_seance ?? null,
+      statut_inscription: inscription.statut_inscription
     };
 
     this.action =

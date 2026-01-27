@@ -45,3 +45,53 @@ WHERE
     a.personne_id = b.personne_id
     AND a.seance_id = b.seance_id
     AND a.id > b.id;
+
+VERSION 2.0 AsSolutions
+INSERT INTO public.contacts
+  (object_type, object_id, contact_type, contact_value, diffusion, contact_list, info, pref)
+SELECT
+  'rider' AS object_type,
+  p.id    AS object_id,
+  (elem->>'Type')  AS contact_type,
+  (elem->>'Value') AS contact_value,
+  TRUE AS diffusion,
+  'liste_contact' AS contact_list,
+  NULL AS info,
+  COALESCE((elem->>'Pref')::boolean, FALSE) AS pref
+FROM public.personne p
+CROSS JOIN LATERAL jsonb_array_elements(
+  CASE
+    WHEN p.contacts IS NULL THEN '[]'::jsonb
+    -- si contacts est déjà json/jsonb
+    WHEN pg_typeof(p.contacts)::text IN ('json', 'jsonb') THEN p.contacts::jsonb
+    -- si contacts est du texte JSON
+    ELSE p.contacts::jsonb
+  END
+) elem
+WHERE (elem->>'Value') IS NOT NULL
+  AND (elem->>'Value') <> '';
+
+
+puis 
+
+INSERT INTO public.contacts
+  (object_type, object_id, contact_type, contact_value, diffusion, contact_list, info, pref)
+SELECT
+  'rider' AS object_type,
+  p.id    AS object_id,
+  (elem->>'Type')  AS contact_type,
+  (elem->>'Value') AS contact_value,
+  TRUE AS diffusion,
+  'liste_contact_prevenir' AS contact_list,
+  NULL AS info,
+  COALESCE((elem->>'Pref')::boolean, FALSE) AS pref
+FROM public.personne p
+CROSS JOIN LATERAL jsonb_array_elements(
+  CASE
+    WHEN p.contacts_prevenir IS NULL THEN '[]'::jsonb
+    WHEN pg_typeof(p.contacts_prevenir)::text IN ('json', 'jsonb') THEN p.contacts_prevenir::jsonb
+    ELSE p.contacts_prevenir::jsonb
+  END
+) elem
+WHERE (elem->>'Value') IS NOT NULL
+  AND (elem->>'Value') <> '';
