@@ -988,7 +988,7 @@
     <div class="columns is-vcentered">
       <div class="column">
       <ng-container *ngIf="!MesAdherents || MesAdherents.length==0; else MesAdherentsOK">
-        <p>Vous n'avez pas d'adhérents concernés par la séance</p>
+        <p>{{libellechargeradherent}}</p>
       </ng-container>
       <ng-template #MesAdherentsOK>
         <ng-container *ngFor="let adh of MesAdherents">
@@ -996,12 +996,12 @@
                 <span class="partie1" style="gap:20px">
                           <span class="icon is-medium" style="gap:20px">
                             <span
-                              class="fa-stack fa-sm" style="cursor: pointer;" (click)="MAJPresence(adh, true)"
+                              class="fa-stack fa-sm" style="cursor: pointer;" (click)="MAJInscription(adh, 'présent')"
                             >
                               <i [ngClass]="IsPresent(adh) ? 'fas fa-stack-2x fa-thumbs-up has-text-success' : 'fas fa-stack-2x fa-thumbs-up'" ></i>
                             </span>
                             <span
-                              class="fa-stack fa-sm" (click)="MAJPresence(adh, false)"
+                              class="fa-stack fa-sm" (click)="MAJInscription(adh, 'absent')"
                             >
                               <i [ngClass]="IsAbsent(adh) ? 'fas fa-stack-2x fa-thumbs-down has-text-danger' : 'fas fa-stack-2x fa-thumbs-down'" ></i>
                             </span>

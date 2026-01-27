@@ -40,7 +40,7 @@ export class MaSeanceComponent implements OnInit {
   scrollableContent!: ElementRef;
 
   showScrollToTop = false;
-
+  libellechargeradherent = $localize`Chargement de vos adhérents en cours...`;
   display_personne = true;
   display_absent = true;
   display_present = true;
@@ -371,7 +371,9 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
         .then((fis: FullInscriptionSeance_VM[]) => {
           fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
           this.MesAdherents = fis;
-
+          if(!fis || fis.length==0){
+            this.libellechargeradherent = $localize`Vous n'avez pas d'adhérents concernés par la séance`;
+          }
           if (hasReponse && statInsAuto !== null && fis.length) {
             this.action = $localize`Mise à jour des présences`;
             let errorGlobal = false;
@@ -381,12 +383,11 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
 
               ins.statut_inscription = statInsAuto;
 
-              const dto: InscriptionSeance_VM = {
+              const dto: any = {
                 rider_id: ins.person.id,
                 seance_id: this.thisSeance.id,
                 date_inscription: ins.date_inscription ?? new Date(),
-                statut_inscription: ins.statut_inscription,
-                statut_seance: ins.statut_seance ?? null,
+                statut_inscription: ins.statut_inscription
               };
 
               return this.inscriptionserv
@@ -692,13 +693,13 @@ private preloadPhotos(items: FullInscriptionSeance_VM[]): void {
   // -------------------------------------------------------------------------
   getPresent(): number {
     return this.All.filter(
-      (x) => x.statut_inscription === InscriptionStatus_VM.PRESENT
+      (x) => x.statut_seance === SeanceStatus_VM.PRESENT
     ).length;
   }
 
   getAbsent(): number {
     return this.All.filter(
-      (x) => x.statut_inscription === InscriptionStatus_VM.ABSENT
+      (x) => x.statut_seance === SeanceStatus_VM.ABSENT
     ).length;
   }
 
