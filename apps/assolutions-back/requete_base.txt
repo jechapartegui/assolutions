@@ -45,3 +45,138 @@ WHERE
     a.personne_id = b.personne_id
     AND a.seance_id = b.seance_id
     AND a.id > b.id;
+
+
+CREATE TABLE IF NOT EXISTS public.registry (
+  id          bigserial PRIMARY KEY,
+  entity_type varchar(50) NOT NULL,
+  entity_id   integer NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT uq_registry_entity UNIQUE (entity_type, entity_id)
+);
+
+-- =========================
+-- RATTRAPAGE REGISTRY - FULL
+-- =========================
+
+-- compte (si on l’a fait ensemble)
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'compte', c.id FROM public.compte c
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- project
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'project', p.id FROM public.project p
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- saison
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'saison', s.id FROM public.saison s
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- personne
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'personne', p.id FROM public.personne p
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- cours
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'cours', c.id FROM public.cours c
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- seance (PK = seance_id)
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'seance', s.seance_id FROM public.seance s
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- inscription_saison
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'inscription_saison', i.id FROM public.inscription_saison i
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- groupes
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'groupes', g.id FROM public.groupes g
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- lien_groupe
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'lien_groupe', l.id FROM public.lien_groupe l
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- addinfo
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'addinfo', a.id FROM public.addinfo a
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- compte_bancaire
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'compte_bancaire', c.id FROM public.compte_bancaire c
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- contrat_prof
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'contrat_prof', c.id FROM public.contrat_prof c
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- cours_professeur
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'cours_professeur', c.id FROM public.cours_professeur c
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- document
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'document', d.id FROM public.document d
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- flux_financier
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'flux_financier', f.id FROM public.flux_financier f
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- lieu
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'lieu', l.id FROM public.lieu l
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- mail_account
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'mail_account', m.id FROM public.mail_account m
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- mail_project
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'mail_project', m.id FROM public.mail_project m
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- mail_record
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'mail_record', m.id FROM public.mail_record m
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- stock
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'stock', s.id FROM public.stock s
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- note
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'note', n.id FROM public.note n
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- operation
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'operation', o.id FROM public.operation o
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- professeur (PK = id = personne.id)
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'professeur', p.id FROM public.professeur p
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+
+-- seance_professeur
+INSERT INTO public.registry(entity_type, entity_id)
+SELECT 'seance_professeur', sp.id FROM public.seance_professeur sp
+ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
+

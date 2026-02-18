@@ -1,0 +1,13 @@
+﻿import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RegistryModule } from '../registry/registry.module';
+import { DocumentController } from './document.controller';
+import { DocumentEntity } from './document.entity';
+import { DocumentService } from './document.service';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([DocumentEntity]), RegistryModule],
+  controllers: [DocumentController],
+  providers: [DocumentService],
+})
+export class DocumentModule {}

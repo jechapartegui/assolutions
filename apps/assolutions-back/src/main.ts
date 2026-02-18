@@ -26,10 +26,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
 
 async function bootstrap() {
-  console.log(
-  'Entity glob pattern now:',
-  join(__dirname, 'entities', '*.entity.js')
-);
 
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],

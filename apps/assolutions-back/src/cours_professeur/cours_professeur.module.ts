@@ -1,0 +1,16 @@
+﻿import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RegistryModule } from '../registry/registry.module';
+import { CoursProfesseurController } from './cours_professeur.controller';
+import { CoursProfesseurEntity } from './cours_professeur.entity';
+import { CoursProfesseurService } from './cours_professeur.service';
+import { CoursEntity } from '../cours/cours.entity';
+import { CoursService } from '../cours/cours.service';
+
+import { AccessControlModule } from '../common/access-control.module'; // ✅
+@Module({
+  imports: [TypeOrmModule.forFeature([CoursProfesseurEntity, CoursEntity]), RegistryModule, AccessControlModule],
+  controllers: [CoursProfesseurController],
+  providers: [CoursProfesseurService, CoursService],
+})
+export class CoursProfesseurModule {}
