@@ -32,6 +32,9 @@ export class MenuComponent implements OnInit {
   Riders: AdherentMenu[];
   listeprof: Professeur_VM[];
   listelieu: Lieu_VM[];
+  // --- Contact club ---
+  showContactClub = false;
+  contactClubMessage = '';
 
 
     public loading: boolean = false;
@@ -520,6 +523,40 @@ return $localize`Evénement`;
       }
     }
   }
+    toggleContactClub(): void {
+    this.showContactClub = !this.showContactClub;
+
+    // si on ferme -> on nettoie
+    if (!this.showContactClub) {
+      this.contactClubMessage = '';
+    }
+  }
+
+  annulerContactClub(): void {
+    this.showContactClub = false;
+    this.contactClubMessage = '';
+  }
+
+  envoyerContactClub(): void {
+    const msg = (this.contactClubMessage || '').trim();
+    const errorService = ErrorService.instance;
+
+    if (!msg) {
+      errorService.emitChange(
+        errorService.CreateError($localize`Contacter le club`, $localize`Le message est vide.`)
+      );
+      return;
+    }
+
+    // TODO: tu branches ton service ici (tu m’as dit que tu gères)
+    // ex: this.contactService.send(msg)
+
+    errorService.emitChange(errorService.OKMessage($localize`Message prêt à être envoyé.`));
+
+    // Option UX: on ferme après envoi
+    this.annulerContactClub();
+  }
+
 }
 export class FilterMenu {
   private _filter_date_apres: Date | null = null;

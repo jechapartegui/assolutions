@@ -51,9 +51,9 @@ export class AdherentExport {
       this.safeAssign(() => this.Phone = a.contact.filter(x => x.Type === 'PHONE')[0]?.Value);
       this.safeAssign(() => this.PhonePref = a.contact.filter(x => x.Type === 'PHONE')[0]?.Pref);
       this.safeAssign(() => this.MailUrgence = a.contact_prevenir.filter(x => x.Type === 'EMAIL')[0]?.Value);
-      this.safeAssign(() => this.NomMailUrgence = a.contact_prevenir.filter(x => x.Type === 'EMAIL')[0]?.Notes);
+      this.safeAssign(() => this.NomMailUrgence = a.contact_prevenir.filter(x => x.Type === 'EMAIL')[0]?.Info);
       this.safeAssign(() => this.PhoneUrgence = a.contact_prevenir.filter(x => x.Type === 'PHONE')[0]?.Value);
-      this.safeAssign(() => this.NomPhoneUrgence = a.contact_prevenir.filter(x => x.Type === 'PHONE')[0]?.Notes);
+      this.safeAssign(() => this.NomPhoneUrgence = a.contact_prevenir.filter(x => x.Type === 'PHONE')[0]?.Info);
 
       
     } else {
