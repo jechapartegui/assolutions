@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -21,14 +21,16 @@ export class MailProjectController {
     return this.service.upsert(projectId, dto);
   }
 
+  // ✅ UPDATE via POST (remplace Patch)
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Patch()
-  patch(@ProjectId() projectId: number, @Body() dto: UpdateMailProjectDto) {
+  @Post('update')
+  update(@ProjectId() projectId: number, @Body() dto: UpdateMailProjectDto) {
     return this.service.upsert(projectId, dto);
   }
 
+  // ✅ DELETE via POST (remplace Delete)
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Delete()
+  @Post('delete')
   remove(@ProjectId() projectId: number) {
     return this.service.remove(projectId);
   }

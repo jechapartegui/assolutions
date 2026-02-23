@@ -235,6 +235,77 @@ public async GET(url: string, responseType: 'json' | 'text' = 'json'): Promise<a
     }
   }
 }
+public async PATCH(url: string, body: any): Promise<any> {
+  try {
+    let project_id = '-1';
+    let user_id = '-1';
+    const timeoutMilliseconds = 1500000;
+
+    if (this.store.selectedProjectId()) project_id = this.store.selectedProjectId().toString();
+    if (this.store.compte()) user_id = this.store.compte()!.id.toString();
+
+    let headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('projectid', project_id)
+      .set('userid', user_id)
+      .set('lang', this.getCurrentLanguage());
+
+    const token = localStorage.getItem('auth_token');
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+
+    const response = await firstValueFrom(
+      this.http.patch(url, body, { headers }).pipe(
+        timeout(timeoutMilliseconds),
+        catchError((error) => {
+          if (error.name === 'TimeoutError') throw new Error('TIMEOUT_ERROR');
+          throw error;
+        })
+      )
+    );
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    if (error instanceof HttpErrorResponse) this.handleError(error);
+    throw new Error('UNKNOWN_ERROR');
+  }
+}
+
+public async DELETE(url: string): Promise<any> {
+  try {
+    let project_id = '-1';
+    let user_id = '-1';
+    const timeoutMilliseconds = 1500000;
+
+    if (this.store.selectedProjectId()) project_id = this.store.selectedProjectId().toString();
+    if (this.store.compte()) user_id = this.store.compte()!.id.toString();
+
+    let headers = new HttpHeaders()
+      .set('content-type', 'application/json')
+      .set('projectid', project_id)
+      .set('userid', user_id)
+      .set('lang', this.getCurrentLanguage());
+
+    const token = localStorage.getItem('auth_token');
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+
+    const response = await firstValueFrom(
+      this.http.delete(url, { headers }).pipe(
+        timeout(timeoutMilliseconds),
+        catchError((error) => {
+          if (error.name === 'TimeoutError') throw new Error('TIMEOUT_ERROR');
+          throw error;
+        })
+      )
+    );
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    if (error instanceof HttpErrorResponse) this.handleError(error);
+    throw new Error('UNKNOWN_ERROR');
+  }
+}
 
 
   private handleError(error: HttpErrorResponse): void {

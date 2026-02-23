@@ -24,8 +24,7 @@ export class CreateFluxFinancierDto {
   @IsString()
   info?: string | null;
 
-  @IsInt()
-  project_id: number;
+  // ✅ supprimé : project_id (vient du header via @ProjectId)
 
   @IsInt()
   saison_id: number;

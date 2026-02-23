@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { catchError, from, Observable, of, switchMap } from 'rxjs';
 import { AppStore } from './app.store';
-import { LoginNestService } from '../services/login.nest.service';
+import { LoginNestService } from '../services/auth-api.service';
 import type { AppMode } from '@shared/lib/compte.interface';
 
 type AuthRule = {

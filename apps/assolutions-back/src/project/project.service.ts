@@ -5,6 +5,7 @@ import { RegistryService } from '../registry/registry.service';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectEntity } from './project.entity';
 
+
 @Injectable()
 export class ProjectService {
   constructor(
@@ -12,13 +13,7 @@ export class ProjectService {
     private readonly repo: Repository<ProjectEntity>,
     private readonly registry: RegistryService,
   ) {}
-
-  listForCompte(compteId: number) {
-    return this.repo.find({
-      where: { compte: compteId },
-      order: { id: 'ASC' },
-    });
-  }
+  
 
   async get(id: number) {
     const item = await this.repo.findOne({ where: { id } });

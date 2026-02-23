@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -15,7 +15,6 @@ export class InscriptionSeanceController {
     return this.service.listForProject(projectId);
   }
 
-  // PK composite -> URL: /inscription-seance/:personneId/:seanceId
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get(':personneId/:seanceId')
   get(
@@ -32,8 +31,9 @@ export class InscriptionSeanceController {
     return this.service.create(dto, projectId);
   }
 
+  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Patch(':personneId/:seanceId')
+  @Post(':personneId/:seanceId/update')
   update(
     @Param('personneId', ParseIntPipe) personneId: number,
     @Param('seanceId', ParseIntPipe) seanceId: number,
@@ -43,8 +43,9 @@ export class InscriptionSeanceController {
     return this.service.update(personneId, seanceId, dto, projectId);
   }
 
+  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Delete(':personneId/:seanceId')
+  @Post(':personneId/:seanceId/delete')
   remove(
     @Param('personneId', ParseIntPipe) personneId: number,
     @Param('seanceId', ParseIntPipe) seanceId: number,

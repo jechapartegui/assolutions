@@ -36,7 +36,7 @@
                   type="email"
                   placeholder="vous@exemple.fr"
                   i18n-placeholder
-                  [(ngModel)]="VM.Login"
+                  [(ngModel)]="VM.compte.login"
                   (ngModelChange)="validateLogin()"
                   (input)="validateLogin()"
                   (keypress)="onKeyPress($event)"
@@ -53,7 +53,7 @@
                 *ngIf="selectedLogin"
                 class="is-flex is-justify-content-space-between is-align-items-center"
               >
-                <span>{{ VM.Login }}</span>
+                <span>{{ VM.compte.login }}</span>
                 <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn>
               </p>
             </div>
@@ -69,7 +69,7 @@
                   type="password"
                   placeholder="••••••••"
                   i18n-placeholder
-                  [(ngModel)]="VM.Password"
+                  [(ngModel)]="VM.compte.password"
                   (ngModelChange)="validatePassword($event)"
                   (keypress)="onKeyPress($event)"
                 />

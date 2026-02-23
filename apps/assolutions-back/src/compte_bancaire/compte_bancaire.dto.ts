@@ -1,9 +1,6 @@
 ﻿import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCompteBancaireDto {
-  @IsInt()
-  project_id: number;
-
   @IsString()
   @MaxLength(255)
   nom: string;

@@ -1,19 +1,28 @@
-import { Adherent_VM } from "./member.interface";
 import { Saison_VM } from "./saison.interface";
+export interface Compte {
+  id: number;
+  login: string;
 
-export class Compte_VM {
-    id: number = 0;
-    nom: string;
-    email: string;
-    password: string| null;
-    actif: boolean = false;
-    mail_actif: boolean;
-    derniere_connexion: Date | null;
-    echec_connexion: number;
-    mail_ko: boolean;
-    token: string | null;
-    adherents: Adherent_VM[] = [];
-  }
+  // selon ton back, souvent non renvoyé (mais présent ici car dans DTO)
+  password?: string | null;
+
+  actif?: boolean;
+  mail_actif?: boolean;
+  activation_token?: string | null;
+}
+
+export type CreateCompteDto = {
+  login: string;
+  password?: string | null;
+};
+
+export type UpdateCompteDto = {
+  login?: string;
+  password?: string | null;
+  actif?: boolean;
+  mail_actif?: boolean;
+  activation_token?: string | null;
+};
 
   export class ProjetLogin {
     id: number;
@@ -34,7 +43,7 @@ export class Compte_VM {
   };
 
   export type MeResponse = {
-  compte: Compte_VM;
+  compte: Compte;
   projects: ProjetView[];
   token: string;
   mode: AppMode;
@@ -56,7 +65,7 @@ export type ProjectRights = {
 export type Session = {
   token: string;
   mode: AppMode;                 // APPLI ou ADMIN (admin => menu/admin routes)
-  compte: Compte_VM;
+  compte: Compte;
   projects: ProjetView[];        // liste de choix
   selectedProjectId: number | null;
   rights: ProjectRights | null;  // droits du projet sélectionné (ProjectView)

@@ -34,6 +34,13 @@ export class CompteService {
     return saved;
   }
 
+  async check_token(login: string, token: string) {
+    const item = await this.repo.findOne({ where: { login } });
+    if (!item) throw new NotFoundException(`compte ${login} introuvable`);
+    if(item.activation_token !== token) throw new NotFoundException(`token incorrect pour le compte ${login}`);
+    return item;
+  }
+
   async update(id: number, dto: UpdateCompteDto) {
     const item = await this.get(id);
     Object.assign(item, dto, { date_maj: new Date() });

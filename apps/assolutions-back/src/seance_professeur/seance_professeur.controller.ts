@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -27,14 +27,20 @@ export class SeanceProfesseurController {
     return this.service.create(dto, projectId);
   }
 
+  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateSeanceProfesseurDto) {
+  @Post(':id/update')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateSeanceProfesseurDto,
+  ) {
     return this.service.update(id, dto, projectId);
   }
 
+  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Delete(':id')
+  @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }

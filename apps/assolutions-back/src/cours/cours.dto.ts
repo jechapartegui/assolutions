@@ -1,10 +1,7 @@
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCoursDto {
-  @IsInt()
-  project_id: number;
-
-  @IsString()
+    @IsString()
   @MaxLength(255)
   nom: string;
 

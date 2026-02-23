@@ -1,6 +1,27 @@
 import { Adresse } from "./adresse.interface";
 import { corelistobject } from "./corelistobject.interface";
 
+export interface Personne {
+  id: number;
+  compte: number;
+
+  date_naissance: string; // YYYY-MM-DD
+  last_name: string;
+  first_name: string;
+  
+  nickname?: string | null;
+  gender?: boolean;
+
+  address: string;
+
+  archive?: boolean;
+}
+
+export type CreatePersonneDto = Omit<Personne, 'id' | 'compte'>;
+export type UpdatePersonneDto = Partial<Omit<Personne, 'id' | 'compte'>>;
+
+
+
 export class PersonneLight_VM extends corelistobject {
      prenom:string = "";
      surnom:string = "";

@@ -26,8 +26,8 @@ export class SaisonService {
     return item;
   }
 
-  async create(dto: CreateSaisonDto) {
-    const entity = this.repo.create(dto as CreateSaisonDto);
+  async create(dto: CreateSaisonDto, projectId: number) {
+    const entity = this.repo.create({ ...dto, project_id: projectId });
     const saved = await this.repo.save(entity);
 
     await this.registry.ensure('saison', saved.id);

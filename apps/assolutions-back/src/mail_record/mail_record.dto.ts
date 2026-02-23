@@ -1,4 +1,4 @@
-﻿import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+﻿import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateMailRecordDto {
   @IsString()
@@ -13,9 +13,7 @@ export class CreateMailRecordDto {
   @MaxLength(200)
   subject: string;
 
-  @IsOptional()
-  @IsInt()
-  project_id?: number | null;
+  // ✅ supprimé : project_id (vient du header)
 }
 
 export class UpdateMailRecordDto {
@@ -34,7 +32,5 @@ export class UpdateMailRecordDto {
   @MaxLength(200)
   subject?: string;
 
-  @IsOptional()
-  @IsInt()
-  project_id?: number | null;
+  // ✅ supprimé : project_id
 }

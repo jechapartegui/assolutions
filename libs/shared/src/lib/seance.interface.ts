@@ -2,6 +2,46 @@ import { corelistobject } from "./corelistobject.interface";
 import { LienGroupe_VM } from "./groupe.interface";
 import { Personne_VM, PersonneLight_VM } from "./personne.interface";
 
+export interface Seance {
+  id: number;
+  project_id: number;
+
+  saison_id: number;
+
+  cours?: number | null;
+  label?: string | null;
+
+  type_seance: string;   // enum DB (string)
+  date_seance: string;
+  heure_debut: string;   // max 10
+  duree_seance: number;
+
+  lieu_id: number;
+  statut: string;        // enum DB (string)
+
+  age_minimum?: number | null;
+  age_maximum?: number | null;
+
+  place_maximum?: number | null;
+
+  essai_possible?: boolean;
+  nb_essai_possible?: number | null;
+
+  info_seance?: string | null;
+
+  convocation_nominative?: boolean;
+  afficher_present?: boolean;
+
+  appointment?: string | null;
+
+  est_limite_age_minimum?: boolean;
+  est_limite_age_maximum?: boolean;
+  est_place_maximum?: boolean;
+}
+
+export type CreateSeanceDto = Omit<Seance, 'id' | 'project_id'>;
+export type UpdateSeanceDto = Partial<Omit<Seance, 'id' | 'project_id'>>;
+
 
 export interface MesSeances_VM {
     seance:Seance_VM

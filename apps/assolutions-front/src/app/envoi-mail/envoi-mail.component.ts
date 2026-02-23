@@ -4,7 +4,7 @@ import { AdherentService } from '../../services/adherent.service';
 import { ErrorService } from '../../services/error.service';
 import { GroupeService } from '../../services/groupe.service';
 import { MailService } from '../../services/mail.service';
-import { ProjetService } from '../../services/projet.service';
+import { ProjetService } from '../../services/project-api.service';
 import { SeancesService } from '../../services/seance.service';
 import { KeyValuePairAny } from '@shared/lib/autres.interface';
 import { GlobalService } from '../../services/global.services';

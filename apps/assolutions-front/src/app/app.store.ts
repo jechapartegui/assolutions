@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Adherent_VM, Cours_VM, Seance_VM } from '@shared/index';
-import { AppMode, Compte_VM, ProjetView, Session } from '@shared/lib/compte.interface';
+import { AppMode, Compte, ProjetView, Session } from '@shared/lib/compte.interface';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 
 
@@ -26,6 +26,12 @@ readonly selectedProject = computed(() => {
   if (!s?.selectedProjectId) return null;
   return s.projects.find(p => p.id === s.selectedProjectId) ?? null;
 });
+
+private readonly _language = signal<string>(
+  localStorage.getItem('language') ?? 'fr'
+);
+
+readonly language = computed(() => this._language());
 
 readonly selectedProjectId = computed(() => {
   const s = this.session();
@@ -97,6 +103,11 @@ setSeanceLoading(isLoading: boolean) {
 setCoursLoading(isLoading: boolean) {
   this.Cours.update(s => ({ ...s, isLoading, error: null }));
 }
+setLanguage(lang: string) {
+  this._language.set(lang);
+  localStorage.setItem('language', lang);
+}
+
 
 // 2) refresh silencieux : compare seulement, ne touche pas Liste
 markRemoteLieu(remote: Lieu_VM[]) {

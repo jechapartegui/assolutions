@@ -1,6 +1,5 @@
-import { AddInfo_VM, GenericLink_VM } from "@shared/index";
+import { GenericLink_VM } from "@shared/index";
 import { Doc } from "../class/doc";
-import { AddInfoService } from "../services/addinfo.service";
 
 
 export class StaticClass{

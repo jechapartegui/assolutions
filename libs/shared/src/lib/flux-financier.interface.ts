@@ -2,6 +2,28 @@ import { GenericLink_VM } from "./liens.interface";
 import { Operation_VM } from "./operation.interface";
 import { Saison_VM } from "./saison.interface";
 import { Stock_VM } from "./stock.interface";
+export interface FluxFinancier {
+  id: number;
+  project_id: number;
+
+  libelle: string;
+  date: string;
+  destinataire: string;
+
+  recette: boolean;
+  statut: number;
+  montant: number;
+
+  info?: string | null;
+
+  saison_id: number;
+  classe_comptable: number;
+
+  type_frais?: string | null;
+}
+
+export type CreateFluxFinancierDto = Omit<FluxFinancier, 'id' | 'project_id'>;
+export type UpdateFluxFinancierDto = Partial<Omit<FluxFinancier, 'id' | 'project_id'>>;
 
 export class FluxFinancier_VM {
 id = 0;

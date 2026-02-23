@@ -2,13 +2,10 @@ import { Component,  OnDestroy,  OnInit,  ViewChild } from '@angular/core';
 import { StaticClass } from './global';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import { environment } from '../environments/environment.prod';
-import { CompteService } from '../services/compte.service';
 import { ErrorService } from '../services/error.service';
-import { GlobalService } from '../services/global.services';
 import { NavigationEnd, Router } from '@angular/router';
 import { AppStore } from './app.store';
 import { distinctUntilChanged, filter, map, startWith, Subscription } from 'rxjs';
-import { LoginNestService } from '../services/login.nest.service';
 
 @Component({
   standalone: false,
@@ -40,10 +37,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
   }
-  constructor(public GlobalService:GlobalService,
+  constructor(
     public erroservice: ErrorService,
-    public compte_serv:CompteService,
-    public loginserv:LoginNestService,
     public globals: StaticClass,
     public router:Router,
     public store:AppStore

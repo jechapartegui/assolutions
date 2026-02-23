@@ -1,9 +1,6 @@
-﻿import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+﻿import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateLieuDto {
-  @IsInt()
-  project_id: number;
-
   @IsString()
   @MaxLength(255)
   nom: string;

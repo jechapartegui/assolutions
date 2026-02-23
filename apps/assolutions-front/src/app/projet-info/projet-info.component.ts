@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Adresse, Projet_VM } from '@shared/index';
 import { AppStore } from '../app.store';
 import { Router } from '@angular/router';
-import { ProjetService } from '../../services/projet.service';
+import { ProjetService } from '../../services/project-api.service';
 import { GlobalService } from '../../services/global.services';
 import { ErrorService } from '../../services/error.service';
 import { HttpErrorResponse } from '@angular/common/http';

@@ -35,6 +35,7 @@ import { SeanceModule } from '../seance/seance.module';
 import { SeanceProfesseurModule } from '../seance_professeur/seance_professeur.module';
 import { StockModule } from '../stock/stock.module';
 import { AccessControlModule } from '../common/access-control.module';
+import { AdhesionModule } from './adhesion/adhesion.module';
 
 @Module({
   imports: [
@@ -96,7 +97,7 @@ const migrations = [join(__dirname, '..', '**', 'migration', '*.{ts,js}')];
     AddinfoModule,
     // MessagesModule,
     CompteModule,
-    CompteBancaireModule, ContratProfModule, MailProjectModule, MailRecordModule,  AccessControlModule,
+    CompteBancaireModule, ContratProfModule, MailProjectModule, MailRecordModule,  AccessControlModule, AdhesionModule,  
     CoursModule, CoursProfesseurModule, DocumentModule, FluxFinancierModule, GroupesModule, InscriptionSaisonModule, InscriptionSeanceModule, LienGroupeModule, 
     LieuModule, MailAccountModule, NoteModule, OperationModule, PersonneModule, ProfesseurModule, ProjectModule, RegistryModule, SaisonModule, SeanceModule, SeanceProfesseurModule, StockModule
   ],

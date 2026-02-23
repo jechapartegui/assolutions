@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateNoteDto, UpdateNoteDto } from './note.dto';
 import { NoteService } from './note.service';
@@ -25,14 +25,16 @@ export class NoteController {
     return this.service.create(dto, req.user.id);
   }
 
+  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
+  @Post(':id/update')
   update(@Param('id', ParseIntPipe) id: number, @Req() req: any, @Body() dto: UpdateNoteDto) {
     return this.service.update(id, dto, req.user.id);
   }
 
+  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.service.remove(id, req.user.id);
   }

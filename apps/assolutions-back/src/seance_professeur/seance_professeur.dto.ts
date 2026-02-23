@@ -1,4 +1,4 @@
-﻿import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+﻿import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateSeanceProfesseurDto {
   @IsInt()
@@ -9,7 +9,7 @@ export class CreateSeanceProfesseurDto {
 
   @IsOptional()
   @IsString()
-  cout?: string | null; // ✅ numeric en string
+  cout?: string | null;
 
   @IsOptional()
   @IsString()
@@ -23,11 +23,14 @@ export class CreateSeanceProfesseurDto {
   statut?: string;
 }
 
-
 export class UpdateSeanceProfesseurDto {
   @IsOptional() @IsInt() seance_id?: number;
   @IsOptional() @IsInt() minutes?: number;
-  @IsOptional() @IsNumber() cout?: number | null;
+
+  @IsOptional()
+  @IsString()
+  cout?: string | null;
+
   @IsOptional() @IsString() info?: string | null;
   @IsOptional() @IsInt() professeurcontract_id?: number;
   @IsOptional() @IsString() statut?: string;

@@ -1,6 +1,6 @@
 export const environment = {
  production: true,
-  maseance: 'https://assolutions.onrender.com/', // ton back Render
+  apiUrl: 'https://assolutions.onrender.com/', // ton back Render
   password:'jecha266',
   defaultlogin:'',
   defaultpassword:'',

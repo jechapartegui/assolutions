@@ -15,9 +15,7 @@ export class CreateAddinfoDto {
   @IsString()
   text: string;
 
-  @IsOptional()
-  @IsInt()
-  project_id?: number | null;
+  // ✅ supprimé: project_id
 }
 
 export class UpdateAddinfoDto {
@@ -39,7 +37,6 @@ export class UpdateAddinfoDto {
   @IsString()
   text?: string;
 
-  @IsOptional()
-  @IsInt()
-  project_id?: number | null;
+  // ✅ supprimé: project_id
 }
+

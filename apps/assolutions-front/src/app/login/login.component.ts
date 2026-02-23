@@ -1,14 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../environments/environment.prod';
-import { CompteService } from '../../services/compte.service';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { LoginNestService } from '../../services/login.nest.service';
-import { Compte_VM, MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
-import { Login_VM } from '../../class/login_vm';
+import {  MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
-
+import { AuthApiService } from '../../services/auth-api.service';
+import { CompteApiService } from '../../services/compte-api.service';
+import { ProjectApiService } from '../../services/project-api.service';
+import { Login_VM } from '../../vm/login.vm';
 @Component({
   standalone: false,
   selector: 'app-login',
@@ -31,15 +31,16 @@ export class LoginComponent implements OnInit {
   libelle_titre: string = $localize`Saisissez votre email pour vous connecter`;
 
   constructor(
-    private login_serv_nest: LoginNestService,
-    private compte_serv: CompteService,
+    private login_serv_nest: AuthApiService,
+    private project_serv: ProjectApiService,
+    private compte_serv: CompteApiService,
     private router: Router,
     private route: ActivatedRoute,
     public GlobalService: GlobalService,
     public store: AppStore
   ) {
-    this.VM.Login = environment.defaultlogin;
-    this.VM.Password = environment.defaultpassword;
+    this.VM.compte.login = environment.defaultlogin;
+    this.VM.compte.password = environment.defaultpassword;
   }
 
   ngOnInit(): void {
@@ -76,13 +77,14 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/login']);
             return;
           }
+          this.VM.compte.login = user;
+          this.VM.compte.activation_token = token;
 
           this.compte_serv
-            .CheckToken(user, token)
-            .then((boo) => {
-              if (boo) {
-                this.compte_serv.getAccountLogin(user).then((compte: Compte_VM) => {
-                  this.VM.compte = compte;
+            .check_token(this.VM.compte.login, this.VM.compte.activation_token)
+            .then((cpt) => {
+              if (cpt) {
+                this.VM.compte = cpt;
 
                   if (this.context === 'REINIT') {
                     this.action = $localize`Réinitialiser le mot de passe`;
@@ -95,9 +97,8 @@ export class LoginComponent implements OnInit {
                   this.action = $localize`Activer le compte`;
                   const o = errorService.OKMessage(this.action);
                   errorService.emitChange(o);
-                  this.router.navigate([''], { queryParams: { context: 'MENU' } });
+                this.router.navigate(['/login']);
                   return;
-                });
               } else {
                 const o = errorService.UnknownError(this.action);
                 errorService.emitChange(o);
@@ -120,7 +121,7 @@ export class LoginComponent implements OnInit {
         case 'SEANCE':
           this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
           if (this.login_seance) {
-            this.VM.Login = this.login_seance;
+            this.VM.compte.login = this.login_seance;
             this.validateLogin();
             this.Login();
           }
@@ -132,8 +133,8 @@ export class LoginComponent implements OnInit {
           break;
       }
 
-      if (!this.VM.Login) {
-        this.VM.Login = environment.defaultlogin ?? '';
+      if (!this.VM.compte.login) {
+        this.VM.compte.login = environment.defaultlogin ?? '';
         this.validateLogin();
       }
     });
@@ -141,7 +142,7 @@ export class LoginComponent implements OnInit {
 
   validateLogin() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    this.VM.isLoginValid = emailRegex.test(this.VM.Login);
+    this.VM.isLoginValid = emailRegex.test(this.VM.compte.login);
     this.valide();
   }
 
@@ -163,7 +164,7 @@ export class LoginComponent implements OnInit {
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       if (this.VM.mdp_requis) {
-        this.validatePassword(this.VM.Password);
+        this.validatePassword(this.VM.compte.password);
         if (this.VM.isValid) {
           this.Login();
         }
@@ -181,7 +182,7 @@ export class LoginComponent implements OnInit {
       this.action = $localize`Validation de l'email`;
 
       this.login_serv_nest
-        .PreLogin(this.VM.Login)
+        .prelogin(this.VM.compte.login)
         .then((prelogin: PreLoginResponse) => {
           this.VM.check_login = { key: true, value: '' };
           this.VM.mode = prelogin.mode;
@@ -189,12 +190,14 @@ export class LoginComponent implements OnInit {
 
           // Auto-login si pas de mot de passe requis + mode APPLI
           if (!this.VM.mdp_requis && this.VM.mode === 'APPLI') {
+      this.action = $localize`Connexion sans mot de passe`;
             this.login_serv_nest
-              .Login(this.VM.Login, null)
+              .login(this.VM.compte.login, null)
               .then(async (mr: MeResponse) => {
                 this.VM.compte = mr.compte;
-                this.VM.projets = mr.projects;
-
+      this.action = $localize`Lister les projets associés au compte`;
+                this.project_serv.listMine().then(async (projets) => {
+                  this.VM.projets = projets;
                 const s: Session = {
                   token: mr.token,
                   mode: this.VM.mode,
@@ -214,6 +217,12 @@ export class LoginComponent implements OnInit {
                 this.store.selectProject(s.selectedProjectId);
                 this.store.updateSelectedMenu('MENU');
                 this.router.navigate(['/menu']);
+                }).catch((error: Error) => {
+                const o = errorService.CreateError(this.action, error.message);
+                errorService.emitChange(o);
+                this.store.clearSession();
+                this.VM.check_login = { key: false, value: error.message };
+              });
               })
               .catch((error: Error) => {
                 const o = errorService.CreateError(this.action, error.message);
@@ -229,60 +238,47 @@ export class LoginComponent implements OnInit {
           this.VM.check_login = { key: false, value: error.message };
         });
     } else {
-      // Saisie mdp
-      this.login_serv_nest
-        .Login(this.VM.Login, this.VM.Password)
-        .then((mr: MeResponse) => {
-          if (this.VM.mode === 'APPLI') {
-            this.VM.compte = mr.compte;
-            this.VM.projets = mr.projects;
+      // Saisie mdp.
+      this.action = $localize`Connexion avec mot de passe`;
+           this.login_serv_nest
+              .login(this.VM.compte.login, this.VM.compte.password)
+              .then(async (mr: MeResponse) => {
+                this.VM.compte = mr.compte;
+      this.action = $localize`Lister les projets associés au compte`;
+                this.project_serv.listMine().then(async (projets) => {
+                  this.VM.projets = projets;
+                const s: Session = {
+                  token: mr.token,
+                  mode: this.VM.mode,
+                  compte: mr.compte,
+                  projects: mr.projects,
+                  selectedProjectId: mr.projects.length === 1 ? mr.projects[0].id : null,
+                  rights: mr.projects.length === 1 ? mr.projects[0].rights : null,
+                };
 
-            const s: Session = {
-              token: mr.token,
-              mode: this.VM.mode,
-              compte: mr.compte,
-              projects: mr.projects,
-              selectedProjectId: mr.projects.length === 1 ? mr.projects[0].id : null,
-              rights: mr.projects.length === 1 ? mr.projects[0].rights : null,
-            };
+                await this.store.setSession(s);
 
-            this.store.setSession(s);
+                if (s.projects.length > 1) {
+                  this.projets = s.projects;
+                  return;
+                }
 
-            if (s.projects.length > 1) {
-              this.projets = s.projects;
-              return;
-            }
-
-            this.store.selectProject(s.selectedProjectId);
-            this.store.updateSelectedMenu('MENU');
-            this.router.navigate(['/menu']);
-            const o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            return;
-          } else {
-            // mode admin
-            const s: Session = {
-              token: mr.token,
-              mode: this.VM.mode,
-              compte: mr.compte,
-              projects: mr.projects,
-              selectedProjectId: mr.projects[0].id,
-              rights: null,
-            };
-
-            this.store.setSession(s);
-            this.store.updateSelectedMenu('MENU-ADMIN');
-            this.router.navigate(['/menu-admin']);
-            const o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            return;
-          }
-        })
-        .catch((error: Error) => {
-          const o = errorService.CreateError(this.action, error.message);
-          errorService.emitChange(o);
-          this.VM.check_login = { key: true, value: error.message };
-        });
+                this.store.selectProject(s.selectedProjectId);
+                this.store.updateSelectedMenu('MENU');
+                this.router.navigate(['/menu']);
+                }).catch((error: Error) => {
+                const o = errorService.CreateError(this.action, error.message);
+                errorService.emitChange(o);
+                this.store.clearSession();
+                this.VM.check_login = { key: false, value: error.message };
+              });
+              })
+              .catch((error: Error) => {
+                const o = errorService.CreateError(this.action, error.message);
+                errorService.emitChange(o);
+                this.store.clearSession();
+                this.VM.check_login = { key: false, value: error.message };
+              });
     }
   }
 
@@ -302,8 +298,7 @@ export class LoginComponent implements OnInit {
     this.action = $localize`Réinitialiser le mot de passe`;
     const errorService = ErrorService.instance;
 
-    this.login_serv_nest
-      .ReinitMDP(this.VM.Login)
+    this.login_serv_nest.reinit_mdp(this.VM.compte.login)
       .then((ok) => {
         if (ok) {
           const o = errorService.OKMessage(this.action);

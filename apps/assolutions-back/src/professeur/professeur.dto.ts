@@ -31,8 +31,7 @@ export class CreateProfesseurDto {
   @IsString()
   info?: string | null;
 
-  @IsInt()
-  project_id: number;
+  // ✅ supprimé : project_id (vient du header)
 }
 
 export class UpdateProfesseurDto {

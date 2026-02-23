@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreatePersonneDto, UpdatePersonneDto } from './personne.dto';
 import { PersonneService } from './personne.service';
@@ -22,18 +22,19 @@ export class PersonneController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreatePersonneDto) {
-    // sécurité : forcer compte = user
     return this.service.create({ ...dto, compte: req.user.id });
   }
 
+  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
+  @Post(':id/update')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePersonneDto) {
     return this.service.update(id, dto);
   }
 
+  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }

@@ -30,8 +30,7 @@ export class CreateStockDto {
   @IsString()
   info: string;
 
-  @IsInt()
-  project_id: number;
+  // ✅ supprimé : project_id (vient du header)
 }
 
 export class UpdateStockDto {

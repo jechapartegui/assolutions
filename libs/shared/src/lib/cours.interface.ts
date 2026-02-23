@@ -2,6 +2,32 @@ import { corelistobject } from "./corelistobject.interface";
 import { LienGroupe_VM } from "./groupe.interface";
 import { PersonneLight_VM } from "./personne.interface";
 
+export interface Cours {
+  id?: number;
+
+  // DTO fields
+  project_id: number;
+  nom: string;
+  jour_semaine: string;
+  heure: string;
+  duree: number;
+  prof_principal_id: number;
+  lieu_id: number;
+
+  age_minimum?: number | null;
+  age_maximum?: number | null;
+
+  saison_id: number;
+
+  place_maximum?: number | null;
+
+  convocation_nominative?: boolean;
+  afficher_present?: boolean;
+  essai_possible?: boolean;
+
+  appointment?: string | null;
+}
+
 export class Cours_VM extends corelistobject {
   jour_semaine: string;
   heure: string= "11:00";

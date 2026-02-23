@@ -1,5 +1,25 @@
 import { FluxFinancier_VM } from "./flux-financier.interface";
 import { GenericLink_VM } from "./liens.interface";
+export interface Stock {
+  id: number;
+  project_id: number;
+
+  qte?: number;
+
+  lieu_stockage: string;
+  type_stock: string;
+
+  valeur_achat?: number | null;
+  date_achat?: string | null;
+
+  flux_financier_id?: number | null;
+
+  libelle: string;
+  info: string;
+}
+
+export type CreateStockDto = Omit<Stock, 'id' | 'project_id'>;
+export type UpdateStockDto = Partial<Omit<Stock, 'id' | 'project_id'>>;
 
 export class Stock_VM {
 id = 0;
