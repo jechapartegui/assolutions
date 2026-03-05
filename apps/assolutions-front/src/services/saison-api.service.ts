@@ -27,4 +27,6 @@ export class SaisonApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+
+ 
 }

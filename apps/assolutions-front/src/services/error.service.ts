@@ -73,7 +73,8 @@ export class ErrorService {
     }
   }
   interpret_error(text: string): string {
-    console.log(text);
+     console.trace();
+     console.log("ErrorService interpret_error : " + text);
     switch (text) {
        case "NO_SESSION_FOUND":
         return $localize`Pas de séances trouvées`;

@@ -13,9 +13,9 @@ export class CoursService {
     private readonly registry: RegistryService,
   ) {}
 
-  listForProject(projectId: number) {
+  listForProject(saison_id: number) {
     return this.repo.find({
-      where: { project_id: projectId },
+      where: { saison_id },
       order: { id: 'ASC' },
     });
   }

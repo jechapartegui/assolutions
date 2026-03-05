@@ -11,5 +11,8 @@ export class AdhesionApiService {
   get(): Promise<ProjetView[]> {
     return this.api.GET<ProjetView[]>(this.base);
   }
+    Anniversaire(saison_id: number): Promise<string[]> {
+    return this.api.GET<string[]>(this.base + `/anniversaire/${saison_id}`);
+  }
 
 }

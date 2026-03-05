@@ -6,9 +6,15 @@ import { ProjectAdminGuard } from '../../common/guards/project-admin.guard';
 export class AdhesionController {
   constructor(private readonly query: AdhesionQueryService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getActiveAdhesion(@Req() req: any) {
     return this.query.getAdhesion(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('anniversaire/:saison_id')
+  async getAnniversaire(@Req() req: any) {
+    return this.query.getAnniversaire(req.params.saison_id);
   }
 }

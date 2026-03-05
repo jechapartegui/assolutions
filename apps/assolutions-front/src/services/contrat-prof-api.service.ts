@@ -8,9 +8,9 @@ export class ContratProfApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<ContratProf[]> {
-    return this.api.GET<ContratProf[]>(this.base);
-  }
+ list(saisonId: number): Promise<ContratProf[]> {
+  return this.api.GET<ContratProf[]>(`${this.base}/saison/${saisonId}`);
+}
 
   get(id: number): Promise<ContratProf> {
     return this.api.GET<ContratProf>(`${this.base}/${id}`);

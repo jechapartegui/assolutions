@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreatePersonneDto, UpdatePersonneDto } from './personne.dto';
 import { PersonneService } from './personne.service';
@@ -18,6 +18,15 @@ export class PersonneController {
   get(@Param('id', ParseIntPipe) id: number) {
     return this.service.get(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('light')
+  listLight(@Body() ids: number[],
+    @Query('includePhotos') includePhotos?: string) {
+    const withPhotos = includePhotos === 'true';
+    return this.service.listLight(ids, withPhotos);
+  }
+ 
 
   @UseGuards(JwtAuthGuard)
   @Post()

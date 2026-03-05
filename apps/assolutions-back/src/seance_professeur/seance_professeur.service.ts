@@ -1,6 +1,6 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 import { RegistryService } from '../registry/registry.service';
 import { SaisonEntity } from '../saison/saison.entity';
@@ -46,6 +46,30 @@ export class SeanceProfesseurService {
       .where('sa.project_id = :projectId', { projectId })
       .orderBy('sp.id', 'ASC')
       .getMany();
+  }
+  listbyIdSeance(ids: number[]) {
+    return this.repo.find({
+      where: {  
+        seance_id: In(ids),
+      },
+      select: {
+        seance_id: true,
+        professeurcontract_id: true,
+      },
+      order: { id: 'ASC' },
+    });
+  }
+  listbyIdProfesseurContract(ids: number[]) {
+    return this.repo.find({
+      where: {  
+        professeurcontract_id: In(ids),
+      },
+      select: {
+        seance_id: true,
+        professeurcontract_id: true,
+      },
+      order: { id: 'ASC' },
+    });
   }
 
   async getForProject(id: number, projectId: number) {

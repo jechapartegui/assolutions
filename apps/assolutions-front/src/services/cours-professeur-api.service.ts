@@ -31,4 +31,8 @@ export class CoursProfesseurApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+
+ listProfsByCoursId(coursId: number[]): Promise<Record<number, number[]>> {
+  return this.api.POST<Record<number, number[]>>(`${this.base}/by-cours`, { coursId });
+}
 }

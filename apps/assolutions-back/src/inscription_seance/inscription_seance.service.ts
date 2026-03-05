@@ -36,6 +36,26 @@ export class InscriptionSeanceService {
       .orderBy('i.date_inscription', 'DESC')
       .getMany();
   }
+  async upsert(dto: CreateInscriptionSeanceDto, projectId: number) {
+  await this.assertSeanceInProject(dto.seance_id, projectId);
+
+  const existing = await this.repo.findOne({
+    where: { personne_id: dto.personne_id, seance_id: dto.seance_id },
+  });
+
+  if (!existing) {
+    const entity = this.repo.create({
+      ...dto,
+      date_inscription: new Date(),
+    } as any);
+    return this.repo.save(entity);
+  }
+
+  existing.statut_inscription = dto.statut_inscription ?? null;
+  existing.statut_seance = dto.statut_seance ?? null;
+  existing.date_inscription = new Date();
+  return this.repo.save(existing);
+}
 
   async getForProject(personneId: number, seanceId: number, projectId: number) {
     await this.assertSeanceInProject(seanceId, projectId);

@@ -59,31 +59,42 @@
             </div>
 
             <!-- Mot de passe -->
-            <div *ngIf="VM.mdp_requis" class="field">
-              <label class="label is-small" for="loginPassword" i18n>Mot de passe</label>
-              <p class="control has-icons-left has-icons-right">
-                <input
-                  id="loginPassword"
-                  *ngIf="VM.mdp_requis"
-                  [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
-                  type="password"
-                  placeholder="••••••••"
-                  i18n-placeholder
-                  [(ngModel)]="VM.compte.password"
-                  (ngModelChange)="validatePassword($event)"
-                  (keypress)="onKeyPress($event)"
-                />
-                <span class="icon is-small is-left">
-                  <i class="fas fa-lock"></i>
-                </span>
-                <span *ngIf="VM.isPasswordValid" class="icon is-small is-right has-text-success">
-                  <i class="fas fa-check"></i>
-                </span>
-              </p>
-              <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
-                Le mot de passe doit contenir au moins 8 caractères et un nombre.
-              </p>
-            </div>
+<div *ngIf="VM.mdp_requis" class="field">
+  <label class="label is-small" for="loginPassword" i18n>
+    Mot de passe
+  </label>
+
+  <p class="control has-icons-left has-icons-right">
+    <input
+      id="loginPassword"
+      [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
+      [type]="showPassword ? 'text' : 'password'"
+      placeholder="••••••••"
+      i18n-placeholder
+      [(ngModel)]="VM.compte.password"
+      (ngModelChange)="validatePassword($event)"
+      (keypress)="onKeyPress($event)"
+    />
+
+    <!-- icône gauche -->
+    <span class="icon is-small is-left">
+      <i class="fas fa-lock"></i>
+    </span>
+
+    <!-- icône œil -->
+    <span
+      class="icon is-small is-right is-clickable"
+      (click)="togglePassword()"
+      style="cursor:pointer"
+    >
+      <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+    </span>
+  </p>
+
+  <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
+    Le mot de passe doit contenir au moins 8 caractères et un nombre.
+  </p>
+</div>
 
             <!-- Sélection projet -->
             <ng-container *ngIf="projets">

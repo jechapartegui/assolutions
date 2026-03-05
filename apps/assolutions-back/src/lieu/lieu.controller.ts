@@ -9,13 +9,13 @@ import { LieuService } from './lieu.service';
 export class LieuController {
   constructor(private readonly service: LieuService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   list(@ProjectId() projectId: number) {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);

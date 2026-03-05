@@ -9,6 +9,7 @@ import { AuthApiService } from '../../services/auth-api.service';
 import { CompteApiService } from '../../services/compte-api.service';
 import { ProjectApiService } from '../../services/project-api.service';
 import { Login_VM } from '../../vm/login.vm';
+import { AdhesionApiService } from '../../services/adhesion-api.service';
 @Component({
   standalone: false,
   selector: 'app-login',
@@ -32,6 +33,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private login_serv_nest: AuthApiService,
+    private adhesion_serv: AdhesionApiService,
     private project_serv: ProjectApiService,
     private compte_serv: CompteApiService,
     private router: Router,
@@ -41,6 +43,7 @@ export class LoginComponent implements OnInit {
   ) {
     this.VM.compte.login = environment.defaultlogin;
     this.VM.compte.password = environment.defaultpassword;
+    this.validateLogin();
   }
 
   ngOnInit(): void {
@@ -143,6 +146,7 @@ export class LoginComponent implements OnInit {
   validateLogin() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     this.VM.isLoginValid = emailRegex.test(this.VM.compte.login);
+    console.log("isLoginValid"  + this.VM.isLoginValid);
     this.valide();
   }
 
@@ -190,23 +194,22 @@ export class LoginComponent implements OnInit {
 
           // Auto-login si pas de mot de passe requis + mode APPLI
           if (!this.VM.mdp_requis && this.VM.mode === 'APPLI') {
-      this.action = $localize`Connexion sans mot de passe`;
+            this.action = $localize`Connexion sans mot de passe`;
             this.login_serv_nest
               .login(this.VM.compte.login, null)
               .then(async (mr: MeResponse) => {
                 this.VM.compte = mr.compte;
-      this.action = $localize`Lister les projets associés au compte`;
-                this.project_serv.listMine().then(async (projets) => {
+                this.action = $localize`Lister les projets associés au compte`;
+                this.adhesion_serv.get().then(async (projets) => {
                   this.VM.projets = projets;
                 const s: Session = {
                   token: mr.token,
                   mode: this.VM.mode,
                   compte: mr.compte,
-                  projects: mr.projects,
-                  selectedProjectId: mr.projects.length === 1 ? mr.projects[0].id : null,
-                  rights: mr.projects.length === 1 ? mr.projects[0].rights : null,
+                  projects: projets,
+                  selectedProjectId: projets.length === 1 ? projets[0].id : null,
+                  rights: projets.length === 1 ? projets[0].rights : null,
                 };
-
                 await this.store.setSession(s);
 
                 if (s.projects.length > 1) {
@@ -217,7 +220,9 @@ export class LoginComponent implements OnInit {
                 this.store.selectProject(s.selectedProjectId);
                 this.store.updateSelectedMenu('MENU');
                 this.router.navigate(['/menu']);
+    console.log(this.store.session());
                 }).catch((error: Error) => {
+                  console.log("là");
                 const o = errorService.CreateError(this.action, error.message);
                 errorService.emitChange(o);
                 this.store.clearSession();
@@ -245,15 +250,15 @@ export class LoginComponent implements OnInit {
               .then(async (mr: MeResponse) => {
                 this.VM.compte = mr.compte;
       this.action = $localize`Lister les projets associés au compte`;
-                this.project_serv.listMine().then(async (projets) => {
+                this.adhesion_serv.get().then(async (projets) => {
                   this.VM.projets = projets;
                 const s: Session = {
                   token: mr.token,
                   mode: this.VM.mode,
                   compte: mr.compte,
-                  projects: mr.projects,
-                  selectedProjectId: mr.projects.length === 1 ? mr.projects[0].id : null,
-                  rights: mr.projects.length === 1 ? mr.projects[0].rights : null,
+                  projects: projets,
+                  selectedProjectId: projets.length === 1 ? projets[0].id : null,
+                  rights: projets.length === 1 ? projets[0].rights : null,
                 };
 
                 await this.store.setSession(s);
@@ -265,7 +270,11 @@ export class LoginComponent implements OnInit {
 
                 this.store.selectProject(s.selectedProjectId);
                 this.store.updateSelectedMenu('MENU');
-                this.router.navigate(['/menu']);
+                if(this.VM.mode === 'APPLI') {
+                  this.router.navigate(['/menu']);
+                } else {
+                  this.router.navigate(['/menu-admin']);
+                }
                 }).catch((error: Error) => {
                 const o = errorService.CreateError(this.action, error.message);
                 errorService.emitChange(o);
@@ -345,4 +354,10 @@ export class LoginComponent implements OnInit {
       await this.router.navigate(['/login']);
     }
   }
+
+  showPassword = false;
+
+togglePassword() {
+  this.showPassword = !this.showPassword;
+}
 }

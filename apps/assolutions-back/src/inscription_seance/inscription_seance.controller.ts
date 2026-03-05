@@ -8,6 +8,12 @@ import { InscriptionSeanceService } from './inscription_seance.service';
 @Controller('inscription-seance')
 export class InscriptionSeanceController {
   constructor(private readonly service: InscriptionSeanceService) {}
+// ✅ UPSERT (create if missing, else update)
+@UseGuards(JwtAuthGuard, ProjectAdminGuard)
+@Post('maj')
+maj(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
+  return this.service.upsert(dto, projectId);
+}
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get()

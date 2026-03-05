@@ -8,8 +8,8 @@ export class GroupesApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<Groupe[]> {
-    return this.api.GET<Groupe[]>(this.base);
+  list(saisonId: number): Promise<Groupe[]> {
+    return this.api.GET<Groupe[]>(`${this.base}/saison/${saisonId}`);
   }
 
   get(id: number): Promise<Groupe> {

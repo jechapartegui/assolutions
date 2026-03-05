@@ -31,4 +31,7 @@ export class InscriptionSeanceApiService {
   remove(personneId: number, seanceId: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${personneId}/${seanceId}/delete`, {});
   }
+  maj(dto: CreateInscriptionSeanceDto): Promise<InscriptionSeance> {
+  return this.api.POST<InscriptionSeance>(`${this.base}/maj`, dto);
+}
 }

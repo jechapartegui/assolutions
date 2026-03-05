@@ -8,6 +8,9 @@ export class LienGroupeApiService {
 
   constructor(private api: ApiClientService) {}
 
+  listGroupesByCoursId(coursId: number[]): Promise<Record<number, number[]>> {
+    return this.api.POST<Record<number, number[]>>(`${this.base}/by-cours`, { coursId });
+  }
   list(): Promise<LienGroupe[]> {
     return this.api.GET<LienGroupe[]>(this.base);
   }

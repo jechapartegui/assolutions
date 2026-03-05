@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
-import { Personne, CreatePersonneDto, UpdatePersonneDto } from '@shared/lib/personne.interface';
+import { Personne, CreatePersonneDto, UpdatePersonneDto, PersonneLight_VM } from '@shared/lib/personne.interface';
 
 @Injectable({ providedIn: 'root' })
 export class PersonneApiService {
@@ -10,6 +10,11 @@ export class PersonneApiService {
 
   listMine(): Promise<Personne[]> {
     return this.api.GET<Personne[]>(this.base);
+  }
+
+  list_personnelight(ids: number[], includePhotos = false): Promise<PersonneLight_VM[]> {
+    const url = `${this.base}/light?includePhotos=${includePhotos ? 'true' : 'false'}`;
+    return this.api.POST<PersonneLight_VM[]>(url, ids);
   }
 
   get(id: number): Promise<Personne> {

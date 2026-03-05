@@ -7,13 +7,13 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('prelogin')
-  prelogin(@Body() body: { email: string }) {
-    return this.auth.prelogin(body.email);
+  prelogin(@Body() body: { login: string }) {
+    return this.auth.prelogin(body.login);
   }
 
   @Post('login')
-  login(@Body() body: { email: string; password?: string }) {
-    return this.auth.login(body.email, body.password);
+  login(@Body() body: { login: string; password?: string }) {
+    return this.auth.login(body.login, body.password);
   }
 
   @UseGuards(JwtAuthGuard)

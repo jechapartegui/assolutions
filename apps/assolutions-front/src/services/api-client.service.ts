@@ -6,7 +6,7 @@ import { AppStore } from '../app/app.store';
 
 @Injectable({ providedIn: 'root' })
 export class ApiClientService {
-  private readonly baseUrl = environment.apiUrl;
+  private readonly baseUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly timeoutMilliseconds = 1500000;
 
   constructor(
@@ -67,14 +67,10 @@ export class ApiClientService {
           })
         )
       );
-    } catch (error) {
-      console.log(error);
-      if (error instanceof HttpErrorResponse) {
-        // si tu as un handler central, branche-le ici
-        // this.handleError(error);
-      }
-      throw new Error('UNKNOWN_ERROR');
-    }
+   } catch (error) {
+  console.log(error);
+  throw error; // ✅
+}
   }
 
   private makeUrl(path: string): string {
@@ -89,6 +85,7 @@ export class ApiClientService {
       .set('lang', this.getCurrentLanguage());
 
     // projectid optionnel
+    console.log("selectedProjectId"  + this.store.selectedProjectId?.());
     const projectId = this.store.selectedProjectId?.() ?? null;
     if (projectId) headers = headers.set('projectid', projectId.toString());
 

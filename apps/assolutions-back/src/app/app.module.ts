@@ -36,6 +36,7 @@ import { SeanceProfesseurModule } from '../seance_professeur/seance_professeur.m
 import { StockModule } from '../stock/stock.module';
 import { AccessControlModule } from '../common/access-control.module';
 import { AdhesionModule } from './adhesion/adhesion.module';
+import { MesSeancesModule } from './mes_seances/mes_seances.module';
 
 @Module({
   imports: [
@@ -91,7 +92,7 @@ const migrations = [join(__dirname, '..', '**', 'migration', '*.{ts,js}')];
         };
       },
     }),
-    CompteModule,
+    CompteModule, MesSeancesModule,
     RegistryModule,
     AuthModule,
     AddinfoModule,

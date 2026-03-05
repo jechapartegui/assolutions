@@ -26,11 +26,6 @@ export class AuthService {
     this.pepper = this.config.get<string>('PEPPER') ?? '';
   }
 
-  // --- helpers
-  private hashPassword(password: string): string {
-    // même algo que ton legacy (sha256 + pepper) pour rester compatible
-    return crypto.createHash('sha256').update(password + this.pepper).digest('hex');
-  }
 
   private signToken(compte: CompteEntity): string {
     return this.jwt.sign(
@@ -73,8 +68,9 @@ export class AuthService {
 
     if (hasPassword) {
       if (!password) throw new BadRequestException('PASSWORD_REQUIRED');
-      const hashed = this.hashPassword(password);
+      const hashed = hashPasswordWithPepper(password, this.pepper);      
       if (hashed !== storedPassword) throw new BadRequestException('INCORRECT_PASSWORD');
+      compte.password = "";
     }
 
     const token = this.signToken(compte);
@@ -98,7 +94,7 @@ export class AuthService {
     const compte = await this.compteRepo.findOne({ where: { id: userId } });
     if (!compte) throw new NotFoundException('ACCOUNT_NOT_FOUND');
 
-    (compte as any).password = newPassword ? this.hashPassword(newPassword) : null;
+    (compte as any).password = newPassword ? hashPasswordWithPepper(newPassword, this.pepper) : null;
     // si tu as un token de reset dans compte :
     if ('activation_token' in compte) (compte as any).activation_token = null;
     if ('activationToken' in compte) (compte as any).activationToken = null;
@@ -115,11 +111,18 @@ export class AuthService {
     if (!login) throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
 
     // selon ton champ: login/email
-    const compte =
-      (await this.compteRepo.findOne({ where: { login: login.toLowerCase() } as any })) ||
-      (await this.compteRepo.findOne({ where: { email: login.toLowerCase() } as any }));
+    const compte =await this.compteRepo.findOne({ where: { login: login.toLowerCase() } as CompteEntity });
 
     if (!compte) throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
     return compte;
   }
 }
+
+
+  // --- helpers
+  export function hashPasswordWithPepper(password: string, pepper:string): string {
+    return crypto
+      .createHmac('sha256', pepper)
+      .update(password)
+      .digest('hex');
+  }

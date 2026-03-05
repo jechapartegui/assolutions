@@ -10,15 +10,18 @@ import { StaticClass } from '../../../assolutions-front/src/app/global';
 import { ErrorService } from '../../../assolutions-front/src/services/error.service';
 import { AppStore } from '../../../assolutions-front/src/app/app.store';
 import { GlobalService } from '../../../assolutions-front/src/services/global.services';
-
+import { NotifJechaComponent } from 'apps/assolutions-front/src/app/custom-notification/custom-notification.component';
+import { MenuComponent } from 'apps/assolutions-front/src/app/menu/menu.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // 👇 import des routes legacy (ton fichier qui contient "const routes: Routes = [...]")
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent],
+  declarations: [AppComponent, LoginComponent, MenuComponent,
+    NotifJechaComponent],
   imports: [
     BrowserModule,
     FormsModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule,BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
   ],

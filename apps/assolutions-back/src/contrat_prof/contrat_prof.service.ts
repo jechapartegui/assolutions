@@ -20,11 +20,11 @@ export class ContratProfService {
     if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
   }
 
-  listForProject(projectId: number) {
+  listForSeason(saisonId: number) {
     return this.repo
       .createQueryBuilder('c')
       .innerJoin('saison', 's', 's.id = c.saison_id')
-      .where('s.project_id = :projectId', { projectId })
+      .where('s.id = :saisonId', { saisonId })
       .orderBy('c.id', 'ASC')
       .getMany();
   }

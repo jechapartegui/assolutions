@@ -26,8 +26,13 @@ export class PersonneLight_VM extends corelistobject {
      prenom:string = "";
      surnom:string = "";
      date_naissance:Date = new Date();
-     sexe:boolean=false;
+     sexe:boolean=false;     
+    photo?: any;
 }
+export class ProfLight_VM extends PersonneLight_VM {
+     contrat_id:number = 0; 
+}
+
 
 export class Personne_VM extends PersonneLight_VM {
     adresse: Adresse = new Adresse();
@@ -35,7 +40,6 @@ export class Personne_VM extends PersonneLight_VM {
     contact:ItemContact[] = [];
     contact_prevenir:ItemContact[]= [];
     login:string;
-    photo:any;
     archive:boolean = false;
 
 

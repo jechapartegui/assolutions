@@ -9,7 +9,6 @@ export * from './lib/cours.interface';
 export * from './lib/groupe.interface';
 export * from './lib/adresse.interface';
 export * from './lib/inscription_saison.interface';
-export * from './lib/inscription_seance.interface';
 export * from './lib/mail-input.interface';
 export * from './lib/personne.interface';
 export * from './lib/project.interface';

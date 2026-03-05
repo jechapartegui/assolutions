@@ -22,11 +22,11 @@ export class GroupesService {
     if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
   }
 
-  listForProject(projectId: number) {
+  listForProject(saisonId: number) {
     return this.repo
       .createQueryBuilder('g')
       .innerJoin('saison', 's', 's.id = g.saison_id')
-      .where('s.project_id = :projectId', { projectId })
+      .where('s.id = :saisonId', { saisonId })
       .orderBy('g.id', 'ASC')
       .getMany();
   }

@@ -9,26 +9,26 @@ import { GroupesService } from './groupes.service';
 export class GroupesController {
   constructor(private readonly service: GroupesService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Get()
-  list(@ProjectId() projectId: number) {
-    return this.service.listForProject(projectId);
+  @UseGuards(JwtAuthGuard)
+  @Get('saison/:saisonId')
+  list(@Param('saisonId', ParseIntPipe) saisonId: number) {
+    return this.service.listForProject(saisonId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateGroupesDto) {
     return this.service.create(dto, projectId);
   }
 
   // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
   update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateGroupesDto) {
     return this.service.update(id, dto, projectId);

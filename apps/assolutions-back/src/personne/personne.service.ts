@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { CreatePersonneDto, UpdatePersonneDto } from './personne.dto';
 import { PersonneEntity } from './personne.entity';
@@ -19,6 +19,35 @@ export class PersonneService {
       order: { id: 'ASC' },
     });
   }
+  async listLight(ids: number[], withPhotos: boolean) {
+  const items = await this.repo.find({
+    where: {
+      id: In(ids),
+    },
+    select: {
+      id: true,
+      first_name: true,
+      last_name: true,
+      nickname: true,
+      date_naissance: true,
+      gender: true,
+      
+    },
+     order: { id: 'ASC'
+    }
+  });
+    return items.map(p => ({
+      id: p.id,
+      nom: p.last_name,
+      prenom: p.first_name,
+      surnom: p.nickname ?? '',
+      date_naissance: p.date_naissance, // string YYYY-MM-DD (ton entity le stocke en string)
+      sexe: !!p.gender,
+      ...(withPhotos ? { photo: '' } : {}),
+    }));
+  }
+
+
 
   async get(id: number) {
     const item = await this.repo.findOne({ where: { id } });

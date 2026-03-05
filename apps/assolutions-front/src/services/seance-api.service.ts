@@ -27,4 +27,8 @@ export class SeanceApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+     get_seance_by_ids(ids: number[]): Promise<Seance[]> {
+      const url = `${this.base}/liste_by_ids`;
+      return this.api.POST<Seance[]>(url, ids);
+    }
 }

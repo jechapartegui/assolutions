@@ -14,8 +14,8 @@ export class CoursApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<Cours[]> {
-    return this.api.GET<Cours[]>(this.base);
+  list(saisonId: number): Promise<Cours[]> {
+    return this.api.GET<Cours[]>(`${this.base}/saison/${saisonId}`);
   }
 
   get(id: number): Promise<Cours> {

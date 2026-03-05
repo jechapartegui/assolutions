@@ -46,20 +46,25 @@
           "vendorChunk": true,
           "extractLicenses": false,
           "sourceMap": true,
-          "namedChunks": true
+          "namedChunks": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/assolutions-front/src/environments/environment.prod.ts",
+              "with": "apps/assolutions-front/src/environments/environment.ts"
+            }
+          ]
         }
       },
       "defaultConfiguration": "production"
     },
     "serve": {
       "continuous": true,
-      "executor": "@angular-devkit/build-angular:dev-server",
-      "configurations": {
-        "production": {
-          "buildTarget": "debug-front:build:production"
-        },
+      "proxyConfig": "apps/debug-front/proxy.conf.json",
+      "executor": "@angular-devkit/build-angular:dev-server", "configurations": {
         "development": {
-          "buildTarget": "debug-front:build:development"
+          "buildTarget": "debug-front:build:development",
+          "port": 2510,
+          "proxyConfig": "apps/debug-front/proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

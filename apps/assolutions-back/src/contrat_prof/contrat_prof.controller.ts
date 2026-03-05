@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -9,13 +9,13 @@ import { ContratProfService } from './contrat_prof.service';
 export class ContratProfController {
   constructor(private readonly service: ContratProfService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Get()
-  list(@ProjectId() projectId: number) {
-    return this.service.listForProject(projectId);
-  }
+@UseGuards(JwtAuthGuard)
+@Get('saison/:saisonId')
+listForSeason(@Param('saisonId', ParseIntPipe) saisonId: number) {
+  return this.service.listForSeason(saisonId);
+}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);

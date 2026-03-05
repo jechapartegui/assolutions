@@ -9,13 +9,13 @@ import { CoursService } from './cours.service';
 export class CoursController {
   constructor(private readonly service: CoursService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
-  @Get()
-  list(@ProjectId() projectId: number) {
-    return this.service.listForProject(projectId);
+  @UseGuards(JwtAuthGuard)
+  @Get('saison/:saison_id')
+  list(@Param('saison_id', ParseIntPipe) id: number) {
+    return this.service.listForProject(id);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);

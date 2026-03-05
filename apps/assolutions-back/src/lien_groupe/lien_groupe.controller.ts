@@ -44,4 +44,9 @@ export class LienGroupeController {
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+  @UseGuards(JwtAuthGuard)
+  @Post('by-cours')
+  listGroupesByCoursId(@Body() body: { coursId: number[] }) {
+    return this.service.listGroupesByCoursId(body.coursId);
+  }
 }

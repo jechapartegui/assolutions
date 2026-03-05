@@ -9,13 +9,13 @@ import { CoursProfesseurService } from './cours_professeur.service';
 export class CoursProfesseurController {
   constructor(private readonly service: CoursProfesseurService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   list(@ProjectId() projectId: number) {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);
@@ -39,5 +39,11 @@ export class CoursProfesseurController {
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('by-cours')
+  listProfsByCoursId(@Body() body: { coursId: number[] }) {
+    return this.service.listProfsByCoursId(body.coursId);
   }
 }

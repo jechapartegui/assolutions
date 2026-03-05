@@ -1,6 +1,6 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { CoursEntity } from '../cours/cours.entity';
 import { CreateCoursProfesseurDto, UpdateCoursProfesseurDto } from './cours_professeur.dto';
@@ -28,6 +28,33 @@ export class CoursProfesseurService {
       .orderBy('cp.id', 'ASC')
       .getMany();
   }
+
+async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> {
+  if (!Array.isArray(coursIds) || coursIds.length === 0) return {};
+
+  const rows = await this.repo.find({
+    where: { cours_id: In(coursIds) },
+    select: {
+      cours_id: true,
+      contrat_id: true,
+    },
+    order: { cours_id: 'ASC' as any, contrat_id: 'ASC' as any }, // si TypeORM accepte
+  });
+
+  const result: Record<number, number[]> = {};
+
+  for (const r of rows) {
+    (result[r.cours_id] ??= []).push(r.contrat_id);
+  }
+
+  // dédoublonnage + tri
+  for (const k of Object.keys(result)) {
+    const arr = result[+k];
+    result[+k] = Array.from(new Set(arr)).sort((a, b) => a - b);
+  }
+
+  return result;
+}
 
   async getForProject(id: number, projectId: number) {
     const item = await this.repo.findOne({ where: { id } });

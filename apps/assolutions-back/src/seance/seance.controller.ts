@@ -26,6 +26,11 @@ export class SeanceController {
   create(@ProjectId() projectId: number, @Body() dto: CreateSeanceDto) {
     return this.service.create(dto, projectId);
   }
+    @UseGuards(JwtAuthGuard)
+    @Post('liste_by_ids')
+    listbyIds(@Body() ids: number[]) {
+      return this.service.listbyId(ids);
+    }
 
   // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)

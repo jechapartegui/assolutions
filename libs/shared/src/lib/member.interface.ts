@@ -1,12 +1,12 @@
+import { InscriptionSeance } from "./inscription-seance.interface";
 import { InscriptionSaison_VM } from "./inscription_saison.interface";
-import { InscriptionSeance_VM } from "./inscription_seance.interface";
 import { Personne_VM } from "./personne.interface";
 
 export class Adherent_VM extends Personne_VM{
   
     inscrit:boolean = false;
     inscriptionsSaison:InscriptionSaison_VM[]= [];
-    inscriptionsSeance:InscriptionSeance_VM[]=[];
+    inscriptionsSeance:InscriptionSeance[]=[];
 }
 
 export class AdherentExport {

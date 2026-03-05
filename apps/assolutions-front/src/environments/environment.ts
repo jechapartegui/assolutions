@@ -5,7 +5,7 @@
 export const environment = {
 
   production: false,
-  apiUrl: '', // ton back local
+  apiUrl: '/api', // ton back local
   password:'jecha266',
   defaultlogin:'jechapartegui@gmail.com',
   defaultpassword:'',

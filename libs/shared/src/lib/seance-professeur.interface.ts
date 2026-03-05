@@ -13,5 +13,10 @@ export interface SeanceProfesseur {
   statut?: string;
 }
 
+export interface SeanceProfesseur_Light {
+  seance_id: number;
+  professeurcontract_id: number;
+}
+
 export type CreateSeanceProfesseurDto = Omit<SeanceProfesseur, 'id' | 'project_id'>;
 export type UpdateSeanceProfesseurDto = Partial<Omit<SeanceProfesseur, 'id' | 'project_id'>>;

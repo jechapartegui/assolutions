@@ -9,15 +9,3 @@ export class LienGroupe_VM {
     this.id_lien = id_lien;
   }
 }
-
-export class Groupe_VM {
-  id: number;
-  nom: string;
-  saison_id: number;
-  whatsapp:string;
-  display: boolean = false; // Pour l'affichage dans la liste
-  prive: boolean; // Pour l'affichage dans la liste
-  // Lien vers les groupes
-  groupes?: LienGroupe_VM[];
-
-}

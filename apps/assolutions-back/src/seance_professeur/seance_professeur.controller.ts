@@ -38,6 +38,17 @@ export class SeanceProfesseurController {
     return this.service.update(id, dto, projectId);
   }
 
+      @UseGuards(JwtAuthGuard)
+    @Post('liste_by_ids_seance')
+    listbyIdSeance(@Body() ids: number[]) {
+      return this.service.listbyIdSeance(ids);
+    }
+          @UseGuards(JwtAuthGuard)
+    @Post('liste_by_idcontrat')
+    listbyIdProfesseurContract(@Body() ids: number[]) {
+      return this.service.listbyIdProfesseurContract(ids);
+    }
+
   // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')

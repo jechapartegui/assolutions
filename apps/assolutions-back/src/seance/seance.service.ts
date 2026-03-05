@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateSeanceDto, UpdateSeanceDto } from './seance.dto';
@@ -20,6 +20,14 @@ export class SeanceService {
     const saison = await this.saisonRepo.findOne({ where: { id: saisonId } });
     if (!saison) throw new NotFoundException(`saison ${saisonId} introuvable`);
     if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
+  }
+
+  async listbyId(ids: number[]) {
+    return this.repo.find({
+      where: {
+           seance_id: In(ids),
+      }
+    });
   }
 
   async listForProject(projectId: number) {

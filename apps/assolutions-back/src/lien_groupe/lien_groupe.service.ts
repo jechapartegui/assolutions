@@ -1,6 +1,6 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { GroupesEntity } from '../groupes/groupes.entity';
 import { SaisonEntity } from '../saison/saison.entity';
@@ -37,6 +37,15 @@ export class LienGroupeService {
       .where('s.project_id = :projectId', { projectId })
       .orderBy('l.id', 'ASC')
       .getMany();
+  }
+
+  async listGroupesByCoursId(coursId: number[]) {
+    const liens = (await this.repo.find({ where: { object_id: In(coursId), object_type: 'cours' } })).map(l => ({ groupe_id: l.groupe_id, cours_id: l.object_id }));
+    return liens.reduce((acc, lien) => {
+      acc[lien.cours_id] = acc[lien.cours_id] || [];
+      acc[lien.cours_id].push(lien.groupe_id);
+      return acc;
+    }, {} as Record<number, number[]>);
   }
 
   async getForProject(id: number, projectId: number) {

@@ -9,10 +9,6 @@ export class ProjectApiService {
 
   constructor(private api: ApiClientService) {}
 
-  listMine(): Promise<ProjetView[]> {
-    return this.api.GET<ProjetView[]>(this.base);
-  }
-
   get(id: number): Promise<Project> {
     return this.api.GET<Project>(`${this.base}/${id}`);
   }
