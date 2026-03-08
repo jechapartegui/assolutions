@@ -1,4 +1,4 @@
-import { Saison_VM } from "./saison.interface";
+import { Saison} from "./saison.interface";
 export interface Compte {
   id: number;
   login: string;
@@ -39,7 +39,7 @@ export type UpdateCompteDto = {
     id: number;
     nom: string;
    rights: ProjectRights;
-    saison_active:Saison_VM | null;
+    saison_active:Saison | null;
   };
 
   export type MeResponse = {

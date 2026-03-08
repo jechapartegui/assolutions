@@ -1,6 +1,6 @@
 import { Adresse } from "./adresse.interface";
 import { ItemContact } from "./personne.interface";
-import { Saison_VM } from "./saison.interface";
+import { Saison } from "./saison.interface";
 
 export class Projet_VM {
   id: number;
@@ -16,5 +16,5 @@ export class Projet_VM {
   couleur?: string;
   login: string;
     token: string | null;
-    saison_active:Saison_VM;
+    saison_active:Saison;
 }

@@ -1,507 +1,519 @@
 <ng-container [ngSwitch]="type_button">
 
   <!-- SAUVEGARDER -->
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Sauvegarder'">
+  <button class="button is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Sauvegarder'">
     <span i18n>Sauvegarder</span>
     <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-mobile btn-elevated btn-compact" [disabled]="disabled" *ngSwitchCase="'SauvegarderSmall'">
+  <button class="button is-small is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'SauvegarderSmall'">
     <span i18n>Sauvegarder</span>
     <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'SauvegarderLight'" aria-label="Sauvegarder">
+  <button class="button is-primary is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'SauvegarderLight'" aria-label="Sauvegarder" type="button">
     <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'SauvegarderSmallLight'" aria-label="Sauvegarder">
+  <button class="button is-small is-primary is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'SauvegarderSmallLight'" aria-label="Sauvegarder" type="button">
     <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'SauvegarderMobile'" aria-label="Sauvegarder">
+  <button class="button is-primary is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'SauvegarderMobile'" aria-label="Sauvegarder" type="button">
     <span class="icon is-medium"><i class="fas fa-floppy-disk"></i></span>
   </button>
 
   <!-- RETOUR -->
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Retour'">
+  <button class="button is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Retour'">
     <span i18n>Retour</span>
     <span class="icon"><i class="fas fa-chevron-left"></i></span>
   </button>
 
-  <button class="button is-small is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'RetourSmall'">
+  <button class="button is-small is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'RetourSmall'">
     <span i18n>Retour</span>
     <span class="icon"><i class="fas fa-chevron-left"></i></span>
   </button>
 
-  <button class="button is-small is-danger is-light btn-mobile btn-elevated" *ngSwitchCase="'RetourSeanceSmall'">
+  <button class="button is-small is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'RetourSeanceSmall'">
     <span i18n>Retour à la séance</span>
     <span class="icon"><i class="fas fa-chevron-left"></i></span>
   </button>
 
-  <button class="button is-small is-danger is-light btn-mobile btn-elevated" *ngSwitchCase="'RetourListeSmall'">
+  <button class="button is-small is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'RetourListeSmall'">
     <span i18n>Retour à la liste</span>
     <span class="icon"><i class="fas fa-chevron-left"></i></span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" *ngSwitchCase="'RetourLight'" aria-label="Retour">
+  <button class="button is-danger is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'RetourLight'" aria-label="Retour" type="button">
     <span class="icon"><i class="fas fa-chevron-left"></i></span>
   </button>
 
-  <button class="button is-small is-danger is-light btn-compact" *ngSwitchCase="'RetourSmallLight'" aria-label="Retour">
+  <button class="button is-small is-danger is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'RetourSmallLight'" aria-label="Retour" type="button">
     <span class="icon"><i class="fas fa-chevron-left"></i></span>
   </button>
 
-  <button
-    *ngSwitchCase="'RetourMobile'"
-    type="button"
-    class="button is-danger is-light btn-mobile btn-elevated"
-    [disabled]="disabled"
-    aria-label="Retour">
+  <button *ngSwitchCase="'RetourMobile'" type="button" class="button is-danger is-light btn-mobile" [disabled]="disabled" aria-label="Retour">
     <span class="icon is-medium"><i class="fas fa-chevron-left"></i></span>
   </button>
 
   <!-- EDITER -->
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Editer'">
+  <button class="button is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Editer'">
     <span i18n>Editer</span>
     <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'EditerSmall'">
+  <button class="button is-small is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'EditerSmall'">
     <span i18n>Editer</span>
     <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'EditerLight'" aria-label="Editer">
+  <button class="button is-info is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'EditerLight'" aria-label="Editer" type="button">
     <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'EditerSmallLight'" aria-label="Editer">
+  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'EditerSmallLight'" aria-label="Editer" type="button">
     <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'EditerMobile'" aria-label="Editer">
+  <button class="button is-info is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'EditerMobile'" aria-label="Editer" type="button">
     <span class="icon is-medium"><i class="fas fa-pen-to-square"></i></span>
   </button>
 
   <!-- ANNULER -->
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Annuler'">
+  <button class="button is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Annuler'">
     <span i18n>Annuler</span>
     <span class="icon"><i class="fa-solid fa-ban"></i></span>
   </button>
 
-  <button class="button is-small is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'AnnulerSmall'">
+  <button class="button is-small is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'AnnulerSmall'">
     <span i18n>Annuler</span>
     <span class="icon"><i class="fa-solid fa-ban"></i></span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'AnnulerLight'" aria-label="Annuler">
+  <button class="button is-danger is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'AnnulerLight'" aria-label="Annuler" type="button">
     <span class="icon"><i class="fa-solid fa-ban"></i></span>
   </button>
 
-  <button class="button is-small is-danger is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'AnnulerSmallLight'" aria-label="Annuler">
+  <button class="button is-small is-danger is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'AnnulerSmallLight'" aria-label="Annuler" type="button">
     <span class="icon"><i class="fa-solid fa-ban"></i></span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'AnnulerMobile'" aria-label="Annuler">
+  <button class="button is-danger is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'AnnulerMobile'" aria-label="Annuler" type="button">
     <span class="icon is-medium"><i class="fas fa-ban"></i></span>
   </button>
 
   <!-- SUPPRIMER -->
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Supprimer'">
+  <button class="button is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Supprimer'">
     <span i18n>Supprimer</span>
     <span class="icon"><i class="fa-solid fa-trash-can"></i></span>
   </button>
 
-  <button class="button is-danger is-small is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'SupprimerSmall'">
+  <button class="button is-danger is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'SupprimerSmall'">
     <span i18n>Supprimer</span>
     <span class="icon"><i class="fa-solid fa-trash-can"></i></span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'SupprimerLight'" aria-label="Supprimer">
+  <button class="button is-danger is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'SupprimerLight'" aria-label="Supprimer" type="button">
     <span class="icon"><i class="fa-solid fa-trash-can"></i></span>
   </button>
 
-  <button class="button is-danger is-small is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'SupprimerSmallLight'" aria-label="Supprimer">
+  <button class="button is-danger is-small is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'SupprimerSmallLight'" aria-label="Supprimer" type="button">
     <span class="icon"><i class="fa-solid fa-trash-can"></i></span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'SupprimerMobile'" aria-label="Supprimer">
+  <button class="button is-danger is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'SupprimerMobile'" aria-label="Supprimer" type="button">
     <span class="icon is-medium"><i class="fas fa-trash-can"></i></span>
   </button>
 
   <!-- VOIR -->
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Voir'">
+  <button class="button is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Voir'">
     <span i18n>Voir</span>
     <span class="icon"><i class="fa-solid fa-binoculars"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'VoirSmall'">
+  <button class="button is-small is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'VoirSmall'">
     <span i18n>Voir présences</span>
     <span class="icon"><i class="fa-solid fa-binoculars"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'VoirLight'" aria-label="Voir">
+  <button class="button is-info is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'VoirLight'" aria-label="Voir" type="button">
     <span class="icon"><i class="fa-solid fa-binoculars"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'VoirSmallLight'" aria-label="Voir">
+  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'VoirSmallLight'" aria-label="Voir" type="button">
     <span class="icon"><i class="fa-solid fa-binoculars"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'VoirMobile'" aria-label="Voir">
+  <button class="button is-info is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'VoirMobile'" aria-label="Voir" type="button">
     <span class="icon is-medium"><i class="fas fa-binoculars"></i></span>
   </button>
 
   <!-- COPIER -->
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Copier'">
+  <button class="button is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Copier'">
     <span i18n>Copier</span>
     <span class="icon"><i class="fa-solid fa-copy"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'CopierSmall'">
+  <button class="button is-small is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'CopierSmall'">
     <span i18n>Copier</span>
     <span class="icon"><i class="fa-solid fa-copy"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'CopierLight'" aria-label="Copier">
+  <button class="button is-info is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'CopierLight'" aria-label="Copier" type="button">
     <span class="icon"><i class="fa-solid fa-copy"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'CopierSmallLight'" aria-label="Copier">
+  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'CopierSmallLight'" aria-label="Copier" type="button">
     <span class="icon"><i class="fa-solid fa-copy"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'CopierMobile'" aria-label="Copier">
+  <button class="button is-info is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'CopierMobile'" aria-label="Copier" type="button">
     <span class="icon is-medium"><i class="fas fa-copy"></i></span>
   </button>
 
-
-
   <!-- RELOAD -->
-  <button class="button is-warning is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Reload'">
+  <button class="button is-warning is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Reload'">
     <span i18n>Rafraîchir</span>
     <span class="icon"><i class="fa-solid fa-arrows-rotate"></i></span>
   </button>
 
-  <button class="button is-small is-warning is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'ReloadSmall'">
+  <button class="button is-small is-warning is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'ReloadSmall'">
     <span i18n>Rafraîchir</span>
     <span class="icon"><i class="fa-solid fa-arrows-rotate"></i></span>
   </button>
 
-  <button class="button is-warning is-light btn-mobile btn-elevated" *ngSwitchCase="'ReloadLight'" aria-label="Rafraîchir">
+  <button class="button is-warning is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'ReloadLight'" aria-label="Rafraîchir" type="button">
     <span class="icon"><i class="fa-solid fa-arrows-rotate"></i></span>
   </button>
 
-  <button class="button is-small is-warning is-light btn-compact" *ngSwitchCase="'ReloadSmallLight'" aria-label="Rafraîchir">
+  <button class="button is-small is-warning is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'ReloadSmallLight'" aria-label="Rafraîchir" type="button">
     <span class="icon"><i class="fa-solid fa-arrows-rotate"></i></span>
   </button>
 
-  <button class="button is-warning is-light btn-mobile btn-elevated" *ngSwitchCase="'ReloadMobile'" aria-label="Rafraîchir">
+  <button class="button is-warning is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'ReloadMobile'" aria-label="Rafraîchir" type="button">
     <span class="icon is-medium"><i class="fas fa-arrows-rotate"></i></span>
   </button>
 
   <!-- FILTER -->
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Filtrer'">
+  <button class="button is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Filtrer'">
     <span i18n>Filtrer</span>
     <span class="icon"><i class="fa-solid fa-filter"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'FiltrerSmall'">
+  <button class="button is-small is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'FiltrerSmall'">
     <span i18n>Filtrer</span>
     <span class="icon"><i class="fa-solid fa-filter"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'FiltrerLight'" aria-label="Filtrer">
+  <button class="button is-info is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'FiltrerLight'" aria-label="Filtrer" type="button">
     <span class="icon"><i class="fa-solid fa-filter"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'FiltrerSmallLight'" aria-label="Filtrer">
+  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'FiltrerSmallLight'" aria-label="Filtrer" type="button">
     <span class="icon"><i class="fa-solid fa-filter"></i></span>
   </button>
 
-  <button *ngSwitchCase="'FiltrerMobile'" type="button" class="button is-info is-light btn-mobile btn-elevated" [disabled]="disabled" aria-label="Filtrer">
+  <button *ngSwitchCase="'FiltrerMobile'" type="button" class="button is-info is-light btn-mobile" [disabled]="disabled" aria-label="Filtrer">
     <span class="icon is-medium"><i class="fas fa-filter"></i></span>
   </button>
 
   <!-- VENDRE -->
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'Vendre'">
+  <button class="button is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Vendre'">
     <span i18n>Faire une vente</span>
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-right"></i></span>
+    <span class="icon"><i class="fas fa-balance-scale-right"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'VendreSmall'">
+  <button class="button is-small is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'VendreSmall'">
     <span i18n>Vendre</span>
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-right"></i></span>
+    <span class="icon"><i class="fas fa-balance-scale-right"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'SelectVendreSmall'">
+  <button class="button is-small is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'SelectVendreSmall'">
     <span i18n>Faire une vente</span>
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-right"></i></span>
+    <span class="icon"><i class="fas fa-balance-scale-right"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'VendreLight'" aria-label="Faire une vente">
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-right"></i></span>
+  <button class="button is-link is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'VendreLight'" aria-label="Faire une vente" type="button">
+    <span class="icon"><i class="fas fa-balance-scale-right"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-compact" *ngSwitchCase="'VendreSmallLight'" aria-label="Faire une vente">
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-right"></i></span>
+  <button class="button is-small is-link is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'VendreSmallLight'" aria-label="Faire une vente" type="button">
+    <span class="icon"><i class="fas fa-balance-scale-right"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'VendreMobile'" aria-label="Faire une vente">
+  <button class="button is-link is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'VendreMobile'" aria-label="Faire une vente" type="button">
     <span class="icon is-medium"><i class="fas fa-balance-scale-right"></i></span>
   </button>
 
   <!-- ACHETER -->
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'Acheter'">
+  <button class="button is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Acheter'">
     <span i18n>Acheter</span>
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-left"></i></span>
+    <span class="icon"><i class="fas fa-balance-scale-left"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'AcheterSmall'">
+  <button class="button is-small is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'AcheterSmall'">
     <span i18n>Acheter</span>
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-left"></i></span>
+    <span class="icon"><i class="fas fa-balance-scale-left"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'AcheterLight'" aria-label="Acheter">
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-left"></i></span>
+  <button class="button is-link is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'AcheterLight'" aria-label="Acheter" type="button">
+    <span class="icon"><i class="fas fa-balance-scale-left"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-compact" *ngSwitchCase="'AcheterSmallLight'" aria-label="Acheter">
-    <span class="icon"><i class="fa-solid fas fa-balance-scale-left"></i></span>
+  <button class="button is-small is-link is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'AcheterSmallLight'" aria-label="Acheter" type="button">
+    <span class="icon"><i class="fas fa-balance-scale-left"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'AcheterMobile'" aria-label="Acheter">
+  <button class="button is-link is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'AcheterMobile'" aria-label="Acheter" type="button">
     <span class="icon is-medium"><i class="fas fa-balance-scale-left"></i></span>
   </button>
 
   <!-- INSCRIRE -->
-     <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'ValiderEssai'">
+  <button class="button is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'ValiderEssai'">
     <span i18n>Valider l'essai</span>
     <span class="icon"><i class="fas fa-user-check"></i></span>
   </button>
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'Inscrire'">
+
+  <button class="button is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Inscrire'">
     <span i18n>Inscrire</span>
     <span class="icon"><i class="fas fa-user-check"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'InscrireSmall'">
+  <button class="button is-small is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'InscrireSmall'">
     <span i18n>Inscrire</span>
     <span class="icon"><i class="fas fa-user-check"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'InscrireLight'" aria-label="Inscrire">
+  <button class="button is-link is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'InscrireLight'" aria-label="Inscrire" type="button">
     <span class="icon"><i class="fas fa-user-check"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-compact" *ngSwitchCase="'InscrireSmallLight'" aria-label="Inscrire">
+  <button class="button is-small is-link is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'InscrireSmallLight'" aria-label="Inscrire" type="button">
     <span class="icon"><i class="fas fa-user-check"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'InscrireMobile'" aria-label="Inscrire">
+  <button class="button is-link is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'InscrireMobile'" aria-label="Inscrire" type="button">
     <span class="icon is-medium"><i class="fas fa-user-check"></i></span>
   </button>
 
   <!-- ARCHIVER -->
- <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'Archiver'">
+  <button class="button is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Archiver'">
     <span i18n>Archiver</span>
     <span class="icon"><i class="fas fa-box-archive"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'ArchiverSmall'">
+  <button class="button is-small is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'ArchiverSmall'">
     <span i18n>Archiver</span>
     <span class="icon"><i class="fas fa-box-archive"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'ArchiverLight'" aria-label="Archiver">
+  <button class="button is-link is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'ArchiverLight'" aria-label="Archiver" type="button">
     <span class="icon"><i class="fas fa-box-archive"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-compact" *ngSwitchCase="'ArchiverSmallLight'" aria-label="Archiver">
+  <button class="button is-small is-link is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'ArchiverSmallLight'" aria-label="Archiver" type="button">
     <span class="icon"><i class="fas fa-box-archive"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'ArchiverMobile'" aria-label="Archiver">
+  <button class="button is-link is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'ArchiverMobile'" aria-label="Archiver" type="button">
     <span class="icon is-medium"><i class="fas fa-box-archive"></i></span>
   </button>
 
-    <!-- DESARCHIVER -->
- <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'Desarchiver'">
+  <!-- DESARCHIVER -->
+  <button class="button is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Desarchiver'">
     <span i18n>Desarchiver</span>
-    <span class="icon"><i class="fas fa-box-tissue"></i></span>
+    <span class="icon"><i class="fas fa-box-open"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'DesarchiverSmall'">
+  <button class="button is-small is-link is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'DesarchiverSmall'">
     <span i18n>Desarchiver</span>
-    <span class="icon"><i class="fas fa-box-tissue"></i></span>
+    <span class="icon"><i class="fas fa-box-open"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'DesarchiverLight'" aria-label="Desarchiver">
-    <span class="icon"><i class="fas fa-box-tissue"></i></span>
+  <button class="button is-link is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'DesarchiverLight'" aria-label="Desarchiver" type="button">
+    <span class="icon"><i class="fas fa-box-open"></i></span>
   </button>
 
-  <button class="button is-small is-link is-light btn-compact" *ngSwitchCase="'DesarchiverSmallLight'" aria-label="Desarchiver">
-    <span class="icon"><i class="fas fa-box-tissue"></i></span>
+  <button class="button is-small is-link is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'DesarchiverSmallLight'" aria-label="Desarchiver" type="button">
+    <span class="icon"><i class="fas fa-box-open"></i></span>
   </button>
 
-  <button class="button is-link is-light btn-mobile btn-elevated" *ngSwitchCase="'DesarchiverMobile'" aria-label="Desarchiver">
-    <span class="icon is-medium"><i class="fas fa-box-tissue"></i></span>
+  <button class="button is-link is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'DesarchiverMobile'" aria-label="Desarchiver" type="button">
+    <span class="icon is-medium"><i class="fas fa-box-open"></i></span>
   </button>
+
   <!-- TRIER -->
-  <button class="button is-info is-light btn-mobile btn-elevated" *ngSwitchCase="'Trier'">
+  <button class="button is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Trier'">
     <span i18n>Trier</span>
     <span class="icon"><i class="fas fa-sort"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-mobile btn-elevated" *ngSwitchCase="'TrierSmall'">
+  <button class="button is-small is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'TrierSmall'">
     <span i18n>Trier</span>
     <span class="icon"><i class="fas fa-sort"></i></span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" *ngSwitchCase="'TrierLight'" aria-label="Trier">
+  <button class="button is-info is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'TrierLight'" aria-label="Trier" type="button">
     <span class="icon"><i class="fas fa-sort"></i></span>
   </button>
 
-  <button class="button is-small is-info is-light btn-compact" *ngSwitchCase="'TrierSmallLight'" aria-label="Trier">
+  <button class="button is-small is-info is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'TrierSmallLight'" aria-label="Trier" type="button">
     <span class="icon"><i class="fas fa-sort"></i></span>
   </button>
 
-  <button *ngSwitchCase="'TrierMobile'" type="button" class="button is-info is-light btn-mobile btn-elevated" aria-label="Trier">
+  <button *ngSwitchCase="'TrierMobile'" type="button" class="button is-info is-light btn-mobile" [disabled]="disabled" aria-label="Trier">
     <span class="icon is-medium"><i class="fas fa-sort"></i></span>
   </button>
 
-  <!-- VUE ADHERENT / ADMIN / PROF -->
-  <button class="button is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'BasculerAdherents'">
+  <!-- BASCULER -->
+  <button class="button is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'BasculerAdherents'">
     <span i18n>Vue Adhérent</span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" *ngSwitchCase="'BasculerAdmin'">
+  <button class="button is-danger is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'BasculerAdmin'">
     <span i18n>Vue Admin</span>
   </button>
 
-  <button class="button is-info is-light btn-mobile btn-elevated" *ngSwitchCase="'BasculerProf'">
+  <button class="button is-info is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'BasculerProf'">
     <span i18n>Vue Professeur</span>
   </button>
 
   <!-- EXPORTER -->
-  <button class="button is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'Exporter'">
+  <button class="button is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Exporter'">
     <span i18n>Exporter</span>
-    <span class="icon" style="position: relative; display: inline-block;">
+    <span class="icon icon-stack-export">
       <i class="fa-regular fa-file-excel"></i>
-      <i class="fa-solid fa-arrow-right" style="font-size:.7em; position:absolute; top:0; right:-35%;"></i>
+      <i class="fa-solid fa-arrow-right"></i>
     </span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'ExporterSmall'">
+  <button class="button is-small is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'ExporterSmall'">
     <span i18n>Exporter</span>
-    <span class="icon" style="position: relative; display: inline-block;">
+    <span class="icon icon-stack-export">
       <i class="fa-regular fa-file-excel"></i>
-      <i class="fa-solid fa-arrow-right" style="font-size:.7em; position:absolute; top:0; right:-35%;"></i>
+      <i class="fa-solid fa-arrow-right"></i>
     </span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'ExporterLight'" aria-label="Exporter">
-    <span class="icon" style="position: relative; display: inline-block;">
+  <button class="button is-primary is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'ExporterLight'" aria-label="Exporter" type="button">
+    <span class="icon icon-stack-export">
       <i class="fa-regular fa-file-excel"></i>
-      <i class="fa-solid fa-arrow-right" style="font-size:.7em; position:absolute; top:0; right:-35%;"></i>
+      <i class="fa-solid fa-arrow-right"></i>
     </span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-compact" *ngSwitchCase="'ExporterSmallLight'" aria-label="Exporter">
-    <span class="icon" style="position: relative; display: inline-block;">
+  <button class="button is-small is-primary is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'ExporterSmallLight'" aria-label="Exporter" type="button">
+    <span class="icon icon-stack-export">
       <i class="fa-regular fa-file-excel"></i>
-      <i class="fa-solid fa-arrow-right" style="font-size:.7em; position:absolute; top:0; right:-35%;"></i>
+      <i class="fa-solid fa-arrow-right"></i>
+    </span>
+  </button>
+
+  <button class="button is-primary is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'ExporterMobile'" aria-label="Exporter" type="button">
+    <span class="icon is-medium icon-stack-export">
+      <i class="fa-regular fa-file-excel"></i>
+      <i class="fa-solid fa-arrow-right"></i>
     </span>
   </button>
 
   <!-- IMPORTER -->
-  <button class="button is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'Importer'" [disabled]="disabled">
+  <button class="button is-primary is-light btn-modern btn-elevated" *ngSwitchCase="'Importer'" [disabled]="disabled">
     <span i18n>Importer</span>
     <span class="icon"><i class="fas fa-file-import"></i></span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'ImporterSmall'" [disabled]="disabled">
+  <button class="button is-small is-primary is-light btn-modern btn-elevated" *ngSwitchCase="'ImporterSmall'" [disabled]="disabled">
     <span i18n>Importer</span>
     <span class="icon"><i class="fas fa-file-import"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'ImporterLight'" [disabled]="disabled" aria-label="Importer">
+  <button class="button is-primary is-light btn-light-icon" *ngSwitchCase="'ImporterLight'" [disabled]="disabled" aria-label="Importer" type="button">
     <span class="icon"><i class="fas fa-file-import"></i></span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-compact" *ngSwitchCase="'ImporterSmallLight'" [disabled]="disabled" aria-label="Importer">
+  <button class="button is-small is-primary is-light btn-compact" *ngSwitchCase="'ImporterSmallLight'" [disabled]="disabled" aria-label="Importer" type="button">
     <span class="icon"><i class="fas fa-file-import"></i></span>
   </button>
 
-  <!-- CREER (Card + boutons) -->
-  <button class="card-header-icon is-primary" [disabled]="disabled" *ngSwitchCase="'CreerCard'" aria-label="Créer">
+  <button class="button is-primary is-light btn-mobile" *ngSwitchCase="'ImporterMobile'" [disabled]="disabled" aria-label="Importer" type="button">
+    <span class="icon is-medium"><i class="fas fa-file-import"></i></span>
+  </button>
+
+  <!-- CREER -->
+  <button class="card-header-icon is-primary" [disabled]="disabled" *ngSwitchCase="'CreerCard'" aria-label="Créer" type="button">
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Creer'">
+  <button class="button is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Creer'">
     <span i18n>Créer</span>
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'Ajouter'">
+  <button class="button is-primary is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'Ajouter'">
     <span i18n>Ajouter</span>
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-primary is-small is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'CreerSmall'">
+  <button class="button is-primary is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'CreerSmall'">
     <span i18n>Créer</span>
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-primary is-small is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'AjouterSmall'">
+  <button class="button is-primary is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'AjouterSmall'">
     <span i18n>Ajouter</span>
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'CreerLight'" aria-label="Créer">
+  <button class="button is-primary is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'CreerLight'" aria-label="Créer" type="button">
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-small is-primary is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'CreerSmallLight'" aria-label="Créer">
+  <button class="button is-small is-primary is-light btn-compact" [disabled]="disabled" *ngSwitchCase="'CreerSmallLight'" aria-label="Créer" type="button">
     <span class="icon"><i class="fa-solid fa-plus"></i></span>
   </button>
 
-  <button class="button is-primary is-light btn-mobile btn-elevated" [disabled]="disabled" *ngSwitchCase="'CreerMobile'" aria-label="Créer">
+  <button class="button is-primary is-light btn-mobile" [disabled]="disabled" *ngSwitchCase="'CreerMobile'" aria-label="Créer" type="button">
     <span class="icon is-medium"><i class="fas fa-plus"></i></span>
   </button>
 
   <!-- CREER SERIE / TERMINER / PLANIFIER -->
-  <button class="button is-primary is-small is-light btn-mobile btn-elevated" *ngSwitchCase="'CreerSerieSmall'">
+  <button class="button is-primary is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'CreerSerieSmall'">
     <span i18n>Créer une série</span>
     <span class="icon"><i class="fas fa-check-double"></i></span>
   </button>
-    <button class="button is-primary is-small is-light btn-mobile btn-elevated" *ngSwitchCase="'ModifierSerieSmall'">
+
+  <button class="button is-primary is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'ModifierSerieSmall'">
     <span i18n>Modifier une série</span>
     <span class="icon"><i class="fas fa-check-double"></i></span>
   </button>
 
-  <button class="button is-primary is-small is-light btn-mobile btn-elevated" *ngSwitchCase="'TerminerSeancesSmall'">
+  <button class="button is-primary is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'TerminerSeancesSmall'">
     <span i18n>Terminer les séances</span>
     <span class="icon"><i class="fa-solid fa-flag-checkered"></i></span>
   </button>
 
-  <button class="button is-info is-small is-light btn-mobile btn-elevated btn-compact" *ngSwitchCase="'TerminerSeanceSmall'">
+  <button class="button is-info is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'TerminerSeanceSmall'">
     <span i18n>Terminer</span>
     <span class="icon"><i class="fa-solid fa-flag-checkered"></i></span>
   </button>
 
-  <button class="button is-primary is-small is-light btn-mobile btn-elevated" *ngSwitchCase="'PlanifierSmall'">
+  <button class="button is-primary is-small is-light btn-modern btn-elevated" [disabled]="disabled" *ngSwitchCase="'PlanifierSmall'">
     <span i18n>Planifier</span>
     <span class="icon"><i class="fa-solid fa-calendar-check"></i></span>
   </button>
 
-  <!-- PRÉSENT / ABSENT (icône seule) -->
-  <button class="button is-primary is-light btn-mobile btn-elevated" *ngSwitchCase="'PresentLight'" aria-label="Présent">
+  <!-- PRÉSENT / ABSENT -->
+  <button class="button is-primary is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'PresentLight'" aria-label="Présent" type="button">
     <span class="icon"><i class="fa-solid fa-thumbs-up"></i></span>
   </button>
 
-  <button class="button is-danger is-light btn-mobile btn-elevated" *ngSwitchCase="'AbsentLight'" aria-label="Absent">
+  <button class="button is-danger is-light btn-light-icon" [disabled]="disabled" *ngSwitchCase="'AbsentLight'" aria-label="Absent" type="button">
     <span class="icon"><i class="fa-solid fa-thumbs-down"></i></span>
+  </button>
+
+  <!-- FALLBACK -->
+  <button class="button is-light btn-modern" [disabled]="disabled" *ngSwitchDefault type="button">
+    <span>{{ type_button }}</span>
   </button>
 
 </ng-container>

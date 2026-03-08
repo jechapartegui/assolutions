@@ -46,7 +46,7 @@ export class MenuComponent implements OnInit {
 
     public loading: boolean = false;
     @ViewChild('scrollableContent', { static: false })
-    scrollableContent!: ElementRef;
+scrollableContent?: ElementRef<HTMLElement>;
     showScrollToTop: boolean = false;
   denseMode = false;
 
@@ -321,6 +321,7 @@ private async loadRiders(
 
   // Tri final
   riders.sort((a, b) => a.id - b.id);
+  console.log("Riders avant pipe : ", riders);
   return riders;
 }
 
@@ -368,7 +369,9 @@ private enrichRidersWithNames(riders: AdherentMenu[]) {
   }
 }
 
-
+hasOpenedRider(): boolean {
+  return !!this.Riders?.some(r => r.afficher);
+}
 
 private handleInitError(err: any, errorService: any) {
   const o =
@@ -775,43 +778,56 @@ MAJInscription(
   }
 
  
-  ngAfterViewInit(): void {
-    this.waitForScrollableContainer();
+private boundOnContentScroll = this.onContentScroll.bind(this);
+
+ngAfterViewInit(): void {
+  this.bindScrollContainer();
+}
+
+private bindScrollContainer(): void {
+  setTimeout(() => {
+    const el = this.scrollableContent?.nativeElement;
+    if (!el) return;
+
+    el.removeEventListener('scroll', this.boundOnContentScroll);
+    el.addEventListener('scroll', this.boundOnContentScroll);
+
+    this.onContentScroll();
+  });
+}
+
+onContentScroll(): void {
+  const el = this.scrollableContent?.nativeElement;
+  if (!el) {
+    this.showScrollToTop = false;
+    return;
   }
 
-  private waitForScrollableContainer(): void {
-    setTimeout(() => {
-      if (this.scrollableContent) {
-        this.scrollableContent.nativeElement.addEventListener(
-          'scroll',
-          this.onContentScroll.bind(this)
-        );
-      } else {
-        this.waitForScrollableContainer(); // Re-tente de le trouver
-      }
-    }, 100); // Réessaie toutes les 100 ms
-  }
+  const scrollTop = el.scrollTop || 0;
+  this.showScrollToTop = scrollTop > 200;
+}
 
-  onContentScroll(): void {
-    const scrollTop = this.scrollableContent.nativeElement.scrollTop || 0;
-    this.showScrollToTop = scrollTop > 200;
-  }
+scrollToTop(): void {
+  const el = this.scrollableContent?.nativeElement;
+  if (!el) return;
 
-  scrollToTop(): void {
-    this.scrollableContent.nativeElement.scrollTo({
-      top: 0,
-      behavior: 'smooth', // Défilement fluide
-    });
-  }
+  el.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  });
+}
   AfficherProfil(_t17: AdherentMenu) {
-    for (const r of this.Riders) {
-      if (r.id == _t17.id && r.profil == _t17.profil) {
-        r.afficher = !r.afficher;
-      } else {
-        r.afficher = false;
-      }
+  for (const r of this.Riders) {
+    if (r.id == _t17.id && r.profil == _t17.profil) {
+      r.afficher = !r.afficher;
+    } else {
+      r.afficher = false;
     }
   }
+
+  this.cdr.detectChanges();
+  this.bindScrollContainer();
+}
     toggleContactClub(): void {
     this.showContactClub = !this.showContactClub;
 

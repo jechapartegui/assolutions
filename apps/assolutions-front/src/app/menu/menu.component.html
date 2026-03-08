@@ -1,917 +1,844 @@
-<div class="container">
+<div class="menu-shell">
   <ng-container *ngIf="loading">
-    <progress
-      class="progress is-large is-info"
-      style="margin-top: 60px"
-      max="100"
-    >
-      60%
-    </progress>
-    <p>Chargement en cours</p>
+    <div class="menu-loading">
+      <progress class="progress is-large is-info" max="100">60%</progress>
+      <p>Chargement en cours</p>
+    </div>
   </ng-container>
+
   <ng-container *ngIf="!loading">
-    <!-- Contact club -->
-<div class="mb-3">
-  <button
-    class="button is-link is-light"
-    type="button"
-    (click)="toggleContactClub()"
-  >
-    <span class="icon">
-      <i class="fas fa-envelope"></i>
-    </span>
-    <span i18n>Contacter le club</span>
-  </button>
-</div>
+    <section class="menu-hero">
+      <div class="menu-hero-header">
+        <div class="menu-hero-title">
+          <h1 class="title is-5 mb-0">Mon menu</h1>
+          <p class="subtitle is-6">
+            Vue rapide de vos séances, inscriptions et actions principales
+          </p>
+        </div>
 
-<div *ngIf="showContactClub" class="box contact-box">
-  <div class="field">
-    <label class="label" i18n>Votre message</label>
-    <div class="control">
-      <textarea
-        class="textarea"
-        rows="8"
-        [(ngModel)]="contactClubMessage"
-        i18n-placeholder
-        placeholder="Écrivez votre message ici…"
-      ></textarea>
-    </div>
-    <p class="help" i18n>Les retours à la ligne seront conservés.</p>
-  </div>
-
-  <div class="field">
-    <label class="label" i18n>Aperçu</label>
-    <div class="contact-preview">
-      {{ contactClubMessage || '…' }}
-    </div>
-  </div>
-
-  <div class="buttons is-right mt-3">
-    <button class="button is-success" type="button" (click)="envoyerContactClub()">
-      <span class="icon"><i class="fas fa-paper-plane"></i></span>
-      <span i18n>Envoyer</span>
-    </button>
-
-    <button class="button" type="button" (click)="annulerContactClub()">
-      <span class="icon"><i class="fas fa-xmark"></i></span>
-      <span i18n>Annuler</span>
-    </button>
-  </div>
-</div>
-
-    <br />
-       <ng-container *ngIf="Riders">
-<div class="riders-scroll-container">
-  <div
-    class="rider-card"
-    *ngFor="let personne of Riders"
-    (click)="AfficherProfil(personne)"
-   
-  >
-    <div
-  class="card has-text-centered p-2 modern-card"
-  [ngClass]="{
-    'is-primary-border': personne.profil === 'ADH',
-    'is-info-border': personne.profil === 'PROF'
-  }"
->
-      <div class="photo-wrapper mb-2">
-        <figure class="image is-64x64 is-inline-block">
-          <img
-            class="is-rounded"
-            [src]="personne.photo ?? '../../assets/photo_H.png'"
-            [alt]="'Photo de ' + personne.nom"
-          />
-        </figure>
+        <div class="menu-hero-actions">
+          <button
+            class="button is-link is-light menu-contact-toggle"
+            type="button"
+            (click)="toggleContactClub()"
+          >
+            <span class="icon">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <span i18n>
+              {{ showContactClub ? 'Fermer le contact club' : 'Contacter le club' }}
+            </span>
+          </button>
+        </div>
       </div>
-      <p class="is-size-7 has-text-weight-bold">
-        {{ personne.prenom }} {{ personne.nom }}
-      </p>
-      <p
-        class="is-size-7"
-        [ngClass]="{
-          'has-text-primary': personne.profil === 'ADH',
-          'has-text-info': personne.profil === 'PROF'
-        }"
+
+      <div *ngIf="showContactClub" class="contact-panel">
+        <div class="contact-panel-head">
+          <div>
+            <p class="title is-6" i18n>Contacter le club</p>
+            <p class="subtitle is-7" i18n>
+              Écrivez votre message. L’aperçu conserve les retours à la ligne.
+            </p>
+          </div>
+        </div>
+
+        <div class="columns is-variable is-4 is-multiline">
+          <div class="column is-12-tablet is-7-desktop">
+            <div class="field">
+              <label class="label" i18n>Votre message</label>
+              <div class="control">
+                <textarea
+                  class="textarea"
+                  rows="8"
+                  [(ngModel)]="contactClubMessage"
+                  i18n-placeholder
+                  placeholder="Écrivez votre message ici…"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="column is-12-tablet is-5-desktop">
+            <div class="field">
+              <label class="label" i18n>Aperçu</label>
+              <div class="contact-preview">
+                {{ contactClubMessage || '…' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="buttons is-right mt-3">
+          <button class="button is-success" type="button" (click)="envoyerContactClub()">
+            <span class="icon"><i class="fas fa-paper-plane"></i></span>
+            <span i18n>Envoyer</span>
+          </button>
+
+          <button class="button is-light" type="button" (click)="annulerContactClub()">
+            <span class="icon"><i class="fas fa-xmark"></i></span>
+            <span i18n>Annuler</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <ng-container *ngIf="Riders && !showContactClub">
+      <div
+        class="riders-scroll-container"
+        [class.riders-scroll-container--compact]="hasOpenedRider()"
       >
-        {{ getLibelleProfil(personne.profil) }}
-      </p>
-<span class="fullscreen">
-      <div *ngIf="personne.profil === 'ADH'" class="notification is-light is-small mt-2 px-2 py-1 d-flex align-items-center justify-content-space-evenly is-flex-wrap-nowrap fullscreen">
-        <span class="has-text-success mr-2">
-          <span class="icon has-text-success">
-            <i class="fas fa-thumbs-up has-text-success"></i>
-          </span>
-          <span>{{
-            nbSeanceInscrit(personne.MesSeances | multifiltersMenu : personne.filters).OK
-          }}</span>
-        </span>
-        <span class="has-text-danger mr-2">
-          <span class="icon has-text-danger">
-            <i class="fas fa-thumbs-down has-text-danger"></i>
-          </span>
-          <span>{{
-            nbSeanceInscrit(personne.MesSeances | multifiltersMenu : personne.filters).KO
-          }}</span>
-        </span>
-        <span class="has-text-info mr-2">
-          <span class="icon has-text-info">
-            <i class="fas fa-question has-text-info"></i>
-          </span>
-          <span>{{
-            nbSeanceInscrit(personne.MesSeances | multifiltersMenu : personne.filters).aucun
-          }}</span>
-        </span>
-      </div>
-    </span>
-    </div>
-  </div>
-</div>
-<br/>
-
-        <div class="columns m-0 is-multiline is-mobile is-centered">
-      <ng-container *ngFor="let rider of Riders">
-        <ng-container *ngIf="rider.afficher">
-          <div
-          class="card"
+        <button
+          class="rider-card-button"
+          type="button"
+          *ngFor="let personne of Riders"
+          (click)="AfficherProfil(personne)"
           [ngClass]="{
-            'border-primary': rider.profil === 'ADH',
-            'border-info': rider.profil === 'PROF'
+            'rider-card-button--compact': hasOpenedRider(),
+            'is-active-rider': personne.afficher,
+            'is-primary-border': personne.profil === 'ADH',
+            'is-info-border': personne.profil === 'PROF'
           }"
         >
-          <header
-            class="card-header"
-            [ngClass]="{
-              'has-background-primary has-text-white': rider.profil === 'ADH',
-              'has-background-info has-text-white': rider.profil === 'PROF'
-            }"
-          >
-            <p class="card-header-title">
-              {{ rider.libelle }} 
-            </p>
-            <button
-              i18n-title
-              title="Éditer"
-              class="button is-small is-outlined m-1"
-              type="button"
-              (click)="Voir(rider.id)"
-            >
-            <i class="fa-solid fa-user-pen"></i>
-            </button>
-          </header>
-       
-            <div class="card-content" #scrollableContent>
-             <div class="scrollable-card-table fullscreen">
-  <table class="table is-fullwidth is-striped is-hoverable">
-                <thead>
-                  <tr>
-                    <th>
-                      <span>
-                        <span class="ligne">
-                          <span
-                            [ngClass]="
-                              rider.filters.filter_nom ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Nom</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="rider.sort_nom === 'NO'"
-                              (click)="Sort('ASC', 'nom',rider)"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_nom === 'ASC'"
-                              (click)="Sort('DESC', 'nom',rider)"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_nom === 'DESC'"
-                              (click)="Sort('ASC', 'nom',rider)"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </span>
-                      </span>
-                    </th>
-                    <th>
-                      <span>
-                        <span class="ligne">
-                          <span
-                            [ngClass]="
-                              rider.filters.filter_date_apres ||
-                              rider.filters.filter_date_avant
-                                ? 'has-text-info'
-                                : ''
-                            "
-                            i18n
-                            >Date Heure (durée)</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="rider.sort_date === 'NO'"
-                              (click)="Sort('ASC', 'date',rider)"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_date === 'ASC'"
-                              (click)="Sort('DESC', 'date',rider)"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_date === 'DESC'"
-                              (click)="Sort('ASC', 'date',rider)"
-                              class="fa-solid fa-sort-down"
-                            ></i> </span
-                        ></span>
-                      </span>
-                    </th>                  
-                    <th>
-                      <span>
-                        <span class="ligne">
-                          <span
-                            [ngClass]="
-                              rider.filters.filter_prof ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Professeurs</span
-                          >
-                        </span>
-                      </span>
-                    </th>
-
-                    <th>
-                      <span>
-                        <span class="ligne">
-                          <span
-                            [ngClass]="
-                              rider.filters.filter_lieu ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Lieu</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="rider.sort_lieu === 'NO'"
-                              (click)="Sort('ASC', 'lieu',rider)"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_lieu === 'ASC'"
-                              (click)="Sort('DESC', 'lieu',rider)"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="rider.sort_lieu === 'DESC'"
-                              (click)="Sort('ASC', 'lieu',rider)"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </span>
-                      </span>
-                    </th>
-                    <th>
-                      <span>
-                        <span
-                          [ngClass]="
-                            rider.filters.filter_statut ? 'has-text-info' : ''
-                          "
-                          i18n
-                          >Statut</span
-                        >
-                      </span>
-                    </th>
-                    <th>
-                      <span  i18n>Présence</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                  *ngFor="
-                  let ms of rider.MesSeances | multifiltersMenu : rider.filters">                  
-                   <td  style="cursor: pointer;" (click)="GotoSeance(ms.seance.id)" >
-                      <ng-container [ngSwitch]="ms.seance.type_seance">
-                        <span *ngSwitchCase="'ENTRAINEMENT'" i18n-title title="Cours">
-                          <i class="fas fa-dumbbell icon-type-seance"></i> Cours
-                        </span>
-                        <span *ngSwitchCase="'MATCH'" i18n-title title="Match">
-                          <i class="fas fa-futbol icon-type-seance"></i> Match
-                        </span>
-                        <span *ngSwitchCase="'EVENEMENT'" i18n-title title="Événement">
-                          <i class="fas fa-star icon-type-seance"></i> Événement
-                        </span>
-                        <span *ngSwitchCase="'SORTIE'" i18n-title title="Sortie">
-                          <i class="fas fa-hiking icon-type-seance"></i> Sortie
-                        </span>
-                      </ng-container>
-                      : {{ ms.seance.nom }}
-                    </td>
-                    <td  style="cursor: pointer;" (click)="GotoSeance(ms.seance.id)" >
-                      {{
-                        ms.seance.date_seance | date : "dd/MM/yyyy"
-                      }} 
-                      {{ ms.seance.heure_debut }} - {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }} ({{ ms.seance.duree_seance | dureeHHMM }})
-                    </td>
-                    <td>
-                      <div class="tags is-small"  style="max-width: 300px">
-                        <ng-container
-                          *ngFor="let gr of ms.seance.seanceProfesseurs"
-                        >
-                          <span class="tag is-success" [title]="gr.personne.prenom + ' ' + gr.personne.nom">
-                            <ng-container *ngIf="gr.personne.surnom && gr.personne.surnom.length>0">
-                                {{ gr.personne.surnom }}
-                            </ng-container>
-                            <ng-container *ngIf="!gr.personne.surnom || gr.personne.surnom.length == 0">
-                                {{ gr.personne.prenom }} {{gr.personne.nom}}
-                            </ng-container>
-                           
-                          </span>
-                        </ng-container>
-                      </div>
-                    </td>
-                   <td>
-  <span 
-    [title]="getadresse(ms.seance.lieu_id)"
-    (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
-    style="cursor: pointer;"
-  >
-    {{ ms.seance.lieu_nom }}
-  </span>
-</td>
-
-
-                    <td>
-                      <ng-container
-                        *ngIf="ms.seance.statut == 'prévue'"
-                      >
-                            <span class="fa-stack fa-lg" i18n-title title="Séance prévue" >
-                              <i
-                                class="fas fa-lg fa-calendar-check has-text-info"
-                              ></i>
-                            </span>
-                      </ng-container>
-                      <ng-container
-                        *ngIf="ms.seance.statut == 'réalisée'"
-                      >
-                          <span class="icon has-text-success" i18n-title title="Séance réalisée" >
-                            <i class="fas fa-lg fa-flag-checkered"></i>
-                          </span>
-                      </ng-container>
-                      <ng-container
-                        *ngIf="ms.seance.statut == 'annulée'"
-                      >
-                          <span class="icon has-text-danger"  i18n-title title="Séance annulée">
-                            <i class="fas fa-lg  fa-ban"></i>
-                          </span>
-                               </ng-container>
-                    </td>
-                    <td>
-                      <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherent">
- <btn [type_button]="'VoirLight'"
-                      (click)="VoirMaSeance(ms.seance)">
-                      </btn>
-                      </ng-container>
-                     <ng-template #ProfilAdherent>
-                      <ng-container *ngIf="ms.seance.statut == 'prévue'">                       
-                      <span class="d-flex">
-                          <span  (click)="MAJInscription(ms, rider, null)
-                            "
-                            *ngIf="
-                              ms.statutInscription ==
-                              'présent' || ms.statutInscription === 'essai'
-                            "
-                            class="icon is-large"
-                          >
-                            <span class="fa-stack fa-lg">
-                              <i
-                                class="fas fa-lg fa-thumbs-up has-text-success"
-                              ></i>
-                            </span>
-                          </span>
-                          <span
-                            (click)="
-                               MAJInscription(ms, rider, true)
-                            "
-                            *ngIf="
-                              ms.statutInscription ==
-                                'absent' ||
-                              ms.statutInscription ==
-                                'convoqué' ||
-                              ms.statutInscription ==
-                                null
-                            "
-                            style="cursor: pointer"
-                            class="icon is-large"
-                          >
-                            <span class="fa-stack fa-lg">
-                              <i
-                                class="far fa-lg fa-thumbs-up has-text-success"
-                              ></i>
-                            </span>
-                          </span>
-                          <span
-                            (click)="
-                               MAJInscription(ms, rider, null)
-                            "
-                            *ngIf="
-                              ms.statutInscription ==
-                              'absent'
-                            "
-                            class="icon is-large"
-                          >
-                            <span class="fa-stack fa-lg">
-                              <i
-                                class="fas fa-lg fa-thumbs-down has-text-danger"
-                              ></i>
-                            </span>
-                          </span>
-                          <span
-                            (click)="
-                               MAJInscription(ms, rider, false)
-                            "
-                            *ngIf="
-                              ms.statutInscription ==
-                                'présent' ||
-                              ms.statutInscription ==
-                                'convoqué' ||
-                              ms.statutInscription ==
-                                null||
-                              ms.statutInscription ==
-                                'essai'
-                            "
-                            style="cursor: pointer"
-                            class="icon is-large"
-                          >
-                            <span class="fa-stack fa-lg">
-                              <i
-                                class="far fa-lg fa-thumbs-down has-text-danger"
-                              ></i>
-                            </span>
-                          </span>
-                          </span>
-                      </ng-container>
-                      </ng-template>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-             </div>
-
-             <div class="mobile">
-              
-            <div class="container-box">
-              <ng-container *ngFor="let ms of rider.MesSeances | multifiltersMenu : rider.filters">
-            <article class="media" [class.dense]="denseMode">      
-              <div class="media-content">
-    <p class="title is-6 mb-1 is-truncated">
-        <ng-container [ngSwitch]="ms.seance.type_seance">
-        <span *ngSwitchCase="'ENTRAINEMENT'" title="Cours">
-          <i class="fas fa-dumbbell icon-type-seance"></i> Cours
-        </span>
-        <span *ngSwitchCase="'MATCH'" title="Match">
-          <i class="fas fa-futbol icon-type-seance"></i> Match
-        </span>
-        <span *ngSwitchCase="'EVENEMENT'" title="Événement">
-          <i class="fas fa-star icon-type-seance"></i> Événement
-        </span>
-        <span *ngSwitchCase="'SORTIE'" title="Sortie">
-          <i class="fas fa-hiking icon-type-seance"></i> Sortie
-        </span>
-      </ng-container>
-      <a class="item-mobile-name" (click)="GotoSeance(ms.seance.id)">{{ ms.seance.nom }}</a>
-    </p>       
-    <p class="is-size-7 mb-1">
-    {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }} {{ ms.seance.heure_debut }} -
-      {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
-      ({{ ms.seance.duree_seance | dureeHHMM }})
-    </p>
-
-    <div class="tags is-small mb-1">
-      <ng-container *ngFor="let gr of ms.seance.seanceProfesseurs">
-        <span class="tag is-success" [title]="gr.personne.prenom + ' ' + gr.personne.nom">
-          <ng-container *ngIf="gr.personne.surnom">
-            {{ gr.personne.surnom }}
-          </ng-container>
-          <ng-container *ngIf="!gr.personne.surnom">
-            {{ gr.personne.prenom }} {{ gr.personne.nom }}
-          </ng-container>
-        </span>
-      </ng-container>
-    </div>
-
-    <p class="is-size-7">
-      <span
-        [title]="getadresse(ms.seance.lieu_id)"
-        (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
-        style="cursor: pointer"
-      >
-        {{ ms.seance.lieu_nom }}
-      </span>
-    </p>
-  </div>
-
-  <!-- Bloc action à droite -->
-  <div class="media-right">
-    <ng-container *ngIf="ms.seance.statut === 'prévue' && rider.profil === 'ADH'">
-      <span
-        (click)="MAJInscription(ms, rider, null)"
-        *ngIf="ms.statutInscription === 'présent' || ms.statutInscription === 'essai'"
-        class="icon is-large"
-        style="cursor: pointer"
-      >
-        <span class="fa-stack fa-lg">
-          <i class="fas fa-lg fa-thumbs-up has-text-success"></i>
-        </span>
-      </span>
-
-      <span
-        (click)="MAJInscription(ms, rider, true)"
-                                    *ngIf="
-                              ms.statutInscription ==
-                                'absent' ||
-                              ms.statutInscription ==
-                                'convoqué' ||
-                              ms.statutInscription ==
-                                null
-                            "
-        class="icon is-large"
-        style="cursor: pointer"
-      >
-        <span class="fa-stack fa-lg">
-          <i class="far fa-lg fa-thumbs-up has-text-success"></i>
-        </span>
-      </span>
-
-      <span
-        (click)="MAJInscription(ms, rider, null)"
-        *ngIf="ms.statutInscription === 'absent'"
-        class="icon is-large"
-        style="cursor: pointer"
-      >
-        <span class="fa-stack fa-lg">
-          <i class="fas fa-lg fa-thumbs-down has-text-danger"></i>
-        </span>
-      </span>
-
-      <span
-        (click)="MAJInscription(ms, rider, false)"
-                                    *ngIf="
-                              ms.statutInscription ==
-                                'présent' ||
-                              ms.statutInscription ==
-                                'convoqué' ||
-                              ms.statutInscription ==
-                                'essai' ||
-                              ms.statutInscription ==
-                                null
-                            "
-        class="icon is-large"
-        style="cursor: pointer"
-      >
-        <span class="fa-stack fa-lg">
-          <i class="far fa-lg fa-thumbs-down has-text-danger"></i>
-        </span>
-      </span>
-    </ng-container>
-
-    <btn
-      *ngIf="rider.profil === 'PROF'"
-      [type_button]="'VoirLight'"
-      (click)="VoirMaSeance(ms.seance)"
-    ></btn>
-  </div>
-            </article>
-              </ng-container>
-</div>
-
-            <p *ngIf="!rider.MesSeances || rider.MesSeances.length == 0">
-              Pas de séances disponible
-            </p>
-            <button
-              class="scroll-to-top"
-              *ngIf="showScrollToTop"
-              (click)="scrollToTop()"
-              title="Revenir en haut"
-            >
-              ↑
-            </button>
-          </div>
-          <footer class="card-footer">
-            <div class="columns" style="font-size: medium;">
-              <div class="column">
-              <div class="buttons">
-                <ng-container *ngIf="rider.filtre_et_option; else PasFiltre">
-                <div
-                  class="field is-horizontal"
-                  style="gap: 0.5rem; align-items: center"
-                >
-                  <button class="button is-danger is-light btn-mobile btn-elevated" (click)="rider.filtre_et_option = false;">
-                    Masquer les filtres et options
-                  </button>
-                  <div class="field-label is-normal">
-                    <label class="label" style="white-space: nowrap;font-size: smaller;" i18n
-                      >Sélection du filtre</label
-                    >
-                  </div>
-                  <div class="field-body">
-                    <div class="field is-narrow">
-                      <div class="control">
-                        <div
-                          class="select is-fullwidth ; font-size: smaller"
-                        >
-                          <select 
-                          style="font-size: smaller" [(ngModel)]="rider.selected_filter">
-                            <option value="nom" i18n>Nom</option>
-                            <option value="date" i18n>Date</option>
-                            <option value="statut" i18n>Statut</option>
-                            <option value="prof" i18n>Professeur</option>
-                            <option value="lieu" i18n>Lieu</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    *ngIf="rider.selected_filter"
-                    class="field-label is-normal"
-                  >
-                    <label class="label" style="white-space: nowrap" i18n
-                      >Valeur du filtre
-                    </label>
-                  </div>
-                  <div class="field-body" *ngIf="rider.selected_filter">
-                    <div class="field is-narrow">
-                      <div class="control">
-                        <input
-                          *ngIf="rider.selected_filter == 'nom'"
-                          style="width: fit-content; font-size: smaller"
-                          class="input is-small"
-                          i18n-placeholder
-                          placeholder="Nom du cours"
-                          type="text"
-                          [(ngModel)]="rider.filters.filter_nom"
-                        />
-                        <div
-                          class="select"
-                          *ngIf="rider.selected_filter == 'statut'"
-                        >
-                          <select
-                            style="font-size: smaller"
-                            [(ngModel)]="rider.filters.filter_statut"
-                          >
-                            <option [ngValue]="null" i18n>Tous</option>
-                            <option [ngValue]="'prévue'" i18n>
-                              Prévue
-                            </option>
-                            <option [ngValue]="'réalisée'" i18n>
-                              Réalisée
-                            </option>
-                            <option [ngValue]="'annulée'" i18n>
-                              Annulée
-                            </option>
-                          </select>
-                        </div>
-                        <div
-                          class="select"
-                          *ngIf="rider.selected_filter == 'prof'"
-                        >
-                          <select
-                            style="font-size: smaller"
-                            [(ngModel)]="rider.filters.filter_prof"
-                          >
-                            <option [ngValue]="null" i18n>Tous</option>
-                            <ng-container
-                              *ngFor="let prof of liste_prof_filter"
-                            >
-                              <option [ngValue]="prof.value">
-                                {{ prof.value }}
-                              </option>
-                            </ng-container>
-                          </select>
-                        </div>
-                        <div
-                          class="select"
-                          *ngIf="rider.selected_filter == 'lieu'"
-                        >
-                          <select
-                            style="font-size: smaller"
-                            [(ngModel)]="rider.filters.filter_lieu"
-                          >
-                            <option [ngValue]="null" i18n>Tous</option>
-                            <ng-container
-                              *ngFor="let lieu of liste_lieu_filter"
-                            >
-                              <option [ngValue]="lieu">
-                                {{ lieu }}
-                              </option>
-                            </ng-container>
-                          </select>
-                        </div>
-                        <span
-                          *ngIf="rider.selected_filter == 'date'"
-                          class="ligne"
-                        >
-                          <div
-                            style="gap: 6px"
-                            class="field is-small is-horizontal field-jecha"
-                          >
-                            <label
-                              for="groupe"
-                              class="label is-small"
-                              i18n
-                              >Du</label
-                            >
-                            <input
-                              style="width: fit-content"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Filtre date avant"
-                              type="date"
-                              [(ngModel)]="rider.filters.filter_date_avant"
-                            />
-                          </div>
-                        </span>
-                        <span
-                          *ngIf="rider.selected_filter == 'date'"
-                          class="ligne"
-                        >
-                          <div
-                            style="gap: 6px"
-                            class="field is-small is-horizontal field-jecha"
-                          >
-                            <label
-                              for="groupe"
-                              class="label is-small"
-                              i18n
-                              >Au</label
-                            >
-                            <input
-                              style="width: fit-content"
-                              class="input is-small"
-                              i18n-placeholder
-                              placeholder="Filtre date après"
-                              type="date"
-                              [(ngModel)]="rider.filters.filter_date_apres"
-                            />
-                          </div>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="tags">
-                    <span
-                      *ngIf="rider.filters.filter_nom"
-                      class="tag is-success"
-                    >
-                      <span i18n>Nom : </span>
-                      <span>{{ rider.filters.filter_nom }}</span>
-                      <button
-                        class="delete"
-                        (click)="rider.filters.filter_nom = null"
-                      ></button>
-                    </span>
-
-                    <span
-                      *ngIf="rider.filters.filter_statut != null"
-                      class="tag is-success"
-                    >
-                      <span i18n>Statut : </span>
-                      <span *ngIf="rider.filters.filter_statut == 'prévue'" i18n
-                        >Prévue</span
-                      >
-                      <span
-                        *ngIf="rider.filters.filter_statut == 'réalisée'"
-                        i18n
-                        >Réalisée</span
-                      >
-                      <span
-                        *ngIf="rider.filters.filter_statut == 'annulée'"
-                        i18n
-                        >Annulée</span
-                      >
-                      <button
-                        class="delete"
-                        (click)="rider.filters.filter_statut = null"
-                      ></button>
-                    </span>
-
-                    <span
-                      *ngIf="
-                        rider.filters.filter_date_avant ||
-                        rider.filters.filter_date_apres
-                      "
-                      class="tag is-success"
-                    >
-                      <span class="mx-1" *ngIf="rider.filters.filter_date_avant">
-                        {{ rider.filters.filter_date_avant | date : "dd/MM/yyyy" }}
-                      </span>
-                      <span class="mx-1" *ngIf="rider.filters.filter_date_avant">&lt;=</span>
-                      <span class="mx-1">Date</span>
-                      <span class="mx-1" *ngIf="rider.filters.filter_date_apres">&gt;=</span>
-                      <span  class="mx-1"  *ngIf="rider.filters.filter_date_apres">{{ rider.filters.filter_date_apres | date : "dd/MM/yyyy"}}</span>
-                      <button
-                        class="delete"
-                        (click)="
-                          rider.filters.filter_date_avant = null;
-                          rider.filters.filter_date_apres = null
-                        "
-                      ></button>
-                    </span>
-
-                    <span
-                      *ngIf="rider.filters.filter_lieu != null"
-                      class="tag is-success"
-                    >
-                      <span i18n>Lieu : </span>
-                      <span i18n>{{ rider.filters.filter_lieu }}</span>
-
-                      <button
-                        class="delete"
-                        (click)="rider.filters.filter_lieu = null"
-                      ></button>
-                    </span>
-                    <span
-                      *ngIf="rider.filters.filter_prof != null"
-                      class="tag is-success"
-                    >
-                      <span i18n>Prof : </span>
-                      <span i18n>{{ rider.filters.filter_prof }}</span>
-
-                      <button
-                        class="delete"
-                        (click)="rider.filters.filter_prof = null"
-                      ></button>
-                    </span>
-                    <btn
-                      [type_button]="'SupprimerLight'"
-                      (click)="ReinitFiltre(rider)"
-                      *ngIf="
-                        rider.filters.filter_date_apres ||
-                        rider.filters.filter_date_avant ||
-                        rider.filters.filter_groupe ||
-                        rider.filters.filter_statut ||
-                        rider.filters.filter_nom ||
-                        rider.filters.filter_lieu ||
-                        rider.filters.filter_prof
-                      "
-                    >
-                    </btn>
-                  </div>
-                    <div *ngIf="rider.profil == 'ADH'" class="field-label is-normal">
-                    <label class="label" style="white-space: nowrap;font-size: smaller;" i18n
-                      >Action sur les séances affichées</label
-                    >
-                  </div>
-                        <btn *ngIf="rider.profil == 'ADH'" 
-                      [type_button]="'PresentLight'"
-                      (click)="MAJInscriptionAffichee(rider, true)"></btn><btn *ngIf="rider.profil == 'ADH'" 
-                      [type_button]="'AbsentLight'"
-                      (click)="MAJInscriptionAffichee(rider, false)"></btn>
-                </div>
-                </ng-container>                
-                <ng-template #PasFiltre>
-                  <button class="button is-primary is-light btn-mobile btn-elevated" (click)="rider.filtre_et_option = true;">
-                    Afficher les filtres et options
-                  </button>
-                </ng-template>
+          <ng-container *ngIf="!hasOpenedRider(); else compactRider">
+            <div class="rider-card-full">
+              <div class="photo-wrapper">
+                <figure class="image rider-avatar is-inline-block">
+                  <img
+                    class="is-rounded"
+                    [src]="personne.photo ?? 'assets/photo_H.png'"
+                    [alt]="'Photo de ' + personne.nom"
+                  />
+                </figure>
               </div>
-             
-           
-        </div>
-        </div>
-        </footer>
-        </div>
-        </div>
-    </ng-container>   
-  </ng-container>
-  </div>
-  
-<!-- Affiche seulement s'il y a au moins un anniversaire -->
-<section *ngIf="anniversaire?.length"
-         class="box anniv-banner is-shadowless">
-  <div class="is-flex is-align-items-center is-justify-content-space-between">
-    <div class="is-flex is-align-items-center">
-      <div class="emoji" aria-hidden="true">🎂</div>
-      <div class="ml-3">
-        <h3 class="title is-5 mb-1">Anniversaire(s) aujourd’hui</h3>
-        <p class="subtitle is-6 mb-0">
-          On leur souhaite un très joyeux anniversaire ! 🎉
-        </p>
-      </div>
-    </div>
-  </div>
 
-  <div class="mt-3">
-    <div class="tags are-medium">
-      <span *ngFor="let n of anniversaire"
-            class="tag is-danger is-light">
-        {{ n }}
-      </span>
-    </div>
-  </div>
-</section>
-  </ng-container>
+              <p class="rider-name">
+                {{ personne.prenom }} {{ personne.nom }}
+              </p>
+
+              <p
+                class="rider-role"
+                [ngClass]="{
+                  'has-text-primary': personne.profil === 'ADH',
+                  'has-text-info': personne.profil === 'PROF'
+                }"
+              >
+                {{ getLibelleProfil(personne.profil) }}
+              </p>
+
+              <div *ngIf="personne.profil === 'ADH'" class="rider-stats">
+                <div class="rider-stat has-text-success">
+                  <span class="icon is-small"><i class="fas fa-thumbs-up"></i></span>
+                  <strong>{{
+                    nbSeanceInscrit(personne.MesSeances | multifiltersMenu : personne.filters).OK
+                  }}</strong>
+                </div>
+
+                <div class="rider-stat has-text-danger">
+                  <span class="icon is-small"><i class="fas fa-thumbs-down"></i></span>
+                  <strong>{{
+                    nbSeanceInscrit(personne.MesSeances | multifiltersMenu : personne.filters).KO
+                  }}</strong>
+                </div>
+
+                <div class="rider-stat has-text-info">
+                  <span class="icon is-small"><i class="fas fa-question"></i></span>
+                  <strong>{{
+                    nbSeanceInscrit(personne.MesSeances | multifiltersMenu : personne.filters).aucun
+                  }}</strong>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #compactRider>
+            <div class="rider-card-compact">
+              <span class="rider-compact-dot"></span>
+              <span class="rider-compact-name">
+                {{ personne.prenom }} {{ personne.nom }}
+              </span>
+            </div>
+          </ng-template>
+        </button>
+      </div>
+
+      <section
+        *ngIf="anniversaire?.length && !hasOpenedRider()"
+        class="anniv-banner"
+      >
+        <div class="anniv-banner-head">
+          <div class="emoji" aria-hidden="true">🎂</div>
+          <div>
+            <h3 class="title is-6 mb-1">Anniversaire(s) aujourd’hui</h3>
+            <p class="subtitle is-7 mb-0">
+              On leur souhaite un très joyeux anniversaire ! 🎉
+            </p>
+          </div>
+        </div>
+
+        <div class="anniv-banner-tags">
+          <span *ngFor="let n of anniversaire" class="tag is-danger is-light">
+            {{ n }}
+          </span>
+        </div>
+      </section>
+
+      <div class="menu-content">
+        <div class="columns m-0 is-mobile menu-content-columns">
+          <ng-container *ngFor="let rider of Riders">
+            <ng-container *ngIf="rider.afficher">
+              <div class="column is-12 menu-content-column">
+                <div
+                  class="menu-main-card"
+                  [ngClass]="{
+                    'border-primary': rider.profil === 'ADH',
+                    'border-info': rider.profil === 'PROF'
+                  }"
+                >
+                  <header class="menu-card-header">
+                    <div class="menu-card-header-left">
+                      <div
+                        class="menu-card-avatar"
+                        [ngClass]="{
+                          'is-adh': rider.profil === 'ADH',
+                          'is-prof': rider.profil === 'PROF'
+                        }"
+                      >
+                        <i
+                          class="fa-solid"
+                          [ngClass]="{
+                            'fa-user': rider.profil === 'ADH',
+                            'fa-chalkboard-user': rider.profil === 'PROF'
+                          }"
+                        ></i>
+                      </div>
+
+                      <div class="menu-card-identity">
+                        <div class="menu-card-name">{{ rider.libelle }}</div>
+                        <div class="menu-card-subtitle">
+                          {{ getLibelleProfil(rider.profil) }} ·
+                          {{ (rider.MesSeances | multifiltersMenu : rider.filters).length }}
+                          séance(s) affichée(s)
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="menu-card-header-actions">
+                      <button
+                        i18n-title
+                        title="Éditer"
+                        class="button is-small is-light is-rounded menu-icon-btn"
+                        type="button"
+                        (click)="Voir(rider.id)"
+                      >
+                        <i class="fa-solid fa-user-pen"></i>
+                      </button>
+                    </div>
+                  </header>
+
+                  <div class="menu-card-body">
+                    <div class="menu-scroll-zone" #scrollableContent>
+                      <!-- DESKTOP -->
+                      <div class="desktop-view">
+                        <table class="table is-fullwidth is-hoverable menu-table">
+                          <thead>
+                            <tr>
+                              <th class="col-nom">
+                                <span class="ligne">
+                                  <span
+                                    [ngClass]="rider.filters.filter_nom ? 'has-text-info' : ''"
+                                    i18n
+                                  >
+                                    Nom
+                                  </span>
+                                  <span class="sort-trigger">
+                                    <i
+                                      *ngIf="rider.sort_nom === 'NO'"
+                                      (click)="Sort('ASC', 'nom', rider)"
+                                      class="fa-solid fa-sort"
+                                    ></i>
+                                    <i
+                                      *ngIf="rider.sort_nom === 'ASC'"
+                                      (click)="Sort('DESC', 'nom', rider)"
+                                      class="fa-solid fa-sort-up"
+                                    ></i>
+                                    <i
+                                      *ngIf="rider.sort_nom === 'DESC'"
+                                      (click)="Sort('ASC', 'nom', rider)"
+                                      class="fa-solid fa-sort-down"
+                                    ></i>
+                                  </span>
+                                </span>
+                              </th>
+
+                              <th class="col-date">
+                                <span class="ligne">
+                                  <span
+                                    [ngClass]="
+                                      rider.filters.filter_date_apres || rider.filters.filter_date_avant
+                                        ? 'has-text-info'
+                                        : ''
+                                    "
+                                    i18n
+                                  >
+                                    Date Heure (durée)
+                                  </span>
+                                  <span class="sort-trigger">
+                                    <i
+                                      *ngIf="rider.sort_date === 'NO'"
+                                      (click)="Sort('ASC', 'date', rider)"
+                                      class="fa-solid fa-sort"
+                                    ></i>
+                                    <i
+                                      *ngIf="rider.sort_date === 'ASC'"
+                                      (click)="Sort('DESC', 'date', rider)"
+                                      class="fa-solid fa-sort-up"
+                                    ></i>
+                                    <i
+                                      *ngIf="rider.sort_date === 'DESC'"
+                                      (click)="Sort('ASC', 'date', rider)"
+                                      class="fa-solid fa-sort-down"
+                                    ></i>
+                                  </span>
+                                </span>
+                              </th>
+
+                              <th class="col-prof">
+                                <span class="ligne">
+                                  <span
+                                    [ngClass]="rider.filters.filter_prof ? 'has-text-info' : ''"
+                                    i18n
+                                  >
+                                    Professeurs
+                                  </span>
+                                </span>
+                              </th>
+
+                              <th class="col-lieu">
+                                <span class="ligne">
+                                  <span
+                                    [ngClass]="rider.filters.filter_lieu ? 'has-text-info' : ''"
+                                    i18n
+                                  >
+                                    Lieu
+                                  </span>
+                                  <span class="sort-trigger">
+                                    <i
+                                      *ngIf="rider.sort_lieu === 'NO'"
+                                      (click)="Sort('ASC', 'lieu', rider)"
+                                      class="fa-solid fa-sort"
+                                    ></i>
+                                    <i
+                                      *ngIf="rider.sort_lieu === 'ASC'"
+                                      (click)="Sort('DESC', 'lieu', rider)"
+                                      class="fa-solid fa-sort-up"
+                                    ></i>
+                                    <i
+                                      *ngIf="rider.sort_lieu === 'DESC'"
+                                      (click)="Sort('ASC', 'lieu', rider)"
+                                      class="fa-solid fa-sort-down"
+                                    ></i>
+                                  </span>
+                                </span>
+                              </th>
+
+                              <th class="col-statut">
+                                <span
+                                  [ngClass]="rider.filters.filter_statut ? 'has-text-info' : ''"
+                                  i18n
+                                >
+                                  Statut
+                                </span>
+                              </th>
+
+                              <th class="col-presence">
+                                <span i18n>Présence</span>
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            <tr *ngFor="let ms of rider.MesSeances | multifiltersMenu : rider.filters">
+                              <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
+                                <ng-container [ngSwitch]="ms.seance.type_seance">
+                                  <span *ngSwitchCase="'ENTRAINEMENT'" i18n-title title="Cours">
+                                    <i class="fas fa-dumbbell icon-type-seance"></i> Cours
+                                  </span>
+                                  <span *ngSwitchCase="'MATCH'" i18n-title title="Match">
+                                    <i class="fas fa-futbol icon-type-seance"></i> Match
+                                  </span>
+                                  <span *ngSwitchCase="'EVENEMENT'" i18n-title title="Événement">
+                                    <i class="fas fa-star icon-type-seance"></i> Événement
+                                  </span>
+                                  <span *ngSwitchCase="'SORTIE'" i18n-title title="Sortie">
+                                    <i class="fas fa-hiking icon-type-seance"></i> Sortie
+                                  </span>
+                                </ng-container>
+                                : {{ ms.seance.nom }}
+                              </td>
+
+                              <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
+                                {{ ms.seance.date_seance | date : "dd/MM/yyyy" }}
+                                {{ ms.seance.heure_debut }} -
+                                {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
+                                ({{ ms.seance.duree_seance | dureeHHMM }})
+                              </td>
+
+                              <td>
+                                <div class="tags is-small tags-prof">
+                                  <ng-container *ngFor="let gr of ms.seance.seanceProfesseurs">
+                                    <span class="tag is-success" [title]="gr.prenom + ' ' + gr.nom">
+                                      <ng-container *ngIf="gr.surnom && gr.surnom.length > 0">
+                                        {{ gr.surnom }}
+                                      </ng-container>
+                                      <ng-container *ngIf="!gr.surnom || gr.surnom.length == 0">
+                                        {{ gr.prenom }} {{ gr.nom }}
+                                      </ng-container>
+                                    </span>
+                                  </ng-container>
+                                </div>
+                              </td>
+
+                              <td>
+                                <span
+                                  [title]="getadresse(ms.seance.lieu_id)"
+                                  (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
+                                  class="cell-link"
+                                >
+                                  {{ ms.seance.lieu_nom }}
+                                </span>
+                              </td>
+
+                              <td>
+                                <ng-container *ngIf="ms.seance.statut == 'prévue'">
+                                  <span class="fa-stack fa-lg" i18n-title title="Séance prévue">
+                                    <i class="fas fa-lg fa-calendar-check has-text-info"></i>
+                                  </span>
+                                </ng-container>
+
+                                <ng-container *ngIf="ms.seance.statut == 'réalisée'">
+                                  <span class="icon has-text-success" i18n-title title="Séance réalisée">
+                                    <i class="fas fa-lg fa-flag-checkered"></i>
+                                  </span>
+                                </ng-container>
+
+                                <ng-container *ngIf="ms.seance.statut == 'annulée'">
+                                  <span class="icon has-text-danger" i18n-title title="Séance annulée">
+                                    <i class="fas fa-lg fa-ban"></i>
+                                  </span>
+                                </ng-container>
+                              </td>
+
+                              <td>
+                                <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherentDesktop">
+                                  <btn
+                                    [type_button]="'VoirLight'"
+                                    (click)="VoirMaSeance(ms.seance)"
+                                  ></btn>
+                                </ng-container>
+
+                                <ng-template #ProfilAdherentDesktop>
+                                  <ng-container *ngIf="ms.seance.statut == 'prévue'">
+                                    <span class="d-flex align-items-center is-flex-wrap-nowrap">
+                                      <span
+                                        (click)="MAJInscription(ms, rider, null)"
+                                        *ngIf="
+                                          ms.statutInscription == 'présent' ||
+                                          ms.statutInscription === 'essai'
+                                        "
+                                        class="icon is-large action-icon"
+                                      >
+                                        <span class="fa-stack fa-lg">
+                                          <i class="fas fa-lg fa-thumbs-up has-text-success"></i>
+                                        </span>
+                                      </span>
+
+                                      <span
+                                        (click)="MAJInscription(ms, rider, true)"
+                                        *ngIf="
+                                          ms.statutInscription == 'absent' ||
+                                          ms.statutInscription == 'convoqué' ||
+                                          ms.statutInscription == null
+                                        "
+                                        class="icon is-large action-icon"
+                                      >
+                                        <span class="fa-stack fa-lg">
+                                          <i class="far fa-lg fa-thumbs-up has-text-success"></i>
+                                        </span>
+                                      </span>
+
+                                      <span
+                                        (click)="MAJInscription(ms, rider, null)"
+                                        *ngIf="ms.statutInscription == 'absent'"
+                                        class="icon is-large action-icon"
+                                      >
+                                        <span class="fa-stack fa-lg">
+                                          <i class="fas fa-lg fa-thumbs-down has-text-danger"></i>
+                                        </span>
+                                      </span>
+
+                                      <span
+                                        (click)="MAJInscription(ms, rider, false)"
+                                        *ngIf="
+                                          ms.statutInscription == 'présent' ||
+                                          ms.statutInscription == 'convoqué' ||
+                                          ms.statutInscription == null ||
+                                          ms.statutInscription == 'essai'
+                                        "
+                                        class="icon is-large action-icon"
+                                      >
+                                        <span class="fa-stack fa-lg">
+                                          <i class="far fa-lg fa-thumbs-down has-text-danger"></i>
+                                        </span>
+                                      </span>
+                                    </span>
+                                  </ng-container>
+                                </ng-template>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- MOBILE -->
+                      <div class="mobile-view">
+                        <div class="mobile-list">
+                          <ng-container *ngFor="let ms of rider.MesSeances | multifiltersMenu : rider.filters">
+                            <article class="mobile-item" [class.dense]="denseMode">
+                              <div class="mobile-item-top">
+                                <div class="mobile-item-main">
+                                  <button
+                                    class="mobile-item-title-btn"
+                                    type="button"
+                                    (click)="GotoSeance(ms.seance.id)"
+                                  >
+                                    <span class="mobile-item-title">
+                                      <ng-container [ngSwitch]="ms.seance.type_seance">
+                                        <span *ngSwitchCase="'ENTRAINEMENT'" title="Cours">
+                                          <i class="fas fa-dumbbell icon-type-seance"></i> Cours
+                                        </span>
+                                        <span *ngSwitchCase="'MATCH'" title="Match">
+                                          <i class="fas fa-futbol icon-type-seance"></i> Match
+                                        </span>
+                                        <span *ngSwitchCase="'EVENEMENT'" title="Événement">
+                                          <i class="fas fa-star icon-type-seance"></i> Événement
+                                        </span>
+                                        <span *ngSwitchCase="'SORTIE'" title="Sortie">
+                                          <i class="fas fa-hiking icon-type-seance"></i> Sortie
+                                        </span>
+                                      </ng-container>
+                                      : {{ ms.seance.nom }}
+                                    </span>
+                                  </button>
+
+                                  <p class="mobile-item-meta">
+                                    {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
+                                    {{ ms.seance.heure_debut }} -
+                                    {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
+                                    ({{ ms.seance.duree_seance | dureeHHMM }})
+                                  </p>
+
+                                  <div class="tags is-small mb-1">
+                                    <ng-container *ngFor="let gr of ms.seance.seanceProfesseurs">
+                                      <span class="tag is-success" [title]="gr.prenom + ' ' + gr.nom">
+                                        <ng-container *ngIf="gr.surnom">
+                                          {{ gr.surnom }}
+                                        </ng-container>
+                                        <ng-container *ngIf="!gr.surnom">
+                                          {{ gr.prenom }} {{ gr.nom }}
+                                        </ng-container>
+                                      </span>
+                                    </ng-container>
+                                  </div>
+
+                                  <p class="is-size-7 mb-0">
+                                    <button
+                                      type="button"
+                                      class="cell-link-button"
+                                      [title]="getadresse(ms.seance.lieu_id)"
+                                      (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
+                                    >
+                                      {{ ms.seance.lieu_nom }}
+                                    </button>
+                                  </p>
+                                </div>
+
+                                <div class="mobile-item-actions">
+                                  <ng-container *ngIf="rider.profil === 'PROF'; else ProfilAdherentMobile">
+                                    <btn
+                                      [type_button]="'VoirLight'"
+                                      (click)="VoirMaSeance(ms.seance)"
+                                    ></btn>
+                                  </ng-container>
+
+                                  <ng-template #ProfilAdherentMobile>
+                                    <ng-container *ngIf="ms.seance.statut === 'prévue'">
+                                      <button
+                                        type="button"
+                                        class="mobile-action-btn"
+                                        (click)="MAJInscription(ms, rider, true)"
+                                        *ngIf="
+                                          ms.statutInscription == 'absent' ||
+                                          ms.statutInscription == 'convoqué' ||
+                                          ms.statutInscription == null
+                                        "
+                                      >
+                                        <i class="far fa-thumbs-up has-text-success"></i>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        class="mobile-action-btn"
+                                        (click)="MAJInscription(ms, rider, null)"
+                                        *ngIf="
+                                          ms.statutInscription == 'présent' ||
+                                          ms.statutInscription === 'essai'
+                                        "
+                                      >
+                                        <i class="fas fa-thumbs-up has-text-success"></i>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        class="mobile-action-btn"
+                                        (click)="MAJInscription(ms, rider, false)"
+                                        *ngIf="
+                                          ms.statutInscription == 'présent' ||
+                                          ms.statutInscription == 'convoqué' ||
+                                          ms.statutInscription == 'essai' ||
+                                          ms.statutInscription == null
+                                        "
+                                      >
+                                        <i class="far fa-thumbs-down has-text-danger"></i>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        class="mobile-action-btn"
+                                        (click)="MAJInscription(ms, rider, null)"
+                                        *ngIf="ms.statutInscription === 'absent'"
+                                      >
+                                        <i class="fas fa-thumbs-down has-text-danger"></i>
+                                      </button>
+                                    </ng-container>
+                                  </ng-template>
+                                </div>
+                              </div>
+                            </article>
+                          </ng-container>
+
+                          <p *ngIf="!rider.MesSeances || rider.MesSeances.length == 0" class="menu-empty">
+                            Pas de séances disponible
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      class="scroll-to-top"
+                      *ngIf="showScrollToTop"
+                      (click)="scrollToTop()"
+                      title="Revenir en haut"
+                      type="button"
+                    >
+                      ↑
+                    </button>
+                  </div>
+
+                  <footer class="card-footer">
+                    <div class="menu-footer-panel">
+                      <ng-container *ngIf="rider.filtre_et_option; else PasFiltre">
+                        <div class="menu-footer-row menu-footer-top">
+                          <div class="menu-footer-actions">
+                            <button
+                              class="button is-light is-danger menu-footer-toggle"
+                              (click)="rider.filtre_et_option = false;"
+                              type="button"
+                            >
+                              <span class="icon"><i class="fas fa-sliders"></i></span>
+                              <span>Masquer les filtres et options</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div class="menu-filter-grid">
+                          <div class="menu-filter-col-3">
+                            <label class="label" i18n>Sélection du filtre</label>
+                            <div class="select is-fullwidth">
+                              <select [(ngModel)]="rider.selected_filter">
+                                <option value="nom" i18n>Nom</option>
+                                <option value="date" i18n>Date</option>
+                                <option value="statut" i18n>Statut</option>
+                                <option value="prof" i18n>Professeur</option>
+                                <option value="lieu" i18n>Lieu</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div class="menu-filter-col-4" *ngIf="rider.selected_filter == 'nom'">
+                            <label class="label" i18n>Valeur</label>
+                            <input
+                              class="input"
+                              i18n-placeholder
+                              placeholder="Nom du cours"
+                              type="text"
+                              [(ngModel)]="rider.filters.filter_nom"
+                            />
+                          </div>
+
+                          <div class="menu-filter-col-4" *ngIf="rider.selected_filter == 'statut'">
+                            <label class="label" i18n>Valeur</label>
+                            <div class="select is-fullwidth">
+                              <select [(ngModel)]="rider.filters.filter_statut">
+                                <option [ngValue]="null" i18n>Tous</option>
+                                <option [ngValue]="'prévue'" i18n>Prévue</option>
+                                <option [ngValue]="'réalisée'" i18n>Réalisée</option>
+                                <option [ngValue]="'annulée'" i18n>Annulée</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div class="menu-filter-col-4" *ngIf="rider.selected_filter == 'prof'">
+                            <label class="label" i18n>Valeur</label>
+                            <div class="select is-fullwidth">
+                              <select [(ngModel)]="rider.filters.filter_prof">
+                                <option [ngValue]="null" i18n>Tous</option>
+                                <ng-container *ngFor="let prof of liste_prof_filter">
+                                  <option [ngValue]="prof.value">{{ prof.value }}</option>
+                                </ng-container>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div class="menu-filter-col-4" *ngIf="rider.selected_filter == 'lieu'">
+                            <label class="label" i18n>Valeur</label>
+                            <div class="select is-fullwidth">
+                              <select [(ngModel)]="rider.filters.filter_lieu">
+                                <option [ngValue]="null" i18n>Tous</option>
+                                <ng-container *ngFor="let lieu of liste_lieu_filter">
+                                  <option [ngValue]="lieu">{{ lieu }}</option>
+                                </ng-container>
+                              </select>
+                            </div>
+                          </div>
+
+                          <ng-container *ngIf="rider.selected_filter == 'date'">
+                            <div class="menu-filter-col-3">
+                              <label class="label" i18n>Du</label>
+                              <input
+                                class="input"
+                                type="date"
+                                [(ngModel)]="rider.filters.filter_date_avant"
+                              />
+                            </div>
+
+                            <div class="menu-filter-col-3">
+                              <label class="label" i18n>Au</label>
+                              <input
+                                class="input"
+                                type="date"
+                                [(ngModel)]="rider.filters.filter_date_apres"
+                              />
+                            </div>
+                          </ng-container>
+                        </div>
+
+                        <div class="menu-filter-tags">
+                          <span *ngIf="rider.filters.filter_nom" class="tag is-success">
+                            <span i18n>Nom :&nbsp;</span>
+                            <span>{{ rider.filters.filter_nom }}</span>
+                            <button class="delete" (click)="rider.filters.filter_nom = null"></button>
+                          </span>
+
+                          <span *ngIf="rider.filters.filter_statut != null" class="tag is-success">
+                            <span i18n>Statut :&nbsp;</span>
+                            <span *ngIf="rider.filters.filter_statut == 'prévue'" i18n>Prévue</span>
+                            <span *ngIf="rider.filters.filter_statut == 'réalisée'" i18n>Réalisée</span>
+                            <span *ngIf="rider.filters.filter_statut == 'annulée'" i18n>Annulée</span>
+                            <button class="delete" (click)="rider.filters.filter_statut = null"></button>
+                          </span>
+
+                          <span
+                            *ngIf="rider.filters.filter_date_avant || rider.filters.filter_date_apres"
+                            class="tag is-success"
+                          >
+                            <span class="mx-1" *ngIf="rider.filters.filter_date_avant">
+                              {{ rider.filters.filter_date_avant | date : 'dd/MM/yyyy' }}
+                            </span>
+                            <span class="mx-1" *ngIf="rider.filters.filter_date_avant">&lt;=</span>
+                            <span class="mx-1">Date</span>
+                            <span class="mx-1" *ngIf="rider.filters.filter_date_apres">&gt;=</span>
+                            <span class="mx-1" *ngIf="rider.filters.filter_date_apres">
+                              {{ rider.filters.filter_date_apres | date : 'dd/MM/yyyy' }}
+                            </span>
+                            <button
+                              class="delete"
+                              (click)="
+                                rider.filters.filter_date_avant = null;
+                                rider.filters.filter_date_apres = null
+                              "
+                            ></button>
+                          </span>
+
+                          <span *ngIf="rider.filters.filter_lieu != null" class="tag is-success">
+                            <span i18n>Lieu :&nbsp;</span>
+                            <span>{{ rider.filters.filter_lieu }}</span>
+                            <button class="delete" (click)="rider.filters.filter_lieu = null"></button>
+                          </span>
+
+                          <span *ngIf="rider.filters.filter_prof != null" class="tag is-success">
+                            <span i18n>Prof :&nbsp;</span>
+                            <span>{{ rider.filters.filter_prof }}</span>
+                            <button class="delete" (click)="rider.filters.filter_prof = null"></button>
+                          </span>
+
+                          <btn
+                            [type_button]="'SupprimerLight'"
+                            (click)="ReinitFiltre(rider)"
+                            *ngIf="
+                              rider.filters.filter_date_apres ||
+                              rider.filters.filter_date_avant ||
+                              rider.filters.filter_groupe ||
+                              rider.filters.filter_statut ||
+                              rider.filters.filter_nom ||
+                              rider.filters.filter_lieu ||
+                              rider.filters.filter_prof
+                            "
+                          ></btn>
+                        </div>
+
+                        <div class="menu-bulk-actions" *ngIf="rider.profil == 'ADH'">
+                          <span class="menu-bulk-actions-title" i18n>
+                            Action sur les séances affichées
+                          </span>
+                          <btn
+                            [type_button]="'PresentLight'"
+                            (click)="MAJInscriptionAffichee(rider, true)"
+                          ></btn>
+                          <btn
+                            [type_button]="'AbsentLight'"
+                            (click)="MAJInscriptionAffichee(rider, false)"
+                          ></btn>
+                        </div>
+                      </ng-container>
+
+                      <ng-template #PasFiltre>
+                        <button
+                          class="button is-primary is-light menu-footer-toggle"
+                          (click)="rider.filtre_et_option = true;"
+                          type="button"
+                        >
+                          <span class="icon"><i class="fas fa-sliders"></i></span>
+                          <span>Afficher les filtres et options</span>
+                        </button>
+                      </ng-template>
+                    </div>
+                  </footer>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
   </ng-container>
 </div>

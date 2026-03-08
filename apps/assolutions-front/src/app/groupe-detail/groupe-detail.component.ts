@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
-import { GroupeService } from '../../services/groupe.service';
-import { Groupe_VM, LienGroupe_VM } from '@shared/lib/groupe.interface';
+import { Groupe, LienGroupe_VM } from '@shared/lib/groupes.interface';
+import { GroupesApiService } from '../../services/groupes-api.service';
 
 
 @Component({
@@ -44,7 +44,7 @@ async CopyWA(g: LienGroupe_VM) {
   }
 }
 
-  @Input() liste_groupe: Groupe_VM[];
+  @Input() liste_groupe: Groupe[];
   @Input() id_source: number;
   @Input() objet_source: string;
   @Input() Groupes: LienGroupe_VM[];
@@ -54,7 +54,7 @@ async CopyWA(g: LienGroupe_VM) {
   public action: string = "";
   titre_groupe: string = $localize`Groupes`;
   @Input() edit: boolean = true; // Si true, on peut ajouter/supprimer des groupes
-  constructor(public gr_serv: GroupeService) { }
+  constructor(public gr_serv: GroupesApiService) { }
 
   ngOnInit(): void {
     this.MAJListeGroupe();

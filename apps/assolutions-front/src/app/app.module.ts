@@ -67,12 +67,19 @@ import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-red
 import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
 import { InfoComponent } from './info/info.component';
 import { CreerCompteComponent } from './creer-compte/creer-compte.component';
+import { AdherentDetailComponent } from './adherent/adherent-detail.component';
+import { AdherentListMobileComponent } from './adherent/adherent-list-mobile.component';
+import { AdherentListDesktopComponent } from './adherent/adherent-list-desktop.component';
+import { AdherentAccountSelectorComponent } from './adherent/adherent-account-selector.component';
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     MenuComponent,
-    AdherentComponent,
+    AdherentComponent,AdherentAccountSelectorComponent,
+AdherentListDesktopComponent,
+AdherentListMobileComponent,
+AdherentDetailComponent,
     GroupeComponent,
     CoursComponent, InfoComponent,
     SeanceComponent, MailTemplatePreviewComponent, 

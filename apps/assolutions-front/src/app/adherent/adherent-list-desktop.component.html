@@ -1,0 +1,515 @@
+<span class="fullscreen">
+  <div class="columns page-fill">
+    <div class="column">
+      <div class="card card--scroller">
+        <header class="card-header" style="align-items: center">
+          <p class="card-header-title">
+            <span i18n>Liste des adhérents</span>&nbsp;({{ filteredListe.length }})&nbsp;-&nbsp;
+            <span i18n>Saison</span>&nbsp;{{ getActiveSaisonLabel }}
+          </p>
+
+          <span *ngIf="store.AdherentHasRemoteNewerData()" class="tag is-warning is-light" style="margin-left: 10px">
+            Nouvelles données dispo
+          </span>
+
+          <span *ngIf="needsReload" class="tag is-danger is-light" style="margin-left: 10px">
+            Recharge conseillée
+          </span>
+
+          <span *ngIf="refreshing" class="tag is-info is-light" style="margin-left:10px">
+            Mise à jour…
+          </span>
+
+          <btn
+            *ngIf="store.AdherentHasRemoteNewerData() || needsReload"
+            [type_button]="'ReloadLight'"
+            (click)="reloadRequested.emit()">
+          </btn>
+        </header>
+
+        <div class="card-content" #scrollableContent>
+          <div class="content">
+            <table class="table" style="width: 100%" *ngIf="Liste && Liste.length > 0">
+              <thead>
+                <tr>
+                  <th style="width: 2rem;">
+                    <input
+                      type="checkbox"
+                      [checked]="Liste?.length && selectedIds.size === Liste.length"
+                      (change)="toggleSelectAll.emit($any($event.target).checked)" />
+                  </th>
+
+                  <th></th>
+
+                  <th (dblclick)="filterEditStart.emit('nom')" title="Double-clic pour filtrer" style="user-select:none;">
+                    <span class="ligne" *ngIf="!filters.editing?.nom">
+                      <span [ngClass]="filters.filter_nom ? 'has-text-info' : ''" i18n>Nom</span>
+                      <span style="cursor:pointer">
+                        <i *ngIf="sort_nom === 'NO'"   (click)="sortChange.emit({ sens: 'ASC', champ: 'nom' })"  class="fa-solid fa-sort"></i>
+                        <i *ngIf="sort_nom === 'ASC'"  (click)="sortChange.emit({ sens: 'DESC', champ: 'nom' })" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sort_nom === 'DESC'" (click)="sortChange.emit({ sens: 'ASC', champ: 'nom' })"  class="fa-solid fa-sort-down"></i>
+                      </span>
+                    </span>
+
+                    <div *ngIf="filters.editing?.nom" class="field has-addons is-small" style="margin-top:.15rem;">
+                      <div class="control is-small">
+                        <input
+                          class="input is-small"
+                          type="text"
+                          i18n-placeholder
+                          placeholder="Nom à filtrer"
+                          [ngModel]="filters.filter_nom || ''"
+                          (ngModelChange)="filterChange.emit({ key: 'nom', value: $event })"
+                          (keydown.enter)="filterEditEnd.emit('nom')"
+                          (keydown.escape)="filterEditCancel.emit('nom')"
+                          (blur)="filterEditEnd.emit('nom')"
+                          style="width:16rem; max-width:40vw;" />
+                      </div>
+                      <div class="control is-small">
+                        <button class="button is-small" (click)="clearFilter.emit('nom')" title="Effacer">
+                          <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!filters.editing?.nom && filters.filter_nom" class="tags" style="margin-top:.15rem;" (dblclick)="filterEditStart.emit('nom')">
+                      <span class="tag is-success is-light is-small">
+                        <span i18n>Nom :</span>&nbsp;<span>{{ filters.filter_nom }}</span>
+                        <button class="delete is-small" (click)="clearFilter.emit('nom')"></button>
+                      </span>
+                    </div>
+                  </th>
+
+                  <th (dblclick)="filterEditStart.emit('date')" title="Double-clic pour filtrer" style="user-select:none;">
+                    <span class="ligne" *ngIf="!filters.editing?.date">
+                      <span [ngClass]="(filters.filter_date_apres || filters.filter_date_avant) ? 'has-text-info' : ''" i18n>Date de naissance</span>
+                      <span style="cursor: pointer">
+                        <i *ngIf="sort_date === 'NO'" (click)="sortChange.emit({ sens: 'ASC', champ: 'date' })" class="fa-solid fa-sort"></i>
+                        <i *ngIf="sort_date === 'ASC'" (click)="sortChange.emit({ sens: 'DESC', champ: 'date' })" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sort_date === 'DESC'" (click)="sortChange.emit({ sens: 'ASC', champ: 'date' })" class="fa-solid fa-sort-down"></i>
+                      </span>
+                    </span>
+
+                    <div *ngIf="filters.editing?.date" class="field is-horizontal is-small" style="gap:.5rem; margin-top:.15rem;">
+                      <div class="field has-addons is-small">
+                        <div class="control is-small">
+                          <span class="button is-static is-small" i18n>Du</span>
+                        </div>
+                        <div class="control is-small">
+                          <input
+                            class="input is-small"
+                            type="date"
+                            [ngModel]="filters.filter_date_apres || ''"
+                            (ngModelChange)="filterChange.emit({ key: 'date_apres', value: $event })"
+                            (keydown.enter)="filterEditEnd.emit('date')"
+                            (keydown.escape)="filterEditCancel.emit('date')"
+                            (blur)="filterEditEnd.emit('date')" />
+                        </div>
+                      </div>
+
+                      <div class="field has-addons is-small">
+                        <div class="control is-small">
+                          <span class="button is-static is-small" i18n>Au</span>
+                        </div>
+                        <div class="control is-small">
+                          <input
+                            class="input is-small"
+                            type="date"
+                            [ngModel]="filters.filter_date_avant || ''"
+                            (ngModelChange)="filterChange.emit({ key: 'date_avant', value: $event })"
+                            (keydown.enter)="filterEditEnd.emit('date')"
+                            (keydown.escape)="filterEditCancel.emit('date')"
+                            (blur)="filterEditEnd.emit('date')" />
+                        </div>
+                      </div>
+
+                      <div class="control is-small">
+                        <button class="button is-small" (click)="clearFilter.emit('date')" title="Effacer">
+                          <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!filters.editing?.date && (filters.filter_date_apres || filters.filter_date_avant)" class="tags" style="margin-top:.15rem;" (dblclick)="filterEditStart.emit('date')">
+                      <span class="tag is-success is-light is-small">
+                        <span i18n>Date : </span>
+                        <ng-container *ngIf="filters.filter_date_apres"> < {{ filters.filter_date_apres }}</ng-container>
+                        <ng-container *ngIf="filters.filter_date_avant"> > {{ filters.filter_date_avant }}</ng-container>
+                        <button class="delete is-small" (click)="clearFilter.emit('date')"></button>
+                      </span>
+                    </div>
+                  </th>
+
+                  <th (dblclick)="filterEditStart.emit('sexe')" title="Double-clic pour filtrer" style="user-select:none;">
+                    <span class="ligne" *ngIf="!filters.editing?.sexe">
+                      <span [ngClass]="filters.filter_sexe !== null ? 'has-text-info' : ''" i18n>Sexe</span>
+                      <span style="cursor: pointer">
+                        <i *ngIf="sort_sexe === 'NO'" (click)="sortChange.emit({ sens: 'ASC', champ: 'sexe' })" class="fa-solid fa-sort"></i>
+                        <i *ngIf="sort_sexe === 'ASC'" (click)="sortChange.emit({ sens: 'DESC', champ: 'sexe' })" class="fa-solid fa-sort-up"></i>
+                        <i *ngIf="sort_sexe === 'DESC'" (click)="sortChange.emit({ sens: 'ASC', champ: 'sexe' })" class="fa-solid fa-sort-down"></i>
+                      </span>
+                    </span>
+
+                    <div *ngIf="filters.editing?.sexe" class="field has-addons is-small" style="margin-top:.15rem;">
+                      <div class="control is-small">
+                        <div class="select is-small">
+                          <select
+                            [ngModel]="filters.filter_sexe"
+                            (ngModelChange)="filterChange.emit({ key: 'sexe', value: $event })"
+                            (change)="filterEditEnd.emit('sexe')"
+                            (blur)="filterEditEnd.emit('sexe')">
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <option [ngValue]="false" i18n>Femme</option>
+                            <option [ngValue]="true" i18n>Homme</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="control is-small">
+                        <button class="button is-small" (click)="clearFilter.emit('sexe')" title="Effacer">
+                          <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!filters.editing?.sexe && filters.filter_sexe !== null" class="tags" style="margin-top:.15rem;" (dblclick)="filterEditStart.emit('sexe')">
+                      <span class="tag is-success is-light is-small">
+                        <span i18n>Sexe :</span>&nbsp;
+                        <span *ngIf="filters.filter_sexe" i18n>Homme</span>
+                        <span *ngIf="filters.filter_sexe === false" i18n>Femme</span>
+                        <button class="delete is-small" (click)="clearFilter.emit('sexe')"></button>
+                      </span>
+                    </div>
+                  </th>
+
+                  <th (dblclick)="filterEditStart.emit('groupe')" title="Double-clic pour filtrer" style="user-select:none;">
+                    <span class="ligne" *ngIf="!filters.editing?.groupe">
+                      <span [ngClass]="filters.filter_groupe ? 'has-text-info' : ''" i18n>Groupes</span>
+                    </span>
+
+                    <div *ngIf="filters.editing?.groupe" class="field has-addons is-small" style="margin-top:.15rem;">
+                      <div class="control is-small">
+                        <div class="select is-small">
+                          <select
+                            [ngModel]="filters.filter_groupe"
+                            (ngModelChange)="filterChange.emit({ key: 'groupe', value: $event })"
+                            (change)="filterEditEnd.emit('groupe')"
+                            (blur)="filterEditEnd.emit('groupe')">
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <ng-container *ngFor="let group of liste_groupe_filter">
+                              <option [ngValue]="group.nom">{{ group.nom }}</option>
+                            </ng-container>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="control is-small">
+                        <button class="button is-small" (click)="clearFilter.emit('groupe')" title="Effacer">
+                          <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!filters.editing?.groupe && filters.filter_groupe" class="tags" style="margin-top:.15rem;" (dblclick)="filterEditStart.emit('groupe')">
+                      <span class="tag is-success is-light is-small">
+                        <span i18n>Groupe :</span>&nbsp;<span>{{ filters.filter_groupe }}</span>
+                        <button class="delete is-small" (click)="clearFilter.emit('groupe')"></button>
+                      </span>
+                    </div>
+                  </th>
+
+                  <th><span i18n>Contact</span></th>
+
+                  <th (dblclick)="filterEditStart.emit('inscrit')" title="Double-clic pour filtrer" style="user-select:none;">
+                    <span class="ligne" *ngIf="!filters.editing?.inscrit">
+                      <span [ngClass]="filters.filter_inscrit !== null ? 'has-text-info' : ''" i18n>Inscrit</span>
+                    </span>
+
+                    <div *ngIf="filters.editing?.inscrit" class="field has-addons is-small" style="margin-top:.15rem;">
+                      <div class="control is-small">
+                        <div class="select is-small">
+                          <select
+                            [ngModel]="filters.filter_inscrit"
+                            (ngModelChange)="filterChange.emit({ key: 'inscrit', value: $event })"
+                            (change)="filterEditEnd.emit('inscrit')"
+                            (blur)="filterEditEnd.emit('inscrit')">
+                            <option [ngValue]="null" i18n>Tous</option>
+                            <option [ngValue]="true" i18n>Oui</option>
+                            <option [ngValue]="false" i18n>Non</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="control is-small">
+                        <button class="button is-small" (click)="clearFilter.emit('inscrit')" title="Effacer">
+                          <span class="icon is-small"><i class="fa-solid fa-xmark"></i></span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!filters.editing?.inscrit && filters.filter_inscrit !== null" class="tags" style="margin-top:.15rem;" (dblclick)="filterEditStart.emit('inscrit')">
+                      <span class="tag is-success is-light is-small">
+                        <span i18n>Inscrit :</span>&nbsp;
+                        <span *ngIf="filters.filter_inscrit" i18n>Oui</span>
+                        <span *ngIf="filters.filter_inscrit === false" i18n>Non</span>
+                        <button class="delete is-small" (click)="clearFilter.emit('inscrit')"></button>
+                      </span>
+                    </div>
+                  </th>
+
+                  <th><span i18n>Action</span></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let adherent of filteredListe">
+                  <td style="width: 2rem;">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(adherent.id)"
+                      (change)="toggleSelection.emit({ id: adherent.id, checked: $any($event.target).checked })" />
+                  </td>
+
+                  <td>
+                    <figure class="image is-32x32 is-inline-block mr-2">
+                      <img
+                        class="is-rounded"
+                        style="width:auto; height:44px"
+                        [src]="adherent?.photo || defaultAvatar"
+                        [alt]="'Photo de ' + (adherent?.libelle || adherent?.nom || '')"
+                        (error)="onImgError($event)">
+                    </figure>
+                  </td>
+
+                  <td>{{ adherent.libelle }}</td>
+
+                  <td>
+                    {{ adherent.date_naissance | date : "dd/MM/yyyy" }}
+                    ({{ calculateAge(adherent.date_naissance) }}&nbsp;<span i18n>ans</span>)
+                  </td>
+
+                  <td>
+                    <i *ngIf="adherent.sexe" class="fa-solid fa-mars has-text-info"></i>
+                    <i *ngIf="!adherent.sexe" class="fa-solid fa-venus has-text-danger"></i>
+                  </td>
+
+                  <td>
+                    <div class="tags">
+                      <ng-container *ngFor="let gr of currentActiveInscriptionGroupe(adherent)">
+                        <span class="tag is-success">{{ gr.nom }}</span>
+                      </ng-container>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span *ngIf="adherent.ContactPrefereType == 'EMAIL'"><i class="fas fa-at"></i></span>
+                    <span *ngIf="adherent.ContactPrefereType == 'PHONE'"><i class="fas fa-phone"></i></span>
+                    <span *ngIf="adherent.ContactPrefereType == 'INSTA'"><i class="fab fa-instagram-square"></i></span>
+                    <span *ngIf="adherent.ContactPrefereType == 'FACEBOOK'"><i class="fab fa-facebook-square"></i></span>
+                    <span *ngIf="adherent.ContactPrefereType == 'TWITTER'"><i class="fab fa-twitter-square"></i></span>
+                    <span class="ml-1">{{ toValueContactPref(adherent.contact) }}</span>
+                  </td>
+
+                  <td>
+                    <i *ngIf="isInscrtitionActive(adherent, active_saison.id) == false" class="fas fa-times"></i>
+                    <i *ngIf="isInscrtitionActive(adherent, active_saison.id)" class="fas fa-check has-text-success"></i>
+                  </td>
+
+                  <td>
+                    <div class="buttons" style="flex-wrap: nowrap">
+                      <btn
+                        i18n-title
+                        title="Supprimer"
+                        [type_button]="'SupprimerLight'"
+                        *ngIf="store.mode() === 'ADMIN'"
+                        (click)="deleteOne.emit(adherent)">
+                      </btn>
+
+                      <btn
+                        i18n-title
+                        title="Voir"
+                        [type_button]="'VoirLight'"
+                        (click)="readOne.emit(adherent)">
+                      </btn>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p *ngIf="!Liste || Liste.length == 0" i18n>Pas d'adhérents disponible</p>
+
+            <button class="scroll-to-top" *ngIf="showScrollToTop" (click)="scrollTop.emit()" title="Revenir en haut">↑</button>
+          </div>
+        </div>
+
+        <footer class="card-footer">
+          <div class="columns">
+            <div class="column">
+              <ng-container *ngIf="hasSelection; else normalActions">
+                <span *ngIf="bulkWorking" class="tag is-info is-light" style="margin-left:10px">
+                  {{ bulkLabel || 'Traitement en cours…' }}
+                </span>
+
+                <div *ngIf="!bulkWorking" class="buttons" style="flex-wrap: nowrap">
+                  <btn title="Supprimer sélection" [type_button]="'SupprimerSmall'" (click)="bulkDelete.emit()"></btn>
+                  <btn title="Copier sélection" [type_button]="'CopierSmall'" (click)="bulkCopy.emit()"></btn>
+                  <btn title="Annuler sélection" [type_button]="'AnnulerSmall'" (click)="bulkClear.emit()"></btn>
+                </div>
+              </ng-container>
+
+              <ng-template #normalActions>
+                <div *ngIf="!afficher_filtre" class="buttons">
+                  <btn [type_button]="'CreerSmall'" (click)="createAdherent.emit()"></btn>
+                  <btn [type_button]="'FiltrerSmall'" (click)="toggleAfficherFiltre.emit()"></btn>
+                  <btn [type_button]="'ExporterSmall'" (click)="exportExcel.emit()"></btn>
+                  <btn *ngIf="store.mode() === 'ADMIN'" [type_button]="'ImporterSmall'" (click)="gotoImport.emit()"></btn>
+
+                  <div class="field is-horizontal" *ngIf="store.mode() === 'ADMIN'">
+                    <div class="field-label is-normal is-two-quarter">
+                      <label class="label" style="white-space: nowrap" i18n>Saison affichée</label>
+                    </div>
+                    <div class="field-body">
+                      <div class="field is-narrow">
+                        <div class="control">
+                          <div class="select is-fullwidth">
+                            <select [ngModel]="active_saison" (ngModelChange)="activeSaisonChange.emit($event)">
+                              <ng-container *ngFor="let saison of liste_saison">
+                                <option [ngValue]="saison">{{ saison.nom }}</option>
+                              </ng-container>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="buttons" *ngIf="afficher_filtre">
+                  <btn (click)="toggleAfficherFiltre.emit(); selectedFilterChange.emit('')" [type_button]="'RetourLight'"></btn>
+
+                  <div class="field is-horizontal" style="gap:.5rem; align-items:center">
+                    <div class="field-label is-normal">
+                      <label class="label" style="white-space: nowrap" i18n>Sélection du filtre</label>
+                    </div>
+
+                    <div class="field-body">
+                      <div class="field is-narrow">
+                        <div class="control">
+                          <div class="select is-fullwidth ; font-size: smaller">
+                            <select [ngModel]="selected_filter" (ngModelChange)="selectedFilterChange.emit($event)">
+                              <option value="nom" i18n>Nom</option>
+                              <option value="date" i18n>Date de naissance</option>
+                              <option value="groupe" i18n>Groupe</option>
+                              <option value="sexe" i18n>Sexe</option>
+                              <option value="inscrit" i18n>Inscrit</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="selected_filter" class="field-label is-normal">
+                      <label class="label" style="white-space: nowrap" i18n>Valeur du filtre</label>
+                    </div>
+
+                    <div class="field-body" *ngIf="selected_filter">
+                      <div class="field is-narrow">
+                        <div class="control">
+                          <input
+                            *ngIf="selected_filter == 'nom'"
+                            style="width: fit-content; font-size: smaller"
+                            class="input is-small"
+                            i18n-placeholder
+                            placeholder="Nom du cours"
+                            type="text"
+                            [(ngModel)]="filters.filter_nom" />
+
+                          <div class="select" *ngIf="selected_filter == 'sexe'">
+                            <select style="font-size: smaller" [(ngModel)]="filters.filter_sexe">
+                              <option [ngValue]="null" i18n>Tous</option>
+                              <option [ngValue]="false" i18n>Femme</option>
+                              <option [ngValue]="true" i18n>Homme</option>
+                            </select>
+                          </div>
+
+                          <div class="select" *ngIf="selected_filter == 'groupe'">
+                            <select style="font-size: smaller" [(ngModel)]="filters.filter_groupe">
+                              <option [ngValue]="null" i18n>Tous</option>
+                              <ng-container *ngFor="let group of liste_groupe_filter">
+                                <option [ngValue]="group.nom">{{ group.nom }}</option>
+                              </ng-container>
+                            </select>
+                          </div>
+
+                          <div class="select" *ngIf="selected_filter == 'inscrit'">
+                            <select style="font-size: smaller" [(ngModel)]="filters.filter_inscrit">
+                              <option [ngValue]="null" i18n>Tous</option>
+                              <option [ngValue]="false" i18n>Non</option>
+                              <option [ngValue]="true" i18n>Oui</option>
+                            </select>
+                          </div>
+
+                          <span *ngIf="selected_filter == 'date'" class="ligne">
+                            <div style="gap:6px" class="field is-small is-horizontal field-jecha">
+                              <label class="label is-small" i18n>Du</label>
+                              <input style="width: fit-content" class="input is-small" type="date" [(ngModel)]="filters.filter_date_apres" />
+                            </div>
+                          </span>
+
+                          <span *ngIf="selected_filter == 'date'" class="ligne">
+                            <div style="gap:6px" class="field is-small is-horizontal field-jecha">
+                              <label class="label is-small" i18n>Au</label>
+                              <input style="width: fit-content" class="input is-small" type="date" [(ngModel)]="filters.filter_date_avant" />
+                            </div>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="tags">
+                      <span *ngIf="filters.filter_nom" class="tag is-success">
+                        <span i18n>Nom : </span><span>{{ filters.filter_nom }}</span>
+                        <button class="delete" (click)="filters.filter_nom = null"></button>
+                      </span>
+
+                      <span *ngIf="filters.filter_inscrit != null" class="tag is-success">
+                        <span i18n>Inscrits : </span>
+                        <span *ngIf="filters.filter_inscrit == true" i18n>Oui</span>
+                        <span *ngIf="filters.filter_inscrit == false" i18n>Non</span>
+                        <button class="delete" (click)="filters.filter_inscrit = null"></button>
+                      </span>
+
+                      <span *ngIf="filters.filter_date_avant || filters.filter_date_apres" class="tag is-success">
+                        <span i18n>Date de naissance : </span>
+                        <span *ngIf="filters.filter_date_avant">&nbsp;>&nbsp;{{ filters.filter_date_avant }}</span>
+                        <span *ngIf="filters.filter_date_apres">&nbsp;<&nbsp;{{ filters.filter_date_apres }}</span>
+                        <button class="delete" (click)="filters.filter_date_avant = null; filters.filter_date_apres = null"></button>
+                      </span>
+
+                      <span *ngIf="filters.filter_sexe != null" class="tag is-success">
+                        <span i18n>Sexe : </span>
+                        <span *ngIf="filters.filter_sexe == true" i18n>Homme</span>
+                        <span *ngIf="filters.filter_sexe == false" i18n>Femme</span>
+                        <button class="delete" (click)="filters.filter_sexe = null"></button>
+                      </span>
+
+                      <span *ngIf="filters.filter_groupe != null" class="tag is-success">
+                        <span i18n>Groupe : </span>
+                        <span>{{ filters.filter_groupe }}</span>
+                        <button class="delete" (click)="filters.filter_groupe = null"></button>
+                      </span>
+
+                      <btn
+                        [type_button]="'SupprimerLight'"
+                        (click)="clearAllFilters.emit()"
+                        *ngIf="filters.filter_date_apres || filters.filter_date_avant || filters.filter_groupe || filters.filter_inscrit || filters.filter_nom || filters.filter_sexe">
+                      </btn>
+                    </div>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+</span>

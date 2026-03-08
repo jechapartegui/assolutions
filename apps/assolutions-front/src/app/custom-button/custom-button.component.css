@@ -1,55 +1,260 @@
-button{
-    gap: 0.5rem;
+:host {
+  display: inline-block;
+  min-width: 0;
 }
-/* Bouton rond, grand, tactile, lignes soignées */
+
+.button {
+  gap: 0.45rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  box-shadow: none;
+  transition:
+    transform 120ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+/* =========================
+   BASE STYLES
+   ========================= */
+
+.btn-modern {
+  min-height: 2.5rem;
+  padding-inline: 0.9rem;
+  border-radius: 12px;
+}
+
+.btn-modern.button.is-small {
+  min-height: 2rem;
+  padding-inline: 0.7rem;
+  border-radius: 10px;
+  font-size: 0.84rem;
+}
+
+.btn-elevated {
+  box-shadow:
+    0 6px 18px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.btn-modern:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 20px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.btn-modern:active:not([disabled]) {
+  transform: translateY(0);
+  box-shadow:
+    0 4px 10px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-modern:focus-visible,
+.card-header-icon:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(32, 156, 238, 0.22),
+    0 8px 20px rgba(15, 23, 42, 0.10);
+}
+
+.button[disabled],
+.card-header-icon[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================
+   LIGHT / ICON-ONLY
+   ========================= */
+
+.btn-light-icon {
+  min-width: 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+  border-radius: 10px !important;
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.btn-light-icon.button.is-small,
+.btn-compact {
+  min-width: 1.95rem;
+  width: 1.95rem;
+  height: 1.95rem;
+  min-height: 1.95rem;
+  padding: 0;
+  border-radius: 8px !important;
+  box-shadow:
+    0 3px 8px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.btn-light-icon:hover:not([disabled]),
+.btn-compact:hover:not([disabled]) {
+  transform: translateY(-1px);
+}
+
+.btn-light-icon .icon,
+.btn-compact .icon {
+  margin: 0 !important;
+}
+
+/* =========================
+   MOBILE ICON BUTTONS
+   ========================= */
+
 .btn-mobile {
-  /* tailles sûres pour les doigts */
-  min-width: 3rem;  /* 48px */
-  min-height: 3rem; /* 48px */
-  padding: 0.75rem; /* respire sans étirer la bulle */
-  border-radius: 9999px; /* parfait cercle */
+  min-width: 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border-radius: 14px !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1; /* icône parfaitement centrée */
-  border-width: 0; /* avec is-light, on garde un bord clean */
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
-}
-
-/* Élévation subtile (mode carte moderne) */
-.btn-elevated {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-}
-
-/* Hover/active/focus — feedback “propre” et rapide */
-.btn-mobile:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.16);
-}
-
-.btn-mobile:active {
-  transform: translateY(0); /* évite le “saut” au clic */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.16);
-  filter: saturate(1.1);
-}
-
-/* Anneau d’accessibilité discret mais visible */
-.btn-mobile:focus-visible {
-  outline: none;
+  line-height: 1;
   box-shadow:
-    0 2px 8px rgba(0,0,0,0.12),
-    0 0 0 3px rgba(32,156,238,0.35); /* anneau focus */
+    0 8px 18px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
-/* Icône taille confortable */
+.btn-mobile .icon {
+  margin: 0 !important;
+}
+
 .btn-mobile .icon.is-medium i {
-  font-size: 1.25rem; /* ~20px, lisible sans être énorme */
+  font-size: 1.1rem;
 }
 
-/* État disabled harmonisé avec Bulma */
-.btn-mobile[disabled] {
-  opacity: 0.55;
-  pointer-events: none;
-  transform: none;
-  box-shadow: none;
+.btn-mobile:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 22px rgba(15, 23, 42, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* =========================
+   TEXT + ICON SPACING
+   ========================= */
+
+.button .icon:last-child:not(:first-child) {
+  margin-left: 0.1rem;
+}
+
+.button .icon:first-child:not(:last-child) {
+  margin-right: 0.1rem;
+}
+
+/* =========================
+   SPECIAL ICONS
+   ========================= */
+
+.icon-stack-export {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-stack-export .fa-arrow-right {
+  font-size: 0.62em;
+  position: absolute;
+  top: -0.05rem;
+  right: -0.28rem;
+}
+
+/* =========================
+   CARD HEADER BUTTON
+   ========================= */
+
+.card-header-icon {
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  min-width: 2rem;
+  min-height: 2rem;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+
+.card-header-icon:hover:not([disabled]) {
+  transform: translateY(-1px);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* =========================
+   COLOR TUNING FOR LIGHT BUTTONS
+   ========================= */
+
+.button.is-light.is-primary {
+  border-color: rgba(0, 209, 178, 0.14);
+}
+
+.button.is-light.is-info {
+  border-color: rgba(32, 156, 238, 0.14);
+}
+
+.button.is-light.is-danger {
+  border-color: rgba(241, 70, 104, 0.14);
+}
+
+.button.is-light.is-warning {
+  border-color: rgba(255, 221, 87, 0.18);
+}
+
+.button.is-light.is-link {
+  border-color: rgba(72, 95, 199, 0.14);
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media screen and (max-width: 767px) {
+  .btn-modern {
+    min-height: 2.35rem;
+    padding-inline: 0.8rem;
+  }
+
+  .btn-modern.button.is-small {
+    min-height: 1.9rem;
+    padding-inline: 0.62rem;
+  }
+
+  .btn-mobile {
+    min-width: 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    border-radius: 12px !important;
+  }
+
+  .btn-light-icon {
+    min-width: 2.1rem;
+    width: 2.1rem;
+    height: 2.1rem;
+    min-height: 2.1rem;
+  }
+
+  .btn-light-icon.button.is-small,
+  .btn-compact {
+    min-width: 1.85rem;
+    width: 1.85rem;
+    height: 1.85rem;
+    min-height: 1.85rem;
+  }
 }

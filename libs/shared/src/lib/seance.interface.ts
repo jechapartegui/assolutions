@@ -1,6 +1,6 @@
 import { corelistobject } from "./corelistobject.interface";
 import { Cours_VM } from "./cours.interface";
-import { LienGroupe_VM } from "./groupe.interface";
+import { LienGroupe_VM } from "./groupes.interface";
 import { Lieu } from "./lieu.interface";
 import { Personne_VM, PersonneLight_VM, ProfLight_VM } from "./personne.interface";
 

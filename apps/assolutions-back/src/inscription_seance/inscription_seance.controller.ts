@@ -9,19 +9,19 @@ import { InscriptionSeanceService } from './inscription_seance.service';
 export class InscriptionSeanceController {
   constructor(private readonly service: InscriptionSeanceService) {}
 // ✅ UPSERT (create if missing, else update)
-@UseGuards(JwtAuthGuard, ProjectAdminGuard)
+@UseGuards(JwtAuthGuard)
 @Post('maj')
 maj(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
   return this.service.upsert(dto, projectId);
 }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   list(@ProjectId() projectId: number) {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':personneId/:seanceId')
   get(
     @Param('personneId', ParseIntPipe) personneId: number,
@@ -31,14 +31,14 @@ maj(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
     return this.service.getForProject(personneId, seanceId, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
     return this.service.create(dto, projectId);
   }
 
   // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':personneId/:seanceId/update')
   update(
     @Param('personneId', ParseIntPipe) personneId: number,
@@ -50,7 +50,7 @@ maj(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
   }
 
   // ✅ DELETE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':personneId/:seanceId/delete')
   remove(
     @Param('personneId', ParseIntPipe) personneId: number,

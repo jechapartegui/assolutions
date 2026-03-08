@@ -13,11 +13,14 @@ import { GlobalService } from '../../../assolutions-front/src/services/global.se
 import { NotifJechaComponent } from 'apps/assolutions-front/src/app/custom-notification/custom-notification.component';
 import { MenuComponent } from 'apps/assolutions-front/src/app/menu/menu.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MultifiltersMenuPipe } from 'apps/assolutions-front/src/filters/multifilters-menu.pipe';
+import { DureeHHMMPipe } from 'apps/assolutions-front/src/pipe/duree.pipe';
+import { CustomButtonComponent } from 'apps/assolutions-front/src/app/custom-button/custom-button.component';
 // 👇 import des routes legacy (ton fichier qui contient "const routes: Routes = [...]")
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, MenuComponent,
-    NotifJechaComponent],
+  declarations: [AppComponent, LoginComponent, MenuComponent,MultifiltersMenuPipe, CustomButtonComponent,
+    NotifJechaComponent, DureeHHMMPipe],
   imports: [
     BrowserModule,
     FormsModule,

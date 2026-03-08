@@ -6,7 +6,7 @@ export * from './lib/member.interface';
 export * from './lib/saison.interface';
 export * from './lib/autres.interface';
 export * from './lib/cours.interface';
-export * from './lib/groupe.interface';
+export * from './lib/groupes.interface';
 export * from './lib/adresse.interface';
 export * from './lib/inscription_saison.interface';
 export * from './lib/mail-input.interface';

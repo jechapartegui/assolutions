@@ -1,4 +1,4 @@
-import { LienGroupe_VM } from "./groupe.interface";
+import { LienGroupe_VM } from "./groupes.interface";
 
 export class InscriptionSaison_VM{
     public id:number = 0;

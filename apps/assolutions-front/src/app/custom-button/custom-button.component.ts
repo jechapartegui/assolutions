@@ -7,6 +7,6 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./custom-button.component.css']
 })
 export class CustomButtonComponent {
-  @Input() type_button:string;
-  @Input() disabled:boolean = false;
+  @Input() type_button: string = '';
+  @Input() disabled: boolean = false;
 }
