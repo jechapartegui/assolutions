@@ -29,6 +29,14 @@ export class SeanceProfesseurApiService {
     return this.api.POST<SeanceProfesseur>(`${this.base}/${id}/update`, dto);
   }
 
+  updatelist(seanceId: number, profs: number[]): Promise<void> {
+    const payload = {
+      seanceId, 
+      profs
+    };
+    return this.api.POST<void>(`${this.base}/updatelist`, payload);
+  }
+
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }

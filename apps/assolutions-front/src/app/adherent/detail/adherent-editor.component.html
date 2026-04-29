@@ -1,0 +1,336 @@
+<div class="adherent-editor-card" *ngIf="currentVm?.editAdherent as adherent">
+  <header class="adherent-editor-header">
+    <div class="adherent-editor-title">
+      <p class="title is-5 mb-1" *ngIf="adherent.id === 0">
+        Créer un adhérent
+      </p>
+      <p class="title is-5 mb-1" *ngIf="adherent.id > 0">
+        Éditer un adhérent
+      </p>
+
+      <p class="subtitle is-6 mb-0">
+        {{ adherent.libelle || 'Nouvel adhérent' }}
+      </p>
+
+      <div class="adherent-editor-summary">
+        <span *ngIf="adherent.date_naissance">
+          Né(e) le {{ adherent.date_naissance | date:'dd/MM/yyyy' }}
+        </span>
+        <span> · {{ statutInscriptionLabel }}</span>
+        <span *ngIf="adherent.archive"> · Archivé</span>
+      </div>
+    </div>
+
+    <div class="buttons is-flex-wrap-wrap adherent-editor-actions">
+      <button class="button is-light" type="button" (click)="back.emit()">
+        <span>Retour</span>
+      </button>
+
+      <button
+        *ngIf="adherent.id > 0"
+        class="button"
+        [class.is-warning]="!adherent.archive"
+        [class.is-light]="adherent.archive"
+        type="button"
+        (click)="toggleArchive()"
+      >
+        <span>{{ archiveActionLabel }}</span>
+      </button>
+
+      <button
+        class="button is-success"
+        type="button"
+        [disabled]="!currentVm?.isValid || loading"
+        (click)="save()"
+      >
+        <span>Sauvegarder</span>
+      </button>
+
+      <button
+        *ngIf="isAdmin && adherent.id > 0"
+        class="button is-danger is-light"
+        type="button"
+        (click)="deleteAdherent()"
+      >
+        <span>Supprimer</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="adherent-editor-body">
+<div class="adherent-editor-grid">
+  <div class="adherent-editor-col adherent-editor-col--main">
+    <!-- Infos principales -->
+    <section class="box editor-box">
+      <div class="editor-box-title-row">
+        <h3 class="subtitle is-6 has-text-primary mb-0">Informations principales</h3>
+      </div>
+
+      <div class="editor-fields editor-fields--two">
+        <div class="field">
+          <label class="label">Nom</label>
+          <div class="control">
+            <input
+              class="input"
+              [(ngModel)]="adherent.nom"
+              (ngModelChange)="checkall()"
+              placeholder="Nom"
+            />
+          </div>
+          <p *ngIf="!rNom.key" class="help is-danger">{{ rNom.value }}</p>
+        </div>
+
+        <div class="field">
+          <label class="label">Prénom</label>
+          <div class="control">
+            <input
+              class="input"
+              [(ngModel)]="adherent.prenom"
+              (ngModelChange)="checkall()"
+              placeholder="Prénom"
+            />
+          </div>
+          <p *ngIf="!rPrenom.key" class="help is-danger">{{ rPrenom.value }}</p>
+        </div>
+
+        <div class="field">
+          <label class="label">Surnom</label>
+          <div class="control">
+            <input
+              class="input"
+              [(ngModel)]="adherent.surnom"
+              placeholder="Surnom"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Date de naissance</label>
+          <input class="input" type="date" [(ngModel)]="dateNaissanceValue" />
+        </div>
+
+        <div class="field">
+          <label class="label">Sexe</label>
+          <div class="select is-fullwidth">
+            <select [(ngModel)]="adherent.sexe">
+              <option [ngValue]="null">Non renseigné</option>
+              <option [ngValue]="false">Femme</option>
+              <option [ngValue]="true">Homme</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Statut</label>
+          <div class="status-stack">
+            <span class="status-pill" [class.status-pill--success]="hasSaisonActive">
+              {{ statutInscriptionLabel }}
+            </span>
+
+            <span class="status-pill" [class.status-pill--muted]="!adherent.archive">
+              {{ adherent.archive ? 'Archivé' : 'Actif' }}
+            </span>
+          </div>
+          <p class="help mt-2">
+            Le statut d’inscription est calculé et n’est pas modifiable ici.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contacts principaux -->
+    <section class="box editor-box">
+      <div class="editor-box-title-row">
+        <h3 class="subtitle is-6 has-text-primary mb-0">Contacts principaux</h3>
+      </div>
+
+      <div class="editor-stack">
+        <div class="contact-row" *ngFor="let c of adherent.contact; let i = index; trackBy: trackByIndex">
+          <div class="select is-fullwidth">
+            <select [(ngModel)]="c.Type">
+              <option [ngValue]="'PHONE'">Téléphone</option>
+              <option [ngValue]="'EMAIL'">Email</option>
+            </select>
+          </div>
+
+          <input
+            class="input"
+            [type]="c.Type === 'PHONE' ? 'tel' : 'email'"
+            [ngModel]="c.Value"
+            (ngModelChange)="setContactValue(c, $event)"
+            placeholder="Valeur"
+          />
+
+          <label class="checkbox contact-pref">
+            <input
+              type="radio"
+              name="preferred-contact"
+              [checked]="c.Pref"
+              (change)="setPreferredContact(i)"
+            />
+            <span>Préféré</span>
+          </label>
+
+          <button class="button is-light" type="button" (click)="removeContact(i)">
+            <span>Supprimer</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="buttons mt-3 mb-0">
+        <button class="button is-primary is-light" type="button" (click)="addContact('MAIL')">
+          <span>Ajouter un contact</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Contacts à prévenir -->
+    <section class="box editor-box">
+      <h3 class="subtitle is-6 has-text-primary mb-4">Contact à prévenir</h3>
+
+      <div class="editor-stack">
+        <div class="contact-row" *ngFor="let c of adherent.contact_prevenir; let i = index; trackBy: trackByIndex">
+          <div class="select is-fullwidth">
+            <select [(ngModel)]="c.Type">
+              <option [ngValue]="'PHONE'">Téléphone</option>
+              <option [ngValue]="'EMAIL'">Email</option>
+            </select>
+          </div>
+
+          <input
+            class="input"
+            [ngModel]="c.Value"
+            (ngModelChange)="setContactValue(c, $event)"
+            placeholder="Valeur"
+          />
+
+          <div></div>
+
+          <button class="button is-light" type="button" (click)="removeContactPrevenir(i)">
+            <span>Supprimer</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="buttons mt-3 mb-0">
+        <button class="button is-primary is-light" type="button" (click)="addContactPrevenir('TEL')">
+          <span>Ajouter un contact à prévenir</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Historique -->
+    <section class="box editor-box">
+      <div class="editor-box-title-row">
+        <h3 class="subtitle is-6 has-text-primary mb-0">Historique des inscriptions par saison</h3>
+        <span class="editor-box-badge editor-box-badge--neutral">Lecture seule</span>
+      </div>
+
+      <div class="history-list" *ngIf="getSortedInscriptionsSaison().length; else noSaisonHistory">
+        <div class="history-item" *ngFor="let inscription of getSortedInscriptionsSaison(); trackBy: trackBySaison">
+          <div class="history-item-main">
+            <div class="history-item-title">
+              {{ getSaisonLabel(inscription.saison_id) }}
+            </div>
+
+            <div class="history-item-subtitle">
+              <span
+                class="status-pill"
+                [class.status-pill--success]="isSaisonActive(inscription.saison_id)"
+              >
+                {{
+                  isSaisonActive(inscription.saison_id)
+                    ? 'Saison active'
+                    : 'Historique'
+                }}
+              </span>
+
+              <span class="status-pill status-pill--light" *ngIf="inscription.active">
+                {{ inscription.active }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noSaisonHistory>
+        <p class="empty-state">Aucune inscription de saison enregistrée.</p>
+      </ng-template>
+    </section>
+  </div>
+
+  <div class="adherent-editor-col adherent-editor-col--side">
+    <!-- Adresse -->
+    <section class="box editor-box">
+      <h3 class="subtitle is-6 has-text-primary mb-4">Adresse</h3>
+
+      <div class="editor-fields">
+        <div class="field">
+          <label class="label">Adresse</label>
+          <input class="input" [(ngModel)]="adherent.adresse.Street" />
+        </div>
+
+        <div class="editor-fields editor-fields--two">
+          <div class="field">
+            <label class="label">Code postal</label>
+            <input class="input" [(ngModel)]="adherent.adresse.PostCode" />
+          </div>
+
+          <div class="field">
+            <label class="label">Ville</label>
+            <input class="input" [(ngModel)]="adherent.adresse.City" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Groupes -->
+    <section class="box editor-box">
+      <h3 class="subtitle is-6 has-text-primary mb-4">
+        Groupes – saison {{ vm.activeSaison?.nom || 'active' }}
+      </h3>
+
+      <p class="help mb-3" *ngIf="!activeSaisonId">
+        Aucune saison active définie.
+      </p>
+
+      <p class="help mb-3" *ngIf="activeSaisonId && !hasInscriptionSaison(activeSaisonId)">
+        L’adhérent n’est pas inscrit sur la saison active.
+      </p>
+
+      <div class="editor-check-grid" *ngIf="activeSaisonId && hasInscriptionSaison(activeSaisonId)">
+        <label class="checkbox editor-check-item" *ngFor="let groupe of groupesDisponibles">
+          <input
+            type="checkbox"
+            [checked]="hasGroupeActiveSaison(groupe.id)"
+            (change)="toggleGroupeForActiveSaison(groupe.id)"
+          />
+          <span>{{ groupe.nom }}</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Résumé -->
+    <section class="box editor-box">
+      <h3 class="subtitle is-6 has-text-primary mb-4">Résumé</h3>
+
+      <div class="content is-small">
+        <p><strong>Libellé :</strong> {{ adherent.libelle || '-' }}</p>
+        <p><strong>Sexe :</strong> {{ getSexeLabel(adherent.sexe) || '-' }}</p>
+        <p><strong>Statut :</strong> {{ statutInscriptionLabel }}</p>
+        <p><strong>État :</strong> {{ adherent.archive ? 'Archivé' : 'Actif' }}</p>
+        <p><strong>Email :</strong> {{ getEmailPrincipal || '-' }}</p>
+        <p><strong>Contacts principaux :</strong> {{ adherent.contact.length }}</p>
+        <p><strong>Contacts à prévenir :</strong> {{ adherent.contact_prevenir.length }}</p>
+        <p><strong>Inscriptions saison :</strong> {{ adherent.inscriptionsSaison.length }}</p>
+
+        <div *ngIf="activeSaisonId">
+          <p class="mb-1"><strong>Groupes saison active :</strong></p>
+          <p>{{ getGroupesLabelForSaison() || 'Aucun groupe' }}</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+  </div>
+</div>

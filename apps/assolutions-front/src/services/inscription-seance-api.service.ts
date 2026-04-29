@@ -4,6 +4,7 @@ import {
   InscriptionSeance,
   CreateInscriptionSeanceDto,
   UpdateInscriptionSeanceDto,
+  FullInscriptionSeance_VM,
 } from '@shared/lib/inscription-seance.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -34,4 +35,22 @@ export class InscriptionSeanceApiService {
   maj(dto: CreateInscriptionSeanceDto): Promise<InscriptionSeance> {
   return this.api.POST<InscriptionSeance>(`${this.base}/maj`, dto);
 }
+
+listBySaison(saisonId: number): Promise<InscriptionSeance[]>{
+  return this.api.GET<InscriptionSeance[]>(`${this.base}/saison/` + saisonId);
 }
+listBySaison_UniqueID(saisonId: number): Promise<number[]>{
+  return this.api.GET<number[]>(`${this.base}/saison/uniqueid/` + saisonId);
+}
+
+  listByPersonneAndSaison(personneId: number, saisonId: number): Promise<InscriptionSeance[]> {
+    return this.api.GET<InscriptionSeance[]>(`${this.base}/personne/${personneId}/saison/${saisonId}`);
+  }
+
+  GetAllSeanceFull(seanceId: number): Promise<FullInscriptionSeance_VM[]> {
+    return this.api.GET<FullInscriptionSeance_VM[]>(`${this.base}/full/${seanceId}`);
+  }
+  GetAdherentCompte(login: string, seanceId: number): Promise<FullInscriptionSeance_VM[]> {
+    return this.api.GET<FullInscriptionSeance_VM[]>(`${this.base}/compte/${login}/seance/${seanceId}`);
+  }
+  }

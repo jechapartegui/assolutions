@@ -8,12 +8,12 @@ export class MailRecordEntity {
   @Column({ type: 'varchar', length: 200 })
   record: string;
 
-  @Column({ type: 'varchar', length: 200, name: 'to' })
+  @Column({ name: 'to', type: 'varchar', length: 200 })
   to: string;
 
   @Column({ type: 'varchar', length: 200 })
   subject: string;
 
-  @Column({ type: 'int', nullable: true })
-  project_id: number | null;
+  @Column({ name: 'project_id', type: 'int', nullable: true })
+  project_id?: number | null;
 }

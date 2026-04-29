@@ -180,6 +180,29 @@ INSERT INTO public.registry(entity_type, entity_id)
 SELECT 'seance_professeur', sp.id FROM public.seance_professeur sp
 ON CONFLICT (entity_type, entity_id) DO UPDATE SET updated_at = now();
 
+-- Table: public.contacts
+
+-- DROP TABLE IF EXISTS public.contacts;
+
+CREATE TABLE IF NOT EXISTS public.contacts
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    object_type character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    object_id integer NOT NULL,
+    contact_type character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    contact_value character varying COLLATE pg_catalog."default",
+    diffusion boolean,
+    contact_list character varying COLLATE pg_catalog."default" NOT NULL DEFAULT 'liste_contact'::character varying,
+    info character varying COLLATE pg_catalog."default",
+    pref boolean NOT NULL,
+    CONSTRAINT contacts_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.contacts
+    OWNER to jecha266;
+
 VERSION 2.0 AsSolutions
 INSERT INTO public.contacts
   (object_type, object_id, contact_type, contact_value, diffusion, contact_list, info, pref)
@@ -229,3 +252,45 @@ CROSS JOIN LATERAL jsonb_array_elements(
 ) elem
 WHERE (elem->>'Value') IS NOT NULL
   AND (elem->>'Value') <> '';
+
+
+CREATE TABLE IF NOT EXISTS public.login_project
+(
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    login_id integer NOT NULL,
+    project_id integer NOT NULL,
+    date_creation timestamp with time zone NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_login_project_compte
+        FOREIGN KEY (login_id)
+        REFERENCES public.compte (id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_login_project_project
+        FOREIGN KEY (project_id)
+        REFERENCES public.project (id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_login_project_login_project
+        UNIQUE (login_id, project_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_login_project_login_id
+    ON public.login_project (login_id);
+
+CREATE INDEX IF NOT EXISTS idx_login_project_project_id
+    ON public.login_project (project_id);
+
+    INSERT INTO public.login_project (login_id, project_id)
+SELECT DISTINCT
+    p.compte AS login_id,
+    s.project_id AS project_id
+FROM public.inscription_saison ins
+INNER JOIN public.personne p
+    ON p.id = ins.personne_id
+INNER JOIN public.saison s
+    ON s.id = ins.saison_id
+WHERE p.compte IS NOT NULL
+  AND s.project_id IS NOT NULL
+  AND ins.active = true
+ON CONFLICT (login_id, project_id) DO NOTHING;

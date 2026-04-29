@@ -59,4 +59,24 @@ maj(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
   ) {
     return this.service.remove(personneId, seanceId, projectId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('saison/:saisonId')
+  listBySaison(@Param('saisonId', ParseIntPipe) saisonId: number) {
+    return this.service.listBySaison(saisonId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('saison/uniqueid/:saisonId')
+  listBySaison_UniqueID(@Param('saisonId', ParseIntPipe) saisonId: number) {
+    return this.service.listBySaison_UniqueID(saisonId);
+  }
+
+@UseGuards(JwtAuthGuard)
+@Get('personne/:personneId/saison/:saisonId')
+listByPersonneAndSaison(
+  @Param('personneId', ParseIntPipe) personneId: number,
+  @Param('saisonId', ParseIntPipe) saisonId: number,
+) {
+  return this.service.listByPersonneAndSaison(personneId, saisonId);
+}
 }

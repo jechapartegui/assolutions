@@ -31,5 +31,7 @@ export * from './lib/inscription-seance.interface';
 export * from './lib/lien-groupe.interface';
 export * from './lib/mail-record.interface';
 export * from './lib/mail-project.interface';
-export * from './lib/mail-account.interface';
+export * from './lib/mail-input.interface';
+export * from './lib/mes-seances.interface';
+export * from './lib/commande.interface';
 

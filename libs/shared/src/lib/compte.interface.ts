@@ -59,7 +59,7 @@ export type AppMode = "APPLI" | "ADMIN";
 export type ProjectRights = {
   adherent: boolean;
   prof: boolean;
-  essai: boolean;
+  visible: boolean;
 };
 
 export type Session = {

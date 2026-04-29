@@ -32,4 +32,8 @@ export class PersonneApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+
+  list_by_id(ids: number[]): Promise<Personne[]> {
+    return this.api.POST<Personne[]>(`${this.base}/by-ids`, ids); 
+  }
 }

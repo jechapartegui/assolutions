@@ -1,457 +1,93 @@
-<ng-container *ngIf="store.isLoggedIn(); else NonConnecte">
-<ng-container *ngIf="thisSeance">
-  <ng-container *ngIf="!isLien">
-
-  <!-- ====== DESKTOP / TABLET ====== -->
-  <span class="fullscreen">
-    <div class="columns page-fill">
-      <div class="column">
-        <div class="card">
-          <header class="card-header" style="align-items: center">
-            <p class="card-header-title">
-              {{ thisSeance.nom }}&nbsp;{{ seanceText }}
-            </p>
-          </header>
-
-          <!-- ====== CARD CONTENT ====== -->
-          <div class="card-content" #scrollableContent>
-            <div class="content">
-
-              <!-- ====== PANNEAUX D'OPTIONS (remplacent la liste) ====== -->
-              <ng-container *ngIf="uiMode !== 'list'">
-                <!-- Toolbar locale du panneau -->
-                <div class="ms-panel-toolbar">
-                  <button class="button is-light is-rounded btn-compact"
-                          (click)="closePanel()">
-                    <span class="icon"><i class="fas fa-arrow-left"></i></span>
-                    <span>Retour</span>
-                  </button>
-
-                  <span class="ms-panel-title" *ngIf="uiMode==='convocation'">
-                    <i class="fas fa-paper-plane"></i>&nbsp;Convocation
-                  </span>
-                  <span class="ms-panel-title" *ngIf="uiMode==='annulation'">
-                    <i class="fas fa-ban"></i>&nbsp;Annulation
-                  </span>
-                  <span class="ms-panel-title" *ngIf="uiMode==='ajout'">
-                    <i class="fas fa-user-plus"></i>&nbsp;Ajouter une personne
-                  </span>
-                  <span class="ms-panel-title" *ngIf="uiMode==='note'">
-                    <i class="fas fa-sticky-note"></i>&nbsp;Note séance
-                  </span>
-                </div>
-
-                <!-- CONVOCATION -->
-                <div *ngIf="uiMode==='convocation'" class="ms-panel">
-                  <div class="ms-form grid-2">
-                    <div>
-                      <label class="label">Destinataires</label>
-                      <div class="ms-recipients">
-                        <label class="checkbox" *ngFor="let p of All">
-                          <input type="checkbox"
-                                 [checked]="isChecked(p, 'convocation')"
-                                 (change)="toggleRecipient(p, 'convocation', $any($event.target).checked)">
-                          <span class="ms-rec-name">{{ p.person.libelle }}</span>
-                          <span class="tag is-light ms-badge" *ngIf="p.statut_inscription">
-                            {{ p.statut_inscription }}
-                          </span>
-                        </label>
-                      </div>
-                      <div class="buttons is-right mt-2">
-                        <button class="button is-small is-light is-rounded btn-compact"
-                                (click)="checkAll('convocation', true)">Tout sélectionner</button>
-                        <button class="button is-small is-light is-rounded btn-compact"
-                                (click)="checkAll('convocation', false)">Tout désélectionner</button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="label">Sujet</label>
-                                   <mail-template-preview
-  [html]="mailSubject"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-<label class="label mt-2" i18n>Customisation du message</label>
-<textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
-<label class="label mt-2" i18n>Visualisation du message</label>
-
-<mail-template-preview
-  [html]="mailBody"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-
-                      <div class="buttons is-right mt-3">
-                        <button class="button is-primary is-light is-rounded btn-compact"
-                                [disabled]="!selectedRecipients.length"
-                                (click)="sendMail('convocation')">
-                          <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ANNULATION -->
-                <div *ngIf="uiMode==='annulation'" class="ms-panel">
-                  <div class="ms-form grid-2">
-                    <div>
-                      <label class="label">Destinataires</label>
-                      <div class="ms-recipients">
-                        <label class="checkbox" *ngFor="let p of All">
-                          <input type="checkbox"
-                                 [checked]="isChecked(p, 'annulation')"
-                                 (change)="toggleRecipient(p, 'annulation', $any($event.target).checked)">
-                          <span class="ms-rec-name">{{ p.person.libelle }}</span>
-                          <span class="tag is-light ms-badge" *ngIf="p.statut_inscription">
-                            {{ p.statut_inscription }}
-                          </span>
-                        </label>
-                      </div>
-                      <div class="buttons is-right mt-2">
-                        <button class="button is-small is-info is-light is-rounded btn-compact"
-                                (click)="checkAll('annulation', true)">Tout sélectionner</button>
-                        <button class="button is-small is-info is-light is-rounded btn-compact"
-                                (click)="checkAll('annulation', false)">Tout désélectionner</button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label class="label">Sujet</label>
-
-              <label class="label">Sujet</label>
-                                   <mail-template-preview
-  [html]="mailSubject"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-<label class="label mt-2">Message</label>
-<textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
-
-<mail-template-preview
-  [html]="mailBody"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-
-                      <div class="buttons is-right mt-3">
-                        <button class="button is-success is-light is-rounded btn-compact"
-                                [disabled]="!selectedRecipients.length"
-                                (click)="sendMail('annulation')">
-                          <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- AJOUT PERSONNE -->
-                <div *ngIf="uiMode==='ajout'" class="ms-panel">
-                  <div class="field is-horizontal" style="gap:.75rem; align-items:center;">
-                    <div class="field-label is-normal">
-                      <label class="label" style="white-space: nowrap">Sélection adhérent</label>
-                    </div>
-                    <div class="field-body">
-                      <div class="field is-narrow">
-                        <div class="control">
-                          <div class="select is-fullwidth">
-                            <select [(ngModel)]="adherent_to">
-                              <ng-container *ngFor="let add of Autres">
-                                <option [ngValue]="add">{{ add.libelle }}</option>
-                              </ng-container>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <button class="button is-primary is-light is-rounded btn-compact"
-                            [disabled]="!adherent_to"
-                            (click)="AjouterAdherentsHorsGroupe(); closePanel()">
-                      <i class="fas fa-user-plus"></i>&nbsp;Ajouter
-                    </button>
-                  </div>
-                </div>
-
-                <!-- NOTE SÉANCE -->
-                <div *ngIf="uiMode==='note'" class="ms-panel">
-                  <label class="label">Info séance</label>
-                  <textarea class="textarea" rows="8"
-                            [(ngModel)]="thisSeance.info_seance"></textarea>
-                  <div class="buttons is-right mt-3">
-                    <button class="button is-link is-light is-rounded btn-compact" (click)="saveInfoSeance()">Enregistrer</button>
-                  </div>
-                </div>
-              </ng-container>
-
-              <!-- ====== LISTES (mode normal) ====== -->
-              <ng-container *ngIf="uiMode === 'list'">
-
-                <!-- Présences potentielles -->
-                <h6 class="title is-6" style="cursor:pointer;"
-                    (click)="display_personne = !display_personne">
-                  <i class="fas"
-                     [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle()}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
-                </h6>
-
-                <span *ngIf="display_personne">
-                  <ng-template #desktopRow let-potentiel let-icon="icon">
-  <div class="ligne">
-    <span class="partie1">
-      <span class="icon is-medium">
-        <ng-container *ngIf="store.isProf(); else iconReadOnly">
-          <span class="fa-stack fa-sm" style="cursor: pointer;" (click)="openMenu(potentiel, $event)">
-            <i class="fas fa-stack-2x" [ngClass]="icon"></i>
-          </span>
-        </ng-container>
-        <ng-template #iconReadOnly>
-          <i class="fas fa-stack-2x" [ngClass]="icon"></i>
-        </ng-template>
-      </span>
-
-      <!-- Menu statuts -->
-      <ul class="menu-icons"
-          [ngClass]="{ 'is-visible': potentiel.isVisible, not: !potentiel.isVisible }"
-          (click)="$event.stopPropagation()">
-        <li (click)="setStatusAndClose('présent',  potentiel, $event)"><i class="fas fa-thumbs-up"></i> Présent</li>
-        <li (click)="setStatusAndClose('absent',   potentiel, $event)"><i class="fas fa-thumbs-down"></i> Absent</li>
-        <li (click)="setStatusAndClose('essai',    potentiel, $event)"><i class="fas fa-question"></i> Essai</li>
-        <li (click)="setStatusAndClose('convoqué', potentiel, $event)"><i class="fas fa-hand-point-up"></i> Convoqué</li>
-        <li (click)="setStatusAndClose(null,       potentiel, $event)"><i class="fas fa-ellipsis-h"></i> Non défini</li>
-      </ul>
-
-      <figure class="image is-32x32 is-inline-block mr-2">
-        <img class="is-rounded avatar"
-             [src]="potentiel.person?.photo || defaultAvatar"
-             [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
-             (error)="onImgError($event)">
-      </figure>
-
-      <span class="nom_personne">{{ potentiel.person.libelle }}</span>
-      <span [title]="contact_urgence_nom(potentiel)">{{ contact_urgence(potentiel) }}</span>
-    </span>
-
-    <div class="buttons has-addons" *ngIf="store.isProf()">
-      <button type="button"
-              class="button is-outlined is-rounded is-primary"
-              (click)="MAJPresence(potentiel, true)"
-              [disabled]="!GetNbPersonne()">
-        <i class="fas fa-check"></i>
-      </button>
-      <button type="button"
-              class="button is-outlined is-rounded is-danger"
-              (click)="MAJPresence(potentiel, false)">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  </div>
-</ng-template>
-
-              <!-- Présent -->
-  <ng-container *ngFor="let potentiel of All">
-    <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'présent'">
-      <ng-container *ngTemplateOutlet="desktopRow; context: { $implicit: potentiel, icon: 'fa-thumbs-up has-text-success' }"></ng-container>
-    </ng-container>
-  </ng-container>
-
-  <!-- Essai -->
-  <ng-container *ngFor="let potentiel of All">
-    <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'essai'">
-      <ng-container *ngTemplateOutlet="desktopRow; context: { $implicit: potentiel, icon: 'fa-question' }"></ng-container>
-    </ng-container>
-  </ng-container>
-
-  <!-- Convoqué -->
-  <ng-container *ngFor="let potentiel of All">
-    <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'convoqué'">
-      <ng-container *ngTemplateOutlet="desktopRow; context: { $implicit: potentiel, icon: 'fa-hand-point-up has-text-info' }"></ng-container>
-    </ng-container>
-  </ng-container>
-
-  <!-- Absent -->
-  <ng-container *ngFor="let potentiel of All">
-    <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'absent'">
-      <ng-container *ngTemplateOutlet="desktopRow; context: { $implicit: potentiel, icon: 'fa-thumbs-down has-text-danger' }"></ng-container>
-    </ng-container>
-  </ng-container>
-
-  <!-- Non défini (prof uniquement) -->
-  <ng-container *ngFor="let potentiel of All">
-    <ng-container *ngIf="!potentiel.statut_seance && !potentiel.statut_inscription && store.isProf()">
-      <ng-container *ngTemplateOutlet="desktopRow; context: { $implicit: potentiel, icon: 'fa-ellipsis-h' }"></ng-container>
-    </ng-container>
-  </ng-container>
-
+<ng-container *ngIf="isLoggedIn; else NonConnecte">
+  <ng-container *ngIf="thisSeance">
+    <ng-container *ngIf="!isLien; else LinkMode">
+      <div class="ms-shell">
+        <section class="ms-hero">
+          <div class="ms-hero-header">
+            <div class="ms-hero-title">
+              <div class="ms-title-row">
+                <h1 class="title is-5 mb-0">{{ thisSeance.nom }}</h1>
+                <span
+                  class="tag is-light ms-status-tag"
+                  *ngIf="thisSeance.statut"
+                >
+                  {{ thisSeance.statut }}
                 </span>
+              </div>
 
-                <!-- Présents -->
-                <h6 class="title is-6" style="cursor:pointer;"
-                    (click)="display_present = !display_present">
-                  <i class="fas"
-                     [ngClass]="display_present ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présents</span>&nbsp;({{ getPresent() }}&nbsp;<span i18n>personnes</span>)
-                </h6>
-       <span *ngIf="display_present">
-                <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="potentiel.statut_seance">
-                    <ng-container *ngIf="potentiel.statut_seance === 'présent'">
-                      <div class="ligne">
-                        <span class="partie1">
-                          <span class="icon is-medium" *ngIf="store.isProf()" >
-                            <span class="fa-stack fa-sm">
-                              <i
-                                *ngIf="potentiel.statut_inscription == 'présent'"
-                                class="fas fa-stack-2x fa-thumbs-up"
-                              ></i>
-                              <i
-                                *ngIf="potentiel.statut_inscription == 'absent'"
-                                class="fas fa-stack-2x fa-thumbs-down"
-                              ></i>
-                              <i
-                                *ngIf="potentiel.statut_inscription == 'essai'"
-                                class="fas fa-stack-2x fa-question"
-                              ></i>
-                              <i
-                                *ngIf="
-                                  potentiel.statut_inscription == 'convoqué'
-                                "
-                                class="fas fa-stack-2x fa-hand-point-up"
-                              ></i>
-                              <i
-                                *ngIf="potentiel.statut_inscription == null"
-                                class="fas fa-stack-2x fa-ellipsis-h"
-                              ></i>
-                            </span>
-                          </span>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
-                        </span>
-
-                        <div class="buttons has-addons"  *ngIf="store.isProf()">
-                          <button
-                            type="button"
-                            class="button is-rounded is-primary"
-                            (click)="MAJPresence(potentiel, null)"
-                          >
-                            <i class="fas fa-check"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="button is-outlined is-rounded is-danger"
-                            (click)="MAJPresence(potentiel, false)"
-                          >
-                            <i class="fas fa-times"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </ng-container>
-                  </ng-container>
+              <p class="subtitle is-6 mb-0">
+                {{ seanceText }}
+                <ng-container *ngIf="thisSeance.lieu_nom">
+                  · {{ thisSeance.lieu_nom }}
                 </ng-container>
-              </span>
-              <h6  style="cursor:pointer;"
-                class="title is-6"
-                (click)="
-                  display_absent
-                    ? (display_absent = false)
-                    : (display_absent = true)
-                "
-              >
-                <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
-                <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
-                <span i18n>Absents</span>&nbsp;({{ getAbsent() }}&nbsp;<span
-                  i18n
-                  >personnes</span
-                >)
-              </h6>
-              <span *ngIf="display_absent">
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="potentiel.statut_seance">
-                  <ng-container *ngIf="potentiel.statut_seance === 'absent'">
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium"  *ngIf="store.isProf()">
-                          <span class="fa-stack fa-sm">
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'présent'"
-                              class="fas fa-stack-2x fa-thumbs-up"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'absent'"
-                              class="fas fa-stack-2x fa-thumbs-down"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'essai'"
-                              class="fas fa-stack-2x fa-question"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'convoqué'"
-                              class="fas fa-stack-2x fa-hand-point-up"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == null"
-                              class="fas fa-stack-2x fa-ellipsis-h"
-                            ></i>
-                          </span>
-                        </span>
-                        <span class="nom_personne">{{
-                          potentiel.person.libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
+              </p>
 
-                      <div class="buttons has-addons"  *ngIf="store.isProf()">
-                        <button
-                          type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          [disabled]="!GetNbPersonne()"
-                          (click)="MAJPresence(potentiel, true)"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-rounded is-danger"
-                          (click)="MAJPresence(potentiel, null)"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </ng-container>
-                </ng-container>
-              </ng-container></span>
-
-                <button class="scroll-to-top"
-                        *ngIf="showScrollToTop"
-                        (click)="scrollToTop()"
-                        title="Revenir en haut">↑</button>
-              </ng-container>
+              <div class="ms-summary-tags">
+                <span class="tag is-light">
+                  <i class="fas fa-users mr-1"></i>
+                  Potentiels : {{ getPresencePotentielle() }}/{{ All.length }}
+                </span>
+                <span class="tag is-success is-light">
+                  <i class="fas fa-check mr-1"></i>
+                  Présents : {{ getPresent() }}
+                </span>
+                <span class="tag is-danger is-light">
+                  <i class="fas fa-times mr-1"></i>
+                  Absents : {{ getAbsent() }}
+                </span>
+                <span
+                  class="tag is-info is-light"
+                  *ngIf="pendingPlacesLabel"
+                >
+                  <i class="fas fa-layer-group mr-1"></i>
+                  {{ pendingPlacesLabel }}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <!-- ====== FOOTER Desktop ====== -->
-          <footer class="card-footer">
-            <div class="columns">
-              <div class="column">
-                <div class="buttons">
-                  
-                  <btn [type_button]="'RetourSmall'" (click)="RetourListe()"></btn>
-                <div class="dropdown is-up is-right" [class.is-active]="optionsOpen">
+            <div class="buttons ms-hero-actions">
+              <button
+                class="button is-light"
+                type="button"
+                (click)="RetourListe()"
+              >
+                <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                <span>Retour</span>
+              </button>
+
+              <button
+                *ngIf="isProf"
+                class="button is-light"
+                type="button"
+                (click)="vue_alpha = !vue_alpha"
+              >
+                <span class="icon">
+                  <i
+                    class="fas"
+                    [ngClass]="vue_alpha ? 'fa-arrow-down-a-z' : 'fa-list-check'"
+                  ></i>
+                </span>
+                <span>{{ vue_alpha ? 'Vue alphabétique' : 'Vue par statut' }}</span>
+              </button>
+
+              <div
+                class="dropdown is-right"
+                [class.is-active]="optionsOpen"
+                *ngIf="isProf"
+              >
                 <div class="dropdown-trigger">
-                  <button class="button is-small is-primary is-light btn-mobile btn-elevated"
-                          aria-haspopup="true" aria-controls="dropdown-menu"
-                          (click)="optionsOpen = !optionsOpen">
+                  <button
+                    class="button is-primary is-light"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                    type="button"
+                    (click)="optionsOpen = !optionsOpen"
+                  >
                     <span class="icon"><i class="fas fa-ellipsis-h"></i></span>
-                    <span i18n>Options</span>
+                    <span>Options</span>
                   </button>
                 </div>
+
                 <div class="dropdown-menu" id="dropdown-menu" role="menu">
                   <div class="dropdown-content">
                     <a class="dropdown-item" (click)="openPanel('convocation')">
@@ -469,559 +105,636 @@
                   </div>
                 </div>
               </div>
-
-                </div>
-              </div>
-            </div>
-          </footer>
-        </div>
-      </div>
-    </div>
-  </span>
-
-  <!-- ====== MOBILE ====== -->
-  <span class="mobile">
-    <div class="container-box">
-      <nav class="navbar is-fixed-top">
-        <btn [type_button]="'RetourMobile'" (click)="uiMode!=='list' ? closePanel() : RetourListe()"></btn>
-        <button class="button is-outlined is-primary btn-mobile btn-elevated" *ngIf="store.isProf()" 
-                (click)="toggleMobileOptions = !toggleMobileOptions">
-          <i class="fas fa-ellipsis-h"></i>&nbsp;<span i18n>Options</span>
-        </button>
-         <button *ngIf="vue_alpha" class="button is-outlined is-primary btn-mobile btn-elevated"
-                (click)="vue_alpha = !vue_alpha">
-          <i class="fas fa-thumbs-up"></i>&nbsp;<span i18n>Vue par statut</span>
-        </button>
-         <button *ngIf="!vue_alpha" class="button is-outlined is-primary btn-mobile btn-elevated"
-                (click)="vue_alpha = !vue_alpha">
-          <i class="fas fa-arrow-down-a-z"></i>&nbsp;<span i18n>Vue alphabetique</span>
-        </button>
-        <div class="dropdown is-left" [class.is-active]="toggleMobileOptions">
-          <div class="dropdown-menu">
-            <div class="dropdown-content">
-              <a class="dropdown-item" (click)="openPanel('convocation'); toggleMobileOptions=false">Envoyer convocation</a>
-              <a class="dropdown-item" (click)="openPanel('annulation'); toggleMobileOptions=false">Envoyer annulation</a>
-              <a class="dropdown-item" (click)="openPanel('ajout'); toggleMobileOptions=false">Ajouter une personne</a>
-              <a class="dropdown-item" (click)="openPanel('note'); toggleMobileOptions=false">Note séance</a>
             </div>
           </div>
-        </div>
-      </nav>
+        </section>
 
-      <p class="title is-5" style="margin-top:.5rem;">
-        {{ thisSeance.nom }}&nbsp;{{ seanceText }}
-      </p>
-
-      <!-- Contenu mobile : panneau d’options OU listes -->
-      <ng-container *ngIf="uiMode !== 'list'">
-        <!-- On réutilise les mêmes panneaux que desktop (markup identique) -->
-        <div class="ms-panel-toolbar">
-          <button class="button is-light is-rounded btn-compact" (click)="closePanel()">
-            <span class="icon"><i class="fas fa-arrow-left"></i></span>
-            <span>Retour</span>
-          </button>
-          <span class="ms-panel-title" *ngIf="uiMode==='convocation'"><i class="fas fa-paper-plane"></i>&nbsp;Convocation</span>
-          <span class="ms-panel-title" *ngIf="uiMode==='annulation'"><i class="fas fa-ban"></i>&nbsp;Annulation</span>
-          <span class="ms-panel-title" *ngIf="uiMode==='ajout'"><i class="fas fa-user-plus"></i>&nbsp;Ajouter une personne</span>
-          <span class="ms-panel-title" *ngIf="uiMode==='note'"><i class="fas fa-sticky-note"></i>&nbsp;Note séance</span>
-        </div>
-
-        <div *ngIf="uiMode==='convocation'" class="ms-panel">
-          <!-- même contenu que desktop -->
-          <div class="ms-form grid-1">
-            <div>
-              <label class="label">Destinataires</label>
-              <div class="ms-recipients">
-                <label class="checkbox" *ngFor="let p of All">
-                  <input type="checkbox"
-                         [checked]="isChecked(p, 'convocation')"
-                         (change)="toggleRecipient(p, 'convocation', $any($event.target).checked)">
-                  <span class="ms-rec-name">{{ p.person.libelle }}</span>
-                  <span class="tag is-light ms-badge" *ngIf="p.statut_inscription">{{ p.statut_inscription }}</span>
-                </label>
-              </div>
-              <div class="buttons is-right mt-2">
-                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('convocation', true)">Tout sélectionner</button>
-                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('convocation', false)">Tout désélectionner</button>
-              </div>
-            </div>
-            <div>
-              <label class="label">Sujet</label>
-              <mail-template-preview
-  [html]="mailSubject"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-<label class="label mt-2">Message</label>
-<textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
-
-<mail-template-preview
-  [html]="mailBody"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-
-              <div class="buttons is-right mt-3">
-                <button class="button is-outlined is-primary btn-mobile btn-elevated" [disabled]="!selectedRecipients.length"
-                        (click)="sendMail('convocation')">
-                  <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
+        <div class="ms-content" #scrollableContent>
+          <ng-container *ngIf="uiMode !== 'list'; else ListMode">
+            <section class="ms-panel-shell">
+              <div class="ms-panel-toolbar">
+                <button
+                  class="button is-light is-rounded"
+                  type="button"
+                  (click)="closePanel()"
+                >
+                  <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                  <span>Retour</span>
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div *ngIf="uiMode==='annulation'" class="ms-panel">
-          <!-- même contenu que desktop -->
-          <div class="ms-form grid-1">
-            <!-- … identique au bloc convocation, en remplaçant le preset par annulation … -->
-            <div>
-              <label class="label">Destinataires</label>
-              <div class="ms-recipients">
-                <label class="checkbox" *ngFor="let p of All">
-                  <input type="checkbox"
-                         [checked]="isChecked(p, 'annulation')"
-                        (change)="toggleRecipient(p, 'annulation', $any($event.target).checked)">
-                  <span class="ms-rec-name">{{ p.person.libelle }}</span>
-                  <span class="tag is-light ms-badge" *ngIf="p.statut_inscription">{{ p.statut_inscription }}</span>
-                </label>
+                <span class="ms-panel-title" *ngIf="uiMode === 'convocation'">
+                  <i class="fas fa-paper-plane"></i>&nbsp;Convocation
+                </span>
+                <span class="ms-panel-title" *ngIf="uiMode === 'annulation'">
+                  <i class="fas fa-ban"></i>&nbsp;Annulation
+                </span>
+                <span class="ms-panel-title" *ngIf="uiMode === 'ajout'">
+                  <i class="fas fa-user-plus"></i>&nbsp;Ajouter une personne
+                </span>
+                <span class="ms-panel-title" *ngIf="uiMode === 'note'">
+                  <i class="fas fa-sticky-note"></i>&nbsp;Note séance
+                </span>
               </div>
-              <div class="buttons is-right mt-2">
-                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('annulation', true)">Tout sélectionner</button>
-                <button class="button is-small is-light is-rounded btn-compact" (click)="checkAll('annulation', false)">Tout désélectionner</button>
-              </div>
-            </div>
-            <div>
-                          <label class="label">Sujet</label>
-              <mail-template-preview
-  [html]="mailSubject"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-<label class="label mt-2">Message</label>
-<textarea class="textarea" rows="4" [(ngModel)]="Notes"></textarea>
 
-<mail-template-preview
-  [html]="mailBody"
-  [variables]="variables"
-  [notes]="Notes">
-</mail-template-preview>
-              <div class="buttons is-right mt-3">
-                <button class="button is-danger is-light is-rounded btn-compact" [disabled]="!selectedRecipients.length"
-                        (click)="sendMail('annulation')">
-                  <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+              <div *ngIf="uiMode === 'convocation'" class="ms-panel">
+                <div class="ms-form grid-2">
+                  <div class="ms-form-card">
+                    <label class="label">Destinataires</label>
+                    <div class="ms-recipients">
+                      <label class="checkbox ms-recipient-row" *ngFor="let p of All">
+                        <input
+                          type="checkbox"
+                          [checked]="isChecked(p, 'convocation')"
+                          (change)="toggleRecipient(p, 'convocation', $any($event.target).checked)"
+                        />
+                        <span class="ms-rec-name">{{ p.person.libelle }}</span>
+                        <span class="tag is-light ms-badge" *ngIf="p.statut_inscription">
+                          {{ p.statut_inscription }}
+                        </span>
+                      </label>
+                    </div>
+                    <div class="buttons is-right mt-2">
+                      <button
+                        class="button is-small is-light is-rounded"
+                        type="button"
+                        (click)="checkAll('convocation', true)"
+                      >
+                        Tout sélectionner
+                      </button>
+                      <button
+                        class="button is-small is-light is-rounded"
+                        type="button"
+                        (click)="checkAll('convocation', false)"
+                      >
+                        Tout désélectionner
+                      </button>
+                    </div>
+                  </div>
 
-        <div *ngIf="uiMode==='ajout'" class="ms-panel">
-          <!-- même contenu que desktop -->
-          <div class="field is-horizontal" style="gap:.75rem; align-items:center;">
-            <div class="field-label is-normal">
-              <label class="label" style="white-space: nowrap">Sélection adhérent</label>
-            </div>
-            <div class="field-body">
-              <div class="field is-narrow">
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select [(ngModel)]="adherent_to">
-                      <ng-container *ngFor="let add of Autres">
-                        <option [ngValue]="add">{{ add.libelle }}</option>
-                      </ng-container>
-                    </select>
+                  <div class="ms-form-card">
+                    <label class="label">Sujet</label>
+                    <mail-template-preview
+                      [html]="mailSubject"
+                      [variables]="variables"
+                      [notes]="Notes"
+                    ></mail-template-preview>
+
+                    <label class="label mt-3">Customisation du message</label>
+                    <textarea
+                      class="textarea"
+                      rows="4"
+                      [(ngModel)]="Notes"
+                    ></textarea>
+
+                    <label class="label mt-3">Visualisation du message</label>
+                    <mail-template-preview
+                      [html]="mailBody"
+                      [variables]="variables"
+                      [notes]="Notes"
+                    ></mail-template-preview>
+
+                    <div class="buttons is-right mt-3">
+                      <button
+                        class="button is-primary is-light is-rounded"
+                        type="button"
+                        [disabled]="!selectedRecipients.length"
+                        (click)="sendMail('convocation')"
+                      >
+                        <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <button class="button is-primary is-light is-rounded btn-compact"
-                    [disabled]="!adherent_to"
-                    (click)="AjouterAdherentsHorsGroupe(); closePanel()">
-              <i class="fas fa-user-plus"></i>&nbsp;Ajouter
-            </button>
-          </div>
-        </div>
 
-        <div *ngIf="uiMode==='note'" class="ms-panel">
-          <label class="label">Info séance</label>
-          <textarea class="textarea" rows="8" [(ngModel)]="thisSeance.info_seance"></textarea>
-          <div class="buttons is-right mt-3">
-            <button class="button is-link is-light is-rounded btn-compact" (click)="saveInfoSeance()">Enregistrer</button>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="uiMode === 'list'">
-                       <!-- Présences potentielles -->
-                <h6 class="title is-6" style="cursor:pointer;"
-                    (click)="display_personne = !display_personne">
-                  <i class="fas"
-                     [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                  &nbsp;<span i18n>Présences potentielles</span>&nbsp;({{getPresencePotentielle()}}&nbsp;/&nbsp;{{ All.length }}&nbsp;<span i18n>personnes</span>)
-                </h6>
-
-                <span *ngIf="display_personne">
-                 <ng-template #mobileRow let-potentiel>
-  <div class="ligne">
-    <span class="partie1">
-      <span class="icon is-medium">
-        <span *ngIf="store.isProf()"
-              class="fa-stack fa-sm"
-              (click)="openMenu(potentiel, $event)">
-          <i class="fas fa-stack-2x" [ngClass]="iconClass(potentiel)"></i>
-        </span>
-        <i *ngIf="!store.isProf()" class="fas fa-stack-2x" [ngClass]="iconClass(potentiel)" style="text-align:left;"></i>
-      </span>
-
-      <ul class="menu-icons"
-          [ngClass]="{ 'is-visible': potentiel.isVisible, not: !potentiel.isVisible }"
-          (click)="$event.stopPropagation()">
-        <li (click)="setStatusAndClose('présent',  potentiel, $event)"><i class="fas fa-thumbs-up"></i> Présent</li>
-        <li (click)="setStatusAndClose('absent',   potentiel, $event)"><i class="fas fa-thumbs-down"></i> Absent</li>
-        <li (click)="setStatusAndClose('essai',    potentiel, $event)"><i class="fas fa-question"></i> Essai</li>
-        <li (click)="setStatusAndClose('convoqué', potentiel, $event)"><i class="fas fa-hand-point-up"></i> Convoqué</li>
-        <li (click)="setStatusAndClose(null,       potentiel, $event)"><i class="fas fa-ellipsis-h"></i> Non défini</li>
-      </ul>
-
-      <figure class="image is-32x32 is-inline-block mr-2"
-              (click)="openPreview(potentiel, $event)"
-              style="cursor: zoom-in;">
-        <img class="is-rounded avatar"
-             [src]="potentiel?.person?.photo || defaultAvatar"
-             [alt]="'Photo de ' + (potentiel?.person?.libelle || potentiel?.person?.nom || '')"
-             (error)="onImgError($event)">
-      </figure>
-
-      <span class="nom_personne"
-            (click)="openPreview(potentiel, $event)"
-            style="cursor: zoom-in;">
-        {{ potentiel.person?.libelle }}
-      </span>
-
-      <span class="contact-urgence"
-            [title]="contact_urgence_nom(potentiel)"
-            (click)="openPreview(potentiel, $event)"
-            style="cursor: zoom-in;">
-        {{ contact_urgence(potentiel) }}
-      </span>
-    </span>
-
-    <div *ngIf="store.isProf()" class="buttons has-addons" style="flex-wrap: nowrap;">
-      <button *ngIf="potentiel.statut_seance && potentiel.statut_seance === 'présent'"  type="button"  class="button is-rounded is-primary"
-              (click)="MAJPresence(potentiel, true)"
-              [disabled]="!GetNbPersonne()">
-        <i class="fas fa-check"></i>
-      </button>
-       <button *ngIf="!potentiel.statut_seance || potentiel.statut_seance !== 'présent'"  type="button"  class="button is-outlined is-rounded is-primary"
-              (click)="MAJPresence(potentiel, true)"
-              [disabled]="!GetNbPersonne()">
-        <i class="fas fa-check"></i>
-      </button>
-      <button type="button"  *ngIf="potentiel.statut_seance && potentiel.statut_seance === 'absent'" class="button is-rounded is-danger"
-              (click)="MAJPresence(potentiel, false)">       
-        <i class="fas fa-times"></i>
-      </button>
-       <button type="button"  *ngIf="!potentiel.statut_seance || potentiel.statut_seance !== 'absent'" class="button is-outlined  is-rounded is-danger"
-              (click)="MAJPresence(potentiel, false)">       
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- MODALE DE PRÉVISUALISATION (zoom mobile) -->
-<!-- ✅ Modale unique et safe -->
-<ng-container *ngIf="previewPotentiel as p">
-  <div class="modal is-active">
-    <div class="modal-background" (click)="closePreview()"></div>
-
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <header class="modal-card-head">
-        <p class="modal-card-title">
-          {{ p.person?.libelle || 'Aperçu' }}
-        </p>
-        <button class="delete" aria-label="close" (click)="closePreview()"></button>
-      </header>
-
-      <section class="modal-card-body">
-        <div class="has-text-centered">
-          <figure class="image is-128x128 is-inline-block">
-            <img class="is-rounded"
-                 [src]="getPhoto(p)"
-                 (error)="onImgError($event)"
-                 [alt]="'Photo de ' + (p.person?.libelle || '')">
-          </figure>
-        </div>
-
-        <div class="mt-4">
-          <p class="has-text-weight-semibold mb-1">Contact</p>
-          <p class="mb-1">{{ contact_urgence(p) }}</p>
-          <p class="is-size-7 has-text-grey" *ngIf="contact_urgence_nom(p)">
-            {{ contact_urgence_nom(p) }}
-          </p>
-        </div>
-      </section>
-
-      <footer class="modal-card-foot is-justify-content-flex-end">
-        <button class="button is-primary is-light is-rounded" (click)="closePreview()">Fermer</button>
-      </footer>
-    </div>
-  </div>
-</ng-container>
-
-
-</ng-template>
-
-<ng-container *ngIf="vue_alpha; else PasVuAlpha">
-<ng-container *ngFor="let potentiel of All">  
-     <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
-</ng-container>
-</ng-container>
-<ng-template #PasVuAlpha>
-
-<!-- Présent -->
-<ng-container *ngFor="let potentiel of All">
-  <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'présent'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
-  </ng-container>
-</ng-container>
-
-<!-- Essai -->
-<ng-container *ngFor="let potentiel of All">
-  <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'essai'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
-  </ng-container>
-</ng-container>
-
-<!-- Convoqué -->
-<ng-container *ngFor="let potentiel of All">
-  <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'convoqué'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
-  </ng-container>
-</ng-container>
-
-<!-- Absent -->
-<ng-container *ngFor="let potentiel of All">
-  <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'absent'">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
-  </ng-container>
-</ng-container>
-
-<!-- Non défini (prof uniquement) -->
-<ng-container *ngFor="let potentiel of All">
-  <ng-container *ngIf="!potentiel.statut_seance && !potentiel.statut_inscription && store.isProf()">
-    <ng-container *ngTemplateOutlet="mobileRow; context: { $implicit: potentiel }"></ng-container>
-  </ng-container>
-</ng-container>
-</ng-template>
-
-                    <h6  style="cursor:pointer;"
-                class="title is-6"
-                (click)="
-                  display_present
-                    ? (display_present = false)
-                    : (display_present = true)
-                "
-              >
-                <i *ngIf="!display_present" class="fas fa-chevron-down"></i>
-                <i *ngIf="display_present" class="fas fa-chevron-up"></i> &nbsp;
-                <span i18n>Présents</span>&nbsp;({{ getPresent() }}&nbsp;<span
-                  i18n
-                  >personnes</span
-                >)
-              </h6>
-                </span>
-             <span *ngIf="display_present">
-                <ng-container *ngFor="let potentiel of All">
-                  <ng-container *ngIf="potentiel.statut_seance">
-                    <ng-container *ngIf="potentiel.statut_seance === 'présent'">
-                      <div class="ligne">
-                        <span class="partie1">
-                          <span class="icon is-medium" *ngIf="store.isProf()">
-                            <span class="fa-stack fa-sm">
-                              <i
-                                *ngIf="potentiel.statut_inscription == 'présent'"
-                                class="fas fa-stack-2x fa-thumbs-up"
-                              ></i>
-                              <i
-                                *ngIf="potentiel.statut_inscription == 'absent'"
-                                class="fas fa-stack-2x fa-thumbs-down"
-                              ></i>
-                              <i
-                                *ngIf="potentiel.statut_inscription == 'essai'"
-                                class="fas fa-stack-2x fa-question"
-                              ></i>
-                              <i
-                                *ngIf="
-                                  potentiel.statut_inscription == 'convoqué'
-                                "
-                                class="fas fa-stack-2x fa-hand-point-up"
-                              ></i>
-                              <i
-                                *ngIf="potentiel.statut_inscription == null"
-                                class="fas fa-stack-2x fa-ellipsis-h"
-                              ></i>
-                            </span>
-                          </span>
-                          <span class="nom_personne">{{
-                            potentiel.person.libelle
-                          }}</span>
-                          <span [title]="contact_urgence_nom(potentiel)">{{
-                            contact_urgence(potentiel)
-                          }}</span>
+              <div *ngIf="uiMode === 'annulation'" class="ms-panel">
+                <div class="ms-form grid-2">
+                  <div class="ms-form-card">
+                    <label class="label">Destinataires</label>
+                    <div class="ms-recipients">
+                      <label class="checkbox ms-recipient-row" *ngFor="let p of All">
+                        <input
+                          type="checkbox"
+                          [checked]="isChecked(p, 'annulation')"
+                          (change)="toggleRecipient(p, 'annulation', $any($event.target).checked)"
+                        />
+                        <span class="ms-rec-name">{{ p.person.libelle }}</span>
+                        <span class="tag is-light ms-badge" *ngIf="p.statut_inscription">
+                          {{ p.statut_inscription }}
                         </span>
+                      </label>
+                    </div>
+                    <div class="buttons is-right mt-2">
+                      <button
+                        class="button is-small is-light is-rounded"
+                        type="button"
+                        (click)="checkAll('annulation', true)"
+                      >
+                        Tout sélectionner
+                      </button>
+                      <button
+                        class="button is-small is-light is-rounded"
+                        type="button"
+                        (click)="checkAll('annulation', false)"
+                      >
+                        Tout désélectionner
+                      </button>
+                    </div>
+                  </div>
 
-                        <div class="buttons has-addons" *ngIf="store.isProf()">
-                          <button
-                            type="button"
-                            class="button is-rounded is-primary"
-                            (click)="MAJPresence(potentiel, null)"
-                          >
-                            <i class="fas fa-check"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="button is-outlined is-rounded is-danger"
-                            (click)="MAJPresence(potentiel, false)"
-                          >
-                            <i class="fas fa-times"></i>
-                          </button>
+                  <div class="ms-form-card">
+                    <label class="label">Sujet</label>
+                    <mail-template-preview
+                      [html]="mailSubject"
+                      [variables]="variables"
+                      [notes]="Notes"
+                    ></mail-template-preview>
+
+                    <label class="label mt-3">Message</label>
+                    <textarea
+                      class="textarea"
+                      rows="4"
+                      [(ngModel)]="Notes"
+                    ></textarea>
+
+                    <mail-template-preview
+                      [html]="mailBody"
+                      [variables]="variables"
+                      [notes]="Notes"
+                    ></mail-template-preview>
+
+                    <div class="buttons is-right mt-3">
+                      <button
+                        class="button is-danger is-light is-rounded"
+                        type="button"
+                        [disabled]="!selectedRecipients.length"
+                        (click)="sendMail('annulation')"
+                      >
+                        <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="uiMode === 'ajout'" class="ms-panel">
+                <div class="ms-form grid-1">
+                  <div class="ms-form-card">
+                    <label class="label">Sélection adhérent</label>
+
+                    <div class="field has-addons ms-inline-add">
+                      <div class="control is-expanded">
+                        <div class="select is-fullwidth">
+                          <select [(ngModel)]="adherent_to">
+                            <ng-container *ngFor="let add of Autres">
+                              <option [ngValue]="add">{{ add.libelle }}</option>
+                            </ng-container>
+                          </select>
                         </div>
                       </div>
-                    </ng-container>
-                  </ng-container>
-                </ng-container>
-              </span>
-              <h6  style="cursor:pointer;"
-                class="title is-6"
-                (click)=" display_absent
-                    ? (display_absent = false)
-                    : (display_absent = true)
-                "
-              >
-                <i *ngIf="!display_absent" class="fas fa-chevron-down"></i>
-                <i *ngIf="display_absent" class="fas fa-chevron-up"></i> &nbsp;
-                <span i18n>Absents</span>&nbsp;({{ getAbsent()}}&nbsp;<span
-                  i18n
-                  >personnes</span
-                >)
-              </h6>
-              <span *ngIf="display_absent">
-              <ng-container *ngFor="let potentiel of All">
-                <ng-container *ngIf="potentiel.statut_seance">
-                  <ng-container *ngIf="potentiel.statut_seance === 'absent'">
-                    <div class="ligne">
-                      <span class="partie1">
-                        <span class="icon is-medium" *ngIf="store.isProf()">
-                          <span class="fa-stack fa-sm">
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'présent'"
-                              class="fas fa-stack-2x fa-thumbs-up"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'absent'"
-                              class="fas fa-stack-2x fa-thumbs-down"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'essai'"
-                              class="fas fa-stack-2x fa-question"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == 'convoqué'"
-                              class="fas fa-stack-2x fa-hand-point-up"
-                            ></i>
-                            <i
-                              *ngIf="potentiel.statut_inscription == null"
-                              class="fas fa-stack-2x fa-ellipsis-h"
-                            ></i>
-                          </span>
-                        </span>
-                        <span class="nom_personne">{{
-                          potentiel.person.libelle
-                        }}</span>
-                        <span [title]="contact_urgence_nom(potentiel)">{{
-                          contact_urgence(potentiel)
-                        }}</span>
-                      </span>
 
-                      <div class="buttons has-addons" *ngIf="store.isProf()">
+                      <div class="control">
                         <button
+                          class="button is-primary is-light is-rounded"
                           type="button"
-                          class="button is-outlined is-rounded is-primary"
-                          [disabled]="!GetNbPersonne()"
-                          (click)="MAJPresence(potentiel, true)"
+                          [disabled]="!adherent_to"
+                          (click)="AjouterAdherentsHorsGroupe(); closePanel()"
                         >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="button is-rounded is-danger"
-                          (click)="MAJPresence(potentiel, null)"
-                        >
-                          <i class="fas fa-times"></i>
+                          <i class="fas fa-user-plus"></i>&nbsp;Ajouter
                         </button>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="uiMode === 'note'" class="ms-panel">
+                <div class="ms-form grid-1">
+                  <div class="ms-form-card">
+                    <label class="label">Info séance</label>
+                    <textarea
+                      class="textarea"
+                      rows="8"
+                      [(ngModel)]="thisSeance.info_seance"
+                    ></textarea>
+                    <div class="buttons is-right mt-3">
+                      <button
+                        class="button is-link is-light is-rounded"
+                        type="button"
+                        (click)="saveInfoSeance()"
+                      >
+                        Enregistrer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #ListMode>
+            <section class="ms-sections">
+              <article class="ms-section-card">
+                <header
+                  class="ms-section-header"
+                  (click)="display_personne = !display_personne"
+                >
+                  <div>
+                    <h2 class="title is-6 mb-0">
+                      Présences potentielles
+                    </h2>
+                    <p class="ms-section-subtitle">
+                      {{ getPresencePotentielle() }} / {{ All.length }} personnes
+                    </p>
+                  </div>
+
+                  <button class="button is-white ms-toggle-btn" type="button">
+                    <span class="icon">
+                      <i
+                        class="fas"
+                        [ngClass]="display_personne ? 'fa-chevron-up' : 'fa-chevron-down'"
+                      ></i>
+                    </span>
+                  </button>
+                </header>
+
+                <div class="ms-section-body" *ngIf="display_personne">
+                  <ng-container *ngIf="vue_alpha; else ViewByStatusPotential">
+                    <ng-container *ngFor="let potentiel of All">
+                      <ng-container
+                        *ngIf="!potentiel.statut_seance"
+                        [ngTemplateOutlet]="personRow"
+                        [ngTemplateOutletContext]="{ $implicit: potentiel }"
+                      ></ng-container>
+                    </ng-container>
                   </ng-container>
-                </ng-container>
-              </ng-container></span>
-      </ng-container>
-    </div>
-  </span>
 
-</ng-container>
-<ng-container *ngIf="isLien">
-     <div class="box is-light">
-    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Mes adhérents</h3>
-       <btn *ngIf="thisSeance.afficher_present"
-        [type_button]="'RetourLight'" 
-        (click)="isLien = false;Load();" 
-      ></btn> 
-      <btn *ngIf="!thisSeance.afficher_present"
-        [type_button]="'RetourLight'" 
-        (click)="AfficherMenu()" 
-      ></btn>
-            
-    </div>
+                  <ng-template #ViewByStatusPotential>
+                    <ng-container *ngFor="let potentiel of All">
+                      <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'présent'">
+                        <ng-container
+                          [ngTemplateOutlet]="personRow"
+                          [ngTemplateOutletContext]="{ $implicit: potentiel }"
+                        ></ng-container>
+                      </ng-container>
+                    </ng-container>
 
-    <div class="columns is-vcentered">
-      <div class="column">
-      <ng-container *ngIf="!MesAdherents || MesAdherents.length==0; else MesAdherentsOK">
-        <p>{{libellechargeradherent}}</p>
-      </ng-container>
-      <ng-template #MesAdherentsOK>
-        <ng-container *ngFor="let adh of MesAdherents">
-            <div class="ligne">
-                <span class="partie1" style="gap:20px">
-                          <span class="icon is-medium" style="gap:20px">
-                            <span
-                              class="fa-stack fa-sm" style="cursor: pointer;" (click)="MAJInscription(adh, 'présent')"
-                            >
-                              <i [ngClass]="IsPresent(adh) ? 'fas fa-stack-2x fa-thumbs-up has-text-success' : 'fas fa-stack-2x fa-thumbs-up'" ></i>
-                            </span>
-                            <span
-                              class="fa-stack fa-sm" (click)="MAJInscription(adh, 'absent')"
-                            >
-                              <i [ngClass]="IsAbsent(adh) ? 'fas fa-stack-2x fa-thumbs-down has-text-danger' : 'fas fa-stack-2x fa-thumbs-down'" ></i>
-                            </span>
-                          </span>
-  <span class="nom_personne">{{
-                            adh.person.libelle
-                          }}</span>
-                          </span>
-                        </div>
-        </ng-container>
-                  
-      </ng-template>      
-        </div>     
+                    <ng-container *ngFor="let potentiel of All">
+                      <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'essai'">
+                        <ng-container
+                          [ngTemplateOutlet]="personRow"
+                          [ngTemplateOutletContext]="{ $implicit: potentiel }"
+                        ></ng-container>
+                      </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngFor="let potentiel of All">
+                      <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'convoqué'">
+                        <ng-container
+                          [ngTemplateOutlet]="personRow"
+                          [ngTemplateOutletContext]="{ $implicit: potentiel }"
+                        ></ng-container>
+                      </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngFor="let potentiel of All">
+                      <ng-container *ngIf="!potentiel.statut_seance && potentiel.statut_inscription === 'absent'">
+                        <ng-container
+                          [ngTemplateOutlet]="personRow"
+                          [ngTemplateOutletContext]="{ $implicit: potentiel }"
+                        ></ng-container>
+                      </ng-container>
+                    </ng-container>
+
+                    <ng-container *ngFor="let potentiel of All">
+                      <ng-container *ngIf="!potentiel.statut_seance && !potentiel.statut_inscription && isProf">
+                        <ng-container
+                          [ngTemplateOutlet]="personRow"
+                          [ngTemplateOutletContext]="{ $implicit: potentiel }"
+                        ></ng-container>
+                      </ng-container>
+                    </ng-container>
+                  </ng-template>
+                </div>
+              </article>
+
+              <article class="ms-section-card">
+                <header
+                  class="ms-section-header"
+                  (click)="display_present = !display_present"
+                >
+                  <div>
+                    <h2 class="title is-6 mb-0">Présents</h2>
+                    <p class="ms-section-subtitle">{{ getPresent() }} personnes</p>
+                  </div>
+
+                  <button class="button is-white ms-toggle-btn" type="button">
+                    <span class="icon">
+                      <i
+                        class="fas"
+                        [ngClass]="display_present ? 'fa-chevron-up' : 'fa-chevron-down'"
+                      ></i>
+                    </span>
+                  </button>
+                </header>
+
+                <div class="ms-section-body" *ngIf="display_present">
+                  <ng-container *ngFor="let potentiel of All">
+                    <ng-container *ngIf="potentiel.statut_seance === 'présent'">
+                      <ng-container
+                        [ngTemplateOutlet]="personRow"
+                        [ngTemplateOutletContext]="{ $implicit: potentiel, isSeanceStatus: true }"
+                      ></ng-container>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </article>
+
+              <article class="ms-section-card">
+                <header
+                  class="ms-section-header"
+                  (click)="display_absent = !display_absent"
+                >
+                  <div>
+                    <h2 class="title is-6 mb-0">Absents</h2>
+                    <p class="ms-section-subtitle">{{ getAbsent() }} personnes</p>
+                  </div>
+
+                  <button class="button is-white ms-toggle-btn" type="button">
+                    <span class="icon">
+                      <i
+                        class="fas"
+                        [ngClass]="display_absent ? 'fa-chevron-up' : 'fa-chevron-down'"
+                      ></i>
+                    </span>
+                  </button>
+                </header>
+
+                <div class="ms-section-body" *ngIf="display_absent">
+                  <ng-container *ngFor="let potentiel of All">
+                    <ng-container *ngIf="potentiel.statut_seance === 'absent'">
+                      <ng-container
+                        [ngTemplateOutlet]="personRow"
+                        [ngTemplateOutletContext]="{ $implicit: potentiel, isSeanceStatus: true }"
+                      ></ng-container>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </article>
+            </section>
+
+            <button
+              class="scroll-to-top"
+              *ngIf="showScrollToTop"
+              (click)="scrollToTop()"
+              title="Revenir en haut"
+              type="button"
+            >
+              ↑
+            </button>
+          </ng-template>
         </div>
+      </div>
 
-</div>
+      <ng-template #personRow let-potentiel let-isSeanceStatus="isSeanceStatus">
+        <div class="ms-person-row">
+          <div class="ms-person-main">
+            <div class="ms-person-status-wrap">
+              <span class="icon is-medium ms-status-icon">
+                <ng-container *ngIf="isProf; else readOnlyIcon">
+                  <span
+                    class="fa-stack fa-sm"
+                    style="cursor: pointer"
+                    (click)="openMenu(potentiel, $event)"
+                  >
+                    <i class="fas fa-stack-2x" [ngClass]="iconClass(potentiel)"></i>
+                  </span>
+                </ng-container>
+
+                <ng-template #readOnlyIcon>
+                  <i class="fas fa-stack-2x" [ngClass]="iconClass(potentiel)"></i>
+                </ng-template>
+              </span>
+
+              <ul
+                class="menu-icons"
+                [ngClass]="{ 'is-visible': potentiel.isVisible, not: !potentiel.isVisible }"
+                (click)="$event.stopPropagation()"
+              >
+                <li (click)="setStatusAndClose('présent', potentiel, $event)">
+                  <i class="fas fa-thumbs-up"></i> Présent
+                </li>
+                <li (click)="setStatusAndClose('absent', potentiel, $event)">
+                  <i class="fas fa-thumbs-down"></i> Absent
+                </li>
+                <li (click)="setStatusAndClose('essai', potentiel, $event)">
+                  <i class="fas fa-question"></i> Essai
+                </li>
+                <li (click)="setStatusAndClose('convoqué', potentiel, $event)">
+                  <i class="fas fa-hand-point-up"></i> Convoqué
+                </li>
+                <li (click)="setStatusAndClose(null, potentiel, $event)">
+                  <i class="fas fa-ellipsis-h"></i> Non défini
+                </li>
+              </ul>
+            </div>
+
+            <figure
+              class="image is-40x40 ms-avatar"
+              (click)="openPreview(potentiel, $event)"
+            >
+              <img
+                class="is-rounded"
+                [src]="potentiel.person?.photo || defaultAvatar"
+                [alt]="'Photo de ' + (potentiel.person?.libelle || potentiel.person?.nom || '')"
+                (error)="onImgError($event)"
+              />
+            </figure>
+
+            <div class="ms-person-text" (click)="openPreview(potentiel, $event)">
+              <div class="ms-person-topline">
+                <span class="ms-person-name">{{ potentiel.person.libelle }}</span>
+
+                <span
+                  class="tag is-light"
+                  *ngIf="potentiel.statut_inscription && !isSeanceStatus"
+                >
+                  {{ potentiel.statut_inscription }}
+                </span>
+
+                <span
+                  class="tag is-light"
+                  *ngIf="potentiel.statut_seance && isSeanceStatus"
+                >
+                  {{ potentiel.statut_seance }}
+                </span>
+              </div>
+
+              <div class="ms-person-subline">
+                <span class="ms-person-contact">
+                  {{ contact_urgence(potentiel) || 'Aucun contact' }}
+                </span>
+                <span
+                  class="ms-person-contact-info"
+                  *ngIf="contact_urgence_nom(potentiel)"
+                  [title]="contact_urgence_nom(potentiel)"
+                >
+                  · {{ contact_urgence_nom(potentiel) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="buttons has-addons ms-person-actions" *ngIf="isProf">
+            <button
+              type="button"
+              class="button is-rounded"
+              [ngClass]="potentiel.statut_seance === 'présent' ? 'is-primary' : 'is-outlined is-primary'"
+              (click)="MAJPresence(potentiel, isSeanceStatus ? null : true)"
+              [disabled]="!GetNbPersonne() && potentiel.statut_seance !== 'présent'"
+            >
+              <i class="fas fa-check"></i>
+            </button>
+            <button
+              type="button"
+              class="button is-rounded"
+              [ngClass]="potentiel.statut_seance === 'absent' ? 'is-danger' : 'is-outlined is-danger'"
+              (click)="MAJPresence(potentiel, isSeanceStatus ? null : false)"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-container *ngIf="previewPotentiel as p">
+        <div class="modal is-active">
+          <div class="modal-background" (click)="closePreview()"></div>
+
+          <div class="modal-card" (click)="$event.stopPropagation()">
+            <header class="modal-card-head">
+              <p class="modal-card-title">
+                {{ p.person?.libelle || 'Aperçu' }}
+              </p>
+              <button
+                class="delete"
+                aria-label="close"
+                (click)="closePreview()"
+              ></button>
+            </header>
+
+            <section class="modal-card-body">
+              <div class="has-text-centered">
+                <figure class="image is-128x128 is-inline-block">
+                  <img
+                    class="is-rounded"
+                    [src]="getPhoto(p)"
+                    (error)="onImgError($event)"
+                    [alt]="'Photo de ' + (p.person?.libelle || '')"
+                  />
+                </figure>
+              </div>
+
+              <div class="mt-4">
+                <p class="has-text-weight-semibold mb-1">Contact</p>
+                <p class="mb-1">{{ contact_urgence(p) }}</p>
+                <p class="is-size-7 has-text-grey" *ngIf="contact_urgence_nom(p)">
+                  {{ contact_urgence_nom(p) }}
+                </p>
+              </div>
+            </section>
+
+            <footer class="modal-card-foot is-justify-content-flex-end">
+              <button
+                class="button is-primary is-light is-rounded"
+                type="button"
+                (click)="closePreview()"
+              >
+                Fermer
+              </button>
+            </footer>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #LinkMode>
+      <div class="ms-link-shell">
+        <section class="ms-link-card">
+          <div class="ms-link-header">
+            <div>
+              <h3 class="title is-5 mb-1">Mes adhérents</h3>
+              <p class="subtitle is-6 mb-0">
+                {{ thisSeance.nom }}{{ seanceText }}
+              </p>
+            </div>
+
+            <div>
+              <btn
+                *ngIf="thisSeance.afficher_present"
+                [type_button]="'RetourLight'"
+                (click)="isLien = false; Load()"
+              ></btn>
+              <btn
+                *ngIf="!thisSeance.afficher_present"
+                [type_button]="'RetourLight'"
+                (click)="AfficherMenu()"
+              ></btn>
+            </div>
+          </div>
+
+          <div class="ms-link-body">
+            <ng-container *ngIf="!MesAdherents || MesAdherents.length === 0; else MesAdherentsOK">
+              <p>{{ libellechargeradherent }}</p>
+            </ng-container>
+
+            <ng-template #MesAdherentsOK>
+              <div class="ms-link-list">
+                <ng-container *ngFor="let adh of MesAdherents">
+                  <div class="ms-link-row">
+                    <div class="ms-link-person">
+                      <figure class="image is-40x40 ms-avatar">
+                        <img
+                          class="is-rounded"
+                          [src]="adh.person?.photo || defaultAvatar"
+                          [alt]="'Photo de ' + (adh.person?.libelle || '')"
+                          (error)="onImgError($event)"
+                        />
+                      </figure>
+
+                      <span class="ms-person-name">{{ adh.person.libelle }}</span>
+                    </div>
+
+                    <div class="ms-link-actions">
+                      <button
+                        class="button is-rounded"
+                        [ngClass]="IsPresent(adh) ? 'is-success' : 'is-outlined is-success'"
+                        type="button"
+                        (click)="MAJInscription(adh, 'présent')"
+                      >
+                        <i class="fas fa-thumbs-up"></i>
+                      </button>
+
+                      <button
+                        class="button is-rounded"
+                        [ngClass]="IsAbsent(adh) ? 'is-danger' : 'is-outlined is-danger'"
+                        type="button"
+                        (click)="MAJInscription(adh, 'absent')"
+                      >
+                        <i class="fas fa-thumbs-down"></i>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-template>
+          </div>
+        </section>
+      </div>
+    </ng-template>
+  </ng-container>
 </ng-container>
 
-</ng-container>
-</ng-container>
 <ng-template #NonConnecte>
-  <app-login [context]="'SEANCE'" [login_seance]="login"  ></app-login>
+  <app-login [context]="'SEANCE'" [login_seance]="login"></app-login>
 </ng-template>

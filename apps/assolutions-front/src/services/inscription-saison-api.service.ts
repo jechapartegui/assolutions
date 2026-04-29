@@ -15,6 +15,10 @@ export class InscriptionSaisonApiService {
   list(): Promise<InscriptionSaison[]> {
     return this.api.GET<InscriptionSaison[]>(this.base);
   }
+    listsaison(saisonId: number): Promise<InscriptionSaison[]> {
+    return this.api.GET<InscriptionSaison[]>(`${this.base}/saison/${saisonId}`);
+  }
+
 
   get(id: number): Promise<InscriptionSaison> {
     return this.api.GET<InscriptionSaison>(`${this.base}/${id}`);
@@ -30,5 +34,9 @@ export class InscriptionSaisonApiService {
 
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
+  }
+
+  listForPersonne(personneId: number): Promise<InscriptionSaison[]> {
+    return this.api.GET<InscriptionSaison[]>(`${this.base}/personne/${personneId}`);
   }
 }

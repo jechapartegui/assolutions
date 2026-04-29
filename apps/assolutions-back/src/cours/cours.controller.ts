@@ -21,14 +21,14 @@ export class CoursController {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard,)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateCoursDto) {
     return this.service.create(dto, projectId);
   }
 
   // ✅ UPDATE via POST (serveur friendly)
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
   update(
     @Param('id', ParseIntPipe) id: number,

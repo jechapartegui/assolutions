@@ -1,6 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
-import { MailProject, CreateMailProjectDto, UpdateMailProjectDto } from '@shared/lib/mail-project.interface';
+import {
+  InitMailProjectDto,
+  MailProject,
+  MailProjectTemplateType,
+  MailProjectTemplateVm,
+  UpdateMailProjectBodylessTemplateDto,
+  UpdateMailProjectTemplateDto,
+} from '@shared/lib/mail-project.interface';
 
 @Injectable({ providedIn: 'root' })
 export class MailProjectApiService {
@@ -12,15 +19,18 @@ export class MailProjectApiService {
     return this.api.GET<MailProject>(this.base);
   }
 
-  createOrReplace(dto: CreateMailProjectDto): Promise<MailProject> {
-    return this.api.POST<MailProject>(this.base, dto);
+  init(dto: InitMailProjectDto): Promise<MailProject> {
+    return this.api.POST<MailProject>(`${this.base}/init`, dto);
   }
 
-  update(dto: UpdateMailProjectDto): Promise<MailProject> {
-    return this.api.POST<MailProject>(`${this.base}/update`, dto);
+  getTemplate(type: MailProjectTemplateType): Promise<MailProjectTemplateVm> {
+    return this.api.GET<MailProjectTemplateVm>(`${this.base}/${type}`);
   }
 
-  remove(): Promise<void> {
-    return this.api.POST<void>(`${this.base}/delete`, {});
+  updateTemplate(
+    type: MailProjectTemplateType,
+    dto: UpdateMailProjectTemplateDto | UpdateMailProjectBodylessTemplateDto,
+  ): Promise<MailProjectTemplateVm> {
+    return this.api.POST<MailProjectTemplateVm>(`${this.base}/${type}`, dto);
   }
 }

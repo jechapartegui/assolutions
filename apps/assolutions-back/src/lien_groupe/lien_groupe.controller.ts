@@ -49,4 +49,37 @@ export class LienGroupeController {
   listGroupesByCoursId(@Body() body: { coursId: number[] }) {
     return this.service.listGroupesByCoursId(body.coursId);
   }
+    @UseGuards(JwtAuthGuard)
+  @Post('by-seance')
+  listGroupesBySeanceId(@Body() body: { seanceId: number[] }) {
+    return this.service.listGroupesBySeanceId(body.seanceId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('by-personne')
+  listGroupesByPersonneId(@Body() body: { personneId: number[] }) {
+    return this.service.listGroupesByPersonneId(body.personneId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('lienGroupeByPersonne')
+  lienGroupeByPersonne(@Body() body: { personneId: number, saisonId: number }) {
+    return this.service.lienGroupeByPersonne(body.personneId, body.saisonId);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('updateGroupesForSeance')
+  updateGroupesForSeance(@ProjectId() projectId: number, @Body() body: { seanceId: number, groupeIds: number[] }) {
+    const { seanceId, groupeIds } = body;
+    return this.service.updateGroupesForSeance(seanceId, groupeIds, projectId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('updateGroupesForCours')
+  updateGroupesForCours(@ProjectId() projectId: number, @Body() body: { coursId: number, groupeIds: number[] }) {
+    const { coursId, groupeIds} = body;
+    return this.service.updateGroupesForCours(coursId, groupeIds, projectId);
+  }
 }
+

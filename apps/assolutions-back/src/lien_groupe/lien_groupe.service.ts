@@ -47,6 +47,22 @@ export class LienGroupeService {
       return acc;
     }, {} as Record<number, number[]>);
   }
+    async listGroupesBySeanceId(seanceId: number[]) {
+    const liens = (await this.repo.find({ where: { object_id: In(seanceId), object_type: 'séance' } })).map(l => ({ groupe_id: l.groupe_id, seance_id: l.object_id }));
+    return liens.reduce((acc, lien) => {
+      acc[lien.seance_id] = acc[lien.seance_id] || [];
+      acc[lien.seance_id].push(lien.groupe_id);
+      return acc;
+    }, {} as Record<number, number[]>);
+  }
+  async listGroupesByPersonneId(personneId:number[]){
+    const liens = (await this.repo.find({ where: { object_id: In(personneId), object_type: 'rider' } })).map(l => ({ groupe_id: l.groupe_id, personne_id: l.object_id }));
+    return liens.reduce((acc, lien) => {
+      acc[lien.personne_id] = acc[lien.personne_id] || [];
+      acc[lien.personne_id].push(lien.groupe_id);
+      return acc;
+    }, {} as Record<number, number[]>);
+  }
 
   async getForProject(id: number, projectId: number) {
     const item = await this.repo.findOne({ where: { id } });
@@ -82,4 +98,54 @@ export class LienGroupeService {
     await this.registry.remove('lien_groupe', id);
     return { ok: true };
   }
-}
+
+  async updateGroupesForSeance(seanceId: number, groupeIds: number[], projectId: number) {
+    // on vérifie que tous les groupes appartiennent bien au projet
+    for (const groupeId of groupeIds) {
+      await this.assertGroupeInProject(groupeId, projectId);
+    }
+    // on récupère les liens existants pour cette séance
+    const existing = await this.repo.find({ where: { object_id: seanceId, object_type: 'séance' } });
+    const existingGroupeIds = existing.map(e => e.groupe_id);
+    // on calcule les liens à supprimer et à ajouter
+    const toDelete = existing.filter(e => !groupeIds.includes(e.groupe_id));
+    const toAdd = groupeIds.filter(gid => !existingGroupeIds.includes(gid));
+    // on supprime les liens à supprimer
+    await this.repo.remove(toDelete);
+    // on ajoute les liens à ajouter
+    const newLiens = toAdd.map(gid => this.repo.create({ groupe_id: gid, object_id: seanceId, object_type: 'séance' }));
+    await this.repo.save(newLiens);
+  }
+
+  async updateGroupesForCours(coursId: number, groupeIds: number[], projectId: number) {
+    // on vérifie que tous les groupes appartiennent bien au projet
+    for (const groupeId of groupeIds) {
+      await this.assertGroupeInProject(groupeId, projectId);
+    }   
+    // on récupère les liens existants pour ce cours
+    const existing = await this.repo.find({ where: { object_id: coursId, object_type: 'cours' } });
+    const existingGroupeIds = existing.map(e => e.groupe_id);
+    // on calcule les liens à supprimer et à ajouter
+    const toDelete = existing.filter(e => !groupeIds.includes(e.groupe_id));
+    const toAdd = groupeIds.filter(gid => !existingGroupeIds.includes(gid));
+    // on supprime les liens à supprimer
+    await this.repo.remove(toDelete);
+    // on ajoute les liens à ajouter
+    const newLiens = toAdd.map(gid => this.repo.create({ groupe_id: gid, object_id: coursId, object_type: 'cours' }));
+    await this.repo.save(newLiens);
+  }
+
+  async lienGroupeByPersonne(personneId: number, saisonId: number) {
+    const liens = await this.repo.find({ where: { object_id: personneId, object_type: 'rider' } });
+    const groupeIds = liens.map(l => l.groupe_id);
+    if (groupeIds.length === 0) return [];
+    const groupes = await this.groupesRepo.findBy({ id: In(groupeIds), saison_id: saisonId });
+    let retour  = [];
+   liens.forEach(lien => {
+      const groupe = groupes.find(g => g.id === lien.groupe_id);
+      if (!groupe) return; // le groupe n'est pas dans la saison demandée
+      retour.push(lien);
+    });
+    return retour;
+  }
+  }

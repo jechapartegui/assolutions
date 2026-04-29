@@ -15,13 +15,19 @@ export class SeanceController {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+    @UseGuards(JwtAuthGuard)
+  @Get('saison/:saisonId')
+  listBySaison(@Param('saisonId', ParseIntPipe) saisonId: number) {
+    return this.service.listForSaison(saisonId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateSeanceDto) {
     return this.service.create(dto, projectId);
@@ -33,7 +39,7 @@ export class SeanceController {
     }
 
   // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -49,4 +55,5 @@ export class SeanceController {
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+
 }

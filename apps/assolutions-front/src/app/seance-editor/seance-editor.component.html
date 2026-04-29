@@ -1,0 +1,270 @@
+<div class="seance-editor-card">
+  <header class="seance-editor-header">
+    <div class="seance-editor-title">
+      <p class="title is-5 mb-1" *ngIf="seance.id === 0 && !vm.editModeSerie" i18n>
+        Créer une séance
+      </p>
+      <p class="title is-5 mb-1" *ngIf="seance.id === 0 && vm.editModeSerie" i18n>
+        Créer une série de séances
+      </p>
+      <p class="title is-5 mb-1" *ngIf="seance.id > 0" i18n>
+        Éditer une séance
+      </p>
+
+      <p class="subtitle is-6 mb-0">
+        {{ seance.nom || 'Nouvelle séance' }}
+      </p>
+
+      <p class="seance-editor-summary">
+        {{ getType(seance.type_seance) || 'Séance' }}
+        <span *ngIf="seance.date_seance">· {{ seance.date_seance | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="seance.heure_debut">· {{ seance.heure_debut }}</span>
+        <span *ngIf="seance.lieu_nom">· {{ seance.lieu_nom }}</span>
+      </p>
+    </div>
+
+    <div class="buttons is-flex-wrap-wrap seance-editor-actions">
+      <button class="button is-light" type="button" (click)="back.emit()">
+        <span class="icon"><i class="fas fa-arrow-left"></i></span>
+        <span i18n>Retour</span>
+      </button>
+
+      <button class="button is-success" type="button" [disabled]="!vm.isValid" (click)="save()">
+        <span class="icon"><i class="fas fa-floppy-disk"></i></span>
+        <span i18n>Sauvegarder</span>
+      </button>
+<button
+  class="button is-warning is-light"
+  type="button"
+  (click)="duplicateSeance()"
+>
+  <span class="icon"><i class="fas fa-copy"></i></span>
+  <span>Dupliquer</span>
+</button>
+      <button
+  *ngIf="isAdmin && seance.id > 0"
+  class="button is-danger is-light"
+  type="button"
+  (click)="deleteSeance()"
+>
+  <span class="icon"><i class="fas fa-trash"></i></span>
+  <span>Supprimer</span>
+</button>
+    </div>
+  </header>
+
+  <div class="seance-editor-body">
+    <div class="seance-editor-grid">
+      <!-- Bloc principal -->
+      <section class="box editor-box editor-box--wide">
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Informations principales</h3>
+
+        <div class="editor-fields editor-fields--two">
+          <div class="field">
+            <label class="label" i18n>Libellé</label>
+            <div class="control">
+              <input
+                class="input"
+                [(ngModel)]="seance.nom"
+                (ngModelChange)="checkall()"
+                placeholder="Nom de la séance"
+              />
+            </div>
+            <p *ngIf="!rNom.key" class="help is-danger">{{ rNom.value }}</p>
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Type</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="seance.type_seance" (ngModelChange)="onTypeChange()">
+                <option value="ENTRAINEMENT" i18n>Entraînement / cours</option>
+                <option value="SORTIE" i18n>Sortie</option>
+                <option value="EVENEMENT" i18n>Événement</option>
+                <option value="MATCH" i18n>Match</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" *ngIf="isTraining">
+            <label class="label" i18n>Cours</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="seance.cours" (ngModelChange)="onCoursChange()">
+                <option [ngValue]="0">--</option>
+                <option *ngFor="let cours of coursDisponibles" [ngValue]="cours.id">
+                  {{ cours.nom }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Statut</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="seance.statut">
+                <option [ngValue]="'prévue'">Prévue</option>
+                <option [ngValue]="'réalisée'">Réalisée</option>
+                <option [ngValue]="'annulée'">Annulée</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Date</label>
+            <input class="input" type="date" [(ngModel)]="dateValue" />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Heure de début</label>
+            <input
+              class="input"
+              type="time"
+              [(ngModel)]="seance.heure_debut"
+              (ngModelChange)="onDureeChange()"
+            />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Durée (minutes)</label>
+            <input
+              class="input"
+              type="number"
+              min="0"
+              [(ngModel)]="seance.duree_seance"
+              (ngModelChange)="onDureeChange()"
+            />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Heure de fin</label>
+            <input class="input" [value]="seance.heure_fin || ''" readonly />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Lieu</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="seance.lieu_id" (ngModelChange)="onLieuChange()">
+                <option [ngValue]="0">--</option>
+                <option *ngFor="let lieu of lieuxDisponibles" [ngValue]="lieu.key">
+                  {{ lieu.value }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Rendez-vous</label>
+            <input class="input" [(ngModel)]="seance.rdv" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" i18n>Informations complémentaires</label>
+          <textarea
+            class="textarea"
+            rows="4"
+            [(ngModel)]="seance.info_seance"
+            placeholder="Informations visibles sur la séance"
+          ></textarea>
+        </div>
+      </section>
+
+      <!-- Encadrants -->
+      <section class="box editor-box">
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Encadrants</h3>
+
+        <div class="tags mb-3">
+          <span class="tag is-success is-medium" *ngFor="let p of seance.seanceProfesseurs">
+            {{ getProfLabel(p) }}
+            <button class="delete is-small" type="button" (click)="removeProf(p)"></button>
+          </span>
+        </div>
+
+        <p *ngIf="!rProf.key" class="help is-danger mb-3">{{ rProf.value }}</p>
+
+        <div class="field is-grouped">
+          <div class="control is-expanded">
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="currentProfId">
+                <option [ngValue]="null" i18n>Choisir un encadrant</option>
+                <option *ngFor="let p of profDispo" [ngValue]="p.key">
+                  {{ p.value }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control">
+            <button class="button is-primary is-light" type="button" (click)="ajouterProf()">
+              <span class="icon"><i class="fas fa-plus"></i></span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Groupes -->
+      <section class="box editor-box">
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Groupes</h3>
+
+        <div class="editor-check-grid">
+          <label class="checkbox editor-check-item" *ngFor="let groupe of groupesDisponibles">
+            <input
+              type="checkbox"
+              [checked]="hasGroupe(groupe.id)"
+              (change)="toggleGroupe(groupe.id)"
+            />
+            <span>{{ groupe.nom }}</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Paramètres -->
+      <section class="box editor-box">
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Paramètres</h3>
+
+        <div class="editor-check-stack">
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="seance.afficher_present" />
+            <span i18n>Afficher les présences</span>
+          </label>
+
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="seance.essai_possible" />
+            <span i18n>Essai possible</span>
+          </label>
+
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="seance.convocation_nominative" />
+            <span i18n>Convocation nominative</span>
+          </label>
+
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="seance.est_place_maximum" />
+            <span i18n>Limiter le nombre de places</span>
+          </label>
+        </div>
+
+        <div class="editor-fields editor-fields--two mt-4">
+          <div class="field" *ngIf="seance.est_place_maximum">
+            <label class="label" i18n>Places maximum</label>
+            <input class="input" type="number" [(ngModel)]="seance.place_maximum" />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Nombre d'essais possibles</label>
+            <input class="input" type="number" [(ngModel)]="seance.nb_essai_possible" />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Âge minimum</label>
+            <input class="input" type="number" [(ngModel)]="seance.age_minimum" />
+          </div>
+
+          <div class="field">
+            <label class="label" i18n>Âge maximum</label>
+            <input class="input" type="number" [(ngModel)]="seance.age_maximum" />
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

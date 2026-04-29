@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { catchError, from, Observable, of, switchMap } from 'rxjs';
 import { AppStore } from './app.store';
-import { LoginNestService } from '../services/auth-api.service';
 import type { AppMode } from '@shared/lib/compte.interface';
+import { AuthApiService } from '../services/auth-api.service';
 
 type AuthRule = {
   modes?: AppMode[];         // ex: ['ADMIN'] ou ['APPLI']
@@ -17,7 +17,7 @@ export class AuthGuard implements CanActivate {
   private meAlreadyTried = false;
 
   constructor(
-    private loginService: LoginNestService,
+    private loginService: AuthApiService,
     private store: AppStore,
     private router: Router
   ) {}
@@ -45,7 +45,7 @@ export class AuthGuard implements CanActivate {
     }
     this.meAlreadyTried = true;
 
-    return from(this.loginService.Me()).pipe(
+    return from(this.loginService.me()).pipe(
       switchMap((me: any) => {
         const selectedProjectId = this.restoreSelectedProjectId(me?.projects ?? []);
 

@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FilterAdherent } from '../app/adherent/adherent.component';
 import { Adherent_VM } from '@shared/lib/member.interface';
+import { AdherentFilterVm } from '../vm/adherent-page.vm';
 
 @Pipe({
   standalone:false,
@@ -8,7 +8,7 @@ import { Adherent_VM } from '@shared/lib/member.interface';
   pure: false, // recalcul à chaque cycle, comme chez toi
 })
 export class MultifiltersAdherentPipe implements PipeTransform {
-  transform(items: Adherent_VM[], filters: FilterAdherent, saison_id: number): Adherent_VM[] {
+  transform(items: Adherent_VM[], filters: AdherentFilterVm, saison_id: number): Adherent_VM[] {
     if (!Array.isArray(items) || !filters) return items ?? [];
 
     // Prépare les filtres (lowercase une fois, etc.)
@@ -16,8 +16,8 @@ export class MultifiltersAdherentPipe implements PipeTransform {
     const groupeLC = (filters.filter_groupe ?? '').toLowerCase().trim();
 
     // Dates: on compare en ISO "YYYY-MM-DD" pour éviter les pièges de timezone
-    const bornemin = (filters.filter_date_apres ?? '').toString().trim(); // "YYYY-MM-DD" ou ""
-    const bornemax = (filters.filter_date_avant ?? '').toString().trim(); // "YYYY-MM-DD" ou ""
+    const bornemin = (filters.filter_date_naissance_apres ?? '').toString().trim(); // "YYYY-MM-DD" ou ""
+    const bornemax = (filters.filter_date_naissance_avant ?? '').toString().trim(); // "YYYY-MM-DD" ou ""
 
     return items.filter((item) => {
       // libellé normalisé en lowercase

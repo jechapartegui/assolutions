@@ -83,4 +83,36 @@ export class InscriptionSeanceService {
     await this.repo.remove(item);
     return { ok: true };
   }
+
+  async listBySaison(saisonId: number) {
+    return this.repo
+      .createQueryBuilder('i')
+      .innerJoin('seance', 'se', 'se.seance_id = i.seance_id')
+      .where('se.saison_id = :saisonId', { saisonId })
+      .orderBy('i.date_inscription', 'DESC')
+      .getMany();
+  }
+
+  async listBySaison_UniqueID(saisonId: number) {
+    const inscriptions = await this.repo
+      .createQueryBuilder('i')
+      .innerJoin('seance', 'se', 'se.seance_id = i.seance_id')
+      .where('se.saison_id = :saisonId', { saisonId })
+      .orderBy('i.date_inscription', 'DESC')
+      .getMany();
+   const uniqueIds = new Set<number>();
+    inscriptions.forEach(i => uniqueIds.add(i.personne_id));
+    return Array.from(uniqueIds);
+  }
+
+  async listByPersonneAndSaison(personneId: number, saisonId: number) {
+    return this.repo
+      .createQueryBuilder('i')
+      .innerJoin('seance', 'se', 'se.seance_id = i.seance_id')
+      .where('se.saison_id = :saisonId', { saisonId })
+      .andWhere('i.personne_id = :personneId', { personneId })
+      .orderBy('i.date_inscription', 'DESC')
+      .getMany();
+  }
+
 }

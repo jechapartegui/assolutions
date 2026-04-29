@@ -21,6 +21,10 @@
             <p class="subtitle is-6 has-text-grey">
               {{ libelle_titre }}
             </p>
+
+            <p *ngIf="context === 'CREATE' && requestedProject" class="tag is-info is-light mt-2">
+              <span i18n>Projet ciblé</span>&nbsp;: {{ requestedProject.nom }}
+            </p>
           </header>
 
           <!-- CORPS DU FORMULAIRE -->
@@ -54,47 +58,48 @@
                 class="is-flex is-justify-content-space-between is-align-items-center"
               >
                 <span>{{ VM.compte.login }}</span>
-                <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn>
+                <btn
+                  [type_button]="'AnnulerSmallLight'"
+                  (click)="selectedLogin=false; VM.mdp_requis=false; VM.check_login={ key: false, value: '' }"
+                ></btn>
               </p>
             </div>
 
             <!-- Mot de passe -->
-<div *ngIf="VM.mdp_requis" class="field">
-  <label class="label is-small" for="loginPassword" i18n>
-    Mot de passe
-  </label>
+            <div *ngIf="VM.mdp_requis" class="field">
+              <label class="label is-small" for="loginPassword" i18n>
+                Mot de passe
+              </label>
 
-  <p class="control has-icons-left has-icons-right">
-    <input
-      id="loginPassword"
-      [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
-      [type]="showPassword ? 'text' : 'password'"
-      placeholder="••••••••"
-      i18n-placeholder
-      [(ngModel)]="VM.compte.password"
-      (ngModelChange)="validatePassword($event)"
-      (keypress)="onKeyPress($event)"
-    />
+              <p class="control has-icons-left has-icons-right">
+                <input
+                  id="loginPassword"
+                  [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
+                  [type]="showPassword ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  i18n-placeholder
+                  [(ngModel)]="VM.compte.password"
+                  (ngModelChange)="validatePassword($event)"
+                  (keypress)="onKeyPress($event)"
+                />
 
-    <!-- icône gauche -->
-    <span class="icon is-small is-left">
-      <i class="fas fa-lock"></i>
-    </span>
+                <span class="icon is-small is-left">
+                  <i class="fas fa-lock"></i>
+                </span>
 
-    <!-- icône œil -->
-    <span
-      class="icon is-small is-right is-clickable"
-      (click)="togglePassword()"
-      style="cursor:pointer"
-    >
-      <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-    </span>
-  </p>
+                <span
+                  class="icon is-small is-right is-clickable"
+                  (click)="togglePassword()"
+                  style="cursor:pointer"
+                >
+                  <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </span>
+              </p>
 
-  <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
-    Le mot de passe doit contenir au moins 8 caractères et un nombre.
-  </p>
-</div>
+              <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
+                Le mot de passe doit contenir au moins 8 caractères et un nombre.
+              </p>
+            </div>
 
             <!-- Sélection projet -->
             <ng-container *ngIf="projets">
@@ -111,6 +116,14 @@
                       </select>
                     </div>
                   </div>
+
+                  <p
+                    *ngIf="context === 'CREATE' && requestedProjectId && !projets_select"
+                    class="help is-warning"
+                    i18n
+                  >
+                    Le projet du lien n'est pas dans votre liste. Sélectionnez un autre projet accessible.
+                  </p>
                 </div>
               </ng-container>
             </ng-container>
@@ -124,7 +137,7 @@
                 <div class="field" *ngIf="!projets">
                   <p class="control stack-3">
                     <button
-                      *ngIf="(!store.isLoggedIn()) && !VM.mdp_requis"
+                      *ngIf="!store.isLoggedIn() && !VM.mdp_requis"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
                       (click)="Login()"
@@ -144,23 +157,26 @@
                     </button>
 
                     <button
-                      *ngIf="VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ESSAI'"
+                      *ngIf="!VM.mdp_requis && context != 'REINIT' && context != 'ESSAI'"
                       type="button"
-                      class="btn-link has-text-centered"
+                      class="button is-text btn-mobile btn-block-mobile"
+                      [disabled]="!VM.isLoginValid"
                       (click)="ReinitMDP()"
                       i18n
                     >
                       Réinitialiser le mot de passe
                     </button>
 
-                    <!-- lien vers création -->
-                    <a
-                      class="btn-link has-text-centered"
-                      [routerLink]="['/creer-compte']"
+                    <!-- Création uniquement depuis un lien CREATE + projet -->
+                    <button
+                      *ngIf="canCreateAccount"
+                      type="button"
+                      class="button is-link is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+                      (click)="goCreateAccount()"
                       i18n
                     >
                       Créer un compte
-                    </a>
+                    </button>
                   </p>
                 </div>
 
@@ -169,6 +185,7 @@
                   <p class="control stack-3">
                     <button
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+                      [disabled]="!projets_select"
                       (click)="ConnectToProject()"
                       i18n
                     >

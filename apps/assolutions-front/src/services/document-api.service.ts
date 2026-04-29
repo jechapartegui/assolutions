@@ -23,4 +23,8 @@ export class DocumentApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+
+  photo_by_id(ids: number[]): Promise<{ [id: number]: string | null }> {
+    return this.api.POST<{ [id: number]: string | null }>(`${this.base}/photo-by-id`, ids);
+  }
 }

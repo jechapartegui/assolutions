@@ -6,7 +6,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { MenuComponent } from './menu/menu.component';
-import { AdherentComponent } from './adherent/adherent.component';
+import { AdherentComponent } from './adherent/main/adherent.component';
 import { GroupeComponent } from './groupe/groupe.component';
 import { CoursComponent } from './cours/cours.component';
 import { SeanceComponent } from './seance/seance.component';
@@ -67,20 +67,25 @@ import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-red
 import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
 import { InfoComponent } from './info/info.component';
 import { CreerCompteComponent } from './creer-compte/creer-compte.component';
-import { AdherentDetailComponent } from './adherent/adherent-detail.component';
-import { AdherentListMobileComponent } from './adherent/adherent-list-mobile.component';
-import { AdherentListDesktopComponent } from './adherent/adherent-list-desktop.component';
-import { AdherentAccountSelectorComponent } from './adherent/adherent-account-selector.component';
+import { SeanceEditorComponent } from './seance-editor/seance-editor.component';
+import { SeanceListComponent } from './seance-list/seance-list.component';
+import { RefDataStore } from '../store/ref-data.store';
+import { MenuStore } from '../store/menu.store';
+import { AppStore } from './app.store';
+import { CoursEditorComponent } from './cours-editor/cours-editor.component';
+import { SeanceStore } from '../store/seance.store';
+import { CoursListComponent } from './cours-list/cours-list.component';
+import { CoursStore } from '../store/cours.store';
+import { AdherentListComponent } from './adherent/list/adherent-list.component';
+import { AdherentEditorComponent } from './adherent/detail/adherent-editor.component';
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     MenuComponent,
-    AdherentComponent,AdherentAccountSelectorComponent,
-AdherentListDesktopComponent,
-AdherentListMobileComponent,
-AdherentDetailComponent,
-    GroupeComponent,
+    AdherentComponent, AdherentListComponent,
+     SeanceEditorComponent, SeanceListComponent, CoursEditorComponent, CoursListComponent,
+    GroupeComponent, AdherentEditorComponent,
     CoursComponent, InfoComponent,
     SeanceComponent, MailTemplatePreviewComponent, 
     ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
@@ -101,7 +106,10 @@ AdherentDetailComponent,
     // Ajoutez ici l'un des modules d'animations selon vos besoins
     BrowserAnimationsModule
   ],
-  providers: [GlobalService, ErrorService, StaticClass, DatePipe],
+  providers: [ StaticClass,
+    ErrorService,
+    AppStore,
+MenuStore, RefDataStore,GlobalService, SeanceStore, CoursStore],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

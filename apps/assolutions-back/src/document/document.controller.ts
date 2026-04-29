@@ -30,4 +30,10 @@ export class DocumentController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('photo-by-id')
+  photo_by_id(@Body() ids: number[]) {
+    return this.service.photoById(ids);
+  }
 }

@@ -47,4 +47,10 @@ export class PersonneController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('by-ids')
+  list_by_id(@Body() ids: number[]) {
+    return this.service.listByIds(ids);
+  }
 }

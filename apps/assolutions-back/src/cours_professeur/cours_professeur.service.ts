@@ -92,4 +92,15 @@ async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> 
     await this.registry.remove('cours_professeur', id);
     return { ok: true };
   }
+
+  async updateList(coursId: number, profsors: number[], projectId: number) {
+      const existing = await this.repo.find({ where: { cours_id: coursId } });
+      const toDelete = existing.filter((e) => !profsors.includes(e.contrat_id));
+      const toAdd = profsors.filter((p) => !existing.some((e) => e.contrat_id === p));
+      toDelete.forEach((e) => this.remove(e.id, projectId));
+      toAdd.forEach(async (p) => {
+        let i :CreateCoursProfesseurDto = { cours_id: coursId, contrat_id: p};        
+         this.create(i, projectId)
+    });
+    }
 }

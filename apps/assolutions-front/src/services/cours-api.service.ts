@@ -35,4 +35,12 @@ export class CoursApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+
+  updateSerieCours(id: number, dto: UpdateCoursDto, fromDate: Date): Promise<void> {
+    const payload = {
+      ...dto,
+      fromDate,
+    };
+    return this.api.POST<void>(`${this.base}/${id}/serie`, payload);
+}
 }

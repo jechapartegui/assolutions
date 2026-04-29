@@ -1,0 +1,129 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.seance-editor-card {
+  height: 100%;
+  min-height: 0;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.seance-editor-header {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.95));
+}
+
+.seance-editor-title {
+  min-width: 0;
+}
+
+.seance-editor-summary {
+  margin-top: 0.3rem;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.seance-editor-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.seance-editor-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.85rem;
+}
+
+.seance-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.editor-box {
+  height: auto;
+  min-height: 0;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+  margin: 0 !important;
+}
+
+.editor-box--wide {
+  grid-row: span 2;
+}
+
+.editor-fields {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.editor-fields--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.editor-check-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 0.75rem;
+}
+
+.editor-check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.editor-check-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media screen and (max-width: 1215px) {
+  .seance-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-box--wide {
+    grid-row: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .seance-editor-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seance-editor-actions {
+    justify-content: stretch;
+  }
+
+  .seance-editor-actions .button {
+    flex: 1 1 auto;
+  }
+
+  .editor-fields--two,
+  .editor-check-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seance-editor-body {
+    padding: 0.65rem;
+  }
+}

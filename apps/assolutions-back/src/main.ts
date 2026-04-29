@@ -1,11 +1,16 @@
 import 'reflect-metadata';
-import { HttpException, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import { ConfigService } from '@nestjs/config';
 import { json, Response, urlencoded } from 'express';
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
-import { join } from 'path';
 import { DataSource } from 'typeorm';
+import { AppModule } from './app/app.module';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -14,32 +19,50 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
     const body = exception.getResponse();
-    response
-      .status(status)
-      .json(
-        typeof body === 'string'
-          ? { statusCode: status, message: body }
-          : body
-      );
+
+    response.status(status).json(
+      typeof body === 'string'
+        ? { statusCode: status, message: body }
+        : body,
+    );
   }
 }
 
-
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
 
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
 
-  // Configuration CORS explicite et sécurisée
+  const config = app.get(ConfigService);
+
+  const port = Number(config.get<string>('PORT') || 3000);
+  const frontUrl = config.get<string>('FRONT_URL');
+  const appEnvLabel = config.get<string>('APP_ENV_LABEL') || 'UNKNOWN';
+  const nodeEnv = config.get<string>('NODE_ENV') || 'development';
+  const smtpHost = config.get<string>('SMTP_HOST') || 'not set';
+  const mailSandbox = config.get<string>('MAIL_SANDBOX') || 'false';
+  const databaseUrlDefined = !!config.get<string>('DATABASE_URL');
+
+  app.useGlobalFilters(new HttpExceptionFilter());
+
   app.enableCors({
-    origin: (origin:any, callback:any) => {
-      // Autoriser origin null (ex: fichiers locaux) ou tout ce qui commence par http
-      if (!origin || origin.startsWith('http')) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin) {
+        return callback(null, true);
       }
+
+      if (frontUrl && origin === frontUrl.replace(/\/$/, '')) {
+        return callback(null, true);
+      }
+
+      if (!frontUrl && origin.startsWith('http')) {
+        return callback(null, true);
+      }
+
+      logger.warn(`CORS refusé pour origin=${origin}`);
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     allowedHeaders: [
@@ -59,24 +82,33 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
-  // Log tous les appels OPTIONS (pré-requêtes CORS)
-  app.use((req:any, res:any, next:any) => {
+  app.use((req: any, _res: any, next: any) => {
     if (req.method === 'OPTIONS') {
-      console.log('🛰 OPTIONS Request:', req.headers.origin, req.url);
+      logger.debug(`OPTIONS ${req.url} origin=${req.headers.origin ?? 'none'}`);
     }
     next();
   });
 
   app.setGlobalPrefix('api');
-// -- NOUVEAU SNIPPET POUR DEBUG ENTITY LOADING --
-const dataSource = app.get(DataSource);
-console.log('🔍 Loaded entities:');
-dataSource.entityMetadatas.forEach(meta =>
-  console.log(`  • ${meta.name} → table: ${meta.tableName}`)
-);
-  const port = process.env.PORT || 3000;
+
+  const dataSource = app.get(DataSource);
+
+  logger.log(`APP_ENV_LABEL = ${appEnvLabel}`);
+  logger.log(`NODE_ENV = ${nodeEnv}`);
+  logger.log(`PORT = ${port}`);
+  logger.log(`FRONT_URL = ${frontUrl || 'not set'}`);
+  logger.log(`SMTP_HOST = ${smtpHost}`);
+  logger.log(`MAIL_SANDBOX = ${mailSandbox}`);
+  logger.log(`DATABASE_URL defined = ${databaseUrlDefined ? 'yes' : 'no'}`);
+
+  logger.log(`Loaded entities: ${dataSource.entityMetadatas.length}`);
+  for (const meta of dataSource.entityMetadatas) {
+    logger.debug(`Entity ${meta.name} -> table ${meta.tableName}`);
+  }
+
   await app.listen(port);
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/api`);
+
+  logger.log(`Application is running on: http://localhost:${port}/api`);
 }
 
 bootstrap();

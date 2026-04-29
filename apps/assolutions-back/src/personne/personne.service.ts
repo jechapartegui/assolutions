@@ -79,4 +79,13 @@ export class PersonneService {
     await this.registry.remove('personne', id);
     return { ok: true };
   }
+
+  async listByIds(ids: number[]) {
+    return this.repo.find({
+      where: {
+        id: In(ids),
+      },
+      order: { id: 'ASC' },
+    });
+  }
 }

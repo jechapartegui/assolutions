@@ -36,11 +36,20 @@ import { SeanceProfesseurModule } from '../seance_professeur/seance_professeur.m
 import { StockModule } from '../stock/stock.module';
 import { AccessControlModule } from '../common/access-control.module';
 import { AdhesionModule } from './adhesion/adhesion.module';
+import { ContactModule } from '../contact/contact.module';
 import { MesSeancesModule } from './mes_seances/mes_seances.module';
+import { MessageModule } from '../message/message.module';
+import { LoginProjectModule } from '../login_project/login_project.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+   ConfigModule.forRoot({
+  isGlobal: true,
+  envFilePath: [
+    `apps/assolutions-back/.env.${process.env.NODE_ENV || 'development'}`,
+    'apps/assolutions-back/.env',
+  ],
+}),
 
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -95,10 +104,10 @@ const migrations = [join(__dirname, '..', '**', 'migration', '*.{ts,js}')];
     CompteModule, MesSeancesModule,
     RegistryModule,
     AuthModule,
-    AddinfoModule,
+    AddinfoModule, LoginProjectModule,
     // MessagesModule,
-    CompteModule,
-    CompteBancaireModule, ContratProfModule, MailProjectModule, MailRecordModule,  AccessControlModule, AdhesionModule,  
+    CompteModule, ContactModule,
+    CompteBancaireModule, ContratProfModule, MailProjectModule, MailRecordModule,  AccessControlModule, AdhesionModule,  MessageModule,
     CoursModule, CoursProfesseurModule, DocumentModule, FluxFinancierModule, GroupesModule, InscriptionSaisonModule, InscriptionSeanceModule, LienGroupeModule, 
     LieuModule, MailAccountModule, NoteModule, OperationModule, PersonneModule, ProfesseurModule, ProjectModule, RegistryModule, SaisonModule, SeanceModule, SeanceProfesseurModule, StockModule
   ],

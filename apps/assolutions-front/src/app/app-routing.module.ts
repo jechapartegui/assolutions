@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { MenuComponent } from './menu/menu.component';
 import { GroupeComponent } from './groupe/groupe.component';
-import { AdherentComponent } from './adherent/adherent.component';
+import { AdherentComponent } from './adherent/main/adherent.component';
 import { SeanceComponent } from './seance/seance.component';
 import { CoursComponent } from './cours/cours.component';
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';

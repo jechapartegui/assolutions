@@ -3,13 +3,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../environments/environment.prod';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import {  MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
+import { MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
 import { AuthApiService } from '../../services/auth-api.service';
 import { CompteApiService } from '../../services/compte-api.service';
 import { ProjectApiService } from '../../services/project-api.service';
 import { Login_VM } from '../../vm/login.vm';
 import { AdhesionApiService } from '../../services/adhesion-api.service';
+
 @Component({
   standalone: false,
   selector: 'app-login',
@@ -23,12 +24,17 @@ export class LoginComponent implements OnInit {
   projets: ProjetView[];
   projets_select: ProjetView = null;
 
-  selectedLogin: boolean = false;
+  selectedLogin = false;
+  showPassword = false;
 
-  @Input() context: 'REINIT' | 'ACTIVATE' | 'SEANCE' | 'MENU' | 'ESSAI' = 'MENU'; // CREATE retiré
+  /** Projet demandé depuis un lien externe : /login?context=CREATE&projectId=123 */
+  requestedProjectId: number | null = null;
+  requestedProject: any = null;
+
+  @Input() context: 'REINIT' | 'ACTIVATE' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
   @Input() login_seance: string = null;
 
-  loading: boolean;
+  loading = false;
   libelle_titre: string = $localize`Saisissez votre email pour vous connecter`;
 
   constructor(
@@ -41,8 +47,8 @@ export class LoginComponent implements OnInit {
     public GlobalService: GlobalService,
     public store: AppStore
   ) {
-    this.VM.compte.login = environment.defaultlogin;
-    this.VM.compte.password = environment.defaultpassword;
+    this.VM.compte.login = environment.defaultlogin ?? '';
+    this.VM.compte.password = environment.defaultpassword ?? '';
     this.validateLogin();
   }
 
@@ -50,7 +56,7 @@ export class LoginComponent implements OnInit {
     this.action = $localize`Chargement de la page`;
     const errorService = ErrorService.instance;
 
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.subscribe(async (params) => {
       if ('context' in params) {
         try {
           this.context = params['context'];
@@ -61,6 +67,8 @@ export class LoginComponent implements OnInit {
           return;
         }
       }
+
+      this.requestedProjectId = this.readProjectIdFromParams(params);
 
       switch (this.context) {
         case 'ACTIVATE':
@@ -80,6 +88,7 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/login']);
             return;
           }
+
           this.VM.compte.login = user;
           this.VM.compte.activation_token = token;
 
@@ -89,24 +98,24 @@ export class LoginComponent implements OnInit {
               if (cpt) {
                 this.VM.compte = cpt;
 
-                  if (this.context === 'REINIT') {
-                    this.action = $localize`Réinitialiser le mot de passe`;
-                    const o = errorService.OKMessage(this.action);
-                    errorService.emitChange(o);
-                    this.router.navigate(['/reinit-mdp']);
-                    return;
-                  }
-
-                  this.action = $localize`Activer le compte`;
+                if (this.context === 'REINIT') {
+                  this.action = $localize`Réinitialiser le mot de passe`;
                   const o = errorService.OKMessage(this.action);
                   errorService.emitChange(o);
-                this.router.navigate(['/login']);
+                  this.router.navigate(['/reinit-mdp']);
                   return;
-              } else {
-                const o = errorService.UnknownError(this.action);
+                }
+
+                this.action = $localize`Activer le compte`;
+                const o = errorService.OKMessage(this.action);
                 errorService.emitChange(o);
                 this.router.navigate(['/login']);
+                return;
               }
+
+              const o = errorService.UnknownError(this.action);
+              errorService.emitChange(o);
+              this.router.navigate(['/login']);
             })
             .catch((error: Error) => {
               const o = errorService.CreateError(this.action, error.message);
@@ -116,6 +125,10 @@ export class LoginComponent implements OnInit {
 
           break;
         }
+
+        case 'CREATE':
+          await this.initCreateMode();
+          break;
 
         case 'ESSAI':
           this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
@@ -143,16 +156,50 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  private readProjectIdFromParams(params: any): number | null {
+    const raw = params['projectId'] ?? params['projetId'] ?? params['idProjet'] ?? params['id'];
+    const id = raw !== undefined && raw !== null && raw !== '' ? Number(raw) : null;
+    return id !== null && Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private async initCreateMode(): Promise<void> {
+    const errorService = ErrorService.instance;
+
+    if (!this.requestedProjectId) {
+      this.libelle_titre = $localize`Lien d'inscription incomplet : aucun projet n'est indiqué.`;
+      return;
+    }
+
+    this.loading = true;
+    try {
+      this.requestedProject = await this.project_serv.get(this.requestedProjectId);
+      const nomProjet = this.requestedProject?.nom ? ` ${this.requestedProject.nom}` : '';
+      this.libelle_titre = $localize`Connectez-vous ou créez un compte pour vous inscrire au projet${nomProjet}`;
+    } catch (error: any) {
+      const o = errorService.CreateError(
+        $localize`Chargement du projet`,
+        error?.message ?? $localize`Projet introuvable`
+      );
+      errorService.emitChange(o);
+      this.libelle_titre = $localize`Projet introuvable ou inaccessible.`;
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  get canCreateAccount(): boolean {
+    return this.context === 'CREATE' && !!this.requestedProjectId;
+  }
+
   validateLogin() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    this.VM.isLoginValid = emailRegex.test(this.VM.compte.login);
-    console.log("isLoginValid"  + this.VM.isLoginValid);
+    this.VM.isLoginValid = emailRegex.test(this.VM.compte.login ?? '');
     this.valide();
   }
 
   validatePassword(mdp: string) {
-    const hasMinLength = mdp.length >= 8;
-    const hasNumber = /\d/.test(mdp);
+    const hasMinLength = (mdp ?? '').length >= 8;
+    const hasNumber = /\d/.test(mdp ?? '');
     this.VM.isPasswordValid = hasMinLength && hasNumber;
     this.valide();
   }
@@ -172,7 +219,7 @@ export class LoginComponent implements OnInit {
         if (this.VM.isValid) {
           this.Login();
         }
-      } else {
+      } else if (this.VM.isValid) {
         this.Login();
       }
     }
@@ -181,6 +228,8 @@ export class LoginComponent implements OnInit {
   async Login() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
+
+    if (!this.VM.isLoginValid) return;
 
     if (this.VM.check_login.key === false) {
       this.action = $localize`Validation de l'email`;
@@ -191,50 +240,14 @@ export class LoginComponent implements OnInit {
           this.VM.check_login = { key: true, value: '' };
           this.VM.mode = prelogin.mode;
           this.VM.mdp_requis = prelogin.password_required;
+          this.selectedLogin = this.VM.mdp_requis;
 
-          // Auto-login si pas de mot de passe requis + mode APPLI
           if (!this.VM.mdp_requis && this.VM.mode === 'APPLI') {
             this.action = $localize`Connexion sans mot de passe`;
             this.login_serv_nest
               .login(this.VM.compte.login, null)
-              .then(async (mr: MeResponse) => {
-                this.VM.compte = mr.compte;
-                this.action = $localize`Lister les projets associés au compte`;
-                this.adhesion_serv.get().then(async (projets) => {
-                  this.VM.projets = projets;
-                const s: Session = {
-                  token: mr.token,
-                  mode: this.VM.mode,
-                  compte: mr.compte,
-                  projects: projets,
-                  selectedProjectId: projets.length === 1 ? projets[0].id : null,
-                  rights: projets.length === 1 ? projets[0].rights : null,
-                };
-                await this.store.setSession(s);
-
-                if (s.projects.length > 1) {
-                  this.projets = s.projects;
-                  return;
-                }
-
-                this.store.selectProject(s.selectedProjectId);
-                this.store.updateSelectedMenu('MENU');
-                this.router.navigate(['/menu']);
-    console.log(this.store.session());
-                }).catch((error: Error) => {
-                  console.log("là");
-                const o = errorService.CreateError(this.action, error.message);
-                errorService.emitChange(o);
-                this.store.clearSession();
-                this.VM.check_login = { key: false, value: error.message };
-              });
-              })
-              .catch((error: Error) => {
-                const o = errorService.CreateError(this.action, error.message);
-                errorService.emitChange(o);
-                this.store.clearSession();
-                this.VM.check_login = { key: false, value: error.message };
-              });
+              .then((mr: MeResponse) => this.openSession(mr))
+              .catch((error: Error) => this.handleLoginError(error));
           }
         })
         .catch((error: Error) => {
@@ -243,71 +256,109 @@ export class LoginComponent implements OnInit {
           this.VM.check_login = { key: false, value: error.message };
         });
     } else {
-      // Saisie mdp.
       this.action = $localize`Connexion avec mot de passe`;
-           this.login_serv_nest
-              .login(this.VM.compte.login, this.VM.compte.password)
-              .then(async (mr: MeResponse) => {
-                this.VM.compte = mr.compte;
-      this.action = $localize`Lister les projets associés au compte`;
-                this.adhesion_serv.get().then(async (projets) => {
-                  this.VM.projets = projets;
-                const s: Session = {
-                  token: mr.token,
-                  mode: this.VM.mode,
-                  compte: mr.compte,
-                  projects: projets,
-                  selectedProjectId: projets.length === 1 ? projets[0].id : null,
-                  rights: projets.length === 1 ? projets[0].rights : null,
-                };
-
-                await this.store.setSession(s);
-
-                if (s.projects.length > 1) {
-                  this.projets = s.projects;
-                  return;
-                }
-
-                this.store.selectProject(s.selectedProjectId);
-                this.store.updateSelectedMenu('MENU');
-                if(this.VM.mode === 'APPLI') {
-                  this.router.navigate(['/menu']);
-                } else {
-                  this.router.navigate(['/menu-admin']);
-                }
-                }).catch((error: Error) => {
-                const o = errorService.CreateError(this.action, error.message);
-                errorService.emitChange(o);
-                this.store.clearSession();
-                this.VM.check_login = { key: false, value: error.message };
-              });
-              })
-              .catch((error: Error) => {
-                const o = errorService.CreateError(this.action, error.message);
-                errorService.emitChange(o);
-                this.store.clearSession();
-                this.VM.check_login = { key: false, value: error.message };
-              });
+      this.login_serv_nest
+        .login(this.VM.compte.login, this.VM.compte.password)
+        .then((mr: MeResponse) => this.openSession(mr))
+        .catch((error: Error) => this.handleLoginError(error));
     }
+  }
+
+  private async openSession(mr: MeResponse): Promise<void> {
+    const errorService = ErrorService.instance;
+    this.VM.compte = mr.compte;
+    this.action = $localize`Lister les projets associés au compte`;
+
+    try {
+      const projets = await this.adhesion_serv.get();
+      this.VM.projets = projets;
+
+      const projectFromContext = this.findRequestedProject(projets);
+      const autoProject = projectFromContext ?? (projets.length === 1 ? projets[0] : null);
+
+      const s: Session = {
+        token: mr.token,
+        mode: this.VM.mode,
+        compte: mr.compte,
+        projects: projets,
+        selectedProjectId: autoProject?.id ?? null,
+        rights: autoProject?.rights ?? null,
+      };
+
+      await this.store.setSession(s);
+
+      if (autoProject) {
+        this.store.selectProject(autoProject.id);
+        this.store.updateSelectedMenu('MENU');
+        this.navigateAfterProjectSelection();
+        return;
+      }
+
+      if (projets.length > 1) {
+        this.projets = projets;
+        this.projets_select = projectFromContext;
+        return;
+      }
+
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Aucun projet n'est associé à ce compte. Vous pouvez créer un compte uniquement depuis un lien d'inscription.`
+      );
+      errorService.emitChange(o);
+    } catch (error: any) {
+      const o = errorService.CreateError(this.action, error?.message ?? $localize`Erreur inconnue`);
+      errorService.emitChange(o);
+      this.store.clearSession();
+      this.VM.check_login = { key: false, value: error?.message ?? '' };
+    }
+  }
+
+  private findRequestedProject(projets: ProjetView[]): ProjetView | null {
+    if (!this.requestedProjectId) return null;
+    return projets.find((p) => Number(p.id) === Number(this.requestedProjectId)) ?? null;
+  }
+
+  private navigateAfterProjectSelection(): void {
+    if (this.VM.mode === 'APPLI') {
+      this.router.navigate(['/menu']);
+    } else {
+      this.router.navigate(['/menu-admin']);
+    }
+  }
+
+  private handleLoginError(error: Error): void {
+    const errorService = ErrorService.instance;
+    const o = errorService.CreateError(this.action, error.message);
+    errorService.emitChange(o);
+    this.store.clearSession();
+    this.VM.check_login = { key: false, value: error.message };
   }
 
   LogOut() {
     this.action = $localize`Se déconnecter`;
     const errorService = ErrorService.instance;
     this.store.clearSession();
+    this.projets = null;
+    this.projets_select = null;
+    this.selectedLogin = false;
+    this.VM.mdp_requis = false;
+    this.VM.check_login = { key: false, value: '' };
     const o = errorService.OKMessage(this.action);
     errorService.emitChange(o);
     this.router.navigate(['/login']);
   }
 
   ReinitMDP() {
+    if (!this.VM.isLoginValid) return;
+
     const c = window.confirm($localize`Voulez-vous réinitialiser votre mot de passe ?`);
     if (!c) return;
 
     this.action = $localize`Réinitialiser le mot de passe`;
     const errorService = ErrorService.instance;
 
-    this.login_serv_nest.reinit_mdp(this.VM.compte.login)
+    this.login_serv_nest
+      .reinit_mdp(this.VM.compte.login)
       .then((ok) => {
         if (ok) {
           const o = errorService.OKMessage(this.action);
@@ -322,6 +373,14 @@ export class LoginComponent implements OnInit {
         errorService.emitChange(o);
         this.loading = false;
       });
+  }
+
+  goCreateAccount() {
+    if (!this.canCreateAccount) return;
+
+    this.router.navigate(['/creer-compte'], {
+      queryParams: { projectId: this.requestedProjectId },
+    });
   }
 
   SelectProject(event: any) {
@@ -341,7 +400,7 @@ export class LoginComponent implements OnInit {
     try {
       this.store.selectProject(this.projets_select.id);
       this.store.updateSelectedMenu('MENU');
-      this.router.navigate(['/menu']);
+      this.navigateAfterProjectSelection();
       const o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
     } catch (err: any) {
@@ -355,9 +414,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  showPassword = false;
-
-togglePassword() {
-  this.showPassword = !this.showPassword;
-}
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
 }

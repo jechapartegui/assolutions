@@ -64,4 +64,20 @@ export class InscriptionSaisonService {
     await this.registry.remove('inscription_saison', id);
     return { ok: true };
   }
+
+  async listForSaison(saisonId: number, projectId: number) {
+    await this.assertSaisonInProject(saisonId, projectId);
+    return this.repo.find({ where: { saison_id: saisonId }, order: { id: 'ASC' } });
+  }
+
+  async listForPersonne(personneId: number, projectId: number) {
+    return this.repo
+      .createQueryBuilder('i')
+      .innerJoin('saison', 's', 's.id = i.saison_id')
+      .where('i.personne_id = :personneId', { personneId })
+      .andWhere('s.project_id = :projectId', { projectId })
+      .orderBy('i.id', 'ASC')
+      .getMany();
+  }
+
 }

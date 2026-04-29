@@ -1,205 +1,517 @@
-/* On garde tes styles initiaux + compactage léger */
-.panel { --bulma-panel-heading-padding: 0.5em 0.75em; }
-
-/* Chaque ligne: infos à gauche, boutons à droite */
-.ligne{
-  position: relative;                /* pour les menus absolus */
-  font-size: small;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;    /* boutons à droite, infos à gauche */
-  align-items: center;
-  gap: .5rem;
-  min-height: 40px;
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
 }
 
-/* Bloc gauche (icône + nom + contact) => tient sur une seule ligne */
-.partie1{
+.ms-shell,
+.ms-link-shell {
+  height: calc(100vh - 60px);
+  min-height: 0;
+  width: 100%;
+  padding: 0.45rem;
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;                 /* ❗ reste sur une ligne */
-  align-items: center;
-  align-content: center;
-  gap: 6px;
-  flex: 1 1 auto;                    /* prend la place disponible */
-  min-width: 0;                      /* autorise les ellipses */
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow: hidden;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top left, rgba(0, 209, 178, 0.08), transparent 22%),
+    radial-gradient(circle at top right, rgba(32, 156, 238, 0.08), transparent 18%),
+    linear-gradient(180deg, #f7fbfc 0%, #f4f7fb 100%);
 }
 
-/* Nom: garde une largeur flexible, ellipses si trop long */
-.nom_personne{
-  font-size: .95rem;
+@media screen and (min-width: 1024px) {
+  .ms-shell,
+  .ms-link-shell {
+    height: calc(100vh - 52px);
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  .ms-shell,
+  .ms-link-shell {
+    height: calc(100vh - 60px);
+    padding-bottom: calc(0.45rem + env(safe-area-inset-bottom));
+  }
+}
+
+.ms-hero,
+.ms-link-card {
+  flex: 0 0 auto;
+  border-radius: 18px;
+  padding: 0.8rem 0.95rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 252, 0.94));
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.ms-hero-header,
+.ms-link-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ms-hero-title {
+  min-width: 0;
+}
+
+.ms-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ms-status-tag {
+  text-transform: capitalize;
+}
+
+.ms-summary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.ms-hero-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.ms-content {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 0.1rem;
+}
+
+.ms-sections {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ms-section-card,
+.ms-panel-shell,
+.ms-link-body {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.ms-section-card {
+  overflow: hidden;
+}
+
+.ms-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(255, 255, 255, 0.95));
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.ms-section-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(15, 23, 42, 0.65);
+}
+
+.ms-toggle-btn {
+  box-shadow: none !important;
+}
+
+.ms-section-body {
+  padding: 0.35rem 0.55rem 0.65rem;
+}
+
+.ms-person-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: 14px;
+}
+
+.ms-person-row:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.ms-person-main {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ms-person-status-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 26px;
+}
+
+.ms-status-icon {
+  width: 26px;
+  min-width: 26px;
+}
+
+.ms-avatar {
+  flex: 0 0 auto;
+  cursor: zoom-in;
+}
+
+.ms-avatar img {
+  object-fit: cover;
+  width: 40px;
+  height: 40px;
+}
+
+.ms-person-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  cursor: zoom-in;
+}
+
+.ms-person-topline {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.ms-person-name {
+  font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ms-person-subline {
+  margin-top: 0.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-size: 0.84rem;
+  color: rgba(15, 23, 42, 0.68);
+}
+
+.ms-person-contact {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
-  flex: 0 1 auto;
 }
 
-/* Contact d’urgence: inline si ça passe, ellipses sinon */
-.partie1 > span[title]{
+.ms-person-contact-info {
+  color: rgba(15, 23, 42, 0.55);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
-  flex: 0 1 auto;
-  max-width: 40%;                    /* limite pour que le nom + contact tiennent */
-  color: #6b7280;                    /* gris doux par défaut */
 }
 
-/* Boutons: compacts, cohérents avec le style "btn-compact" */
-.ligne .buttons.has-addons .button{
-  padding: .35rem .6rem;
-  min-height: 2rem;
-  line-height: 1;
+.ms-person-actions {
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
 }
 
-/* Icônes empilées déjà existantes: pas de changement, juste un petit ajustement */
-.fa-stack.fa-sm { line-height: 1; }
+.ms-person-actions .button {
+  min-width: 2.35rem;
+}
 
-/* ========== MENU CONTEXTUEL (statut) ========== */
 .menu-icons {
   display: none;
   position: absolute;
   z-index: 1000;
-  top: 100%;                         /* sous l’icône par défaut */
-  left: 42px;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 170px;
   background-color: #fff;
   color: #111;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
   list-style: none;
   padding: 8px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
-.menu-icons.is-visible { display: block; }
+
+.menu-icons.is-visible {
+  display: block;
+}
+
 .menu-icons li {
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
 }
-.menu-icons li:hover { background-color: #f0f0f0; }
-.not{ display: none; }
 
-/* ========== Toolbar Options/Panneaux ========== */
-.ms-panel-toolbar{
-  display:flex; align-items:center; justify-content: space-between;
-  gap:.75rem; margin-bottom: .75rem;
+.menu-icons li:hover {
+  background-color: #f2f5f8;
 }
-.ms-panel-title{ font-weight: 700; }
 
-/* ========== Panneaux d’options (remplacent la liste) ========== */
-.ms-panel{
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 10px;
-  padding: 12px;
+.not {
+  display: none;
+}
+
+.ms-panel-shell {
+  padding: 0.9rem;
+}
+
+.ms-panel-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.ms-panel-title {
+  font-weight: 700;
+}
+
+.ms-panel {
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 16px;
+  padding: 0.9rem;
   background: #fff;
 }
-@media (prefers-color-scheme: dark){
-  .ms-panel{ background: #171923; border-color: rgba(255,255,255,.12); }
+
+.ms-form {
+  display: grid;
+  gap: 1rem;
 }
 
-/* Form layout desktop/tablet */
-.ms-form{ display:grid; gap: 16px; }
-.ms-form.grid-2{ grid-template-columns: 1.2fr 1fr; }
-.ms-form.grid-1{ grid-template-columns: 1fr; }
-@media (max-width: 1023px){ .ms-form.grid-2{ grid-template-columns: 1fr; } }
+.ms-form.grid-2 {
+  grid-template-columns: 1.1fr 1fr;
+}
 
-/* Liste de destinataires (checkboxes compactes) */
-.ms-recipients{
+.ms-form.grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.ms-form-card {
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 14px;
+  padding: 0.9rem;
+  background: rgba(248, 250, 252, 0.65);
+}
+
+.ms-recipients {
   display: grid;
-  gap: 6px;
+  gap: 0.45rem;
   max-height: 50vh;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-}
-.ms-rec-name{ margin-left: 6px; margin-right: 6px; }
-.ms-badge{ margin-left: 4px; }
-
-/* Utilitaires de marges */
-.mt-2{ margin-top: .5rem; }
-.mt-3{ margin-top: .75rem; }
-
-/* Dropdown (bulma) aligné à droite du header */
-.card-header .dropdown .dropdown-menu{
-  right: 0; left: auto;
+  padding-right: 0.2rem;
 }
 
-/* Compacter les boutons addon */
-.buttons.has-addons .button{ padding: .35rem .6rem; }
-/* Un léger gap pour que le menu ne colle pas au bouton quand il s'ouvre vers le haut */
-.dropdown.is-up .dropdown-menu{
-  left: 0;
-  bottom: calc(100% + 8px);
+.ms-recipient-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.1rem;
 }
 
-/* ========== Mobile: remplace le contact par une icône, sans régression d’alignement ========== */
-@media (max-width: 767px){
-  /* Le bloc gauche garde son comportement 1-ligne */
-  .partie1{ gap: 6px; }
+.ms-rec-name {
+  min-width: 0;
+  flex: 1 1 auto;
+}
 
-  /* Contact: on masque le texte et on affiche une icône, le titre reste accessible (long-press/hover) */
-  .partie1 > span[title]{
-    max-width: 0;
-    overflow: hidden;
-    padding: 0;
-    margin-left: 2px;
+.ms-badge {
+  text-transform: capitalize;
+}
+
+.ms-inline-add {
+  align-items: stretch;
+}
+
+.ms-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ms-link-body {
+  padding: 0.9rem;
+}
+
+.ms-link-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ms-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.ms-link-person {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ms-link-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scroll-to-top {
+  position: sticky;
+  bottom: 1rem;
+  margin-left: auto;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: #3273dc;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(50, 115, 220, 0.28);
+}
+
+.modal-card {
+  max-width: 520px;
+  width: calc(100vw - 2rem);
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mr-1 {
+  margin-right: 0.25rem;
+}
+
+@media screen and (max-width: 1023px) {
+  .ms-form.grid-2 {
+    grid-template-columns: 1fr;
   }
-  .partie1 > span[title]::before{
-    content: "\f095";                /* phone (Font Awesome) */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    display: inline-block;
-    width: 1.25rem;
-    text-align: center;
-    color: #3273dc;                  /* Bulma primary */
-  }
-
-  .ms-recipients{ max-height: 45vh; }
 }
 
-/* ========== DARK MODE spécifique: menu contextuel lisible ========== */
-@media (prefers-color-scheme: dark){
-  .menu-icons{
+@media screen and (max-width: 767px) {
+  .ms-hero-header,
+  .ms-link-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ms-hero-actions {
+    justify-content: stretch;
+  }
+
+  .ms-hero-actions .button,
+  .ms-hero-actions .dropdown {
+    width: 100%;
+  }
+
+  .ms-hero-actions .dropdown-trigger,
+  .ms-hero-actions .dropdown-trigger .button {
+    width: 100%;
+  }
+
+  .ms-person-row,
+  .ms-link-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ms-person-actions,
+  .ms-link-actions {
+    width: 100%;
+  }
+
+  .ms-person-actions .button,
+  .ms-link-actions .button {
+    flex: 1 1 auto;
+  }
+
+  .ms-person-subline {
+    display: block;
+  }
+
+  .ms-person-contact-info {
+    display: block;
+    margin-top: 0.1rem;
+  }
+
+  .ms-recipients {
+    max-height: 42vh;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .ms-shell,
+  .ms-link-shell {
+    background:
+      radial-gradient(circle at top left, rgba(0, 209, 178, 0.08), transparent 22%),
+      radial-gradient(circle at top right, rgba(32, 156, 238, 0.08), transparent 18%),
+      linear-gradient(180deg, #0f1720 0%, #131a24 100%);
+  }
+
+  .ms-hero,
+  .ms-link-card,
+  .ms-section-card,
+  .ms-panel-shell,
+  .ms-link-body,
+  .ms-panel {
+    background: rgba(24, 28, 39, 0.95);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #eef2f7;
+  }
+
+  .ms-section-header,
+  .ms-form-card,
+  .ms-link-row {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .ms-section-subtitle,
+  .ms-person-subline,
+  .ms-person-contact-info {
+    color: rgba(230, 235, 242, 0.72);
+  }
+
+  .ms-person-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .menu-icons {
     background: #1f2330;
     color: #e6e7e9;
-    border-color: rgba(255,255,255,.14);
-    box-shadow: 0 10px 24px rgba(0,0,0,.5);
-  }
-  .menu-icons li:hover{
-    background: rgba(255,255,255,.06);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
   }
 
-  /* Couleur du contact (quand visible en desktop) */
-  .partie1 > span[title]{ color: #a0a7b3; }
-  /* Optionnel : curseur zoom et meilleure responsivité de la modale */
-.nom_personne, .contact-urgence { cursor: zoom-in; }
-.modal-card { max-width: 520px; width: calc(100vw - 2rem); }
-
-}
-/* Sur mobile, on veut que le menu soit "dans le flux", sous la navbar */
-.mobile .navbar .dropdown {
-  position: static; /* plus de position relative qui sert de référence */
-}
-
-.mobile .navbar .dropdown-menu {
-  position: static;               /* plus d'absolu = plus de bug de placement */
-  transform: none !important;     /* au cas où Bulma ajoute un translate */
-  left: auto !important;
-  right: auto !important;
-  margin-top: 0.5rem;
-  width: 100%;                    /* prend la largeur dispo de la navbar */
-  z-index: 20;                    /* au-dessus du contenu en dessous */
-}
-
-.mobile .navbar .dropdown-content {
-  width: 100%;
-  border-radius: 0.25rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.mobile .navbar .dropdown-item {
-  text-align: left;
-  padding: 0.75rem 1rem;
+  .menu-icons li:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
 }

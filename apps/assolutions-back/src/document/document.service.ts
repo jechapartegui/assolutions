@@ -1,6 +1,6 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
 import { DocumentEntity } from './document.entity';
@@ -38,4 +38,25 @@ export class DocumentService {
     await this.registry.remove('document', id);
     return { ok: true };
   }
+
+async photoById(ids: number[]): Promise<{ [id: number]: string | null }> {
+  const items = await this.repo.findBy({
+    objet_type: 'member',
+    objet_id: In(ids),
+    typedoc: 'photo',
+  });
+
+  const result: { [id: number]: string | null } = {};
+  for (const id of ids) {
+    result[id] = null;
+  }
+
+  for (const item of items) {
+    result[item.objet_id] = item.file_data
+      ? `data:image/jpeg;base64,${item.file_data.toString('base64')}`
+      : null;
+  }
+
+  return result;
+}
 }

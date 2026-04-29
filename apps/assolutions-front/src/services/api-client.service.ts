@@ -85,7 +85,6 @@ export class ApiClientService {
       .set('lang', this.getCurrentLanguage());
 
     // projectid optionnel
-    console.log("selectedProjectId"  + this.store.selectedProjectId?.());
     const projectId = this.store.selectedProjectId?.() ?? null;
     if (projectId) headers = headers.set('projectid', projectId.toString());
 

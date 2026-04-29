@@ -29,6 +29,17 @@
               {{ showContactClub ? 'Fermer le contact club' : 'Contacter le club' }}
             </span>
           </button>
+          <button
+  *ngIf="refreshAvailable"
+  class="button is-warning is-light"
+  type="button"
+  (click)="applyRefresh()"
+>
+  <span class="icon">
+    <i class="fas fa-rotate"></i>
+  </span>
+  <span i18n>Actualiser</span>
+</button>
         </div>
       </div>
 
@@ -101,15 +112,18 @@
         >
           <ng-container *ngIf="!hasOpenedRider(); else compactRider">
             <div class="rider-card-full">
-              <div class="photo-wrapper">
-                <figure class="image rider-avatar is-inline-block">
-                  <img
-                    class="is-rounded"
-                    [src]="personne.photo ?? 'assets/photo_H.png'"
-                    [alt]="'Photo de ' + personne.nom"
-                  />
-                </figure>
-              </div>
+<div class="photo-wrapper">
+  <div class="rider-avatar">
+    <img
+      *ngIf="personne.photo"
+      [src]="personne.photo"
+      [alt]="'Photo de ' + (personne.prenom || '') + ' ' + (personne.nom || '')"
+    />
+    <div *ngIf="!personne.photo" class="rider-avatar-fallback">
+      {{ getInitiales(personne) }}
+    </div>
+  </div>
+</div>
 
               <p class="rider-name">
                 {{ personne.prenom }} {{ personne.nom }}
@@ -196,21 +210,23 @@
                 >
                   <header class="menu-card-header">
                     <div class="menu-card-header-left">
-                      <div
-                        class="menu-card-avatar"
-                        [ngClass]="{
-                          'is-adh': rider.profil === 'ADH',
-                          'is-prof': rider.profil === 'PROF'
-                        }"
-                      >
-                        <i
-                          class="fa-solid"
-                          [ngClass]="{
-                            'fa-user': rider.profil === 'ADH',
-                            'fa-chalkboard-user': rider.profil === 'PROF'
-                          }"
-                        ></i>
-                      </div>
+<div
+  class="menu-card-avatar"
+  [ngClass]="{
+    'is-adh': rider.profil === 'ADH',
+    'is-prof': rider.profil === 'PROF',
+    'has-photo': !!rider.photo
+  }"
+>
+  <img
+    *ngIf="rider.photo"
+    [src]="rider.photo"
+    [alt]="'Photo de ' + rider.libelle"
+  />
+  <span *ngIf="!rider.photo" class="menu-card-avatar-fallback">
+    {{ getInitiales(rider) }}
+  </span>
+</div>
 
                       <div class="menu-card-identity">
                         <div class="menu-card-name">{{ rider.libelle }}</div>
@@ -373,13 +389,13 @@
                                     <i class="fas fa-hiking icon-type-seance"></i> Sortie
                                   </span>
                                 </ng-container>
-                                : {{ ms.seance.nom }}
+                                : {{ ms.seance.cours_nom }}
                               </td>
 
                               <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
                                 {{ ms.seance.date_seance | date : "dd/MM/yyyy" }}
                                 {{ ms.seance.heure_debut }} -
-                                {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
+                           {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
                                 ({{ ms.seance.duree_seance | dureeHHMM }})
                               </td>
 
@@ -467,7 +483,7 @@
                                       </span>
 
                                       <span
-                                        (click)="MAJInscription(ms, rider, null)"
+                                        (click)="MAJInscription(ms, rider, false)"
                                         *ngIf="ms.statutInscription == 'absent'"
                                         class="icon is-large action-icon"
                                       >

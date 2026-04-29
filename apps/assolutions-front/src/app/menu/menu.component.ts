@@ -1,30 +1,17 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { ErrorService } from '../../services/error.service';
-import { StaticClass } from '../global';
-import { AdherentSeance_VM, MesSeances_VM, Seance, Seance_VM, StatutSeance, calculerHeureFin, mapSeanceListToVM } from '@shared/index';
-import { KeyValuePair } from '@shared/lib/autres.interface';
+import { InscriptionStatus_VM, MesSeances_VM, OutgoingMessageVm, MailAddressVm, Seance_VM, StatutSeance, calculerHeureFin as calculerHeureFinUtil, Project } from '@shared/index';
+
 import { AdherentMenu } from '../../class/adherent-menu';
-import { Lieu, Lieu_VM, mapLieuxToVM } from '@shared/lib/lieu.interface';
-import { Cours_VM, mapCoursListToVM } from '@shared/lib/cours.interface';
 import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
+import { MenuRepository } from '../../repository/menu.repository';
+import { MenuStore } from '../../store/menu.store';
+import { ErrorService } from '../../services/error.service';
 import { AppStore } from '../app.store';
-import { AdhesionApiService } from '../../services/adhesion-api.service';
-import { MenuDataStore } from '../../services/menu-data.store';
-import { ContratProfApiService } from '../../services/contrat-prof-api.service';
-import { CreateInscriptionSeanceDto, InscriptionStatus_VM, PersonneLight_VM, ProfLight_VM, SeanceProfesseur_Light, SeanceStatus_VM } from '@shared/index';
-import { PersonneApiService } from '../../services/personne-api.service';
-import { LieuApiService } from '../../services/lieu-api.service';
-import { CoursApiService } from '../../services/cours-api.service';
-import { GroupesApiService } from '../../services/groupes-api.service';
-import { Groupe } from '@shared/lib/groupes.interface';
-import { LienGroupeApiService } from '../../services/lien-groupe-api.service';
-import { CoursProfesseurApiService } from '../../services/cours-professeur-api.service';
-import { MesSeancesApiService } from '../../services/mes-seances-api.service';
-import { SeanceApiService } from '../../services/seance-api.service';
-import { SeanceProfesseurApiService } from '../../services/seance-professeur-api.service';
-import { InscriptionSeanceApiService } from '../../services/inscription-seance-api.service';
+import { StaticClass } from '../global';
+import { MessageApiService } from '../../services/message-api.service';
+import { firstValueFrom } from 'rxjs';
+import { ProjectApiService } from '../../services/project-api.service';
 
 @Component({
   standalone: false,
@@ -32,752 +19,109 @@ import { InscriptionSeanceApiService } from '../../services/inscription-seance-a
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css'],
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent implements OnInit, OnDestroy {
+  @ViewChild('scrollableContent', { static: false })
+  scrollableContent?: ElementRef<HTMLElement>;
 
-  action: string;
-  Riders: AdherentMenu[];
-  listeprof: ProfLight_VM[];
-  listelieu: Lieu_VM[];
-  listegroupe: Groupe[];
-  // --- Contact club ---
-  showContactClub = false;
-  contactClubMessage = '';
+  public g!: StaticClass;
+  public loading = false;
+  public showScrollToTop = false;
+  public denseMode = false;
+  public showContactClub = false;
+  public contactClubMessage = '';
+  public action = '';
 
-
-    public loading: boolean = false;
-    @ViewChild('scrollableContent', { static: false })
-scrollableContent?: ElementRef<HTMLElement>;
-    showScrollToTop: boolean = false;
-  denseMode = false;
-
-  public liste_prof_filter: KeyValuePair[];
-  public liste_lieu_filter: string[];
-  public liste_groupe_filter: string[];
-  public liste_cours_filter: string[];
-  public anniversaire: string[];
-  listeCours: Cours_VM[] = [];
-
-  public g: StaticClass;
   constructor(
-    private adhesionserv: AdhesionApiService,
-    public cdr: ChangeDetectorRef,
-    public store:AppStore,
-    private router: Router,
-    private menuStore:MenuDataStore,
-    private contratprof_serv: ContratProfApiService,
-    private seance_prof_serv: SeanceProfesseurApiService,
-    private ma_seance_serv: MesSeancesApiService,
-    private seance_serv:SeanceApiService,
-    private personne_serv:PersonneApiService,
-    private groupe_serv: GroupesApiService,
-    private liengroupe_serv: LienGroupeApiService,
-    private cours_profservice: CoursProfesseurApiService,
-    private inscription_seance_serv:InscriptionSeanceApiService,
-    private lieuserv: LieuApiService,
-    private coursservice: CoursApiService,
-  private multifiltersPipe: MultifiltersMenuPipe // 👈 injecte le pipe
+    public readonly store: AppStore,
+    public readonly cdr: ChangeDetectorRef,
+    private readonly router: Router,
+    public readonly menuStore: MenuStore,
+    private readonly menuRepository: MenuRepository,
+    private readonly messageservice: MessageApiService,
+    private readonly multifiltersPipe: MultifiltersMenuPipe,
+    private readonly projectapi: ProjectApiService,
   ) {}
 
-async ngOnInit(): Promise<void> {
-  const errorService = ErrorService.instance;
-  this.action = $localize`Charger le menu`;
-
-  // Redirection admin
-  if (this.store.mode() === 'ADMIN') {
-    this.router.navigate(['/menu-admin']);
-    return;
+  get Riders(): AdherentMenu[] {
+    return this.menuStore.vm().riders;
   }
 
-  this.loading = true;
-
-  try {
-    const { yesterday, nextMonth } = this.computeDefaultDates();
-
-    this.Riders = [];
-
-    const projectId = this.store.selectedProject().id;
-    const saisonId = this.store.saison_active_id();
-    const rights = this.store.selectedProject().rights;
-
-    // 1) Lancer en parallèle ce qui ne dépend pas des autres
-    const anniversairePromise = this.loadAnniversaire(saisonId);
-
-    // (cache-first, potentiellement en parallèle)
-    const refsPromise = this.loadReferenceData(projectId, saisonId);
-
-    // 2) Charger Riders selon droits
-    this.Riders = await this.loadRiders(rights, yesterday, nextMonth);
-
-    // 3) Attendre les refs (profs/lieux/cours) puis enrichir
-    await refsPromise;
-    await anniversairePromise;
-
-    this.enrichRidersWithNames(this.Riders);
-
-
-  } catch (err: any) {
-    this.handleInitError(err, errorService);
-  } finally {
-    this.loading = false;
-    this.updateDenseMode();
-    window.addEventListener('resize', this.updateDenseMode);
-  }
-}
-
-ngOnDestroy() {
-  window.removeEventListener('resize', this.updateDenseMode);
-}
-
-/* ---------------------------- Helpers privés ---------------------------- */
-
-private computeDefaultDates() {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-
-  const nextMonth = new Date(today);
-  nextMonth.setMonth(today.getMonth() + 1);
-
-  return { yesterday, nextMonth };
-}
-
-private async loadAnniversaire(saisonId: number): Promise<void> {
-  try {
-    const anniv = await this.adhesionserv.Anniversaire(saisonId);
-    this.anniversaire = anniv;
-  } catch {
-    // option : ignorer si tu ne veux pas bloquer le menu pour ça
-    // ou remonter une erreur si c'est critique
-  }
-}
-
-private async loadReferenceData(projectId: number, saisonId: number): Promise<void> {
-  this.action = $localize`Charger les données de référence`;
-
-  const prereqPromise = Promise.all([
-    this.loadProfs(projectId),
-    this.loadLieux(projectId),
-    this.loadGroupes(projectId),
-  ]);
-
-  await prereqPromise;
-
-  await this.loadCours(saisonId);
-}
-
-private async loadProfs(projectId: number): Promise<void> {
-  this.action = $localize`Récupérer la liste des professeurs`;
-
-  if (this.menuStore.profsFresh(projectId)) {
-    this.listeprof = this.menuStore.getProfs(projectId)!.value;
-    this.liste_prof_filter = this.listeprof.map(x => ({
-      key: x.contrat_id,                // 👈 plus logique si tu sélectionnes par contrat
-      value: `${x.prenom} ${x.nom}`,
-    }));
-    return;
+  get anniversaire(): string[] {
+    return this.menuStore.vm().anniversaire;
   }
 
-  const contrats = await this.contratprof_serv.list(this.store.saison_active_id());
-
-  // (Optionnel mais recommandé) si tu es dans une saison, filtre ici par saison_id
-  // const contrats = (await this.contratprof_serv.list()).filter(c => c.saison_id === saisonId);
-
-  const profIds = contrats
-    .map(c => c.professeur_id)
-    .filter((id): id is number => id != null);
-
-  const personnes = await this.personne_serv.list_personnelight(profIds);
-
-  if (personnes.length === 0) {
-    throw ErrorService.instance.CreateError(
-      this.action,
-      $localize`Il faut au moins un professeur pour créer un cours`
-    );
+  get listeprof() {
+    return this.menuStore.vm().listeprof;
   }
 
-  // Index personnes par id
-  const personneById = new Map<number, PersonneLight_VM>(
-    personnes.map(p => [p.id, p])
-  );
-
-  // ✅ On fabrique des ProfLight_VM à partir des contrats
-  const profs: ProfLight_VM[] = contrats
-    .map(cp => {
-      const p = personneById.get(cp.professeur_id);
-      if (!p) return null;
-
-      const prof = new ProfLight_VM();
-      Object.assign(prof, p);
-      prof.contrat_id = cp.id;
-      return prof;
-    })
-    .filter((x): x is ProfLight_VM => !!x);
-
-  if (profs.length === 0) {
-    throw ErrorService.instance.CreateError(
-      this.action,
-      $localize`Aucun contrat professeur valide`
-    );
+  get listelieu() {
+    return this.menuStore.vm().listelieu;
   }
 
-  this.menuStore.setProfs(projectId, profs);
-  this.listeprof = profs;
-
-  this.liste_prof_filter = profs.map(x => ({
-    key: x.contrat_id,                // 👈 clé par contrat
-    value: `${x.prenom} ${x.nom}`,
-  }));
-}
-
-private async loadLieux(projectId: number): Promise<void> {
-  this.action = $localize`Récupérer la liste des lieux`;
-
-  if (this.menuStore.lieuxFresh(projectId)) {
-    this.listelieu = this.menuStore.getLieux(projectId)!.value;
-    this.liste_lieu_filter = this.listelieu.map((x) => x.nom);
-    return;
+  get listegroupe() {
+    return this.menuStore.vm().listegroupe;
   }
 
-  const lieux = await this.lieuserv.list();
-  if (lieux.length === 0) {
-    throw ErrorService.instance.CreateError(
-      this.action,
-      $localize`Il faut au moins un lieu pour créer un cours`
-    );
+  get listeCours() {
+    return this.menuStore.vm().listeCours;
   }
 
-  this.menuStore.setLieux(projectId, lieux);
- this.listelieu = mapLieuxToVM(lieux);
-
-  this.liste_lieu_filter = lieux.map((x) => x.nom);
-}
-
-private async loadGroupes(projectId: number): Promise<void> {
-  this.action = $localize`Récupérer la liste des groupes`;
-
-  if (this.menuStore.groupesFresh(projectId)) {
-    this.listegroupe = this.menuStore.getGroupes(projectId)!.value;
-    this.liste_groupe_filter = this.listegroupe.map((x) => x.nom);
-    return;
+  get liste_prof_filter() {
+    return this.menuStore.vm().liste_prof_filter;
   }
 
-  const groupes = await this.groupe_serv.list(this.store.saison_active_id());
-  if (groupes.length === 0) {
-    throw ErrorService.instance.CreateError(
-      this.action,
-      $localize`Il faut au moins un groupe pour créer un cours`
-    );
+  get liste_lieu_filter() {
+    return this.menuStore.vm().liste_lieu_filter;
   }
 
-  this.menuStore.setGroupes(projectId, groupes);
- this.listegroupe = groupes;
-
-  this.liste_groupe_filter = this.listegroupe.map((x) => x.nom);
-}
-
-private async loadCours(saisonId: number): Promise<void> {
-  this.action = $localize`Récupérer la liste des cours`;
-
-  if (this.menuStore.coursFresh(saisonId)) {
-    this.listeCours = this.menuStore.getCours(saisonId)!.value;
-    return;
+  get liste_groupe_filter() {
+    return this.menuStore.vm().liste_groupe_filter;
   }
 
-  const cours = await this.coursservice.list(saisonId);
-  const groupesByCoursId: Record<number, number[]> = await this.liengroupe_serv.listGroupesByCoursId(cours.map(c => c.id)); 
-  this.menuStore.setCours(saisonId, cours);
-  const contratsByCoursId: Record<number, number[]> =
-  await this.cours_profservice.listProfsByCoursId(cours.map(c => c.id)); // ok si ça renvoie bien contrat_id
-
-this.listeCours = mapCoursListToVM(
-  cours,
-  this.listelieu,
-  this.listegroupe,
-  this.listeprof, // ProfLight_VM[]
-  { groupesByCoursId, contratsByCoursId }
-);
-}
-
-private async loadRiders(
-  rights: { adherent: boolean; essai: boolean; prof: boolean },
-  yesterday: Date,
-  nextMonth: Date
-): Promise<AdherentMenu[]> {
-  const riders: AdherentMenu[] = [];
-
-  // Adhérent + essai
-  if (rights.adherent || rights.essai) {
-    this.action = $localize`Récupérer les adhérents`;
-    const seancesAdh = await this.GetMySeance();
-    riders.push(...this.buildRiders(seancesAdh, 'ADH', yesterday, nextMonth));
+  get liste_cours_filter() {
+    return this.menuStore.vm().liste_cours_filter;
   }
 
-  // Prof
-  if (rights.prof) {
-    this.action = $localize`Récupérer les professeurs`;
-    const seancesProf = await this.GetProfSeance();
-    riders.push(...this.buildRiders(seancesProf, 'PROF', yesterday, nextMonth));
+  get refreshAvailable(): boolean {
+    return this.menuStore.vm().refreshAvailable;
   }
 
-  // Tri final
-  riders.sort((a, b) => a.id - b.id);
-  console.log("Riders avant pipe : ", riders);
-  return riders;
-}
-
-private buildRiders(
-  seances: any[],
-  profil: 'ADH' | 'PROF',
-  yesterday: Date,
-  nextMonth: Date
-): AdherentMenu[] {
-  return seances.map((x) => {
-    const rider = new AdherentMenu(x);
-    rider.profil = profil;
-    rider.filters.filter_date_avant = yesterday;
-    rider.filters.filter_date_apres = nextMonth;
-
-    this.sortMesSeances(rider);
-    return rider;
-  });
-}
-
-private sortMesSeances(rider: AdherentMenu) {
-  rider.MesSeances.sort((a, b) => {
-    const dateA = new Date(a.seance.date_seance);
-    const [hA, mA] = a.seance.heure_debut.split(':').map(Number);
-    dateA.setHours(hA, mA, 0, 0);
-
-    const dateB = new Date(b.seance.date_seance);
-    const [hB, mB] = b.seance.heure_debut.split(':').map(Number);
-    dateB.setHours(hB, mB, 0, 0);
-
-    return dateA.getTime() - dateB.getTime();
-  });
-}
-
-private enrichRidersWithNames(riders: AdherentMenu[]) {
-  for (const rider of riders) {
-    for (const ms of rider.MesSeances) {
-      if (ms.seance.lieu_id && ms.seance.lieu_id > 0) {
-        ms.seance.lieu_nom = this.trouverLieu(ms.seance.lieu_id);
-      }
-      if (ms.seance.cours && ms.seance.cours > 0) {
-        ms.seance.cours_nom = this.trouverCours(ms.seance);
-      }
-    }
-  }
-}
-
-hasOpenedRider(): boolean {
-  return !!this.Riders?.some(r => r.afficher);
-}
-
-private handleInitError(err: any, errorService: any) {
-  const o =
-    err instanceof HttpErrorResponse
-      ? errorService.CreateError(this.action, err.message)
-      : err instanceof Error
-        ? errorService.CreateError(this.action, err.message)
-        : err;
-
-  errorService.emitChange(o);
-
-  if (this.store.mode() === 'ADMIN') {
-    if (o.message.includes('professeur')) {
-      this.router.navigate(['/adherent']);
-    } else if (o.message.includes('lieu')) {
-      this.router.navigate(['/lieu']);
-      this.store.updateSelectedMenu("LIEU");
-    }
-  } else {
-    this.store.clearSession();
-    this.router.navigate(['/login']);
-  }
-}
-
-updateDenseMode = () => {
-  this.denseMode = window.innerWidth < 480;
-};
-
-  getLibelleProfil(profil: string): string {
-    return profil === 'ADH'
-      ? $localize`Adhérent`
-      : $localize`Professeur`;
-  }
-  
-  formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = ('0' + (date.getMonth() + 1)).slice(-2);
-    const day = ('0' + date.getDate()).slice(-2);
-    return `${year}-${month}-${day}`;
-  }
-  
-
-async GetMySeance(): Promise<AdherentSeance_VM[]> {
-  this.action = $localize`Charger les séances disponibles`;
-  const errorService = ErrorService.instance;
-
-  try {
-    return await this.hydrateAdherentSeances(() => this.ma_seance_serv.get());
-  } catch (error: any) {
-    const o = errorService.CreateError(this.action, error);
-    errorService.emitChange(o);
-    return [];
-  }
-}
-
-async GetProfSeance(): Promise<AdherentSeance_VM[]> {
-  this.action = $localize`Charger les séances à réaliser pour le professeur`;
-  const errorService = ErrorService.instance;
-
-  try {
-    return await this.hydrateAdherentSeances(() => this.ma_seance_serv.prof());
-  } catch (error: any) {
-    const o = errorService.CreateError(this.action, error);
-    errorService.emitChange(o);
-    return [];
-  }
-}
-private async hydrateAdherentSeances(
-  fetchMinimal: () => Promise<AdherentSeance_VM[]>
-): Promise<AdherentSeance_VM[]> {
-
-  // 1) payload minimal : ids + statuts
-  const retour = await fetchMinimal();
-
-  // 2) ids
-  const personneIds = this.buildIdList(retour, x => x.personne?.id);
-  const seanceIds = Array.from(
-    new Set(
-      retour.flatMap(x => x.mes_seances?.map(ms => ms.seance?.id) ?? [])
-            .filter((x): x is number => typeof x === 'number' && !isNaN(x))
-    )
-  );
-
-  // 3) hydrate personnes
-  const personnes: PersonneLight_VM[] =
-    personneIds.length ? await this.personne_serv.list_personnelight(personneIds) : [];
-
-  const personneById = new Map<number, PersonneLight_VM>(personnes.map(p => [p.id, p]));
-  for (const a of retour) {
-    const p = personneById.get(a.personne.id);
-    if (p) a.personne = p;
-  }
-
-  // 4) charger séances + liens profs (par contrat)
-  const seances: Seance[] =
-    seanceIds.length ? await this.seance_serv.get_seance_by_ids(seanceIds) : [];
-
-  const rawSeanceProfs: SeanceProfesseur_Light[] =
-    seanceIds.length ? await this.seance_prof_serv.get_list_by_idseance(seanceIds) : [];
-
-  const contratsBySeanceId = this.buildContratsBySeanceId(rawSeanceProfs);
-
-  // 5) dépendances depuis menuStore
-  const coursList: Cours_VM[] = this.menuStore.getCours(this.store.saison_active_id())?.value ?? [];
-  const lieuxList: Lieu[] = this.menuStore.getLieux(this.store.public_projet_id())?.value ?? [];
-  const profsList: ProfLight_VM[] = this.menuStore.getProfs(this.store.saison_active_id())?.value ?? [];
-
-  const coursById = new Map<number, Cours_VM>(coursList.map(c => [c.id, c]));
-  const lieuxById = new Map<number, Lieu>(lieuxList.map(l => [l.id, l]));
-  const profsByContratId = new Map<number, ProfLight_VM>(profsList.map(p => [p.contrat_id, p]));
-
-  // 6) map Seance -> Seance_VM
-  const seanceVMs: Seance_VM[] = mapSeanceListToVM(seances, {
-    coursById,
-    lieuxById,
-    profsByContratId,
-    contratsBySeanceId,
-  });
-  const seanceVmById = new Map<number, Seance_VM>(seanceVMs.map(s => [s.id, s]));
-
-  // 7) injecter les Seance_VM dans retour
-  for (const a of retour) {
-    for (const ms of a.mes_seances) {
-      const vm = seanceVmById.get(ms.seance.id);
-      if (vm) ms.seance = vm;
-    }
-  }
-
-  return retour;
-}
-private buildIdList<T>(items: T[], getter: (x: T) => number | null | undefined): number[] {
-  return Array.from(new Set(items.map(getter).filter((x): x is number => typeof x === 'number' && !isNaN(x))));
-}
-
-private buildContratsBySeanceId(rows: SeanceProfesseur_Light[]): Map<number, number[]> {
-  const map = new Map<number, number[]>();
-
-  for (const r of rows) {
-    const arr = map.get(r.seance_id);
-    if (arr) arr.push(r.professeurcontract_id);
-    else map.set(r.seance_id, [r.professeurcontract_id]);
-  }
-
-  // dédoublonnage safe
-  for (const [sid, arr] of map) {
-    map.set(sid, Array.from(new Set(arr)));
-  }
-
-  return map;
-}
-
-copierDansPressePapier(texte: string): void {
+  async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
-  navigator.clipboard.writeText(texte).then(() => {    
-    // Optionnel : Afficher un message, toast ou console.log
-          const o = errorService.OKMessage($localize`Adresse copiée :` + texte);
-      errorService.emitChange(o);
-    console.log( $localize`Adresse copiée :`, texte);
-  }).catch(err => {
-    console.error( $localize`Erreur de copie`, err);
-  });
-}
-  getadresse(id:number) : string {
-    let ad = this.listelieu.find(x => x.id == id) 
-    return ad!.nom + " " + ad!.adresse.Street + " " + ad!.adresse.PostCode + " " + ad!.adresse.City
-  }
-    calculerHeureFin(heure: string, duree: number): string {
-  return calculerHeureFin(heure, duree);
-}
-  nbSeanceInscrit(seance: MesSeances_VM[]): {OK:number, KO:number, aucun:number} {
-    let OK = 0;
-    let KO = 0;
-    let aucun = 0;
-    seance.forEach((s) => { 
-      if(s.seance.statut == StatutSeance.prévue){
-      if(s.statutInscription == null || s.statutInscription == undefined){ 
-        aucun++;
-      }
-      else if (s.statutInscription == "présent") {
-        OK++;
-      } 
-      else if (s.statutInscription == "essai") {
-        OK++;
-      } 
-      else if (s.statutInscription == "absent") {
-        KO++;
-      } else {
-        aucun++;
-      }
-      }
-     
-    });
+    this.action = $localize`Charger le menu`;
 
-    return {OK, KO, aucun};
-  }
-
-  trouverLieu(lieuId: number): string {
-    if (this.listelieu) {
-      const lieunom = this.listelieu.find((lieu) => +lieu.id === lieuId);
-      if(lieunom) {
-        return lieunom.nom;
-      } else  {
-        return $localize`Lieu non trouvé`;
-      }
-    } // Implémentez la logique pour trouver le professeur à partir de la liste des professeurs
-    // que vous pouvez stocker dans une variable
-    else {
-      return $localize`Lieu non trouvé`;
+    if (this.store.mode() === 'ADMIN') {
+      this.router.navigate(['/menu-admin']);
+      return;
     }
-  }
-  Sort( sens: 'NO' | 'ASC' | 'DESC', champ: string, rider: AdherentMenu ) {
-    let liste_seance_VM = this.Riders.find(
-      (x) => x.id == rider.id
-    ).MesSeances;
-    switch (champ) {
-      case 'nom':
-        rider.sort_nom = sens;
-        rider.sort_date = 'NO';
-        rider.sort_lieu = 'NO';
-        rider.sort_cours = 'NO';
-        liste_seance_VM.sort((a, b) => {
-          const nomA = a.seance.nom.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.seance.nom.toUpperCase();
-          let comparaison = 0;
-          if (nomA > nomB) {
-            comparaison = 1;
-          } else if (nomA < nomB) {
-            comparaison = -1;
-          }
 
-          return rider.sort_nom === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-        
-      case 'type':
-        rider.sort_nom = "NO";
-        rider.sort_date = 'NO';
-        rider.sort_lieu = 'NO';
-        rider.sort_cours = sens;
-        liste_seance_VM.sort((a, b) => {
-          const nomA = a.seance.cours_nom;
-          const nomB = b.seance.cours_nom;
-          let comparaison = 0;
-          if (nomA > nomB) {
-            comparaison = 1;
-          } else if (nomA < nomB) {
-            comparaison = -1;
-          }
+    this.loading = true;
 
-          return rider.sort_cours === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-      case 'lieu':
-        rider.sort_lieu = sens;
-        rider.sort_date = 'NO';
-        rider.sort_nom = 'NO';
-        rider.sort_cours = 'NO';
-        liste_seance_VM.sort((a, b) => {
-          const lieuA =a.seance.lieu_nom;           
-          const lieuB =b.seance.lieu_nom;   
+    try {
+      const selectedProject = this.store.selectedProject();
+      if (!selectedProject) {
+        let o = errorService.CreateError(this.action, $localize`Aucun projet sélectionné`);
+          errorService.emitChange(o);
+      }
 
-          // Ignorer la casse lors du tri
-          const lieuAUpper = lieuA.toUpperCase();
-          const lieuBUpper = lieuB.toUpperCase();
+      const projectId = selectedProject.id;
+      const saisonId = this.store.saison_active_id();
+      const rights = selectedProject.rights;
 
-          let comparaison = 0;
-          if (lieuAUpper > lieuBUpper) {
-            comparaison = 1;
-          } else if (lieuAUpper < lieuBUpper) {
-            comparaison = -1;
-          }
-
-          return rider.sort_lieu === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-      case 'date':
-        rider.sort_lieu = 'NO';
-        rider.sort_date = sens;
-        rider.sort_cours = 'NO';
-        rider.sort_nom = 'NO';
-        liste_seance_VM.sort((a, b) => {
-          let dateA = a.seance.date_seance;
-          let dateB = b.seance.date_seance;
-
-          let comparaison = 0;
-          if (dateA > dateB) {
-            comparaison = 1;
-          } else if (dateA < dateB) {
-            comparaison = -1;
-          }
-
-          return rider.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-    }
-  }
-  trouverCours(_s:Seance_VM) : string{
-    if(_s.type_seance == "ENTRAINEMENT"){
-      return this.listeCours.find(x => x.id == _s.cours).nom || $localize`Cours non trouvé`;
-    } else if(_s.type_seance == "MATCH"){
-      return $localize`Match`;
-    } else if(_s.type_seance == "SORTIE"){
-      return $localize`Sortie`;
-    } else {
-return $localize`Evénement`;
+      await this.menuStore.init(projectId, saisonId, rights);
+    } catch (err: any) {
+        let o = errorService.CreateError(this.action, $localize`chargement du menu : ` +  err?.message);
+          errorService.emitChange(o);
+    } finally {
+      this.loading = false;
+      this.updateDenseMode();
+      window.addEventListener('resize', this.updateDenseMode);
     }
   }
 
-  private refreshRider(rider: AdherentMenu): void {
-  // On force Angular à détecter le changement en réaffectant une nouvelle référence
-  rider.MesSeances = [...rider.MesSeances];
-}
-
-MAJInscription(
-  messeance: MesSeances_VM,
-  adherentmen: AdherentMenu,
-  statut: boolean | null,
-  afficher_message: boolean = true
-) {
-  const errorService = ErrorService.instance;
-
-  const oldStatut = messeance.statutInscription ?? null;
-
-  // UI optimiste
-  messeance.statutInscription =
-    statut === true ? InscriptionStatus_VM.PRESENT :
-    statut === false ? InscriptionStatus_VM.ABSENT :
-    undefined;
-
-  this.refreshRider(adherentmen);
-  this.cdr.detectChanges();
-
-  const dto: CreateInscriptionSeanceDto = {
-    personne_id: adherentmen.id,
-    seance_id: messeance.seance.id,
-    statut_inscription:
-      statut === true ? InscriptionStatus_VM.PRESENT :
-      statut === false ? InscriptionStatus_VM.ABSENT :
-      null,
-    statut_seance:
-      messeance.statutPrésence === 'absent' ? SeanceStatus_VM.ABSENT :
-      messeance.statutPrésence === 'présent' ? SeanceStatus_VM.PRESENT :
-      null,
-  };
-
-  const statut_text =
-    statut === true ? $localize`présent` :
-    statut === false ? $localize`Absent` :
-    $localize`Indéfini`;
-
-  this.action =
-    $localize`Nouveau statut d'inscription de ` +
-    adherentmen.libelle +
-    ` : ` +
-    statut_text +
-    ` pour la séance ` +
-    messeance.seance.nom;
-
-  this.inscription_seance_serv.maj(dto)
-    .then(() => {
-      const o = errorService.OKMessage(this.action);
-      if (afficher_message) errorService.emitChange(o);
-    })
-    .catch((err) => {
-      const o = errorService.CreateError(this.action, err?.message ?? err);
-      errorService.emitChange(o);
-
-      // rollback UI
-      messeance.statutInscription = oldStatut ?? undefined;
-      this.refreshRider(adherentmen);
-      this.cdr.detectChanges();
-    });
-}
-
-  async MAJInscriptionAffichee(rider: AdherentMenu, statut: boolean) {
-     const errorService = ErrorService.instance;
-    const seancesAffichees = this.multifiltersPipe.transform(rider.MesSeances, rider.filters);
-
-  for (const ms of seancesAffichees) {
-    await this.MAJInscription(ms, rider, statut, false);
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.updateDenseMode);
   }
-     this.action = $localize`Mettre à jour l'inscription : ` + rider.libelle + " " + (statut ? $localize`Présent` : $localize`Absent`);
-            let o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-
-
-  }
-  GotoSeance(id : number){
-    this.router.navigate(['/seance'], { queryParams: { id: id } });
-  }
-
-  Voir(id: number) {
-    this.router.navigate(['/adherent'], { queryParams: { id: id } });
-  }
-
-  ReinitFiltre(adh: AdherentMenu) {
-    adh.filters = new FilterMenu();
-  }
-
-  VoirMaSeance(seance: Seance_VM) {
-    this.router.navigate(['/ma-seance'], {
-      queryParams: { id: seance.id },
-    });
-  }
-
- 
 private boundOnContentScroll = this.onContentScroll.bind(this);
 
 ngAfterViewInit(): void {
@@ -806,17 +150,270 @@ onContentScroll(): void {
   const scrollTop = el.scrollTop || 0;
   this.showScrollToTop = scrollTop > 200;
 }
+getInitiales(personne: AdherentMenu): string {
+  const prenom = (personne.prenom ?? '').trim();
+  const nom = (personne.nom ?? '').trim();
+  const surnom = (personne.surnom ?? '').trim();
 
-scrollToTop(): void {
-  const el = this.scrollableContent?.nativeElement;
-  if (!el) return;
+  const first = prenom.charAt(0) || surnom.charAt(0) || '';
+  const last = nom.charAt(0) || '';
 
-  el.scrollTo({
-    top: 0,
-    behavior: 'smooth',
+  const value = `${first}${last}`.trim().toUpperCase();
+  return value || '?';
+}
+
+
+
+  applyRefresh(): void {
+    this.menuStore.applyRefresh();
+  }
+
+  toggleContactClub(): void {
+    this.showContactClub = !this.showContactClub;
+  }
+
+  async MAJInscription(
+    ms: MesSeances_VM,
+    rider: AdherentMenu,
+    present: boolean | null,
+  ): Promise<void> {
+  let statut_inscription: InscriptionStatus_VM | null = null;
+
+  if (present === true) {
+    statut_inscription = InscriptionStatus_VM.PRESENT;
+  } else if (present === false) {
+    statut_inscription = InscriptionStatus_VM.ABSENT;
+  }
+
+    await this.menuRepository.updateInscription(ms.seance.id, rider.id, statut_inscription);
+
+    
+
+    this.menuStore.patchLocalInscription(rider.id, (ms.seance as Seance_VM).id, statut_inscription);
+  }
+
+  hasOpenedRider(): boolean {
+    return this.Riders.some((x) => !!x.afficher);
+  }
+
+  getLibelleProfil(profil: string): string {
+    if (profil === 'ADH') return 'Adhérent';
+    if (profil === 'PROF') return 'Professeur';
+    return profil;
+  }
+
+  ReinitFiltre(rider: AdherentMenu): void {
+    rider.filters.filter_date_apres = null;
+    rider.filters.filter_date_avant = null;
+    rider.filters.filter_groupe = null;
+    rider.filters.filter_statut = null;
+    rider.filters.filter_nom = null;
+    rider.filters.filter_lieu = null;
+    rider.filters.filter_prof = null;
+  }
+
+  nbSeanceInscrit(list: MesSeances_VM[]): { OK: number; KO: number; aucun: number } {
+    const r = { OK: 0, KO: 0, aucun: 0 };
+
+    for (const x of list ?? []) {
+      if (x.statutInscription === 'présent' || x.statutInscription === 'essai') r.OK++;
+      else if (x.statutInscription === 'absent') r.KO++;
+      else r.aucun++;
+    }
+
+    return r;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent?.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }
+
+  readonly updateDenseMode = () => {
+    this.denseMode = window.innerWidth <= 1023;
+    this.cdr.markForCheck();
+  };
+
+  Voir(id: number): void {
+    this.router.navigate(['/adherent-edit'], { queryParams: { id } });
+  }
+
+  VoirMaSeance(seance: any): void {
+    this.router.navigate(['/seance-edit'], { queryParams: { id: seance.id } });
+  }
+
+  Sort(
+    order: 'ASC' | 'DESC',
+    type: 'nom' | 'date' | 'statut' | 'prof' | 'lieu',
+    rider: AdherentMenu,
+  ): void {
+    if (!rider?.MesSeances?.length) return;
+
+    if (type === 'nom') {
+      rider.sort_nom = order;
+      rider.MesSeances.sort((a, b) =>
+        order === 'ASC'
+          ? (((a.seance as any)?.cours_nom) ?? '').localeCompare((((b.seance as any)?.cours_nom) ?? ''), 'fr')
+          : (((b.seance as any)?.cours_nom) ?? '').localeCompare((((a.seance as any)?.cours_nom) ?? ''), 'fr')
+      );
+      return;
+    }
+
+    if (type === 'date') {
+      rider.sort_date = order;
+      rider.MesSeances.sort((a, b) => {
+        const da = `${((a.seance as any)?.date_seance ?? (a.seance as any)?.date ?? '')} ${((a.seance as any)?.heure_debut ?? '')}`;
+        const db = `${((b.seance as any)?.date_seance ?? (b.seance as any)?.date ?? '')} ${((b.seance as any)?.heure_debut ?? '')}`;
+        return order === 'ASC' ? da.localeCompare(db, 'fr') : db.localeCompare(da, 'fr');
+      });
+      return;
+    }
+
+    
+
+
+    if (type === 'lieu') {
+      rider.sort_lieu = order;
+      rider.MesSeances.sort((a, b) =>
+        order === 'ASC'
+          ? ((((a.seance as any)?.lieu_nom) ?? '')).localeCompare((((b.seance as any)?.lieu_nom) ?? ''), 'fr')
+          : ((((b.seance as any)?.lieu_nom) ?? '')).localeCompare((((a.seance as any)?.lieu_nom) ?? ''), 'fr')
+      );
+    }
+  }
+
+
+GotoSeance(seanceId: number): void {
+  this.router.navigate(['/seance-edit'], { queryParams: { id: seanceId } });
+}
+
+getadresse(lieuId: number): string {
+  const lieu = this.listelieu.find((x: any) => x.id === lieuId);
+  if (!lieu) return '';
+
+  if (typeof lieu.adresse === 'string') {
+    return lieu.adresse;
+  }
+
+  if (lieu.adresse) {
+    const a: any = lieu.adresse;
+    return [
+      a.adresse1,
+      a.adresse2,
+      a.adresse3,
+      a.code_postal,
+      a.ville,
+    ]
+      .filter((x) => !!x)
+      .join(' ');
+  }
+
+  return '';
+}
+
+calculerHeureFin(heureDebut: string, duree: number): string {
+  return calculerHeureFinUtil(heureDebut, duree);
+}
+
+copierDansPressePapier(texte: string): void {
+  if (!texte) return;
+
+  navigator.clipboard?.writeText(texte).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = texte;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand('copy');
+    } finally {
+      document.body.removeChild(textarea);
+    }
   });
 }
-  AfficherProfil(_t17: AdherentMenu) {
+
+async MAJInscriptionAffichee(rider: AdherentMenu, present: boolean | null): Promise<void> {
+  const visibles = (rider.MesSeances ?? []).filter((ms: MesSeances_VM) => {
+    if (!rider.filters) return true;
+
+    const filtered = this.multifiltersPipe.transform(
+      [ms],
+      rider.filters
+    );
+
+    return filtered.length > 0;
+  });
+
+  for (const ms of visibles) {
+    await this.MAJInscription(ms, rider, present);
+  }
+}
+annulerContactClub(): void {
+    this.showContactClub = false;
+    this.contactClubMessage = '';
+  }
+async envoyerContactClub(): Promise<void> {
+  const msg = (this.contactClubMessage || '').trim();
+  const errorService = ErrorService.instance;
+
+  if (!msg) {
+    errorService.emitChange(
+      errorService.CreateError(
+        $localize`Contacter le club`,
+        $localize`Le message est vide.`
+      )
+    );
+    return;
+  }
+
+  const selectedProject = this.store.selectedProject();
+
+  if (!selectedProject?.id) {
+    errorService.emitChange(
+      errorService.CreateError(
+        $localize`Contacter le club`,
+        $localize`Aucun club sélectionné.`
+      )
+    );
+    return;
+  }
+const MAVM: Project = await this.projectapi.get(selectedProject.id);
+
+  if (!MAVM?.login) {
+    errorService.emitChange(
+      errorService.CreateError(
+        $localize`Contacter le club`,
+        $localize`Adresse email du club introuvable.`
+      )
+    );
+    return;
+  }
+
+  const to: MailAddressVm = {
+    email: MAVM.login,
+    name: MAVM.nom ?? MAVM.login,
+  };
+
+  const outgoingmsg: OutgoingMessageVm = {
+    to,
+    subject: $localize`Message depuis l'application`,
+    html: msg,
+  };
+
+  await this.messageservice.send(outgoingmsg);
+
+  errorService.emitChange(
+    errorService.OKMessage($localize`Message envoyé au club.`)
+  );
+
+  this.annulerContactClub();
+}
+    AfficherProfil(_t17: AdherentMenu) {
+      console.log('Afficher profil de', _t17);
   for (const r of this.Riders) {
     if (r.id == _t17.id && r.profil == _t17.profil) {
       r.afficher = !r.afficher;
@@ -828,41 +425,8 @@ scrollToTop(): void {
   this.cdr.detectChanges();
   this.bindScrollContainer();
 }
-    toggleContactClub(): void {
-    this.showContactClub = !this.showContactClub;
-
-    // si on ferme -> on nettoie
-    if (!this.showContactClub) {
-      this.contactClubMessage = '';
-    }
-  }
-
-  annulerContactClub(): void {
-    this.showContactClub = false;
-    this.contactClubMessage = '';
-  }
-
-  envoyerContactClub(): void {
-    const msg = (this.contactClubMessage || '').trim();
-    const errorService = ErrorService.instance;
-
-    if (!msg) {
-      errorService.emitChange(
-        errorService.CreateError($localize`Contacter le club`, $localize`Le message est vide.`)
-      );
-      return;
-    }
-
-    // TODO: tu branches ton service ici (tu m’as dit que tu gères)
-    // ex: this.contactService.send(msg)
-
-    errorService.emitChange(errorService.OKMessage($localize`Message prêt à être envoyé.`));
-
-    // Option UX: on ferme après envoi
-    this.annulerContactClub();
-  }
-
 }
+
 export class FilterMenu {
   private _filter_date_apres: Date | null = null;
   get filter_date_apres(): Date | null {

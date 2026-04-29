@@ -44,4 +44,19 @@ export class InscriptionSaisonController {
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('saison/:saisonId')
+  listBySaison(@Param('saisonId', ParseIntPipe) saisonId: number, @ProjectId() projectId: number) {
+    return this.service.listForSaison(saisonId, projectId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('personne/:personneId')
+  listByPersonne(
+    @Param('personneId', ParseIntPipe) personneId: number,
+    @ProjectId() projectId: number,
+  ) {
+    return this.service.listForPersonne(personneId, projectId);
+  }
 }

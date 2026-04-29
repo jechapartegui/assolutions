@@ -29,6 +29,14 @@ export class SeanceService {
       }
     });
   }
+  async listForSaison(saison_id: number) {
+    return this.repo.find({
+      where: { saison_id },
+      order: { seance_id: 'ASC' },
+    });
+  }
+
+
 
   async listForProject(projectId: number) {
     // On liste les séances dont la saison appartient au projet

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { ProjetView } from '@shared/lib/compte.interface';
 export type ligneSaison = {
   id: number;
   nom: string;
@@ -7,18 +8,6 @@ export type ligneSaison = {
   date_fin: string;
 };
 
-export type ProjectRights = {
-  adherent: boolean;
-  prof: boolean;
-  essai: boolean;
-};
-
-export type ProjetView = {
-  id: number;
-  nom: string;
-  rights: ProjectRights;
-  saison_active: ligneSaison | null;
-};
 
 type ProjectRow = {
   project_id: number;
@@ -27,68 +16,81 @@ type ProjectRow = {
   saison_nom: string | null;
   saison_date_debut: string | null;
   saison_date_fin: string | null;
+  visible: boolean;
   has_active_inscription: boolean;
   has_prof_contract: boolean;
-  inscription_count: number;
 };
-
 
 @Injectable()
 export class AdhesionQueryService {
  constructor(private readonly dataSource: DataSource) {}
 
-  async getAdhesion(compteId: number): Promise<ProjetView[]> {
-  const sql = `SELECT
-  pr.id            AS project_id,
-  pr.nom           AS project_nom,
-  s.id             AS saison_id,
-  s.nom            AS saison_nom,
-  s.date_debut     AS saison_date_debut,
-  s.date_fin       AS saison_date_fin,
+async getAdhesion(compteId: number): Promise<ProjetView[]> {
+  const sql = `
+SELECT
+  pr.id        AS project_id,
+  pr.nom       AS project_nom,
 
-  -- Adhérent/essai
-  COALESCE(BOOL_OR(ins.active), false) AS has_active_inscription,
-  COUNT(ins.id) FILTER (WHERE pe_ins.id IS NOT NULL) AS inscription_count,
+  s.id         AS saison_id,
+  s.nom        AS saison_nom,
+  s.date_debut AS saison_date_debut,
+  s.date_fin   AS saison_date_fin,
 
-  -- Prof
-  BOOL_OR(cp.id IS NOT NULL) AS has_prof_contract
+  true AS visible,
 
-FROM project pr
-JOIN saison s
+  COALESCE(BOOL_OR(ins.id IS NOT NULL AND ins.active = true), false) AS has_active_inscription,
+  COALESCE(BOOL_OR(cp.id IS NOT NULL), false) AS has_prof_contract
+
+FROM login_project lp
+
+JOIN project pr
+  ON pr.id = lp.project_id
+ AND pr.actif = true
+
+LEFT JOIN saison s
   ON s.project_id = pr.id
  AND s.active = true
 
-LEFT JOIN inscription_saison ins
-  ON ins.saison_id = s.id
 LEFT JOIN personne pe_ins
-  ON pe_ins.id = ins.personne_id
- AND pe_ins.compte = $1
+  ON pe_ins.compte = lp.login_id
  AND pe_ins.archive = false
 
-LEFT JOIN contrat_prof cp
-  ON cp.saison_id = s.id
+LEFT JOIN inscription_saison ins
+  ON ins.personne_id = pe_ins.id
+ AND ins.saison_id = s.id
+
 LEFT JOIN personne pe_prof
-  ON pe_prof.id = cp.professeur_id
- AND pe_prof.compte = $1
+  ON pe_prof.compte = lp.login_id
  AND pe_prof.archive = false
 
-WHERE pr.actif = true
-GROUP BY pr.id, pr.nom, s.id, s.nom, s.date_debut, s.date_fin;
+LEFT JOIN contrat_prof cp
+  ON cp.professeur_id = pe_prof.id
+ AND cp.saison_id = s.id
+
+WHERE lp.login_id = $1
+
+GROUP BY
+  pr.id,
+  pr.nom,
+  s.id,
+  s.nom,
+  s.date_debut,
+  s.date_fin
+
+ORDER BY pr.nom;
 `;
 
-    const rows = (await this.dataSource.query(sql, [compteId])) as ProjectRow[];
+  const rows = (await this.dataSource.query(sql, [compteId])) as ProjectRow[];
 
-return rows
-  // optionnel : si tu veux exclure les projets où tu n'es ni prof ni adhérent/essai
-  .filter(r => r.has_prof_contract || r.has_active_inscription !== null)
-  .map((r) => ({
+  return rows.map((r) => ({
     id: r.project_id,
     nom: r.project_nom,
     rights: {
-  adherent: r.has_active_inscription === true,
-  prof: r.has_prof_contract === true,
-  essai: r.has_active_inscription === false && Number(r.inscription_count) > 0,
-},
+      visible: true,
+      adherent: r.has_active_inscription === true,
+      prof: r.has_prof_contract === true,
+      essai: false, // à définir selon ta logique métier
+    },
     saison_active: r.saison_id
       ? {
           id: r.saison_id,
@@ -98,7 +100,7 @@ return rows
         }
       : null,
   }));
-  }
+}
 
   async getAnniversaire(saisonId: number): Promise<string[]> {
     const today = new Date();

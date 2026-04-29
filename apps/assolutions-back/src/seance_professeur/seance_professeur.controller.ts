@@ -9,26 +9,26 @@ import { SeanceProfesseurService } from './seance_professeur.service';
 export class SeanceProfesseurController {
   constructor(private readonly service: SeanceProfesseurService) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   list(@ProjectId() projectId: number) {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateSeanceProfesseurDto) {
     return this.service.create(dto, projectId);
   }
 
   // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -50,9 +50,17 @@ export class SeanceProfesseurController {
     }
 
   // ✅ DELETE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+  
+  @UseGuards(JwtAuthGuard)
+  @Post('updatelist')
+  updateList(@ProjectId() projectId: number, @Body() body: { seanceId: number, profs: number[] }) {
+    const { seanceId, profs } = body;
+    return this.service.updateList(seanceId, profs, projectId);
+  }
+
 }

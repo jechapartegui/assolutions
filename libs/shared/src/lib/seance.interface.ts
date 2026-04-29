@@ -1,8 +1,8 @@
 import { corelistobject } from "./corelistobject.interface";
 import { Cours_VM } from "./cours.interface";
-import { LienGroupe_VM } from "./groupes.interface";
-import { Lieu } from "./lieu.interface";
-import { Personne_VM, PersonneLight_VM, ProfLight_VM } from "./personne.interface";
+import { Groupe } from "./groupes.interface";
+import { Lieu_VM } from "./lieu.interface";
+import {  PersonneLight_VM, ProfLight_VM } from "./personne.interface";
 
 export interface Seance {
   id: number;
@@ -18,7 +18,7 @@ export interface Seance {
   date_seance: string;
   heure_debut: string;   // max 10
   duree_seance: number;
-
+  heure_fin?: string;     // max 10
   lieu_id: number;
   statut: string;        // enum DB (string)
 
@@ -66,6 +66,7 @@ export class Seance_VM extends corelistobject {
   date_seance: Date = new Date();
   heure_debut: string ="11:00";
   duree_seance: number = 0;
+  heure_fin: string ="11:00";
   lieu_id: number = 0;
   statut: 'prévue' | 'réalisée' | 'annulée' = 'prévue';
   age_minimum: number | null = null;
@@ -87,7 +88,7 @@ export class Seance_VM extends corelistobject {
   // Les entités de lien
   seanceProfesseurs: ProfLight_VM[] = [];
 
-  groupes: LienGroupe_VM[] = []; // Liste des groupes liés à la séance
+  groupes: Groupe[] = []; // Liste des groupes liés à la séance
 }
 
 export enum StatutSeance{
@@ -134,7 +135,7 @@ function toDate(dateStr: string | null | undefined): Date {
 export function mapSeanceToVM(
   s: Seance,
   ctx: {
-    lieuxById: Map<number, Lieu>;
+    lieuxById: Map<number, Lieu_VM>;
     coursById: Map<number, Cours_VM>;
     profsByContratId: Map<number, ProfLight_VM>;
     contratsBySeanceId: Map<number, number[]>; // seanceId -> [contratId]
@@ -183,7 +184,7 @@ export function mapSeanceToVM(
 
   // enrichissements simples
   vm.lieu_nom = ctx.lieuxById.get(vm.lieu_id)?.nom;
-  vm.cours_nom = ctx.coursById.get(vm.cours)?.nom;
+  vm.cours_nom = ctx.coursById.get(vm.cours)?.nom ?? s.label ?? '';
 
   // profs liés (par contrat)
   const contratIds = ctx.contratsBySeanceId.get(vm.id) ?? [];
@@ -200,7 +201,7 @@ export function mapSeanceToVM(
 export function mapSeanceListToVM(
   seances: Seance[],
   ctx: {
-    lieuxById: Map<number, Lieu>;
+    lieuxById: Map<number, Lieu_VM>;
     coursById: Map<number, Cours_VM>;
     profsByContratId: Map<number, ProfLight_VM>;
     contratsBySeanceId: Map<number, number[]>;

@@ -46,4 +46,11 @@ export class CoursProfesseurController {
   listProfsByCoursId(@Body() body: { coursId: number[] }) {
     return this.service.listProfsByCoursId(body.coursId);
   }
+  
+  @UseGuards(JwtAuthGuard)
+  @Post('updatelist')
+  updateList(@ProjectId() projectId: number, @Body() body: { coursId: number, profs: number[] }) {
+    const { coursId, profs } = body;
+    return this.service.updateList(coursId, profs, projectId);
+  }
 }

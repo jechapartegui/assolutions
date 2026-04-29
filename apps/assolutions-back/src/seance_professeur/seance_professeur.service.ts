@@ -38,6 +38,16 @@ export class SeanceProfesseurService {
     if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
   }
 
+  private async getinfoseance(seanceId: number) {
+  const seance = await this.seanceRepo.findOne({ where: { seance_id: seanceId } });
+  if (!seance) throw new NotFoundException(`seance ${seanceId} introuvable`);
+
+  return {
+    duree_seance: seance.duree_seance,
+    statut: seance.statut,
+  };
+}
+
   listForProject(projectId: number) {
     return this.repo
       .createQueryBuilder('sp')
@@ -109,5 +119,18 @@ export class SeanceProfesseurService {
     await this.repo.remove(item);
     await this.registry.remove('seance_professeur', id);
     return { ok: true };
+  }
+
+  async updateList(seanceId: number, profsors: number[], projectId: number) {
+    const existing = await this.repo.find({ where: { seance_id: seanceId } });
+    const toDelete = existing.filter((e) => !profsors.includes(e.professeurcontract_id));
+    const toAdd = profsors.filter((p) => !existing.some((e) => e.professeurcontract_id === p));
+    toDelete.forEach((e) => this.remove(e.id, projectId));
+    toAdd.forEach(async (p) => {
+      const s: {duree_seance: number, statut: string} = await this.getinfoseance(seanceId);
+      let i :CreateSeanceProfesseurDto = { seance_id: seanceId, professeurcontract_id: p, minutes:s.duree_seance, statut:s.statut};
+      
+       this.create(i, projectId)
+  });
   }
 }

@@ -3,7 +3,7 @@
 @Entity({ name: 'mail_project' })
 export class MailProjectEntity {
   @PrimaryColumn({ type: 'int' })
-  id: number; // probablement project_id
+  id: number;
 
   @Column({ type: 'text' })
   mail_relance: string;

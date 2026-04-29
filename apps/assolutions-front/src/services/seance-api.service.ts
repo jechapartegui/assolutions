@@ -8,8 +8,18 @@ export class SeanceApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<Seance[]> {
-    return this.api.GET<Seance[]>(this.base);
+  list(saisonId:number): Promise<Seance[]> {
+    return this.api.GET<Seance[]>(`${this.base}/saison/${saisonId}`);
+  }
+
+  addrange(dto: CreateSeanceDto,dateDebut: Date, dateFin: Date, jourSemaine: string): Promise<number[]> {
+    const payload = {
+      seances: dto,
+      dateDebut,
+      dateFin,
+      jourSemaine
+    };
+    return this.api.POST<number[]>(`${this.base}/addrange`, payload);
   }
 
   get(id: number): Promise<Seance> {
