@@ -17,6 +17,9 @@ export class CreateProjectDto {
   @IsBoolean()
   @IsOptional()
   actif?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  public?: boolean;
 
   @IsDateString()
   date_debut: string; // YYYY-MM-DD
@@ -71,6 +74,9 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsBoolean()
   actif?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  public?: boolean;
 
   @IsOptional()
   @IsDateString()

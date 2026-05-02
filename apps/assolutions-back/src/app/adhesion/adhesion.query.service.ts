@@ -97,6 +97,7 @@ ORDER BY pr.nom;
           nom: r.saison_nom ?? '',
           date_debut: r.saison_date_debut ?? '',
           date_fin: r.saison_date_fin ?? '',
+          project_id: r.project_id,
         }
       : null,
   }));

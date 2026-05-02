@@ -9,6 +9,13 @@ export class ProjectApiService {
 
   constructor(private api: ApiClientService) {}
 
+  async listPublicProjects(): Promise<Project[]> {
+    return this.api.GET<Project[]>(`${this.base}/public`);
+  }
+  async getAll(): Promise<Project[]> {
+    return this.api.GET<Project[]>(this.base);
+  }
+
   get(id: number): Promise<Project> {
     return this.api.GET<Project>(`${this.base}/${id}`);
   }

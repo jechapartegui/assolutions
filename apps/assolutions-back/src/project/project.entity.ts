@@ -10,6 +10,9 @@ export class ProjectEntity {
 
   @Column({ type: 'boolean', default: false })
   actif: boolean;
+  
+  @Column({ type: 'boolean', default: true })
+  public: boolean;
 
   @Column({ type: 'date' })
   date_debut: string; // date -> string 'YYYY-MM-DD' (simple & fiable)

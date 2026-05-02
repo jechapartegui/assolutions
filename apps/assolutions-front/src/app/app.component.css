@@ -80,3 +80,35 @@
     --app-bottombar-height: 60px;
   }
 }
+.account-navbar {
+  gap: 0.75rem;
+}
+
+.account-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: 240px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(0, 209, 178, 0.08);
+  color: #00796b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.account-project-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.account-actions {
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.account-actions .button {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}

@@ -2,11 +2,23 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectService } from './project.service';
+import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 
 @Controller('projects')
 export class ProjectController {
   constructor(private readonly service: ProjectService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Get('public')
+  listPublicProjects() {
+    return this.service.listPublicProjects();
+  }
+
+    @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Get()
+  list() {
+    return this.service.list();
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')

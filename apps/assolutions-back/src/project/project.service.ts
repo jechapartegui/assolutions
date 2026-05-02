@@ -14,6 +14,13 @@ export class ProjectService {
     private readonly registry: RegistryService,
   ) {}
   
+  async list() {
+    return this.repo.find();
+  }
+
+  async listPublicProjects() {
+    return this.repo.find({ where: { public: true } });
+  }
 
   async get(id: number) {
     const item = await this.repo.findOne({ where: { id } });

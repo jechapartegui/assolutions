@@ -52,8 +52,8 @@
     </section>
 
     <div class="adherent-content">
-      <app-adherent-list
-        *ngIf="!vm.editAdherent"
+     <app-adherent-list
+  *ngIf="!vm.editAdherent && canShowAdherentList"
         [vm]="vm"
         (openAdherent)="onOpen($event)"
   [isAdmin]="isAdmin"
@@ -63,8 +63,7 @@
       <app-adherent-editor
         *ngIf="vm.editAdherent"
         [vm]="vm"
-  [isAdmin]="isAdmin"
-        (back)="onBackToList()"
+  [isAdmin]="isAdmin"(back)="onEditorBack()"
       ></app-adherent-editor>
     </div>
   </ng-container>

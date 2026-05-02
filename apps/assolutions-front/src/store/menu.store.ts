@@ -7,6 +7,8 @@ import {
   MenuPendingRefresh,
 } from '../vm/menu.vm';
 
+type MenuRights = { visible?: boolean; adherent?: boolean; prof?: boolean; essai?: boolean } | null;
+
 @Injectable({ providedIn: 'root' })
 export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   private static readonly TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -27,7 +29,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   async init(
     projectId: number,
     saisonId: number,
-    rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
+    rights: MenuRights,
   ): Promise<void> {
     const state = this._vm();
 
@@ -56,7 +58,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   private async loadInitialData(
     projectId: number,
     saisonId: number,
-    rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
+    rights: MenuRights,
   ): Promise<void> {
     this._vm.update((s) => ({
       ...s,
@@ -83,7 +85,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   async refreshSilently(
     projectId: number,
     saisonId: number,
-    rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
+    rights: MenuRights,
   ): Promise<void> {
     if (this.silentRefreshPromise) {
       return this.silentRefreshPromise;
@@ -101,7 +103,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   private async runSilentRefresh(
     projectId: number,
     saisonId: number,
-    rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
+    rights: MenuRights,
   ): Promise<void> {
     try {
       const fresh = await this.menuRepository.loadMenuData(projectId, saisonId, rights);
@@ -132,7 +134,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   async refreshNow(
     projectId: number,
     saisonId: number,
-    rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
+    rights: MenuRights,
   ): Promise<void> {
     if (this.hardRefreshPromise) {
       return this.hardRefreshPromise;
@@ -150,7 +152,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   private async runHardRefresh(
     projectId: number,
     saisonId: number,
-    rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
+    rights: MenuRights,
   ): Promise<void> {
     this._vm.update((s) => ({
       ...s,

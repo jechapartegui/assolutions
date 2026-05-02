@@ -1,6 +1,6 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateInscriptionSaisonDto, UpdateInscriptionSaisonDto } from './inscription_saison.dto';
@@ -9,12 +9,37 @@ import { InscriptionSaisonEntity } from './inscription_saison.entity';
 @Injectable()
 export class InscriptionSaisonService {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(InscriptionSaisonEntity)
     private readonly repo: Repository<InscriptionSaisonEntity>,
     @InjectRepository(SaisonEntity)
     private readonly saisonRepo: Repository<SaisonEntity>,
     private readonly registry: RegistryService,
   ) {}
+
+  async listByPersonnes(personneIds: number[]) {
+  if (!personneIds?.length) return [];
+
+  const sql = `
+    SELECT
+      ins.personne_id                  AS personne_id,
+      pr.id                            AS project_id,
+      pr.nom                           AS project_nom,
+      s.id                             AS saison_id,
+      s.nom                            AS saison_nom,
+      ins.id                           AS inscription_id,
+      ins.active                       AS active
+    FROM inscription_saison ins
+    JOIN saison s
+      ON s.id = ins.saison_id
+    JOIN project pr
+      ON pr.id = s.project_id
+    WHERE ins.personne_id = ANY($1::int[])
+    ORDER BY pr.nom, s.date_debut DESC, s.nom
+  `;
+
+  return this.dataSource.query(sql, [personneIds]);
+}
 
   private async assertSaisonInProject(saisonId: number, projectId: number) {
     const saison = await this.saisonRepo.findOne({ where: { id: saisonId } });
@@ -37,6 +62,7 @@ export class InscriptionSaisonService {
     await this.assertSaisonInProject(item.saison_id, projectId);
     return item;
   }
+
 
   async create(dto: CreateInscriptionSaisonDto, projectId: number) {
     await this.assertSaisonInProject(dto.saison_id, projectId);

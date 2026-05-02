@@ -44,6 +44,10 @@ export class InscriptionSaisonController {
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+  @Post('by-personnes')
+listByPersonnes(@Body() body: { personneIds: number[] }) {
+  return this.service.listByPersonnes(body.personneIds);
+}
 
   @UseGuards(JwtAuthGuard)
   @Get('saison/:saisonId')

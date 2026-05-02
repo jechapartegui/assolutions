@@ -8,6 +8,7 @@ import { AdherentComponent } from 'apps/assolutions-front/src/app/adherent/main/
 import { AdherentEditorComponent } from 'apps/assolutions-front/src/app/adherent/detail/adherent-editor.component';
 import { SeanceComponent } from 'apps/assolutions-front/src/app/seance/seance.component';
 import { CoursComponent } from 'apps/assolutions-front/src/app/cours/cours.component';
+import { MonCompteComponent } from 'apps/assolutions-front/src/app/mon-compte/mon-compte.component';
 
 import type { AppMode } from '@shared/lib/compte.interface';
 
@@ -22,6 +23,7 @@ export const routes: Routes = [
 
   // APPLI
   { path: 'menu', component: MenuComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
+  { path: 'mon-compte', component: MonCompteComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
  // { path: 'tableau-de-bord', component: DashboardComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
  // { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
 

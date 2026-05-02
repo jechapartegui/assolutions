@@ -103,7 +103,6 @@ export class AuthGuard implements CanActivate {
 
     // droits
     if (rule.requireProf && !this.store.isProf()) return false;
-    if (rule.requireEssai && !this.store.canEssai()) return false;
 
     return true;
   }

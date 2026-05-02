@@ -37,6 +37,7 @@ import { InfoComponent } from './info/info.component';
 
 
 import type { AppMode } from '@shared/lib/compte.interface';
+import { MonCompteComponent } from './mon-compte/mon-compte.component';
 
 // Raccourcis
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
@@ -51,6 +52,10 @@ const routes: Routes = [
   { path: 'menu', component: MenuComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'tableau-de-bord', component: DashboardComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
+  {
+  path: 'mon-compte',
+  component: MonCompteComponent, canActivate: [AuthGuard], data: APPLI_ONLY 
+}
 
   // PROF (APPLI + ADMIN)
   { path: 'cours', component: CoursComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },

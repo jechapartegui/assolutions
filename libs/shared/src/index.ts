@@ -34,4 +34,5 @@ export * from './lib/mail-project.interface';
 export * from './lib/mail-input.interface';
 export * from './lib/mes-seances.interface';
 export * from './lib/commande.interface';
+export * from './lib/login-projet.interface';
 

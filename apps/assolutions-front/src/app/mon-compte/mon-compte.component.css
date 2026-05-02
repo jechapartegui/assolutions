@@ -1,0 +1,117 @@
+.account-wrapper {
+  min-height: 100%;
+  padding: 1.5rem;
+}
+
+.account-header {
+  margin-bottom: 1.5rem;
+}
+
+.account-loading {
+  min-height: 35vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.account-card {
+  border-radius: 1rem;
+}
+
+.account-card-wide {
+  grid-column: 1 / -1;
+}
+
+.account-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.label-inline {
+  color: #7a7a7a;
+  font-size: 0.85rem;
+}
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.project-row,
+.person-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.project-row:first-of-type,
+.person-row:first-of-type {
+  border-top: 0;
+}
+
+@media (max-width: 768px) {
+  .account-wrapper {
+    padding: 1rem;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-row,
+  .person-row,
+  .account-line {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+.account-wrapper {
+  height: calc(100vh - var(--app-topbar-height, 52px));
+  padding: 1.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-header {
+  flex: 0 0 auto;
+  margin-bottom: 1.5rem;
+}
+
+.account-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  align-items: start;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.account-card {
+  border-radius: 1rem;
+  align-self: start;
+}
+
+.account-card-wide {
+  grid-column: 1 / -1;
+}

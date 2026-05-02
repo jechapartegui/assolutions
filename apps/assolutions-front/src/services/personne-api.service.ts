@@ -12,6 +12,7 @@ export class PersonneApiService {
     return this.api.GET<Personne[]>(this.base);
   }
 
+
   list_personnelight(ids: number[], includePhotos = false): Promise<PersonneLight_VM[]> {
     const url = `${this.base}/light?includePhotos=${includePhotos ? 'true' : 'false'}`;
     return this.api.POST<PersonneLight_VM[]>(url, ids);

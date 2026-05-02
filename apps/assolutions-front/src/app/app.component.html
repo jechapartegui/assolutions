@@ -320,39 +320,47 @@
             </div>
           </ng-container>
       </div>
-      <div class="navbar-end" *ngIf="store.isLoggedIn() && store.hasProjet() == true">
-        <div class="navbar-item">
-          <div class="buttons">
-            <a
-              class="button is-rounded is-outlined is-primary"
-              (click)="Dashboard()"
-            >
-            <i class="fa-solid fa-table-columns"></i>
-            </a>
-          </div>
-        </div>
-        <div class="navbar-item">
-          <div class="buttons">
-            <a
-              class="button is-rounded is-outlined is-info"
-              (click)="MDP()"
-            >
-            <i class="fa-solid fa-lock"></i>
-            </a>
-          </div>
-        </div>
+<div class="navbar-end" *ngIf="store.isLoggedIn()">
+  <div class="navbar-item account-navbar">
+    <div class="account-pill" *ngIf="store.hasProjet()">
+      <span class="icon">
+        <i class="fa-solid fa-diagram-project"></i>
+      </span>
+      <span class="account-project-name">
+        {{ store.selectedProject()?.nom || 'Projet' }}
+      </span>
+    </div>
 
-        <div class="navbar-item">
-          <div class="buttons">
-            <a
-              class="button is-rounded is-outlined is-danger"
-              (click)="LogOut()"
-            >
-              <i class="fa-solid fa-right-from-bracket"></i>
-            </a>
-          </div>
-        </div>
-      </div>
+    <div class="buttons account-actions">
+      <a
+        class="button is-light is-rounded"
+        [routerLink]="['/mon-compte']"
+        (click)="store.updateSelectedMenu('MON_COMPTE')"
+        title="Mon compte"
+      >
+        <i class="fa-solid fa-user-gear"></i>
+        <span class="is-hidden-touch ml-1">Mon compte</span>
+      </a>
+
+      <a
+        *ngIf="store.hasProjet()"
+        class="button is-light is-rounded"
+        (click)="Dashboard()"
+        title="Tableau de bord"
+      >
+        <i class="fa-solid fa-table-columns"></i>
+      </a>
+
+      <a
+        class="button is-danger is-light is-rounded"
+        (click)="LogOut()"
+        title="Se déconnecter"
+      >
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </a>
+    </div>
+  </div>
+</div>
     </div>
   </nav>
 </span>
@@ -363,7 +371,7 @@
 <ng-container *ngIf="!isPublic">
   <span class="mobile">
     <footer class="footer" 
-    style="width:  -webkit-fill-available;" *ngIf="store.isLoggedIn">
+    style="width:  -webkit-fill-available;" *ngIf="store.isLoggedIn()">
     <div class="tabs is-toggle is-fullwidth">
       <ul>
         <li>
@@ -394,6 +402,22 @@
             <span class="tablet">Menu</span>
           </a>
         </li>
+        <li *ngIf="store.isLoggedIn()">
+  <a
+    [class]="
+      store.selectedMenu() === 'MON_COMPTE'
+        ? 'navbar-item is-selected'
+        : 'navbar-item'
+    "
+    (click)="store.updateSelectedMenu('MON_COMPTE')"
+    [routerLink]="['/mon-compte']"
+  >
+    <span class="icon is-large">
+      <i class="fas fa-2x fa-user-gear"></i>
+    </span>
+    <span class="tablet">Compte</span>
+  </a>
+</li>
 
         <li *ngIf="store.isLoggedIn() && store.isProf()">
           <a [class]="

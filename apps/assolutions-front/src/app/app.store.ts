@@ -59,9 +59,6 @@ export class AppStore {
     return this.sessionStore.isProf;
   }
 
-  get canEssai() {
-    return this.sessionStore.canEssai;
-  }
 
   get hasProjet() {
     return this.sessionStore.hasProjet;
@@ -69,6 +66,31 @@ export class AppStore {
 
   get language() {
     return this.sessionStore.language;
+  }
+
+  get projectCount(): number {
+    return this.sessionStore.projects?.().length ?? 0;
+  }
+
+  get hasOneProject(): boolean {
+    return this.projectCount === 1;
+  }
+
+  get hasManyProjects(): boolean {
+    return this.projectCount > 1;
+  }
+
+  get hasNoProject(): boolean {
+    return this.projectCount === 0;
+  }
+
+  findProjectById(projectId: number): any | null {
+    const projects = this.sessionStore.projects?.() ?? [];
+    return projects.find((p: any) => Number(p.id) === Number(projectId)) ?? null;
+  }
+
+  canAccessProject(projectId: number): boolean {
+    return !!this.findProjectById(projectId);
   }
 
   setSession(session: any): void {

@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { CompteService } from '../../services/compte.service';
+import { CompteApiService } from '../../services/compte-api.service';
 import { ErrorService } from '../../services/error.service';
-import { Compte_VM } from '@shared/lib/compte.interface';
+import { Compte } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
 
 @Component({
@@ -23,16 +23,16 @@ export class CompteComponent implements OnInit {
 
   sort_login: string;
   sort_actif: string;
-  thisCompte: Compte_VM;
+  thisCompte: Compte;
 
-  ListeCompte: Compte_VM[];
+  ListeCompte: Compte[];
   action: string;
   context: "LISTE" | "ECRITURE" = "LISTE";
   afficher_filtre: boolean = false;
   selected_filter:string;
 
     // Récupère l'URL actuelle sans les chemins et paramètres supplémentaires
-  constructor(private cpteserv: CompteService, private router: Router, public store :AppStore) {
+  constructor(private cpteserv: CompteApiService, private router: Router, public store :AppStore) {
     
     this.baseUrl = `${window.location.protocol}//${window.location.hostname}`;
    }
@@ -47,7 +47,7 @@ export class CompteComponent implements OnInit {
         return;
       }
 
-      this.cpteserv.GetAll().then((cpt) => {
+      this.cpteserv.list().then((cpt) => {
         this.ListeCompte = cpt;
       }).catch((error: HttpErrorResponse) => {
         let n = errorService.CreateError("Chargement", error);
@@ -101,7 +101,7 @@ export class CompteComponent implements OnInit {
     var re = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
     return re.test(text);
   }
-  Edit(cpt: Compte_VM) {
+  Edit(cpt: Compte) {
     throw new Error('Method not implemented.');
   }
   Delete(_t115: any) {

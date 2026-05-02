@@ -32,6 +32,20 @@ export class AdherentComponent implements OnInit {
     get vm() {
       return this.adherentStore.vm();
     }
+    get context(): string {
+  return this.route.snapshot.queryParamMap.get('context') ?? '';
+}
+
+get isMonCompteContext(): boolean {
+  return this.context === 'MON_COMPTE';
+}
+
+get canShowAdherentList(): boolean {
+  return this.store.isLoggedIn()
+    && this.store.hasProjet()
+    && this.store.isProf()
+    && !this.isMonCompteContext;
+}
   
     get isAdmin(): boolean {
     return this.store.mode?.() === 'ADMIN';
@@ -63,11 +77,30 @@ export class AdherentComponent implements OnInit {
       try {
         const saisonId = this.store.saison_active_id();
         await this.adherentStore.init(saisonId);
-        this.route.queryParams.subscribe(async (params) => {
-          if (params['id']) {
-            await this.adherentStore.openAdherent(+params['id'], saisonId);
-          }
-        });
+       this.route.queryParams.subscribe(async (params) => {
+  const context = params['context'];
+  const action = params['action'];
+  const id = params['id'];
+
+  if (context === 'MON_COMPTE' && action === 'CREATE') {
+    this.adherentStore.createEmpty();
+    return;
+  }
+
+  if (context === 'MON_COMPTE' && id) {
+    await this.adherentStore.openAdherent(+id, saisonId);
+    return;
+  }
+
+  if (!this.store.isProf()) {
+    this.router.navigate(['/mon-compte']);
+    return;
+  }
+
+  if (id) {
+    await this.adherentStore.openAdherent(+id, saisonId);
+  }
+});
       } catch (err: any) {
         errorService.emitChange(
           errorService.CreateError(
@@ -113,4 +146,16 @@ export class AdherentComponent implements OnInit {
       const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
       void this.adherentStore.refreshNow(saisonId);
     }
+
+    onEditorBack(): void {
+  this.adherentStore.closeDetail();
+
+  if (this.isMonCompteContext || !this.store.isProf()) {
+    this.router.navigate(['/mon-compte']);
+    return;
+  }
+
+  const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
+  void this.adherentStore.refreshNow(saisonId);
+}
   }

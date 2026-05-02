@@ -211,6 +211,7 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
     const errorService = ErrorService.instance;
     const vm = this.currentVm;
     const adherent = this.adherent;
+    this.forceCompteIfNeeded();
 
     this.checkall();
 
@@ -246,6 +247,20 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
       );
     }
   }
+  canEditCompte(): boolean {
+  return this.isAdmin === true || this.appstore.isProf() === true;
+}
+
+private forceCompteIfNeeded(): void {
+  const adherent = this.currentVm?.editAdherent;
+  const compte = this.appstore.compte?.();
+
+  if (!adherent || !compte) return;
+
+  if (!this.canEditCompte()) {
+    adherent.compte = compte.id;
+  }
+}
 
   async deleteAdherent(): Promise<void> {
     const adherent = this.adherent;
