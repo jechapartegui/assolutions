@@ -1,46 +1,62 @@
 // apps/assolutions-back/rewrite-shared-aliases.cjs
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const distDir = path.join(__dirname, "dist");
-// dossier absolu vers /dist/libs/shared (à la racine du repo)
-const sharedDistDir = path.resolve(__dirname, "..", "..", "dist", "libs", "shared");
+const appDistDir = path.resolve(__dirname, '..', '..', 'dist', 'apps', 'assolutions-back');
+const sharedDistDir = path.resolve(__dirname, '..', '..', 'dist', 'libs', 'shared');
+
+if (!fs.existsSync(appDistDir)) {
+  console.error('Dossier build introuvable :', appDistDir);
+  process.exit(1);
+}
+
+if (!fs.existsSync(sharedDistDir)) {
+  console.error('Dossier shared introuvable :', sharedDistDir);
+  process.exit(1);
+}
 
 function listJsFiles(dir, list = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, entry.name);
-    if (entry.isDirectory()) listJsFiles(p, list);
-    else if (p.endsWith(".js")) list.push(p);
+    const filePath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      listJsFiles(filePath, list);
+    } else if (filePath.endsWith('.js')) {
+      list.push(filePath);
+    }
   }
+
   return list;
 }
 
 function rewriteFile(file) {
-  const text = fs.readFileSync(file, "utf8");
-  if (!text.includes("@shared/")) return false;
+  const text = fs.readFileSync(file, 'utf8');
 
-  // chemin relatif depuis le fichier vers dist/libs/shared
-  let rel = path.relative(path.dirname(file), sharedDistDir).replace(/\\/g, "/");
-  if (!rel.startsWith(".")) rel = "./" + rel;
-  if (!rel.endsWith("/")) rel += "/";
+  if (!text.includes('@shared/')) return false;
 
-  // remplace require("@shared/...") ET import "... from '@shared/...'"
+  let rel = path.relative(path.dirname(file), sharedDistDir).replace(/\\/g, '/');
+
+  if (!rel.startsWith('.')) rel = './' + rel;
+  if (!rel.endsWith('/')) rel += '/';
+
   const replaced = text
     .replace(/(require\(\s*['"])@shared\//g, `$1${rel}`)
     .replace(/(from\s+['"])@shared\//g, `$1${rel}`);
 
   if (replaced !== text) {
-    fs.writeFileSync(file, replaced, "utf8");
+    fs.writeFileSync(file, replaced, 'utf8');
     return true;
   }
+
   return false;
 }
 
-const files = listJsFiles(distDir);
+const files = listJsFiles(appDistDir);
+
 let changed = 0;
-for (const f of files) if (rewriteFile(f)) changed++;
+
+for (const file of files) {
+  if (rewriteFile(file)) changed++;
+}
 
 console.log(`rewrite-shared-aliases: rewrote ${changed} file(s).`);
-if (changed === 0) {
-  console.warn("rewrite-shared-aliases: no @shared/ found in dist (nothing to do).");
-}

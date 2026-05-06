@@ -8,7 +8,7 @@
     "prebuild": "npm run clean && npm run clean:shared:src && npm run build:shared",
     "build:shared": "tsc -p ../../libs/shared/tsconfig.json",
     "build": "npx tsc --showConfig -p tsconfig.build.json > .tsc.out && node -e \"const j=require('fs').readFileSync('.tsc.out','utf8');const c=JSON.parse(j);console.log('Resolved @shared/* ->', c.compilerOptions.paths['@shared/*']);\" && tsc -p tsconfig.build.json && node rewrite-shared-aliases.cjs && npm run assert:no-alias",
-    "assert:no-alias": "node -e \"const fs=require('fs'),p=require('path');let bad=[];const w=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const f=p.join(d,e.name);if(e.isDirectory())return w(f);if(f.endsWith('.js')){const s=fs.readFileSync(f,'utf8');if(s.includes('@shared/')) bad.push(f);}});w('dist');if(bad.length){console.error('Leftover @shared in:',bad);process.exit(1);}else{console.log('✔ no @shared alias left in dist');}\"",
+    "assert:no-alias": "node -e \"const fs=require('fs'),p=require('path');let bad=[];const root=p.resolve('../../dist/apps/assolutions-back');const w=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const f=p.join(d,e.name);if(e.isDirectory())return w(f);if(f.endsWith('.js')){const s=fs.readFileSync(f,'utf8');if(s.includes('@shared/')) bad.push(f);}});w(root);if(bad.length){console.error('Leftover @shared in:',bad);process.exit(1);}else{console.log('✔ no @shared alias left in',root);}\"",
     "start": "node dist/main.js",
     "start:dev": "ts-node-dev --clear --respawn --transpile-only --project tsconfig.dev.json -r ./register-tsconfig-paths.cjs src/main.ts"
   },
