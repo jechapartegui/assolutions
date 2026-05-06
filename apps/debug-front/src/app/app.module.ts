@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
@@ -29,11 +30,14 @@ import { CoursComponent } from 'apps/assolutions-front/src/app/cours/cours.compo
 import { AdherentComponent } from 'apps/assolutions-front/src/app/adherent/main/adherent.component';
 import { AdherentListComponent } from 'apps/assolutions-front/src/app/adherent/list/adherent-list.component';
 import { AdherentEditorComponent } from 'apps/assolutions-front/src/app/adherent/detail/adherent-editor.component';
+import { MailTemplatePreviewComponent } from 'apps/assolutions-front/src/app/mail-template-preview/mail-template-preview.component';
+import { MaSeanceComponent } from 'apps/assolutions-front/src/app/ma-seance/ma-seance.component';
 // 👇 import des routes legacy (ton fichier qui contient "const routes: Routes = [...]")
+
 
 @NgModule({
   declarations: [AppComponent, LoginComponent, MenuComponent,MultifiltersMenuPipe, CustomButtonComponent, SeanceComponent, SeanceEditorComponent, 
-    SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent,
+    SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent, MailTemplatePreviewComponent, MaSeanceComponent,
     NotifJechaComponent, DureeHHMMPipe, AdherentComponent, AdherentListComponent, AdherentEditorComponent],
   imports: [
     BrowserModule,

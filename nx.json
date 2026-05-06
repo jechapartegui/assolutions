@@ -8,7 +8,7 @@
   "cli": {
     "defaultCollection": "@nrwl/workspace"
   },
-  "useInferencePlugins": true,
+  "useInferencePlugins": false,
   "pluginsConfig": {
     "@nx/js": {
       "ignoreTypeScriptVersion": true

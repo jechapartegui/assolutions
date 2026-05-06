@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { ProjetView } from '@shared/lib/compte.interface';
+import { ProjetView } from '@shared/index';
 export type ligneSaison = {
   id: number;
   nom: string;

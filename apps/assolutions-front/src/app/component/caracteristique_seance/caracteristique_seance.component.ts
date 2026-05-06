@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { ValidationItem } from "@shared/lib/autres.interface";
 import { ReglesSeance } from "apps/assolutions-front/src/class/regles";
@@ -10,30 +11,30 @@ import { GlobalService } from "apps/assolutions-front/src/services/global.servic
   styleUrls: ['./caracteristique_seance.component.css'],
 })
 export class CaracSeanceComponent  {
-@Input() age_min: boolean = false;
-@Input() age_min_valeur: number = -1;
-@Input() age_max: boolean = false;
-@Input() age_max_valeur: number = -1;
-@Input() place_limite: boolean = false;
-@Input() place_limite_valeur: number = -1;
-@Input() essai_possible: boolean = false;
-@Input() afficher_present: boolean = false;
-@Input() ID: number = 0; // ID de la séance
-@Input() vis_essai_possible: boolean = false; 
-@Input() readonly:boolean=false;
-@Input() vis_afficher_present:boolean = false;// si true, on affiche le bouton "essai" dans la liste des caractéristiques
+@Input() age_min = false;
+@Input() age_min_valeur = -1;
+@Input() age_max = false;
+@Input() age_max_valeur = -1;
+@Input() place_limite = false;
+@Input() place_limite_valeur = -1;
+@Input() essai_possible = false;
+@Input() afficher_present = false;
+@Input() ID = 0; // ID de la séance
+@Input() vis_essai_possible = false; 
+@Input() readonly=false;
+@Input() vis_afficher_present = false;// si true, on affiche le bouton "essai" dans la liste des caractéristiques
 @Input() Regles: ReglesSeance;
 @Output() valueChange = new EventEmitter<caracteristique>();
 @Output() valid = new EventEmitter<boolean>();
 public save: string = null;
-public edit: boolean = false;
-public estValid: boolean = false;
+public edit = false;
+public estValid = false;
 
 constructor() { }
 async ngOnInit(): Promise<void> {
 this.vis_afficher_present = this.Regles.vis_afficher_present;
 this.vis_essai_possible = this.Regles.vis_essai_possible;
-let ddl: caracteristique = {
+const ddl: caracteristique = {
     age_min: this.age_min,
     age_min_valeur: this.age_min_valeur,
     age_max: this.age_max,

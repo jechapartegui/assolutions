@@ -7,66 +7,16 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { MenuComponent } from './menu/menu.component';
 import { AdherentComponent } from './adherent/main/adherent.component';
-import { GroupeComponent } from './groupe/groupe.component';
 import { CoursComponent } from './cours/cours.component';
 import { SeanceComponent } from './seance/seance.component';
-import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
-import { ProfComponent } from './prof/prof.component';
 import { StaticClass } from './global';
-import { DatePipe } from '@angular/common';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import { HttpClientModule } from '@angular/common/http';
-import { ContactItemComponent } from './contact-item/contact-item.component';
-import { GroupeDetailComponent } from './groupe-detail/groupe-detail.component';
-import { HoverButtonComponent } from './hover-button/hover-button.component';
-import { MaSeanceComponent } from './ma-seance/ma-seance.component';
-import { AddressComponent } from './address/address.component';
-import { CompteComponent } from './compte/compte.component';
-import { InscriptionComponent } from './inscription/inscription.component';
-import { ProfesseurComponent } from './professeur/professeur.component';
-import { SeancesEssaisComponent } from './seances-essais/seances-essais.component';
-import { CompteDetailComponent } from './compte-detail/compte-detail.component';
-import { ReinitMdpComponent } from './reinit-mdp/reinit-mdp.component';
-import { StockComponent } from './stock/stock.component';
-import { SuiviMailComponent } from './suivi-mail/suivi-mail.component';
-import { ProjetMailComponent } from './projet-mail/projet-mail.component';
-import { FacturesComponent } from './factures/factures.component';
-import { ProjetInfoComponent } from './projet-info/projet-info.component';
-import { CompteBancaireComponent } from './compte-bancaire/compte-bancaire.component';
-import { LieuComponent } from './lieu/lieu.component';
-import { SaisonComponent } from './saison/saison.component';
-import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
-import { AdministrateursComponent } from './administrateurs/administrateurs.component';
-import { DashboardComponent } from './tdb/dashboard.component';
-import { ImportComponent   } from './import/import.component';
-import { GestionListeComponent } from './gestion-liste/gestion-liste.component';
-import { OperationsComponent } from './operations/operations.component';
-import { ClementineComponent } from './clementine/clementine.component';
-import { DocumentComponent } from './document/document.component';
 import { CustomButtonComponent } from './custom-button/custom-button.component';
 import { ErrorService } from '../services/error.service';
-import { RangePipe } from '../filters/range.pipe';
-import { FilterLibelleNomPipe } from '../filters/filter-libellenom.pipe';
-import { MultifiltersAdherentPipe } from '../filters/multifilters-adherent.pipe';
-import { MultifiltersComptePipe } from '../filters/multifilters-compte.pipe';
-import { MultifiltersCoursPipe } from '../filters/multifilters-cours.pipe';
 import { MultifiltersMenuPipe } from '../filters/multifilters-menu.pipe';
-import { MultifiltersProfPipe } from '../filters/multifilters-prof.pipe';
-import { MultifiltersSaisonPipe } from '../filters/multifilters-saison.pipe';
-import { MultifiltersSeancePipe } from '../filters/multifilters-seance.pipe';
-import { MultifiltersStockPipe } from '../filters/multifilters-stock.pipe';
 import { GlobalService } from '../services/global.services';
-import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { DureeHHMMPipe } from '../pipe/duree.pipe';
-import { InfoPersoComponent } from './component/Infoperso/infoperso.component';
-import { DateLieuComponent } from './component/datelieu/datelieu.component';
-import { CaracSeanceComponent } from './component/caracteristique_seance/caracteristique_seance.component';
-import { OrEmptyPipe } from '../filters/orempty.pipe';
-import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
-import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
-import { MultifiltersFFPipe } from '../filters/multifilters-comptabilite.pipe';
-import { InfoComponent } from './info/info.component';
-import { CreerCompteComponent } from './creer-compte/creer-compte.component';
 import { SeanceEditorComponent } from './seance-editor/seance-editor.component';
 import { SeanceListComponent } from './seance-list/seance-list.component';
 import { RefDataStore } from '../store/ref-data.store';
@@ -78,31 +28,20 @@ import { CoursListComponent } from './cours-list/cours-list.component';
 import { CoursStore } from '../store/cours.store';
 import { AdherentListComponent } from './adherent/list/adherent-list.component';
 import { AdherentEditorComponent } from './adherent/detail/adherent-editor.component';
+import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
+import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
-    MenuComponent,
-    AdherentComponent, AdherentListComponent,
-     SeanceEditorComponent, SeanceListComponent, CoursEditorComponent, CoursListComponent,
-    GroupeComponent, AdherentEditorComponent,
-    CoursComponent, InfoComponent,
-    SeanceComponent, MailTemplatePreviewComponent, 
-    ComptabiliteComponent, InfoPersoComponent, ShortLinkRedirectComponent,
-    ProfComponent,RangePipe,  OrEmptyPipe, CreerCompteComponent,
-    NotifJechaComponent,  AdministrateursComponent, 
-    ContactItemComponent, DureeHHMMPipe, DateLieuComponent, CaracSeanceComponent,
-    MultifiltersStockPipe, MultifiltersSaisonPipe,FilterLibelleNomPipe, MultifiltersProfPipe,  MultifiltersMenuPipe, MultifiltersComptePipe, MultifiltersAdherentPipe, MultifiltersSeancePipe, MultifiltersCoursPipe, MultifiltersFFPipe,
-   GroupeDetailComponent, ProfComponent, HoverButtonComponent, MaSeanceComponent, AddressComponent, 
-   CompteComponent, InscriptionComponent, ProfesseurComponent, SeancesEssaisComponent, CompteDetailComponent, ReinitMdpComponent,  StockComponent, MenuAdminComponent,
-   SuiviMailComponent, ProjetMailComponent, FacturesComponent, ProjetInfoComponent, CompteBancaireComponent, LieuComponent, SaisonComponent, EnvoiMailComponent, DashboardComponent, ImportComponent, GestionListeComponent, OperationsComponent, ClementineComponent, DocumentComponent, CustomButtonComponent],
+    AppComponent, LoginComponent, MenuComponent,MultifiltersMenuPipe, CustomButtonComponent, SeanceComponent, SeanceEditorComponent, 
+    SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent, MailTemplatePreviewComponent, MaSeanceComponent,
+    NotifJechaComponent, DureeHHMMPipe, AdherentComponent, AdherentListComponent, AdherentEditorComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,   // pour formGroup/formControlName
     AppRoutingModule,
-    DatePipe, 
     // Ajoutez ici l'un des modules d'animations selon vos besoins
     BrowserAnimationsModule
   ],

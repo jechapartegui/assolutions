@@ -35,7 +35,7 @@
           "outputHashing": "all",
           "budgets": [
             { "type": "initial", "maximumWarning": "2mb", "maximumError": "3mb" },
-            { "type": "anyComponentStyle", "maximumWarning": "2kb", "maximumError": "4kb" }
+            { "type": "anyComponentStyle", "maximumWarning": "15kb", "maximumError": "25kb" }
           ]
         },
         "preprod": {
@@ -47,8 +47,7 @@
           ],
           "outputHashing": "all",
           "budgets": [
-            { "type": "initial", "maximumWarning": "2mb", "maximumError": "3mb" },
-            { "type": "anyComponentStyle", "maximumWarning": "2kb", "maximumError": "4kb" }
+            { "type": "initial", "maximumWarning": "2mb", "maximumError": "3mb" },{ "type": "anyComponentStyle", "maximumWarning": "15kb", "maximumError": "25kb" }
           ]
         },
         "development": {

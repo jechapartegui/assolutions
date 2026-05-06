@@ -46,8 +46,9 @@ import { LoginProjectModule } from '../login_project/login_project.module';
    ConfigModule.forRoot({
   isGlobal: true,
   envFilePath: [
-    `apps/assolutions-back/.env.${process.env.NODE_ENV || 'development'}`,
-    'apps/assolutions-back/.env',
+    join(process.cwd(), 'apps/assolutions-back/.env.development'),
+    join(process.cwd(), 'apps/assolutions-back/.env'),
+    join(process.cwd(), '.env'),
   ],
 }),
 
@@ -82,15 +83,21 @@ const migrations = [join(__dirname, '..', '**', 'migration', '*.{ts,js}')];
             logging: isProd ? ['error', 'warn'] : ['schema', 'error', 'warn'],
           };
         }
+const password = cfg.get<string>('PGPASSWORD');
 
+if (typeof password !== 'string') {
+  throw new Error(
+    'PGPASSWORD manquant. Vérifie apps/assolutions-back/.env ou .env.development'
+  );
+}
         // Config via variables séparées
         return {
-          type: 'postgres' as const,
-          host: cfg.get<string>('PGHOST'),
-          port: parseInt(cfg.get<string>('PGPORT') ?? '5432', 10),
-          username: cfg.get<string>('PGUSER'),
-          password: cfg.get<string>('PGPASSWORD'),
-          database: cfg.get<string>('PGDATABASE'),
+       type: 'postgres' as const,
+  host: cfg.get<string>('PGHOST') ?? 'localhost',
+  port: parseInt(cfg.get<string>('PGPORT') ?? '5432', 10),
+  username: cfg.get<string>('PGUSER') ?? 'postgres',
+  password,
+  database: cfg.get<string>('PGDATABASE') ?? 'assolutions',
           ssl,
           entities,
           migrations,

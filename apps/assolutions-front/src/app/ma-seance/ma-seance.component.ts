@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AfterViewInit,
@@ -18,13 +19,15 @@ import {
   Compte,
   FullInscriptionSeance_VM,
   InscriptionStatus_VM,
+  MailProjectTemplateVm,
+  OutgoingMessageVm,
   SeanceStatus_VM,
+  UpdateInscriptionSeanceDto,
 } from '@shared/index';
 import { Adherent_VM } from '@shared/lib/member.interface';
-import { Seance_VM, StatutSeance } from '@shared/lib/seance.interface';
-import { Personne_VM } from '@shared/lib/personne.interface';
+import { Seance_VM, StatutSeance, UpdateSeanceDto } from '@shared/lib/seance.interface';
+import { ItemContact, Personne_VM } from '@shared/lib/personne.interface';
 import { AppStore } from '../app.store';
-import { KeyValuePairAny } from '@shared/index';
 import { SeanceMapper } from '../../mapper/seance.mapper';
 import { MessageApiService } from '../../services/message-api.service';
 import { MailProjectApiService } from '../../services/mail-project-api.service';
@@ -97,7 +100,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     private seancemapper: SeanceMapper,
     private inscriptionserv: InscriptionSeanceApiService,
     private mailserv: MessageApiService,
-    private mailinput:MailProjectApiService,
+    private mailProjectServ: MailProjectApiService,
     private documentapi: DocumentApiService
   ) {}
 
@@ -317,13 +320,23 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     this.seanceText = ` ${dateDebStr}`;
   }
 
-  private async preloadPhotos(items: FullInscriptionSeance_VM[]): Promise<void> {
-    const list_id = items.map((it) => it?.person?.id).filter((id): id is number => !!id);
-    const photo_by_id = await this.documentapi.photo_by_id(list_id);
+ private async preloadPhotos(items: FullInscriptionSeance_VM[]): Promise<void> {
+  const ids = [
+    ...new Set(
+      (items ?? [])
+        .map((it) => it?.person?.id)
+        .filter((id): id is number => !!id)
+    ),
+  ];
 
-    for (const it of items) {
+  if (!ids.length) return;
+
+  try {
+    const photosById = await this.documentapi.photo_by_id(ids);
+
+    for (const it of items ?? []) {
       const id = it?.person?.id;
-      if (!id) continue;
+      if (!id || !it.person) continue;
 
       if (it.person.photo && it.person.photo.length > 0) continue;
 
@@ -333,24 +346,18 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         continue;
       }
 
-      if (this.inFlight.has(id)) continue;
-      this.inFlight.add(id);
-
-      this.documentapi.photo_by_id([id])
-        .then((photo) => {
-          const url = photo && photo.length > 0 ? photo : '';
-          if (url) {
-            this.photoCache.set(id, url);
-            it.person.photo = url;
-          }
-        })
-        .catch(() => {})
-        .finally(() => {
-          this.inFlight.delete(id);
-          this.cdr.detectChanges();
-        });
+      const url = photosById?.[id] ?? '';
+      if (url) {
+        this.photoCache.set(id, url);
+        it.person.photo = url;
+      }
     }
+
+    this.cdr.detectChanges();
+  } catch {
+    // On ne bloque pas l'écran pour une photo manquante
   }
+}
 
   LoadLogin(compte: Compte) {
     const errorService = ErrorService.instance;
@@ -384,16 +391,14 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
 
               ins.statut_inscription = statInsAuto;
 
-              const dto: InscriptionSeance_VM = {
-                rider_id: ins.person.id,
-                seance_id: this.thisSeance.id,
+              const dto: UpdateInscriptionSeanceDto = {
                 date_inscription: ins.date_inscription ?? new Date(),
                 statut_inscription: ins.statut_inscription,
                 statut_seance: ins.statut_seance ?? null,
               };
 
               return this.inscriptionserv
-                .MAJ(dto)
+                .update(ins.person.id, this.thisSeance.id, dto)
                 .then((ok) => {
                   if (!ok) {
                     ins.statut_inscription = oldStatut;
@@ -434,7 +439,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         });
     } else {
       this.inscriptionserv
-        .GetAdherentPersonne(this.adherent, this.thisSeance.id)
+        .GetAdherentCompte(this.store.compte().login, this.thisSeance.id)
         .then((liste) => {
           (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
           this.MesAdherents = liste ?? [];
@@ -446,16 +451,14 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
             this.action = $localize`Mise à jour des présences`;
             ins.statut_inscription = statInsAuto;
 
-            const dto: InscriptionSeance_VM = {
-              rider_id: ins.person.id,
-              seance_id: this.thisSeance.id,
+            const dto: UpdateInscriptionSeanceDto = {
               date_inscription: ins.date_inscription ?? new Date(),
               statut_inscription: ins.statut_inscription,
               statut_seance: ins.statut_seance ?? null,
             };
 
             this.inscriptionserv
-              .MAJ(dto)
+              .update(ins.person.id, this.thisSeance.id, dto)
               .then((ok_) => {
                 if (!ok_) {
                   ins.statut_inscription = oldStatut;
@@ -518,9 +521,12 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       default:
         return;
     }
+    const dto:UpdateSeanceDto = {
+      statut: this.thisSeance.statut,
+    };
 
     this.seanceserv
-      .Update(this.thisSeance)
+      .update(this.thisSeance.id, dto)
       .then((retour) => {
         if (retour) {
           const o = errorService.OKMessage(this.action);
@@ -563,16 +569,14 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
 
     inscription.statut_seance = newSeance;
 
-    const dto: InscriptionSeance_VM = {
-      rider_id: inscription.person.id,
-      seance_id: this.thisSeance.id,
+    const dto: UpdateInscriptionSeanceDto = {
       date_inscription: inscription.date_inscription ?? new Date(),
       statut_inscription: inscription.statut_inscription,
       statut_seance: newSeance,
     };
 
     this.inscriptionserv
-      .MAJ(dto)
+      .update(inscription.person.id, this.thisSeance.id, dto)
       .then((res) => {
         if (!res) {
           inscription.statut_seance = oldSeance;
@@ -629,9 +633,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         break;
     }
 
-    const dto: any = {
-      rider_id: inscription.person.id,
-      seance_id: this.thisSeance.id,
+    const dto: UpdateInscriptionSeanceDto = {
       date_inscription: new Date(),
       statut_inscription: inscription.statut_inscription,
     };
@@ -645,7 +647,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       this.thisSeance.nom;
 
     this.inscriptionserv
-      .MAJ(dto)
+      .update(inscription.person.id, this.thisSeance.id, dto)
       .then((res) => {
         if (!res) {
           const o = errorService.UnknownError(this.action);
@@ -712,16 +714,14 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     if (!this.adherent_to) return;
 
     this.action = $localize`Convoquer ` + this.adherent_to.libelle;
-    const conv: InscriptionSeance_VM = {
-      rider_id: this.adherent_to.id,
-      seance_id: this.thisSeance.id,
+    const conv: UpdateInscriptionSeanceDto = {
       date_inscription: new Date(),
       statut_inscription: InscriptionStatus_VM.CONVOQUE,
       statut_seance: null,
     };
 
     this.inscriptionserv
-      .MAJ(conv)
+      .update(this.adherent_to.id, this.thisSeance.id, conv)
       .then(() => {
         this.Load();
         this.adherent_to = null;
@@ -809,14 +809,14 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     const p = ins.person;
     if (!p) return '';
 
-    const cpPhone = p.contact_prevenir?.find((x: any) => x.Type === 'PHONE');
+    const cpPhone = p.contact_prevenir?.find((x: ItemContact) => x.Type === 'PHONE');
     if (cpPhone?.Value) return cpPhone.Value;
 
     if (p.contact_prevenir?.length) {
       return p.contact_prevenir[0].Value ?? '';
     }
 
-    const cPhone = p.contact?.find((x: any) => x.Type === 'PHONE');
+    const cPhone = p.contact?.find((x: ItemContact) => x.Type === 'PHONE');
     if (cPhone?.Value) return cPhone.Value;
 
     if (p.contact?.length) {
@@ -830,14 +830,14 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     const p = ins.person;
     if (!p) return '';
 
-    const cpPhone = p.contact_prevenir?.find((x: any) => x.Type === 'PHONE');
+    const cpPhone = p.contact_prevenir?.find((x: ItemContact) => x.Type === 'PHONE');
     if (cpPhone?.Info) return cpPhone.Info;
 
     if (p.contact_prevenir?.length) {
       return p.contact_prevenir[0].Info ?? '';
     }
 
-    const cPhone = p.contact?.find((x: any) => x.Type === 'PHONE');
+    const cPhone = p.contact?.find((x: ItemContact) => x.Type === 'PHONE');
     if (cPhone?.Info) return cPhone.Info;
 
     return '';
@@ -870,7 +870,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     this.variables = {
       SEANCE: this.thisSeance.nom,
       id: this.thisSeance.id,
-      PERSONNE_ID: this.selectedRecipients[0]?.rider_id ?? 0,
+      PERSONNE_ID: this.selectedRecipients[0]?.personne_id ?? 0,
       DATE: formatDDMMYYYY(this.thisSeance.date_seance),
       ID: this.thisSeance.id,
       NOM: $localize`Prénom Nom`,
@@ -890,11 +890,11 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE
       );
 
-      this.mailserv
-        .GetMail(mode)
-        .then((retour: KeyValuePairAny) => {
-          this.mailSubject = retour.key;
-          this.mailBody = retour.value;
+      this.mailProjectServ
+        .getTemplate(mode)
+        .then((retour: MailProjectTemplateVm) => {
+          this.mailSubject = retour.sujet;
+          this.mailBody = retour.mail;
         })
         .catch(() => {
           this.mailSubject = `[Convocation] ${this.thisSeance?.nom ?? ''}`;
@@ -907,11 +907,11 @@ Merci de confirmer votre présence.`;
       this.action = $localize`Chargement du template d'annulation`;
       this.selectedRecipients = [...this.All];
 
-      this.mailserv
-        .GetMail(mode)
-        .then((retour: KeyValuePairAny) => {
-          this.mailSubject = retour.key;
-          this.mailBody = retour.value;
+      this.mailProjectServ
+        .getTemplate(mode)
+        .then((retour: MailProjectTemplateVm) => {
+          this.mailSubject = retour.sujet;
+          this.mailBody = retour.mail;
         })
         .catch(() => {
           this.mailSubject = `[Annulation] ${this.thisSeance?.nom ?? ''}`;
@@ -980,7 +980,7 @@ La séance ${this.seanceText} est annulée.`;
       this.action = $localize`Annuler la séance`;
       this.thisSeance.statut = StatutSeance.annulée;
       this.seanceserv
-        .Update(this.thisSeance)
+        .update(this.thisSeance.id, { statut: this.thisSeance.statut })
         .then(() => {
           const o = errorService.OKMessage(this.action);
           errorService.emitChange(o);
@@ -990,14 +990,20 @@ La séance ${this.seanceText} est annulée.`;
           errorService.emitChange(o);
         });
     }
+    const listmail:OutgoingMessageVm[] = this.selectedRecipients.map((x) => ({
+      to_person_id: x.person.id,
+      subject: this.mailSubject,
+      body: this.mailBody,
+      html: '',
+      to :{
+        email: '',
+        name: x.person.libelle,
+      },
+      project_id: this.store.selectedProjectId(),
+    }));
 
     this.action = $localize`Envoi du mail`;
-    this.mailserv
-      .EnvoyerConvocationAnnulation(
-        kind,
-        this.selectedRecipients.map((x) => x.person.id),
-        this.Notes,
-        this.thisSeance.id
+    this.mailserv.sendMany(listmail
       )
       .then(() => {
         const o = errorService.OKMessage(this.action);
@@ -1016,7 +1022,7 @@ La séance ${this.seanceText} est annulée.`;
     this.action = $localize`Note sauvegardée`;
 
     this.seanceserv
-      .Update(this.thisSeance)
+      .update(this.thisSeance.id, { info_seance: this.thisSeance.info_seance })
       .then(() => {
         const o = errorService.OKMessage(this.action);
         errorService.emitChange(o);

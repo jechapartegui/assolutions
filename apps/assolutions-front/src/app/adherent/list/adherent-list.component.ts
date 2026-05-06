@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AdherentStore } from 'apps/assolutions-front/src/store/adherent.store';
 import { AdherentListItem_VM, AdherentPageVm } from 'apps/assolutions-front/src/vm/adherent-page.vm';

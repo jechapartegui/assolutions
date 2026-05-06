@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Component, Input, OnChanges, SecurityContext } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 type KV = { key: string; value: any };
 
 @Component({
-    standalone:false,
+  standalone: false,
   selector: 'mail-template-preview',
   templateUrl: './mail-template-preview.component.html',
   styleUrls: ['./mail-template-preview.component.css']

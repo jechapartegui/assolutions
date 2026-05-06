@@ -2,11 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MultifiltersStockPipe } from '../../filters/multifilters-stock.pipe';
-import { AddInfoService } from '../../services/addinfo.service';
+import { AddInfoApiService } from '../../services/addinfo-api.service';
 import { ErrorService } from '../../services/error.service';
 import { ExcelService } from '../../services/excel.service';
 import { GlobalService } from '../../services/global.services';
-import { StockService } from '../../services/stock.service';
+import { StockApiService } from '../../services/stock-api.service';
 import { TypeStock, TypeTransaction, StaticClass } from '../global';
 import { AppStore } from '../app.store';
 import { GenericLink_VM, Stock_VM } from '@shared/index';
@@ -22,19 +22,19 @@ export class StockComponent implements OnInit {
   
     @ViewChild('scrollableContent', { static: false })
     scrollableContent!: ElementRef;
-    showScrollToTop: boolean = false;
-    public loading: boolean = false;
+    showScrollToTop = false;
+    public loading = false;
     public histo_stock: string;
     public selected_filter: string;
 
   liste_lieu: GenericLink_VM[] = [];
   liste_transaction: GenericLink_VM[] = [];
-  est_prof: boolean = false;
-  est_admin: boolean = false;
+  est_prof = false;
+  est_admin = false;
   liste_stock: Stock_VM[] = [];
   liste_type_equipement: string[] = [];
   liste_equipement: string[];
-  IsVendre: boolean = false;
+  IsVendre = false;
   editMode = false;
   editStock: Stock_VM | null = null;
   public TypeStock: TypeStock[] = [];
@@ -45,17 +45,17 @@ export class StockComponent implements OnInit {
   public sort_type = 'NO';
   public sort_date = 'NO';
   public sort_lieu = 'NO';
-  public afficher_filtre: boolean = false;
+  public afficher_filtre = false;
   public filters: FilterStock = new FilterStock();
-  public action: string = '';
+  public action = '';
 
   constructor(
     public GlobalService: GlobalService, public store:AppStore,
     private router: Router,
-    private stockservice: StockService,
+    private stockservice: StockApiService,
     public SC: StaticClass,
     public excelService: ExcelService,
-    private addinfo_serv: AddInfoService,
+    private addinfo_serv: AddInfoApiService,
     private multifiltersStockPipe: MultifiltersStockPipe
   ) {}
 
@@ -74,7 +74,7 @@ export class StockComponent implements OnInit {
 
       this.action = $localize`Charger la liste des endroits de stockage`;
       if (!this.SC.ListeObjet || this.SC.ListeObjet.length == 0) {
-        let ad: string[] = ['rider', 'lieu'];
+        const ad: string[] = ['rider', 'lieu'];
         this.addinfo_serv.getall_liste(ad).then((liste) => {
           this.SC.ListeObjet = liste;
           this.liste_lieu = this.SC.ListeObjet.filter(
@@ -115,7 +115,7 @@ export class StockComponent implements OnInit {
       }
       this.UpdateListeStock();
     } else {
-      let o = errorService.CreateError(
+      const o = errorService.CreateError(
         this.action,
         $localize`Accès impossible, vous n'êtes pas connecté`
       );
@@ -142,7 +142,7 @@ export class StockComponent implements OnInit {
         this.editMode = true;
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
@@ -168,7 +168,7 @@ export class StockComponent implements OnInit {
         this.editMode = false;
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
       });
   }
@@ -181,7 +181,7 @@ export class StockComponent implements OnInit {
       .then((stocks) => {
         if (stocks.length == 0) {
           this.liste_stock = [];
-          let o = errorService.CreateError(this.action, $localize`Aucun stock`);
+          const o = errorService.CreateError(this.action, $localize`Aucun stock`);
           errorService.emitChange(o);
           return;
         } else {
@@ -189,8 +189,8 @@ export class StockComponent implements OnInit {
 
           this.loading = false;
           this.liste_stock.sort((a, b) => {
-            let dateA = a.date_achat;
-            let dateB = b.date_achat;
+            const dateA = a.date_achat;
+            const dateB = b.date_achat;
 
             let comparaison = 0;
             if (dateA > dateB) {
@@ -204,7 +204,7 @@ export class StockComponent implements OnInit {
         }
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         this.loading = false;
         return;
@@ -233,7 +233,7 @@ export class StockComponent implements OnInit {
   Delete(stock: Stock_VM): void {
     const errorService = ErrorService.instance;
 
-    let confirmation = window.confirm(
+    const confirmation = window.confirm(
       $localize`Voulez-vous supprimer cet équipement ? Cette action est définitive. `
     );
     if (confirmation) {
@@ -244,15 +244,15 @@ export class StockComponent implements OnInit {
           .then((result) => {
             if (result) {
               this.UpdateListeStock();
-              let o = errorService.OKMessage(this.action);
+              const o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
             } else {
-              let o = errorService.UnknownError(this.action);
+              const o = errorService.UnknownError(this.action);
               errorService.emitChange(o);
             }
           })
           .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
+            const o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
           });
       }
@@ -269,16 +269,16 @@ export class StockComponent implements OnInit {
           .then((id) => {
             if (id > 0) {
               this.editStock.id = id;
-              let o = errorService.OKMessage(this.action);
+              const o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
               this.UpdateListeStock();
             } else {
-              let o = errorService.UnknownError(this.action);
+              const o = errorService.UnknownError(this.action);
               errorService.emitChange(o);
             }
           })
           .catch((err) => {
-            let o = errorService.CreateError(this.action, err.message);
+            const o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
           });
       } else {
@@ -287,16 +287,16 @@ export class StockComponent implements OnInit {
           .update(this.editStock)
           .then((ok) => {
             if (ok) {
-              let o = errorService.OKMessage(this.action);
+              const o = errorService.OKMessage(this.action);
               errorService.emitChange(o);
               this.UpdateListeStock();
             } else {
-              let o = errorService.UnknownError(this.action);
+              const o = errorService.UnknownError(this.action);
               errorService.emitChange(o);
             }
           })
           .catch((err) => {
-            let o = errorService.CreateError(this.action, err.message);
+            const o = errorService.CreateError(this.action, err.message);
             errorService.emitChange(o);
           });
       }
@@ -310,18 +310,18 @@ export class StockComponent implements OnInit {
       .get(this.editStock.id)
       .then((c) => {
         this.editStock = c;
-        let o = errorService.OKMessage(this.action);
+        const o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
       })
       .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
+        const o = errorService.CreateError(this.action, err.message);
         errorService.emitChange(o);
         return;
       });
   }
 
   Retour(): void {
-    let confirm = window.confirm(
+    const confirm = window.confirm(
       $localize`Vous perdrez les modifications réalisées non sauvegardées, voulez-vous continuer ?`
     );
     if (confirm) {
@@ -380,8 +380,8 @@ export class StockComponent implements OnInit {
         this.sort_libelle = 'NO';
         this.sort_type = 'NO';
         this.liste_stock.sort((a, b) => {
-          let dateA = a.date_achat;
-          let dateB = b.date_achat;
+          const dateA = a.date_achat;
+          const dateB = b.date_achat;
 
           let comparaison = 0;
           if (dateA > dateB) {
@@ -415,7 +415,7 @@ export class StockComponent implements OnInit {
   }
 
   ExporterExcel() {
-    let headers = {
+    const headers = {
       ID: 'ID',
       Libelle: 'Libellé',
       TypeStockLibelle: 'Type équipement',
@@ -423,7 +423,7 @@ export class StockComponent implements OnInit {
       Valeur_Achat: 'Valeur achat',
       Quantite: 'Quantite',
     };
-    let list: Stock_VM[] = this.getFilteredStocks();
+    const list: Stock_VM[] = this.getFilteredStocks();
 
     this.excelService.exportAsExcelFile(list, 'liste_stock', headers);
   }

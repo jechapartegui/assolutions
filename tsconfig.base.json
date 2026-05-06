@@ -1,8 +1,11 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "ignoreDeprecations": "5.0",
+  "moduleResolution": "bundler",
     "paths": {
-      "@shared/*": ["libs/shared/src/*"]
+      "@shared/*": ["libs/shared/src/*"],
+      "@shared/index": ["libs/shared/src/index.ts"]
     }
   }
 }

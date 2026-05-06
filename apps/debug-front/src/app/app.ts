@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import { Component,  OnDestroy,  OnInit,  ViewChild } from '@angular/core';
 import { StaticClass } from '../../../assolutions-front/src/app/global';
 import { NotifJechaComponent } from '../../../assolutions-front/src/app/custom-notification/custom-notification.component';

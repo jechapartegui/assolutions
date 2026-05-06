@@ -1,14 +1,19 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
+    "outDir": "../../dist/out-tsc/debug-front",
+    "rootDir": "../..",
     "types": []
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../assolutions-front/src/**/*.ts",
+    "../../libs/shared/src/**/*.ts"
+  ],
   "exclude": [
     "jest.config.ts",
     "src/test-setup.ts",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts"
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

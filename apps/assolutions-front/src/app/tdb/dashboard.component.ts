@@ -3,10 +3,10 @@ import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@an
 import { Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
 import { GlobalService } from '../../services/global.services';
-import { MaSeanceNestService } from '../../services/ma-seance.nest.service';
-import { ProfesseurService } from '../../services/professeur.service';
-import { LieuNestService } from '../../services/lieu.nest.service';
-import { CoursService } from '../../services/cours.service';
+import { MaSeanceApiService } from '../../services/ma-seance-api.service';
+import { ProfesseurApiService } from '../../services/professeur-api.service';
+import { LieuApiService } from '../../services/lieu-api.service';
+import { CoursApiService } from '../../services/cours-api.service';
 import { AdherentService } from '../../services/adherent.service';
 import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
 import { AppStore } from '../app.store';
@@ -50,10 +50,10 @@ export class DashboardComponent implements OnInit {
     public GlobalService: GlobalService,
     public store: AppStore,
     private router: Router,
-    private prof_serv: ProfesseurService,
-    private lieuserv: LieuNestService,
-    private coursservice: CoursService,
-    private ma_seance_serv: MaSeanceNestService,
+    private prof_serv: ProfesseurApiService,
+    private lieuserv: LieuApiService,
+    private CoursApiService: CoursApiService,
+    private ma_seance_serv: MaSeanceApiService,
     private riderservice: AdherentService,
     private multifilters: MultifiltersMenuPipe
   ) {}
@@ -120,7 +120,7 @@ export class DashboardComponent implements OnInit {
       this.listelieu = lieux;
       this.liste_lieu_filter = lieux.map((l) => l.nom);
 
-      this.listeCours = await this.coursservice.GetAll(this.store.saison_active_id());
+      this.listeCours = await this.CoursApiService.GetAll(this.store.saison_active_id());
 
       // enrichissements riders (photo + libellés cours/lieu)
       this.Riders.forEach((r) => {

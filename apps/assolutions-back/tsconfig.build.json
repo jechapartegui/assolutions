@@ -1,13 +1,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "paths": {
-      "@shared/*": ["dist/libs/shared/*"]
-    },
+    "outDir": "../../dist/apps/assolutions-back",
+    "rootDir": "../..",
     "declaration": false,
     "sourceMap": false
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared/src/**/*.ts"
+  ],
   "exclude": ["**/*.spec.ts"]
 }

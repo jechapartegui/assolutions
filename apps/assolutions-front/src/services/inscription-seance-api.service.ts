@@ -36,6 +36,7 @@ export class InscriptionSeanceApiService {
   return this.api.POST<InscriptionSeance>(`${this.base}/maj`, dto);
 }
 
+
 listBySaison(saisonId: number): Promise<InscriptionSeance[]>{
   return this.api.GET<InscriptionSeance[]>(`${this.base}/saison/` + saisonId);
 }
@@ -46,7 +47,7 @@ listBySaison_UniqueID(saisonId: number): Promise<number[]>{
   listByPersonneAndSaison(personneId: number, saisonId: number): Promise<InscriptionSeance[]> {
     return this.api.GET<InscriptionSeance[]>(`${this.base}/personne/${personneId}/saison/${saisonId}`);
   }
-
+  
   GetAllSeanceFull(seanceId: number): Promise<FullInscriptionSeance_VM[]> {
     return this.api.GET<FullInscriptionSeance_VM[]>(`${this.base}/full/${seanceId}`);
   }

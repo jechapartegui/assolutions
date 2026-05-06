@@ -23,7 +23,7 @@ export class CoursRepository {
     private readonly appStore: AppStore,
     private readonly refDataRepository: RefDataRepository,
     private readonly saisonService: SaisonApiService,
-    private readonly coursService: CoursApiService,
+    private readonly CoursApiService: CoursApiService,
     private readonly coursProfesseurService: CoursProfesseurApiService,
     private readonly lienGroupeService: LienGroupeApiService,
     private readonly mapper: CoursMapper,
@@ -71,7 +71,7 @@ export class CoursRepository {
     const storedProjectId = this.appStore.selectedProjectId();
 
     const [coursList, lieux, groupes, profs] = await Promise.all([
-      this.coursService.list(saisonId),
+      this.CoursApiService.list(saisonId),
       this.refDataRepository.getLieux(storedProjectId),
       this.refDataRepository.getGroupes(saisonId),
       this.refDataRepository.getProfs(storedProjectId, saisonId),
@@ -107,7 +107,7 @@ const groupesByCoursId: Record<number, number[]> =
   const storedProjectId = this.appStore.selectedProjectId();
 
   const [cours, lieux, groupes, profs, contratsByCoursId, groupesByCoursId] = await Promise.all([
-    this.coursService.get(coursId),
+    this.CoursApiService.get(coursId),
     this.refDataRepository.getLieux(storedProjectId),
     this.refDataRepository.getGroupes(saisonId),
     this.refDataRepository.getProfs(storedProjectId, saisonId),
@@ -130,21 +130,21 @@ const groupesByCoursId: Record<number, number[]> =
   async createCours(coursVm: Cours_VM): Promise<Cours_VM> {
     const projectId = this.appStore.selectedProjectId();
     const dto = this.mapper.toCreateDto(coursVm, projectId);
-    const created = await this.coursService.create(dto);
+    const created = await this.CoursApiService.create(dto);
     return this.mapper.toCoursVm(created);
   }
 
   async updateCours(coursVm: Cours_VM): Promise<Cours_VM> {
     const projectId = this.appStore.selectedProjectId();
     const dto = this.mapper.toUpdateDto(coursVm, projectId);
-    const updated = await this.coursService.update(coursVm.id, dto);
+    const updated = await this.CoursApiService.update(coursVm.id, dto);
     return this.mapper.toCoursVm(updated);
   }
 
   async deleteCours(coursId: number): Promise<void> {
     await this.coursProfesseurService.updatelist(coursId, []);
     await this.lienGroupeService.updateGroupesForCours(coursId, []);
-    await this.coursService.remove(coursId);
+    await this.CoursApiService.remove(coursId);
   }
 
 async updateSerieCours(coursVm: Cours_VM, fromDate: Date): Promise<void> {
@@ -154,7 +154,7 @@ async updateSerieCours(coursVm: Cours_VM, fromDate: Date): Promise<void> {
 
   const projectId = this.appStore.selectedProjectId();
   const dto = this.mapper.toUpdateDto(coursVm, projectId);
-  await this.coursService.updateSerieCours(coursVm.id, dto, fromDate);
+  await this.CoursApiService.updateSerieCours(coursVm.id, dto, fromDate);
 }
   async updateCoursProfs(coursId: number, profs: any[]): Promise<void> {
     const contratIds = (profs ?? [])

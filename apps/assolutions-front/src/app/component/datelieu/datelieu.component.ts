@@ -3,7 +3,7 @@ import { ValidationItem } from "@shared/lib/autres.interface";
 import { Lieu_VM } from "@shared/lib/lieu.interface";
 import { AppStore } from "../../app.store";
 import { ReglesDateLieu } from "apps/assolutions-front/src/class/regles";
-import { LieuNestService } from "apps/assolutions-front/src/services/lieu.nest.service";
+import { LieuApiService } from "apps/assolutions-front/src/services/lieu-api.service";
 import { SaisonService } from "apps/assolutions-front/src/services/saison.service";
 import { GlobalService } from "apps/assolutions-front/src/services/global.services";
 
@@ -37,7 +37,7 @@ date_min: Date = null;
 date_max: Date = null;
 public lieux : Lieu_VM[] = [];
 
-constructor(private lieuService: LieuNestService, private saison_serv:SaisonService, public store:AppStore) { }
+constructor(private lieuService: LieuApiService, private saison_serv:SaisonService, public store:AppStore) { }
 
     async ngOnInit(): Promise<void> {
       

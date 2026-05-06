@@ -4,16 +4,18 @@
     "module": "CommonJS",
     "target": "ES2020",
     "moduleResolution": "Node",
-    "rootDir": ".",
+    "rootDir": "../..",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false,
     "strictPropertyInitialization": false,
-    "ignoreDeprecations": "5.0",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared/src/**/*.ts"
+  ],
   "exclude": ["**/*.spec.ts"]
 }

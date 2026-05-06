@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
-import { LieuNestService } from '../../services/lieu.nest.service';
+import { LieuApiService } from '../../services/lieu-api.service';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Adresse } from '@shared/lib/adresse.interface';
 import { AppStore } from '../app.store';
@@ -34,7 +34,7 @@ bulkLabel = ''; // optionnel: "Suppression…" / "Copie…"
   edit: boolean = false;
   constructor(
     public router: Router,
-    public lieu_serv: LieuNestService,
+    public lieu_serv: LieuApiService,
     public store: AppStore,
     public GlobalService: GlobalService
   ) {}
