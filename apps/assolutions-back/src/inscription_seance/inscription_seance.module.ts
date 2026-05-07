@@ -10,8 +10,10 @@ import { SaisonEntity } from '../saison/saison.entity';
 import { SaisonService } from '../saison/saison.service';
 
 import { AccessControlModule } from '../common/access-control.module'; // ✅
+import { PersonneEntity } from '../personne/personne.entity';
+import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([InscriptionSeanceEntity, SeanceEntity, SaisonEntity]), RegistryModule, AccessControlModule],
+  imports: [TypeOrmModule.forFeature([InscriptionSeanceEntity, SeanceEntity, SaisonEntity, PersonneEntity, LienGroupeEntity]), RegistryModule, AccessControlModule],
   controllers: [InscriptionSeanceController],
   providers: [InscriptionSeanceService, SeanceService, SaisonService],
 })

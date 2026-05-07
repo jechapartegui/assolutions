@@ -103,6 +103,24 @@ ORDER BY pr.nom;
   }));
 }
 
+async GetAdherentAdhesion(saisonId: number, login: string): Promise<any[]> {
+  const sql = `SELECT p.*
+FROM personne p
+JOIN inscription_saison a ON a.personne_id = p.id
+JOIN compte l ON l.id = p.compte
+WHERE a.saison_id = $1 AND l.login = $2`;
+  const rows = (await this.dataSource.query(sql, [saisonId, login])) as any[];
+  return rows.map(r => ({
+    id: r.id, 
+    prenom: r.prenom,
+    nom: r.nom,
+    date_naissance: r.date_naissance,
+    sexe: r.sexe,
+    surnom: r.surnom,
+    inscrit: r.inscrit
+  }));  
+}
+
   async getAnniversaire(saisonId: number): Promise<string[]> {
     const today = new Date();
     const sql = `SELECT p.first_name || ' ' || p.last_name AS nom FROM personne p

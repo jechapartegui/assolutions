@@ -11,6 +11,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { CompteEntity } from '../compte/compte.entity';
 import { ProjectEntity } from '../project/project.entity';
 import { PersonneEntity } from '../personne/personne.entity';
+import { LoginProjectEntity } from '../login_project/login_project.entity';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { PersonneEntity } from '../personne/personne.entity';
         signOptions: { expiresIn: '30d' },
       }),
     }),
-    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity]),
+    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity, LoginProjectEntity]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

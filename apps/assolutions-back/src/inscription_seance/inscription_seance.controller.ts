@@ -1,7 +1,6 @@
 ﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { CreateInscriptionSeanceDto, UpdateInscriptionSeanceDto } from './inscription_seance.dto';
 import { InscriptionSeanceService } from './inscription_seance.service';
 
@@ -13,6 +12,12 @@ export class InscriptionSeanceController {
 @Post('maj')
 maj(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSeanceDto) {
   return this.service.upsert(dto, projectId);
+}
+
+@UseGuards(JwtAuthGuard)
+@Get('full/:seanceId')
+full(@ProjectId() projectId: number, @Param('seanceId', ParseIntPipe) seanceId: number) {
+  return this.service.full(seanceId, projectId);
 }
 
   @UseGuards(JwtAuthGuard)

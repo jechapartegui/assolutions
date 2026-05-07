@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: "https://assolutions-preprod.onrender.com/",
+  apiUrl: "https://assolutions-preprod.onrender.com/api",
   password:'jecha266',
   defaultlogin:'',
   defaultpassword:'',

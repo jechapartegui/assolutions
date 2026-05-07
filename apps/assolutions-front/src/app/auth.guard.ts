@@ -46,25 +46,37 @@ export class AuthGuard implements CanActivate {
     this.meAlreadyTried = true;
 
     return from(this.loginService.me()).pipe(
-      switchMap((me: any) => {
-        const selectedProjectId = this.restoreSelectedProjectId(me?.projects ?? []);
+switchMap((me: any) => {
+  console.log('AUTH ME RESPONSE', me);
 
-        this.store.setSession({
-          token: token,
-          mode: me.mode ?? 'APPLI',
-          compte: me.compte,
-          projects: me.projects ?? [],
-          selectedProjectId,
-        } as any);
+  const projects = me?.projects ?? [];
+  const selectedProjectId = this.restoreSelectedProjectId(projects);
 
-        if (selectedProjectId) {
-          this.store.selectProject(selectedProjectId);
-        }
+  this.store.setSession({
+    token,
+    mode: me.mode ?? 'APPLI',
+    compte: me.compte,
+    projects,
+    selectedProjectId,
+  } as any);
 
-        const ok = this.checkAccess(route);
-        if (!ok) this.gotoUnauthorizedHome();
-        return of(ok);
-      }),
+  if (selectedProjectId) {
+    this.store.selectProject(selectedProjectId);
+  }
+
+  console.log('STORE AFTER ME', {
+    isLoggedIn: this.store.isLoggedIn(),
+    mode: this.store.mode(),
+    selectedProject: this.store.selectedProject(),
+    projects,
+  });
+
+  const ok = this.checkAccess(route);
+  console.log('ACCESS OK ?', ok, route.routeConfig?.path, route.data);
+
+  if (!ok) this.gotoUnauthorizedHome();
+  return of(ok);
+}),
       catchError((err) => {
         console.log('AuthGuard: /auth/me failed', err);
         this.store.clearSession();
@@ -89,23 +101,29 @@ export class AuthGuard implements CanActivate {
     return null;
   }
 
-  private checkAccess(route: ActivatedRouteSnapshot): boolean {
-    const rule = (route.data?.['auth'] ?? {}) as AuthRule;
+private checkAccess(route: ActivatedRouteSnapshot): boolean {
+  const rule = (route.data?.['auth'] ?? {}) as AuthRule;
 
-    // mode
-    if (rule.modes?.length) {
-      const mode = this.store.mode();
-      if (!rule.modes.includes(mode as any)) return false;
+  if (rule.modes?.length) {
+    const mode = this.store.mode();
+    if (!rule.modes.includes(mode as any)) {
+      console.log('ACCESS DENIED: bad mode', { mode, allowed: rule.modes });
+      return false;
     }
-
-    // projet requis
-    if (rule.requireProject && !this.store.selectedProject()) return false;
-
-    // droits
-    if (rule.requireProf && !this.store.isProf()) return false;
-
-    return true;
   }
+
+  if (rule.requireProject && !this.store.selectedProject()) {
+    console.log('ACCESS DENIED: project required but none selected');
+    return false;
+  }
+
+  if (rule.requireProf && !this.store.isProf()) {
+    console.log('ACCESS DENIED: prof required');
+    return false;
+  }
+
+  return true;
+}
 
   private gotoUnauthorizedHome() {
     if (this.store.mode() === 'ADMIN') this.router.navigate(['/menu-admin']);

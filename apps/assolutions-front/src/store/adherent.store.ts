@@ -301,7 +301,7 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
         refreshAvailable: true,
         pendingCount: this.computePendingCount(this.currentData, freshVm),
       });
-    } catch {}
+    } catch { /* empty */ }
   }
 
   async refreshNow(saisonId: number): Promise<void> {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from "@angular/common/http";
 import {
   AfterViewInit,
   ChangeDetectorRef,
@@ -9,41 +9,56 @@ import {
   Input,
   OnInit,
   ViewChild,
-} from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+} from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
 
-import { ErrorService } from '../../services/error.service';
-import { InscriptionSeanceApiService } from '../../services/inscription-seance-api.service';
-import { SeanceApiService } from '../../services/seance-api.service';
+import { ErrorService } from "../../services/error.service";
+import { InscriptionSeanceApiService } from "../../services/inscription-seance-api.service";
+import { SeanceApiService } from "../../services/seance-api.service";
 import {
   Compte,
   FullInscriptionSeance_VM,
+  InscriptionSeance,
   InscriptionStatus_VM,
   MailProjectTemplateVm,
   OutgoingMessageVm,
   SeanceStatus_VM,
   UpdateInscriptionSeanceDto,
-} from '@shared/index';
-import { Adherent_VM } from '@shared/lib/member.interface';
-import { Seance_VM, StatutSeance, UpdateSeanceDto } from '@shared/lib/seance.interface';
-import { ItemContact, Personne_VM } from '@shared/lib/personne.interface';
-import { AppStore } from '../app.store';
-import { SeanceMapper } from '../../mapper/seance.mapper';
-import { MessageApiService } from '../../services/message-api.service';
-import { MailProjectApiService } from '../../services/mail-project-api.service';
-import { AdhesionApiService } from '../../services/adhesion-api.service';
-import { DocumentApiService } from '../../services/document-api.service';
+} from "@shared/index";
+import { Adherent_VM } from "@shared/lib/member.interface";
+import {
+  Seance_VM,
+  StatutSeance,
+  UpdateSeanceDto,
+} from "@shared/lib/seance.interface";
+import {
+  ItemContact,
+  Personne,
+  Personne_VM,
+} from "@shared/lib/personne.interface";
+import { AppStore } from "../app.store";
+import { SeanceMapper } from "../../mapper/seance.mapper";
+import { MessageApiService } from "../../services/message-api.service";
+import { MailProjectApiService } from "../../services/mail-project-api.service";
+import { AdhesionApiService } from "../../services/adhesion-api.service";
+import { DocumentApiService } from "../../services/document-api.service";
+import { PersonneApiService } from "../../services/personne-api.service";
+import {
+  ContactApiService,
+  ContactDto,
+} from "../../services/contact-api.service";
+import { AdherentMapper } from "../../mapper/adherent.mapper";
 
 @Component({
   standalone: false,
-  selector: 'app-ma-seance',
-  templateUrl: './ma-seance.component.html',
-  styleUrls: ['./ma-seance.component.css'],
+  selector: "app-ma-seance",
+  templateUrl: "./ma-seance.component.html",
+  styleUrls: ["./ma-seance.component.css"],
 })
 export class MaSeanceComponent implements OnInit, AfterViewInit {
   @Input() id: number = 0;
 
-  @ViewChild('scrollableContent', { static: false })
+  @ViewChild("scrollableContent", { static: false })
   scrollableContent!: ElementRef<HTMLElement>;
 
   showScrollToTop = false;
@@ -54,19 +69,19 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   add_adh_seance = false;
   public multi = false;
 
-  libellechargeradherent: string = '';
+  libellechargeradherent: string = "";
   thisSeance!: Seance_VM;
   Autres: Adherent_VM[] = [];
   All: FullInscriptionSeance_VM[] = [];
   MesAdherents: FullInscriptionSeance_VM[] = [];
 
-  Notes = '';
+  Notes = "";
   variables: Record<string, any> = {};
 
   adherent_to: Adherent_VM | null = null;
 
-  action = '';
-  seanceText = '';
+  action = "";
+  seanceText = "";
 
   login: string | null = null;
   reponse: boolean | null = null;
@@ -77,15 +92,15 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
 
   optionsOpen = false;
   toggleMobileOptions = false;
-  uiMode: 'list' | 'convocation' | 'annulation' | 'ajout' | 'note' = 'list';
+  uiMode: "list" | "convocation" | "annulation" | "ajout" | "note" = "list";
 
   selectedRecipients: FullInscriptionSeance_VM[] = [];
-  mailSubject = '';
-  mailBody = '';
+  mailSubject = "";
+  mailBody = "";
 
   previewPotentiel: FullInscriptionSeance_VM | null = null;
 
-  defaultAvatar = 'assets/photo_H.png';
+  defaultAvatar = "assets/photo_H.png";
 
   private photoCache = new Map<number, string>();
   private inFlight = new Set<number>();
@@ -101,7 +116,10 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     private inscriptionserv: InscriptionSeanceApiService,
     private mailserv: MessageApiService,
     private mailProjectServ: MailProjectApiService,
-    private documentapi: DocumentApiService
+    private documentapi: DocumentApiService,
+    private personneapi: PersonneApiService,
+    private contactapi: ContactApiService,
+    private adherentmapper: AdherentMapper,
   ) {}
 
   get isProf(): boolean {
@@ -117,7 +135,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   }
 
   get pendingPlacesLabel(): string {
-    if (!this.thisSeance?.est_place_maximum) return '';
+    if (!this.thisSeance?.est_place_maximum) return "";
     const max = this.thisSeance.place_maximum ?? 0;
     const current = this.getPresent();
     return `${current}/${max} places`;
@@ -132,27 +150,27 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     };
 
     if (!this.id || this.id === 0) {
-      if (params['id']) {
-        this.id = +params['id'];
+      if (params["id"]) {
+        this.id = +params["id"];
       } else {
-        this.router.navigate(['/menu']);
-        this.store.updateSelectedMenu('MENU');
+        this.router.navigate(["/menu"]);
+        this.store.updateSelectedMenu("MENU");
         return;
       }
     }
 
-    if (params['login']) {
+    if (params["login"]) {
       this.isLien = true;
-      this.login = params['login'];
+      this.login = params["login"];
     }
-    if (params['adherent']) {
+    if (params["adherent"]) {
       this.isLien = true;
-      this.adherent = +params['adherent'];
+      this.adherent = +params["adherent"];
     }
-    if (params['reponse'] !== undefined) {
+    if (params["reponse"] !== undefined) {
       this.isLien = true;
-      const r = params['reponse']!;
-      this.reponse = r === '0' ? false : r === '1' ? true : null;
+      const r = params["reponse"]!;
+      this.reponse = r === "0" ? false : r === "1" ? true : null;
     }
 
     try {
@@ -174,14 +192,15 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         this.LoadLogin(compte);
       }
     }
-    
 
     if (this.isLien && this.login && !this.adherent && !this._loadLoginDone) {
       this._loadLoginDone = true;
       this.inscriptionserv
         .GetAdherentCompte(this.login, this.id)
         .then((liste) => {
-          (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+          (liste ?? []).forEach((obj: any) =>
+            Personne_VM.bakeLibelle(obj.person),
+          );
           this.MesAdherents = liste ?? [];
           this.cdr.detectChanges();
         })
@@ -196,14 +215,12 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     this.waitForScrollableContainer();
   }
 
-
-
   private waitForScrollableContainer(): void {
     setTimeout(() => {
       if (this.scrollableContent?.nativeElement) {
         this.scrollableContent.nativeElement.addEventListener(
-          'scroll',
-          this.onContentScroll.bind(this)
+          "scroll",
+          this.onContentScroll.bind(this),
         );
       } else {
         this.waitForScrollableContainer();
@@ -221,143 +238,258 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
 
     this.scrollableContent.nativeElement.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   }
 
   AfficherMenu() {
-    this.router.navigate(['/menu']);
-    this.store.updateSelectedMenu('MENU');
+    this.router.navigate(["/menu"]);
+    this.store.updateSelectedMenu("MENU");
   }
 
   RetourListe() {
-    this.router.navigate(['/seance'], {
+    this.router.navigate(["/seance"], {
       queryParams: { id: this.thisSeance.id },
     });
   }
+  private getPersonneId(person?: Partial<Personne_VM> | null): number {
+    return Number((person as any)?.id ?? (person as any)?.personne_id ?? 0);
+  }
 
-  Load(): void {
+  private normalizeText(value: unknown): string {
+    return String(value ?? "")
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
+  private sortByLibelle = (
+    a: FullInscriptionSeance_VM,
+    b: FullInscriptionSeance_VM,
+  ): number => {
+    return this.normalizeText(a.person?.libelle).localeCompare(
+      this.normalizeText(b.person?.libelle),
+      "fr",
+    );
+  };
+
+  private toInscriptionStatus(value: unknown): InscriptionStatus_VM | null {
+    const v = this.normalizeText(value);
+
+    switch (v) {
+      case "present":
+        return InscriptionStatus_VM.PRESENT;
+      case "absent":
+        return InscriptionStatus_VM.ABSENT;
+      case "convoque":
+        return InscriptionStatus_VM.CONVOQUE;
+      case "essai":
+        return InscriptionStatus_VM.ESSAI;
+      default:
+        return null;
+    }
+  }
+
+  private toSeanceStatus(value: unknown): SeanceStatus_VM | null {
+    const v = this.normalizeText(value);
+
+    switch (v) {
+      case "present":
+        return SeanceStatus_VM.PRESENT;
+      case "absent":
+        return SeanceStatus_VM.ABSENT;
+      default:
+        return null;
+    }
+  }
+
+  private mapContact(c: ContactDto): ItemContact {
+    return {
+      id: c.id,
+      Diffusion: c.diffusion ?? false,
+      Type: c.contact_type,
+      Value: c.contact_value ?? "",
+      Info: c.info ?? "",
+      Pref: c.pref,
+    };
+  }
+
+  private bakePersonne(
+    rawPersonne: Personne,
+    contacts: ContactDto[],
+  ): Personne_VM {
+    const base = this.adherentmapper.toPersonneVm(rawPersonne) as Personne_VM;
+
+    Object.setPrototypeOf(base, Personne_VM.prototype);
+
+    const personneId =
+      this.getPersonneId(base) || Number((rawPersonne as any).id ?? 0);
+    const itemContacts = (contacts ?? []).filter(
+      (c) => Number(c.object_id) === personneId,
+    );
+
+    base.contact = itemContacts
+      .filter((x) => x.contact_list === "liste_contact")
+      .map((c) => this.mapContact(c));
+
+    base.contact_prevenir = itemContacts
+      .filter((x) => x.contact_list === "liste_contact_prevenir")
+      .map((c) => this.mapContact(c));
+
+    Personne_VM.bakeLibelle(base);
+    return base;
+  }
+
+  MapToFullInscriptionSeance_VM(
+    inscriptions: InscriptionSeance[],
+    personnes: Personne[],
+    contacts: ContactDto[],
+  ): FullInscriptionSeance_VM[] {
+    const personnesById = new Map<number, Personne>();
+
+    for (const p of personnes ?? []) {
+      const id = Number((p as any).id ?? (p as any).personne_id ?? 0);
+      if (id) personnesById.set(id, p);
+    }
+
+    return (inscriptions ?? [])
+      .map((ins): FullInscriptionSeance_VM | null => {
+        const personneId = Number(ins.personne_id ?? 0);
+        const rawPersonne = personnesById.get(personneId);
+
+        if (!personneId || !rawPersonne) {
+          return null;
+        }
+
+        const person = this.bakePersonne(rawPersonne, contacts);
+
+        return {
+          project_id: ins.project_id,
+          personne_id: personneId,
+          seance_id: Number(ins.seance_id),
+          date_inscription: ins.date_inscription ?? null,
+          statut_inscription: this.toInscriptionStatus(ins.statut_inscription),
+          statut_seance: this.toSeanceStatus(ins.statut_seance),
+          person,
+          isVisible: false,
+        };
+      })
+      .filter((x): x is FullInscriptionSeance_VM => x !== null)
+      .sort(this.sortByLibelle);
+  }
+
+  async Load(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;
 
-    this.inscriptionserv
-      .GetAllSeanceFull(this.id)
-      .then((res: FullInscriptionSeance_VM[]) => {
-        res.forEach((p) => {
-          if (p?.person) {
-            Object.setPrototypeOf(p.person, Personne_VM.prototype);
-            Personne_VM.bakeLibelle(p.person);
-          }
-        });
+    try {
+      const inscriptions = (await this.inscriptionserv.GetAllSeanceFull(
+        this.id,
+      )) as InscriptionSeance[];
 
-        const sortByLibelle = (
-          a: FullInscriptionSeance_VM,
-          b: FullInscriptionSeance_VM
-        ) => {
-          const norm = (s: string | undefined | null) =>
-            (s ?? '')
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .toLowerCase();
+      const personneIds = [
+        ...new Set(
+          (inscriptions ?? [])
+            .map((ins) => Number(ins.personne_id ?? 0))
+            .filter((id) => id > 0),
+        ),
+      ];
 
-          return norm(a.person?.libelle).localeCompare(norm(b.person?.libelle));
-        };
+    const [personnes, contacts] = await Promise.all([
+  this.personneapi.list_by_id(personneIds),
+  this.contactapi.list_by_id(personneIds),
+]) as [Personne[], ContactDto[]];
 
-        this.All = [...res].sort(sortByLibelle);
+this.All = this.MapToFullInscriptionSeance_VM(
+  inscriptions ?? [],
+  personnes,
+  contacts,
+);
+      await this.preloadPhotos(this.All);
 
-        this.preloadPhotos(this.All);
+      const riders = await this.riderservice.GetAdherentAdhesion(this.thisSeance.saison_id, this.store.compte().login);
 
-        return this.riderservice.GetAdherentAdhesion(this.store.saison_active_id(), this.store.compte()?.login);
-      })
-      .then((riders: Adherent_VM[]) => {
-        if (!riders) {
-          this.Autres = [];
-          return;
-        }
+      const alreadyInSeance = new Set(
+        this.All.map((x) => Number(x.personne_id)).filter((id) => id > 0),
+      );
 
-        riders.forEach((p) => Personne_VM.bakeLibelle(p as any));
-
-        this.Autres = riders.filter(
-          (x) => !this.All.find((y) => y.person?.id === x.id)
+      this.Autres = (riders ?? [])
+        .map((p) => {
+          Object.setPrototypeOf(p, Personne_VM.prototype);
+          Personne_VM.bakeLibelle(p as any);
+          return p;
+        })
+        .filter((x) => !alreadyInSeance.has(Number(x.id)))
+        .sort((a, b) =>
+          this.normalizeText(a.libelle).localeCompare(
+            this.normalizeText(b.libelle),
+            "fr",
+          ),
         );
 
-        const fakeFull: FullInscriptionSeance_VM[] = this.Autres.map((p) => {
-
-          const f = {
-            project_id: this.store.selectedProjectId(),
-            personne_id: p.id,
-            seance_id: this.thisSeance.id,
-            statut_inscription: null,
-            statut_seance: null,
-            date_inscription: null,
-
-          } as FullInscriptionSeance_VM;
-          return f;
-        });
-
-        this.preloadPhotos(fakeFull);
-
-        this.cdr.detectChanges();
-      })
-      .catch((error) => {
-        const n = errorService.CreateError(this.action, error);
-        errorService.emitChange(n);
-      });
+      this.cdr.detectChanges();
+    } catch (error) {
+      const n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+    }
   }
 
   private generateSeanceText() {
     const d = toDateSafe(this.thisSeance?.date_seance);
     if (!d) {
-      this.seanceText = '';
+      this.seanceText = "";
       return;
     }
     const options: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     };
-    const dateDebStr = d.toLocaleDateString('fr-FR', options);
+    const dateDebStr = d.toLocaleDateString("fr-FR", options);
     this.seanceText = ` ${dateDebStr}`;
   }
 
- private async preloadPhotos(items: FullInscriptionSeance_VM[]): Promise<void> {
-  const ids = [
-    ...new Set(
-      (items ?? [])
-        .map((it) => it?.person?.id)
-        .filter((id): id is number => !!id)
-    ),
-  ];
+  private async preloadPhotos(
+    items: FullInscriptionSeance_VM[],
+  ): Promise<void> {
+    const ids = [
+      ...new Set(
+        (items ?? [])
+          .map((it) => it?.person?.id)
+          .filter((id): id is number => !!id),
+      ),
+    ];
 
-  if (!ids.length) return;
+    if (!ids.length) return;
 
-  try {
-    const photosById = await this.documentapi.photo_by_id(ids);
+    try {
+      const photosById = await this.documentapi.photo_by_id(ids);
 
-    for (const it of items ?? []) {
-      const id = it?.person?.id;
-      if (!id || !it.person) continue;
+      for (const it of items ?? []) {
+        const id = it?.person?.id;
+        if (!id || !it.person) continue;
 
-      if (it.person.photo && it.person.photo.length > 0) continue;
+        if (it.person.photo && it.person.photo.length > 0) continue;
 
-      const cached = this.photoCache.get(id);
-      if (cached) {
-        it.person.photo = cached;
-        continue;
+        const cached = this.photoCache.get(id);
+        if (cached) {
+          it.person.photo = cached;
+          continue;
+        }
+
+        const url = photosById?.[id] ?? "";
+        if (url) {
+          this.photoCache.set(id, url);
+          it.person.photo = url;
+        }
       }
 
-      const url = photosById?.[id] ?? '';
-      if (url) {
-        this.photoCache.set(id, url);
-        it.person.photo = url;
-      }
+      this.cdr.detectChanges();
+    } catch {
+      // On ne bloque pas l'écran pour une photo manquante
     }
-
-    this.cdr.detectChanges();
-  } catch {
-    // On ne bloque pas l'écran pour une photo manquante
   }
-}
 
   LoadLogin(compte: Compte) {
     const errorService = ErrorService.instance;
@@ -369,12 +501,12 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     const statInsAuto: InscriptionStatus_VM | null = !hasReponse
       ? null
       : this.reponse
-      ? InscriptionStatus_VM.PRESENT
-      : InscriptionStatus_VM.ABSENT;
+        ? InscriptionStatus_VM.PRESENT
+        : InscriptionStatus_VM.ABSENT;
 
     if (!this.adherent) {
       this.inscriptionserv
-        .GetAdherentCompte(this.login, this.thisSeance.id)
+        .GetAdherentCompte(this.login!, this.thisSeance.id)
         .then((fis: FullInscriptionSeance_VM[]) => {
           fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
           this.MesAdherents = fis;
@@ -398,7 +530,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
               };
 
               return this.inscriptionserv
-                .update(ins.person.id, this.thisSeance.id, dto)
+                .update(ins.personne_id, this.thisSeance.id, dto)
                 .then((ok) => {
                   if (!ok) {
                     ins.statut_inscription = oldStatut;
@@ -421,7 +553,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
               this.MesAdherents = [...this.MesAdherents];
               this.All = this.All.map((x) => {
                 const updated = this.MesAdherents.find(
-                  (m) => m.person.id === x.person.id
+                  (m) => m.personne_id === x.personne_id,
                 );
                 return updated
                   ? { ...x, statut_inscription: updated.statut_inscription }
@@ -441,7 +573,9 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       this.inscriptionserv
         .GetAdherentCompte(this.store.compte().login, this.thisSeance.id)
         .then((liste) => {
-          (liste ?? []).forEach((obj: any) => Personne_VM.bakeLibelle(obj.person));
+          (liste ?? []).forEach((obj: any) =>
+            Personne_VM.bakeLibelle(obj.person),
+          );
           this.MesAdherents = liste ?? [];
 
           if (hasReponse && statInsAuto !== null && this.MesAdherents[0]) {
@@ -458,7 +592,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
             };
 
             this.inscriptionserv
-              .update(ins.person.id, this.thisSeance.id, dto)
+              .update(ins.personne_id, this.thisSeance.id, dto)
               .then((ok_) => {
                 if (!ok_) {
                   ins.statut_inscription = oldStatut;
@@ -470,9 +604,9 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
                 }
                 this.MesAdherents = [...this.MesAdherents];
                 this.All = this.All.map((x) =>
-                  x.person.id === ins.person.id
+                  x.personne_id === ins.personne_id
                     ? { ...x, statut_inscription: ins.statut_inscription }
-                    : x
+                    : x,
                 );
                 this.cdr.detectChanges();
               })
@@ -495,9 +629,9 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   GetNbPersonne(): boolean {
     if (this.thisSeance.est_place_maximum) {
       const ct = this.All.filter(
-        (x) => x.statut_seance === SeanceStatus_VM.PRESENT
+        (x) => x.statut_seance === SeanceStatus_VM.PRESENT,
       ).length;
-      return ct < this.thisSeance.place_maximum;
+      return ct < (this.thisSeance.place_maximum ?? 0);
     }
     return true;
   }
@@ -506,22 +640,22 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     const errorService = ErrorService.instance;
 
     switch (statut) {
-      case 'réalisée':
+      case "réalisée":
         this.action = $localize`Terminer la séance`;
         this.thisSeance.statut = StatutSeance.réalisée;
         break;
-      case 'prévue':
+      case "prévue":
         this.action = $localize`Planifier la séance`;
         this.thisSeance.statut = StatutSeance.prévue;
         break;
-      case 'annulée':
+      case "annulée":
         this.action = $localize`Annuler la séance`;
         this.thisSeance.statut = StatutSeance.annulée;
         break;
       default:
         return;
     }
-    const dto:UpdateSeanceDto = {
+    const dto: UpdateSeanceDto = {
       statut: this.thisSeance.statut,
     };
 
@@ -576,7 +710,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     };
 
     this.inscriptionserv
-      .update(inscription.person.id, this.thisSeance.id, dto)
+      .update(inscription.personne_id, this.thisSeance.id, dto)
       .then((res) => {
         if (!res) {
           inscription.statut_seance = oldSeance;
@@ -586,10 +720,10 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         }
 
         this.All = this.All.map((x) =>
-          x.person.id === inscription.person.id ? inscription : x
+          x.personne_id === inscription.personne_id ? inscription : x,
         );
         this.MesAdherents = this.MesAdherents.map((x) =>
-          x.person.id === inscription.person.id ? inscription : x
+          x.personne_id === inscription.personne_id ? inscription : x,
         );
         this.cdr.detectChanges();
       })
@@ -611,19 +745,19 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
 
     let statutText = $localize`Indéfini`;
     switch (statut) {
-      case 'présent':
+      case "présent":
         statutText = $localize`présent`;
         inscription.statut_inscription = InscriptionStatus_VM.PRESENT;
         break;
-      case 'absent':
+      case "absent":
         statutText = $localize`Absent`;
         inscription.statut_inscription = InscriptionStatus_VM.ABSENT;
         break;
-      case 'essai':
+      case "essai":
         statutText = $localize`à l'essai`;
         inscription.statut_inscription = InscriptionStatus_VM.ESSAI;
         break;
-      case 'convoqué':
+      case "convoqué":
         statutText = $localize`convoqué`;
         inscription.statut_inscription = InscriptionStatus_VM.CONVOQUE;
         break;
@@ -647,7 +781,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       this.thisSeance.nom;
 
     this.inscriptionserv
-      .update(inscription.person.id, this.thisSeance.id, dto)
+      .update(inscription.personne_id, this.thisSeance.id, dto)
       .then((res) => {
         if (!res) {
           const o = errorService.UnknownError(this.action);
@@ -659,10 +793,10 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         }
 
         this.All = this.All.map((x) =>
-          x.person.id === inscription.person.id ? inscription : x
+          x.personne_id === inscription.personne_id ? inscription : x,
         );
         this.MesAdherents = this.MesAdherents.map((x) =>
-          x.person.id === inscription.person.id ? inscription : x
+          x.personne_id === inscription.personne_id ? inscription : x,
         );
 
         this.cdr.detectChanges();
@@ -676,22 +810,20 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   }
 
   getPresent(): number {
-    return this.All.filter(
-      (x) => x.statut_seance === SeanceStatus_VM.PRESENT
-    ).length;
+    return this.All.filter((x) => x.statut_seance === SeanceStatus_VM.PRESENT)
+      .length;
   }
 
   getAbsent(): number {
-    return this.All.filter(
-      (x) => x.statut_seance === SeanceStatus_VM.ABSENT
-    ).length;
+    return this.All.filter((x) => x.statut_seance === SeanceStatus_VM.ABSENT)
+      .length;
   }
 
   getPresencePotentielle(): number {
     return this.All.filter(
       (x) =>
         x.statut_inscription == InscriptionStatus_VM.PRESENT ||
-        x.statut_inscription == InscriptionStatus_VM.ESSAI
+        x.statut_inscription == InscriptionStatus_VM.ESSAI,
     ).length;
   }
 
@@ -734,7 +866,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       });
   }
 
-  openMenu(potentiel: any, ev: MouseEvent) {
+  openMenu(potentiel: FullInscriptionSeance_VM, ev: MouseEvent) {
     ev.stopPropagation();
     this.closeAllMenus();
     potentiel.isVisible = true;
@@ -742,9 +874,9 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   }
 
   setStatusAndClose(
-    statut: 'présent' | 'absent' | 'essai' | 'convoqué' | null,
+    statut: "présent" | "absent" | "essai" | "convoqué" | null,
     potentiel: FullInscriptionSeance_VM,
-    ev?: MouseEvent
+    ev?: MouseEvent,
   ) {
     ev?.stopPropagation();
     this.MAJInscription(potentiel, statut);
@@ -757,12 +889,12 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     this.MesAdherents.forEach((x) => (x.isVisible = false));
   }
 
-  @HostListener('document:click')
+  @HostListener("document:click")
   onDocumentClick() {
     this.closeAllMenus();
   }
 
-  @HostListener('document:keydown.escape')
+  @HostListener("document:keydown.escape")
   onEsc() {
     this.closePanel();
     this.closePreview();
@@ -787,85 +919,89 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   }
 
   iconClass(p: FullInscriptionSeance_VM): string {
-    const s = (p?.statut_inscription ?? '').toString().toLowerCase();
+    const s = (p?.statut_inscription ?? "").toString().toLowerCase();
     switch (s) {
-      case 'présent':
-      case 'present':
-        return 'fa-thumbs-up has-text-success';
-      case 'absent':
-        return 'fa-thumbs-down has-text-danger';
-      case 'essai':
-        return 'fa-question';
-      case 'convoqué':
-      case 'convoque':
-      case 'convque':
-        return 'fa-hand-point-up has-text-info';
+      case "présent":
+      case "present":
+        return "fa-thumbs-up has-text-success";
+      case "absent":
+        return "fa-thumbs-down has-text-danger";
+      case "essai":
+        return "fa-question";
+      case "convoqué":
+      case "convoque":
+      case "convque":
+        return "fa-hand-point-up has-text-info";
       default:
-        return 'fa-ellipsis-h';
+        return "fa-ellipsis-h";
     }
   }
 
   private _contact_urgence(ins: FullInscriptionSeance_VM): string {
     const p = ins.person;
-    if (!p) return '';
+    if (!p) return "";
 
-    const cpPhone = p.contact_prevenir?.find((x: ItemContact) => x.Type === 'PHONE');
+    const cpPhone = p.contact_prevenir?.find(
+      (x: ItemContact) => x.Type === "PHONE",
+    );
     if (cpPhone?.Value) return cpPhone.Value;
 
     if (p.contact_prevenir?.length) {
-      return p.contact_prevenir[0].Value ?? '';
+      return p.contact_prevenir[0].Value ?? "";
     }
 
-    const cPhone = p.contact?.find((x: ItemContact) => x.Type === 'PHONE');
+    const cPhone = p.contact?.find((x: ItemContact) => x.Type === "PHONE");
     if (cPhone?.Value) return cPhone.Value;
 
     if (p.contact?.length) {
-      return p.contact[0].Value ?? '';
+      return p.contact[0].Value ?? "";
     }
 
-    return '';
+    return "";
   }
 
   private _contact_urgence_nom(ins: FullInscriptionSeance_VM): string {
     const p = ins.person;
-    if (!p) return '';
+    if (!p) return "";
 
-    const cpPhone = p.contact_prevenir?.find((x: ItemContact) => x.Type === 'PHONE');
+    const cpPhone = p.contact_prevenir?.find(
+      (x: ItemContact) => x.Type === "PHONE",
+    );
     if (cpPhone?.Info) return cpPhone.Info;
 
     if (p.contact_prevenir?.length) {
-      return p.contact_prevenir[0].Info ?? '';
+      return p.contact_prevenir[0].Info ?? "";
     }
 
-    const cPhone = p.contact?.find((x: ItemContact) => x.Type === 'PHONE');
+    const cPhone = p.contact?.find((x: ItemContact) => x.Type === "PHONE");
     if (cPhone?.Info) return cPhone.Info;
 
-    return '';
+    return "";
   }
 
   contact_urgence(p?: FullInscriptionSeance_VM): string {
-    if (!p?.person) return '';
+    if (!p?.person) return "";
     try {
       return this._contact_urgence(p);
     } catch {
-      return '';
+      return "";
     }
   }
 
   contact_urgence_nom(p?: FullInscriptionSeance_VM): string {
-    if (!p?.person) return '';
+    if (!p?.person) return "";
     try {
       return this._contact_urgence_nom(p);
     } catch {
-      return '';
+      return "";
     }
   }
 
-  openPanel(mode: 'convocation' | 'annulation' | 'ajout' | 'note') {
+  openPanel(mode: "convocation" | "annulation" | "ajout" | "note") {
     this.uiMode = mode;
     this.optionsOpen = false;
     this.toggleMobileOptions = false;
-    this.Notes = '';
+    this.Notes = "";
 
     this.variables = {
       SEANCE: this.thisSeance.nom,
@@ -874,20 +1010,20 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       DATE: formatDDMMYYYY(this.thisSeance.date_seance),
       ID: this.thisSeance.id,
       NOM: $localize`Prénom Nom`,
-      LIEU: this.thisSeance.lieu_nom ?? 'lieu non définie',
-      HEURE: this.thisSeance.heure_debut ?? 'heure non définie',
-      RDV: this.thisSeance.rdv ?? '',
+      LIEU: this.thisSeance.lieu_nom ?? "lieu non définie",
+      HEURE: this.thisSeance.heure_debut ?? "heure non définie",
+      RDV: this.thisSeance.rdv ?? "",
       DUREE:
         this.thisSeance.duree_seance != null
           ? `${this.thisSeance.duree_seance} min`
-          : 'durée non définie',
+          : "durée non définie",
       NOTES: this.Notes,
     };
 
-    if (mode === 'convocation') {
+    if (mode === "convocation") {
       this.action = $localize`Chargement du template de convocation`;
       this.selectedRecipients = this.All.filter(
-        (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE
+        (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE,
       );
 
       this.mailProjectServ
@@ -897,13 +1033,13 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
           this.mailBody = retour.mail;
         })
         .catch(() => {
-          this.mailSubject = `[Convocation] ${this.thisSeance?.nom ?? ''}`;
+          this.mailSubject = `[Convocation] ${this.thisSeance?.nom ?? ""}`;
           this.mailBody = `Bonjour,
 
 Vous êtes convoqué(e) pour la séance ${this.seanceText}.
 Merci de confirmer votre présence.`;
         });
-    } else if (mode === 'annulation') {
+    } else if (mode === "annulation") {
       this.action = $localize`Chargement du template d'annulation`;
       this.selectedRecipients = [...this.All];
 
@@ -914,20 +1050,20 @@ Merci de confirmer votre présence.`;
           this.mailBody = retour.mail;
         })
         .catch(() => {
-          this.mailSubject = `[Annulation] ${this.thisSeance?.nom ?? ''}`;
+          this.mailSubject = `[Annulation] ${this.thisSeance?.nom ?? ""}`;
           this.mailBody = `Bonjour,
 
 La séance ${this.seanceText} est annulée.`;
         });
     } else {
       this.selectedRecipients = [];
-      this.mailSubject = '';
-      this.mailBody = '';
+      this.mailSubject = "";
+      this.mailBody = "";
     }
   }
 
   closePanel() {
-    this.uiMode = 'list';
+    this.uiMode = "list";
     this.selectedRecipients = [];
     this.optionsOpen = false;
     this.toggleMobileOptions = false;
@@ -935,15 +1071,15 @@ La séance ${this.seanceText} est annulée.`;
 
   isChecked(
     p: FullInscriptionSeance_VM,
-    kind: 'convocation' | 'annulation'
+    kind: "convocation" | "annulation",
   ): boolean {
-    return this.selectedRecipients.some((x) => x.person.id === p.person.id);
+    return this.selectedRecipients.some((x) => x.personne_id === p.personne_id);
   }
 
   toggleRecipient(
     p: FullInscriptionSeance_VM,
-    kind: 'convocation' | 'annulation',
-    checked: boolean
+    kind: "convocation" | "annulation",
+    checked: boolean,
   ) {
     if (checked) {
       if (!this.isChecked(p, kind)) {
@@ -951,16 +1087,16 @@ La séance ${this.seanceText} est annulée.`;
       }
     } else {
       this.selectedRecipients = this.selectedRecipients.filter(
-        (x) => x.person.id !== p.person.id
+        (x) => x.personne_id !== p.personne_id,
       );
     }
   }
 
-  checkAll(kind: 'convocation' | 'annulation', val: boolean) {
-    if (kind === 'convocation') {
+  checkAll(kind: "convocation" | "annulation", val: boolean) {
+    if (kind === "convocation") {
       this.selectedRecipients = val
         ? this.All.filter(
-            (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE
+            (p) => p.statut_inscription === InscriptionStatus_VM.CONVOQUE,
           )
         : [];
     } else {
@@ -968,12 +1104,12 @@ La séance ${this.seanceText} est annulée.`;
     }
   }
 
-  sendMail(kind: 'convocation' | 'annulation') {
+  sendMail(kind: "convocation" | "annulation") {
     const errorService = ErrorService.instance;
 
-    if (kind === 'annulation') {
+    if (kind === "annulation") {
       const c = window.confirm(
-        $localize`Voulez-vous passer le statut de la séance à Annulée ?`
+        $localize`Voulez-vous passer le statut de la séance à Annulée ?`,
       );
       if (!c) return;
 
@@ -990,21 +1126,21 @@ La séance ${this.seanceText} est annulée.`;
           errorService.emitChange(o);
         });
     }
-    const listmail:OutgoingMessageVm[] = this.selectedRecipients.map((x) => ({
-      to_person_id: x.person.id,
+    const listmail: OutgoingMessageVm[] = this.selectedRecipients.map((x) => ({
+      to_person_id: x.personne_id,
       subject: this.mailSubject,
       body: this.mailBody,
-      html: '',
-      to :{
-        email: '',
+      html: "",
+      to: {
+        email: "",
         name: x.person.libelle,
       },
       project_id: this.store.selectedProjectId(),
     }));
 
     this.action = $localize`Envoi du mail`;
-    this.mailserv.sendMany(listmail
-      )
+    this.mailserv
+      .sendMany(listmail)
       .then(() => {
         const o = errorService.OKMessage(this.action);
         errorService.emitChange(o);
@@ -1037,12 +1173,12 @@ La séance ${this.seanceText} est annulée.`;
 }
 
 export function formatDDMMYYYY(
-  input: Date | string | null | undefined
+  input: Date | string | null | undefined,
 ): string {
   const d = toDateSafe(input);
-  if (!d) return '';
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  if (!d) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
@@ -1055,7 +1191,7 @@ export function toDateSafe(input: unknown): Date | null {
     return isNaN(d.getTime()) ? null : d;
   }
 
-  if (typeof input === 'string') {
+  if (typeof input === "string") {
     const m = input.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (m) {
       const yyyy = +m[1];
@@ -1071,7 +1207,7 @@ export function toDateSafe(input: unknown): Date | null {
     return null;
   }
 
-  if (typeof input === 'number') {
+  if (typeof input === "number") {
     const d = new Date(input);
     return isNaN(d.getTime()) ? null : d;
   }

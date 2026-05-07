@@ -10,7 +10,6 @@ import { ErrorService } from '../../services/error.service';
 import { AppStore } from '../app.store';
 import { StaticClass } from '../global';
 import { MessageApiService } from '../../services/message-api.service';
-import { firstValueFrom } from 'rxjs';
 import { ProjectApiService } from '../../services/project-api.service';
 
 @Component({
@@ -241,7 +240,7 @@ getInitiales(personne: AdherentMenu): string {
   }
 
   VoirMaSeance(seance: any): void {
-    this.router.navigate(['/seance-edit'], { queryParams: { id: seance.id } });
+    this.router.navigate(['/ma-seance'], { queryParams: { id: seance.id } });
   }
 
   Sort(
