@@ -66,9 +66,6 @@ private readonly lienGroupeRepo: Repository<LienGroupeEntity>,
 
       statut_seance:
         this.toSeanceStatus(inscription.statut_seance),
-
-      person: null,
-      isVisible: true,
     });
   }
 
@@ -132,9 +129,7 @@ private readonly lienGroupeRepo: Repository<LienGroupeEntity>,
 
      
 
-      const isVisible =
-        !seance.place_maximum ||
-        totalPersonnesInscrites < seance.place_maximum;
+    
 
       result.push({
         project_id: projectId,
@@ -143,8 +138,6 @@ private readonly lienGroupeRepo: Repository<LienGroupeEntity>,
         date_inscription: null,
         statut_inscription: null,
         statut_seance: null,
-        person: personne,
-        isVisible: false,
       });
 
       personnesDejaDansResult.add(personneId);
