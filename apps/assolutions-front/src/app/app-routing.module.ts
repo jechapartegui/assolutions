@@ -36,6 +36,7 @@ import { AuthGuard } from './auth.guard';
 
 import type { AppMode } from '@shared/lib/compte.interface';
 import { MonCompteComponent } from './mon-compte/mon-compte.component';
+import { GroupeComponent } from './groupe/groupe.component';
 
 // Raccourcis
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
@@ -54,6 +55,7 @@ const routes: Routes = [
 
   { path: 'ma-seance', component: MaSeanceComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'adherent', component: AdherentComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
+  {path: 'groupe', component: GroupeComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
 
   { path: 's/:slug', component: ShortLinkRedirectComponent },
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
