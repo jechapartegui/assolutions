@@ -320,7 +320,7 @@ async copyWhatsappSurvey(): Promise<void> {
 }
 
 private buildWhatsappSurveyText(): string {
-  const type = this.seance.type_seance ?? '';
+  const type = this.seance.type_seance == 'ENTRAINEMENT' ? $localize`Entraînement` : this.seance.type_seance == 'MATCH' ? $localize`Match` : this.seance.type_seance == 'SORTIE' ? $localize`Sortie` : $localize`Événement`;
   const nom = this.seance.nom ?? '';
   const date = this.formatDateFr(this.seance.date_seance);
   const heure = this.seance.heure_debut ?? '';

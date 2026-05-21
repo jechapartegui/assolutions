@@ -7,6 +7,6 @@ export const environment = {
   environment: 'preprod',
   defaultloginProjet:'',
   defaultloginpassword:'',
-  frontUrl:'https://preprod.assolutions.fr'
+  frontUrl:'https://preprod.assolutions.club'
   
 };
