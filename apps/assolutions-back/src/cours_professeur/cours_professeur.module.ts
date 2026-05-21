@@ -8,8 +8,9 @@ import { CoursEntity } from '../cours/cours.entity';
 import { CoursService } from '../cours/cours.service';
 
 import { AccessControlModule } from '../common/access-control.module'; // ✅
+import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([CoursProfesseurEntity, CoursEntity]), RegistryModule, AccessControlModule],
+  imports: [TypeOrmModule.forFeature([CoursProfesseurEntity, CoursEntity, ContratProfEntity]), RegistryModule, AccessControlModule],
   controllers: [CoursProfesseurController],
   providers: [CoursProfesseurService, CoursService],
 })

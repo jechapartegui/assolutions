@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Cours_VM } from '@shared/index';
 import { CoursPageVm } from '../../vm/cours-page.vm';
 import { CoursStore } from '../../store/cours.store';
+import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/services/excel-export.service';
 
 @Component({
   selector: 'app-cours-list',
@@ -15,7 +16,7 @@ export class CoursListComponent {
   @Output() openCours = new EventEmitter<number>();
   @Output() createCours = new EventEmitter<void>();
 
-  constructor(public readonly store: CoursStore) {}
+  constructor(public readonly store: CoursStore, private readonly excel: ExcelExportService) {}
 isSelected(id: number): boolean {
   return (this.vm.selectedIds ?? []).includes(id);
 }
@@ -26,6 +27,96 @@ toggleSelection(id: number): void {
 
 toggleMultiSelectMode(): void {
   this.store.toggleMultiSelectMode();
+}
+exportExcel(): void {
+  const rows = this.vm.list ?? [];
+
+  const columns: ExcelColumn<Cours_VM>[] = [
+    {
+      header: $localize`:@@common.id:ID`,
+      value: c => c.id
+    },
+
+    {
+      header: $localize`:@@course.name:Cours`,
+      value: c => c.nom
+    },
+
+    {
+      header: $localize`:@@course.day:Jour`,
+      value: c => c.jour_semaine
+    },
+
+    {
+      header: $localize`:@@common.time:Heure`,
+      value: c => c.heure
+    },
+
+    {
+      header: $localize`:@@course.duration:Durée`,
+      value: c => c.duree
+    },
+
+    {
+      header: $localize`:@@place.name:Lieu`,
+      value: c => c.lieu?.nom ?? ''
+    },
+
+    {
+      header: $localize`:@@group.list:Groupes`,
+      value: c => (c.groupes ?? []).map(g => g.nom).join(', ')
+    },
+
+    {
+      header: $localize`:@@teacher.list:Professeurs`,
+      value: c => (c.professeursCours ?? [])
+        .map(p => `${p.prenom ?? ''} ${p.nom ?? ''}`.trim())
+        .join(', ')
+    },
+
+    {
+      header: $localize`:@@season.name:Saison`,
+      value: c =>
+        this.vm.refs?.listeSaison?.find(s => s.id === c.saison_id)?.nom ?? ''
+    },
+
+    {
+      header: $localize`:@@member.minAge:Âge minimum`,
+      value: c => c.age_minimum
+    },
+
+    {
+      header: $localize`:@@member.maxAge:Âge maximum`,
+      value: c => c.age_maximum
+    },
+
+    {
+      header: $localize`:@@place.maximum:Places maximum`,
+      value: c => c.place_maximum
+    },
+
+    {
+      header: $localize`:@@trial.allowed:Essai possible`,
+      value: c => c.essai_possible
+    },
+
+    {
+      header: $localize`:@@meeting.point:RDV`,
+      value: c => c.rdv
+    },
+
+    {
+      header: $localize`:@@attendance.display:Afficher présents`,
+      value: c => c.afficher_present
+    },
+
+    {
+      header: $localize`:@@convocation.nominative:Convocation nominative`,
+      value: c => c.convocation_nominative
+    },
+  ];
+
+  this.excel.export('cours', rows, columns);
 }
 
 async deleteSelection(): Promise<void> {

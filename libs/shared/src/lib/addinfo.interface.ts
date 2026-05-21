@@ -7,6 +7,31 @@ text!: string; // label
 project_id:number | null;
 }
 
+export interface AddInfoFormItem_VM {
+  field_id: number;
+  value_id: number;
+  object_id: number;
+  object_type: string;
+  value_type: string;
+  label: string;
+  text: string;
+  field: AddInfo;
+  value: AddInfo | null;
+}
+export interface AddInfoEditorItem_VM {
+  fieldId: number;
+  valueId: number;
+  label: string;
+  fieldType: string;
+  value: string;
+  initialValue: string;
+  selected: boolean;
+  initiallySelected: boolean;
+
+  boolValue?: boolean;
+  options?: string[];
+}
+
 export interface AddInfo {
   id: number;
 

@@ -5,12 +5,14 @@ import { RegistryService } from '../registry/registry.service';
 import { CoursEntity } from '../cours/cours.entity';
 import { CreateCoursProfesseurDto, UpdateCoursProfesseurDto } from './cours_professeur.dto';
 import { CoursProfesseurEntity } from './cours_professeur.entity';
+import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 
 @Injectable()
 export class CoursProfesseurService {
   constructor(
     @InjectRepository(CoursProfesseurEntity) private readonly repo: Repository<CoursProfesseurEntity>,
     @InjectRepository(CoursEntity) private readonly coursRepo: Repository<CoursEntity>,
+    @InjectRepository(ContratProfEntity) private readonly contratRepo: Repository<ContratProfEntity>,
     private readonly registry: RegistryService,
   ) {}
 
@@ -32,25 +34,33 @@ export class CoursProfesseurService {
 async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> {
   if (!Array.isArray(coursIds) || coursIds.length === 0) return {};
 
-  const rows = await this.repo.find({
-    where: { cours_id: In(coursIds) },
-    select: {
-      cours_id: true,
-      contrat_id: true,
-    },
-    order: { cours_id: 'ASC' as any, contrat_id: 'ASC' as any }, // si TypeORM accepte
-  });
+  const rows = await this.repo
+    .createQueryBuilder('cp')
+    .innerJoin(
+      ContratProfEntity,
+      'contrat',
+      'contrat.id = cp.contrat_id',
+    )
+    .select('cp.cours_id', 'cours_id')
+    .addSelect('contrat.professeur_id', 'professeur_id')
+    .where('cp.cours_id IN (:...coursIds)', { coursIds })
+    .orderBy('cp.cours_id', 'ASC')
+    .addOrderBy('contrat.professeur_id', 'ASC')
+    .getRawMany<{ cours_id: number; professeur_id: number }>();
 
   const result: Record<number, number[]> = {};
 
   for (const r of rows) {
-    (result[r.cours_id] ??= []).push(r.contrat_id);
+    const coursId = Number(r.cours_id);
+    const professeurId = Number(r.professeur_id);
+
+    if (!coursId || !professeurId) continue;
+
+    (result[coursId] ??= []).push(professeurId);
   }
 
-  // dédoublonnage + tri
   for (const k of Object.keys(result)) {
-    const arr = result[+k];
-    result[+k] = Array.from(new Set(arr)).sort((a, b) => a - b);
+    result[+k] = Array.from(new Set(result[+k])).sort((a, b) => a - b);
   }
 
   return result;
@@ -93,10 +103,15 @@ async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> 
     return { ok: true };
   }
 
-  async updateList(coursId: number, profsors: number[], projectId: number) {
+  async updateList(coursId: number, profsors: number[], saisonid: number, projectId: number) {
+    console.log('profsors', profsors);  
+     const listprof = await this.contratRepo.find({ where: { professeur_id: In(profsors), saison_id: saisonid } });
+     const foundIds = listprof.map(p => p.id);
+     console.log('foundIds', foundIds);
       const existing = await this.repo.find({ where: { cours_id: coursId } });
-      const toDelete = existing.filter((e) => !profsors.includes(e.contrat_id));
-      const toAdd = profsors.filter((p) => !existing.some((e) => e.contrat_id === p));
+      console.log('existing', existing);
+      const toDelete = existing.filter((e) => !foundIds.includes(e.contrat_id));
+      const toAdd = foundIds.filter((p) => !existing.some((e) => e.contrat_id === p));
       toDelete.forEach((e) => this.remove(e.id, projectId));
       toAdd.forEach(async (p) => {
         let i :CreateCoursProfesseurDto = { cours_id: coursId, contrat_id: p};        

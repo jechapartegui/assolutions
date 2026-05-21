@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
-import { AddInfo, CreateAddInfoDto, UpdateAddInfoDto } from '@shared/lib/addinfo.interface';
+import { AddInfo, AddInfoFormItem_VM, CreateAddInfoDto, UpdateAddInfoDto } from '@shared/index';
 
 @Injectable({ providedIn: 'root' })
 export class AddInfoApiService {
@@ -29,4 +29,46 @@ export class AddInfoApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+
+  listFields(objectType: string): Promise<AddInfo[]> {
+  return this.api.GET<AddInfo[]>(`${this.base}/fields/${objectType}`);
+}
+
+listValues(objectType: string, objectId: number): Promise<AddInfo[]> {
+  return this.api.GET<AddInfo[]>(`${this.base}/values/${objectType}/${objectId}`);
+}
+
+getForm(objectType: string, objectId: number): Promise<AddInfoFormItem_VM[]> {
+  return this.api.GET<AddInfoFormItem_VM[]>(`${this.base}/form/${objectType}/${objectId}`);
+}
+
+setValue(dto: {
+  object_type: string;
+  object_id: number;
+  field_id: number;
+  text: string;
+}): Promise<AddInfo> {
+  return this.api.POST<AddInfo>(`${this.base}/values`, dto);
+}
+
+getLov<T = unknown>(code: string, lang = 'FR'): Promise<AddInfo | null> {
+  return this.api.GET<AddInfo | null>(`${this.base}/lov/${code}/${lang}`);
+}
+
+createValue(dto: {
+  object_type: string;
+  object_id: number;
+  field_id: number;
+  text: string;
+}): Promise<AddInfo> {
+  return this.api.POST<AddInfo>(`${this.base}/values`, dto);
+}
+
+updateValue(id: number, dto: { text: string }): Promise<AddInfo> {
+  return this.api.POST<AddInfo>(`${this.base}/values/${id}/update`, dto);
+}
+
+deleteValue(id: number): Promise<void> {
+  return this.api.POST<void>(`${this.base}/values/${id}/delete`, {});
+}
 }

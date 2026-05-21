@@ -37,6 +37,7 @@ import { AuthGuard } from './auth.guard';
 import type { AppMode } from '@shared/lib/compte.interface';
 import { MonCompteComponent } from './mon-compte/mon-compte.component';
 import { GroupeComponent } from './groupe/groupe.component';
+import { DashboardComponent } from './tdb/dashboard.component';
 
 // Raccourcis
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
@@ -59,6 +60,7 @@ const routes: Routes = [
 
   { path: 's/:slug', component: ShortLinkRedirectComponent },
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
+  { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
 
   { path: '**', redirectTo: 'login' },
 ];

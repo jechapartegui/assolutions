@@ -57,8 +57,8 @@
 
             <div class="column is-12-tablet is-2-desktop groupe-checkbox-column">
               <label class="checkbox">
-                <input type="checkbox" [ngModel]="edit.prive" (ngModelChange)="groupeStore.patchEdit({ prive: $event })" />
-                Privé
+                <input type="checkbox" [ngModel]="edit.visible" (ngModelChange)="groupeStore.patchEdit({ visible: $event })" />
+                Visible
               </label>
             </div>
           </div>
@@ -80,8 +80,8 @@
             <div>
               <p class="title is-6 mb-1">{{ groupe.nom }}</p>
               <div class="tags mb-0">
-                <span class="tag" [ngClass]="groupe.prive ? 'is-warning is-light' : 'is-success is-light'">
-                  {{ groupe.prive ? 'Privé' : 'Public' }}
+                <span class="tag" [ngClass]="groupe.visible ? 'is-success is-light' : 'is-warning is-light'">
+                  {{ groupe.visible ? 'Public' : 'Privé' }}
                 </span>
                 <span class="tag is-info is-light">{{ membersOfSelectedGroupe().length }} adhérent(s)</span>
                 <span class="tag is-light" *ngIf="groupe.whatsapp">WhatsApp</span>
@@ -106,14 +106,14 @@
               <input
                 class="input"
                 placeholder="Filtrer nom / prénom / surnom"
-                [(ngModel)]="vm.filterAdherent"
+                [ngModel]="vm.filterAdherent" (ngModelChange)="groupeStore.setFilterAdherent($event)"
               />
             </div>
 
             <div class="field mb-0 groupe-select-field">
               <label class="label">Adhérent</label>
               <div class="select is-fullwidth">
-                <select [(ngModel)]="vm.adherentToAddId">
+                <select [ngModel]="vm.adherentToAddId" (ngModelChange)="groupeStore.setAdherentToAddId($event)">
                   <option [ngValue]="null">---</option>
                   <option *ngFor="let adherent of availableAdherentsForSelectedGroupe()" [ngValue]="adherent.id">
                     {{ adherent.libelle || (adherent.prenom + ' ' + adherent.nom) }}

@@ -1,28 +1,15 @@
+import { Groupe } from '@shared/index';
 import { AdherentListItem_VM } from '../vm/adherent-page.vm';
 
-export interface GroupeListItem_VM {
-  id: number;
-  nom: string;
-  whatsapp: string;
-  prive: boolean;
-  saison_id: number;
-}
-
-export interface GroupeEditVm {
-  id: number;
-  nom: string;
-  whatsapp: string;
-  prive: boolean;
-}
 
 export interface GroupePageVm {
-  groupes: GroupeListItem_VM[];
+  groupes: Groupe[];
   adherents: AdherentListItem_VM[];
   activeSaisonId: number | null;
   loading: boolean;
   action: string;
   selectedGroupeId: number | null;
-  editGroupe: GroupeEditVm | null;
+  editGroupe: Groupe | null;
   filterAdherent: string;
   adherentToAddId: number | null;
 }

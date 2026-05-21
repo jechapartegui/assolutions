@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MultifiltersStockPipe } from '../../filters/multifilters-stock.pipe';
 import { AddInfoApiService } from '../../services/addinfo-api.service';
 import { ErrorService } from '../../services/error.service';
-import { ExcelService } from '../../services/excel.service';
+import { ExcelService } from '../../services/excel-export.service';
 import { GlobalService } from '../../services/global.services';
 import { StockApiService } from '../../services/stock-api.service';
 import { TypeStock, TypeTransaction, StaticClass } from '../global';

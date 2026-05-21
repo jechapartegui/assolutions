@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ValidationItem } from '@shared/lib/autres.interface';
 import {
   Seance_VM,
@@ -9,6 +9,9 @@ import { SeanceRepository } from '../../repository/seance.repository';
 import { SeancePageVm } from '../../vm/seance-page.vm';
 import { SeanceMapper } from '../../mapper/seance.mapper';
 import { SeanceStore } from '../../store/seance.store';
+import { AddInfoEditorComponent } from '../add-info-editor/add-info-editor.component';
+import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-seance-editor',
@@ -20,6 +23,8 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
   @Input({ required: true }) vm!: SeancePageVm;
   @Input() isAdmin = false;
   @Output() back = new EventEmitter<void>();
+@ViewChild('addInfoEditor')
+addInfoEditor?: AddInfoEditorComponent;
 
   public currentProfId: number | null = null;
   public profDispo: any[] = [];
@@ -33,6 +38,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     private readonly repository: SeanceRepository,
     private readonly mapper: SeanceMapper,
     private readonly store: SeanceStore,
+  private readonly router: Router,
   ) {}
 
   get seance(): Seance_VM {
@@ -116,8 +122,11 @@ async save(): Promise<void> {
   }
 
   try {
-    await this.store.saveEditedSeance();
-
+    const saved = await this.store.saveEditedSeance();
+if (this.addInfoEditor && saved?.id > 0) {
+  this.addInfoEditor.objectId = saved.id;
+  await this.addInfoEditor.save();
+}
     errorService.emitChange(
       errorService.OKMessage(
         this.seance.id > 0
@@ -290,4 +299,62 @@ async save(): Promise<void> {
     const cours = this.coursDisponibles.find((x) => x.id === this.seance.cours);
     this.seance.cours_nom = cours?.nom ?? '';
   }
+  openMaSeance(): void {
+  if (!this.seance?.id) return;
+
+  this.router.navigate(['/ma-seance'], {
+    queryParams: { id: this.seance.id },
+  });
+}
+
+async copyWhatsappSurvey(): Promise<void> {
+  if (!this.seance?.id) return;
+
+  const message = this.buildWhatsappSurveyText();
+
+  await navigator.clipboard.writeText(message);
+
+  ErrorService.instance.emitChange(
+    ErrorService.instance.OKMessage($localize`Sondage WhatsApp copié`)
+  );
+}
+
+private buildWhatsappSurveyText(): string {
+  const type = this.seance.type_seance ?? '';
+  const nom = this.seance.nom ?? '';
+  const date = this.formatDateFr(this.seance.date_seance);
+  const heure = this.seance.heure_debut ?? '';
+  const rdv = this.seance.rdv ?? '';
+
+  return `${type} ${nom} le ${date} à ${heure} ${rdv}. Vous venez ?
+Oui : ${this.buildShortLink(1)}
+Non : ${this.buildShortLink(0)}`;
+}
+
+private buildShortLink(reponse: 0 | 1): string {
+  const slug = this.jsonToB64Url({
+    i: this.seance.id,
+    r: reponse,
+  });
+return `${environment.frontUrl}/s/${slug}`;
+}
+
+private jsonToB64Url(value: unknown): string {
+  const json = JSON.stringify(value);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+
+  return b64
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+private formatDateFr(value: Date | string | null | undefined): string {
+  if (!value) return '';
+
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+
+  return d.toLocaleDateString('fr-FR');
+}
 }

@@ -1,290 +1,343 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { ErrorService } from '../../services/error.service';
-import { GlobalService } from '../../services/global.services';
-import { MaSeanceApiService } from '../../services/ma-seance-api.service';
-import { ProfesseurApiService } from '../../services/professeur-api.service';
-import { LieuApiService } from '../../services/lieu-api.service';
-import { CoursApiService } from '../../services/cours-api.service';
-import { AdherentService } from '../../services/adherent.service';
+import {
+  calculerHeureFin as calculerHeureFinUtil,
+  MesSeances_VM,
+} from '@shared/index';
+
+import { AdherentMenu } from '../../class/adherent-menu';
 import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
+import { ErrorService } from '../../services/error.service';
+import { MenuStore } from '../../store/menu.store';
 import { AppStore } from '../app.store';
 
-import {
-  AdherentSeance_VM,
-  MesSeances_VM,
-  Seance_VM,
-  StatutSeance,
-  calculerHeureFin,
-} from '@shared/lib/seance.interface';
-import { Professeur_VM } from '@shared/lib/prof.interface';
-import { Lieu_VM } from '@shared/lib/lieu.interface';
-import { Cours_VM } from '@shared/lib/cours.interface';
-import { KeyValuePair } from '@shared/lib/autres.interface';
-import { AdherentMenu } from '../../class/adherent-menu';
+type DashboardGroup = {
+  cours: string;
+  items: MesSeances_VM[];
+  declare_present: number;
+  declare_absent: number;
+  declare_aucun: number;
+  reel_present: number;
+  reel_absent: number;
+};
 
 @Component({
   standalone: false,
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['../menu/menu.component.css'], // on réutilise le CSS du Menu
+  styleUrls: ['../menu/menu.component.css'],
 })
-export class DashboardComponent implements OnInit {
-  action: string;
-  loading = false;
+export class DashboardComponent implements OnInit, OnDestroy {
+  @ViewChild('scrollableContent', { static: false })
+  scrollableContent?: ElementRef<HTMLElement>;
 
-  Riders: AdherentMenu[] = [];
-  listeprof: Professeur_VM[] = [];
-  listelieu: Lieu_VM[] = [];
-  listeCours: Cours_VM[] = [];
+  public loading = false;
+  public action = '';
+  public showScrollToTop = false;
 
-  public liste_prof_filter: KeyValuePair[] = [];
-  public liste_lieu_filter: string[] = [];
-
-  @ViewChild('scrollableContent', { static: false }) scrollableContent!: ElementRef;
-  showScrollToTop = false;
+  private groupCache = new WeakMap<AdherentMenu, { signature: string; groups: DashboardGroup[] }>();
+  private readonly boundOnContentScroll = this.onContentScroll.bind(this);
 
   constructor(
-    public cdr: ChangeDetectorRef,
-    public GlobalService: GlobalService,
-    public store: AppStore,
-    private router: Router,
-    private prof_serv: ProfesseurApiService,
-    private lieuserv: LieuApiService,
-    private CoursApiService: CoursApiService,
-    private ma_seance_serv: MaSeanceApiService,
-    private riderservice: AdherentService,
-    private multifilters: MultifiltersMenuPipe
+    public readonly store: AppStore,
+    public readonly cdr: ChangeDetectorRef,
+    private readonly router: Router,
+    public readonly menuStore: MenuStore,
+    private readonly multifilters: MultifiltersMenuPipe,
   ) {}
+
+  get Riders(): AdherentMenu[] {
+    return this.menuStore.vm().riders;
+  }
+
+  get listelieu(): any[] {
+    return this.menuStore.vm().listelieu ?? [];
+  }
+
+  get refreshAvailable(): boolean {
+    return this.menuStore.vm().refreshAvailable;
+  }
 
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger le tableau de bord`;
+
+    if (this.store.mode() === 'ADMIN') {
+      this.router.navigate(['/menu-admin']);
+      return;
+    }
+
     this.loading = true;
 
     try {
-      if (!this.store.isLoggedIn) {
-        const o = errorService.CreateError(this.action, $localize`Accès impossible, vous n'êtes pas connecté`);
-        errorService.emitChange(o);
-        this.store.clearSession();
-        this.router.navigate(['/login']);
+      const selectedProject = this.store.selectedProject();
+
+      if (!selectedProject) {
+        errorService.emitChange(
+          errorService.CreateError(this.action, $localize`Aucun projet sélectionné`)
+        );
         return;
       }
 
-      const today = new Date();
-      const start = new Date(this.store.saison_active().date_debut);
-      start.setMonth(today.getMonth() - 12); // par défaut : 2 mois en arrière
-      const end = new Date(today);
-
-      // Adhérents
-      if (this.store.selectedProject().rights.adherent || this.store.selectedProject().rights.essai) {
-        const seancesAdh = await this.GetMySeances();
-        const ridersAdh = seancesAdh.map((x) => {
-          const r = new AdherentMenu(x);
-          r.profil = 'ADH';
-          r.filters.filter_date_avant = start;
-          r.filters.filter_date_apres = end;
-          this.sortByDateHeure(r.MesSeances);
-          return r;
-        });
-        this.Riders.push(...ridersAdh);
-      }
-
-      // Profs
-      if (this.store.selectedProject().rights.prof) {
-        const seancesProf = await this.GetProfSeances();
-        const ridersProf = seancesProf.map((x) => {
-          const r = new AdherentMenu(x);
-          r.profil = 'PROF';
-          r.filters.filter_date_avant = start;
-          r.filters.filter_date_apres = end;
-          this.sortByDateHeure(r.MesSeances);
-          return r;
-        });
-        this.Riders.push(...ridersProf);
-      }
-
-      // tri final par id
-      this.Riders.sort((a, b) => a.id - b.id);
-
-      // listes annexes
-      const profs = await this.prof_serv.GetProf();
-      this.listeprof = profs;
-      this.liste_prof_filter = profs.map((p) => ({
-        key: p.person.id,
-        value: `${p.person.prenom} ${p.person.nom}`,
-      }));
-
-      const lieux = await this.lieuserv.GetAll();
-      this.listelieu = lieux;
-      this.liste_lieu_filter = lieux.map((l) => l.nom);
-
-      this.listeCours = await this.CoursApiService.GetAll(this.store.saison_active_id());
-
-      // enrichissements riders (photo + libellés cours/lieu)
-      this.Riders.forEach((r) => {
-        this.riderservice.GetPhoto(r.id).then((profil) => {
-          r.photo = profil && profil.length > 0 ? profil : undefined;
-        });
-
-        r.MesSeances.forEach((ms) => {
-          if (ms.seance.lieu_id && ms.seance.lieu_id > 0) {
-            ms.seance.lieu_nom = this.trouverLieu(ms.seance.lieu_id);
-          }
-          if (ms.seance.cours && ms.seance.cours > 0) {
-            ms.seance.cours_nom = this.trouverCours(ms.seance);
-          }
-        });
-      });
+      await this.menuStore.init(
+        selectedProject.id,
+        this.store.saison_active_id(),
+        selectedProject.rights as any,
+      );
     } catch (err: any) {
-      const errorService = ErrorService.instance;
-      const o =
-        err instanceof HttpErrorResponse
-          ? errorService.CreateError(this.action, err.message)
-          : err instanceof Error
-          ? errorService.CreateError(this.action, err.message)
-          : err;
-      errorService.emitChange(o);
-      if (this.store.mode() !== 'ADMIN') {
-        this.store.clearSession();
-        this.router.navigate(['/login']);
-      }
+      errorService.emitChange(
+        errorService.CreateError(
+          this.action,
+          $localize`chargement du tableau de bord : ` + (err?.message ?? err)
+        )
+      );
     } finally {
       this.loading = false;
+      window.addEventListener('resize', this.markForCheck);
+      setTimeout(() => this.bindScrollContainer());
     }
   }
 
-  private sortByDateHeure(list: MesSeances_VM[]) {
-    list.sort((a, b) => {
-      const dateA = new Date(a.seance.date_seance);
-      const [hA, mA] = a.seance.heure_debut.split(':').map(Number);
-      dateA.setHours(hA, mA, 0, 0);
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.markForCheck);
+    this.scrollableContent?.nativeElement.removeEventListener('scroll', this.boundOnContentScroll);
+  }
 
-      const dateB = new Date(b.seance.date_seance);
-      const [hB, mB] = b.seance.heure_debut.split(':').map(Number);
-      dateB.setHours(hB, mB, 0, 0);
+  private readonly markForCheck = (): void => {
+    this.cdr.markForCheck();
+  };
 
-      return dateA.getTime() - dateB.getTime();
+  private bindScrollContainer(): void {
+    const el = this.scrollableContent?.nativeElement;
+    if (!el) return;
+
+    el.removeEventListener('scroll', this.boundOnContentScroll);
+    el.addEventListener('scroll', this.boundOnContentScroll);
+    this.onContentScroll();
+  }
+
+  onContentScroll(): void {
+    const el = this.scrollableContent?.nativeElement;
+    this.showScrollToTop = !!el && (el.scrollTop || 0) > 200;
+  }
+
+  scrollToTop(): void {
+    this.scrollableContent?.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth',
     });
   }
 
-  // --- Récupération données (identiques à Menu)
-  private async GetMySeances(): Promise<AdherentSeance_VM[]> {
-    const errorService = ErrorService.instance;
-    try {
-      return await this.ma_seance_serv.Get();
-    } catch (e: any) {
-      errorService.emitChange(errorService.CreateError($localize`Se connecter`, e));
-      return [];
+  applyRefresh(): void {
+    this.menuStore.applyRefresh();
+    this.groupCache = new WeakMap<AdherentMenu, { signature: string; groups: DashboardGroup[] }>();
+  }
+
+  hasOpenedRider(): boolean {
+    return this.Riders.some((x) => !!x.afficher);
+  }
+
+  AfficherProfil(rider: AdherentMenu): void {
+    for (const r of this.Riders) {
+      r.afficher = r.id === rider.id && r.profil === rider.profil ? !r.afficher : false;
     }
+
+    this.cdr.detectChanges();
+    setTimeout(() => this.bindScrollContainer());
   }
 
-  private async GetProfSeances(): Promise<AdherentSeance_VM[]> {
-    const errorService = ErrorService.instance;
-    try {
-      return await this.ma_seance_serv.Prof();
-    } catch (e: any) {
-      errorService.emitChange(errorService.CreateError($localize`Se connecter`, e));
-      return [];
+  getLibelleProfil(profil: string): string {
+    if (profil === 'ADH') return $localize`Adhérent`;
+    if (profil === 'PROF') return $localize`Professeur`;
+    return profil;
+  }
+
+  getInitiales(personne: AdherentMenu): string {
+    const prenom = (personne.prenom ?? '').trim();
+    const nom = (personne.nom ?? '').trim();
+    const surnom = (personne.surnom ?? '').trim();
+
+    const value = `${prenom.charAt(0) || surnom.charAt(0) || ''}${nom.charAt(0) || ''}`
+      .trim()
+      .toUpperCase();
+
+    return value || '?';
+  }
+
+  calculerHeureFin(heureDebut: string, duree: number): string {
+    return calculerHeureFinUtil(heureDebut, duree);
+  }
+
+  getadresse(lieuId: number): string {
+    const lieu = this.listelieu.find((x: any) => +x.id === +lieuId);
+    if (!lieu) return '';
+
+    if (typeof lieu.adresse === 'string') {
+      return lieu.adresse;
     }
+
+    const adresse = lieu.adresse ?? {};
+    return [
+      adresse.adresse1,
+      adresse.adresse2,
+      adresse.adresse3,
+      adresse.Street,
+      adresse.code_postal,
+      adresse.PostCode,
+      adresse.ville,
+      adresse.City,
+    ]
+      .filter((x) => !!x)
+      .join(' ');
   }
 
-  // --- Helpers UI similaires au Menu
-  getLibelleProfil(p: string) {
-    return p === 'ADH' ? $localize`Adhérent` : $localize`Professeur`;
-  }
+  copierDansPressePapier(texte: string): void {
+    if (!texte) return;
 
-  calculerHeureFin(heure: string, duree: number): string {
-    return calculerHeureFin(heure, duree);
-  }
+    navigator.clipboard?.writeText(texte).catch(() => {
+      const textarea = document.createElement('textarea');
+      textarea.value = texte;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
 
-  trouverLieu(lieuId: number): string {
-    const l = this.listelieu.find((x) => +x.id === +lieuId);
-    return l ? l.nom : $localize`Lieu non trouvé`;
-  }
-
-  trouverCours(s: Seance_VM): string {
-    if (s.type_seance === 'ENTRAINEMENT') {
-      const c = this.listeCours.find((x) => x.id === s.cours);
-      return c?.nom ?? $localize`Cours non trouvé`;
-    } else {
-      return s.nom
-    }
-  }
-
-  getadresse(id: number): string {
-    const ad = this.listelieu.find((x) => x.id == id);
-    return ad ? `${ad.nom} ${ad.adresse.Street} ${ad.adresse.PostCode} ${ad.adresse.City}` : '';
-  }
-
-  copierDansPressePapier(txt: string) {
-    const errorService = ErrorService.instance;
-    navigator.clipboard
-      .writeText(txt)
-      .then(() => errorService.emitChange(errorService.OKMessage($localize`Adresse copiée :` + txt)))
-      .catch(() => {});
-  }
-
-  GotoSeance(id: number) {
-    this.router.navigate(['/seance'], { queryParams: { id } });
-  }
-  Voir(id: number) {
-    this.router.navigate(['/adherent'], { queryParams: { id } });
-  }
-  VoirMaSeance(seance: any) {
-    this.router.navigate(['/ma-seance'], { queryParams: { id: seance.seance_id } });
-  }
-
-  AfficherProfil(r: AdherentMenu) {
-    for (const x of this.Riders) x.afficher = x.id === r.id && x.profil === r.profil ? !x.afficher : false;
-  }
-
-
-  buildGroups(rider: AdherentMenu) {
-
-      const filtered = this.multifilters.transform(rider.MesSeances, rider.filters);
-    const map = new Map<
-      string,
-      {
-        cours: string;
-        items: MesSeances_VM[];
-        declare_present: number;
-        declare_absent: number;
-        declare_aucun: number;
-        reel_present: number;
-        reel_absent: number;
+      try {
+        document.execCommand('copy');
+      } finally {
+        document.body.removeChild(textarea);
       }
-    >();
+    });
+  }
+
+  GotoSeance(seanceId: number): void {
+    this.router.navigate(['/seance-edit'], { queryParams: { id: seanceId } });
+  }
+
+  Voir(personneId: number): void {
+    this.router.navigate(['/adherent-edit'], { queryParams: { id: personneId } });
+  }
+
+  VoirMaSeance(seance: any): void {
+    this.router.navigate(['/ma-seance'], { queryParams: { id: seance?.id ?? seance?.seance_id } });
+  }
+
+  buildGroups(rider: AdherentMenu): DashboardGroup[] {
+    const signature = this.getGroupSignature(rider);
+    const cached = this.groupCache.get(rider);
+
+    if (cached?.signature === signature) {
+      return cached.groups;
+    }
+
+    const filtered = this.multifilters.transform(rider.MesSeances ?? [], rider.filters) ?? [];
+    const map = new Map<string, DashboardGroup>();
 
     for (const ms of filtered) {
-      const key = ms.seance.cours_nom ?? this.trouverCours(ms.seance);
-      if (!map.has(key)) {
-        map.set(key, {
-          cours: key,
-          items: [],
-          declare_present: 0,
-          declare_absent: 0,
-          declare_aucun: 0,
-          reel_present: 0,
-          reel_absent: 0,
-        });
+      if (ms.seance?.statut && ms.seance.statut !== 'réalisée') {
+        continue;
       }
-      const g = map.get(key)!;
-      g.items.push(ms);
 
-      // Déclaré (inscription)
-      if (ms.statutInscription === 'présent' || ms.statutInscription === 'essai') g.declare_present++;
-      else if (ms.statutInscription === 'absent') g.declare_absent++;
-      else g.declare_aucun++;
+      const cours = this.getCoursLabel(ms);
+      const group = map.get(cours) ?? {
+        cours,
+        items: [],
+        declare_present: 0,
+        declare_absent: 0,
+        declare_aucun: 0,
+        reel_present: 0,
+        reel_absent: 0,
+      };
 
-      // Réel
-      console.log('ms', ms);
-      if (ms.statutPrésence === 'présent') g.reel_present++;
-      else if (ms.statutPrésence === 'absent') g.reel_absent++;
+      group.items.push(ms);
+      this.countDeclaration(group, ms);
+      this.countPresenceReelle(group, ms);
+
+      map.set(cours, group);
     }
 
-    // sortie triée par nom de cours
-    return Array.from(map.values()).sort((a, b) => a.cours.localeCompare(b.cours));
+    const groups = Array.from(map.values())
+      .map((g) => ({
+        ...g,
+        items: g.items.sort((a, b) => this.compareSeanceDate(a, b)),
+      }))
+      .sort((a, b) => a.cours.localeCompare(b.cours, 'fr'));
+
+    this.groupCache.set(rider, { signature, groups });
+    return groups;
+  }
+
+  private getGroupSignature(rider: AdherentMenu): string {
+    const filters = rider.filters as any;
+
+    return JSON.stringify({
+      ids: (rider.MesSeances ?? []).map((ms) => [
+        ms.seance?.id,
+        ms.statutInscription,
+        (ms as any).statutPrésence ?? (ms as any).statutPresence ?? (ms as any).statut_presence,
+      ]),
+      filters: {
+        nom: filters?.filter_nom ?? null,
+        dateAvant: filters?.filter_date_avant ?? null,
+        dateApres: filters?.filter_date_apres ?? null,
+        statut: filters?.filter_statut ?? null,
+        lieu: filters?.filter_lieu ?? null,
+        prof: filters?.filter_prof ?? null,
+        groupe: filters?.filter_groupe ?? null,
+      },
+    });
+  }
+
+  private getCoursLabel(ms: MesSeances_VM): string {
+    const seance: any = ms.seance ?? {};
+    return seance.cours_nom || seance.nom || $localize`Cours non renseigné`;
+  }
+
+  private countDeclaration(group: DashboardGroup, ms: MesSeances_VM): void {
+    const statut = ms.statutInscription;
+
+    if (statut === 'présent' || statut === 'essai') {
+      group.declare_present++;
+      return;
+    }
+
+    if (statut === 'absent') {
+      group.declare_absent++;
+      return;
+    }
+
+    group.declare_aucun++;
+  }
+
+  private countPresenceReelle(group: DashboardGroup, ms: MesSeances_VM): void {
+    const statut =
+      (ms as any).statutPrésence ??
+      (ms as any).statutPresence ??
+      (ms as any).statut_presence ??
+      (ms as any).presence ??
+      null;
+
+    if (statut === 'présent' || statut === true) {
+      group.reel_present++;
+      return;
+    }
+
+    if (statut === 'absent' || statut === false) {
+      group.reel_absent++;
+    }
+  }
+
+  private compareSeanceDate(a: MesSeances_VM, b: MesSeances_VM): number {
+    return this.getSeanceTimestamp(a) - this.getSeanceTimestamp(b);
+  }
+
+  private getSeanceTimestamp(ms: MesSeances_VM): number {
+    const seance: any = ms.seance ?? {};
+    const date = new Date(seance.date_seance ?? seance.date ?? 0);
+    const [h, m] = `${seance.heure_debut ?? '00:00'}`.split(':').map(Number);
+
+    date.setHours(h || 0, m || 0, 0, 0);
+    return date.getTime();
   }
 }

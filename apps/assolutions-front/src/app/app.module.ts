@@ -31,12 +31,14 @@ import { AdherentEditorComponent } from './adherent/detail/adherent-editor.compo
 import { MailTemplatePreviewComponent } from './mail-template-preview/mail-template-preview.component';
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { GroupeComponent } from './groupe/groupe.component';
+import { AddInfoEditorComponent } from './add-info-editor/add-info-editor.component';
+import { DashboardComponent } from './tdb/dashboard.component';
 @NgModule({
   declarations: [
     AppComponent,
     AppComponent, LoginComponent, MenuComponent,MultifiltersMenuPipe, CustomButtonComponent, SeanceComponent, SeanceEditorComponent, 
-    SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent, MailTemplatePreviewComponent, MaSeanceComponent,
-    NotifJechaComponent, DureeHHMMPipe, AdherentComponent, AdherentListComponent, AdherentEditorComponent, GroupeComponent],
+    SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent, MailTemplatePreviewComponent, MaSeanceComponent, DashboardComponent,
+    NotifJechaComponent, DureeHHMMPipe, AdherentComponent, AdherentListComponent, AdherentEditorComponent, GroupeComponent, AddInfoEditorComponent],
   imports: [
     BrowserModule,
     HttpClientModule,

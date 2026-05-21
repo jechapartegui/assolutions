@@ -6,7 +6,6 @@ import { InscriptionSeanceApiService } from '../services/inscription-seance-api.
 import { AdherentMapper } from '../mapper/adherent.mapper';
 
 import { Personne } from '@shared/lib/personne.interface';
-import { Saison } from '@shared/lib/saison.interface';
 import { InscriptionSaison } from '@shared/lib/inscription-saison.interface';
 import { InscriptionSeance } from '@shared/lib/inscription-seance.interface';
 import { LienGroupe_VM } from '@shared/lib/groupes.interface';
@@ -23,6 +22,7 @@ import { PersonneApiService } from '../services/personne-api.service';
 import { LienGroupeApiService } from '../services/lien-groupe-api.service';
 import { DocumentApiService } from '../services/document-api.service';
 import { ContactApiService, ContactDto } from '../services/contact-api.service';
+import { AddInfoApiService } from '../services/addinfo-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdherentRepository {
@@ -38,6 +38,7 @@ export class AdherentRepository {
     private readonly refDataRepository: RefDataRepository,
     private readonly liengroupeapi: LienGroupeApiService,
     private readonly documentapi: DocumentApiService,
+    private readonly addInfoApiService: AddInfoApiService,
   ) {}
 
 async loadPageData(saisonId: number): Promise<AdherentPageData> {
@@ -94,11 +95,23 @@ async loadPageData(saisonId: number): Promise<AdherentPageData> {
     const inscriptionSaisonActive =
       (inscriptionsSaisonByPersonne[personneId] ?? []).find(x => x.saison_id === saisonId) ?? null;
 
-    const groupeIds = groupeByPersonne[personneId] ?? [];
-    const groupesActifs: LienGroupe_VM[] = groupeIds
-      .map((groupeId: number) => groupesById[groupeId])
-      .filter(Boolean)
-      .map((groupe: any) => this.mapper.toLienGroupeVm(groupe));
+   const groupeIds = (groupeByPersonne[personneId] ?? []).map((id: any) => Number(id));
+
+const groupesActifs: LienGroupe_VM[] = groupeIds
+  .map((groupeId: number) => {
+    const groupe = groupesById[groupeId];
+
+    if (!groupe) {    
+      return null;
+    }
+
+    return {
+      ...this.mapper.toLienGroupeVm(groupe),
+      id: groupeId,
+      groupe_id: groupeId,
+    } as LienGroupe_VM;
+  })
+  .filter((groupe): groupe is LienGroupe_VM => !!groupe);
      const contactById: Record<number, ContactDto> = {};
   for (const cont of contactslist) {
     contactById[cont.object_id] = cont;
@@ -121,25 +134,29 @@ async loadPageData(saisonId: number): Promise<AdherentPageData> {
 }
 
   async loadAdherentDetail(id: number, saisonId: number): Promise<AdherentDetail_VM> {
-    const [personne, inscriptionsSaison, inscriptionsSeance, groupesParSaison, liste_groupes, contacts] = await Promise.all([
+    const [personne, inscriptionsSaison, inscriptionsSeance, groupesParSaison, liste_groupes, contacts, photosByPersonne] = await Promise.all([
       this.personneapi.get(id),
       this.loadInscriptionsSaisonForPersonne(id),
       this.loadInscriptionsSeanceForPersonne(id, saisonId),
       this.liengroupeapi.lienGroupeByPersonne(id, saisonId),
       this.refDataRepository.getGroupes(saisonId),
       this.contactservice.list_by_id([id]),
+      this.documentapi.photo_by_id([id]),
     ]);
 
 
-    return this.mapper.toAdherentDetailVm(
-      personne,
-      inscriptionsSaison,
-      inscriptionsSeance,
-      groupesParSaison,
-      contacts ?? [],
-      saisonId,
-liste_groupes,
-    );
+     const detail = this.mapper.toAdherentDetailVm(
+    personne,
+    inscriptionsSaison,
+    inscriptionsSeance,
+    groupesParSaison,
+    contacts ?? [],
+    saisonId,
+    liste_groupes,
+  );
+  detail.photo = photosByPersonne?.[id] ?? null;
+
+  return detail;
   }
 
   async createAdherent(vm: AdherentDetail_VM): Promise<AdherentDetail_VM> {
@@ -151,10 +168,14 @@ liste_groupes,
       gender: !!vm.sexe,
       address: JSON.stringify(vm.adresse) ?? JSON.stringify(new Adresse()),
       archive: !!vm.archive,
+      photo: vm.photo ?? null,
     };
+    const saved = await this.personneapi.create(dto);
 
-    const created = await this.personneapi.create(dto);
-    return this.loadAdherentDetail(created.id, vm.inscriptionsSaison?.find(x => x.active)?.saison_id ?? 0);
+await this.documentapi.setPhoto(saved.id, vm.photo ?? null, 'member');
+
+return this.loadAdherentDetail(saved.id, vm.inscriptionsSaison?.find(x => x.active)?.saison_id ?? 0);;
+    
   }
 
   async updateAdherent(vm: AdherentDetail_VM, saisonId: number): Promise<AdherentDetail_VM> {
@@ -165,10 +186,11 @@ liste_groupes,
       nickname: vm.surnom ?? null,
       gender: !!vm.sexe,
       address: JSON.stringify(vm.adresse) ?? '',
-      archive: !!vm.archive,
+      archive: !!vm.archive,photo: vm.photo ?? null,
     };
 
     await this.personneapi.update(vm.id, dto);
+await this.documentapi.setPhoto(vm.id, vm.photo ?? null, 'member');
     return this.loadAdherentDetail(vm.id, saisonId);
   }
 

@@ -1,132 +1,146 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
-import { catchError, from, Observable, of, switchMap } from 'rxjs';
+import { catchError, from, map, Observable, of, switchMap } from 'rxjs';
+
 import { AppStore } from './app.store';
+import { AuthApiService, LoginResponse } from '../services/auth-api.service';
+import { ProjetView } from '@shared/index';
 import type { AppMode } from '@shared/lib/compte.interface';
-import { AuthApiService } from '../services/auth-api.service';
+import { AdhesionApiService } from '../services/adhesion-api.service';
 
 type AuthRule = {
-  modes?: AppMode[];         // ex: ['ADMIN'] ou ['APPLI']
+  modes?: AppMode[];
   requireProf?: boolean;
   requireEssai?: boolean;
-  requireProject?: boolean;  // si tu veux forcer un projet sélectionné
+  requireProject?: boolean;
 };
+
+
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
   private meAlreadyTried = false;
 
   constructor(
-    private loginService: AuthApiService,
-    private store: AppStore,
-    private router: Router
+    private readonly loginService: AuthApiService,
+    private readonly adherentService : AdhesionApiService,
+    private readonly store: AppStore,
+    private readonly router: Router,
   ) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-    const token = localStorage.getItem('auth_token');
-    // 1) Pas de token => pas connecté
-    if (!token) {
-      this.meAlreadyTried = false;
-      this.gotoLogin(state.url);
-      return of(false);
-    }
+canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
+  const token = localStorage.getItem('auth_token');
 
-    // 2) Déjà connecté (store OK) => juste check access
-    if (this.store.isLoggedIn()) {
-      const ok = this.checkAccess(route);
-      if (!ok) this.gotoUnauthorizedHome();
-      return of(ok);
-    }
-
-    // 3) Token présent mais store vide => tenter /auth/me une seule fois
-    if (this.meAlreadyTried) {
-      this.gotoLogin(state.url);
-      return of(false);
-    }
-    this.meAlreadyTried = true;
-
-    return from(this.loginService.me()).pipe(
-switchMap((me: any) => {
-  console.log('AUTH ME RESPONSE', me);
-
-  const projects = me?.projects ?? [];
-  const selectedProjectId = this.restoreSelectedProjectId(projects);
-
-  this.store.setSession({
-    token,
-    mode: me.mode ?? 'APPLI',
-    compte: me.compte,
-    projects,
-    selectedProjectId,
-  } as any);
-
-  if (selectedProjectId) {
-    this.store.selectProject(selectedProjectId);
+  if (!token) {
+    this.meAlreadyTried = false;
+    this.gotoLogin(state.url);
+    return of(false);
   }
 
-  console.log('STORE AFTER ME', {
-    isLoggedIn: this.store.isLoggedIn(),
-    mode: this.store.mode(),
-    selectedProject: this.store.selectedProject(),
-    projects,
-  });
+  if (this.store.isLoggedIn()) {
+    const ok = this.checkAccess(route);
 
-  const ok = this.checkAccess(route);
-  console.log('ACCESS OK ?', ok, route.routeConfig?.path, route.data);
+    if (!ok) {
+      this.gotoUnauthorizedHome();
+    }
 
-  if (!ok) this.gotoUnauthorizedHome();
-  return of(ok);
-}),
-      catchError((err) => {
-        console.log('AuthGuard: /auth/me failed', err);
-        this.store.clearSession();
-        this.meAlreadyTried = false;
-        this.gotoLogin(state.url);
-        return of(false);
-      })
-    );
+    return of(ok);
   }
 
-  private gotoLogin(redirectUrl: string) {
-    this.router.navigate(['/login'], { queryParams: { redirect: redirectUrl } });
+  if (this.meAlreadyTried) {
+    this.gotoLogin(state.url);
+    return of(false);
   }
 
-  private restoreSelectedProjectId(projects: any[]): number | null {
+  this.meAlreadyTried = true;
+
+return from(this.loginService.me()).pipe(
+  switchMap((me: LoginResponse): Observable<boolean> =>
+    from(this.adherentService.get() as Promise<ProjetView[]>).pipe(
+      map((projects: ProjetView[]): boolean => {
+        const selectedProjectId = this.restoreSelectedProjectId(projects);
+
+        this.store.setSession({
+          token,
+          mode: me.mode,
+          compte: me.compte,
+          projects,
+          selectedProjectId,
+          rights: projects.find((x) => x.id === selectedProjectId)?.rights ?? null,
+        });
+
+        const ok = this.checkAccess(route);
+
+        if (!ok) {
+          this.gotoUnauthorizedHome();
+          return false;
+        }
+
+        return true;
+      }),
+    ),
+  ),
+  catchError((): Observable<boolean> => {
+    this.store.clearSession();
+    this.meAlreadyTried = false;
+    this.gotoLogin(state.url);
+    return of(false);
+  }),
+);
+}
+
+  private restoreSelectedProjectId(projects: ProjetView[]): number | null {
     const raw = localStorage.getItem('selected_projet');
-    const id = raw ? Number(raw) : NaN;
+    const selectedProjectId = raw ? Number(raw) : NaN;
 
-    if (!Number.isNaN(id) && projects?.some((p: any) => p.id === id)) return id;
-    if (projects?.length === 1) return projects[0].id;
+    if (
+      !Number.isNaN(selectedProjectId) &&
+      projects.some((p) => Number(p.id) === Number(selectedProjectId))
+    ) {
+      return selectedProjectId;
+    }
+
+    if (projects.length === 1) {
+      return projects[0].id;
+    }
 
     return null;
   }
 
-private checkAccess(route: ActivatedRouteSnapshot): boolean {
-  const rule = (route.data?.['auth'] ?? {}) as AuthRule;
+  private checkAccess(route: ActivatedRouteSnapshot): boolean {
+    const rule = (route.data?.['auth'] ?? {}) as AuthRule;
 
-  if (rule.modes?.length) {
-    const mode = this.store.mode();
-    if (!rule.modes.includes(mode as any)) {
-      console.log('ACCESS DENIED: bad mode', { mode, allowed: rule.modes });
+    if (rule.modes?.length) {
+      const mode = this.store.mode();
+
+      if (!rule.modes.includes(mode)) {
+        return false;
+      }
+    }
+
+    if (rule.requireProject && !this.store.selectedProject()) {
       return false;
     }
+
+    if (rule.requireProf && !this.store.isProf()) {
+      return false;
+    }
+
+    return true;
   }
 
-  if (rule.requireProject && !this.store.selectedProject()) {
-    console.log('ACCESS DENIED: project required but none selected');
-    return false;
+  private gotoLogin(redirectUrl: string): void {
+    this.router.navigate(['/login'], {
+      queryParams: { redirect: redirectUrl },
+    });
   }
 
-  if (rule.requireProf && !this.store.isProf()) {
-    console.log('ACCESS DENIED: prof required');
-    return false;
-  }
+  private gotoUnauthorizedHome(): void {
+    if (this.store.mode() === 'ADMIN') {
+      this.router.navigate(['/menu-admin']);
+      return;
+    }
 
-  return true;
-}
-
-  private gotoUnauthorizedHome() {
-    if (this.store.mode() === 'ADMIN') this.router.navigate(['/menu-admin']);
-    else this.router.navigate(['/menu']);
+    this.router.navigate(['/menu']);
   }
 }

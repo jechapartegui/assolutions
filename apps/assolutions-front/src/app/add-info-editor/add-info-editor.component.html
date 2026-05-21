@@ -1,0 +1,114 @@
+<section class="box editor-box" *ngIf="items.length || availableFields.length">
+  <div class="editor-box-title-row">
+    <h3 class="subtitle is-6 has-text-primary mb-0">
+      Informations complémentaires
+    </h3>
+  </div>
+
+  <div class="editor-fields editor-fields--two" *ngIf="items.length">
+    <div class="field" *ngFor="let item of items">
+      <label class="label">{{ item.label }}</label>
+
+      <ng-container [ngSwitch]="getFieldKind(item.fieldType)">
+        <input
+          *ngSwitchCase="'number'"
+          class="input"
+          type="number"
+          [(ngModel)]="item.value"
+        />
+
+        <input
+          *ngSwitchCase="'date'"
+          class="input"
+          type="date"
+          [(ngModel)]="item.value"
+        />
+
+        <input
+          *ngSwitchCase="'email'"
+          class="input"
+          type="email"
+          [(ngModel)]="item.value"
+        />
+
+        <input
+          *ngSwitchCase="'phone'"
+          class="input"
+          type="tel"
+          [(ngModel)]="item.value"
+        />
+
+        <input
+          *ngSwitchCase="'url'"
+          class="input"
+          type="url"
+          [(ngModel)]="item.value"
+        />
+
+        <label *ngSwitchCase="'boolean'" class="checkbox">
+          <input type="checkbox" [(ngModel)]="item.boolValue" />
+          <span> Oui</span>
+        </label>
+
+        <textarea
+          *ngSwitchCase="'textarea'"
+          class="textarea"
+          rows="3"
+          [(ngModel)]="item.value"
+        ></textarea>
+
+        <div *ngSwitchCase="'select'" class="select is-fullwidth">
+          <select [(ngModel)]="item.value">
+            <option value="">Non renseigné</option>
+            <option *ngFor="let option of item.options" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
+
+        <input
+          *ngSwitchDefault
+          class="input"
+          type="text"
+          [(ngModel)]="item.value"
+        />
+      </ng-container>
+
+      <button
+        class="button is-small is-light mt-2"
+        type="button"
+        (click)="removeItem(item)"
+      >
+        Retirer
+      </button>
+    </div>
+  </div>
+
+  <div class="field mt-3" *ngIf="availableFields.length">
+    <label class="label">Ajouter une information</label>
+
+    <div class="field has-addons">
+      <div class="control is-expanded">
+        <div class="select is-fullwidth">
+          <select [(ngModel)]="selectedFieldId">
+            <option [ngValue]="0">Choisir un champ</option>
+            <option *ngFor="let field of availableFields" [ngValue]="field.id">
+              {{ field.text }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control">
+        <button
+          class="button is-primary is-light"
+          type="button"
+          [disabled]="!selectedFieldId"
+          (click)="addSelectedField()"
+        >
+          Ajouter
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

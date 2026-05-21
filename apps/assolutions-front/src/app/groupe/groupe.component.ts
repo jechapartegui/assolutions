@@ -4,7 +4,7 @@ import { ErrorService } from '../../services/error.service';
 import { AppStore } from '../app.store';
 import { GroupeStore } from '../../store/groupe.store';
 import { AdherentListItem_VM } from '../../vm/adherent-page.vm';
-import { GroupeListItem_VM } from '../../vm/groupe-page.vm';
+import { Groupe } from '@shared/index';
 
 @Component({
   standalone: false,
@@ -13,6 +13,10 @@ import { GroupeListItem_VM } from '../../vm/groupe-page.vm';
   styleUrls: ['./groupe.component.css'],
 })
 export class GroupeComponent implements OnInit {
+  /**
+   * Petit bouton rouge nucléaire de debug :
+   * dans la console navigateur, lancer : window.groupeStore.debugCurrentState()
+   */
   constructor(
     public readonly groupeStore: GroupeStore,
     private readonly router: Router,
@@ -40,7 +44,7 @@ export class GroupeComponent implements OnInit {
     }
   }
 
-  selectedGroupe(): GroupeListItem_VM | null {
+  selectedGroupe(): Groupe | null {
     return this.groupeStore.selectedGroupe();
   }
 
@@ -73,7 +77,7 @@ export class GroupeComponent implements OnInit {
     }
   }
 
-  async deleteGroupe(groupe: GroupeListItem_VM): Promise<void> {
+  async deleteGroupe(groupe: Groupe): Promise<void> {
     const count = this.countMembers(groupe.id);
     const confirmDelete = window.confirm(
       count > 0

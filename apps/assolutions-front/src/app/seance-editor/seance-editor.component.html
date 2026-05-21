@@ -41,6 +41,25 @@
   <span class="icon"><i class="fas fa-copy"></i></span>
   <span>Dupliquer</span>
 </button>
+<button
+  *ngIf="seance.id > 0"
+  class="button is-info is-light"
+  type="button"
+  (click)="openMaSeance()"
+>
+  <span class="icon"><i class="fas fa-binoculars"></i></span>
+  <span>Ma séance</span>
+</button>
+
+<button
+  *ngIf="seance.id > 0"
+  class="button is-success is-light"
+  type="button"
+  (click)="copyWhatsappSurvey()"
+>
+  <span class="icon"><i class="fab fa-whatsapp"></i></span>
+  <span>Sondage</span>
+</button>
       <button
   *ngIf="isAdmin && seance.id > 0"
   class="button is-danger is-light"
@@ -217,6 +236,11 @@
         </div>
       </section>
 
+    <app-add-info-editor
+  #addInfoEditor
+  [objectType]="'SEANCE'"
+  [objectId]="seance.id"
+></app-add-info-editor>
       <!-- Paramètres -->
       <section class="box editor-box">
         <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Paramètres</h3>

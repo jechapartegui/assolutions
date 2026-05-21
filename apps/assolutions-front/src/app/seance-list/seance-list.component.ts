@@ -3,6 +3,7 @@ import { Seance_VM } from '@shared/index';
 import { SeancePageVm } from '../../vm/seance-page.vm';
 import { SeanceStore } from '../../store/seance.store';
 import { SeanceMapper } from '../../mapper/seance.mapper';
+import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/services/excel-export.service';
 
 @Component({
   selector: 'app-seance-list',
@@ -19,6 +20,7 @@ export class SeanceListComponent {
   constructor(
     public readonly store: SeanceStore,
     private readonly mapper: SeanceMapper,
+    private readonly excel: ExcelExportService
   ) {}
 isSelected(id: number): boolean {
   return (this.vm.selectedIds ?? []).includes(id);
@@ -26,6 +28,127 @@ isSelected(id: number): boolean {
 
 toggleSelection(id: number): void {
   this.store.toggleSelectedSeance(id);
+}
+exportExcel(): void {
+  const rows = this.vm.list ?? [];
+
+  const columns: ExcelColumn<Seance_VM>[] = [
+    {
+      header: $localize`:@@common.id:ID`,
+      value: s => s.id
+    },
+
+    {
+      header: $localize`:@@session.name:Séance`,
+      value: s => s.nom
+    },
+
+    {
+      header: $localize`:@@course.name:Cours`,
+      value: s => s.cours_nom ?? ''
+    },
+
+    {
+      header: $localize`:@@session.type:Type`,
+      value: s => s.type_seance
+    },
+
+    {
+      header: $localize`:@@session.date:Date`,
+      value: s => this.dateOnly(s.date_seance)
+    },
+
+    {
+      header: $localize`:@@session.start:Heure début`,
+      value: s => s.heure_debut
+    },
+
+    {
+      header: $localize`:@@session.end:Heure fin`,
+      value: s => s.heure_fin
+    },
+
+    {
+      header: $localize`:@@course.duration:Durée`,
+      value: s => s.duree_seance
+    },
+
+    {
+      header: $localize`:@@place.name:Lieu`,
+      value: s => s.lieu_nom ?? ''
+    },
+
+    {
+      header: $localize`:@@group.list:Groupes`,
+      value: s => (s.groupes ?? []).map(g => g.nom).join(', ')
+    },
+
+    {
+      header: $localize`:@@teacher.list:Professeurs`,
+      value: s => (s.seanceProfesseurs ?? [])
+        .map(p => `${p.prenom ?? ''} ${p.nom ?? ''}`.trim())
+        .join(', ')
+    },
+
+    {
+      header: $localize`:@@session.status:Statut`,
+      value: s => s.statut
+    },
+
+    {
+      header: $localize`:@@member.minAge:Âge minimum`,
+      value: s => s.age_minimum
+    },
+
+    {
+      header: $localize`:@@member.maxAge:Âge maximum`,
+      value: s => s.age_maximum
+    },
+
+    {
+      header: $localize`:@@place.maximum:Places maximum`,
+      value: s => s.place_maximum
+    },
+
+    {
+      header: $localize`:@@trial.allowed:Essai possible`,
+      value: s => s.essai_possible
+    },
+
+    {
+      header: $localize`:@@trial.maximum:Nb essais`,
+      value: s => s.nb_essai_possible
+    },
+
+    {
+      header: $localize`:@@meeting.point:RDV`,
+      value: s => s.rdv
+    },
+
+    {
+      header: $localize`:@@session.info:Informations`,
+      value: s => s.info_seance
+    },
+
+    {
+      header: $localize`:@@attendance.display:Afficher présents`,
+      value: s => s.afficher_present
+    },
+
+    {
+      header: $localize`:@@convocation.nominative:Convocation nominative`,
+      value: s => s.convocation_nominative
+    },
+  ];
+
+  this.excel.export('seances', rows, columns);
+}
+private dateOnly(value: Date | string | null | undefined): string {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return '';
+
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 }
 
 toggleMultiSelectMode(): void {

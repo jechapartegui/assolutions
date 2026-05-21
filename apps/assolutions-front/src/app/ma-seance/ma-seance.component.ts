@@ -491,140 +491,135 @@ this.All = this.MapToFullInscriptionSeance_VM(
     }
   }
 
-  LoadLogin(compte: Compte) {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger les adhérents de mon compte`;
-    this.libellechargeradherent = $localize`Chargement des adhérents liés à mon compte...`;
-    this.login = compte.login;
+async LoadLogin(compte: Compte): Promise<void> {
+  const errorService = ErrorService.instance;
 
-    const hasReponse = this.reponse !== null && this.reponse !== undefined;
-    const statInsAuto: InscriptionStatus_VM | null = !hasReponse
-      ? null
-      : this.reponse
-        ? InscriptionStatus_VM.PRESENT
-        : InscriptionStatus_VM.ABSENT;
+  this.action = $localize`Charger les adhérents de mon compte`;
+  this.libellechargeradherent = $localize`Chargement des adhérents liés à mon compte...`;
+  this.login = compte.login;
 
-    if (!this.adherent) {
-      this.inscriptionserv
-        .GetAdherentCompte(this.login!, this.thisSeance.id)
-        .then((fis: FullInscriptionSeance_VM[]) => {
-          fis.forEach((p) => Personne_VM.bakeLibelle(p.person));
-          this.MesAdherents = fis;
-          if (!fis || fis.length === 0) {
-            this.libellechargeradherent = $localize`Aucun adhérent lié à ce compte n'est inscrit à cette séance.`;
-          }
+  const hasReponse = this.reponse !== null && this.reponse !== undefined;
 
-          if (hasReponse && statInsAuto !== null && fis.length) {
-            this.action = $localize`Mise à jour des présences`;
-            let errorGlobal = false;
+  const statInsAuto: InscriptionStatus_VM | null = !hasReponse
+    ? null
+    : this.reponse
+      ? InscriptionStatus_VM.PRESENT
+      : InscriptionStatus_VM.ABSENT;
 
-            const promises = fis.map((ins) => {
-              const oldStatut = ins.statut_inscription;
+  try {
+    const inscriptions = await this.inscriptionserv.GetAdherentCompte(
+      this.login!,
+      this.thisSeance.id,
+    ) as InscriptionSeance[];
 
-              ins.statut_inscription = statInsAuto;
+    const personneIds = [
+      ...new Set((inscriptions ?? []).map(i => Number(i.personne_id))),
+    ];
 
-              const dto: UpdateInscriptionSeanceDto = {
-                date_inscription: ins.date_inscription ?? new Date(),
-                statut_inscription: ins.statut_inscription,
-                statut_seance: ins.statut_seance ?? null,
-              };
+    const personnes = personneIds.length
+      ? await this.personneapi.list_by_id(personneIds)
+      : [];
 
-              return this.inscriptionserv
-                .update(ins.personne_id, this.thisSeance.id, dto)
-                .then((ok) => {
-                  if (!ok) {
-                    ins.statut_inscription = oldStatut;
-                    errorGlobal = true;
-                  }
-                })
-                .catch((err) => {
-                  ins.statut_inscription = oldStatut;
-                  errorGlobal = true;
-                  const n = errorService.CreateError(this.action, err);
-                  errorService.emitChange(n);
-                });
-            });
+    const personnesById = new Map(
+      personnes.map(p => [Number(p.id), p]),
+    );
 
-            Promise.all(promises).then(() => {
-              if (!errorGlobal) {
-                const n = errorService.OKMessage(this.action);
-                errorService.emitChange(n);
-              }
-              this.MesAdherents = [...this.MesAdherents];
-              this.All = this.All.map((x) => {
-                const updated = this.MesAdherents.find(
-                  (m) => m.personne_id === x.personne_id,
-                );
-                return updated
-                  ? { ...x, statut_inscription: updated.statut_inscription }
-                  : x;
-              });
-              this.cdr.detectChanges();
-            });
-          } else {
-            this.cdr.detectChanges();
-          }
-        })
-        .catch((error) => {
-          const n = errorService.CreateError(this.action, error);
-          errorService.emitChange(n);
-        });
-    } else {
-      this.inscriptionserv
-        .GetAdherentCompte(this.store.compte().login, this.thisSeance.id)
-        .then((liste) => {
-          (liste ?? []).forEach((obj: any) =>
-            Personne_VM.bakeLibelle(obj.person),
-          );
-          this.MesAdherents = liste ?? [];
+    let fullInscriptions: FullInscriptionSeance_VM[] = (inscriptions ?? [])
+      .map(inscription => {
+        const person = personnesById.get(Number(inscription.personne_id));
 
-          if (hasReponse && statInsAuto !== null && this.MesAdherents[0]) {
-            const ins = this.MesAdherents[0];
-            const oldStatut = ins.statut_inscription;
+        if (!person) {
+          return null;
+        }
 
-            this.action = $localize`Mise à jour des présences`;
-            ins.statut_inscription = statInsAuto;
+        Personne_VM.bakeLibelle(person);
 
-            const dto: UpdateInscriptionSeanceDto = {
-              date_inscription: ins.date_inscription ?? new Date(),
-              statut_inscription: ins.statut_inscription,
-              statut_seance: ins.statut_seance ?? null,
-            };
+        return {
+          ...inscription,
+          person: this.adherentmapper.toPersonneVm(person) as Personne_VM,
+          isVisible: false,
+        } as FullInscriptionSeance_VM;
+      })
+      .filter((x): x is FullInscriptionSeance_VM => x !== null);
 
-            this.inscriptionserv
-              .update(ins.personne_id, this.thisSeance.id, dto)
-              .then((ok_) => {
-                if (!ok_) {
-                  ins.statut_inscription = oldStatut;
-                  const n = errorService.UnknownError(this.action);
-                  errorService.emitChange(n);
-                } else {
-                  const n = errorService.OKMessage(this.action);
-                  errorService.emitChange(n);
-                }
-                this.MesAdherents = [...this.MesAdherents];
-                this.All = this.All.map((x) =>
-                  x.personne_id === ins.personne_id
-                    ? { ...x, statut_inscription: ins.statut_inscription }
-                    : x,
-                );
-                this.cdr.detectChanges();
-              })
-              .catch((error) => {
-                ins.statut_inscription = oldStatut;
-                const n = errorService.CreateError(this.action, error);
-                errorService.emitChange(n);
-              });
-          } else {
-            this.cdr.detectChanges();
-          }
-        })
-        .catch((error) => {
-          const n = errorService.CreateError(this.action, error);
-          errorService.emitChange(n);
-        });
+    if (this.adherent) {
+      fullInscriptions = fullInscriptions.filter(
+        x => Number(x.personne_id) === Number(this.adherent),
+      );
     }
+
+    this.MesAdherents = fullInscriptions;
+
+    if (!this.MesAdherents.length) {
+      this.libellechargeradherent =
+        $localize`Aucun adhérent lié à ce compte n'est inscrit à cette séance.`;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (hasReponse && statInsAuto !== null) {
+      this.action = $localize`Mise à jour des présences`;
+
+      let errorGlobal = false;
+
+      const promises = this.MesAdherents.map(async ins => {
+        const oldStatut = ins.statut_inscription;
+
+        ins.statut_inscription = statInsAuto;
+
+        const dto: UpdateInscriptionSeanceDto = {
+          date_inscription: ins.date_inscription ?? new Date(),
+          statut_inscription: ins.statut_inscription,
+          statut_seance: ins.statut_seance ?? null,
+        };
+
+        try {
+          const ok = await this.inscriptionserv.update(
+            ins.personne_id,
+            this.thisSeance.id,
+            dto,
+          );
+
+          if (!ok) {
+            ins.statut_inscription = oldStatut;
+            errorGlobal = true;
+          }
+        } catch (err) {
+          ins.statut_inscription = oldStatut;
+          errorGlobal = true;
+
+          const n = errorService.CreateError(this.action, err);
+          errorService.emitChange(n);
+        }
+      });
+
+      await Promise.all(promises);
+
+      if (!errorGlobal) {
+        const n = errorService.OKMessage(this.action);
+        errorService.emitChange(n);
+      }
+
+      this.MesAdherents = [...this.MesAdherents];
+
+      this.All = this.All.map(x => {
+        const updated = this.MesAdherents.find(
+          m => Number(m.personne_id) === Number(x.personne_id),
+        );
+
+        return updated
+          ? { ...x, statut_inscription: updated.statut_inscription }
+          : x;
+      });
+    }
+
+    this.cdr.detectChanges();
+  } catch (error) {
+    const n = errorService.CreateError(this.action, error);
+    errorService.emitChange(n);
+    this.cdr.detectChanges();
   }
+}
 
   GetNbPersonne(): boolean {
     if (this.thisSeance.est_place_maximum) {

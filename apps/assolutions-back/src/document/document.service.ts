@@ -2,7 +2,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
-import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
+import { CreateDocumentDto, SetPhotoDto, UpdateDocumentDto } from './document.dto';
 import { DocumentEntity } from './document.entity';
 
 @Injectable()
@@ -58,5 +58,70 @@ async photoById(ids: number[]): Promise<{ [id: number]: string | null }> {
   }
 
   return result;
+}
+async setPhoto(dto: SetPhotoDto) {
+  const objet_type = dto.objet_type || 'member';
+
+  const existing = await this.repo.findOne({
+    where: {
+      objet_id: dto.objet_id,
+      objet_type,
+      typedoc: 'photo',
+    },
+  });
+
+  if (!dto.photo) {
+    if (existing) {
+      await this.repo.remove(existing);
+      await this.registry.remove('document', existing.id);
+    }
+
+    return { ok: true, photo: null };
+  }
+
+  const parsed = this.parseDataUrl(dto.photo);
+
+  const item =
+    existing ??
+    this.repo.create({
+      titre: 'Photo',
+      objet_id: dto.objet_id,
+      objet_type,
+      typedoc: 'photo',
+      storage_type: 'DB',
+      commentaire: null,
+      auteur: null,
+      file_path: null,
+    });
+
+  item.titre = 'Photo';
+  item.mimetype = parsed.mimetype;
+  item.file_data = parsed.buffer;
+  item.file_path = null;
+  item.storage_type = 'DB';
+
+  const saved = await this.repo.save(item);
+  await this.registry.ensure('document', saved.id);
+
+  return {
+    ok: true,
+    photo: `data:${saved.mimetype};base64,${saved.file_data?.toString('base64')}`,
+  };
+}
+
+private parseDataUrl(dataUrl: string): { mimetype: string; buffer: Buffer } {
+  const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
+
+  if (!match) {
+    return {
+      mimetype: 'image/jpeg',
+      buffer: Buffer.from(dataUrl, 'base64'),
+    };
+  }
+
+  return {
+    mimetype: match[1],
+    buffer: Buffer.from(match[2], 'base64'),
+  };
 }
 }

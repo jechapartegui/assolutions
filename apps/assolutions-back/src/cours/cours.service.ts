@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
 import { CreateCoursDto, UpdateCoursDto } from './cours.dto';
 import { CoursEntity } from './cours.entity';
+import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 
 @Injectable()
 export class CoursService {
@@ -11,6 +12,9 @@ export class CoursService {
     @InjectRepository(CoursEntity)
     private readonly repo: Repository<CoursEntity>,
     private readonly registry: RegistryService,
+
+    @InjectRepository(ContratProfEntity)
+    private readonly repoContratProf: Repository<ContratProfEntity>,
   ) {}
 
   listForProject(saison_id: number) {
@@ -24,6 +28,7 @@ export class CoursService {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException(`cours ${id} introuvable`);
     if (item.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
+  
     return item;
   }
 

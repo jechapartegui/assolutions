@@ -29,6 +29,7 @@ export class LienGroupeService {
     if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
   }
 
+
   async listForProject(projectId: number) {
     return this.repo
       .createQueryBuilder('l')
@@ -99,6 +100,12 @@ export class LienGroupeService {
     return { ok: true };
   }
 
+  async removeidfromgroupe(objectId: number, groupeId: number, type: string) {
+    const item = await this.repo.findOne({ where: { object_id: objectId, groupe_id: groupeId, object_type: type } });
+    if (!item) throw new NotFoundException(`lien_groupe introuvable pour object ${objectId} groupe ${groupeId} type ${type}`);
+    await this.repo.remove(item);
+  }
+
   async updateGroupesForSeance(seanceId: number, groupeIds: number[], projectId: number) {
     // on vérifie que tous les groupes appartiennent bien au projet
     for (const groupeId of groupeIds) {
@@ -117,11 +124,8 @@ export class LienGroupeService {
     await this.repo.save(newLiens);
   }
 
-  async updateGroupesForCours(coursId: number, groupeIds: number[], projectId: number) {
-    // on vérifie que tous les groupes appartiennent bien au projet
-    for (const groupeId of groupeIds) {
-      await this.assertGroupeInProject(groupeId, projectId);
-    }   
+  async updateGroupesForCours(coursId: number, groupeIds: number[]) {
+
     // on récupère les liens existants pour ce cours
     const existing = await this.repo.find({ where: { object_id: coursId, object_type: 'cours' } });
     const existingGroupeIds = existing.map(e => e.groupe_id);
@@ -140,7 +144,7 @@ export class LienGroupeService {
     const groupeIds = liens.map(l => l.groupe_id);
     if (groupeIds.length === 0) return [];
     const groupes = await this.groupesRepo.findBy({ id: In(groupeIds), saison_id: saisonId });
-    let retour  = [];
+    let retour: LienGroupeEntity[] = [];
    liens.forEach(lien => {
       const groupe = groupes.find(g => g.id === lien.groupe_id);
       if (!groupe) return; // le groupe n'est pas dans la saison demandée

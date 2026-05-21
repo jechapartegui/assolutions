@@ -6,6 +6,7 @@ export const environment = {
   defaultpassword:'',
   environment: 'prod',
   defaultloginProjet:'',
-  defaultloginpassword:''
+  defaultloginpassword:'',
+  frontUrl:'https://assolutions.fr'
   
 };

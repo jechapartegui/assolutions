@@ -35,10 +35,11 @@ export class CoursProfesseurApiService {
  listProfsByCoursId(coursId: number[]): Promise<Record<number, number[]>> {
   return this.api.POST<Record<number, number[]>>(`${this.base}/by-cours`, { coursId });
 }
-updatelist(coursId: number, profs: number[]): Promise<void> {
+updatelist(coursId: number, profs: number[], saisonId: number): Promise<void> {
     const payload = {
       coursId, 
-      profs
+      profs,
+      saisonId
     };
     return this.api.POST<void>(`${this.base}/updatelist`, payload);
   }

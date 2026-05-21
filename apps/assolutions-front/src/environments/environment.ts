@@ -11,7 +11,8 @@ export const environment = {
   defaultpassword:'',
   environment: 'dev',
   defaultloginProjet:'usivry.roller@gmail.com',
-  defaultloginpassword:'Yakalelo2211!'
+  defaultloginpassword:'Yakalelo2211!',
+  frontUrl:'http://localhost:2211'
   
 };
 

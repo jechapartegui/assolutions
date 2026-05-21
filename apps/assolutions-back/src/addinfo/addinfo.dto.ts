@@ -1,42 +1,40 @@
-﻿import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
-
-export class CreateAddinfoDto {
-  @IsInt()
-  object_id: number;
-
-  @IsString()
-  @MaxLength(50)
+﻿export class CreateAddinfoFieldDto {
   object_type: string;
-
-  @IsString()
-  @MaxLength(50)
   value_type: string;
-
-  @IsString()
   text: string;
-
-  // ✅ supprimé: project_id
 }
 
-export class UpdateAddinfoDto {
-  @IsOptional()
-  @IsInt()
-  object_id?: number;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(50)
+export class UpdateAddinfoFieldDto {
   object_type?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(50)
   value_type?: string;
-
-  @IsOptional()
-  @IsString()
   text?: string;
-
-  // ✅ supprimé: project_id
 }
 
+export class SetAddinfoValueDto {
+  object_type: string;
+  object_id: number;
+  field_id: number;
+  text: string;
+}
+
+export class UpdateAddinfoValueDto {
+  text?: string;
+}
+
+export class UpsertLovDto {
+  code: string; // STOCK, COMPTE...
+  lang: string; // FR, EN...
+  text: string; // JSON sérialisé
+  project_specific?: boolean;
+}
+
+export class CreateAddInfoValueDto {
+  object_type: string;
+  object_id: number;
+  field_id: number;
+  text: string;
+}
+
+export class UpdateAddInfoValueDto {
+  text?: string;
+}

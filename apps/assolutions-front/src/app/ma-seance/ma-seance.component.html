@@ -590,7 +590,7 @@
               type="button"
               class="button is-rounded"
               [ngClass]="potentiel.statut_seance === 'présent' ? 'is-primary' : 'is-outlined is-primary'"
-              (click)="MAJPresence(potentiel, isSeanceStatus ? null : true)"
+              (click)="MAJPresence(potentiel, potentiel.statut_seance === 'présent' ? null : true)"
               [disabled]="!GetNbPersonne() && potentiel.statut_seance !== 'présent'"
             >
               <i class="fas fa-check"></i>
@@ -599,7 +599,7 @@
               type="button"
               class="button is-rounded"
               [ngClass]="potentiel.statut_seance === 'absent' ? 'is-danger' : 'is-outlined is-danger'"
-              (click)="MAJPresence(potentiel, isSeanceStatus ? null : false)"
+              (click)="MAJPresence(potentiel, potentiel.statut_seance === 'absent' ? null : false)"
             >
               <i class="fas fa-times"></i>
             </button>

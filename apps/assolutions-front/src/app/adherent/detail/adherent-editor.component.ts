@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ValidationItem } from '@shared/lib/autres.interface';
@@ -27,6 +28,7 @@ import {
 } from '@shared/index';
 import { combineLatest, Subscription } from 'rxjs';
 import { AppStore } from '../../app.store';
+import { AddInfoEditorComponent } from '../../add-info-editor/add-info-editor.component';
 
 @Component({
   selector: 'app-adherent-editor',
@@ -38,7 +40,8 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() vm?: AdherentPageVm;
   @Input() isAdmin = false;
   @Output() back = new EventEmitter<void>();
-
+@ViewChild('addInfoEditor')
+addInfoEditor?: AddInfoEditorComponent;
   public rNom: ValidationItem = { key: true, value: '' };
   public rPrenom: ValidationItem = { key: true, value: '' };
   public loading = false;
@@ -132,7 +135,7 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
     adherent.inscriptionsSeance ??= [];
     adherent.groupesParSaison ??= [];
     adherent.adresse ??= new Adresse();
-
+adherent.photo ??= null;
     this.normalizePreferredContact();
     this.checkall();
   }
@@ -222,7 +225,12 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
     try {
       adherent.inscrit = this.hasSaisonActive;
 
-      await this.store.saveDetail();
+      const saved = await this.store.saveDetail();
+
+if (this.addInfoEditor && saved?.id > 0) {
+  this.addInfoEditor.objectId = saved.id;
+  await this.addInfoEditor.save();
+}
 
       errorService.emitChange(
         errorService.OKMessage(
@@ -501,4 +509,33 @@ private forceCompteIfNeeded(): void {
   trackBySaison = (_index: number, item: InscriptionSaison): number => {
     return item.saison_id ?? _index;
   };
+  get photoPreview(): string | null {
+  return this.adherent?.photo ?? null;
+}
+
+onPhotoSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+
+  if (!file || !this.adherent) return;
+
+  if (!file.type.startsWith('image/')) {
+    window.alert('Le fichier sélectionné doit être une image.');
+    input.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    this.adherent!.photo = reader.result as string;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+removePhoto(): void {
+  if (!this.adherent) return;
+  this.adherent.photo = null;
+}
 }

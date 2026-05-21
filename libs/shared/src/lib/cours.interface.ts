@@ -58,7 +58,6 @@ export class Cours_VM extends corelistobject {
   groupes: Groupe[] =[];
 }
 
-type IdMap<T> = Record<number, T>;
 
 export function mapCoursToVM(
   cours: Cours,
@@ -102,20 +101,12 @@ export function mapCoursToVM(
   // Lieu
   vm.lieu = listeLieux.find(l => l.id === vm.lieu_id) ?? ({} as Lieu_VM);
 
+  const listid = options?.contratsByCoursId?.[vm.id] ?? [];
   // ✅ Prof principal résolu par contrat_id
-  const profPrincipal = listeProfesseurs.find(p => p.contrat_id === vm.prof_principal_id);
-
+  const listep = listeProfesseurs.filter(p =>  listid.includes(p.id ?? 0) ) ?? [] ;
   // ✅ Profs liés résolus par contrat_id
-  const contratIds = options?.contratsByCoursId?.[vm.id] ?? [];
-  const linkedProfs = contratIds
-    .map(cid => listeProfesseurs.find(p => p.contrat_id === cid))
-    .filter((p): p is ProfLight_VM => !!p);
-
-  // On met le prof principal en premier et on évite les doublons
-  vm.professeursCours = [
-    ...(profPrincipal ? [profPrincipal] : []),
-    ...linkedProfs.filter(p => p.contrat_id !== profPrincipal?.contrat_id),
-  ];
+ 
+  vm.professeursCours = listep
 
   // Groupes
   const groupeIds = options?.groupesByCoursId?.[vm.id] ?? [];

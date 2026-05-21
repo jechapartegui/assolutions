@@ -3,6 +3,7 @@ import { Saison } from '@shared/lib/saison.interface';
 import { InscriptionSaison } from '@shared/lib/inscription-saison.interface';
 import { InscriptionSeance } from '@shared/lib/inscription-seance.interface';
 import { Groupe, LienGroupe_VM } from '@shared/lib/groupes.interface';
+import { AddInfoFormItem_VM } from '@shared/lib/addinfo.interface';
 
 export class AdherentFilterVm {
   filter_nom: string | null = null;
@@ -42,6 +43,7 @@ export class AdherentDetail_VM extends Personne_VM {
   inscriptionsSaison: InscriptionSaison[] = [];
   inscriptionsSeance: InscriptionSeance[] = [];
   groupesParSaison: LienGroupe_VM[] = [];
+  addInfos: AddInfoFormItem_VM[] = [];
 }
 
 export interface AdherentPageData {

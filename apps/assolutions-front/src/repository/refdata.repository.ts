@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Cours_VM, Groupe, Lieu_VM, ProfLight_VM } from '@shared/index';
+import { ContratProf, Cours_VM, Groupe, Lieu_VM, PersonneLight_VM, ProfLight_VM } from '@shared/index';
 import { mapCoursListToVM } from '@shared/lib/cours.interface';
 import { mapLieuxToVM } from '@shared/lib/lieu.interface';
 
@@ -78,7 +78,7 @@ async getProfs(
     const contrats = await this.contratProfApi.list(saisonId);
 
     const profIds = contrats
-      .map((c: any) => c.professeur_id)
+      .map((c: ContratProf) => c.professeur_id)
       .filter((id: unknown): id is number => typeof id === 'number');
 
     if (!profIds.length) {
@@ -88,8 +88,8 @@ async getProfs(
 
     const personnes = await this.personneApi.list_personnelight(profIds);
 
-    const profs: ProfLight_VM[] = personnes.map((p: any) => {
-      const contrat = contrats.find((c: any) => c.professeur_id === p.id);
+    const profs: ProfLight_VM[] = personnes.map((p: PersonneLight_VM) => {
+      const contrat = contrats.find((c: ContratProf) => c.professeur_id === p.id);
       return {
         ...p,
         contrat_id: contrat?.id ?? null,

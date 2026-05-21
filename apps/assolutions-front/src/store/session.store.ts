@@ -18,37 +18,34 @@ export class SessionStore {
   private readonly _language = signal(localStorage.getItem('language') ?? 'fr');
 
   readonly language = computed(() => this._language());
-  readonly isLoggedIn = computed(() => !!this.session());
+  readonly isLoggedIn = computed(() => this.session() !== null);
   readonly mode = computed(() => this.session()?.mode ?? 'APPLI');
   readonly compte = computed(() => this.session()?.compte ?? null);
   readonly projects = computed(() => this.session()?.projects ?? []);
 
-  readonly selectedProject = computed(() => {
-    const s = this.session();
-    if (!s?.selectedProjectId) return null;
-    return s.projects.find((p) => p.id === s.selectedProjectId) ?? null;
-  });
-
   readonly selectedProjectId = computed(() => {
     const s = this.session();
-    if (!s?.selectedProjectId) return this.publicProjetId();
-    return s.selectedProjectId;
+    return s ? s.selectedProjectId ?? null : this.publicProjetId();
+  });
+
+  readonly selectedProject = computed(() => {
+    const s = this.session();
+    const selectedProjectId = this.selectedProjectId();
+
+    if (!s || selectedProjectId == null) return null;
+
+    return s.projects.find((p) => Number(p.id) === Number(selectedProjectId)) ?? null;
   });
 
   readonly projectId = computed(() => this.selectedProjectId());
 
   readonly saisonActiveId = computed(() => {
-    const s = this.session();
-    if (!s?.selectedProjectId) return this.publicSaisonActiveId();
-
-    const projet = s.projects.find((p) => p.id === s.selectedProjectId);
+    const projet = this.selectedProject();
     return projet?.saison_active?.id ?? this.publicSaisonActiveId();
   });
 
   readonly saisonActive = computed(() => {
-    const s = this.session();
-    if (!s?.selectedProjectId) return null;
-    return s.projects.find((p) => p.id === s.selectedProjectId)?.saison_active ?? null;
+    return this.selectedProject()?.saison_active ?? null;
   });
 
   readonly rights = computed(() => {
@@ -65,13 +62,32 @@ export class SessionStore {
   readonly isAdmin = computed(() => this.mode() === 'ADMIN');
   readonly isProf = computed(() => !!this.rights()?.prof);
   readonly isVisible = computed(() => !!this.rights()?.visible);
-  readonly hasProjet = computed(() => (this.session()?.projects?.length ?? 0) > 0);
+  readonly hasProjet = computed(() => this.projects().length > 0);
 
-  setSession(s: Session): void {
-    this.session.set(s);
-    localStorage.setItem('auth_token', s.token);
-    localStorage.setItem('auth_mode', s.mode);
-    localStorage.setItem('selected_projet', String(s.selectedProjectId ?? ''));
+  setSession(session: Session): void {
+    const selectedProjectId = this.cleanSelectedProjectId(
+      session.selectedProjectId ?? null,
+      session.projects,
+    );
+
+    const cleanSession: Session = {
+      ...session,
+      selectedProjectId,
+    };
+
+    this.session.set(cleanSession);
+
+    if (cleanSession.token) {
+      localStorage.setItem('auth_token', cleanSession.token);
+    }
+
+    localStorage.setItem('auth_mode', cleanSession.mode);
+
+    if (selectedProjectId != null) {
+      localStorage.setItem('selected_projet', String(selectedProjectId));
+    } else {
+      localStorage.removeItem('selected_projet');
+    }
   }
 
   clearSession(): void {
@@ -84,13 +100,34 @@ export class SessionStore {
   setProjects(projects: ProjetView[]): void {
     const s = this.session();
     if (!s) return;
-    this.session.set({ ...s, projects });
+
+    const selectedProjectId = this.cleanSelectedProjectId(s.selectedProjectId ?? null, projects);
+
+    this.session.set({
+      ...s,
+      projects,
+      selectedProjectId,
+    });
+
+    if (selectedProjectId != null) {
+      localStorage.setItem('selected_projet', String(selectedProjectId));
+    } else {
+      localStorage.removeItem('selected_projet');
+    }
   }
 
   selectProject(projectId: number): void {
     const s = this.session();
     if (!s) return;
-    this.session.set({ ...s, selectedProjectId: projectId });
+
+    const projectExists = s.projects.some((p) => Number(p.id) === Number(projectId));
+    if (!projectExists) return;
+
+    this.session.set({
+      ...s,
+      selectedProjectId: projectId,
+    });
+
     localStorage.setItem('selected_projet', String(projectId));
   }
 
@@ -99,9 +136,16 @@ export class SessionStore {
     if (!s || s.selectedProjectId == null) return;
 
     const projects = s.projects.map((p) => {
-      if (p.id !== s.selectedProjectId) return p;
+      if (Number(p.id) !== Number(s.selectedProjectId)) return p;
       if (!p.saison_active) return p;
-      return { ...p, saison_active: { ...p.saison_active, id: saisonId } };
+
+      return {
+        ...p,
+        saison_active: {
+          ...p.saison_active,
+          id: saisonId,
+        },
+      };
     });
 
     this.session.set({ ...s, projects });
@@ -119,5 +163,21 @@ export class SessionStore {
 
   updateSelectedMenu(menu: MenuType): void {
     this.selectedMenu.set(menu);
+  }
+
+  private cleanSelectedProjectId(
+    selectedProjectId: number | null,
+    projects: ProjetView[],
+  ): number | null {
+    if (selectedProjectId != null) {
+      const exists = projects.some((p) => Number(p.id) === Number(selectedProjectId));
+      if (exists) return selectedProjectId;
+    }
+
+    if (projects.length === 1) {
+      return projects[0].id;
+    }
+
+    return null;
   }
 }

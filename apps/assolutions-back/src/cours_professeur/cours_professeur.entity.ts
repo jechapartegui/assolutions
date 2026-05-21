@@ -11,6 +11,9 @@ export class CoursProfesseurEntity {
   @Column({ type: 'int' })
   contrat_id: number;
 
+  
+
+
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_creation: Date;
 

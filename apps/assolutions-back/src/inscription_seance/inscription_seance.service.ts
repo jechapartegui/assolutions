@@ -5,9 +5,10 @@ import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceEntity } from '../seance/seance.entity';
 import { CreateInscriptionSeanceDto, UpdateInscriptionSeanceDto } from './inscription_seance.dto';
 import { InscriptionSeanceEntity } from './inscription_seance.entity';
-import { FullInscriptionSeance_VM, InscriptionSeance, InscriptionStatus_VM, Personne_VM, SeanceStatus_VM } from '@shared/index';
+import { InscriptionSeance, InscriptionStatus_VM, Personne_VM, SeanceStatus_VM } from '@shared/index';
 import { PersonneEntity } from '../personne/personne.entity';
 import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
+import { CompteEntity } from '../compte/compte.entity';
 
 @Injectable()
 export class InscriptionSeanceService {
@@ -20,6 +21,8 @@ export class InscriptionSeanceService {
     private readonly saisonRepo: Repository<SaisonEntity>,
     @InjectRepository(PersonneEntity)
 private readonly personneRepo: Repository<PersonneEntity>,
+    @InjectRepository(CompteEntity)
+private readonly compteRepo: Repository<CompteEntity>,
 
 @InjectRepository(LienGroupeEntity)
 private readonly lienGroupeRepo: Repository<LienGroupeEntity>,
@@ -28,10 +31,8 @@ private readonly lienGroupeRepo: Repository<LienGroupeEntity>,
   private async assertSeanceInProject(seanceId: number, projectId: number) {
     const seance = await this.seanceRepo.findOne({ where: { seance_id: seanceId } });
     if (!seance) throw new NotFoundException(`seance ${seanceId} introuvable`);
-
     const saison = await this.saisonRepo.findOne({ where: { id: seance.saison_id } });
     if (!saison) throw new NotFoundException(`saison ${seance.saison_id} introuvable`);
-
     if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
   }
 
@@ -217,13 +218,7 @@ private toSeanceStatus(value: any): SeanceStatus_VM | null {
   return this.repo.save(existing);
 }
 
-  async getForProject(personneId: number, seanceId: number, projectId: number) {
-    await this.assertSeanceInProject(seanceId, projectId);
 
-    const item = await this.repo.findOne({ where: { personne_id: personneId, seance_id: seanceId } });
-    if (!item) throw new NotFoundException(`inscription_seance introuvable`);
-    return item;
-  }
 
   async create(dto: CreateInscriptionSeanceDto, projectId: number) {
     await this.assertSeanceInProject(dto.seance_id, projectId);
@@ -233,16 +228,36 @@ private toSeanceStatus(value: any): SeanceStatus_VM | null {
   }
 
   async update(personneId: number, seanceId: number, dto: UpdateInscriptionSeanceDto, projectId: number) {
-    const item = await this.getForProject(personneId, seanceId, projectId);
+    await this.assertSeanceInProject(seanceId, projectId);
+      const item = await this.repo.findOne({ where: { personne_id: personneId, seance_id: seanceId } });
+    if (!item) {
+    const  dtocreate = {
+        personne_id: personneId,
+        seance_id: seanceId, statut_inscription: dto.statut_inscription, statut_seance: dto.statut_seance } as CreateInscriptionSeanceDto;
+    const entity = this.repo.create(dtocreate);
+    return this.repo.save(entity);
+    } else {
     Object.assign(item, dto);
     return this.repo.save(item);
+
+    }
   }
 
-  async remove(personneId: number, seanceId: number, projectId: number) {
-    const item = await this.getForProject(personneId, seanceId, projectId);
+  async remove(personneId: number, seanceId: number) {
+      const item = await this.repo.findOne({ where: { personne_id: personneId, seance_id: seanceId } });
+      if(!item) {
+        throw new NotFoundException(`InscriptionSeance ${personneId}-${seanceId} introuvable`);
+      }
     await this.repo.remove(item);
     return { ok: true };
   }
+    async getForProject(personneId: number, seanceId: number, projectId: number) {
+    await this.assertSeanceInProject(seanceId, projectId);
+
+    const item = await this.repo.findOne({ where: { personne_id: personneId, seance_id: seanceId } });
+    if (!item) throw new NotFoundException(`inscription_seance introuvable`);
+    return item;
+}
 
   async listBySaison(saisonId: number) {
     return this.repo
@@ -274,5 +289,37 @@ private toSeanceStatus(value: any): SeanceStatus_VM | null {
       .orderBy('i.date_inscription', 'DESC')
       .getMany();
   }
+
+  async GetAdherentCompte(login: string, seanceId: number) {
+  const seance = await this.seanceRepo.findOne({
+    where: { seance_id: seanceId },
+  });
+
+  if (!seance) {
+    throw new NotFoundException(`seance ${seanceId} introuvable`);
+  }
+
+  const compte = await this.compteRepo.findOne({
+    where: { login },
+  });
+
+  if (!compte) {
+    throw new NotFoundException(`compte with login ${login} introuvable`);
+  }
+
+  const personnes = await this.personneRepo.find({
+    where: { compte: compte.id },
+  });
+
+  if (!personnes.length) {
+    throw new NotFoundException(`personne with login ${login} introuvable`);
+  }
+
+  const personneIds = personnes.map(p => p.id);
+
+  const inscriptions = await this.full(seanceId, seance.saison_id);
+
+  return inscriptions.filter(i => personneIds.includes(i.personne_id));
+}
 
 }

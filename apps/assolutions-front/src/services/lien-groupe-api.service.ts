@@ -4,9 +4,15 @@ import { LienGroupe, CreateLienGroupeDto, UpdateLienGroupeDto } from '@shared/li
 
 @Injectable({ providedIn: 'root' })
 export class LienGroupeApiService {
+ 
+      
   private readonly base = '/lien-groupe';
 
   constructor(private api: ApiClientService) {}
+
+   removeidfromgroupe(objectId: number, groupeId: number, type: string): Promise<void> {
+    return this.api.POST<void>(`${this.base}/${objectId}/${groupeId}/${type}/delete`, {});
+  }
 
   listGroupesByCoursId(coursId: number[]): Promise<Record<number, number[]>> {
     return this.api.POST<Record<number, number[]>>(`${this.base}/by-cours`, { coursId });

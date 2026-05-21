@@ -44,7 +44,7 @@ export class AuthService {
     return this.jwt.sign(
       {
         sub: compte.id,
-        login: (compte as any).login ?? (compte as any).email,
+        login: compte.login,
         superAdmin: false,
       },
       { expiresIn: '30d' },
@@ -68,15 +68,25 @@ export class AuthService {
   }
 
   private async getProjectsForCompte(compteId: number): Promise<ProjectEntity[]> {
-    const loginProjects = await this.loginProjectRepo.find({
-      where: { compte: compteId } as any,
-      relations: ['project'],
-    });
+  const loginProjects = await this.loginProjectRepo.find({
+    where: { login_id: compteId },
+    relations: ['project'],
+  });
 
-    return loginProjects
-      .map((lp: any) => lp.project)
-      .filter(Boolean);
-  }
+  return loginProjects
+    .map((lp: LoginProjectEntity) => {
+      const project = lp.project;
+
+      if (!project) {
+        return null;
+      }
+
+      project.password = '';
+
+      return project;
+    })
+    .filter((project): project is ProjectEntity => project !== null);
+}
 
   private async buildSession(compte: CompteEntity, token = ''): Promise<any> {
     const mode = await this.computeMode(compte.id);
@@ -93,11 +103,11 @@ export class AuthService {
   async prelogin(login: string): Promise<{ password_required: boolean; mode: AppMode }> {
     const compte = await this.getByLogin(login);
 
-    if (!(compte as any).actif && !(compte as any).isActive) {
+    if (!(compte as CompteEntity).actif) {
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
 
-    const storedPassword = (compte as any).password;
+    const storedPassword = (compte as CompteEntity).password;
     const hasPassword = !!(storedPassword && String(storedPassword).length > 0);
 
     const mode = await this.computeMode(compte.id);
@@ -111,11 +121,11 @@ export class AuthService {
   async login(login: string, password?: string): Promise<any> {
     const compte = await this.getByLogin(login);
 
-    if (!(compte as any).actif && !(compte as any).isActive) {
+    if (!(compte as CompteEntity).actif) {
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
 
-    const storedPassword = (compte as any).password;
+    const storedPassword = (compte as CompteEntity).password;
     const hasPassword = !!(storedPassword && String(storedPassword).length > 0);
 
     if (hasPassword) {
@@ -131,7 +141,7 @@ export class AuthService {
     }
 
     // On évite de renvoyer le hash au front
-    (compte as any).password = null;
+    (compte as CompteEntity).password = null;
 
     const token = this.signToken(compte);
 
@@ -147,12 +157,12 @@ export class AuthService {
       throw new NotFoundException('ACCOUNT_NOT_FOUND');
     }
 
-    if (!(compte as any).actif && !(compte as any).isActive) {
+    if (!(compte as CompteEntity).actif) {
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }
 
     // On évite de renvoyer le hash au front
-    (compte as any).password = null;
+    (compte as CompteEntity).password = null;
 
     return this.buildSession(compte);
   }
@@ -166,24 +176,16 @@ export class AuthService {
       throw new NotFoundException('ACCOUNT_NOT_FOUND');
     }
 
-    (compte as any).password = newPassword
+    (compte as CompteEntity).password = newPassword
       ? hashPasswordWithPepper(newPassword, this.pepper)
       : null;
 
     if ('activation_token' in compte) {
-      (compte as any).activation_token = null;
-    }
-
-    if ('activationToken' in compte) {
-      (compte as any).activationToken = null;
+      (compte as CompteEntity).activation_token = null;
     }
 
     if ('actif' in compte) {
-      (compte as any).actif = true;
-    }
-
-    if ('isActive' in compte) {
-      (compte as any).isActive = true;
+      (compte as CompteEntity).actif = true;
     }
 
     await this.compteRepo.save(compte);
@@ -197,7 +199,7 @@ export class AuthService {
     }
 
     const compte = await this.compteRepo.findOne({
-      where: { login: login.toLowerCase() } as any,
+      where: { login: login.toLowerCase() }
     });
 
     if (!compte) {

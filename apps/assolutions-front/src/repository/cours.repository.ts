@@ -5,6 +5,7 @@ import {
   KeyValuePair,
   mapCoursListToVM,
   mapCoursToVM,
+  ProfLight_VM,
 } from '@shared/index';
 
 import { AppStore } from '../app/app.store';
@@ -46,9 +47,9 @@ export class CoursRepository {
       (saisons ?? [])[0] ??
       null;
 
-    const listeProfFilter: KeyValuePair[] = (profs ?? []).map((x: any) => ({
-      key: x.contrat_id ?? x.id ?? 0,
-      value: `${x.prenom ?? x.person?.prenom ?? ''} ${x.nom ?? x.person?.nom ?? ''}`.trim(),
+    const listeProfFilter: KeyValuePair[] = (profs ?? []).map((x: ProfLight_VM) => ({
+      key:  x.id ?? 0,
+      value: `${x.prenom ?? ''} ${x.nom ?? ''}`.trim(),
     }));
 
     const listeLieuFilter: KeyValuePair[] = (lieux ?? []).map((x: any) => ({
@@ -142,7 +143,7 @@ const groupesByCoursId: Record<number, number[]> =
   }
 
   async deleteCours(coursId: number): Promise<void> {
-    await this.coursProfesseurService.updatelist(coursId, []);
+    await this.coursProfesseurService.updatelist(coursId, [], this.appStore.saison_active_id());
     await this.lienGroupeService.updateGroupesForCours(coursId, []);
     await this.CoursApiService.remove(coursId);
   }
@@ -161,7 +162,7 @@ async updateSerieCours(coursVm: Cours_VM, fromDate: Date): Promise<void> {
       .map((p: any) => p.contrat_id ?? p.id ?? 0)
       .filter((id: number) => id > 0);
 
-    await this.coursProfesseurService.updatelist(coursId, contratIds);
+    await this.coursProfesseurService.updatelist(coursId, contratIds, this.appStore.saison_active_id());
   }
 
   async updateCoursGroupes(coursId: number, groupeIds: number[]): Promise<void> {

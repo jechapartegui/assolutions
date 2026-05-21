@@ -1,5 +1,6 @@
 /* eslint-disable @nx/enforce-module-boundaries */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/services/excel-export.service';
 import { AdherentStore } from 'apps/assolutions-front/src/store/adherent.store';
 import { AdherentListItem_VM, AdherentPageVm } from 'apps/assolutions-front/src/vm/adherent-page.vm';
 
@@ -15,9 +16,92 @@ export class AdherentListComponent {
   @Output() openAdherent = new EventEmitter<number>();
   @Output() createAdherent = new EventEmitter<void>();
 
-  constructor(public readonly store: AdherentStore) {}
+  constructor(public readonly store: AdherentStore, private readonly excel: ExcelExportService) {}
 isSelected(id: number): boolean {
   return (this.vm.selectedIds ?? []).includes(id);
+}
+exportExcel(): void {
+  const rows = this.getFilteredAdherent();
+
+const columns: ExcelColumn<AdherentListItem_VM>[] = [
+  { header: $localize`:@@common.id:ID`, value: a => a.id },
+  { header: $localize`:@@person.lastname:Nom`, value: a => a.nom },
+  { header: $localize`:@@person.firstname:Prénom`, value: a => a.prenom },
+  { header: $localize`:@@person.nickname:Surnom`, value: a => a.surnom },
+
+  {
+    header: $localize`:@@common.label:Libellé`,
+    value: a => a.libelle || `${a.prenom ?? ''} ${a.nom ?? ''}`.trim()
+  },
+
+  {
+    header: $localize`:@@person.birthdate:Date de naissance`,
+    value: a => this.dateOnly(a.date_naissance)
+  },
+
+  {
+    header: $localize`:@@person.age:Âge`,
+    value: a => this.ageOnly(a.date_naissance)
+  },
+
+  {
+    header: $localize`:@@person.gender:Sexe`,
+    value: a => this.getSexeLabel(a.sexe)
+  },
+
+  {
+    header: $localize`:@@group.active:Groupes actifs`,
+    value: a => (a.groupesActifs ?? []).map(g => g.nom).join(', ')
+  },
+
+  {
+    header: $localize`:@@address.full:Adresse`,
+    value: a =>
+      [
+        a.adresse?.Street,
+        a.adresse?.PostCode,
+        a.adresse?.City,
+        a.adresse?.Country
+      ]
+      .filter(Boolean)
+      .join(' ')
+  },
+
+  {
+    header: $localize`:@@contact.preferred:Contact préféré`,
+    value: a => this.get_contact(a)
+  },
+
+  {
+    header: $localize`:@@member.registered:Inscrit`,
+    value: a => a.inscrit
+  },
+];
+
+  this.excel.export('adherents', rows, columns);
+}
+
+private dateOnly(value: Date | string | null | undefined): string {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return '';
+
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+}
+
+private ageOnly(value: Date | string | null | undefined): number | '' {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return '';
+
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+
+  const birthdayPassed =
+    today.getMonth() > date.getMonth() ||
+    (today.getMonth() === date.getMonth() && today.getDate() >= date.getDate());
+
+  return birthdayPassed ? age : age - 1;
 }
 
 toggleSelection(id: number): void {

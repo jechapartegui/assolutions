@@ -59,10 +59,9 @@ full(@ProjectId() projectId: number, @Param('seanceId', ParseIntPipe) seanceId: 
   @Post(':personneId/:seanceId/delete')
   remove(
     @Param('personneId', ParseIntPipe) personneId: number,
-    @Param('seanceId', ParseIntPipe) seanceId: number,
-    @ProjectId() projectId: number,
+    @Param('seanceId', ParseIntPipe) seanceId: number
   ) {
-    return this.service.remove(personneId, seanceId, projectId);
+    return this.service.remove(personneId, seanceId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -83,5 +82,13 @@ listByPersonneAndSaison(
   @Param('saisonId', ParseIntPipe) saisonId: number,
 ) {
   return this.service.listByPersonneAndSaison(personneId, saisonId);
+}
+@UseGuards(JwtAuthGuard)
+@Get('compte/:login/seance/:seanceId')
+GetAdherentCompte(
+  @Param('login') login: string,
+  @Param('seanceId', ParseIntPipe) seanceId: number,
+) {
+  return this.service.GetAdherentCompte(login, seanceId);
 }
 }

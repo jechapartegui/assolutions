@@ -96,6 +96,12 @@
   overflow: hidden;
 }
 
+.groupe-detail-card {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
 .groupe-edit-card > .columns,
 .groupe-edit-card > .buttons {
   padding: 0.75rem;
@@ -117,6 +123,8 @@
 
 .groupe-members-zone {
   margin: 0.75rem;
+  min-height: 0;
+  max-height: calc(100dvh - var(--desktop-topbar-h) - 320px);
   overflow: auto;
 }
 
@@ -258,5 +266,9 @@
 
   .groupe-add-panel {
     grid-template-columns: 1fr;
+  }
+    .groupe-members-zone {
+    max-height: none;
+    overflow: visible;
   }
 }

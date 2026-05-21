@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ErrorService } from '../../services/error.service';
-import { ExcelService } from '../../services/excel.service';
+import { ExcelService } from '../../services/excel-export.service';
 import { GlobalService } from '../../services/global.services';
 import { SaisonService } from '../../services/saison.service';
 import { Saison_VM } from '@shared/lib/saison.interface';

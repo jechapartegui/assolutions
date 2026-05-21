@@ -2,11 +2,11 @@ import { Injectable, computed, signal } from '@angular/core';
 import { AdherentListItem_VM } from '../vm/adherent-page.vm';
 import {
   createInitialGroupePageVm,
-  GroupeEditVm,
-  GroupeListItem_VM,
   GroupePageVm,
 } from '../vm/groupe-page.vm';
 import { GroupeRepository } from '../repository/groupe.repository';
+import { Groupe, LienGroupe_VM } from '@shared/index';
+import { AppStore } from '../app/app.store';
 
 @Injectable({ providedIn: 'root' })
 export class GroupeStore {
@@ -15,7 +15,7 @@ export class GroupeStore {
 
   private initPromise: Promise<void> | null = null;
 
-  constructor(private readonly repository: GroupeRepository) {}
+  constructor(private readonly repository: GroupeRepository, private readonly appstore:AppStore) {}
 
   async init(saisonId: number): Promise<void> {
     const current = this.state();
@@ -33,7 +33,7 @@ export class GroupeStore {
     }
   }
 
-  async reload(saisonId = this.state().activeSaisonId ?? 0): Promise<void> {
+  async reload(saisonId = this.state().activeSaisonId): Promise<void> {
     if (!saisonId) return;
 
     this.patch({ loading: true, action: 'Chargement des groupes' });
@@ -66,14 +66,15 @@ export class GroupeStore {
     this.patch({
       editGroupe: {
         id: 0,
+        saison_id: this.state().activeSaisonId,
+        project_id: this.appstore.selectedProjectId(),
         nom: '',
-        whatsapp: '',
-        prive: false,
+        whatsapp: '', visible: false,
       },
     });
   }
 
-  startEdit(groupe: GroupeListItem_VM): void {
+  startEdit(groupe: Groupe): void {
     this.patch({
       selectedGroupeId: groupe.id,
       editGroupe: { ...groupe },
@@ -84,7 +85,7 @@ export class GroupeStore {
     this.patch({ editGroupe: null });
   }
 
-  patchEdit(partial: Partial<GroupeEditVm>): void {
+  patchEdit(partial: Partial<Groupe>): void {
     const current = this.state().editGroupe;
     if (!current) return;
 
@@ -123,7 +124,7 @@ export class GroupeStore {
     });
   }
 
-  async deleteGroupe(groupe: GroupeListItem_VM): Promise<void> {
+  async deleteGroupe(groupe: Groupe): Promise<void> {
     this.patch({ loading: true, action: 'Suppression du groupe' });
 
     await this.repository.deleteGroupe(groupe.id, this.state().adherents);
@@ -162,7 +163,7 @@ export class GroupeStore {
         ...a,
         groupesActifs: [
           ...(a.groupesActifs ?? []),
-          { id: groupe.id, nom: groupe.nom, id_lien: lienId ?? 0 } as any,
+          { id: groupe.id, nom: groupe.nom, id_lien: lienId ?? 0 } as LienGroupe_VM,
         ],
       } as AdherentListItem_VM;
     });
@@ -184,7 +185,7 @@ export class GroupeStore {
     this.patch({ adherents, loading: false, action: '' });
   }
 
-  selectedGroupe(): GroupeListItem_VM | null {
+  selectedGroupe(): Groupe | null {
     const id = this.state().selectedGroupeId;
     return this.state().groupes.find((g) => g.id === id) ?? null;
   }
@@ -210,7 +211,7 @@ export class GroupeStore {
   }
 
   isAdherentInGroupe(adherent: AdherentListItem_VM, groupeId: number): boolean {
-    return (adherent.groupesActifs ?? []).some((g: any) => Number(g.id) === Number(groupeId));
+    return (adherent.groupesActifs ?? []).some((g: LienGroupe_VM) => g.id === Number(groupeId));
   }
 
   countMembers(groupeId: number): number {
@@ -220,7 +221,21 @@ export class GroupeStore {
   private withoutGroupe(adherent: AdherentListItem_VM, groupeId: number): AdherentListItem_VM {
     return {
       ...adherent,
-      groupesActifs: (adherent.groupesActifs ?? []).filter((g: any) => Number(g.id) !== Number(groupeId)),
+      groupesActifs: (adherent.groupesActifs ?? []).filter((g: LienGroupe_VM) => g.id !== Number(groupeId)),
     } as AdherentListItem_VM;
   }
+
+
+  setFilterAdherent(value: string): void {
+    this.patch({ filterAdherent: value ?? '' });
+  }
+
+  setAdherentToAddId(value: number | null): void {
+    this.patch({ adherentToAddId: value });
+  }
+
+  
+
+
+ 
 }

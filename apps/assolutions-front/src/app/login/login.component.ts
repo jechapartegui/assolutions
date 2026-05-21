@@ -277,6 +277,23 @@ export class LoginComponent implements OnInit {
         .catch((error: Error) => this.handleLoginError(error));
     }
   }
+  private getAutoProject(
+  projectFromContext: ProjetView | null | undefined,
+  projets: ProjetView[],
+): ProjetView | null {
+  if (projectFromContext) return projectFromContext;
+
+  if (projets.length === 0) return null;
+
+  if (projets.length === 1) return projets[0];
+
+  const projetsAvecDroits = projets.filter(p =>
+    !!p.rights?.adherent ||
+    !!p.rights?.prof 
+  );
+
+  return projetsAvecDroits.length === 1 ? projetsAvecDroits[0] : null;
+}
 
   private async openSession(mr: MeResponse): Promise<void> {
     const errorService = ErrorService.instance;
@@ -288,8 +305,9 @@ export class LoginComponent implements OnInit {
       this.VM.projets = projets;
 
       const projectFromContext = this.findRequestedProject(projets);
-      const autoProject = projectFromContext ?? (projets.length === 1 ? projets[0] : null);
-
+      
+      const autoProject = this.getAutoProject(projectFromContext, projets);
+      
       const s: Session = {
         token: mr.token,
         mode: this.VM.mode,

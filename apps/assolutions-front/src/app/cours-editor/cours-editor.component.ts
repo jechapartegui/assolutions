@@ -184,8 +184,9 @@ async save(): Promise<void> {
   }
 
   majListeProf(): void {
-    const idsPris = new Set((this.cours?.professeursCours ?? []).map((x: any) => x.id));
-    this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((x) => !idsPris.has(x.key));
+    const idsPris = new Set((this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => x.id));
+
+    this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((x) => !idsPris.has(Number(x.key)));
   }
 
   checkall(): void {
@@ -231,7 +232,7 @@ async save(): Promise<void> {
     return (this.cours.groupes ?? []).some((g: any) => g.id === groupeId);
   }
 
-  getProfLabel(p: any): string {
+  getProfLabel(p: PersonneLight_VM): string {
     return `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim();
   }
 

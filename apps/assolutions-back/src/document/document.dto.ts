@@ -81,3 +81,17 @@ export class UpdateDocumentDto {
   @MaxLength(100)
   auteur?: string | null;
 }
+
+
+export class SetPhotoDto {
+  @IsInt()
+  objet_id: number;
+
+  @IsString()
+  @MaxLength(25)
+  objet_type: string; // 'member'
+
+  @IsOptional()
+  @IsString()
+  photo?: string | null; // data:image/...;base64,...
+}

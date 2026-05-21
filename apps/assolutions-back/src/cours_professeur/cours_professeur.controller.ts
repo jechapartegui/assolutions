@@ -21,14 +21,14 @@ export class CoursProfesseurController {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateCoursProfesseurDto) {
     return this.service.create(dto, projectId);
   }
 
   // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
   update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateCoursProfesseurDto) {
     return this.service.update(id, dto, projectId);
@@ -49,8 +49,8 @@ export class CoursProfesseurController {
   
   @UseGuards(JwtAuthGuard)
   @Post('updatelist')
-  updateList(@ProjectId() projectId: number, @Body() body: { coursId: number, profs: number[] }) {
-    const { coursId, profs } = body;
-    return this.service.updateList(coursId, profs, projectId);
+  updateList(@ProjectId() projectId: number, @Body() body: { coursId: number, profs: number[], saisonId: number }) {
+    const { coursId, profs, saisonId } = body;
+    return this.service.updateList(coursId, profs, saisonId, projectId);
   }
 }

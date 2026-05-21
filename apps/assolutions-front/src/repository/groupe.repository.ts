@@ -3,7 +3,7 @@ import { GroupesApiService } from '../services/groupes-api.service';
 import { LienGroupeApiService } from '../services/lien-groupe-api.service';
 import { AdherentRepository } from './adherent.repository';
 import { AdherentListItem_VM } from '../vm/adherent-page.vm';
-import { GroupeEditVm, GroupeListItem_VM } from '../vm/groupe-page.vm';
+import { CreateLienGroupeDto, Groupe, LienGroupe_VM } from '@shared/index';
 
 @Injectable({ providedIn: 'root' })
 export class GroupeRepository {
@@ -13,34 +13,34 @@ export class GroupeRepository {
     private readonly adherentRepository: AdherentRepository,
   ) {}
 
-  async loadPageData(saisonId: number): Promise<{ groupes: GroupeListItem_VM[]; adherents: AdherentListItem_VM[] }> {
+  async loadPageData(saisonId: number): Promise<{ groupes: Groupe[]; adherents: AdherentListItem_VM[] }> {
     const [groupes, adherentPage] = await Promise.all([
       this.groupesApi.list(saisonId),
       this.adherentRepository.loadPageData(saisonId),
     ]);
 
     return {
-      groupes: (groupes ?? []).map((g: any) => this.toGroupeListItemVm(g, saisonId)),
-      adherents: (adherentPage.list ?? []).filter((a) => !!a.inscrit),
+      groupes: groupes,
+      adherents: adherentPage.list ?? [],
     };
   }
 
-  async createGroupe(vm: GroupeEditVm, saisonId: number): Promise<GroupeListItem_VM> {
+  async createGroupe(vm: Groupe, saisonId: number): Promise<Groupe> {
     const created = await this.groupesApi.create({
       nom: vm.nom,
       whatsapp: vm.whatsapp ?? '',
-      prive: !!vm.prive,
+      visible: !!vm.visible,
       saison_id: saisonId,
     } as any);
 
     return this.toGroupeListItemVm(created, saisonId);
   }
 
-  async updateGroupe(vm: GroupeEditVm, saisonId: number): Promise<GroupeListItem_VM> {
+  async updateGroupe(vm: Groupe, saisonId: number): Promise<Groupe> {
     const updated = await this.groupesApi.update(vm.id, {
       nom: vm.nom,
       whatsapp: vm.whatsapp ?? '',
-      prive: !!vm.prive,
+      visible: !!vm.visible,
       saison_id: saisonId,
     } as any);
 
@@ -61,39 +61,45 @@ export class GroupeRepository {
     const lien = await this.lienGroupeApi.create({
       object_id: adherentId,
       personne_id: adherentId,
-      type: 'rider',
+      object_type: 'rider',
       groupe_id: groupeId,
-    } as any);
+    } as CreateLienGroupeDto);
 
     return (lien as any)?.id ?? null;
   }
 
   async removeAdherentFromGroupe(adherent: AdherentListItem_VM, groupeId: number): Promise<void> {
-    const lien = (adherent.groupesActifs ?? []).find((g: any) => Number(g.id) === Number(groupeId));
-    const lienId = (lien as any)?.id_lien ?? (lien as any)?.lien_id ?? (lien as any)?.idLien;
-
-    if (!lienId) {
-      throw new Error('Lien groupe introuvable pour cet adhérent');
-    }
-
-    await this.lienGroupeApi.remove(Number(lienId));
+    await this.lienGroupeApi.removeidfromgroupe(Number(adherent.id), groupeId, 'rider');
   }
 
   private getLienIdsForGroupe(groupeId: number, adherents: AdherentListItem_VM[]): number[] {
     return (adherents ?? [])
-      .map((adherent) => (adherent.groupesActifs ?? []).find((g: any) => Number(g.id) === Number(groupeId)) as any)
+      .map((adherent) => (adherent.groupesActifs ?? []).find((g: LienGroupe_VM) => this.getGroupeId(g) === Number(groupeId)))
       .filter(Boolean)
-      .map((g) => g.id_lien ?? g.lien_id ?? g.idLien)
+      .map((g) => this.getLienId(g))
       .filter((id) => id !== null && id !== undefined)
       .map(Number);
   }
 
-  private toGroupeListItemVm(raw: any, saisonId: number): GroupeListItem_VM {
+  private getGroupeId(groupe: LienGroupe_VM ): number {
+    return Number(
+      groupe?.id ??
+      0,
+    );
+  }
+
+  private getLienId(groupe: LienGroupe_VM): number | null {
+    const id = groupe?.id_lien ;
+    return id === null || id === undefined ? null : Number(id);
+  }
+
+  private toGroupeListItemVm(raw: any, saisonId: number): Groupe {
     return {
       id: Number(raw.id),
       nom: raw.nom ?? raw.name ?? '',
       whatsapp: raw.whatsapp ?? '',
-      prive: !!raw.prive,
+      project_id: Number(raw.project_id ?? 0),
+      visible: !!raw.visible,
       saison_id: Number(raw.saison_id ?? saisonId),
     };
   }

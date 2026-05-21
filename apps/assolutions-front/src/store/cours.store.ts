@@ -60,7 +60,7 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
   async init(saisonId: number): Promise<void> {
     const current = this.state();
 
-    if (this.hasCurrentCache(current.activeSaison?.id === saisonId || current.activeSaison === (saisonId as any))) {
+    if (this.hasCurrentCache(current.activeSaison?.id === saisonId )) {
       if (this.shouldRefreshSilently(true, this.state().lastLoadedAt ?? null)) {
         void this.refreshSilently(saisonId);
       }

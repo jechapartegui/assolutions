@@ -1,6 +1,6 @@
 ﻿import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
+import { CreateDocumentDto, SetPhotoDto, UpdateDocumentDto } from './document.dto';
 import { DocumentService } from './document.service';
 
 @Controller('documents')
@@ -36,4 +36,10 @@ export class DocumentController {
   photo_by_id(@Body() ids: number[]) {
     return this.service.photoById(ids);
   }
+
+  @UseGuards(JwtAuthGuard)
+@Post('set-photo')
+setPhoto(@Body() dto: SetPhotoDto) {
+  return this.service.setPhoto(dto);
+}
 }
