@@ -9,11 +9,9 @@ import * as nodemailer from 'nodemailer';
 import { OutgoingMessageDto, SendMessagesDto } from './message.dto';
 import { ProjectEntity } from '../project/project.entity';
 import { MailRecordEntity } from '../mail_record/mail_record.entity';
+import { MailAddressVm } from '@shared/lib/mail-input.interface';
 
-type MailAddress = {
-  email: string;
-  name?: string | null;
-};
+
 
 @Injectable()
 export class MessageService {
@@ -69,7 +67,6 @@ export class MessageService {
     for (const message of dto.messages) {
       try {
         const prepared = this.prepareMessage(project, message);
-        console.warn(prepared);
         await this.transporter.sendMail({
           from: prepared.from,
           to: prepared.to,
@@ -149,14 +146,14 @@ export class MessageService {
     };
   }
 
-  private normalizeAddress(address: MailAddress): MailAddress {
+  private normalizeAddress(address: MailAddressVm): MailAddressVm {
     return {
       email: address.email.trim().toLowerCase(),
       name: address.name?.trim() || null,
     };
   }
 
-  private toYopmailAddress(address: MailAddress): MailAddress {
+  private toYopmailAddress(address: MailAddressVm): MailAddressVm {
     const localPart = address.email.split('@')[0]?.trim();
     if (!localPart) {
       throw new BadRequestException(`Adresse email invalide: ${address.email}`);
@@ -172,7 +169,7 @@ export class MessageService {
     return subject.startsWith('TEST : ') ? subject : `TEST : ${subject}`;
   }
 
-  private formatAddress(address: MailAddress): string {
+  private formatAddress(address: MailAddressVm): string {
     if (address.name) {
       return `"${this.escapeDisplayName(address.name)}" <${address.email}>`;
     }

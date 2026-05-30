@@ -112,10 +112,11 @@ const groupesActifs: LienGroupe_VM[] = groupeIds
     } as LienGroupe_VM;
   })
   .filter((groupe): groupe is LienGroupe_VM => !!groupe);
-     const contactById: Record<number, ContactDto> = {};
-  for (const cont of contactslist) {
-    contactById[cont.object_id] = cont;
-  }
+  const contactsByPersonneId: Record<number, ContactDto[]> = {};
+
+for (const cont of contactslist ?? []) {
+  (contactsByPersonneId[cont.object_id] ??= []).push(cont);
+}
 
     list.push(
       this.mapper.toAdherentListItemVm({
@@ -123,7 +124,7 @@ const groupesActifs: LienGroupe_VM[] = groupeIds
         activeSaisonId: saisonId,
         inscriptionSaisonActive,
         nbInscriptionsSeance: 1,
-        contacts: contactById[personneId] ? [contactById[personneId]] : [],
+        contacts: contactsByPersonneId[personneId] ?? [],
         photo: photosByPersonne[personneId] ?? null,
         groupesActifs,
       })

@@ -50,7 +50,7 @@ getEmails(adherent: AdherentListItem_VM): string[] {
   const contacts = (adherent.contact ?? [])
     .filter(c => c.Type === 'EMAIL' && c.Diffusion === true)
     .map(c => c.Value);
-
+  console.log(contacts);
   return Array.from(
     new Set(
       [...contacts, adherent.login]
@@ -77,7 +77,7 @@ buildGeneratedMails(
   if (!emails.length) {
     return [{
       adherent,
-      to: '',
+      to: { email: '', name: adherent.libelle ?? '' },
       subject,
       html,
       status: 'ERROR',
@@ -87,7 +87,7 @@ buildGeneratedMails(
 
   return emails.map(email => ({
     adherent,
-    to: email,
+    to: { email, name: extra['LIBELLE'] ?? adherent.libelle ?? '' },
     subject: this.render(subjectTemplate, { ...baseContext, EMAIL: email }, loopRows),
     html: this.render(htmlTemplate, { ...baseContext, EMAIL: email }, loopRows),
     status: 'READY',

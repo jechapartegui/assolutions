@@ -1,5 +1,5 @@
 import { AdherentListItem_VM } from './adherent-page.vm';
-import { Seance_VM } from '@shared/index';
+import { MailAddressVm, Seance_VM } from '@shared/index';
 
 export type MailStep = 'TYPE' | 'PARAMS' | 'AUDIENCE' | 'BROUILLON' | 'ENVOI';
 
@@ -15,7 +15,7 @@ export type AudienceType = 'TOUS' | 'INSCRITS' | 'GROUPE' | 'SEANCE_TOUS' | 'SEA
 
 export interface GeneratedMailVm {
   adherent: AdherentListItem_VM;
-  to: string;
+  to: MailAddressVm;
   subject: string;
   html: string;
   status: 'READY' | 'SENT' | 'ERROR';
