@@ -2,7 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import { ProjetView, Session } from '@shared/index';
 
 export type MenuType =
-  | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE'
+  | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE' | 'MA-SEANCE' 
   | 'SAISON' | 'LIEU' | 'MENU' | 'MENU-ADMIN'
   | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL'
   | 'PROJETINFO' | 'PROJETMAIL' | 'COMPTA' | 'CB'

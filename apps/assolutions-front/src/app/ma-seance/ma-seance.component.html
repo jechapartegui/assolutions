@@ -736,5 +736,9 @@
 </ng-container>
 
 <ng-template #NonConnecte>
-  <app-login [context]="'SEANCE'" [login_seance]="login"></app-login>
+  <app-login
+  [context]="'SEANCE'"
+  [login_seance]="login"
+  (loggedIn)="afterLoginFromSeance()"
+></app-login>
 </ng-template>

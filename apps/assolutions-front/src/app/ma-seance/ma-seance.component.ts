@@ -141,6 +141,24 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     return `${current}/${max} places`;
   }
 
+  async afterLoginFromSeance(): Promise<void> {
+    console.log("ici");
+  const compte = this.store.compte();
+
+  if (!compte?.login) return;
+
+  this._loadLoginDone = false;
+
+  await this.Load();
+
+  if (this.isLien) {
+    this._loadLoginDone = true;
+    await this.LoadLogin(compte);
+  }
+
+  this.cdr.detectChanges();
+}
+
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
     this.action = $localize`Charger la séance`;

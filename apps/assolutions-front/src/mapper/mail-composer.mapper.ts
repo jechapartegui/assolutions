@@ -2,38 +2,47 @@ import { Injectable } from '@angular/core';
 import { AdherentListItem_VM } from '../vm/adherent-page.vm';
 import { GeneratedMailVm, MailComposerVm, MailType } from '../vm/mail-composer.vm';
 import { Groupe, LienGroupe_VM, Seance_VM } from '@shared/index';
+import { environment } from '../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class MailComposerMapper {
-  createInitialVm(saisonId: number): MailComposerVm {
-    return {
-      step: 'TYPE',
-      loading: false,
-      action: '',
-      saisonId,
+ createInitialVm(saisonId: number): MailComposerVm {
+  return {
+    step: 'TYPE',
+    loading: false,
+    action: '',
 
-      mailType: null,
-      audienceType: 'TOUS',
+    saisonId,
 
-      dateDebut: '',
-      dateFin: '',
+    mailType: null,
+    audienceType: 'TOUS',
 
-      selectedSeance: null,
-      serieSeances: [],
-      sujetSerie: '',
+    dateDebut: '',
+    dateFin: '',
 
-      adherents: [],
-      seances: [],
+    allSeances: [],
+    seances: [],
 
-      selectedAdherentIds: [],
+    selectedSeance: null,
+    serieSeances: [],
+    sujetSerie: '',
 
-      templateSubject: '',
-      templateHtml: '',
+    adherents: [],
+    selectedAdherentIds: [],
 
-      generated: [],
-      selectedGeneratedIndex: 0,
-    };
-  }
+    selectedGroupId: null,
+    audienceSearch: '',
+
+    templateSubject: '',
+    templateHtml: '',
+
+    generated: [],
+    selectedGeneratedIndex: 0,
+
+    paramsValidated: false,
+    sendInfo: '',
+  };
+}
 
   getMailTypes(): { type: MailType; label: string; icon: string; description: string }[] {
     return [
@@ -156,20 +165,54 @@ private getLoopRows(
 ): Record<string, any>[] {
   if (mailType === 'relance') {
     return this.getEligibleRelanceSeances(adherent, extra)
-      .map(seance => this.seanceToLoopRow(seance));
+      .map(seance => this.seanceToLoopRow(seance, adherent));
   }
 
   if (mailType === 'serie_seance') {
     return ((extra['SEANCES'] ?? []) as Seance_VM[])
-      .map(seance => this.seanceToLoopRow(seance));
+      .map(seance => this.seanceToLoopRow(seance, adherent));
   }
 
   if (mailType === 'annulation' || mailType === 'convocation') {
     const seance = extra['SEANCE'];
-    return seance ? [this.seanceToLoopRow(seance)] : [];
+    return seance ? [this.seanceToLoopRow(seance, adherent)] : [];
   }
 
   return [];
+}
+
+private buildPresenceButton(
+  seance: Seance_VM,
+  adherent: AdherentListItem_VM,
+  present: boolean,
+): string {
+  const url = this.buildPresenceLink(seance.id, adherent.id, present);
+  const label = present ? 'Présent' : 'Absent';
+  const icon = present ? '👍' : '👎';
+  const cssClass = present ? 'yes' : 'no';
+
+  return `
+    <a
+      href="${url}"
+      class="icon-btn ${cssClass}"
+      title="${label}"
+      aria-label="${label}"
+    >${icon}</a>
+  `;
+}
+
+private buildPresenceLink(
+  seanceId: number,
+  adherentId: number,
+  present: boolean,
+): string {
+  const params = new URLSearchParams({
+    id: String(seanceId),
+    adherent: String(adherentId),
+    reponse: present ? '1' : '0',
+  });
+
+  return `${environment.frontUrl}/ma-seance?${params.toString()}`;
 }
 
 private getEligibleRelanceSeances(
@@ -231,7 +274,10 @@ private isAdherentInAgeRange(adherent: AdherentListItem_VM, seance: Seance_VM): 
   return true;
 }
 
-private seanceToLoopRow(seance: Seance_VM): Record<string, any> {
+private seanceToLoopRow(
+  seance: Seance_VM,
+  adherent?: AdherentListItem_VM,
+): Record<string, any> {
   return {
     ID: seance.id,
 
@@ -253,8 +299,9 @@ private seanceToLoopRow(seance: Seance_VM): Record<string, any> {
     LIEU_NOM: this.getLieuLabel(seance),
 
     RDV: (seance as any).rdv ?? '',
-    PRESENT: '',
-    ABSENT: '',
+
+    PRESENT: adherent ? this.buildPresenceButton(seance, adherent, true) : '',
+    ABSENT: adherent ? this.buildPresenceButton(seance, adherent, false) : '',
     CONNEXION: '',
   };
 }
@@ -358,6 +405,13 @@ private toDateFr(value: string | Date | null | undefined): string {
 
 private resolve(obj: Record<string, any>, path: string): any {
   return path.split('.').reduce((acc, key) => acc?.[key], obj);
+}
+
+public isAdherentEligibleForSeance(adherent: AdherentListItem_VM, seance: Seance_VM): boolean {
+  return (
+    this.isAdherentInSeanceGroup(adherent, seance) &&
+    this.isAdherentInAgeRange(adherent, seance)
+  );
 }
 
   

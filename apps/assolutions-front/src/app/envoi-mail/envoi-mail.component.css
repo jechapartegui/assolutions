@@ -33,8 +33,13 @@
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   background: #fff;
-  cursor: default;
+  cursor: pointer;
   text-align: left;
+}
+
+.step:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .step span {
@@ -141,6 +146,16 @@
   border-radius: 16px;
   background: #fbfcfd;
   border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.params-layout {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.params-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .audience-layout,
@@ -257,5 +272,13 @@
   .audience-layout,
   .draft-layout {
     grid-template-columns: 1fr;
+  }
+
+  .params-footer {
+    justify-content: stretch;
+  }
+
+  .params-footer .button {
+    width: 100%;
   }
 }

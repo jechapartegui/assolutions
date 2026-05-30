@@ -8,22 +8,45 @@
 
   <div class="mail-shell">
     <aside class="mail-steps">
-      <button class="step" [class.is-active]="vm.step === 'TYPE'">
+      <button
+        type="button"
+        class="step"
+        [class.is-active]="vm.step === 'TYPE'"
+        (click)="goStep('TYPE')"
+      >
         <span>1</span>
         <strong>Type</strong>
       </button>
 
-      <button class="step" [class.is-active]="vm.step === 'PARAMS'">
+      <button
+        type="button"
+        class="step"
+        [class.is-active]="vm.step === 'PARAMS'"
+        [disabled]="vm.mailType === 'vide' || vm.mailType === 'bienvenue'"
+        (click)="goStep('PARAMS')"
+      >
         <span>2</span>
         <strong>Paramètres</strong>
       </button>
 
-      <button class="step" [class.is-active]="vm.step === 'AUDIENCE'">
+      <button
+        type="button"
+        class="step"
+        [class.is-active]="vm.step === 'AUDIENCE'"
+        [disabled]="!mailStore.canGoAudience()"
+        (click)="goStep('AUDIENCE')"
+      >
         <span>3</span>
         <strong>Audience</strong>
       </button>
 
-      <button class="step" [class.is-active]="vm.step === 'BROUILLON'">
+      <button
+        type="button"
+        class="step"
+        [class.is-active]="vm.step === 'BROUILLON'"
+        [disabled]="!mailStore.canGoDraft()"
+        (click)="goStep('BROUILLON')"
+      >
         <span>4</span>
         <strong>Brouillon</strong>
       </button>
@@ -36,6 +59,10 @@
           <h1 class="title is-5 mb-1">Envoi de mails</h1>
           <p class="has-text-grey is-size-7">
             Saison #{{ vm.saisonId }} · {{ selectedAdherents.length }} destinataire(s)
+          </p>
+
+          <p class="notification is-success is-light mt-3 mb-0" *ngIf="vm.sendInfo">
+            {{ vm.sendInfo }}
           </p>
         </div>
       </header>
@@ -59,73 +86,92 @@
       </section>
 
       <section class="mail-content" *ngIf="vm.step === 'PARAMS'">
-        <div class="panel-card">
-          <h2 class="subtitle is-6 mb-3">Paramètres du mail</h2>
+        <div class="params-layout">
+          <div class="panel-card">
+            <h2 class="subtitle is-6 mb-3">Plage de recherche</h2>
 
-          <div class="columns">
-            <div class="column">
-              <label class="label">Date début</label>
-              <input
-                class="input"
-                type="date"
-                [ngModel]="vm.dateDebut"
-                (ngModelChange)="updateDateDebut($event)"
-              />
+            <div class="columns">
+              <div class="column">
+                <label class="label">Date début</label>
+                <input
+                  class="input"
+                  type="date"
+                  [ngModel]="vm.dateDebut"
+                  (ngModelChange)="updateDateDebut($event)"
+                />
+              </div>
+
+              <div class="column">
+                <label class="label">Date fin</label>
+                <input
+                  class="input"
+                  type="date"
+                  [ngModel]="vm.dateFin"
+                  (ngModelChange)="updateDateFin($event)"
+                />
+              </div>
             </div>
 
-            <div class="column">
-              <label class="label">Date fin</label>
-              <input
-                class="input"
-                type="date"
-                [ngModel]="vm.dateFin"
-                (ngModelChange)="updateDateFin($event)"
-              />
-            </div>
+            <p class="help">
+              La plage sert à filtrer les séances proposées ci-dessous.
+            </p>
           </div>
 
-          <button
-            class="button is-primary is-light"
-            [disabled]="!vm.dateDebut || !vm.dateFin"
-            (click)="validateDateRange()"
+          <div
+            class="panel-card"
+            *ngIf="vm.mailType === 'annulation' || vm.mailType === 'convocation' || vm.mailType === 'serie_seance'"
           >
-            Valider la plage
-          </button>
-        </div>
+            <h2 class="subtitle is-6 mb-3">
+              {{ vm.mailType === 'serie_seance' ? 'Séances de la série' : 'Séance concernée' }}
+            </h2>
 
-        <div class="panel-card" *ngIf="vm.mailType === 'annulation' || vm.mailType === 'convocation' || vm.mailType === 'serie_seance'">
-          <h2 class="subtitle is-6 mb-3">Séance</h2>
-
-          <div class="select is-fullwidth">
-            <select
-              [ngModel]="vm.selectedSeance"
-              (ngModelChange)="selectSeance($event)"
-            >
-              <option [ngValue]="null">Sélectionner une séance</option>
-              <option *ngFor="let seance of vm.seances" [ngValue]="seance">
-                {{ getSeanceLabel(seance) }} · {{ seance.date_seance | date:'dd/MM/yyyy' }}
-              </option>
-            </select>
-          </div>
-
-          <div class="mt-3" *ngIf="vm.mailType === 'serie_seance'">
-            <button class="button is-small is-primary is-light" [disabled]="!vm.selectedSeance" (click)="addSerieSeance()">
-              Ajouter à la série
-            </button>
-
-            <div class="tags mt-3">
-              <span class="tag is-info" *ngFor="let seance of vm.serieSeances">
-                {{ getSeanceLabel(seance) }}
-                <button class="delete is-small" (click)="removeSerieSeance(seance)"></button>
-              </span>
+            <div class="select is-fullwidth">
+              <select
+                [ngModel]="vm.selectedSeance"
+                (ngModelChange)="selectSeance($event)"
+              >
+                <option [ngValue]="null">Sélectionner une séance</option>
+                <option *ngFor="let seance of vm.seances" [ngValue]="seance">
+                  {{ getSeanceFullLabel(seance) }}
+                </option>
+              </select>
             </div>
 
-            <label class="label mt-3">Nom du championnat</label>
-            <input
-              class="input"
-              [ngModel]="vm.sujetSerie"
-              (ngModelChange)="mailStore.patchParams({ sujetSerie: $event })"
-            />
+            <div class="mt-3" *ngIf="vm.mailType === 'serie_seance'">
+              <button
+                class="button is-small is-primary is-light"
+                type="button"
+                [disabled]="!vm.selectedSeance"
+                (click)="addSerieSeance()"
+              >
+                Ajouter à la série
+              </button>
+
+              <div class="tags mt-3">
+                <span class="tag is-info" *ngFor="let seance of vm.serieSeances">
+                  {{ getSeanceFullLabel(seance) }}
+                  <button class="delete is-small" type="button" (click)="removeSerieSeance(seance)"></button>
+                </span>
+              </div>
+
+              <label class="label mt-3">Nom du championnat / événement</label>
+              <input
+                class="input"
+                [ngModel]="vm.sujetSerie"
+                (ngModelChange)="mailStore.patchParams({ sujetSerie: $event, paramsValidated: false })"
+              />
+            </div>
+          </div>
+
+          <div class="panel-card params-footer">
+            <button
+              class="button is-primary"
+              type="button"
+              [disabled]="!canValidateParams()"
+              (click)="validateParams()"
+            >
+              Valider les paramètres et choisir l’audience
+            </button>
           </div>
         </div>
       </section>
@@ -136,20 +182,67 @@
             <h2 class="subtitle is-6 mb-3">Ajouter des destinataires</h2>
 
             <div class="buttons">
-              <button class="button is-primary is-light" (click)="addInscrits()">
+              <button class="button is-primary is-light" type="button" (click)="addInscrits()">
                 Inscrits saison
               </button>
 
-              <button class="button is-primary is-light" (click)="addAll()">
+              <button class="button is-primary is-light" type="button" (click)="addAll()">
                 Tous les adhérents
               </button>
+
+              <button
+                *ngIf="(vm.mailType === 'annulation' || vm.mailType === 'convocation') && vm.selectedSeance"
+                class="button is-info is-light"
+                type="button"
+                (click)="addEligibleForSelectedSeance()"
+              >
+                Éligibles à la séance
+              </button>
+            </div>
+
+            <div class="field has-addons">
+              <div class="control is-expanded">
+                <div class="select is-fullwidth">
+                  <select
+                    [ngModel]="vm.selectedGroupId"
+                    (ngModelChange)="updateSelectedGroupId($event)"
+                  >
+                    <option [ngValue]="null">Sélectionner un groupe</option>
+                    <option *ngFor="let groupe of groupOptions" [ngValue]="groupe.id">
+                      {{ groupe.nom }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="control">
+                <button
+                  class="button is-primary is-light"
+                  type="button"
+                  [disabled]="!vm.selectedGroupId"
+                  (click)="addSelectedGroup()"
+                >
+                  Ajouter groupe
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Rechercher une personne</label>
+              <input
+                class="input"
+                type="search"
+                placeholder="Nom, prénom, email…"
+                [ngModel]="vm.audienceSearch"
+                (ngModelChange)="updateAudienceSearch($event)"
+              />
             </div>
 
             <div class="adherent-list">
               <button
                 type="button"
                 class="adherent-row"
-                *ngFor="let adherent of vm.adherents"
+                *ngFor="let adherent of filteredAdherents"
                 (click)="addAdherent(adherent)"
               >
                 <span>
@@ -165,18 +258,19 @@
           <div class="panel-card">
             <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
               <h2 class="subtitle is-6 mb-0">Sélection</h2>
-              <button class="button is-small is-light" (click)="clearAudience()">Vider</button>
+              <button class="button is-small is-light" type="button" (click)="clearAudience()">Vider</button>
             </div>
 
             <div class="selected-list">
               <span class="tag is-warning is-medium" *ngFor="let adherent of selectedAdherents">
                 {{ adherent.libelle }}
-                <button class="delete is-small" (click)="removeAdherent(adherent)"></button>
+                <button class="delete is-small" type="button" (click)="removeAdherent(adherent)"></button>
               </span>
             </div>
 
             <button
               class="button is-primary is-fullwidth mt-4"
+              type="button"
               [disabled]="selectedAdherents.length === 0"
               (click)="goDraft()"
             >
@@ -206,11 +300,16 @@
             ></textarea>
 
             <div class="buttons mt-3">
-              <button class="button is-info is-light" (click)="generate()">
+              <button class="button is-info is-light" type="button" (click)="generate()">
                 Générer la vue
               </button>
 
-              <button class="button is-primary is-light" [disabled]="vm.mailType === 'vide'" (click)="saveTemplate()">
+              <button
+                class="button is-primary is-light"
+                type="button"
+                [disabled]="vm.mailType === 'vide'"
+                (click)="saveTemplate()"
+              >
                 Sauvegarder le template
               </button>
             </div>
@@ -225,7 +324,7 @@
                 (ngModelChange)="mailStore.patchParams({ selectedGeneratedIndex: +$event })"
               >
                 <option *ngFor="let mail of vm.generated; let i = index" [ngValue]="i">
-                  {{ mail.adherent.libelle }} · {{ mail.to || 'email manquant' }}
+                  {{ mail.adherent.libelle }} · {{ getMailToLabel(mail.to) }} · {{ mail.status }}
                 </option>
               </select>
             </div>
@@ -233,17 +332,29 @@
             <ng-container *ngIf="vm.generated[vm.selectedGeneratedIndex] as mail">
               <div class="mail-preview-meta">
                 <strong>{{ mail.subject }}</strong>
-                <span>{{ mail.to || 'adresse manquante' }}</span>
+                <span>{{ getMailToLabel(mail.to) }}</span>
+                <span *ngIf="mail.status === 'SENT'">Envoyé</span>
+                <span *ngIf="mail.status === 'ERROR'" class="has-text-danger">{{ mail.error }}</span>
               </div>
 
               <mail-template-preview [html]="mail.html"></mail-template-preview>
 
               <div class="buttons mt-3">
-                <button class="button is-primary is-light" [disabled]="!mail.to" (click)="sendOne()">
+                <button
+                  class="button is-primary is-light"
+                  type="button"
+                  [disabled]="!mail.to?.email || mail.status === 'SENT'"
+                  (click)="sendOne()"
+                >
                   Envoyer cet email
                 </button>
 
-                <button class="button is-success is-light" [disabled]="!vm.generated.length" (click)="sendAll()">
+                <button
+                  class="button is-success is-light"
+                  type="button"
+                  [disabled]="!vm.generated.length"
+                  (click)="sendAll()"
+                >
                   Envoyer tous les mails
                 </button>
               </div>

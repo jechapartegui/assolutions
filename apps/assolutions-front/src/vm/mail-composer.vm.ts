@@ -1,7 +1,7 @@
 import { AdherentListItem_VM } from './adherent-page.vm';
 import { MailAddressVm, Seance_VM } from '@shared/index';
 
-export type MailStep = 'TYPE' | 'PARAMS' | 'AUDIENCE' | 'BROUILLON' | 'ENVOI';
+export type MailStep = 'TYPE' | 'PARAMS' | 'AUDIENCE' | 'BROUILLON';
 
 export type MailType =
   | 'relance'
@@ -11,7 +11,12 @@ export type MailType =
   | 'serie_seance'
   | 'vide';
 
-export type AudienceType = 'TOUS' | 'INSCRITS' | 'GROUPE' | 'SEANCE_TOUS' | 'SEANCE_PRESENT' | 'SEANCE_CONVOQUE' | 'ADHERENT';
+export type AudienceType =
+  | 'TOUS'
+  | 'INSCRITS'
+  | 'GROUPE'
+  | 'ELIGIBLES_SEANCE'
+  | 'ADHERENT';
 
 export interface GeneratedMailVm {
   adherent: AdherentListItem_VM;
@@ -35,18 +40,25 @@ export interface MailComposerVm {
   dateDebut: string;
   dateFin: string;
 
+  allSeances: Seance_VM[];
+  seances: Seance_VM[];
+
   selectedSeance: Seance_VM | null;
   serieSeances: Seance_VM[];
   sujetSerie: string;
 
   adherents: AdherentListItem_VM[];
-  seances: Seance_VM[];
-
   selectedAdherentIds: number[];
+
+  selectedGroupId: number | null;
+  audienceSearch: string;
 
   templateSubject: string;
   templateHtml: string;
 
   generated: GeneratedMailVm[];
   selectedGeneratedIndex: number;
+
+  paramsValidated: boolean;
+  sendInfo: string;
 }

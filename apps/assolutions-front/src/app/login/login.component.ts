@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../environments/environment.prod';
 import { ErrorService } from '../../services/error.service';
@@ -20,6 +20,7 @@ import { MenuStore } from '../../store/menu.store';
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
+  @Output() loggedIn = new EventEmitter<void>();
   VM: Login_VM = new Login_VM();
   action: string;
 
@@ -64,6 +65,7 @@ export class LoginComponent implements OnInit {
       if ('context' in params) {
         try {
           this.context = params['context'];
+          console.log(`Context de connexion : ${this.context}`);
         } catch (error) {
           const o = errorService.CreateError(this.action, $localize`Erreur sur la requête`);
           errorService.emitChange(o);
@@ -239,6 +241,14 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  private get redirectUrl(): string | null {
+  return this.route.snapshot.queryParamMap.get('redirect');
+}
+
+private isSeanceRedirect(): boolean {
+  const redirect = this.redirectUrl ?? '';
+  return redirect.startsWith('/ma-seance');
+} 
   async Login() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
@@ -315,9 +325,7 @@ export class LoginComponent implements OnInit {
 
         this.resetProjectCaches();
         this.store.selectProject(mr.projects[0].id);
-        this.store.updateSelectedMenu('MENU-ADMIN');
         this.navigateAfterProjectSelection();
-      this.router.navigate(['/menu-admin']);
       return;
     }
     const errorService = ErrorService.instance;
@@ -346,7 +354,6 @@ export class LoginComponent implements OnInit {
       if (autoProject) {
         this.resetProjectCaches();
         this.store.selectProject(autoProject.id);
-        this.store.updateSelectedMenu('MENU');
         this.navigateAfterProjectSelection();
         return;
       }
@@ -381,14 +388,34 @@ export class LoginComponent implements OnInit {
     this.adherentStore.reset();
   }
 
-  private navigateAfterProjectSelection(): void {
-    if (this.VM.mode === 'APPLI') {
-      this.router.navigate(['/menu']);
-    } else {
-      this.router.navigate(['/menu-admin']);
+private navigateAfterProjectSelection(): void {
+  const redirect = this.redirectUrl;
+
+  if (this.context === 'SEANCE' || this.isSeanceRedirect()) {
+    this.store.updateSelectedMenu('MA-SEANCE');
+
+    if (redirect) {
+      this.router.navigateByUrl(redirect);
+      return;
     }
+
+    this.loggedIn.emit();
+    return;
   }
 
+  if (redirect) {
+    this.router.navigateByUrl(redirect);
+    return;
+  }
+
+  if (this.VM.mode === 'APPLI') {
+    this.store.updateSelectedMenu('MENU');
+    this.router.navigate(['/menu']);
+  } else {
+    this.store.updateSelectedMenu('MENU-ADMIN');
+    this.router.navigate(['/menu-admin']);
+  }
+}
   private handleLoginError(error: Error): void {
     const errorService = ErrorService.instance;
     const o = errorService.CreateError(this.action, error.message);
@@ -465,7 +492,6 @@ export class LoginComponent implements OnInit {
     try {
       this.resetProjectCaches();
       this.store.selectProject(this.projets_select.id);
-      this.store.updateSelectedMenu('MENU');
       this.navigateAfterProjectSelection();
       const o = errorService.OKMessage(this.action);
       errorService.emitChange(o);
