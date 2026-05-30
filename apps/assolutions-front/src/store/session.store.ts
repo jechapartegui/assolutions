@@ -2,10 +2,22 @@ import { computed, Injectable, signal } from '@angular/core';
 import { ProjetView, Session } from '@shared/index';
 
 export type MenuType =
-  | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE' | 'SAISON' | 'LIEU'
-  | 'MENU' | 'MENU-ADMIN' | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL' | 'PROJETINFO'
-  | 'PROJETMAIL' | 'COMPTA' | 'CB' | 'FACTURE' | 'ENVOIMAIL'
-  | 'ADMINISTRATEUR' | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE';
+  | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE'
+  | 'SAISON' | 'LIEU' | 'MENU' | 'MENU-ADMIN'
+  | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL'
+  | 'PROJETINFO' | 'PROJETMAIL' | 'COMPTA' | 'CB'
+  | 'FACTURE' | 'ENVOIMAIL' | 'ADMINISTRATEUR'
+  | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE' | 'PAIEMENT'
+
+  // nouveaux menus admin
+  | 'INSCRIPTION'
+  | 'CONTRAT_PROF'
+  | 'TRACES_PAIEMENT'
+  | 'ADDINFO'
+  | 'IMPORT_EXPORT'
+  | 'DOCUMENT'
+  | 'PHOTOS'
+  | 'JOURNAL_ERREURS';
 
 @Injectable({ providedIn: 'root' })
 export class SessionStore {

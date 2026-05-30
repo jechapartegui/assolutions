@@ -1,10 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
-import { MailService } from '../../services/mail.service';
+import { MailProjectApiService } from '../../services/mail-project-api.service';
+import { MailProjectTemplateType } from '@shared/lib/mail-project.interface';
 
-// Types connus dans ton app d’envoi (les mêmes + "essai")
-export type TemplateType = 'relance' | 'annulation' | 'convocation' | 'bienvenue' | 'serie_seance' | 'essai' | 'libre';
+export type TemplateType = MailProjectTemplateType;
 
 @Component({
   standalone: false,
@@ -22,7 +22,7 @@ export class ProjetMailComponent implements OnInit {
   }
 
   // --- Onglets / types ---
-  types: TemplateType[] = ['relance', 'annulation', 'convocation', 'bienvenue', 'serie_seance', 'essai', 'libre'];
+  types: TemplateType[] = ['relance', 'annulation', 'convocation', 'bienvenue', 'serie_seance', 'essai', 'vide'];
   typeActif: TemplateType = 'relance';
 
   // --- Modèle éditable ---
@@ -42,7 +42,7 @@ export class ProjetMailComponent implements OnInit {
   // --- Sortie prévisualisée ---
   previewHtml = '';
 
-  constructor(private mail: MailService) {}
+  constructor(private mail: MailProjectApiService) {}
 
   ngOnInit(): void {
     this.chargerTemplate(this.typeActif);
@@ -60,10 +60,10 @@ export class ProjetMailComponent implements OnInit {
     const errorService = ErrorService.instance;
     const action = $localize`Charger le template`;
     this.runLocked(
-      this.mail.GetMail(t)
-        .then(kvp => {
-          this.sujet = kvp?.key ?? '';
-          this.html = kvp?.value ?? '';
+    this.mail.getTemplate(t)
+  .then(template => {
+      this.sujet = template?.sujet ?? '';
+      this.html = template?.mail ?? '';
           this.detecterChamps();
           this.genererPreview();
         })
@@ -168,7 +168,10 @@ export class ProjetMailComponent implements OnInit {
     const errorService = ErrorService.instance;
     const action = $localize`Sauvegarder le template`;
     this.runLocked(
-      this.mail.SauvegarderTemplate(this.html, this.sujet, this.typeActif)
+      this.mail.updateTemplate(this.typeActif, {
+        sujet: this.sujet,
+        mail: this.html
+      })
         .then(ok => {
           const o = ok ? errorService.OKMessage(action) : errorService.UnknownError(action);
           errorService.emitChange(o);

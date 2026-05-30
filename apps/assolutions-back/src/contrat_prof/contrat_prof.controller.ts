@@ -40,4 +40,10 @@ listForSeason(@Param('saisonId', ParseIntPipe) saisonId: number) {
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @Get('exist/:profId')
+  exist(@Param('profId', ParseIntPipe) profId: number) {
+    return this.service.exist(profId);
+  }
 }

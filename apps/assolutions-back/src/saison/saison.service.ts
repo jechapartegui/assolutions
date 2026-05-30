@@ -13,12 +13,75 @@ export class SaisonService {
     private readonly registry: RegistryService,
   ) {}
 
-  listForProject(projectId: number) {
-    return this.repo.find({
-      where: { project_id: projectId },
-      order: { id: 'ASC' },
-    });
+async listForProject(projectId: number) {
+  const saisons = await this.repo.find({
+    where: { project_id: projectId },
+    order: { id: 'ASC' },
+  });
+
+  return this.sortBySaisonPrecedenteOrId(saisons);
+}
+
+private sortBySaisonPrecedenteOrId<T extends { id: number; saison_precedente?: number | null }>(
+  saisons: T[],
+): T[] {
+  if (!saisons?.length) return [];
+
+  const byId = new Map<number, T>();
+  const previousIds = new Set<number>();
+
+  for (const saison of saisons) {
+    byId.set(Number(saison.id), saison);
+
+    const previousId = Number(saison.saison_precedente);
+    if (Number.isFinite(previousId) && previousId > 0) {
+      previousIds.add(previousId);
+    }
   }
+
+  const firstCandidates = saisons.filter((saison) => {
+    const previousId = Number(saison.saison_precedente);
+    return !Number.isFinite(previousId) || previousId <= 0 || !byId.has(previousId);
+  });
+
+  if (firstCandidates.length !== 1) {
+    return [...saisons].sort((a, b) => a.id - b.id);
+  }
+
+  const nextByPreviousId = new Map<number, T>();
+
+  for (const saison of saisons) {
+    const previousId = Number(saison.saison_precedente);
+
+    if (Number.isFinite(previousId) && previousId > 0 && byId.has(previousId)) {
+      if (nextByPreviousId.has(previousId)) {
+        return [...saisons].sort((a, b) => a.id - b.id);
+      }
+
+      nextByPreviousId.set(previousId, saison);
+    }
+  }
+
+  const sorted: T[] = [];
+  const visited = new Set<number>();
+  let current: T | undefined = firstCandidates[0];
+
+  while (current) {
+    if (visited.has(current.id)) {
+      return [...saisons].sort((a, b) => a.id - b.id);
+    }
+
+    sorted.push(current);
+    visited.add(current.id);
+    current = nextByPreviousId.get(current.id);
+  }
+
+  if (sorted.length !== saisons.length) {
+    return [...saisons].sort((a, b) => a.id - b.id);
+  }
+
+  return sorted;
+}
 
   async get(id: number) {
     const item = await this.repo.findOne({ where: { id } });

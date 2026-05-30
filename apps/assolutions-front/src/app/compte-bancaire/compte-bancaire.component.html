@@ -1,169 +1,408 @@
-<div class="container" *ngIf="ListeCompte">
-  <div class="columns" *ngIf="context == 'LISTE'">
-    <div class="column">
-      <div class="card">
-        <header class="card-header">
-          <p class="card-header-title" i18n>
-            Liste des comptes bancaires ({{ ListeCompte.length }})
-          </p>
-          <button
-            type="button"
-            (click)="Creer()"
-            class="button is-primary is-rounded is-outlined"
-            style="align-self: center; fill: hsl(171, 100%, 41%)"
-          >
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </header>
-        <span class="fullscreen">
-          <div class="card-content">
-            <table
-              class="table"
-              style="width: 100%; font-size: smaller"
-              *ngIf="ListeCompte && ListeCompte.length > 0"
-            >
-              <thead>
-                <tr>
-                  <th>
-                    <span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller" i18n>Nom</span>
-                        <span style="cursor: pointer">
-                          <i
-                            *ngIf="sort_nom === 'NO'"
-                            (click)="Sort('ASC', 'nom')"
-                            class="fa-solid fa-sort"
-                          ></i>
-                          <i
-                            *ngIf="sort_nom === 'ASC'"
-                            (click)="Sort('DESC', 'nom')"
-                            class="fa-solid fa-sort-up"
-                          ></i>
-                          <i
-                            *ngIf="sort_nom === 'DESC'"
-                            (click)="Sort('ASC', 'nom')"
-                            class="fa-solid fa-sort-down"
-                          ></i>
-                        </span>
-                      </span>
-                    </span>
-                  </th>
-                  <th><span style="font-size: smaller" i18n>Type</span></th>
-                  <th><span style="font-size: smaller" i18n>Action</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let cpt of ListeCompte">
-                  <td>
-                    {{ cpt.nom }}
-                  </td>
-                  <td>
-                    {{ cpt.type }}
-                  </td>
-                  <td>
-                    <div class="buttons">
-                      <button
-                        i18n-title
-                        title="Voir"
-                        type="button"
-                        (click)="Transactions(cpt)"
-                        class="button is-info is-rounded is-outlined"
-                      >
-                        <i class="fa-solid fa-binoculars"></i>
-                      </button>
-                      <button
-                        i18n-title
-                        title="Supprimer"
-                        class="button is-danger is-rounded is-outlined"
-                        type="button"
-                        (click)="Delete(cpt)"
-                      >
-                        <i class="fa-solid fa-trash-can"></i>
-                      </button>
+<div class="cb-page">
+  <ng-container *ngIf="loading && Liste.length === 0">
+    <div class="loading-zone">
+      <progress class="progress is-small is-info" max="100">60%</progress>
+      <p class="has-text-grey is-size-7">Chargement des comptes bancaires…</p>
+    </div>
+  </ng-container>
 
-                      <button
-                        i18n-title
-                        title="Editer"
-                        class="button is-info is-rounded is-outlined"
-                        type="button"
-                        (click)="Edit(cpt)"
-                      >
-                        <i class="fa-solid fa-pen-to-square"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="!ListeCompte || ListeCompte.length == 0">
-              Pas de comptes disponible
+  <ng-container *ngIf="!(loading && Liste.length === 0)">
+    <ng-container *ngIf="!Item; else detailTpl">
+      <div class="card page-card">
+        <header class="card-header page-card-header">
+          <div class="card-header-title">
+            <div>
+              <h1 class="title is-5 mb-1">Comptes bancaires</h1>
+              <p class="has-text-grey is-size-7">
+                Gestion des comptes, IBAN et moyens de paiement du projet.
+              </p>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <span *ngIf="refreshing" class="tag is-info is-light">
+              Mise à jour…
+            </span>
+
+            <span *ngIf="vm.refreshAvailable" class="tag is-warning is-light">
+              Recharge conseillée
+            </span>
+
+            <btn
+              [type_button]="'ReloadLight'"
+              title="Recharger"
+              (click)="refresh()"
+            ></btn>
+          </div>
+        </header>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="field has-addons mb-0">
+              <div class="control has-icons-left">
+                <input
+                  class="input is-small"
+                  type="text"
+                  placeholder="Filtrer"
+                  [ngModel]="vm.filterNom"
+                  (ngModelChange)="filter($event)"
+                />
+                <span class="icon is-small is-left">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+              </div>
+
+              <div class="control" *ngIf="vm.filterNom">
+                <button class="button is-small is-light" type="button" (click)="clearFilter()">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <ng-container *ngIf="hasSelection; else normalActions">
+              <span class="tag is-primary is-light">
+                {{ vm.selectedIds.length }} sélectionné(s)
+              </span>
+
+              <btn
+                [type_button]="'SupprimerSmall'"
+                title="Supprimer sélection"
+                (click)="supprimerSelection()"
+              ></btn>
+
+              <btn
+                [type_button]="'CopierSmall'"
+                title="Copier sélection"
+                (click)="copierSelection()"
+              ></btn>
+
+              <btn
+                [type_button]="'AnnulerSmall'"
+                title="Annuler sélection"
+                (click)="clearSelection()"
+              ></btn>
+            </ng-container>
+
+            <ng-template #normalActions>
+              <btn [type_button]="'CreerSmall'" title="Créer" (click)="create()"></btn>
+              <btn [type_button]="'ExporterSmall'" title="Exporter" (click)="exportExcel()"></btn>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="table-zone">
+          <table class="table is-fullwidth is-hoverable is-striped cb-table" *ngIf="Liste.length > 0">
+            <thead>
+              <tr>
+                <th class="check-col">
+                  <input
+                    type="checkbox"
+                    [checked]="Liste.length > 0 && vm.selectedIds.length === Liste.length"
+                    (change)="toggleSelectAll($any($event.target).checked)"
+                  />
+                </th>
+
+                <th>
+                  <button type="button" class="sort-button" (click)="sortNom()">
+                    <span>Nom</span>
+                    <i
+                      class="fa-solid"
+                      [ngClass]="vm.selectedSort === 'nom' && vm.selectedSortSens === 'DESC' ? 'fa-sort-down' : 'fa-sort-up'"
+                    ></i>
+                  </button>
+                </th>
+
+                <th>
+                  <button type="button" class="sort-button" (click)="sortType()">
+                    <span>Type</span>
+                    <i
+                      class="fa-solid"
+                      [ngClass]="vm.selectedSort === 'type' && vm.selectedSortSens === 'DESC' ? 'fa-sort-down' : 'fa-sort-up'"
+                    ></i>
+                  </button>
+                </th>
+
+                <th>IBAN</th>
+
+                <th class="active-col">
+                  <button type="button" class="sort-button" (click)="sortActif()">
+                    <span>Actif</span>
+                    <i
+                      class="fa-solid"
+                      [ngClass]="vm.selectedSort === 'actif' && vm.selectedSortSens === 'DESC' ? 'fa-sort-down' : 'fa-sort-up'"
+                    ></i>
+                  </button>
+                </th>
+
+                <th class="action-col">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let compte of Liste; trackBy: trackById" [class.is-disabled-row]="!compte.actif">
+                <td class="check-col">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(compte.id)"
+                    (change)="toggleSelection(compte.id, $any($event.target).checked)"
+                  />
+                </td>
+
+                <td>
+                  <strong>{{ compte.nom }}</strong>
+                  <p class="has-text-grey is-size-7" *ngIf="compte.info">
+                    {{ compte.info }}
+                  </p>
+                </td>
+
+                <td>
+                  <span class="tag is-light">{{ compte.type || '—' }}</span>
+                </td>
+
+                <td class="iban-cell">
+                  {{ compte.iban || '—' }}
+                </td>
+
+                <td class="active-col">
+                  <span *ngIf="compte.actif" class="tag is-success is-light">Actif</span>
+                  <span *ngIf="!compte.actif" class="tag is-light">Inactif</span>
+                </td>
+
+                <td class="action-col">
+                  <div class="buttons are-small is-right">
+                    <btn
+                      [type_button]="'EditerLight'"
+                      title="Éditer"
+                      (click)="editCompte(compte)"
+                    ></btn>
+
+                    <btn
+                      [type_button]="'SupprimerLight'"
+                      title="Supprimer"
+                      (click)="delete(compte)"
+                    ></btn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-zone" *ngIf="Liste.length === 0">
+            <div class="empty-icon">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <p class="has-text-weight-semibold mb-1">Aucun compte bancaire trouvé</p>
+            <p class="has-text-grey is-size-7 mb-3">
+              Crée ton premier compte bancaire ou modifie le filtre.
+            </p>
+            <btn [type_button]="'CreerSmall'" (click)="create()"></btn>
+          </div>
+        </div>
+
+        <footer class="card-footer compact-footer">
+          <span class="card-footer-item is-size-7 has-text-grey">
+            {{ Liste.length }} compte(s) affiché(s)
+          </span>
+        </footer>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #detailTpl>
+  <div class="cb-page">
+    <div class="card page-card">
+      <header class="card-header page-card-header">
+        <div class="card-header-title">
+          <div>
+            <h1 class="title is-5 mb-1">
+              <span *ngIf="Item?.id === 0">Créer un compte bancaire</span>
+              <span *ngIf="Item && Item.id > 0">Modifier un compte bancaire</span>
+            </h1>
+            <p class="has-text-grey is-size-7">
+              Configure le compte, son statut et ses informations de paiement.
             </p>
           </div>
-        </span>
-      </div>
-    </div>
-  </div>
+        </div>
 
-  <div class="columns is-justify-content-center" *ngIf="context == 'EDIT'">
-    <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
-      <div class="box">
-        <h2 *ngIf="editCB.id == 0" class="title is-2" i18n>
-          Créer un compte bancaire
-        </h2>
-        <h2 *ngIf="editCB.id > 0" class="title is-2" i18n>
-          Editer un compte bancaire
-        </h2>
-        <div class="field">
-          <label class="label" for="nom_compte" i18n>Nom du compte</label>
-          <input
-            [class]="editCB.nom.length > 2 ? 'input' : 'input is-danger'"
-            id="nom_compte"
-            type="text"
-            [(ngModel)]="editCB.nom"
-            i18n-placeholder
-            placeholder="Nom du compte"
-          />
-          <p class="help is-danger" *ngIf="editCB.nom.length < 3" i18n>
-            Le nom doit faire au moins 2 caractères
-          </p>
+        <div class="header-actions" *ngIf="Item">
+          <span *ngIf="Item.actif" class="tag is-success is-light">Actif</span>
+          <span *ngIf="!Item.actif" class="tag is-light">Inactif</span>
+
+          <btn
+            *ngIf="Item.id > 0 && !edit"
+            [type_button]="'EditerLight'"
+            title="Modifier"
+            (click)="setEditMode()"
+          ></btn>
+
+          <btn
+            *ngIf="edit"
+            [type_button]="'SauvegarderLight'"
+            title="Sauvegarder"
+            [disabled]="!canSave"
+            (click)="save()"
+          ></btn>
+
+          <btn
+            *ngIf="edit"
+            [type_button]="'AnnulerLight'"
+            title="Annuler"
+            (click)="cancel()"
+          ></btn>
         </div>
-        <div class="field">
-          <label class="label" for="type_compte" i18n>Type de compte :</label>
-          <div class="select">
-            <select [(ngModel)]="editCB.type">
-              <option value="Banque" i18n>Banque</option>
-              <option value="Plateforme" i18n>Plateforme</option>
-            </select>
+      </header>
+
+      <div class="detail-content" *ngIf="Item">
+        <section class="box detail-box">
+          <h2 class="subtitle is-6 has-text-primary mb-3">
+            Informations générales
+          </h2>
+
+          <div class="field">
+            <label class="label">Nom</label>
+
+            <p *ngIf="!edit" class="readonly-value">
+              {{ Item.nom || '—' }}
+            </p>
+
+            <input
+              *ngIf="edit"
+              class="input"
+              [class.is-danger]="(Item.nom || '').trim().length < 2"
+              type="text"
+              placeholder="Nom du compte"
+              [ngModel]="Item.nom"
+              (ngModelChange)="updateNom($event)"
+            />
+
+            <p class="help is-danger" *ngIf="edit && (Item.nom || '').trim().length < 2">
+              Le nom est obligatoire.
+            </p>
           </div>
-        </div>
-        <div class="field">
-          <label class="label" for="info_compte" i18n>Info du compte : </label>
-          <input
-            class="input"
-            id="info_compte"
-            type="text"
-            [(ngModel)]="editCB.info"
-          />
-        </div>
+
+          <div class="field">
+            <label class="label">Type</label>
+
+            <p *ngIf="!edit" class="readonly-value">
+              {{ Item.type || '—' }}
+            </p>
+
+            <div class="select is-fullwidth" *ngIf="edit">
+              <select [ngModel]="Item.type" (ngModelChange)="updateType($event)">
+                <option [ngValue]="'BANQUE'">Banque</option>
+                <option [ngValue]="'CARTE'">Carte</option>
+                <option [ngValue]="'CAISSE'">Caisse</option>
+                <option [ngValue]="'HELLOASSO'">HelloAsso</option>
+                <option [ngValue]="'AUTRE'">Autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                [disabled]="!edit"
+                [ngModel]="Item.actif"
+                (ngModelChange)="updateActif($event)"
+              />
+              Compte actif
+            </label>
+          </div>
+
+          <div class="field">
+            <label class="label">Informations</label>
+
+            <p *ngIf="!edit" class="readonly-value multiline">
+              {{ Item.info || '—' }}
+            </p>
+
+            <textarea
+              *ngIf="edit"
+              class="textarea"
+              rows="4"
+              placeholder="Informations complémentaires"
+              [ngModel]="Item.info"
+              (ngModelChange)="updateInfo($event)"
+            ></textarea>
+          </div>
+        </section>
+
+        <section class="box detail-box">
+          <h2 class="subtitle is-6 has-text-primary mb-3">
+            Données bancaires
+          </h2>
+
+          <div class="field">
+            <label class="label">IBAN</label>
+
+            <p *ngIf="!edit" class="readonly-value iban-readonly">
+              {{ Item.iban || '—' }}
+            </p>
+
+            <input
+              *ngIf="edit"
+              class="input"
+              type="text"
+              maxlength="34"
+              placeholder="IBAN"
+              [ngModel]="Item.iban"
+              (ngModelChange)="updateIban($event)"
+            />
+          </div>
+
+<div class="field">
+  <label class="label">Titulaire carte</label>
+
+  <p *ngIf="!edit" class="readonly-value">
+   {{ getPersonneLabel(Item.carte_titulaire_id) }}
+  </p>
+
+  <app-personne-selector
+    *ngIf="edit"
+    [personneId]="Item.carte_titulaire_id"
+    (personneIdChange)="updateCarteTitulaire($event)"
+    placeholder="Rechercher le titulaire"
+  ></app-personne-selector>
+</div>
+
+          <div class="field">
+            <label class="label">Données carte JSON</label>
+
+            <pre *ngIf="!edit" class="json-preview">{{ carteText || '—' }}</pre>
+
+            <textarea
+              *ngIf="edit"
+              class="textarea is-family-monospace"
+              rows="7"
+              placeholder='{"last4":"1234"}'
+              [ngModel]="carteText"
+              (ngModelChange)="updateCarteJson($event)"
+            ></textarea>
+
+            <p class="help">
+              Si le JSON est invalide, il sera conservé comme texte brut dans <code>raw</code>.
+            </p>
+          </div>
+        </section>
       </div>
-      <div class="buttons">
-        <button class="button is-primary is-rounded is-outlined" [disabled]="editCB.nom.length < 3" type="button"
-          style="fill:hsl(171, 100%, 41%)" (click)="Save()">
-          <i class="fa-solid fa-floppy-disk"></i>
-        </button>
-        <button
-        i18n-title
-        title="Voir"
-        type="button"
-        (click)="Transactions(editCB)"
-        class="button is-info is-rounded is-outlined"
-      >
-        <i class="fa-solid fa-binoculars"></i>
-      </button>
-        <button (click)="Retour()" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
-          <i class="fa-solid fa-backward-fast"></i>
-        </button>
-      </div>
+
+      <footer class="card-footer compact-footer">
+        <div class="card-footer-item footer-actions">
+          <btn [type_button]="'RetourSmall'" title="Retour" (click)="retour()"></btn>
+
+          <btn
+            *ngIf="edit"
+            [type_button]="'SauvegarderSmall'"
+            title="Sauvegarder"
+            [disabled]="!canSave"
+            (click)="save()"
+          ></btn>
+        </div>
+      </footer>
     </div>
   </div>
-</div>
+</ng-template>

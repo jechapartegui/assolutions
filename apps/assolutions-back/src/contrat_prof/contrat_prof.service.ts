@@ -29,6 +29,11 @@ export class ContratProfService {
       .getMany();
   }
 
+  async exist(profId: number) {
+    const count = await this.repo.count({ where: { professeur_id: profId } });
+    return count > 0;
+  }
+
   async getForProject(id: number, projectId: number) {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException(`contrat_prof ${id} introuvable`);

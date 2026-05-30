@@ -66,11 +66,10 @@ export class MessageService {
       success: boolean;
       error?: string | null;
     }[] = [];
-
     for (const message of dto.messages) {
       try {
         const prepared = this.prepareMessage(project, message);
-
+        console.warn(prepared);
         await this.transporter.sendMail({
           from: prepared.from,
           to: prepared.to,

@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from
 import { catchError, from, map, Observable, of, switchMap } from 'rxjs';
 
 import { AppStore } from './app.store';
-import { AuthApiService, LoginResponse } from '../services/auth-api.service';
+import { AuthApiService } from '../services/auth-api.service';
 import { ProjetView } from '@shared/index';
 import type { AppMode } from '@shared/lib/compte.interface';
 import { AdhesionApiService } from '../services/adhesion-api.service';
@@ -28,7 +28,10 @@ export class AuthGuard implements CanActivate {
     private readonly router: Router,
   ) {}
 
-canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
+canActivate(
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+): Observable<boolean> {
   const token = localStorage.getItem('auth_token');
 
   if (!token) {
@@ -54,39 +57,68 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observab
 
   this.meAlreadyTried = true;
 
-return from(this.loginService.me()).pipe(
-  switchMap((me: LoginResponse): Observable<boolean> =>
-    from(this.adherentService.get() as Promise<ProjetView[]>).pipe(
-      map((projects: ProjetView[]): boolean => {
-        const selectedProjectId = this.restoreSelectedProjectId(projects);
+  return from(this.loginService.me()).pipe(
+    switchMap((mr): Observable<boolean> => {
+      if (mr.mode === 'ADMIN') {
+        if (!mr.projects || mr.projects.length !== 1) {
+          this.store.clearSession();
+          this.meAlreadyTried = false;
+          this.gotoLogin(state.url);
+          return of(false);
+        }
+
+        const project = mr.projects[0];
 
         this.store.setSession({
-          token,
-          mode: me.mode,
-          compte: me.compte,
-          projects,
-          selectedProjectId,
-          rights: projects.find((x) => x.id === selectedProjectId)?.rights ?? null,
+          token: mr.token ?? token,
+          mode: 'ADMIN',
+          compte: mr.compte,
+          projects: mr.projects,
+          selectedProjectId: project.id,
+          rights: project.rights,
         });
 
         const ok = this.checkAccess(route);
 
         if (!ok) {
           this.gotoUnauthorizedHome();
-          return false;
         }
 
-        return true;
-      }),
-    ),
-  ),
-  catchError((): Observable<boolean> => {
-    this.store.clearSession();
-    this.meAlreadyTried = false;
-    this.gotoLogin(state.url);
-    return of(false);
-  }),
-);
+        return of(ok);
+      }
+
+      return from(this.adherentService.get() as Promise<ProjetView[]>).pipe(
+        map((projects: ProjetView[]): boolean => {
+          const selectedProjectId = this.restoreSelectedProjectId(projects);
+
+          this.store.setSession({
+            token: mr.token ?? token,
+            mode: mr.mode,
+            compte: mr.compte,
+            projects,
+            selectedProjectId,
+            rights:
+              projects.find((x) => x.id === selectedProjectId)?.rights ?? null,
+          });
+
+          const ok = this.checkAccess(route);
+
+          if (!ok) {
+            this.gotoUnauthorizedHome();
+          }
+
+          return ok;
+        }),
+      );
+    }),
+
+    catchError((): Observable<boolean> => {
+      this.store.clearSession();
+      this.meAlreadyTried = false;
+      this.gotoLogin(state.url);
+      return of(false);
+    }),
+  );
 }
 
   private restoreSelectedProjectId(projects: ProjetView[]): number | null {

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { CompteEntity } from '../compte/compte.entity';
 
 @Entity({ name: 'personne' })
 export class PersonneEntity {
@@ -10,6 +11,10 @@ export class PersonneEntity {
 
   @Column({ type: 'int' })
   compte: number;
+
+  @ManyToOne(() => CompteEntity, { nullable: true })
+@JoinColumn({ name: 'compte' })
+compte_rel?: CompteEntity;
 
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_creation: Date;

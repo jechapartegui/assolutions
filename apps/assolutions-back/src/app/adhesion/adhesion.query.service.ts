@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { ProjetView } from '@shared/index';
+import { PersonneSearchItem, ProjetView } from '@shared/index';
 export type ligneSaison = {
   id: number;
   nom: string;
@@ -25,6 +25,28 @@ type ProjectRow = {
 export class AdhesionQueryService {
  constructor(private readonly dataSource: DataSource) {}
 
+ async admin_search(search: string, project_id: number): Promise<PersonneSearchItem[]> {
+  const sql = `
+    SELECT
+      p.id,
+      p.last_name AS nom,
+      p.first_name AS prenom,
+      p.nickname AS surnom,
+      trim(concat_ws(' ', p.first_name, p.last_name, p.nickname)) AS libelle
+    FROM personne p
+    INNER JOIN login_project c ON c.login_id = p.compte
+    WHERE (
+      p.first_name ILIKE $1
+      OR p.last_name ILIKE $1
+      OR p.nickname ILIKE $1
+      OR trim(concat_ws(' ', p.first_name, p.last_name, p.nickname)) ILIKE $1
+    )
+    AND c.project_id = $2
+    ORDER BY p.last_name, p.first_name, p.nickname
+  `;
+
+  return this.dataSource.query(sql, [`%${search}%`, project_id]);
+}
 async getAdhesion(compteId: number): Promise<ProjetView[]> {
   const sql = `
 SELECT

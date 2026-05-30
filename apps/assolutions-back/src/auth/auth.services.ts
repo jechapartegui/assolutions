@@ -14,6 +14,8 @@ import { CompteEntity } from '../compte/compte.entity';
 import { ProjectEntity } from '../project/project.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
+import { ProjetView } from '@shared/lib/compte.interface';
+import { SaisonEntity } from '../saison/saison.entity';
 
 type AppMode = 'ADMIN' | 'APPLI';
 
@@ -33,6 +35,9 @@ export class AuthService {
 
     @InjectRepository(PersonneEntity)
     private readonly personneRepo: Repository<PersonneEntity>,
+
+    @InjectRepository(SaisonEntity)
+    private readonly saisonRepo: Repository<SaisonEntity>,
 
     @InjectRepository(LoginProjectEntity)
     private readonly loginProjectRepo: Repository<LoginProjectEntity>,
@@ -90,14 +95,37 @@ export class AuthService {
 
   private async buildSession(compte: CompteEntity, token = ''): Promise<any> {
     const mode = await this.computeMode(compte.id);
+    if(mode === 'APPLI') {
     const projects = await this.getProjectsForCompte(compte.id);
-
     return {
       token,
       compte,
       mode,
       projects,
-    };
+    };  }
+    else {      
+      const pr = await this.projectRepo.findOne({where : {compte: compte.id}});
+      if(!pr) {
+        throw new NotFoundException('PROJECT_NOT_FOUND');
+      }
+      const ss = await this.saisonRepo.findOne({where : {project_id: pr.id, active: true}});
+       const ttpr : ProjetView = {
+        id: pr.id,
+        nom: pr.nom ,
+        rights: {
+          adherent: true,
+          prof: true,
+          visible: true},
+          saison_active : ss}
+
+
+      return {
+        token,
+        compte,
+        mode,
+        projects: [ttpr],
+    }
+    }
   }
 
   async prelogin(login: string): Promise<{ password_required: boolean; mode: AppMode }> {

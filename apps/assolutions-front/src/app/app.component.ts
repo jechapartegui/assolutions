@@ -1,4 +1,4 @@
-import { Component,  OnDestroy,  OnInit,  ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StaticClass } from './global';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import { environment } from '../environments/environment.prod';
@@ -6,89 +6,97 @@ import { ErrorService } from '../services/error.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { AppStore } from './app.store';
 import { distinctUntilChanged, filter, map, startWith, Subscription } from 'rxjs';
+import { MenuType } from '../store/session.store';
 
 @Component({
   standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'AsSolutions';
-  action: string;
-  isactive: boolean = false;
+  action!: string;
+  isactive = false;
   g: StaticClass;
-  search_text:string = "";
+  search_text = '';
   envt = environment;
-  @ViewChild(NotifJechaComponent, { static: true }) child: NotifJechaComponent;
-
   isPublic = false;
+
+  @ViewChild(NotifJechaComponent, { static: true })
+  child!: NotifJechaComponent;
+
   private sub?: Subscription;
 
+  constructor(
+    public erroservice: ErrorService,
+    public globals: StaticClass,
+    public router: Router,
+    public store: AppStore,
+  ) {
+    this.g = globals;
 
-  private isPublicUrl(url: string): boolean {
-    // ✅ match “/liste-seances-public”, “/liste-cours-public”, “/public/...”
-    const hasPublicSuffix = /(^|\/)[^?#]*-public(\/|$|\?)/.test(url);
-    const inPublicSegment = /(^|\/)public(\/|$|\?)/.test(url);
-    const embedParam      = url.includes('embed=1'); // optionnel
-    return hasPublicSuffix || inPublicSegment || embedParam;
+    erroservice.changeEmitted$.subscribe((data) => {
+      this.DisplayError(data);
+    });
+  }
+
+  ngOnInit(): void {
+    this.sub = this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        map((e) => e.urlAfterRedirects.toLowerCase()),
+        startWith(this.router.url.toLowerCase()),
+        distinctUntilChanged(),
+      )
+      .subscribe((url) => {
+        this.isPublic = this.isPublicUrl(url);
+      });
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
   }
-  constructor(
-    public erroservice: ErrorService,
-    public globals: StaticClass,
-    public router:Router,
-    public store:AppStore
-  ) {
-    this.g = globals;
-    erroservice.changeEmitted$.subscribe((data) => {
-      this.DisplayError(data);
-    })
-  }
-  public selected_menu: "MATCH" | "CLUB" | "COMPETITION"= "MATCH";
-  ngOnInit(): void {
 
-    this.sub = this.router.events.pipe(
-      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map(e => e.urlAfterRedirects.toLowerCase()),
-      startWith(this.router.url.toLowerCase()),
-      distinctUntilChanged()
-    ).subscribe(url => {
-      this.isPublic = this.isPublicUrl(url);
-    });
+  private isPublicUrl(url: string): boolean {
+    const hasPublicSuffix = /(^|\/)[^?#]*-public(\/|$|\?)/.test(url);
+    const inPublicSegment = /(^|\/)public(\/|$|\?)/.test(url);
+    const embedParam = url.includes('embed=1');
+
+    return hasPublicSuffix || inPublicSegment || embedParam;
   }
 
-  isact() {
-    if (this.isactive) {
-      this.isactive = false;
-    } else {
-      this.isactive = true;
-    }
+  isact(): void {
+    this.isactive = !this.isactive;
   }
 
-  LogOut() {
+  closeMenu(): void {
+    this.isactive = false;
+  }
+
+selectMenu(menu: MenuType): void {
+  this.store.updateSelectedMenu(menu);
+  this.closeMenu();
+}
+
+  LogOut(): void {
     const errorService = ErrorService.instance;
+
     this.action = $localize`Se déconnecter`;
     this.store.clearSession();
     this.router.navigate(['/login']);
-              let o = errorService.OKMessage(this.action);
-              errorService.emitChange(o);
+
+    const notification = errorService.OKMessage(this.action);
+    errorService.emitChange(notification);
   }
 
-  MDP() {
-    this.action = $localize`Modifier le mot de passe`;
-    this.router.navigate(['reinit-mdp']);
-  }
-  Dashboard() {
+  Dashboard(): void {
     this.action = $localize`Afficher le tableau de bord`;
     this.router.navigate(['tdb']);
+    this.closeMenu();
   }
 
-  DisplayError(val) {
+  DisplayError(val: any): void {
     this.child.display_notification(val);
   }
-  
 }

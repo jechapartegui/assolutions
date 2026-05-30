@@ -1,6 +1,13 @@
-:host { display:block; }
-.mail-preview {
-  background: transparent;   /* on laisse le style inline du mail faire son job */
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+:host {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+}
+
+.mail-preview-frame {
+  width: 100%;
+  min-height: 180px;
+  border: 0;
+  border-radius: 12px;
+  background: #f6f7fb;
 }

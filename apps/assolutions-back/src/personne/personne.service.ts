@@ -80,12 +80,20 @@ export class PersonneService {
     return { ok: true };
   }
 
-  async listByIds(ids: number[]) {
-    return this.repo.find({
-      where: {
-        id: In(ids),
-      },
-      order: { id: 'ASC' },
-    });
-  }
+ async listByIds(ids: number[]) {
+  const personnes = await this.repo.find({
+    where: {
+      id: In(ids),
+    },
+    relations: {
+      compte_rel: true,
+    },
+    order: { id: 'ASC' },
+  });
+
+  return personnes.map(p => ({
+    ...p,
+    login: p.compte_rel?.login ?? null
+  }));
+}
 }

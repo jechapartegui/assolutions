@@ -5,6 +5,7 @@ import {
   CreateInscriptionSeanceDto,
   InscriptionStatus_VM,
   InscriptionStatusDto,
+  MesSeanceDto,
   MesSeanceHydrated,
   PersonneLight_VM,
   Seance,
@@ -52,8 +53,8 @@ async loadMenuData(
     this.loadAnniversaire(saisonId),
     this.loadReferenceData(projectId, saisonId),
   ]);
-  const { yesterday, nextMonth } = this.computeDefaultDates();
-  const riders = await this.loadRiders(rights, yesterday, nextMonth, refs);
+  const riders = await this.loadRiders(rights, refs);
+  console.log(riders);
   return {
     riders,
     anniversaire,
@@ -87,8 +88,6 @@ async loadMenuData(
 
 async loadRiders(
   rights: { adherent?: boolean; prof?: boolean; essai?: boolean } | null,
-  yesterday: Date,
-  nextMonth: Date,
   refs: MenuReferencesVm,
 ): Promise<AdherentMenu[]> {
   const sources: RiderSource[] = [];
@@ -120,6 +119,7 @@ async loadRiders(
   const hydratedDtos = await this.hydrateAdhMenDtos(
     sources.map((x) => x.dto)
   );
+  console.log('Hydrated DTOs:', hydratedDtos);
 
   const hydratedByPersonId = new Map<number, AdhMenHydrated>(
     hydratedDtos.map((x) => [x.personne.id, x])
@@ -133,9 +133,7 @@ async loadRiders(
       return this.menuMapper.toAdherentMenu(
   hydrated,
   refs,
-  source.profil,
-  yesterday,
-  nextMonth
+  source.profil
 );
     })
     .filter((x): x is AdherentMenu => x !== null);
@@ -226,7 +224,7 @@ private async hydrateAdhMenDtos(
       if (!personne) return null;
       personne.photo = photosByPersonne[dto.personne.id] ?? null;
       const mes_seances: MesSeanceHydrated[] = (dto.mes_seances ?? [])
-        .map<MesSeanceHydrated | null>((ms) => {
+        .map<MesSeanceHydrated | null>((ms : MesSeanceDto) => {
           const seance = seancesById.get(ms.seance.id);
           if (!seance) return null;
 
@@ -234,6 +232,7 @@ private async hydrateAdhMenDtos(
             seance,
             seanceProfesseurs: profsBySeanceId.get(seance.seance_id) ?? [],
             statutInscription: ms.statutInscription ?? null,
+            statutPrésence: ms.statutPrésence ?? null,
           };
         })
         .filter((x): x is MesSeanceHydrated => x !== null);
@@ -310,17 +309,6 @@ private mapInscriptionStatusVmToDto(
     ].join('///');
 
     return [ridersPart, annivPart, refsPart].join('§§§');
-  }
-
-  private computeDefaultDates(): { yesterday: Date; nextMonth: Date } {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 3);
-
-    const nextMonth = new Date(today);
-    nextMonth.setMonth(today.getMonth() + 1);
-
-    return { yesterday, nextMonth };
   }
 
   async updateInscription(

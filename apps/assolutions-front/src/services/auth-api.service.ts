@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services'; // adapte le chemin si besoin
 import { environment } from '../environments/environment'; // ou ton fichier d'env
+import { MeResponse } from '@shared/lib/compte.interface';
 
 export type AppMode = 'ADMIN' | 'APPLI';
 
@@ -9,12 +10,7 @@ export interface PreloginResponse {
   mode: AppMode;
 }
 
-export interface LoginResponse {
-  token: string;
-  compte: any;
-  mode: AppMode;
-  projects: any[];
-}
+
 
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
@@ -44,7 +40,7 @@ export class AuthApiService {
    * body: { login, password? }
    * Stocke le token dans localStorage (clé déjà utilisée par GlobalService)
    */
-  async login(login: string, password?: string): Promise<LoginResponse> {
+  async login(login: string, password?: string): Promise<MeResponse> {
     const res = await this.global.POST(this.url('/auth/login'), { login, password });
 
     if (res?.token) {
@@ -58,7 +54,7 @@ export class AuthApiService {
    * GET /auth/me
    * Retourne le compte courant (token déjà injecté par GlobalService s'il existe)
    */
-  async me(): Promise<LoginResponse> {
+  async me(): Promise<MeResponse> {
     return await this.global.GET(this.url('/auth/me'));
   }
 

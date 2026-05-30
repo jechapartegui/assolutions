@@ -285,7 +285,9 @@ getInitiales(personne: AdherentMenu): string {
 
 
 GotoSeance(seanceId: number): void {
-  this.router.navigate(['/seance-edit'], { queryParams: { id: seanceId } });
+  if(this.store.isAdmin() || this.store.isProf()) {
+  this.router.navigate(['/seance'], { queryParams: { id: seanceId } });
+  }
 }
 
 getadresse(lieuId: number): string {

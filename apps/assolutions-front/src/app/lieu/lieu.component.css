@@ -1,27 +1,211 @@
-
-/* 1) Le conteneur doit scroller (Bulma en fournit déjà un) */
-.table-container {
-  max-height: 60vh;           /* ajuste à ton besoin */
-  overflow: auto;             /* important pour activer sticky */
+:host {
+  display: block;
+  height: calc(100vh - var(--app-topbar-height, 52px));
+  min-height: 0;
 }
 
-/* 2) En-tête collante (ligne 1 figée) */
-.table thead th,
-.table thead td {
+.lieu-page {
+  height: 100%;
+  min-height: 0;
+  padding: 0.75rem;
+}
+
+.page-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.page-card-header {
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fbfcfd;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-right {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.table-zone {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.lieu-table {
+  font-size: 0.86rem;
+  margin-bottom: 0;
+}
+
+.lieu-table thead th,
+.lieu-table thead td {
   position: sticky;
   top: 0;
-  z-index: 2;                 /* au-dessus des cellules */
-  /* Fond solide pour ne pas voir les lignes défiler dessous */
+  z-index: 2;
   background: var(--bulma-scheme-main, #ffffff);
-  /* Liseré discret en bas pour séparer visuellement */
-  box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
 }
 
-/* Dark mode : fond et liseré adaptés */
+.check-col {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.action-col {
+  width: 7.5rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detail-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.9rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 0.9rem;
+  align-content: start;
+}
+
+.detail-box {
+  height: fit-content;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: none;
+}
+
+.readonly-value {
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0;
+  color: #1f2937;
+}
+
+.compact-footer {
+  flex: 0 0 auto;
+  min-height: 48px;
+}
+
+.footer-actions {
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.loading-zone,
+.empty-zone {
+  height: 100%;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-zone {
+  padding: 2rem;
+}
+
+.empty-icon {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  border-radius: 18px;
+  background: rgba(0, 209, 178, 0.1);
+  color: #008f7d;
+  font-size: 1.35rem;
+}
+
+@media screen and (max-width: 900px) {
+  :host {
+    height: auto;
+    min-height: calc(100vh - var(--app-topbar-height, 52px) - var(--app-bottombar-height, 60px));
+  }
+
+  .lieu-page {
+    min-height: calc(100vh - var(--app-topbar-height, 52px) - var(--app-bottombar-height, 60px));
+    padding-bottom: 4.5rem;
+  }
+
+  .page-card {
+    min-height: calc(100vh - var(--app-topbar-height, 52px) - var(--app-bottombar-height, 60px) - 1.5rem);
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    width: 100%;
+  }
+
+  .toolbar-left .field {
+    width: 100%;
+  }
+
+  .toolbar-left .control:first-child {
+    flex: 1;
+  }
+
+  .detail-content {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
-  .table thead th,
-  .table thead td {
+  .lieu-table thead th,
+  .lieu-table thead td {
     background: var(--bulma-scheme-main, #0f1115);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.12);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12);
   }
 }

@@ -1,683 +1,133 @@
-<div class="container">
-      <ng-container *ngIf="loading">
-        <progress
-          class="progress is-large is-info"
-          style="margin-top: 60px"
-          max="100"
-        >
-          60%
-        </progress>
-        <p>Chargement en cours</p>
-      </ng-container>
-      <ng-container *ngIf="!loading">
-        <ng-container *ngIf="!thisProf; else profDetail">
-          <div class="columns page-fill" *ngIf="ListeProf">
-            <div class="column">
-              <div class="card card--scroller">
-                <header class="card-header" style="align-items: center">
-                  <p
-                    class="card-header-title"
-                    *ngIf="
-                      ListeProf
-                        | multifiltersProf: filters as filteredApplis
-                    "
-                  >
-                    <span i18n>Liste des professeurs</span>&nbsp;({{
-                      filteredApplis.length
-                    }})
-                  </p>
-                </header>
-                <div class="card-content" #scrollableContent>
-                  <div class="content">
-                    <table
-                      class="table"
-                      style="width: 100%; font-size: smaller"
-                      *ngIf="ListeProf && ListeProf.length > 0"
-                    >
-                      <thead>
-                        <tr>
-                          <th>
-                            <span>
-                              <span class="ligne">
-                                <span
-                                  [ngClass]="
-                                    filters.filter_nom ? 'has-text-info' : ''
-                                  "
-                                  i18n
-                                  >Nom</span
-                                >
-                                <span style="cursor: pointer">
-                                  <i
-                                    *ngIf="sort_nom === 'NO'"
-                                    (click)="Sort('ASC', 'nom')"
-                                    class="fa-solid fa-sort"
-                                  ></i>
-                                  <i
-                                    *ngIf="sort_nom === 'ASC'"
-                                    (click)="Sort('DESC', 'nom')"
-                                    class="fa-solid fa-sort-up"
-                                  ></i>
-                                  <i
-                                    *ngIf="sort_nom === 'DESC'"
-                                    (click)="Sort('ASC', 'nom')"
-                                    class="fa-solid fa-sort-down"
-                                  ></i>
-                                </span>
-                              </span>
-                            </span>
-                          </th>
-                          <th>
-                            <span>
-                              <span class="ligne">
-                                <span
-                                  [ngClass]="
-                                    filters.filter_date_apres ||
-                                    filters.filter_date_avant
-                                      ? 'has-text-info'
-                                      : ''
-                                  "
-                                  i18n
-                                  >Date de naissance</span
-                                >
-                                <span style="cursor: pointer">
-                                  <i
-                                    *ngIf="sort_date === 'NO'"
-                                    (click)="Sort('ASC', 'date')"
-                                    class="fa-solid fa-sort"
-                                  ></i>
-                                  <i
-                                    *ngIf="sort_date === 'ASC'"
-                                    (click)="Sort('DESC', 'date')"
-                                    class="fa-solid fa-sort-up"
-                                  ></i>
-                                  <i
-                                    *ngIf="sort_date === 'DESC'"
-                                    (click)="Sort('ASC', 'date')"
-                                    class="fa-solid fa-sort-down"
-                                  ></i> </span
-                              ></span>
-                            </span>
-                          </th>
-                          <th>
-                            <span>
-                              <span class="ligne">
-                                <span
-                                  [ngClass]="
-                                    filters.filter_sexe ? 'has-text-info' : ''
-                                  "
-                                  i18n
-                                  >Sexe</span
-                                ><span style="cursor: pointer">
-                                  <i
-                                    *ngIf="sort_sexe === 'NO'"
-                                    (click)="Sort('ASC', 'sexe')"
-                                    class="fa-solid fa-sort"
-                                  ></i>
-                                  <i
-                                    *ngIf="sort_sexe === 'ASC'"
-                                    (click)="Sort('DESC', 'sexe')"
-                                    class="fa-solid fa-sort-up"
-                                  ></i>
-                                  <i
-                                    *ngIf="sort_sexe === 'DESC'"
-                                    (click)="Sort('ASC', 'sexe')"
-                                    class="fa-solid fa-sort-down"
-                                  ></i>
-                                </span>
-                              </span>
-                            </span>
-                          </th>
-                          <th>
-                            <span>
-                              <span
-                                [ngClass]="
-                                  filters.filter_groupe ? 'has-text-info' : ''
-                                "
-                                i18n
-                                >Contrats</span
-                              >
-                            </span>
-                          </th>
-                          <th>
-                            <span
-                              [ngClass]="
-                                filters.filter_inscrit ? 'has-text-info' : ''
-                              "
-                              i18n
-                              >Saison en cours</span
-                            >
-                          </th>
-                          <th>
-                            <span i18n>Action</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          *ngFor="
-                            let adherent of ListeProf
-                              | multifiltersProf : filters
-                          "
-                        >
-                          <td>
-                            {{ adherent.person.prenom }}&nbsp;{{ adherent.person.nom }}
-                          </td>
-                          <td>
-                            {{ adherent.person.date_naissance| date : "dd/MM/yyyy" }}
-                            ({{ calculateAge(adherent.person.date_naissance) }}&nbsp;<span i18n
-                              >ans</span
-                            >)
-                          </td>
-                          <td>
-                            <i
-                              *ngIf="adherent.person.sexe"
-                              class="fa-solid fa-mars has-text-info"
-                            ></i>
-                            <i
-                              *ngIf="!adherent.person.sexe"
-                              class="fa-solid fa-venus has-text-danger"
-                            ></i>
-                          </td>
-                          <td>
-                            <div class="tags">
-                            <ng-container
-                              *ngFor="let gr of adherent.contrats"
-                            >
-                              <span class="tag is-success">
-                                {{ nom_saison(gr.saison_id) }} - {{ gr.type_contrat }}
-                              </span>
-                            </ng-container>
-                            </div>
-                          <td>
-                            <i *ngIf="!isRegistred(adherent)" class="fas fa-times"></i>
-                            <i
-                              *ngIf="isRegistred(adherent)"
-                              class="fas fa-check has-text-success"
-                            ></i>
-                          </td>
-                          <td>
-                            <div class="buttons" style="flex-wrap: nowrap">
-                              <btn
-                                i18n-title
-                                title="Supprimer"
-                                [type_button]="'SupprimerLight'"
-                                *ngIf="store.mode() === 'ADMIN'"
-                                (click)="Delete(adherent)"
-                              ></btn>
-                              <btn
-                                i18n-title
-                                title="Voir"
-                                [type_button]="'VoirLight'"
-                                (click)="Read(adherent)"
-                              ></btn>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <p
-                      *ngIf="
-                        !ListeProf || ListeProf.length == 0
-                      "
-                      i18n
-                    >
-                      Pas de prof disponible
-                    </p>
-                    <button
-                      class="scroll-to-top"
-                      *ngIf="showScrollToTop"
-                      (click)="scrollToTop()"
-                      title="Revenir en haut"
-                    >
-                      ↑
-                    </button>
-                  </div>
-                </div>
-                <footer class="card-footer">
-                  <div class="columns">
-                    <div class="column">
-                      <div *ngIf="!afficher_filtre" class="buttons">
-                        <btn
-                          [type_button]="'CreerSmall'"
-                          (click)="Creer()"
-                        ></btn>
-                        <btn
-                          [type_button]="'FiltrerSmall'"
-                          (click)="
-                            afficher_filtre
-                              ? (afficher_filtre = false)
-                              : (afficher_filtre = true)
-                          "
-                        ></btn>
-                        <btn
-                          [type_button]="'ExporterSmall'"
-                          (click)="ExportExcel()"
-                        ></btn>
-                      </div>
-  
-                      <div class="buttons" *ngIf="afficher_filtre">
-                        <btn
-                          (click)="
-                            afficher_filtre = false; selected_filter = null
-                          "
-                          [type_button]="'RetourLight'"
-                        ></btn>
-                        <div
-                          class="field is-horizontal"
-                          style="gap: 0.5rem; align-items: center"
-                        >
-                          <div class="field-label is-normal">
-                            <label class="label" style="white-space: nowrap" i18n
-                              >Sélection du filtre</label
-                            >
-                          </div>
-                          <div class="field-body">
-                            <div class="field is-narrow">
-                              <div class="control">
-                                <div
-                                  class="select is-fullwidth ; font-size: smaller"
-                                >
-                                  <select [(ngModel)]="selected_filter">
-                                    <option value="nom" i18n>Nom</option>
-                                    <option value="date" i18n>
-                                      Date de naissance
-                                    </option>
-                                    <option value="groupe" i18n>Groupe</option>
-                                    <option value="sexe" i18n>Sexe</option>
-                                    <option value="inscrit" i18n>Contrat</option>
-                                  </select>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div
-                            *ngIf="selected_filter"
-                            class="field-label is-normal"
-                          >
-                            <label class="label" style="white-space: nowrap" i18n
-                              >Valeur du filtre
-                            </label>
-                          </div>
-                          <div class="field-body" *ngIf="selected_filter">
-                            <div class="field is-narrow">
-                              <div class="control">
-                                <input
-                                  *ngIf="selected_filter == 'nom'"
-                                  style="width: fit-content; font-size: smaller"
-                                  class="input is-small"
-                                  i18n-placeholder
-                                  placeholder="Nom du cours"
-                                  type="text"
-                                  [(ngModel)]="filters.filter_nom"
-                                />
-                                <div
-                                  class="select"
-                                  *ngIf="selected_filter == 'sexe'"
-                                >
-                                  <select
-                                    style="font-size: smaller"
-                                    [(ngModel)]="filters.filter_sexe"
-                                  >
-                                    <option [ngValue]="null" i18n>Tous</option>
-                                    <option [ngValue]="false" i18n>Femme</option>
-                                    <option [ngValue]="true" i18n>Homme</option>
-                                  </select>
-                                </div>                                
-                                <div
-                                  class="select"
-                                  *ngIf="selected_filter == 'inscrit'"
-                                >
-                                  <select
-                                    style="font-size: smaller"
-                                    [(ngModel)]="filters.filter_inscrit"
-                                  >
-                                    <option [ngValue]="null" i18n>Tous</option>
-                                    <option [ngValue]="false" i18n>Non</option>
-                                    <option [ngValue]="true" i18n>Oui</option>
-                                  </select>
-                                </div>
-                                <span
-                                  *ngIf="selected_filter == 'date'"
-                                  class="ligne"
-                                >
-                                  <div
-                                    style="gap: 6px"
-                                    class="field is-small is-horizontal field-jecha"
-                                  >
-                                    <label
-                                      for="groupe"
-                                      class="label is-small"
-                                      i18n
-                                      >Du</label
-                                    >
-                                    <input
-                                      style="width: fit-content"
-                                      class="input is-small"
-                                      i18n-placeholder
-                                      placeholder="Filtre date avant"
-                                      type="date"
-                                      [(ngModel)]="filters.filter_date_apres"
-                                    />
-                                  </div>
-                                </span>
-                                <span
-                                  *ngIf="selected_filter == 'date'"
-                                  class="ligne"
-                                >
-                                  <div
-                                    style="gap: 6px"
-                                    class="field is-small is-horizontal field-jecha"
-                                  >
-                                    <label
-                                      for="groupe"
-                                      class="label is-small"
-                                      i18n
-                                      >Au</label
-                                    >
-                                    <input
-                                      style="width: fit-content"
-                                      class="input is-small"
-                                      i18n-placeholder
-                                      placeholder="Filtre date après"
-                                      type="date"
-                                      [(ngModel)]="filters.filter_date_avant"
-                                    />
-                                  </div>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="tags">
-                            <span
-                              *ngIf="filters.filter_nom"
-                              class="tag is-success"
-                            >
-                              <span i18n>Nom : </span>
-                              <span>{{ filters.filter_nom }}</span>
-                              <button
-                                class="delete"
-                                (click)="filters.filter_nom = null"
-                              ></button>
-                            </span>
-  
-                            <span
-                              *ngIf="filters.filter_inscrit != null"
-                              class="tag is-success"
-                            >
-                              <span i18n>Inscrits : </span>
-                              <span *ngIf="filters.filter_inscrit == true" i18n
-                                >Oui</span
-                              >
-                              <span *ngIf="filters.filter_inscrit == false" i18n
-                                >Non</span
-                              >
-                              <button
-                                class="delete"
-                                (click)="filters.filter_inscrit = null"
-                              ></button>
-                            </span>
-  
-                            <span
-                              *ngIf="
-                                filters.filter_date_avant ||
-                                filters.filter_date_apres
-                              "
-                              class="tag is-success"
-                            >
-                              <span i18n>Date de naissance : </span>
-                              <span *ngIf="filters.filter_date_avant"
-                                >&nbsp;>&nbsp;{{
-                                  filters.filter_date_avant
-                                }}</span
-                              >
-                              <span *ngIf="filters.filter_date_apres"
-                                >&nbsp;<&nbsp;{{
-                                  filters.filter_date_apres
-                                }}</span
-                              >
-                              <button
-                                class="delete"
-                                (click)="
-                                  filters.filter_date_avant = null;
-                                  filters.filter_date_apres = null
-                                "
-                              ></button>
-                            </span>
-  
-                            <span
-                              *ngIf="filters.filter_sexe != null"
-                              class="tag is-success"
-                            >
-                              <span i18n>Sexe : </span>
-                              <span *ngIf="filters.filter_sexe == true" i18n
-                                >Homme</span
-                              >
-                              <span *ngIf="filters.filter_sexe == false" i18n
-                                >Femme</span
-                              >
-                              <button
-                                class="delete"
-                                (click)="filters.filter_sexe = null"
-                              ></button>
-                            </span>
-                            <span
-                              *ngIf="filters.filter_groupe != null"
-                              class="tag is-success"
-                            >
-                              <span i18n>Groupe : </span>
-                              <span i18n>{{ filters.filter_groupe }}</span>
-                              <button
-                                class="delete"
-                                (click)="filters.filter_groupe = null"
-                              ></button>
-                            </span>
-                            <btn
-                              [type_button]="'SupprimerLight'"
-                              (click)="ReinitFiltre()"
-                              *ngIf="
-                                filters.filter_date_apres ||
-                                filters.filter_date_avant ||
-                                filters.filter_inscrit ||
-                                filters.filter_nom ||
-                                filters.filter_sexe
-                              "
-                            >
-                            </btn>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </footer>
-              </div>
-            </div>
-          </div>
-
-</ng-container>
-<ng-template #profDetail>
-  <div class="columns page-fill">
-    <div class="column">
-      <div class="card card--scroller">
-        <!-- Header -->
-        <header class="card-header" style="align-items:center">
-          <p class="card-header-title subtitle is-6">
-            <span *ngIf="creer" i18n>Créer un professeur</span>
-            <span *ngIf="!creer" i18n>Éditer un professeur</span>
-            <span *ngIf="thisProf?.person"><strong>{{ thisProf.person?.prenom }}&nbsp;{{ thisProf.person?.nom }}</strong></span>
+<div class="admin-crud-page">
+  <div class="card page-card">
+    <header class="card-header page-card-header">
+      <div class="card-header-title">
+        <div>
+          <h1 class="title is-5 mb-1">Professeurs</h1>
+          <p class="has-text-grey is-size-7">
+            Personnes identifiées comme professeurs du projet.
           </p>
-         
-        </header>
-
-        <!-- Content -->
-        <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
-
-          <!-- Colonne gauche : champs Professor (entity exacte) -->
-          <div class="column is-full-tablet is-half-desktop">
-            <div class="box is-light">
-              <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations administratives</h3>
-
-              <!-- Status -->
-              <div class="field">
-                <label class="label" i18n>Statut</label>
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select [(ngModel)]="thisProf.statut">
-                      <option [ngValue]="'Bénévole'" i18n>Bénévole</option>
-                      <option [ngValue]="'CDI'" i18n>CDI</option>
-                      <option [ngValue]="'CDD'" i18n>CDD</option>
-                      <option [ngValue]="'Presta'" i18n>Prestataire externe</option>
-                      <option [ngValue]="'Freelance'" i18n>Auto-entrepreneur</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hourly rate (si Employee / SelfEmployed) -->
-              <div class="field" *ngIf="thisProf.statut !== 'Bénévole' ">
-                <label class="label" i18n>Taux horaire</label>
-                <div class="control">
-                  <input type="number" min="0" class="input" [(ngModel)]="thisProf.taux" />
-                </div>
-              </div>
-
-              <!-- SIREN -->
-              <div class="field">
-                <label class="label" i18n>N° SIREN</label>
-                <div class="control">
-                  <input class="input" type="number" [(ngModel)]="thisProf.num_siren" i18n-placeholder placeholder="Numéro de SIREN"/>
-                </div>
-              </div>
-
-              <!-- IBAN -->
-              <div class="field">
-                <label class="label">IBAN</label>
-                <div class="control">
-                  <input class="input" type="text" [(ngModel)]="thisProf.iban" i18n-placeholder placeholder="IBAN"/>
-                </div>
-              </div>
-
-              <!-- TVA -->
-              <div class="field">
-                <label class="label" i18n>N° TVA</label>
-                <div class="control">
-                  <input class="input" type="text" [(ngModel)]="thisProf.num_tva" i18n-placeholder placeholder="Numéro de TVA"/>
-                </div>
-              </div>
-
-              <!-- Info -->
-              <div class="field">
-                <label class="label" i18n>Info complémentaire</label>
-                <div class="control">
-                  <textarea class="textarea" rows="5" [(ngModel)]="thisProf.info" i18n-placeholder placeholder="Informations complémentaires"></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Colonne droite : Contrats -->
-          <div class="column is-full-tablet is-half-desktop">
-            <div class="box is-light">
-              <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-                <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Contrats existants</h3>
-              </div>
-
-              <!-- Liste contrats -->
-              <div *ngIf="thisProf?.contrats?.length; else noContracts">
-                <div class="tags">
-                  <span class="tag is-success" style="cursor: pointer;" (click)="newContrat = c" *ngFor="let c of thisProf.contrats">
-                    {{ nom_saison(c.saison_id) }} · {{ c.type_contrat }} · {{ c.type_remuneration }} 
-                  </span>
-                </div>
-              </div>
-              <ng-template #noContracts>
-                <p class="is-size-7" i18n>Aucun contrat pour l’instant.</p>
-              </ng-template>
-            </div>
-
-            <!-- Formulaire ajout contrat -->
-            <div class="box is-light" *ngIf="newContrat">
-              <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Ajouter un contrat</h3>
-
-              <div class="columns is-multiline">
-                <div class="column is-half">
-                  <div class="field">
-                    <label class="label" i18n>Saison</label>
-                    <div class="control">
-                      <div class="select is-fullwidth">
-                        <select [(ngModel)]="newContrat.saison_id">
-                          <option [ngValue]="0" disabled selected i18n>— Choisir —</option>
-                          <option *ngFor="let s of liste_saison" [ngValue]="s.id">
-                            {{ s.nom  }}
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="column is-half">
-                  <div class="field">
-                    <label class="label" i18n>Type de contrat</label>
-                    <div class="control">
-                      <input class="input" type="text" [(ngModel)]="newContrat.type_contrat" i18n-placeholder placeholder="ex. CDD / Annuel / Interv."/>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="column is-half">
-                  <div class="field">
-                    <label class="label" i18n>Rémunération</label>
-                    <div class="control">
-                      <input class="input" type="text" [(ngModel)]="newContrat.type_remuneration" i18n-placeholder placeholder="ex. à l'heure / au cours / forfait"/>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="column is-half">
-                  <div class="field">
-                    <label class="label" i18n>Début</label>
-                    <div class="control">
-                      <input class="input" type="date" [(ngModel)]="newContrat.date_debut"/>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="column is-half">
-                  <div class="field">
-                    <label class="label" i18n>Fin (optionnel)</label>
-                    <div class="control">
-                      <input class="input" type="date" [(ngModel)]="newContrat.date_fin"/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="buttons is-right">
-                <btn [type_button]="'SauvegarderSmall'" (click)="SaveContrat()" i18n>Sauvegarder le contrat</btn>
-              </div>
-              <p class="help is-danger" *ngIf="contratError">{{ contratError }}</p>
-            </div>
-          </div>
-
         </div>
+      </div>
 
-        <!-- Footer -->
-        <footer class="card-footer">
-          <div class="columns is-mobile is-centered">
-            <div class="column is-half">
-              <div class="buttons" style="flex-wrap:nowrap">
-                <btn [type_button]="'RetourSmall'" (click)="Retour()"></btn>
-                <btn [type_button]="'SauvegarderSmall'" (click)="Save()" i18n>Sauvegarder</btn>
-                <btn [type_button]="'InscrireSmall'" *ngIf="!isRegistred(thisProf)" (click)="Register()" i18n>Inscrire</btn>
+      <div class="header-actions">
+        <span *ngIf="loading" class="tag is-info is-light">Chargement…</span>
+        <btn [type_button]="'ReloadLight'" (click)="load()"></btn>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <app-personne-selector
+        [(personneId)]="selectedPersonneId"
+        placeholder="Rechercher une personne à ajouter comme professeur"
+      ></app-personne-selector>
+
+      <btn
+        [type_button]="'CreerSmall'"
+        [disabled]="!selectedPersonneId || saving"
+        (click)="addProfesseur()"
+      ></btn>
+    </div>
+
+    <div class="table-zone">
+      <table class="table is-fullwidth is-hoverable is-striped" *ngIf="profs.length">
+        <thead>
+          <tr>
+            <th>Professeur</th>
+            <th>Statut</th>
+            <th>Taux</th>
+            <th>IBAN</th>
+            <th>Contrats</th>
+            <th class="action-col">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let prof of profs">
+            <td>
+              <strong>{{ getLibelle(prof) }}</strong>
+              <p class="has-text-grey is-size-7" *ngIf="prof.info">{{ prof.info }}</p>
+            </td>
+
+            <td>{{ prof.status || '—' }}</td>
+            <td>{{ prof.hourly_rate ?? '—' }}</td>
+            <td class="mono">{{ prof.iban || '—' }}</td>
+
+            <td>
+              <span *ngIf="contratsExistByProfId[prof.id]" class="tag is-warning is-light">
+                Contrats existants
+              </span>
+              <span *ngIf="!contratsExistByProfId[prof.id]" class="tag is-light">
+                Aucun contrat
+              </span>
+            </td>
+
+            <td class="action-col">
+              <div class="buttons are-small is-right">
+                <btn [type_button]="'EditerLight'" (click)="edit(prof)"></btn>
+                <btn
+                  [type_button]="'SupprimerLight'"
+                  [disabled]="!canDelete(prof)"
+                  (click)="remove(prof)"
+                ></btn>
               </div>
-            </div>
-          </div>
-        </footer>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="empty-zone" *ngIf="!loading && !profs.length">
+        Aucun professeur.
       </div>
     </div>
   </div>
-</ng-template>
+</div>
 
+<div class="modal is-active" *ngIf="editing">
+  <div class="modal-background" (click)="cancel()"></div>
 
-</ng-container>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Modifier un professeur</p>
+      <p class="modal-card-subtitle">{{ getLibelle(editing) }}</p>
+      <button class="delete" (click)="cancel()"></button>
+    </header>
+
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Statut</label>
+        <input class="input" [ngModel]="editing.status" (ngModelChange)="patch('status', $event)" />
+      </div>
+
+      <div class="field">
+        <label class="label">Taux</label>
+        <input class="input" type="number" [ngModel]="editing.hourly_rate" (ngModelChange)="patch('hourly_rate', $event)" />
+      </div>
+
+      <div class="field">
+        <label class="label">N° TVA</label>
+        <input class="input" [ngModel]="editing.num_tva" (ngModelChange)="patch('num_tva', $event)" />
+      </div>
+
+      <div class="field">
+        <label class="label">N° SIREN</label>
+        <input class="input" type="number" [ngModel]="editing.num_siren" (ngModelChange)="patch('num_siren', $event)" />
+      </div>
+
+      <div class="field">
+        <label class="label">IBAN</label>
+        <input class="input mono" [ngModel]="editing.iban" (ngModelChange)="patch('iban', $event)" />
+      </div>
+
+      <div class="field">
+        <label class="label">Info</label>
+        <textarea class="textarea" [ngModel]="editing.info" (ngModelChange)="patch('info', $event)"></textarea>
+      </div>
+    </section>
+
+    <footer class="modal-card-foot">
+      <btn [type_button]="'SauvegarderSmall'" [disabled]="saving" (click)="save()"></btn>
+      <btn [type_button]="'AnnulerSmall'" (click)="cancel()"></btn>
+    </footer>
+  </div>
 </div>

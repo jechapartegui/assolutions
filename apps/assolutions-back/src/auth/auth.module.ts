@@ -12,6 +12,7 @@ import { CompteEntity } from '../compte/compte.entity';
 import { ProjectEntity } from '../project/project.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
+import { SaisonEntity } from '../saison/saison.entity';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { LoginProjectEntity } from '../login_project/login_project.entity';
         signOptions: { expiresIn: '30d' },
       }),
     }),
-    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity, LoginProjectEntity]),
+    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity, LoginProjectEntity, SaisonEntity]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

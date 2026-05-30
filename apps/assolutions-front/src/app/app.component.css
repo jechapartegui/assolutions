@@ -5,16 +5,21 @@
   height: 100%;
 }
 
-.tabs a {
-  padding: 0.2rem 0.35rem;
-  min-height: 56px;
+.app-shell {
+  min-height: 100%;
+}
+
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .navbar {
   min-height: var(--app-topbar-height);
   height: var(--app-topbar-height);
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
@@ -27,7 +32,84 @@
 
 .navbar-item.is-selected {
   color: var(--bulma-primary, #00d1b2) !important;
+  font-weight: 800;
+}
+
+.navbar-dropdown .navbar-item.is-selected {
+  background: rgba(0, 209, 178, 0.08);
+}
+
+.app-logo {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+.logo-mark,
+.mobile-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  color: #00a693;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(0, 209, 178, 0.12);
+  font-size: 1rem;
+}
+
+.mobile-logo {
+  width: 28px;
+  height: 24px;
+  border-radius: 8px;
+  background: rgba(0, 209, 178, 0.12);
+  font-size: 0.78rem;
+}
+
+.account-navbar {
+  gap: 0.75rem;
+}
+
+.account-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: 240px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(0, 209, 178, 0.08);
+  color: #00796b;
+  font-size: 0.85rem;
   font-weight: 700;
+}
+
+.account-project-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.account-actions {
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.account-actions .button {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.tabs a {
+  padding: 0.2rem 0.35rem;
+  min-height: 56px;
+}
+
+.mobile-footer {
+  width: -webkit-fill-available;
 }
 
 .mobile .footer {
@@ -41,17 +123,14 @@
   overflow: hidden;
 }
 
-.mobile .footer .tabs {
+.mobile .footer .tabs,
+.mobile .footer .tabs ul,
+.mobile .footer .tabs li {
   height: 100%;
 }
 
 .mobile .footer .tabs ul {
-  height: 100%;
   align-items: stretch;
-}
-
-.mobile .footer .tabs li {
-  height: 100%;
 }
 
 .mobile .footer .tabs a {
@@ -79,36 +158,13 @@
     --app-topbar-height: 52px;
     --app-bottombar-height: 60px;
   }
-}
-.account-navbar {
-  gap: 0.75rem;
-}
 
-.account-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  max-width: 240px;
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(0, 209, 178, 0.08);
-  color: #00796b;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
+  .navbar {
+    height: auto;
+    min-height: var(--app-topbar-height);
+  }
 
-.account-project-name {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.account-actions {
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.account-actions .button {
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  .navbar-menu.is-active {
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+  }
 }

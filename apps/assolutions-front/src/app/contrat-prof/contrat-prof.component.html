@@ -1,0 +1,168 @@
+<div class="admin-crud-page">
+  <div class="card page-card">
+    <header class="card-header page-card-header">
+      <div class="card-header-title">
+        <div>
+          <h1 class="title is-5 mb-1">Contrats professeurs</h1>
+          <p class="has-text-grey is-size-7">
+            Contrats des professeurs pour la saison consultée.
+          </p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <span class="tag is-light">Saison #{{ saisonId }}</span>
+        <span *ngIf="loading" class="tag is-info is-light">Chargement…</span>
+
+        <btn [type_button]="'ReloadLight'" (click)="load()"></btn>
+        <btn [type_button]="'CreerSmall'" (click)="create()"></btn>
+      </div>
+    </header>
+
+    <div class="table-zone">
+      <table class="table is-fullwidth is-hoverable is-striped" *ngIf="contrats.length">
+        <thead>
+          <tr>
+            <th>Professeur</th>
+            <th>Contrat</th>
+            <th>Rémunération</th>
+            <th>Période</th>
+            <th class="action-col">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let contrat of contrats">
+            <td>
+              <strong>{{ getProfLabel(contrat.professeur_id) }}</strong>
+            </td>
+
+            <td>{{ contrat.type_contrat || '—' }}</td>
+            <td>{{ contrat.type_remuneration || '—' }}</td>
+
+            <td>
+          {{ formatDateFr(contrat.date_debut) }}
+<span class="has-text-grey"> → </span>
+{{ formatDateFr(contrat.date_fin) }}
+            </td>
+
+            <td class="action-col">
+              <div class="buttons are-small is-right">
+                <btn [type_button]="'EditerLight'" (click)="edit(contrat)"></btn>
+                <btn [type_button]="'SupprimerLight'" (click)="remove(contrat)"></btn>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="empty-zone" *ngIf="!loading && !contrats.length">
+        Aucun contrat professeur pour cette saison.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal is-active" *ngIf="editing">
+  <div class="modal-background" (click)="cancel()"></div>
+
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">
+        <span *ngIf="editing.id === 0">Créer un contrat professeur</span>
+        <span *ngIf="editing.id > 0">Modifier un contrat professeur</span>
+      </p>
+      <button class="delete" (click)="cancel()"></button>
+    </header>
+
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Professeur</label>
+        <div class="select is-fullwidth">
+         <select
+  [disabled]="editing.id > 0"
+  [ngModel]="editing.professeur_id"
+  (ngModelChange)="patch('professeur_id', $event)"
+>
+  <option [ngValue]="null">Sélectionner un professeur</option>
+  <option *ngFor="let prof of profs" [ngValue]="prof.id">
+    {{ getProfLabel(prof.id) }}
+  </option>
+</select>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column">
+          <div class="field">
+            <label class="label">Type de contrat</label>
+            <input
+              class="input"
+              [ngModel]="editing.type_contrat"
+              (ngModelChange)="patch('type_contrat', $event)"
+              placeholder="CDD, CDI, prestation..."
+            />
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="field">
+            <label class="label">Type de rémunération</label>
+            <input
+              class="input"
+              [ngModel]="editing.type_remuneration"
+              (ngModelChange)="patch('type_remuneration', $event)"
+              placeholder="Horaire, forfait..."
+            />
+          </div>
+        </div>
+      </div>
+
+
+      <div class="columns">
+        <div class="column">
+          <div class="field">
+            <label class="label">Date début</label>
+            <input
+              class="input"
+              type="date"
+              [ngModel]="editing.date_debut"
+              (ngModelChange)="patch('date_debut', $event)"
+            />
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="field">
+            <label class="label">Date fin</label>
+            <input
+              class="input"
+              type="date"
+              [ngModel]="editing.date_fin"
+              (ngModelChange)="patch('date_fin', $event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Info</label>
+        <textarea
+          class="textarea"
+          [ngModel]="editing.details"
+          (ngModelChange)="patch('details', $event)"
+        ></textarea>
+      </div>
+    </section>
+
+    <footer class="modal-card-foot">
+      <btn
+        [type_button]="'SauvegarderSmall'"
+        [disabled]="!canSave() || saving"
+        (click)="save()"
+      ></btn>
+
+      <btn [type_button]="'AnnulerSmall'" (click)="cancel()"></btn>
+    </footer>
+  </div>
+</div>

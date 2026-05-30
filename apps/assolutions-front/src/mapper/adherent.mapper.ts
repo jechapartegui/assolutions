@@ -56,12 +56,12 @@ export class AdherentMapper {
     vm.date_naissance = raw.date_naissance ? new Date(raw.date_naissance) : new Date();
     vm.sexe = !!raw.gender;
     vm.archive = !!raw.archive;
+    vm.login = raw.login ?? '';
     vm.contact = [];
     vm.adresse = JSON.parse(raw.address) ?? new Adresse();
 
     vm.contact = [];
     vm.contact_prevenir = [];
-    vm.login = '';
 
     Personne_VM.bakeLibelle(vm);
     return vm;

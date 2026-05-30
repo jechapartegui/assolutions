@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsDateString, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateSaisonDto {
   @IsString()
@@ -14,6 +14,10 @@ export class CreateSaisonDto {
 
   @IsDateString()
   date_fin: string;
+
+  @IsOptional()
+  @IsNumber()
+  saison_precedente?: number;
 }
 
 export class UpdateSaisonDto {
@@ -33,4 +37,8 @@ export class UpdateSaisonDto {
   @IsOptional()
   @IsDateString()
   date_fin?: string;
+  
+  @IsOptional()
+  @IsNumber()
+  saison_precedente?: number;
 }

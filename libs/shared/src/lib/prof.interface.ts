@@ -1,4 +1,3 @@
-import { ContratProfesseur_VM } from "./cours.interface";
 import { PersonneLight_VM } from "./personne.interface";
 
 export type ContratLight_VM = {

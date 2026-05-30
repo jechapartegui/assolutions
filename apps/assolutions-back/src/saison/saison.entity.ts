@@ -20,6 +20,9 @@ export class SaisonEntity {
   @Column({ type: 'date' })
   date_fin: string;
 
+  @Column({ type: 'int' })
+  saison_precedente: number;
+
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_creation: Date;
 

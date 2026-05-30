@@ -1,269 +1,333 @@
-<div class="container">
-<ng-container *ngIf="loading && (!Liste || Liste.length === 0)">
-  <progress class="progress is-large is-info" style="margin-top: 60px" max="100">60%</progress>
-  <p>Chargement en cours</p>
-</ng-container>
-      <ng-container *ngIf="!(loading && (!Liste || Liste.length === 0))">
-        <ng-container *ngIf="!Item; else lieuDetail">
-          <div class="columns page-fill" *ngIf="Liste">
-            <div class="column">
-              <div class="card card--scroller">
-               <header class="card-header" style="align-items: center">
-  <p class="card-header-title" i18n>Liste des lieux</p>
+<div class="lieu-page">
+  <ng-container *ngIf="loading && Liste.length === 0">
+    <div class="loading-zone">
+      <progress class="progress is-small is-info" max="100">60%</progress>
+      <p class="has-text-grey is-size-7">Chargement des lieux…</p>
+    </div>
+  </ng-container>
 
-  <span *ngIf="store.LieuHasRemoteNewerData()" class="tag is-warning is-light" style="margin-left: 10px">
-    Nouvelles données dispo
-  </span>
+  <ng-container *ngIf="!(loading && Liste.length === 0)">
+    <ng-container *ngIf="!Item; else detailTpl">
+      <div class="card page-card">
+        <header class="card-header page-card-header">
+          <div class="card-header-title">
+            <div>
+              <h1 class="title is-5 mb-1">Lieux</h1>
+              <p class="has-text-grey is-size-7">
+                Gestion des lieux utilisés pour les cours et les séances.
+              </p>
+            </div>
+          </div>
 
-  <span *ngIf="needsReload" class="tag is-danger is-light" style="margin-left: 10px">
-    Recharge conseillée
-  </span>
+          <div class="header-actions">
+            <span *ngIf="refreshing" class="tag is-info is-light">
+              Mise à jour…
+            </span>
 
-  <span *ngIf="refreshing" class="tag is-info is-light" style="margin-left:10px">
-    Mise à jour…
-  </span>
+            <span *ngIf="vm.refreshAvailable" class="tag is-warning is-light">
+              Recharge conseillée
+            </span>
 
-  <btn *ngIf="store.LieuHasRemoteNewerData() || needsReload"
-       [type_button]="'ReloadLight'"
-       (click)="needsReload=false; RefreshLieu({apply:true})"></btn>
-</header>
+            <btn
+              [type_button]="'ReloadLight'"
+              title="Recharger"
+              (click)="refresh()"
+            ></btn>
+          </div>
+        </header>
 
-        <div class="card-content" #scrollableContent>
-                  <div class="content">
-            <table class="table" style="width: 100%;font-size:smaller" *ngIf="Liste && Liste.length> 0">
-              <thead>
-                <tr>
-                  <th style="width: 2rem;">
-  <input type="checkbox"
-         [checked]="Liste?.length && selectedIds.size === Liste.length"
-         (change)="toggleSelectAll($any($event.target).checked)" />
-</th>
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="field has-addons mb-0">
+              <div class="control has-icons-left">
+                <input
+                  class="input is-small"
+                  type="text"
+                  placeholder="Filtrer par nom"
+                  [ngModel]="vm.filterNom"
+                  (ngModelChange)="filter($event)"
+                />
+                <span class="icon is-small is-left">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+              </div>
 
-                  <th><span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller;" i18n>Nom</span>
-                        <span style="cursor: pointer;">
-                          <i *ngIf="sort_nom === 'NO'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort"></i>
-                          <i *ngIf="sort_nom === 'ASC'" (click)="Sort('DESC', 'nom')" class="fa-solid fa-sort-up"></i>
-                          <i *ngIf="sort_nom === 'DESC'" (click)="Sort('ASC', 'nom')" class="fa-solid fa-sort-down"></i>
-                        </span>
-                      </span>
+              <div class="control" *ngIf="vm.filterNom">
+                <button class="button is-small is-light" type="button" (click)="clearFilter()">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+          </div>
 
-                    </span>
-                  </th>
-                  <th><span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller;" i18n>Adresse</span>
-                      </span>
-                    </span>
-                  </th>
-                  <th><span style="font-size: smaller;" i18n>Action</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  *ngFor="let lieu of Liste; trackBy: trackById">
-                  <td style="width: 2rem;">
-  <input type="checkbox"
-         [checked]="isSelected(lieu.id)"
-         (change)="toggleSelection(lieu.id, $any($event.target).checked)" />
-</td>
+          <div class="toolbar-right">
+            <ng-container *ngIf="hasSelection; else normalActions">
+              <span class="tag is-primary is-light">
+                {{ vm.selectedIds.length }} sélectionné(s)
+              </span>
 
-                  <td>
-                    {{lieu.nom}}
-                  </td>
-                  <td>
-                    {{lieu.adresse.Street}}&nbsp;{{lieu.adresse.PostCode}}&nbsp;{{lieu.adresse.City}}                       
-                  </td>
-               
- <td>
-                          <div class="buttons" style="flex-wrap: nowrap">
-                            <btn
-                              i18n-title
-                              title="Supprimer"
-                              [type_button]="'SupprimerLight'"
-                              (click)="Delete(lieu)"
-                            ></btn>
+              <btn
+                [type_button]="'SupprimerSmall'"
+                title="Supprimer sélection"
+                (click)="supprimerSelection()"
+              ></btn>
 
-                            <btn
-                              i18n-title
-                              title="Editer"
-                              [type_button]="'EditerLight'"
-                              (click)="Edit(lieu)"
-                            ></btn>
-                          </div>
-                        </td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="!Liste || Liste.length ==0">Pas de lieu disponible</p>
+              <btn
+                [type_button]="'CopierSmall'"
+                title="Copier sélection"
+                (click)="copierSelection()"
+              ></btn>
+
+              <btn
+                [type_button]="'AnnulerSmall'"
+                title="Annuler sélection"
+                (click)="clearSelection()"
+              ></btn>
+            </ng-container>
+
+            <ng-template #normalActions>
+              <btn [type_button]="'CreerSmall'" title="Créer" (click)="create()"></btn>
+              <btn [type_button]="'ExporterSmall'" title="Exporter" (click)="exportExcel()"></btn>
+            </ng-template>
           </div>
         </div>
-     <footer class="card-footer">
-                  <div class="columns">
-                    <div class="column">
-                       <ng-container *ngIf="hasSelection; else normalActions">
-                        <span *ngIf="bulkWorking" class="tag is-info is-light" style="margin-left:10px">
-  {{ bulkLabel || 'Traitement en cours…' }}
-</span>
-<div *ngIf="!bulkWorking" class="buttons" style="flex-wrap: nowrap">
-      <btn title="Supprimer sélection"
-           [type_button]="'SupprimerSmall'"
-           (click)="supprimerListe()"></btn>
 
-      <btn title="Copier sélection"
-           [type_button]="'CopierSmall'"
-           (click)="copierListe()"></btn>
+        <div class="table-zone">
+          <table class="table is-fullwidth is-hoverable is-striped lieu-table" *ngIf="Liste.length > 0">
+            <thead>
+              <tr>
+                <th class="check-col">
+                  <input
+                    type="checkbox"
+                    [checked]="Liste.length > 0 && vm.selectedIds.length === Liste.length"
+                    (change)="toggleSelectAll($any($event.target).checked)"
+                  />
+                </th>
 
-      <btn title="Annuler sélection"
-           [type_button]="'AnnulerSmall'"
-           (click)="clearSelection()"></btn>
-    </div>
-                       </ng-container>
-                       <ng-template #normalActions> 
-                      <div *ngIf="!afficher_filtre" class="buttons">
-                        <btn
-                          [type_button]="'CreerSmall'"
-                          (click)="Creer()"
-                        ></btn>
-                        <btn
-                          [type_button]="'FiltrerSmall'"
-                          (click)="
-                            afficher_filtre
-                              ? (afficher_filtre = false)
-                              : (afficher_filtre = true)
-                          "
-                        ></btn>
-                        <btn
-                          [type_button]="'ExporterSmall'"
-                          (click)="ExportExcel()"
-                        ></btn>
-                      </div>
-  
-                      <div class="buttons" *ngIf="afficher_filtre">
-                        <btn
-                         (click)="afficher_filtre = false; filter_nom = null; FiltrerListeLieu()"
-                          [type_button]="'RetourLight'"
-                        ></btn>
-                        
-                        <div
-                          class="field is-horizontal"
-                          style="gap: 0.5rem; align-items: center"
-                        >
-                          <div class="field-label is-normal">
-                            <label class="label" style="white-space: nowrap" i18n
-                              >Filtrer par nom - valeur du filtre :
-                            </label>
-                            <div class="field is-narrow">
-                              <div class="control">
-                                <input
-                                  style="width: fit-content; font-size: smaller"
-                                  class="input is-small"
-                                  i18n-placeholder
-                                  placeholder="Nom du lieu"
-                                  type="text"
-                                  (ngModelChange)="Filter($event)"
-                                  [(ngModel)]="filter_nom"
-                                />
-                                </div>
-                            </div>
-                          </div>
-                          <div class="tags">
-                            <span
-                              *ngIf="filter_nom"
-                              class="tag is-success"
-                            >
-                              <span i18n>Nom : </span>
-                              <span>{{ filter_nom }}</span>
-                              <button
-                                class="delete"
-                                (click)="filter_nom = null; FiltrerListeLieu()"
-                              ></button>
-                            </span>
-  
-                           
-                            <btn
- [type_button]="'SupprimerLight'"
-  (click)="filter_nom = null; FiltrerListeLieu()"
-  *ngIf="filter_nom">
-                              
-                            >
-                            </btn>
-                          </div>
-                        </div>
-                      </div>
-</ng-template>
+                <th>
+                  <button type="button" class="sort-button" (click)="sortNom()">
+                    <span>Nom</span>
+                    <i
+                      class="fa-solid"
+                      [ngClass]="vm.selectedSortSens  === 'ASC' ? 'fa-sort-up' : 'fa-sort-down'"
+                    ></i>
+                  </button>
+                </th>
 
-                    </div>
+                <th>Adresse</th>
+
+                <th class="action-col">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let lieu of Liste; trackBy: trackById">
+                <td class="check-col">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(lieu.id)"
+                    (change)="toggleSelection(lieu.id, $any($event.target).checked)"
+                  />
+                </td>
+
+                <td>
+                  <strong>{{ lieu.nom }}</strong>
+                </td>
+
+                <td class="has-text-grey">
+                  {{ getAdresseLabel(lieu) || '—' }}
+                </td>
+
+                <td class="action-col">
+                  <div class="buttons are-small is-right">
+                    <btn
+                      [type_button]="'EditerLight'"
+                      title="Éditer"
+                      (click)="editLieu(lieu)"
+                    ></btn>
+
+                    <btn
+                      [type_button]="'SupprimerLight'"
+                      title="Supprimer"
+                      (click)="delete(lieu)"
+                    ></btn>
                   </div>
-                </footer>
-              </div>  
-            </div>
-          </div>
-</ng-container>
-<ng-template #lieuDetail>
-  <div class="columns page-fill">
-    <div class="column">
-      <div class="card card--scroller">
-        <!-- Header -->
-        <header class="card-header" style="align-items:center">
-                  <p class="card-header-title">
-          <span *ngIf="Item.id==0" i18n>Créer un lieu</span>
-          <span *ngIf="Item.id>0" i18n>Editer un lieu</span>
-               </p>
-          </header>     
-                <!-- Content -->
-        <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-          <!-- Colonne gauche : champs Professor (entity exacte) -->
-          <div class="column is-full-tablet is-half-desktop">
-            <div class="box is-light">
-    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations administratives</h3>  
-              <ng-container *ngIf="Item.id>0">
-      <btn *ngIf="!edit"
-        [type_button]="'EditerLight'" 
-        (click)="edit = !edit" 
-      ></btn>
-      <btn *ngIf="edit" [disabled]="Item.nom.length <5" (click)="Save(); edit = false;"
-        [type_button]="'SauvegarderLight'">
-      </btn> <btn *ngIf="edit" (click)="Cancel()"
-        [type_button]="'AnnulerLight'">
-      </btn>
-      </ng-container>
+          <div class="empty-zone" *ngIf="Liste.length === 0">
+            <div class="empty-icon">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <p class="has-text-weight-semibold mb-1">Aucun lieu trouvé</p>
+            <p class="has-text-grey is-size-7 mb-3">
+              Crée ton premier lieu ou modifie le filtre.
+            </p>
+            <btn [type_button]="'CreerSmall'" (click)="create()"></btn>
+          </div>
+        </div>
+
+        <footer class="card-footer compact-footer">
+          <span class="card-footer-item is-size-7 has-text-grey">
+            {{ Liste.length }} lieu(x) affiché(s)
+          </span>
+        </footer>
       </div>
-            <div class="field">
-              <label class="label" i18n>Nom</label>
-              <p *ngIf="!edit">{{Item.nom}}</p>
-              <input *ngIf="edit" [class]="Item.nom.length>4 ? 'input' : 'input is-danger'" type="text" id="nom_rider"
-                name="nom_rider" i18n-placeholder placeholder="Nom" [(ngModel)]="Item.nom" required>
-              <p class="help is-danger" *ngIf="Item.nom.length <5" i18n>Le nom du lieu doit au moins faire 5
-                caractères
-              </p>
-              
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #detailTpl>
+  <div class="lieu-page">
+    <div class="card page-card">
+      <header class="card-header page-card-header">
+        <div class="card-header-title">
+          <div>
+            <h1 class="title is-5 mb-1">
+              <span *ngIf="Item?.id === 0">Créer un lieu</span>
+              <span *ngIf="Item && Item.id > 0">Modifier un lieu</span>
+            </h1>
+            <p class="has-text-grey is-size-7">
+              Renseigne le nom et l’adresse du lieu.
+            </p>
+          </div>
+        </div>
+
+        <div class="header-actions" *ngIf="Item && Item.id > 0">
+          <btn
+            *ngIf="!edit"
+            [type_button]="'EditerLight'"
+            title="Modifier"
+            (click)="setEditMode()"
+          ></btn>
+
+          <btn
+            *ngIf="edit"
+            [type_button]="'SauvegarderLight'"
+            title="Sauvegarder"
+            [disabled]="!canSave"
+            (click)="save()"
+          ></btn>
+
+          <btn
+            *ngIf="edit"
+            [type_button]="'AnnulerLight'"
+            title="Annuler"
+            (click)="cancel()"
+          ></btn>
+        </div>
+      </header>
+
+      <div class="detail-content" *ngIf="Item">
+        <section class="box detail-box">
+          <h2 class="subtitle is-6 has-text-primary mb-3">
+            Informations générales
+          </h2>
+
+          <div class="field">
+            <label class="label">Nom</label>
+
+            <p *ngIf="!edit" class="readonly-value">
+              {{ Item.nom || '—' }}
+            </p>
+
+            <input
+              *ngIf="edit"
+              class="input"
+              [class.is-danger]="(Item.nom || '').trim().length < 2"
+              type="text"
+              placeholder="Nom du lieu"
+              [ngModel]="Item.nom"
+              (ngModelChange)="updateNom($event)"
+            />
+
+            <p class="help is-danger" *ngIf="edit && (Item.nom || '').trim().length < 2">
+              Le nom du lieu est obligatoire.
+            </p>
+          </div>
+        </section>
+
+        <section class="box detail-box">
+          <h2 class="subtitle is-6 has-text-primary mb-3">
+            Adresse
+          </h2>
+
+          <div class="columns is-multiline">
+            <div class="column is-full">
+              <div class="field">
+                <label class="label">Rue</label>
+
+                <p *ngIf="!edit" class="readonly-value">
+                  {{ Item.adresse?.Street || '—' }}
+                </p>
+
+                <input
+                  *ngIf="edit"
+                  class="input"
+                  type="text"
+                  placeholder="Rue"
+                  [ngModel]="Item.adresse?.Street"
+                  (ngModelChange)="updateAdresseField('Street', $event)"
+                />
+              </div>
             </div>
+
+            <div class="column is-one-third-desktop is-half-tablet">
+              <div class="field">
+                <label class="label">Code postal</label>
+
+                <p *ngIf="!edit" class="readonly-value">
+                  {{ Item.adresse?.PostCode || '—' }}
+                </p>
+
+                <input
+                  *ngIf="edit"
+                  class="input"
+                  type="text"
+                  placeholder="Code postal"
+                  [ngModel]="Item.adresse?.PostCode"
+                  (ngModelChange)="updateAdresseField('PostCode', $event)"
+                />
+              </div>
+            </div>
+
+            <div class="column is-two-thirds-desktop is-half-tablet">
+              <div class="field">
+                <label class="label">Ville</label>
+
+                <p *ngIf="!edit" class="readonly-value">
+                  {{ Item.adresse?.City || '—' }}
+                </p>
+
+                <input
+                  *ngIf="edit"
+                  class="input"
+                  type="text"
+                  placeholder="Ville"
+                  [ngModel]="Item.adresse?.City"
+                  (ngModelChange)="updateAdresseField('City', $event)"
+                />
+              </div>
             </div>
           </div>
-            <div class="column is-full-tablet is-half-desktop">
-                    <app-address
-                                 [id]="Item.id"
-                                 [thisAdresse]="Item.adresse"
-                                 [Regles]="(GlobalService.getRegleLieuAdresse())"
-                                 (InfoAdresseChange)="SaveAdresse($event)"
-                                 (valid)="valid_adresse($event)"></app-address>                    
-                  </div>
-  </div>
-       <footer class="card-footer">
-          <div class="columns is-mobile is-centered">
-            <div class="column is-half">
-              <div class="buttons" style="flex-wrap:nowrap">
-                <btn [type_button]="'RetourSmall'"  (click)="Retour()"></btn>
-                <btn *ngIf="edit && Item.id<1" [type_button]="'SauvegarderSmall'" [disabled]="(Item.nom.length < 5 || !valid_address)" (click)="Save()" i18n>Sauvegarder</btn>          
-          </div>
+        </section>
+      </div>
+
+      <footer class="card-footer compact-footer">
+        <div class="card-footer-item footer-actions">
+          <btn [type_button]="'RetourSmall'" title="Retour" (click)="retour()"></btn>
+
+          <btn
+            *ngIf="edit"
+            [type_button]="'SauvegarderSmall'"
+            title="Sauvegarder"
+            [disabled]="!canSave"
+            (click)="save()"
+          ></btn>
+        </div>
+      </footer>
     </div>
   </div>
-       </footer>
-      </div>
-      </div>
-      </div>
 </ng-template>

@@ -12,6 +12,10 @@ export class ContratProfApiService {
   return this.api.GET<ContratProf[]>(`${this.base}/saison/${saisonId}`);
 }
 
+ exist(profId: number): Promise<boolean> {
+  return this.api.GET<boolean>(`${this.base}/exist/${profId}`);
+}
+
   get(id: number): Promise<ContratProf> {
     return this.api.GET<ContratProf>(`${this.base}/${id}`);
   }

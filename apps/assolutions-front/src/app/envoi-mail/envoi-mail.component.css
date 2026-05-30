@@ -1,24 +1,261 @@
+:host {
+  display: block;
+  height: calc(100vh - var(--app-topbar-height, 52px));
+  min-height: 0;
+}
 
-.card.is-relative { position: relative; }
+.mail-page {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  padding: 0.75rem;
+}
+
+.mail-shell {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.mail-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fff;
+  cursor: default;
+  text-align: left;
+}
+
+.step span {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f3f4f6;
+  font-weight: 800;
+}
+
+.step.is-active {
+  border-color: rgba(0, 209, 178, 0.45);
+  background: rgba(0, 209, 178, 0.08);
+}
+
+.step.is-active span {
+  background: #00d1b2;
+  color: #fff;
+}
+
+.mail-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.mail-header {
+  flex: 0 0 auto;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.mail-kicker {
+  margin-bottom: 0.25rem;
+  color: #008f7d;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.mail-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.type-card {
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: #fbfcfd;
+  cursor: pointer;
+  text-align: left;
+  transition: 120ms ease;
+}
+
+.type-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 209, 178, 0.45);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.type-card span:last-child {
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.type-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(0, 209, 178, 0.1);
+  color: #008f7d;
+  font-size: 1.1rem;
+}
+
+.panel-card {
+  padding: 1rem;
+  border-radius: 16px;
+  background: #fbfcfd;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.audience-layout,
+.draft-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.9fr);
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.adherent-list {
+  max-height: 440px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.adherent-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.adherent-row small {
+  display: block;
+  color: #6b7280;
+}
+
+.selected-list {
+  min-height: 180px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-content: flex-start;
+}
+
+.mail-editor {
+  min-height: 360px;
+  font-family: monospace;
+  font-size: 0.82rem;
+}
+
+.mail-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  background: rgba(0, 209, 178, 0.08);
+}
+
+.mail-preview-meta span {
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.empty-preview {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  border-radius: 14px;
+}
 
 .ui-lock-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.6); /* semi-opaque */
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(1px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 40; /* au-dessus du contenu de la carte */
-  pointer-events: all; /* capte tous les clics */
+  z-index: 40;
+  pointer-events: all;
 }
 
 .ui-lock-panel {
   display: inline-flex;
   align-items: center;
-  padding: .75rem 1rem;
-  border-radius: .75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
   background: white;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   font-weight: 600;
+}
+
+@media screen and (max-width: 1023px) {
+  .mail-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .mail-steps {
+    flex-direction: row;
+    overflow: auto;
+  }
+
+  .step {
+    min-width: 140px;
+  }
+
+  .type-grid,
+  .audience-layout,
+  .draft-layout {
+    grid-template-columns: 1fr;
+  }
 }

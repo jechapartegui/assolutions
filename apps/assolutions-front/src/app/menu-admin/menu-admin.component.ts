@@ -1,7 +1,24 @@
-import { Component } from "@angular/core";
-import { AppStore } from "../app.store";
-import { ErrorService } from "../../services/error.service";
-import { Router } from "@angular/router";
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { AppStore } from '../app.store';
+import { SaisonApiService } from '../../services/saison-api.service';
+import { MenuType } from '../../store/session.store';
+
+type AdminTile = {
+  label: string;
+  icon: string;
+  menu: MenuType;
+  route?: string;
+  queryParams?: Record<string, any>;
+  disabled?: boolean;
+  hint?: string;
+};
+
+type AdminSection = {
+  title: string;
+  subtitle?: string;
+  tiles: AdminTile[];
+};
 
 @Component({
   standalone: false,
@@ -9,26 +26,141 @@ import { Router } from "@angular/router";
   templateUrl: './menu-admin.component.html',
   styleUrls: ['./menu-admin.component.css'],
 })
-export class MenuAdminComponent {
-    constructor(public store:AppStore, public router:Router) {}
-  action: string;
+export class MenuAdminComponent implements OnInit {
+  readonly saisonStorageKey = 'assolutions.consultationSaisonId';
 
-      LogOut() {
-        const errorService = ErrorService.instance;
-        this.action = $localize`Se déconnecter`;
-        this.store.clearSession();
-        this.router.navigate(['/login']);
-                  let o = errorService.OKMessage(this.action);
-                  errorService.emitChange(o);
-      }
-    
-      MDP() {
-        this.action = $localize`Modifier le mot de passe`;
-        this.router.navigate(['reinit-mdp']);
-      }
-      Dashboard() {
-        this.action = $localize`Afficher le tableau de bord`;
-        this.router.navigate(['tdb']);
-      }
-    
+  saisons: any[] = [];
+  selectedSaisonId: number | null = null;
+  loadingSaisons = false;
+
+  sections: AdminSection[] = [
+    {
+      title: 'Gestion sportive',
+      subtitle: 'Le quotidien de la saison consultée',
+      tiles: [
+        { label: 'Adhérents', icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
+        { label: 'Inscriptions', icon: 'fa-id-card-clip', menu: 'INSCRIPTION', route: '/inscription-saison' },
+        { label: 'Cours', icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
+        { label: 'Séances', icon: 'fa-calendar-days', menu: 'SEANCE', route: '/seance' },
+        { label: 'Groupes', icon: 'fa-layer-group', menu: 'GROUPE', route: '/groupe' },
+        { label: 'Contrats professeurs', icon: 'fa-file-signature', menu: 'CONTRAT_PROF', route: '/contrat-prof' },
+      ],
+    },
+    {
+      title: 'Finances',
+      subtitle: 'Paiements, opérations et suivi financier',
+      tiles: [
+        { label: 'Comptabilité', icon: 'fa-scale-balanced', menu: 'COMPTA', route: '/comptabilite' },
+        { label: 'Opérations', icon: 'fa-right-left', menu: 'TRANSACTION', route: '/operations', queryParams: { context: 'LISTE' } },
+        { label: 'Factures / paiements', icon: 'fa-receipt', menu: 'PAIEMENT', route: '/paiement' },
+        { label: 'Traces HelloAsso', icon: 'fa-money-check-dollar', menu: 'TRACES_PAIEMENT', route: '/traces-paiement', disabled: true, hint: 'À brancher' },
+        { label: 'Stocks', icon: 'fa-boxes-stacked', menu: 'STOCK', route: '/stock' },
+      ],
+    },
+    {
+      title: 'Communication',
+      subtitle: 'Mails, modèles et suivi',
+      tiles: [
+        { label: 'Envoyer des mails', icon: 'fa-paper-plane', menu: 'ENVOIMAIL', route: '/envoi-mail' },
+        { label: 'Configuration mails', icon: 'fa-envelope-circle-check', menu: 'PROJETMAIL', route: '/projet-mail' },
+        { label: 'Suivi des mails', icon: 'fa-chart-line', menu: 'SUIVIMAIL', route: '/suivi-mail' },
+      ],
+    },
+    {
+      title: 'Paramétrage',
+      subtitle: 'Référentiels et configuration stable',
+      tiles: [
+        { label: 'Saisons', icon: 'fa-calendar', menu: 'SAISON', route: '/saison' },
+        { label: 'Lieux', icon: 'fa-location-dot', menu: 'LIEU', route: '/lieu' },
+        { label: 'Professeurs', icon: 'fa-person-chalkboard', menu: 'PROF', route: '/professeur' },
+        { label: 'Comptes bancaires', icon: 'fa-building-columns', menu: 'CB', route: '/compte-bancaire' },
+        { label: 'Listes de valeur', icon: 'fa-list-check', menu: 'LISTE_VALEUR', route: '/gestion-liste' },
+      ],
+    },
+    {
+      title: 'Projet',
+      subtitle: 'Configuration propre au projet',
+      tiles: [
+        { label: 'Infos projet', icon: 'fa-circle-info', menu: 'PROJETINFO', route: '/projet-info' },
+        { label: 'Comptes utilisateurs', icon: 'fa-user-gear', menu: 'COMPTE', route: '/compte' },
+        { label: 'Champs personnalisés', icon: 'fa-sliders', menu: 'ADDINFO', route: '/addinfo', disabled: true, hint: 'À brancher' },
+      ],
+    },
+    {
+      title: 'Outils',
+      subtitle: 'Maintenance, imports et traces',
+      tiles: [
+        { label: 'Imports / exports', icon: 'fa-file-import', menu: 'IMPORT_EXPORT', route: '/imports-exports', disabled: true, hint: 'À brancher' },
+        { label: 'Documents', icon: 'fa-folder-open', menu: 'DOCUMENT', route: '/documents', disabled: true, hint: 'À brancher' },
+        { label: 'Photos', icon: 'fa-images', menu: 'PHOTOS', route: '/photos', disabled: true, hint: 'À brancher' },
+        { label: 'Journal / erreurs', icon: 'fa-triangle-exclamation', menu: 'JOURNAL_ERREURS', route: '/journal-erreurs', disabled: true, hint: 'À brancher' },
+      ],
+    },
+  ];
+
+  constructor(
+    public store: AppStore,
+    private router: Router,
+    private saisonApi: SaisonApiService,
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSaisons();
+  }
+
+  async loadSaisons(): Promise<void> {
+    this.loadingSaisons = true;
+
+    try {
+      const saisons = await this.saisonApi.list();
+      this.saisons = [...(saisons ?? [])].sort((a: any, b: any) =>
+        String(b?.nom ?? b?.libelle ?? '').localeCompare(String(a?.nom ?? a?.libelle ?? '')),
+      );
+
+      const stored = Number(localStorage.getItem(this.saisonStorageKey));
+      const activeId = this.getActiveSaisonId();
+
+      this.selectedSaisonId =
+        Number.isFinite(stored) && this.saisons.some((s: any) => Number(s.id) === stored)
+          ? stored
+          : activeId;
+    } finally {
+      this.loadingSaisons = false;
+    }
+  }
+
+  getActiveSaisonId(): number | null {
+    const project: any = this.store.selectedProject?.();
+    return project?.saison_active?.id ?? project?.saison_active_id ?? null;
+  }
+
+  getSaisonLabel(saison: any): string {
+    return saison?.nom ?? saison?.libelle ?? saison?.name ?? `Saison #${saison?.id}`;
+  }
+
+  onSaisonChange(value: string | number | null): void {
+    const saisonId = value === null || value === '' ? null : Number(value);
+    this.selectedSaisonId = Number.isFinite(saisonId) ? saisonId : null;
+
+    if (this.selectedSaisonId) {
+      localStorage.setItem(this.saisonStorageKey, String(this.selectedSaisonId));
+    } else {
+      localStorage.removeItem(this.saisonStorageKey);
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('assolutions:consultation-saison-changed', {
+        detail: { saisonId: this.selectedSaisonId },
+      }),
+    );
+  }
+
+  open(tile: AdminTile): void {
+    if (tile.disabled || !tile.route) return;
+
+    this.store.updateSelectedMenu(tile.menu);
+    this.router.navigate([tile.route], {
+      queryParams: tile.queryParams,
+    });
+  }
 }

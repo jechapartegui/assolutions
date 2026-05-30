@@ -1,428 +1,260 @@
-<div *ngIf="uiLock" class="ui-lock-overlay">
-  <div class="ui-lock-panel">
-    <i class="fas fa-circle-notch fa-spin"></i>
-    <span class="ml-2" i18n>Veuillez patienter…</span>
+<div class="mail-page">
+  <div *ngIf="vm.loading" class="ui-lock-overlay">
+    <div class="ui-lock-panel">
+      <i class="fas fa-circle-notch fa-spin"></i>
+      <span class="ml-2">{{ vm.action || 'Veuillez patienter…' }}</span>
+    </div>
   </div>
-</div>
-<fieldset [disabled]="uiLock">
-  <div class="columns page-fill">
-            <div class="column">
-              <div class="card card--scroller">
-                <header class="card-header" style="align-items: center">
-        <p class="card-header-title">
-          <ng-container [ngSwitch]="etape">
-            <span *ngSwitchCase="'SELECTION_MAIL'" i18n>Sélection du type de mail</span>
-            <span *ngSwitchCase="'PARAMETRE'" i18n>Paramétrage du mail</span>
-            <span *ngSwitchCase="'AUDIENCE'" i18n>Paramétrage des destinataires</span>
-            <span *ngSwitchCase="'BROUILLON'" i18n>Revue du brouillon du mail</span>
-          </ng-container>
-        </p>
-        <!-- (facultatif) un compact chevron pour plier/déplier quand tu veux garder l'habitus -->
-       <nav class="card-header-icon breadcrumb is-small is-right" aria-label="breadcrumbs">
-  <ul>
-    <li [class.is-active]="etape==='SELECTION_MAIL'">
-      <a (click)="goto('SELECTION_MAIL')">
-        <span class="icon is-small"><i class="fas fa-list-ul"></i></span>&nbsp;<span>Sélection</span>
-      </a>
-    </li>
 
-    <li [class.is-active]="etape==='PARAMETRE'" [class.is-disabled]="!canGoTo('PARAMETRE')">
-      <a (click)="canGoTo('PARAMETRE') && goto('PARAMETRE')">
-        <span class="icon is-small"><i class="fas fa-sliders-h"></i></span>&nbsp;<span>Paramètres</span>
-      </a>
-    </li>
+  <div class="mail-shell">
+    <aside class="mail-steps">
+      <button class="step" [class.is-active]="vm.step === 'TYPE'">
+        <span>1</span>
+        <strong>Type</strong>
+      </button>
 
-    <li [class.is-active]="etape==='AUDIENCE'" [class.is-disabled]="!canGoTo('AUDIENCE')">
-      <a (click)="canGoTo('AUDIENCE') && goto('AUDIENCE')">
-        <span class="icon is-small"><i class="fas fa-users"></i></span>&nbsp;<span>Audience</span>
-      </a>
-    </li>
+      <button class="step" [class.is-active]="vm.step === 'PARAMS'">
+        <span>2</span>
+        <strong>Paramètres</strong>
+      </button>
 
-    <li [class.is-active]="etape==='BROUILLON'" [class.is-disabled]="!canGoTo('BROUILLON')">
-      <a (click)="canGoTo('BROUILLON') && goto('BROUILLON')">
-        <span class="icon is-small"><i class="fas fa-envelope-open-text"></i></span>&nbsp;<span>Brouillon</span>
-      </a>
-    </li>
-  </ul>
-</nav>
+      <button class="step" [class.is-active]="vm.step === 'AUDIENCE'">
+        <span>3</span>
+        <strong>Audience</strong>
+      </button>
 
+      <button class="step" [class.is-active]="vm.step === 'BROUILLON'">
+        <span>4</span>
+        <strong>Brouillon</strong>
+      </button>
+    </aside>
+
+    <main class="mail-card">
+      <header class="mail-header">
+        <div>
+          <p class="mail-kicker">Campagne mail</p>
+          <h1 class="title is-5 mb-1">Envoi de mails</h1>
+          <p class="has-text-grey is-size-7">
+            Saison #{{ vm.saisonId }} · {{ selectedAdherents.length }} destinataire(s)
+          </p>
+        </div>
       </header>
 
-      <!-- CONTENU SCROLLABLE -->
-    <div class="card-content" #scrollableContent>
-                  <div class="content">
+      <section class="mail-content" *ngIf="vm.step === 'TYPE'">
+        <div class="type-grid">
+          <button
+            type="button"
+            class="type-card"
+            *ngFor="let t of mailStore.mailTypes"
+            (click)="selectType(t.type)"
+          >
+            <span class="type-icon">
+              <i class="fa-solid" [ngClass]="t.icon"></i>
+            </span>
 
-        <!-- ÉTAPE 1 — Sélection du type -->
-        <ng-container *ngIf="vue('SELECTION_MAIL')">
-          <div *ngIf="ouvert_type_mail" class="content">
-            <div class="buttons">
-              <button type="button" (click)="GoToParam('relance')"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-calendar-alt"></i>&nbsp;<span i18n>Séances disponibles</span>
-              </button>
-
-              <button type="button" (click)="GoToParam('annulation')"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-ban"></i>&nbsp;<span i18n>Annulation séance</span>
-              </button>
-
-              <button type="button" (click)="GoToParam('convocation')"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Convocation à un événement</span>
-              </button>
-              <button type="button" (click)="GoToParam('bienvenue')"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Mail de bienvenue</span>
-              </button>
-              <button type="button" (click)="GoToParam('serie_seance')"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Championnat</span>
-              </button>
-
-              <button type="button" (click)="Libre()"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-pen"></i>&nbsp;<span i18n>Message libre</span>
-              </button>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- ÉTAPE 2 — Paramétrage -->
-        <ng-container *ngIf="vue('PARAMETRE')">
-          <div *ngIf="ouvert_param" class="content">
-            <ng-container *ngIf="typemail !== 'libre' && typemail !== 'bienvenue'">
-              <div class="columns is-multiline is-variable is-3">
-                <div class="column is-full-tablet is-half-desktop">
-                  <div class="field">
-                    <label class="label" i18n>Date minimum de la séance</label>
-                    <input class="input" id="date_seance_min" type="date" [(ngModel)]="date_debut" />
-                    <p class="help is-danger" *ngIf="!date_debut" i18n>
-                      La date de début de plage doit être saisie.
-                    </p>
-                  </div>
-                </div>
-                <div class="column is-full-tablet is-half-desktop">
-                  <div class="field">
-                    <label class="label" i18n>Date maximum de la séance</label>
-                    <input class="input" id="date_seance_max" type="date" [(ngModel)]="date_fin" />
-                    <p class="help is-danger" *ngIf="!date_fin" i18n>
-                      La date de fin de plage doit être saisie.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-            <ng-container *ngIf="(typemail === 'annulation' || typemail === 'convocation' || typemail === 'serie_seance') && seance_periode && seance_periode.length>0">
-              <div class="field">
-                <label class="label"><span *ngIf="typemail === 'annulation'" i18n>Séance annulée</span>
-                <span *ngIf="typemail === 'convocation'" i18n>Convocation séance</span>
-                <span *ngIf="typemail === 'serie_seance'" i18n>Séance à ajouter</span></label> 
-                <div class="select is-fullwidth">
-                  <select id="seance_annulee" style="font-size: smaller" [(ngModel)]="seance_annul_convoc">
-                    <ng-container *ngFor="let pr of seance_periode">
-                      <option [ngValue]="pr">{{ pr.nom }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
-                    </ng-container>
-                  </select>
-                </div>
-                <p class="help is-danger" *ngIf="!seance_annul_convoc" i18n>
-                 Une séance doit être sélectionnée.	
-                </p>
-              </div>
-              <ng-container *ngIf="typemail === 'serie_seance'">
-                <button type="button" (click)="AjouterSeanceSerie()"
-                        class="button is-primary is-small is-light btn-mobile btn-elevated">
-                  <i class="fas fa-plus"></i>&nbsp;<span i18n>Ajouter la séance à la série</span>
-                </button>
-                <div class="block">
-                  <p i18n>Liste des séances de la série</p>
-                  <div class="tags are-medium">
-                    <ng-container *ngFor="let seance of liste_seance_serie">
-                      <span class="tag is-info is-medium">
-                        {{ seance.nom }}&nbsp; {{ seance.date_seance | date : 'dd/MM/yyyy' }}
-                        <button (click)="RemoveSeanceSerie(seance)" class="delete is-small"></button>
-                      </span>
-                    </ng-container>
-                  </div>
-                </div>
-                 <div class="field">
-                <label class="label" i18n>Nom du championnat</label>
-                  <input type="text" class="input" [(ngModel)]="sujet_serie_seance" i18n-placeholder placeholder="Sujet du mail (ex: Championnat)"/>
-                  </div>
-                </ng-container>
-                
-              </ng-container>
-              </div>
-        </ng-container>
-
-        <!-- ÉTAPE 3 — Audience -->
-        <ng-container *ngIf="vue('AUDIENCE')">
-          <div *ngIf="ouvert_audience" class="content">
-
-            <div class="tabs is-toggle">
-              <ul>
-                <li (click)="audience = 'TOUS'" [class.is-active]="audience==='TOUS'">
-                  <a><span i18n>Tous les adhérents</span></a>
-                </li>
-                <li (click)="audience = 'GROUPE'" [class.is-active]="audience==='GROUPE'">
-                  <a><span i18n>Groupes</span></a>
-                </li>
-                <li (click)="audience = 'SEANCE'" [class.is-active]="audience==='SEANCE'">
-                  <a><span i18n>Participants à une séance</span></a>
-                </li>
-                <li (click)="audience = 'ADHERENT'" [class.is-active]="audience==='ADHERENT'">
-                  <a><span i18n>Par adhérent</span></a>
-                </li>
-              </ul>
-            </div>
-
-            <!-- TOUS -->
-            <div *ngIf="audience==='TOUS'" class="block">
-              <button (click)="AddUsers(true)" type="button"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-user-friends"></i>&nbsp;<span i18n>Ajouter les adhérents inscrits cette saison</span>
-              </button>
-              <button (click)="AddUsers()" type="button"
-                      class="button is-primary is-small is-light btn-mobile btn-elevated">
-                <i class="fas fa-user-friends"></i>&nbsp;<span i18n>Ajouter tous les adhérents</span>
-              </button>
-            </div>
-
-            <!-- GROUPE -->
-            <div *ngIf="audience==='GROUPE'" class="block">
-              <div class="field">
-                <label for="groupe" class="label" i18n>Groupes</label>
-                <div class="select is-fullwidth">
-                  <select id="groupe" style="font-size: smaller" [(ngModel)]="groupe_selectionne">
-                    <ng-container *ngFor="let pr of liste_groupe">
-                      <option [value]="pr.id">{{ pr.nom }}</option>
-                    </ng-container>
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <button [disabled]="!groupe_selectionne" (click)="AddGroupe()" type="button"
-                        class="button is-outlined is-success btn-mobile btn-elevated">
-                  <i class="fas fa-plus"></i>&nbsp;<span i18n>Ajouter les personnes du groupe</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- SEANCE -->
-            <div *ngIf="audience==='SEANCE'" class="block">
-              <div class="field">
-                <label for="seance" class="label" i18n>Séance</label>
-                <div class="select is-fullwidth">
-                  <select id="seance" style="font-size: smaller" [(ngModel)]="seance_selectionnee">
-                    <ng-container *ngFor="let pr of seance_periode">
-                      <option [ngValue]="pr">{{ pr.nom }}&nbsp; {{ pr.date_seance | date : 'dd/MM/yyyy' }} </option>
-                    </ng-container>
-                  </select>
-                </div>
-              </div>
-              <div class="field buttons">
-                <button [disabled]="!seance_selectionnee" (click)="AddSeanceTous()" type="button"
-                        class="button is-primary is-small is-light btn-mobile btn-elevated">
-                  <i class="fas fa-user-plus"></i>&nbsp;<span i18n>Ajouter toutes les personnes de la séance</span>
-                </button>
-                <button [disabled]="!seance_selectionnee" (click)="AddSeancePresent()" type="button"
-                        class="button is-primary is-small is-light btn-mobile btn-elevated">
-                  <i class="fas fa-user-check"></i>&nbsp;<span i18n>Seulement ceux déclarés présents</span>
-                </button>
-                <button [disabled]="!seance_selectionnee" (click)="AddSeanceConvoque()" type="button"
-                        class="button is-primary is-small is-light btn-mobile btn-elevated">
-                  <i class="fas fa-bullhorn"></i>&nbsp;<span i18n>Seulement les convoqués</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- ADHERENT -->
-            <div *ngIf="audience==='ADHERENT'" class="block">
-              <div class="field">
-                <label for="adh" class="label" i18n>Adhérents</label>
-                <div class="select is-fullwidth">
-                  <select id="adh" style="font-size: smaller" [(ngModel)]="adherent_selectionne">
-                    <ng-container *ngFor="let pr of liste_adherent">
-                      <option [ngValue]="pr">{{ pr.libelle }}&nbsp;{{ calculateAge(pr.date_naissance) }} <span i18n>ans</span></option>
-                    </ng-container>
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <button [disabled]="!adherent_selectionne" (click)="Addherent()" type="button"
-                        class="button is-primary is-small is-light btn-mobile btn-elevated">
-                  <i class="fas fa-plus"></i>&nbsp;<span i18n>Ajouter</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Tags sélection -->
-            <div class="block">
-              <div class="tags are-large">
-                <ng-container *ngFor="let user of ListeUserSelectionne">
-                  <span class="tag is-warning is-medium">
-                    {{ user.libelle }}
-                    <button (click)="RemoveUser(user)" class="delete is-small"></button>
-                  </span>
-                </ng-container>
-              </div>
-            </div>
-
-          </div>
-        </ng-container>
-
-        <!-- ÉTAPE 4 — Brouillon -->
-        <ng-container *ngIf="vue('BROUILLON')">
-          <div *ngIf="ouvert_brouillon" class="content">
-            <div class="columns is-variable is-4">
-              <div class="column is-full-tablet is-half-desktop">
-                <article class="panel is-success" *ngIf="mail_a_generer">
-                  <p class="panel-heading" i18n>Vue HTML</p>
-                  <div class="panel-block">
-                    <div class="field" style="width:100%">
-                      <label class="label" i18n>Sujet :</label>
-                      <input type="text" class="input" [(ngModel)]="subject_mail_a_generer" />
-                    </div>
-                  </div>
-                  <div class="panel-block">
-                    <textarea class="textarea" rows="18" style="font-size: smaller"
-                              i18n-placeholder placeholder="Ici s'affichera le contenu du mail en HTML"
-                              [(ngModel)]="mail_a_generer"></textarea>
-                  </div>
-                </article>
-
-                <div class="buttons" *ngIf="mail_a_generer">
-             <label class="checkbox">
-  <input type="checkbox" *ngIf="typemail==='libre'" [(ngModel)]="envoi_par_compte"/>
-  <span i18n>Envoyer par compte</span>
-</label>
-                
-                </div>
-              </div>
-
-              <div *ngIf="ListeGeneree && ListeGeneree.length>0" class="column is-full-tablet is-half-desktop">
-                <article class="panel is-success" >
-                  <p class="panel-heading" i18n>Vue Générée</p>
-    <div class="select is-fullwidth">
-  <select id="adh" style="font-size: smaller" [(ngModel)]="adherent_generer_vue">
-    <!-- met directement *ngFor sur option -->
-   <option *ngFor="let pr of ListeGeneree;"
-          [ngValue]="pr"
-          [innerText]="makeLabel(pr.key)">
-  </select>
-</div>
-
-<ng-container *ngIf="adherent_generer_vue">
-  <label class="label">Sujet</label>
-  <mail-template-preview [html]="adherent_generer_vue.value.key"></mail-template-preview>
-
-  <label class="label mt-2">Message</label>
-  <mail-template-preview [html]="adherent_generer_vue.value.value"></mail-template-preview>
-</ng-container>
-
-
-                </article>
-
-                
-              </div>
-            </div>
-          </div>
-        </ng-container>
-
-      </div>
-
-<footer class="card-footer" [ngSwitch]="etape">
-  <div class="card-footer-item" style="width:100%">
-    <div class="columns is-mobile is-multiline" style="width:100%">
-      <div class="column is-full">
-        <div class="buttons">
-
-          <!-- ÉTAPE 1 — SELECTION_MAIL : (optionnel) rien à mettre si tout se passe via les cartes/boutons de sélection -->
-
-          <!-- ÉTAPE 2 — PARAMETRE -->
-          <ng-container *ngSwitchCase="'PARAMETRE'">
-            <ng-container *ngIf="typemail !== 'libre'">
-            <button type="button"
-                    (click)="ValiderPlage()"
-                    [disabled]="!date_debut || !date_fin"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la plage</span>
-            </button>
-            </ng-container>
-            <ng-container *ngIf="(typemail === 'annulation' || typemail === 'convocation') && seance_periode && seance_periode.length>0">
- <button type="button"
-                    (click)="ValiderSeance()"
-                    [disabled]="seance_annul_convoc==null"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la séance</span>
-            </button>
-              </ng-container>
-            <ng-container *ngIf="typemail === 'serie_seance' && liste_seance_serie && liste_seance_serie.length>0">
- <button type="button"
- [disabled]="sujet_serie_seance.trim().length===0"
-                    (click)="ValiderSerieSeance()"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la série de séances</span>
-            </button>
-              </ng-container>
-          </ng-container>
-
-          <!-- ÉTAPE 3 — AUDIENCE -->
-          <ng-container *ngSwitchCase="'AUDIENCE'">
-            <button type="button"
-                    (click)="ValiderDestinataire()"
-                    [disabled]="ListeUserSelectionne.length === 0"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <i class="fas fa-check"></i>&nbsp;<span i18n>Valider la liste de destinataire</span>
-            </button>
-
-            <button type="button"
-                    (click)="RemoveUsers()"
-                    [disabled]="ListeUserSelectionne.length === 0"
-                    class="button is-dangeris-small is-light btn-mobile btn-elevated">
-              <i class="fas fa-trash"></i>&nbsp;<span i18n>Vider la liste</span>
-            </button>
-          </ng-container>
-
-          <!-- ÉTAPE 4 — BROUILLON -->
-          <ng-container *ngSwitchCase="'BROUILLON'">
-            <button type="button"
-                    (click)="GenererVue()"
-                    [disabled]="!mail_a_generer"
-                    class="button is-info is-small is-light btn-mobile btn-elevated">
-              <span i18n>Générer la vue avec ce mail</span>&nbsp;<i class="fa-solid fa-rotate-right"></i>
-            </button>
-
-            <button type="button"
-                    (click)="SauvegarderTemplate()"
-                    [disabled]="!mail_a_generer || !subject_mail_a_generer"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <span i18n>Sauvegarder le template</span>&nbsp;<i class="fa-solid fa-floppy-disk"></i>
-            </button>
-
-            <button type="button"
-                    (click)="EnvoyerTousLesMails()"
-                    [disabled]="!(ListeGeneree && ListeGeneree.length>0)"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <span i18n>Envoyer tous les mails</span>&nbsp;<i class="far fa-paper-plane"></i>
-            </button>
-
-            <button type="button"
-                    (click)="EnvoiMail()"
-                    [disabled]="!adherent_generer_vue"
-                    class="button is-primary is-small is-light btn-mobile btn-elevated">
-              <span i18n>Envoyer cet email</span>&nbsp;<i class="far fa-paper-plane"></i>
-            </button>
-          </ng-container>
-
+            <strong>{{ t.label }}</strong>
+            <span>{{ t.description }}</span>
+          </button>
         </div>
-      </div>
-    </div>
-  </div>
-</footer>
+      </section>
 
+      <section class="mail-content" *ngIf="vm.step === 'PARAMS'">
+        <div class="panel-card">
+          <h2 class="subtitle is-6 mb-3">Paramètres du mail</h2>
 
-    </div>
+          <div class="columns">
+            <div class="column">
+              <label class="label">Date début</label>
+              <input
+                class="input"
+                type="date"
+                [ngModel]="vm.dateDebut"
+                (ngModelChange)="updateDateDebut($event)"
+              />
+            </div>
+
+            <div class="column">
+              <label class="label">Date fin</label>
+              <input
+                class="input"
+                type="date"
+                [ngModel]="vm.dateFin"
+                (ngModelChange)="updateDateFin($event)"
+              />
+            </div>
+          </div>
+
+          <button
+            class="button is-primary is-light"
+            [disabled]="!vm.dateDebut || !vm.dateFin"
+            (click)="validateDateRange()"
+          >
+            Valider la plage
+          </button>
+        </div>
+
+        <div class="panel-card" *ngIf="vm.mailType === 'annulation' || vm.mailType === 'convocation' || vm.mailType === 'serie_seance'">
+          <h2 class="subtitle is-6 mb-3">Séance</h2>
+
+          <div class="select is-fullwidth">
+            <select
+              [ngModel]="vm.selectedSeance"
+              (ngModelChange)="selectSeance($event)"
+            >
+              <option [ngValue]="null">Sélectionner une séance</option>
+              <option *ngFor="let seance of vm.seances" [ngValue]="seance">
+                {{ getSeanceLabel(seance) }} · {{ seance.date_seance | date:'dd/MM/yyyy' }}
+              </option>
+            </select>
+          </div>
+
+          <div class="mt-3" *ngIf="vm.mailType === 'serie_seance'">
+            <button class="button is-small is-primary is-light" [disabled]="!vm.selectedSeance" (click)="addSerieSeance()">
+              Ajouter à la série
+            </button>
+
+            <div class="tags mt-3">
+              <span class="tag is-info" *ngFor="let seance of vm.serieSeances">
+                {{ getSeanceLabel(seance) }}
+                <button class="delete is-small" (click)="removeSerieSeance(seance)"></button>
+              </span>
+            </div>
+
+            <label class="label mt-3">Nom du championnat</label>
+            <input
+              class="input"
+              [ngModel]="vm.sujetSerie"
+              (ngModelChange)="mailStore.patchParams({ sujetSerie: $event })"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="mail-content" *ngIf="vm.step === 'AUDIENCE'">
+        <div class="audience-layout">
+          <div class="panel-card">
+            <h2 class="subtitle is-6 mb-3">Ajouter des destinataires</h2>
+
+            <div class="buttons">
+              <button class="button is-primary is-light" (click)="addInscrits()">
+                Inscrits saison
+              </button>
+
+              <button class="button is-primary is-light" (click)="addAll()">
+                Tous les adhérents
+              </button>
+            </div>
+
+            <div class="adherent-list">
+              <button
+                type="button"
+                class="adherent-row"
+                *ngFor="let adherent of vm.adherents"
+                (click)="addAdherent(adherent)"
+              >
+                <span>
+                  <strong>{{ adherent.libelle }}</strong>
+                  <small>{{ getAdherentEmailLabel(adherent) }}</small>
+                </span>
+
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+              <h2 class="subtitle is-6 mb-0">Sélection</h2>
+              <button class="button is-small is-light" (click)="clearAudience()">Vider</button>
+            </div>
+
+            <div class="selected-list">
+              <span class="tag is-warning is-medium" *ngFor="let adherent of selectedAdherents">
+                {{ adherent.libelle }}
+                <button class="delete is-small" (click)="removeAdherent(adherent)"></button>
+              </span>
+            </div>
+
+            <button
+              class="button is-primary is-fullwidth mt-4"
+              [disabled]="selectedAdherents.length === 0"
+              (click)="goDraft()"
+            >
+              Préparer le brouillon
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="mail-content" *ngIf="vm.step === 'BROUILLON'">
+        <div class="draft-layout">
+          <div class="panel-card">
+            <h2 class="subtitle is-6 mb-3">Template</h2>
+
+            <label class="label">Sujet</label>
+            <input
+              class="input mb-3"
+              [ngModel]="vm.templateSubject"
+              (ngModelChange)="updateSubject($event)"
+            />
+
+            <label class="label">HTML</label>
+            <textarea
+              class="textarea mail-editor"
+              [ngModel]="vm.templateHtml"
+              (ngModelChange)="updateHtml($event)"
+            ></textarea>
+
+            <div class="buttons mt-3">
+              <button class="button is-info is-light" (click)="generate()">
+                Générer la vue
+              </button>
+
+              <button class="button is-primary is-light" [disabled]="vm.mailType === 'vide'" (click)="saveTemplate()">
+                Sauvegarder le template
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h2 class="subtitle is-6 mb-3">Aperçu généré</h2>
+
+            <div class="select is-fullwidth mb-3" *ngIf="vm.generated.length">
+              <select
+                [ngModel]="vm.selectedGeneratedIndex"
+                (ngModelChange)="mailStore.patchParams({ selectedGeneratedIndex: +$event })"
+              >
+                <option *ngFor="let mail of vm.generated; let i = index" [ngValue]="i">
+                  {{ mail.adherent.libelle }} · {{ mail.to || 'email manquant' }}
+                </option>
+              </select>
+            </div>
+
+            <ng-container *ngIf="vm.generated[vm.selectedGeneratedIndex] as mail">
+              <div class="mail-preview-meta">
+                <strong>{{ mail.subject }}</strong>
+                <span>{{ mail.to || 'adresse manquante' }}</span>
+              </div>
+
+              <mail-template-preview [html]="mail.html"></mail-template-preview>
+
+              <div class="buttons mt-3">
+                <button class="button is-primary is-light" [disabled]="!mail.to" (click)="sendOne()">
+                  Envoyer cet email
+                </button>
+
+                <button class="button is-success is-light" [disabled]="!vm.generated.length" (click)="sendAll()">
+                  Envoyer tous les mails
+                </button>
+              </div>
+            </ng-container>
+
+            <div class="empty-preview" *ngIf="!vm.generated.length">
+              Génère la vue pour visualiser les mails.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 </div>
-</div>
-</fieldset>

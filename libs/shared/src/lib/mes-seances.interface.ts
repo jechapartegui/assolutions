@@ -9,12 +9,17 @@ export type InscriptionStatusDto =
   | 'convoqué'
   | 'essai'
   | null;
+export type PresenceStatusDto =
+  | 'présent'
+  | 'absent'
+  | null;
 
 export interface MesSeanceDto {
   seance: {
     id: number;
   };
   statutInscription?: InscriptionStatusDto;
+  statutPrésence?: PresenceStatusDto;
 }
 
 export interface PersonneDto {  
@@ -30,6 +35,7 @@ export interface MesSeanceHydrated {
   seance: Seance;
   seanceProfesseurs: SeanceProfesseur_Light[];
   statutInscription: InscriptionStatusDto;
+  statutPrésence: PresenceStatusDto;
 }
 
 export interface AdhMenHydrated {

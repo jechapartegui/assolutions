@@ -296,6 +296,30 @@ export class LoginComponent implements OnInit {
 }
 
   private async openSession(mr: MeResponse): Promise<void> {
+    if(mr.mode ==="ADMIN") {
+      if(!mr.projects || mr.projects.length === 0 || mr.projects.length > 1) {
+        const errorService = ErrorService.instance;
+        const o = errorService.CreateError(this.action, $localize`Aucun projet associé au compte`);
+        errorService.emitChange(o);
+        return;
+      }
+       const s: Session = {
+        token: mr.token,
+        mode: this.VM.mode,
+        compte: mr.compte,
+        projects: mr.projects,
+        selectedProjectId: mr.projects[0].id,
+        rights: mr.projects[0].rights
+      };
+        await this.store.setSession(s);
+
+        this.resetProjectCaches();
+        this.store.selectProject(mr.projects[0].id);
+        this.store.updateSelectedMenu('MENU-ADMIN');
+        this.navigateAfterProjectSelection();
+      this.router.navigate(['/menu-admin']);
+      return;
+    }
     const errorService = ErrorService.instance;
     this.VM.compte = mr.compte;
     this.action = $localize`Lister les projets associés au compte`;

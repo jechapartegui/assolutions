@@ -1,0 +1,98 @@
+:host {
+  display: block;
+  height: calc(100vh - var(--app-topbar-height, 52px));
+  min-height: 0;
+}
+
+.admin-crud-page {
+  height: 100%;
+  min-height: 0;
+  padding: 0.75rem;
+}
+
+.page-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.page-card-header {
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fbfcfd;
+}
+
+.toolbar app-personne-selector {
+  flex: 1;
+}
+
+.table-zone {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.table {
+  font-size: 0.86rem;
+  margin-bottom: 0;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bulma-scheme-main, #fff);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.action-col {
+  width: 8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.empty-zone {
+  height: 100%;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 0.82rem;
+}
+
+.modal-card {
+  max-height: 92vh;
+}
+
+.modal-card-body {
+  overflow: auto;
+}

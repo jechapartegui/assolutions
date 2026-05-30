@@ -38,6 +38,14 @@ import type { AppMode } from '@shared/lib/compte.interface';
 import { MonCompteComponent } from './mon-compte/mon-compte.component';
 import { GroupeComponent } from './groupe/groupe.component';
 import { DashboardComponent } from './tdb/dashboard.component';
+import { MenuAdminComponent } from './menu-admin/menu-admin.component';
+import { LieuComponent } from './lieu/lieu.component';
+import { SaisonComponent } from './saison/saison.component';
+import { CompteBancaireComponent } from './compte-bancaire/compte-bancaire.component';
+import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
+import { ProfesseurComponent } from './professeur/professeur.component';
+import { ProjetMailComponent } from './projet-mail/projet-mail.component';
+import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 
 // Raccourcis
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
@@ -61,6 +69,15 @@ const routes: Routes = [
   { path: 's/:slug', component: ShortLinkRedirectComponent },
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
+  {path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'lieu', component: LieuComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'saison', component: SaisonComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'compte-bancaire', component: CompteBancaireComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'contrat-prof', component: ContratProfComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'professeur', component: ProfesseurComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'projet-mail', component: ProjetMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'envoi-mail', component: EnvoiMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+
 
   { path: '**', redirectTo: 'login' },
 ];

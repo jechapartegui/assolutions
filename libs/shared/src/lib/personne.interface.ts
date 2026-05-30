@@ -11,9 +11,9 @@ export interface Personne {
   
   nickname?: string | null;
   gender?: boolean;
-
+  login?: string;
   address: string;
-
+  
   archive?: boolean;
 }
 
@@ -107,7 +107,13 @@ export class Personne_VM extends PersonneLight_VM {
   }
   }
 
-
+export type PersonneSearchItem = {
+  id: number;
+  nom?: string;
+  prenom?: string;
+  surnom?: string;
+  libelle?: string;
+};
 
 export interface ItemContact {
   id: number;

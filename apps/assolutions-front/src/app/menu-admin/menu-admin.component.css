@@ -1,0 +1,162 @@
+:host {
+  display: block;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+}
+
+.admin-page {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+.admin-hero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(0, 209, 178, 0.11), rgba(255, 102, 133, 0.08)),
+    #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.admin-kicker {
+  margin-bottom: 0.25rem;
+  color: #008f7d;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.season-panel {
+  min-width: 260px;
+  max-width: 340px;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-section {
+  padding: 1rem;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.admin-tile {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fbfcfd;
+  color: #1f2937;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.admin-tile:hover:not(.is-disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(0, 209, 178, 0.45);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.tile-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  background: rgba(0, 209, 178, 0.1);
+  color: #008f7d;
+}
+
+.tile-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tile-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.tile-hint {
+  margin-top: 0.15rem;
+  color: #9ca3af;
+  font-size: 0.72rem;
+}
+
+.tile-arrow {
+  color: #9ca3af;
+  font-size: 0.72rem;
+}
+
+.admin-tile.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f3f4f6;
+}
+
+@media screen and (max-width: 1023px) {
+  .admin-hero {
+    flex-direction: column;
+  }
+
+  .season-panel {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .admin-page {
+    padding: 0.75rem;
+    padding-bottom: 4.75rem;
+  }
+
+  .tiles-grid {
+    grid-template-columns: 1fr;
+  }
+}

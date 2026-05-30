@@ -132,6 +132,7 @@ toMesSeancesVm(
     return {
       seance: seanceVm,
       statutInscription: ms.statutInscription ?? null,
+      statutPrésence: ms.statutPrésence ?? null,
     };
   });
 }
@@ -140,10 +141,14 @@ toAdherentMenu(
   hydrated: AdhMenHydrated,
   refs: MenuReferencesVm,
   profil: 'ADH' | 'PROF',
-  dateMin: Date,
-  dateMax: Date,
 ): AdherentMenu {
   const rider = new AdherentMenu();
+  const dateMin = new Date();
+  if(profil === 'PROF') {
+    dateMin.setMonth(dateMin.getDay() - 2);
+  }
+  const dateMax = new Date();
+  dateMax.setMonth(dateMax.getMonth() + 1);
 
   rider.id = hydrated.personne.id;
   rider.nom = hydrated.personne.nom ?? '';
@@ -156,8 +161,9 @@ toAdherentMenu(
 
   rider.filters.filter_date_apres = dateMax;
   rider.filters.filter_date_avant = dateMin;
+  console.log('Before:', hydrated.mes_seances);
   rider.MesSeances = this.toMesSeancesVm(hydrated.mes_seances, refs);
-
+  console.log('Mapped MesSeances_VM:', rider.MesSeances);
   return rider;
 }
 
