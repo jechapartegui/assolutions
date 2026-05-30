@@ -1,0 +1,87 @@
+name: Bug
+description: Signaler un bug dans Assolutions
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module concerné
+      options:
+        - Connexion
+        - Dashboard
+        - Adhérents
+        - Séances
+        - Cours
+        - Mail / preview
+        - Paiement
+        - Admin
+        - Front général
+        - Back / API
+        - Autre
+    validations:
+      required: true
+
+  - type: dropdown
+    id: gravite
+    attributes:
+      label: Gravité
+      options:
+        - Bloquant
+        - Gênant
+        - Cosmétique
+        - Suggestion
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du bug
+      description: Explique ce qui ne va pas.
+      placeholder: "Ex : le statut de présence ne s'affiche pas au premier chargement."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Comment reproduire
+      placeholder: |
+        1. Aller sur...
+        2. Cliquer sur...
+        3. Constater que...
+    validations:
+      required: true
+
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Résultat attendu
+      placeholder: "Ce qui devrait se passer normalement."
+    validations:
+      required: true
+
+  - type: textarea
+    id: obtenu
+    attributes:
+      label: Résultat obtenu
+      placeholder: "Ce qui se passe actuellement."
+    validations:
+      required: true
+
+  - type: input
+    id: navigateur
+    attributes:
+      label: Navigateur / appareil
+      placeholder: "Chrome Windows, mobile Android, iPhone..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: captures
+    attributes:
+      label: Captures / infos complémentaires
+      description: Tu peux coller une capture écran ici.
+    validations:
+      required: false
