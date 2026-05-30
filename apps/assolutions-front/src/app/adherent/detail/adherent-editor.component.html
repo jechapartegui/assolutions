@@ -170,15 +170,30 @@
             />
             <span>Préféré</span>
           </label>
+          
+          <label *ngIf="c.Type === 'EMAIL'" class="checkbox contact-diffusion">
+  <input
+    type="checkbox"
+    name="diffusion-{{ i }}"
+    [(ngModel)]="c.Diffusion"
+  />
+  <span>Recevoir les emails</span>
+</label>
 
-          <button class="button is-light" type="button" (click)="removeContact(i)">
-            <span>Supprimer</span>
-          </button>
+         <button
+  class="button is-light contact-delete-button"
+  type="button"
+  title="Supprimer"
+  aria-label="Supprimer ce contact"
+  (click)="removeContact(i)"
+>
+  <span aria-hidden="true">✕</span>
+</button>
         </div>
       </div>
 
       <div class="buttons mt-3 mb-0">
-        <button class="button is-primary is-light" type="button" (click)="addContact('MAIL')">
+        <button class="button is-primary is-light" type="button" (click)="addContact('EMAIL')">
           <span>Ajouter un contact</span>
         </button>
       </div>
@@ -189,7 +204,10 @@
       <h3 class="subtitle is-6 has-text-primary mb-4">Contact à prévenir</h3>
 
       <div class="editor-stack">
-        <div class="contact-row" *ngFor="let c of adherent.contact_prevenir; let i = index; trackBy: trackByIndex">
+<div
+  class="contact-row contact-row--prevenir"
+  *ngFor="let c of adherent.contact_prevenir; let i = index; trackBy: trackByIndex"
+>
           <div class="select is-fullwidth">
             <select [(ngModel)]="c.Type">
               <option [ngValue]="'PHONE'">Téléphone</option>
@@ -204,11 +222,15 @@
             placeholder="Valeur"
           />
 
-          <div></div>
-
-          <button class="button is-light" type="button" (click)="removeContactPrevenir(i)">
-            <span>Supprimer</span>
-          </button>
+       <button
+  class="button is-light contact-delete-button"
+  type="button"
+  title="Supprimer"
+  aria-label="Supprimer ce contact à prévenir"
+  (click)="removeContactPrevenir(i)"
+>
+  <span aria-hidden="true">✕</span>
+</button>
         </div>
       </div>
 

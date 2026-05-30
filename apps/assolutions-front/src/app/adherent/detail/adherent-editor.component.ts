@@ -330,22 +330,22 @@ private forceCompteIfNeeded(): void {
     vm.isValid = this.rNom.key && this.rPrenom.key;
   }
 
-  addContact(type: string = 'MAIL'): void {
-    const adherent = this.adherent;
-    if (!adherent) return;
+addContact(type: string = 'EMAIL'): void {
+  const adherent = this.adherent;
+  if (!adherent) return;
 
-    const item: ItemContact = {
-      Type: type,
-      Pref: adherent.contact.length === 0,
-      Value: '',
-      Info: '',
-      id: 0,
-      Diffusion: true,
-    };
+  const item: ItemContact = {
+    Type: type,
+    Pref: adherent.contact.length === 0,
+    Value: '',
+    Info: '',
+    id: 0,
+    Diffusion: type === 'EMAIL',
+  };
 
-    adherent.contact.push(item);
-    this.normalizePreferredContact();
-  }
+  adherent.contact.push(item);
+  this.normalizePreferredContact();
+}
 
   removeContact(index: number): void {
     const adherent = this.adherent;
@@ -355,14 +355,18 @@ private forceCompteIfNeeded(): void {
     this.normalizePreferredContact();
   }
 
-  setPreferredContact(index: number): void {
-    const adherent = this.adherent;
-    if (!adherent) return;
+setPreferredContact(index: number): void {
+  const adherent = this.adherent;
+  if (!adherent) return;
 
-    adherent.contact.forEach((c, i) => {
-      c.Pref = i === index;
-    });
-  }
+  adherent.contact.forEach((c, i) => {
+    c.Pref = i === index;
+
+    if (i === index && c.Type === 'EMAIL' && c.Value?.trim()) {
+      c.Diffusion = true;
+    }
+  });
+}
 
   normalizePreferredContact(): void {
     const adherent = this.adherent;
