@@ -18,6 +18,14 @@ body:
         - Admin
         - Front général
         - Back / API
+        - Menu
+        - Saison
+        - Lieu
+        - Compta
+        - Inscription
+        - Add Info
+        - Liste de valeurs
+        - Professeur
         - Autre
     validations:
       required: true
@@ -28,8 +36,8 @@ body:
       label: Gravité
       options:
         - Bloquant
-        - Gênant
-        - Cosmétique
+        - Majeur
+        - Mineur
         - Suggestion
     validations:
       required: true
@@ -60,7 +68,7 @@ body:
       label: Résultat attendu
       placeholder: "Ce qui devrait se passer normalement."
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: obtenu
@@ -68,7 +76,7 @@ body:
       label: Résultat obtenu
       placeholder: "Ce qui se passe actuellement."
     validations:
-      required: true
+      required: false
 
   - type: input
     id: navigateur
