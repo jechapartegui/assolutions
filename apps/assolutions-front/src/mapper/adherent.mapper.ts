@@ -99,6 +99,16 @@ vm.contact = (params.contacts ?? [])
     Info: c.info ?? '',
     Pref: c.pref,
   }));
+  vm.contact_prevenir = (params.contacts ?? [])
+  .filter(x => x.contact_list === 'liste_contact_prevenir')
+  .map(c => ({
+    id: c.id,
+    Diffusion: c.diffusion ?? false,
+    Type: c.contact_type,
+    Value: c.contact_value ?? '',
+    Info: c.info ?? '',
+    Pref: c.pref,
+  }));
   vm.saisonActiveId = activeSaisonId;
   vm.inscrit = !!inscriptionSaisonActive;
   vm.groupesActifs = groupesActifs ?? [];
@@ -129,6 +139,16 @@ toAdherentDetailVm(
   Object.assign(vm, base);
   vm.contact = (contacts ?? [])
   .filter(x => x.contact_list === 'liste_contact')
+  .map(c => ({
+    id: c.id,
+    Diffusion: c.diffusion ?? false,
+    Type: c.contact_type,
+    Value: c.contact_value ?? '',
+    Info: c.info ?? '',
+    Pref: c.pref,
+  }));
+  vm.contact_prevenir = (contacts ?? [])
+  .filter(x => x.contact_list === 'liste_contact_prevenir')
   .map(c => ({
     id: c.id,
     Diffusion: c.diffusion ?? false,

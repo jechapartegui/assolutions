@@ -5,7 +5,7 @@ import { InscriptionSaisonApiService } from '../services/inscription-saison-api.
 import { InscriptionSeanceApiService } from '../services/inscription-seance-api.service';
 import { AdherentMapper } from '../mapper/adherent.mapper';
 
-import { Personne } from '@shared/lib/personne.interface';
+import { ItemContact, Personne } from '@shared/lib/personne.interface';
 import { InscriptionSaison } from '@shared/lib/inscription-saison.interface';
 import { InscriptionSeance } from '@shared/lib/inscription-seance.interface';
 import { LienGroupe_VM } from '@shared/lib/groupes.interface';
@@ -21,7 +21,7 @@ import { RefDataRepository } from './refdata.repository';
 import { PersonneApiService } from '../services/personne-api.service';
 import { LienGroupeApiService } from '../services/lien-groupe-api.service';
 import { DocumentApiService } from '../services/document-api.service';
-import { ContactApiService, ContactDto } from '../services/contact-api.service';
+import { ContactApiService, ContactDto, CreateContactDto, UpdateContactDto } from '../services/contact-api.service';
 import { AddInfoApiService } from '../services/addinfo-api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -172,6 +172,9 @@ const groupesActifs: LienGroupe_VM[] = groupeIds
     };
     const saved = await this.personneapi.create(dto);
 
+await this.syncContacts(saved.id, vm.contact ?? [], 'liste_contact');
+await this.syncContacts(saved.id, vm.contact_prevenir ?? [], 'liste_contact_prevenir');
+
 await this.documentapi.setPhoto(saved.id, vm.photo ?? null, 'member');
 
 return this.loadAdherentDetail(saved.id, vm.inscriptionsSaison?.find(x => x.active)?.saison_id ?? 0);;
@@ -189,10 +192,62 @@ return this.loadAdherentDetail(saved.id, vm.inscriptionsSaison?.find(x => x.acti
       archive: !!vm.archive,photo: vm.photo ?? null,
     };
 
-    await this.personneapi.update(vm.id, dto);
+await this.personneapi.update(vm.id, dto);
+
+await this.syncContacts(vm.id, vm.contact ?? [], 'liste_contact');
+await this.syncContacts(vm.id, vm.contact_prevenir ?? [], 'liste_contact_prevenir');
+
 await this.documentapi.setPhoto(vm.id, vm.photo ?? null, 'member');
     return this.loadAdherentDetail(vm.id, saisonId);
   }
+
+  private async syncContacts(
+  personneId: number,
+  contacts: ItemContact[],
+  contactList: 'liste_contact' | 'liste_contact_prevenir',
+): Promise<void> {
+  const existing = (await this.contactservice.list_by_id([personneId]))
+    .filter(c => c.contact_list === contactList);
+
+  const nextContacts = (contacts ?? [])
+    .filter(c => !!c.Value?.trim())
+    .map(c => ({
+      ...c,
+      Value: c.Value.trim(),
+      Diffusion: c.Type === 'EMAIL' ? !!c.Diffusion : false,
+    }));
+
+  const nextIds = new Set(
+    nextContacts
+      .filter(c => (c.id ?? 0) > 0)
+      .map(c => c.id),
+  );
+
+  for (const old of existing) {
+    if (!nextIds.has(old.id)) {
+      await this.contactservice.remove(old.id);
+    }
+  }
+
+  for (const c of nextContacts) {
+   const payload: CreateContactDto = {
+  object_type: 'rider',
+  object_id: personneId,
+  contact_type: c.Type,
+  contact_value: c.Value,
+  diffusion: c.Type === 'EMAIL' ? !!c.Diffusion : false,
+  contact_list: contactList,
+  info: c.Info ?? '',
+  pref: !!c.Pref,
+};
+
+if ((c.id ?? 0) > 0) {
+  await this.contactservice.update(c.id, payload);
+} else {
+  await this.contactservice.create(payload);
+}
+  }
+}
 
   async deleteAdherent(id: number): Promise<void> {
     await this.personneapi.remove(id);

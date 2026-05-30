@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { RegistryService } from '../registry/registry.service';
@@ -22,28 +22,36 @@ export class ContactService {
         return this.repo.findOne({ where: { id } });
     }
 
-  async create(dto: CreateContactDto,) {
+  async create(dto: CreateContactDto) {
     const entity = this.repo.create({ ...dto as CreateContactDto });
     const saved = await this.repo.save(entity);
-
     await this.registry.ensure('contact', saved.id);
     return saved;
   }
 
   async update(id: number, dto: UpdateContactDto) {
-    const item = await this.get(id);
-    Object.assign(item, dto);
-    const saved = await this.repo.save(item);
+  const item = await this.get(id);
 
-    await this.registry.ensure('contact', id);
-    return saved;
+  if (!item) {
+    throw new NotFoundException(`Contact ${id} introuvable`);
   }
 
-  async remove(id: number) {
-    const item = await this.get(id);
-    await this.repo.remove(item);
+  Object.assign(item, dto);
+  const saved = await this.repo.save(item);
+  await this.registry.ensure('contact', id);
+  return saved;
+}
 
-    await this.registry.remove('contact', id);
-    return { ok: true };
+async remove(id: number) {
+  const item = await this.get(id);
+
+  if (!item) {
+    throw new NotFoundException(`Contact ${id} introuvable`);
   }
+
+  await this.repo.remove(item);
+  await this.registry.remove('contact', id);
+
+  return { ok: true };
+}
 }
