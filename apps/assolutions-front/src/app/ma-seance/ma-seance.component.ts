@@ -142,7 +142,6 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   }
 
   async afterLoginFromSeance(): Promise<void> {
-    console.log("ici");
   const compte = this.store.compte();
 
   if (!compte?.login) return;

@@ -161,9 +161,7 @@ toAdherentMenu(
 
   rider.filters.filter_date_apres = dateMax;
   rider.filters.filter_date_avant = dateMin;
-  console.log('Before:', hydrated.mes_seances);
   rider.MesSeances = this.toMesSeancesVm(hydrated.mes_seances, refs);
-  console.log('Mapped MesSeances_VM:', rider.MesSeances);
   return rider;
 }
 

@@ -414,7 +414,6 @@ const MAVM: Project = await this.projectapi.get(selectedProject.id);
   this.annulerContactClub();
 }
     AfficherProfil(_t17: AdherentMenu) {
-      console.log('Afficher profil de', _t17);
   for (const r of this.Riders) {
     if (r.id == _t17.id && r.profil == _t17.profil) {
       r.afficher = !r.afficher;

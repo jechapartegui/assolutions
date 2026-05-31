@@ -59,7 +59,6 @@ getEmails(adherent: AdherentListItem_VM): string[] {
   const contacts = (adherent.contact ?? [])
     .filter(c => c.Type === 'EMAIL' && c.Diffusion === true)
     .map(c => c.Value);
-  console.log(contacts);
   return Array.from(
     new Set(
       [...contacts, adherent.login]

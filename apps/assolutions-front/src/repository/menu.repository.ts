@@ -54,7 +54,6 @@ async loadMenuData(
     this.loadReferenceData(projectId, saisonId),
   ]);
   const riders = await this.loadRiders(rights, refs);
-  console.log(riders);
   return {
     riders,
     anniversaire,
@@ -116,27 +115,40 @@ async loadRiders(
     return [];
   }
 
-  const hydratedDtos = await this.hydrateAdhMenDtos(
-    sources.map((x) => x.dto)
-  );
-  console.log('Hydrated DTOs:', hydratedDtos);
 
-  const hydratedByPersonId = new Map<number, AdhMenHydrated>(
-    hydratedDtos.map((x) => [x.personne.id, x])
-  );
+const keyOf = (profil: 'ADH' | 'PROF', id: number) => `${profil}:${id}`;
 
-  const riders: AdherentMenu[] = sources
-    .map((source) => {
-      const hydrated = hydratedByPersonId.get(source.dto.personne.id);
-      if (!hydrated) return null;
-
-      return this.menuMapper.toAdherentMenu(
-  hydrated,
-  refs,
-  source.profil
+const hydratedDtos = await this.hydrateAdhMenDtos(
+  sources.map((x) => x.dto)
 );
-    })
-    .filter((x): x is AdherentMenu => x !== null);
+
+const hydratedBySourceKey = new Map<string, AdhMenHydrated>();
+
+sources.forEach((source, index) => {
+  const hydrated = hydratedDtos[index];
+  if (!hydrated) return;
+
+  hydratedBySourceKey.set(
+    keyOf(source.profil, source.dto.personne.id),
+    hydrated
+  );
+});
+
+const riders: AdherentMenu[] = sources
+  .map((source) => {
+    const hydrated = hydratedBySourceKey.get(
+      keyOf(source.profil, source.dto.personne.id)
+    );
+
+    if (!hydrated) return null;
+
+    return this.menuMapper.toAdherentMenu(
+      hydrated,
+      refs,
+      source.profil
+    );
+  })
+  .filter((x): x is AdherentMenu => x !== null);
 
   this.menuMapper.sortRiderSeances(riders);
   riders.sort((a, b) => a.id - b.id);
