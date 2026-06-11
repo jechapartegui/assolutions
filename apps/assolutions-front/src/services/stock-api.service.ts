@@ -8,8 +8,12 @@ export class StockApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<Stock[]> {
-    return this.api.GET<Stock[]>(this.base);
+  list(fluxFinancierId?: number): Promise<Stock[]> {
+    const url = fluxFinancierId
+      ? `${this.base}?flux_financier_id=${fluxFinancierId}`
+      : this.base;
+
+    return this.api.GET<Stock[]>(url);
   }
 
   get(id: number): Promise<Stock> {

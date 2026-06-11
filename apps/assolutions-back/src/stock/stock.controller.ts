@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -11,8 +11,14 @@ export class StockController {
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get()
-  list(@ProjectId() projectId: number) {
-    return this.service.listForProject(projectId);
+  list(
+    @ProjectId() projectId: number,
+    @Query('flux_financier_id') fluxFinancierId?: string,
+  ) {
+    return this.service.listForProject(
+      projectId,
+      fluxFinancierId ? +fluxFinancierId : undefined,
+    );
   }
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
@@ -27,14 +33,16 @@ export class StockController {
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateStockDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateStockDto,
+  ) {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {

@@ -1,7 +1,7 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CompteBancaireEntity } from './compte_bancaire.entity';
 import { CreateCompteBancaireDto, UpdateCompteBancaireDto } from './compte_bancaire.dto';
 
@@ -10,7 +10,7 @@ export class CompteBancaireService {
   constructor(
     @InjectRepository(CompteBancaireEntity)
     private readonly repo: Repository<CompteBancaireEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   listForProject(projectId: number) {
@@ -28,7 +28,6 @@ export class CompteBancaireService {
     const entity = this.repo.create({ ...dto as CreateCompteBancaireDto, project_id: projectId });
     const saved = await this.repo.save(entity);
 
-    await this.registry.ensure('compte_bancaire', saved.id);
     return saved;
   }
 
@@ -37,15 +36,12 @@ export class CompteBancaireService {
     Object.assign(item, dto, { project_id: projectId });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('compte_bancaire', id);
     return saved;
   }
 
   async remove(id: number, projectId: number) {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
-
-    await this.registry.remove('compte_bancaire', id);
     return { ok: true };
   }
 }

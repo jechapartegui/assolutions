@@ -5,8 +5,16 @@ export class CreateStockDto {
   @IsNumber()
   qte?: number;
 
+  @IsOptional()
+  @IsInt()
+  lieu_id?: number | null;
+
   @IsString()
   lieu_stockage: string;
+
+  @IsOptional()
+  @IsInt()
+  type_stock_id?: number | null;
 
   @IsString()
   type_stock: string;
@@ -29,8 +37,6 @@ export class CreateStockDto {
 
   @IsString()
   info: string;
-
-  // ✅ supprimé : project_id (vient du header)
 }
 
 export class UpdateStockDto {
@@ -39,8 +45,16 @@ export class UpdateStockDto {
   qte?: number;
 
   @IsOptional()
+  @IsInt()
+  lieu_id?: number | null;
+
+  @IsOptional()
   @IsString()
   lieu_stockage?: string;
+
+  @IsOptional()
+  @IsInt()
+  type_stock_id?: number | null;
 
   @IsOptional()
   @IsString()

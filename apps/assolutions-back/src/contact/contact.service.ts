@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { Contact } from './contact.entity';
 import { CreateContactDto, UpdateContactDto } from './contact.dto';
 
@@ -10,7 +10,7 @@ export class ContactService {
   constructor(
     @InjectRepository(Contact)
     private readonly repo: Repository<Contact>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
     async list(ids: number[]) {
@@ -25,7 +25,6 @@ export class ContactService {
   async create(dto: CreateContactDto) {
     const entity = this.repo.create({ ...dto as CreateContactDto });
     const saved = await this.repo.save(entity);
-    await this.registry.ensure('contact', saved.id);
     return saved;
   }
 
@@ -38,7 +37,6 @@ export class ContactService {
 
   Object.assign(item, dto);
   const saved = await this.repo.save(item);
-  await this.registry.ensure('contact', id);
   return saved;
 }
 
@@ -50,7 +48,7 @@ async remove(id: number) {
   }
 
   await this.repo.remove(item);
-  await this.registry.remove('contact', id);
+  // await this.registry.remove('contact', id);
 
   return { ok: true };
 }

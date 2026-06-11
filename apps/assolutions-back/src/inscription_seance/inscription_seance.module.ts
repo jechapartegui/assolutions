@@ -1,6 +1,6 @@
 ﻿import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RegistryModule } from '../registry/registry.module';
+
 import { InscriptionSeanceController } from './inscription_seance.controller';
 import { InscriptionSeanceEntity } from './inscription_seance.entity';
 import { InscriptionSeanceService } from './inscription_seance.service';
@@ -14,7 +14,7 @@ import { PersonneEntity } from '../personne/personne.entity';
 import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
 import { CompteEntity } from '../compte/compte.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([InscriptionSeanceEntity, SeanceEntity, SaisonEntity, PersonneEntity, LienGroupeEntity, CompteEntity]), RegistryModule, AccessControlModule],
+  imports: [TypeOrmModule.forFeature([InscriptionSeanceEntity, SeanceEntity, SaisonEntity, PersonneEntity, LienGroupeEntity, CompteEntity]), AccessControlModule],
   controllers: [InscriptionSeanceController],
   providers: [InscriptionSeanceService, SeanceService, SaisonService],
 })

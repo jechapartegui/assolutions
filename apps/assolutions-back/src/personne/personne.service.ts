@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CreatePersonneDto, UpdatePersonneDto } from './personne.dto';
 import { PersonneEntity } from './personne.entity';
 
@@ -10,7 +10,7 @@ export class PersonneService {
   constructor(
     @InjectRepository(PersonneEntity)
     private readonly repo: Repository<PersonneEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   listForCompte(compteId: number) {
@@ -59,7 +59,6 @@ export class PersonneService {
     const entity = this.repo.create(dto as CreatePersonneDto);
     const saved = await this.repo.save(entity);
 
-    await this.registry.ensure('personne', saved.id);
     return saved;
   }
 
@@ -68,7 +67,6 @@ export class PersonneService {
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('personne', id);
     return saved;
   }
 
@@ -76,7 +74,6 @@ export class PersonneService {
     const item = await this.get(id);
     await this.repo.remove(item);
 
-    await this.registry.remove('personne', id);
     return { ok: true };
   }
 

@@ -9,7 +9,6 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { join } from 'path';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CompteModule } from '../compte/compte.module';
-import { RegistryModule } from '../registry/registry.module';
 import { AddinfoModule } from '../addinfo/addinfo.module';
 import { CompteBancaireModule } from '../compte_bancaire/compte_bancaire.module';
 import { ContratProfModule } from '../contrat_prof/contrat_prof.module';
@@ -40,6 +39,7 @@ import { ContactModule } from '../contact/contact.module';
 import { MesSeancesModule } from './mes_seances/mes_seances.module';
 import { MessageModule } from '../message/message.module';
 import { LoginProjectModule } from '../login_project/login_project.module';
+import { FinanceModule } from '../finance/finance.module';
 
 @Module({
   imports: [
@@ -109,14 +109,13 @@ if (typeof password !== 'string') {
       },
     }),
     CompteModule, MesSeancesModule,
-    RegistryModule,
     AuthModule,
     AddinfoModule, LoginProjectModule,
     // MessagesModule,
     CompteModule, ContactModule,
-    CompteBancaireModule, ContratProfModule, MailProjectModule, MailRecordModule,  AccessControlModule, AdhesionModule,  MessageModule,
+    CompteBancaireModule, ContratProfModule, MailProjectModule, MailRecordModule,  AccessControlModule, AdhesionModule,  MessageModule,FinanceModule,
     CoursModule, CoursProfesseurModule, DocumentModule, FluxFinancierModule, GroupesModule, InscriptionSaisonModule, InscriptionSeanceModule, LienGroupeModule, 
-    LieuModule, MailAccountModule, NoteModule, OperationModule, PersonneModule, ProfesseurModule, ProjectModule, RegistryModule, SaisonModule, SeanceModule, SeanceProfesseurModule, StockModule
+    LieuModule, MailAccountModule, NoteModule, OperationModule, PersonneModule, ProfesseurModule, ProjectModule, SaisonModule, SeanceModule, SeanceProfesseurModule, StockModule
   ],
   providers: [
     {

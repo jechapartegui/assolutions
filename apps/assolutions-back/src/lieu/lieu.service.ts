@@ -1,7 +1,7 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+import { ILike, Repository } from 'typeorm';
+
 import { CreateLieuDto, UpdateLieuDto } from './lieu.dto';
 import { LieuEntity } from './lieu.entity';
 
@@ -9,7 +9,7 @@ import { LieuEntity } from './lieu.entity';
 export class LieuService {
   constructor(
     @InjectRepository(LieuEntity) private readonly repo: Repository<LieuEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   listForProject(projectId: number) {
@@ -25,7 +25,6 @@ export class LieuService {
 
   async create(dto: CreateLieuDto, projectId: number) {
     const saved = await this.repo.save(this.repo.create({ ...dto as CreateLieuDto, project_id: projectId }));
-    await this.registry.ensure('lieu', saved.id);
     return saved;
   }
 
@@ -33,14 +32,22 @@ export class LieuService {
     const item = await this.getForProject(id, projectId);
     Object.assign(item, dto, { project_id: projectId, date_maj: new Date() });
     const saved = await this.repo.save(item);
-    await this.registry.ensure('lieu', id);
     return saved;
   }
 
   async remove(id: number, projectId: number) {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
-    await this.registry.remove('lieu', id);
     return { ok: true };
+  }
+
+  async search(query: string, projectId: number) {
+    return this.repo.find({
+      where: {
+        project_id: projectId,
+        nom: ILike(`%${query}%`),
+      },
+      order: { id: 'ASC' },
+    });
   }
 }

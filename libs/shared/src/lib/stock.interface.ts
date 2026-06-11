@@ -1,12 +1,16 @@
-import { FluxFinancier_VM } from "./flux-financier.interface";
-import { GenericLink_VM } from "./liens.interface";
+import { FluxFinancier_VM } from './flux-financier.interface';
+import { GenericLink_VM } from './liens.interface';
+
 export interface Stock {
   id: number;
   project_id: number;
 
   qte?: number;
 
+  lieu_id?: number | null;
   lieu_stockage: string;
+
+  type_stock_id?: number | null;
   type_stock: string;
 
   valeur_achat?: number | null;
@@ -22,16 +26,24 @@ export type CreateStockDto = Omit<Stock, 'id' | 'project_id'>;
 export type UpdateStockDto = Partial<Omit<Stock, 'id' | 'project_id'>>;
 
 export class Stock_VM {
-id = 0;
-qte = 1;
-lieu_stockage!: GenericLink_VM; // parsed storagePlace
-type_stock!: string; // LV id as string
-valeur_achat?: number | null;
-date_achat?: Date | null; // YYYY-MM-DD
-flux_financier_id?: number | null;
-flux_financier?: FluxFinancier_VM;
-libelle!: string;
-info!: string;
-to_sell:boolean = false;
-temp_id:number;
+  id = 0;
+  qte = 1;
+
+  lieu_id?: number | null;
+  lieu_stockage!: GenericLink_VM;
+
+  type_stock_id?: number | null;
+  type_stock!: string;
+
+  valeur_achat?: number | null;
+  date_achat?: Date | null;
+
+  flux_financier_id?: number | null;
+  flux_financier?: FluxFinancier_VM;
+
+  libelle!: string;
+  info!: string;
+
+  to_sell = false;
+  temp_id!: number;
 }

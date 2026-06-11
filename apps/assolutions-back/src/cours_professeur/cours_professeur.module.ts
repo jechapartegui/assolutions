@@ -1,6 +1,6 @@
 ﻿import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RegistryModule } from '../registry/registry.module';
+
 import { CoursProfesseurController } from './cours_professeur.controller';
 import { CoursProfesseurEntity } from './cours_professeur.entity';
 import { CoursProfesseurService } from './cours_professeur.service';
@@ -10,7 +10,7 @@ import { CoursService } from '../cours/cours.service';
 import { AccessControlModule } from '../common/access-control.module'; // ✅
 import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([CoursProfesseurEntity, CoursEntity, ContratProfEntity]), RegistryModule, AccessControlModule],
+  imports: [TypeOrmModule.forFeature([CoursProfesseurEntity, CoursEntity, ContratProfEntity]), AccessControlModule],
   controllers: [CoursProfesseurController],
   providers: [CoursProfesseurService, CoursService],
 })

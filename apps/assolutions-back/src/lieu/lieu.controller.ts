@@ -40,4 +40,11 @@ export class LieuController {
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('search/:query')
+  search(@Param('query') query: string, @ProjectId() projectId: number) {
+    return this.service.search(query, projectId);
+  }
 }
+

@@ -27,4 +27,8 @@ export class LieuApiService {
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
+ search(search: string): Promise<Lieu[]> {
+     return this.api.GET<Lieu[]>(this.base + `/search/${search}`);
+   }
+ 
 }

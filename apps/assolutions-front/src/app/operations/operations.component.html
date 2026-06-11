@@ -1,501 +1,349 @@
-<div class="container" *ngIf="Operations && context == 'LISTE'">
-  <div class="columns" style="margin-top: 0.5rem">
-    <div class="column menuligne">
-      <hover-button
-        [nomclass]="
-          afficher_filtre
-            ? 'button is-info is-rounded'
-            : 'button is-info is-rounded  is-outlined'
-        "
-        [nomicon]="'fa-solid fa-filter'"
-        [libelle]="'Afficher le filtre'"
-        (click)="
-          afficher_filtre ? (afficher_filtre = false) : (afficher_filtre = true)
-        "
-      >
-      </hover-button>
-      <button
-        *ngIf="afficher_filtre"
-        (click)="ReinitFiltre()"
-        class="button is-danger is-rounded is-outlined"
-      >
-        <span class="icon is-large">
-          <span class="fa-stack fa-lg">
-            <i class="fas fa-filter fa-stack-1x"></i>
-            <i class="fas fa-slash fa-stack-1x has-text-danger"></i>
-          </span>
-        </span>
-      </button>
-      <hover-button
-        [nomclass]="'button  is-rounded is-primary is-outlined'"
-        [nomicon]="'fas fa-file-excel'"
-        [libelle]="'Exporter vers Excel'"
-        (click)="ExporterExcel()"
-      >
-      </hover-button>
-      <hover-button
-        [nomclass]="'button  is-rounded is-primary is-outlined'"
-        [nomicon]="'fas fa-coins'"
-        [libelle]="'Exécuter les dépenses prévues'"
-        (click)="PrevueToExecute()"
-      >
-      </hover-button>
+<div class="operations-page">
+  <header class="operations-header">
+    <div>
+      <p class="operations-kicker">Finances</p>
+      <h1 class="title is-4 mb-1">Opérations bancaires</h1>
+      <p class="has-text-grey is-size-7">
+        Import, suivi et rattachement des opérations aux flux financiers.
+      </p>
     </div>
-  </div>
 
-  <div class="field">
-    <label class="label">Choisir le compte</label>
-    <div class="control">
-      <div class="select">
-        <select [(ngModel)]="filter_compte">
-          <option value="0">Tous</option>
-          <ng-container *ngFor="let cpt of Comptes">
-            <option [ngValue]="cpt.id">{{ cpt.nom }}</option>
-          </ng-container>
+    <div class="header-actions">
+      <div class="select is-small">
+        <select [(ngModel)]="active_saison" (ngModelChange)="onSaisonChange()">
+          <option *ngFor="let saison of saisons" [ngValue]="saison.id">
+            {{ getSaisonLabel(saison) }}
+          </option>
         </select>
       </div>
-    </div>
-  </div>
 
-  <div class="columns">
-    <div class="column">
-      <div class="card">
-        <header class="card-header">
-          <p class="card-header-title" i18n>
-            Liste des recettes et des dépenses ({{ Operations.length }})
+      <button class="button is-primary is-small" (click)="newOperation()">
+        <i class="fa-solid fa-plus mr-1"></i>
+        Nouvelle opération
+      </button>
+    </div>
+  </header>
+
+  <article class="message is-info" *ngIf="loading">
+    <div class="message-body">Chargement des opérations...</div>
+  </article>
+
+  <ng-container *ngIf="!loading">
+    <section class="operations-import">
+      <div>
+        <strong>Import bancaire CSV</strong>
+        <p class="has-text-grey is-size-7">
+          Les lignes sont prévisualisées avant import. Les opérations sans flux sont rangées dans “À classer”.
+        </p>
+      </div>
+
+      <div class="import-controls">
+        <div class="select is-small">
+          <select [(ngModel)]="importCompteId">
+            <option [ngValue]="null">Compte bancaire</option>
+            <option *ngFor="let c of comptes" [ngValue]="c.id">
+              {{ getCompteLabel(c.id) }}
+            </option>
+          </select>
+        </div>
+
+        <label class="button is-small is-link" [class.is-loading]="importing">
+          <input type="file" accept=".csv,text/csv" hidden (change)="onCsvSelected($event)" />
+          Importer CSV
+        </label>
+      </div>
+    </section>
+
+    <article class="message is-success is-small" *ngIf="importResult">
+      <div class="message-body">{{ importResult }}</div>
+    </article>
+
+    <article class="message is-danger is-small" *ngIf="importError">
+      <div class="message-body">{{ importError }}</div>
+    </article>
+
+    <section class="import-preview" *ngIf="importPreview.length">
+      <div class="import-preview-header">
+        <div>
+          <strong>Prévisualisation import</strong>
+          <p class="has-text-grey is-size-7">
+            {{ selectedPreviewCount }} ligne(s) sélectionnée(s) sur {{ importPreview.length }}.
           </p>
-        </header>
-        <span class="fullscreen">
-          <div class="card-content">
-            <table
-              class="table"
-              style="width: 100%; font-size: smaller"
-              *ngIf="Operations && Operations.length > 0"
-            >
+        </div>
+
+        <div class="buttons">
+          <button class="button is-small" (click)="toggleAllPreview(true)">Tout sélectionner</button>
+          <button class="button is-small" (click)="toggleAllPreview(false)">Tout décocher</button>
+          <button class="button is-small is-light" (click)="cancelImportPreview()">Annuler</button>
+          <button class="button is-small is-primary" (click)="confirmImport()" [class.is-loading]="importing">
+            Valider l'import
+          </button>
+        </div>
+      </div>
+
+      <div class="import-preview-table">
+        <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Date</th>
+              <th>Libellé</th>
+              <th class="has-text-right">Montant</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let row of importPreview" [class.preview-warning]="row.status === 'PROCHE'" [class.preview-error]="row.status === 'DOUBLON'">
+              <td>
+                <input type="checkbox" [(ngModel)]="row.selected" [disabled]="row.status === 'DOUBLON'" />
+              </td>
+              <td>{{ row.date_operation | date:'dd/MM/yyyy' }}</td>
+              <td>{{ row.libelle_bancaire }}</td>
+              <td class="has-text-right" [class.has-text-success]="row.montant > 0" [class.has-text-danger]="row.montant < 0">
+                {{ formatMontant(row.montant) }}
+              </td>
+              <td>
+                <span class="tag"
+                  [class.is-success]="row.status === 'OK'"
+                  [class.is-warning]="row.status === 'PROCHE'"
+                  [class.is-danger]="row.status === 'DOUBLON'">
+                  {{ row.message }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="operations-kpi-grid">
+      <div class="operation-kpi">
+        <span>Total filtré</span>
+        <strong>{{ formatMontant(totalOperations) }}</strong>
+      </div>
+
+      <div class="operation-kpi">
+        <span>Opérations</span>
+        <strong>{{ filteredOperations.length }}</strong>
+      </div>
+
+      <div class="operation-kpi">
+        <span>À classer</span>
+        <strong class="has-text-warning">{{ nbAClasser }}</strong>
+      </div>
+    </section>
+
+    <section class="operations-toolbar">
+      <input
+        class="input is-small"
+        [(ngModel)]="filterTexte"
+        placeholder="Filtrer flux, libellé bancaire, destinataire, info"
+      />
+
+      <div class="select is-small">
+        <select [(ngModel)]="filterFluxId">
+          <option [ngValue]="null">Tous les flux</option>
+          <option *ngFor="let f of flux" [ngValue]="f.id">
+            {{ f.libelle }}
+          </option>
+        </select>
+      </div>
+
+      <div class="select is-small">
+        <select [(ngModel)]="filterStatut">
+          <option value="ALL">Tous statuts</option>
+          <option value="PAYE">Payé</option>
+          <option value="A_PAYER">À payer</option>
+        </select>
+      </div>
+
+      <div class="select is-small">
+        <select [(ngModel)]="filterRattachement">
+          <option value="ALL">Tous rattachements</option>
+          <option value="SYSTEME">À classer</option>
+          <option value="NORMAL">Rattachées</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="operations-content">
+      <div class="operations-list" [class.with-editor]="selected">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">Liste des opérations</p>
+          </header>
+
+          <div class="card-content p-0 operations-table-wrapper">
+            <table class="table is-fullwidth is-striped is-hoverable is-narrow">
               <thead>
                 <tr>
-                  <th>
-                    <span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller" i18n
-                          >Date d'operation</span
-                        >
-                        <span style="cursor: pointer">
-                          <i
-                            *ngIf="sort_date === 'NO'"
-                            (click)="Sort('ASC', 'date')"
-                            class="fa-solid fa-sort"
-                          ></i>
-                          <i
-                            *ngIf="sort_date === 'ASC'"
-                            (click)="Sort('DESC', 'date')"
-                            class="fa-solid fa-sort-up"
-                          ></i>
-                          <i
-                            *ngIf="sort_date === 'DESC'"
-                            (click)="Sort('ASC', 'date')"
-                            class="fa-solid fa-sort-down"
-                          ></i> </span
-                      ></span>
-                      <span *ngIf="afficher_filtre" class="ligne">
-                        <div
-                          style="gap: 6px"
-                          class="field is-small is-horizontal field-jecha"
-                        >
-                          <label for="groupe" class="label is-small" i18n
-                            >Du</label
-                          >
-                          <input
-                            style="width: fit-content"
-                            class="input is-small"
-                            i18n-placeholder
-                            placeholder="Filtre date avant"
-                            type="date"
-                            [(ngModel)]="filter_date_debut"
-                          />
-                        </div>
-                      </span>
-                      <span *ngIf="afficher_filtre" class="ligne">
-                        <div
-                          style="gap: 6px"
-                          class="field is-small is-horizontal field-jecha"
-                        >
-                          <label for="groupe" class="label is-small" i18n
-                            >Au</label
-                          >
-                          <input
-                            style="width: fit-content"
-                            class="input is-small"
-                            i18n-placeholder
-                            placeholder="Filtre date après"
-                            type="date"
-                            [(ngModel)]="filter_date_fin"
-                          />
-                        </div>
-                      </span>
-                    </span>
-                  </th>
-                  <th>
-                    <span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller" i18n>Montant</span>
-                        <span style="cursor: pointer">
-                          <i
-                            *ngIf="sort_montant === 'NO'"
-                            (click)="Sort('ASC', 'montant')"
-                            class="fa-solid fa-sort"
-                          ></i>
-                          <i
-                            *ngIf="sort_montant === 'ASC'"
-                            (click)="Sort('DESC', 'montant')"
-                            class="fa-solid fa-sort-up"
-                          ></i>
-                          <i
-                            *ngIf="sort_montant === 'DESC'"
-                            (click)="Sort('ASC', 'montant')"
-                            class="fa-solid fa-sort-down"
-                          ></i> </span
-                      ></span>
-                      <span *ngIf="afficher_filtre" class="ligne">
-                        <div
-                          style="gap: 6px"
-                          class="field is-small is-horizontal field-jecha"
-                        >
-                          <label for="groupe" class="label is-small" i18n
-                            >Entre</label
-                          >
-                          <input
-                            style="width: fit-content"
-                            class="input is-small"
-                            i18n-placeholder
-                            placeholder="Filtre date avant"
-                            type="number"
-                            [(ngModel)]="filter_montant_min"
-                          />
-                        </div>
-                      </span>
-                      <span *ngIf="afficher_filtre" class="ligne">
-                        <div
-                          style="gap: 6px"
-                          class="field is-small is-horizontal field-jecha"
-                        >
-                          <label for="groupe" class="label is-small" i18n
-                            >et</label
-                          >
-                          <input
-                            style="width: fit-content"
-                            class="input is-small"
-                            i18n-placeholder
-                            placeholder="Filtre date après"
-                            type="number"
-                            [(ngModel)]="filter_montant_max"
-                          />
-                        </div>
-                      </span>
-                    </span>
-                  </th>
-                  <th>
-                    <span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller" i18n>R / D</span
-                        ><span style="cursor: pointer">
-                          <i
-                            *ngIf="sort_sens === 'NO'"
-                            (click)="Sort('ASC', 'sens')"
-                            class="fa-solid fa-sort"
-                          ></i>
-                          <i
-                            *ngIf="sort_sens === 'ASC'"
-                            (click)="Sort('DESC', 'sens')"
-                            class="fa-solid fa-sort-up"
-                          ></i>
-                          <i
-                            *ngIf="sort_sens === 'DESC'"
-                            (click)="Sort('ASC', 'sens')"
-                            class="fa-solid fa-sort-down"
-                          ></i>
-                        </span>
-                      </span>
-                      <span *ngIf="afficher_filtre" class="ligne">
-                        <div class="select">
-                          <select
-                            style="font-size: smaller"
-                            [(ngModel)]="filter_sens_operation"
-                          >
-                            <option [ngValue]="null" i18n>Tous</option>
-                            <option [ngValue]="0" i18n>Dépenses</option>
-                            <option [ngValue]="1" i18n>Recettes</option>
-                          </select>
-                        </div>
-                      </span>
-                    </span>
-                  </th>
-                  <th>
-                    <span class="th_filtre">
-                      <span class="ligne">
-                        <span style="font-size: smaller" i18n>Libellé</span>
-                        <span style="cursor: pointer">
-                          <i
-                            *ngIf="sort_libelle === 'NO'"
-                            (click)="Sort('ASC', 'libelle')"
-                            class="fa-solid fa-sort"
-                          ></i>
-                          <i
-                            *ngIf="sort_libelle === 'ASC'"
-                            (click)="Sort('DESC', 'libelle')"
-                            class="fa-solid fa-sort-up"
-                          ></i>
-                          <i
-                            *ngIf="sort_libelle === 'DESC'"
-                            (click)="Sort('ASC', 'libelle')"
-                            class="fa-solid fa-sort-down"
-                          ></i>
-                        </span>
-                      </span>
-                      <input
-                        *ngIf="afficher_filtre"
-                        style="width: fit-content; font-size: smaller"
-                        class="input is-small"
-                        i18n-placeholder
-                        placeholder="Nom du cours"
-                        type="text"
-                        [(ngModel)]="filter_libelle"
-                      />
-                    </span>
-                  </th>
-                  <th *ngIf="filter_compte == 0">
-                    <span style="font-size: smaller" i18n>Compte bancaire</span>
-                  </th>
-                  <th>
-                    <span style="font-size: smaller" i18n>Destinataire</span>
-                  </th>
-                  <th>
-                    <span style="font-size: smaller" i18n>Mode</span>
-                  </th>
-                  <th>
-                    <span style="font-size: smaller" i18n>Statut</span>
-                  </th>
-                  <th><span style="font-size: smaller" i18n>Action</span></th>
+                  <th>Réel</th>
+                  <th>Libellé bancaire</th>
+                  <th>Flux financier</th>
+                  <th>Compte</th>
+                  <th class="has-text-right">Montant</th>
+                  <th>Statut</th>
+                  <th class="has-text-right">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
-                <tr *ngFor="let cpt of Operations">
+                <tr
+                  *ngFor="let op of filteredOperations"
+                  [class.operation-system]="isSystemFlux(op)"
+                  [class.is-selected]="selected?.id === op.id"
+                >
+                  <td>{{ op.date_operation | date:'dd/MM/yyyy' }}</td>
+
                   <td>
-                    {{ cpt.date_operation | date : "dd/MM/yyyy" }}
+                    <strong>{{ op.libelle_bancaire || op.destinataire }}</strong>
+                    <p class="is-size-7 has-text-grey" *ngIf="op.info">{{ op.info }}</p>
                   </td>
-                  <td>
-                    {{ cpt.solde }}
-                  </td>
-                  <td>
-                    <i
-                      *ngIf="cpt.solde >0"
-                      style="color: green"
-                      class="fas fa-plus-square"
-                    ></i>
-                    <i
-                      *ngIf="cpt.solde <=0"
-                      style="color: red"
-                      class="fas fa-minus-square"
-                    ></i>
-                  </td>
-                  <td>
-                    <a (click)="GotoFF(cpt.flux_financier_id)">{{
-                      cpt.flux_financier.libelle
-                    }}</a>
-                  </td>
-                  <td *ngIf="filter_compte == 0">
-                    <a
-                      (click)="
-                        filter_compte = getCompte(cpt.compte_bancaire_id).id
-                      "
-                    >
-                      {{ getCompte(cpt.compte_bancaire_id).nom }}</a
-                    >
-                  </td>
-                  <td>
-                    {{ cpt.destinataire.value }}
-                  </td>
-                  <td>
-                    <span *ngIf="cpt.mode == 0">Espèces</span>
-                    <span *ngIf="cpt.mode == 1">Carte bancaire</span>
-                    <span *ngIf="cpt.mode == 2">Virement</span>
-                    <span *ngIf="cpt.mode == 3">Chèque</span>
-                    <span *ngIf="cpt.mode == 4">Prélèvement</span>
-                  </td>
-                  <td>
-                    <span *ngIf="!cpt.paiement_execute" i18n
-                      >Non exécuté</span
-                    >
-                    <span *ngIf="cpt.paiement_execute" i18n>Exécuté</span>
-                  </td>
-                  <td>
-                    <div class="buttons">
-                      <button
-                        *ngIf="!cpt.paiement_execute"
-                        i18n-title
-                        title="Payer maintenant"
-                        class="button is-info is-rounded is-outlined"
-                        type="button"
-                        (click)="Payer(cpt)"
+
+                  <td class="flux-cell">
+                    <div class="select is-small is-fullwidth">
+                      <select
+                        [ngModel]="op.flux_financier_id ?? null"
+                        (ngModelChange)="rattacherFlux(op, $event)"
                       >
-                        <i class="fas fa-coins"></i>
-                      </button>
-                      <button
-                        i18n-title
-                        title="Editer"
-                        class="button is-info is-rounded is-outlined"
-                        type="button"
-                        (click)="Edit(cpt)"
-                      >
-                        <i class="fa-solid fa-pen-to-square"></i>
-                      </button>
+                        <option [ngValue]="null">Non rattachée</option>
+                        <option *ngFor="let f of flux" [ngValue]="f.id">
+                          {{ f.libelle }}
+                        </option>
+                      </select>
                     </div>
+
+                    <button
+                      class="button is-small is-white is-fullwidth mt-1"
+                      *ngIf="isSystemFlux(op)"
+                      (click)="creerFluxDepuisOperation(op)"
+                    >
+                      Créer un flux depuis cette opération
+                    </button>
+                  </td>
+
+                  <td>{{ getCompteLabel(op.compte_bancaire_id) }}</td>
+
+                  <td
+                    class="has-text-right"
+                    [class.has-text-success]="op.solde > 0"
+                    [class.has-text-danger]="op.solde < 0"
+                  >
+                    {{ formatMontant(op.solde) }}
+                  </td>
+
+                  <td>
+                    <span class="tag" [class.is-success]="op.paiement_execute" [class.is-warning]="!op.paiement_execute">
+                      {{ op.paiement_execute ? 'Payé' : 'À payer' }}
+                    </span>
+
+                    <span class="tag is-light ml-1" *ngIf="op.source_import">import</span>
+                    <span class="tag is-warning ml-1" *ngIf="isSystemFlux(op)">à classer</span>
+                  </td>
+
+                  <td class="has-text-right">
+                    <button class="button is-small is-white" (click)="edit(op)">
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+
+                    <button class="button is-small is-white has-text-danger" (click)="remove(op)">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
             </table>
-            <p *ngIf="!Operations || Operations.length == 0" i18n>
-              Pas de operations disponible.
-            </p>
           </div>
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="container" *ngIf="editOperations && context == 'EDIT'">
-  <div class="columns is-justify-content-center">
-    <div class="column is-6-tablet is-5-desktop is-4-widescreen is-3-fullh">
-      <div *ngIf="editOperations" class="box">
-        <h2 class="title is-2" i18n>Editer une operation</h2>
-        <div class="field">
-          <label class="label" i18n>Montant</label>
-          <p class="control"><i
-            *ngIf="editOperations.solde > 0"
-            style="color: green"
-            class="fas fa-plus-square"
-          ></i>
-          <i
-            *ngIf="editOperations.solde <= 0"
-            style="color: red"
-            class="fas fa-minus-square"
-          ></i>
-            <label>{{ editOperations.solde }}</label>
-            <span class="icon is-small is-right">
-              <i class="fas fa-euro-sign"></i>
-            </span>
-            
-          </p>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Date de operation</label>
-          <div class="control">
-            <input
-              [class]="editOperations.date_operation ? 'input' : 'input is-danger'"
-              type="date"
-              id="date_operation"
-              name="date_operation"
-              i18n-placeholder
-              placeholder="Date d'opération"
-              [(ngModel)]="editOperations.date_operation"
-            />
-            <p class="help is-danger" *ngIf="!editOperations.date_operation" i18n>
-              La date doit être saisie
-            </p>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Info</label>
-          <p class="control">
-            <input
-              class="input"
-              type="text"
-              placeholder="Info"
-              [(ngModel)]="editOperations.info"
-            />
-          </p>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Compte bancaire</label>
-          <div class="control">
-            <div class="select">
-              <select [(ngModel)]="editOperations.compte_bancaire_id">
-                <option value="0">Tous</option>
-                <ng-container *ngFor="let cpt of Comptes">
-                  <option [ngValue]="cpt.id">{{ cpt.nom }}</option>
-                </ng-container>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Destinataire</label>
-          <input
-            class="input"
-            list="destinataires"
-            id="destinataire"
-            [ngModel]="editOperations.destinataire.value"
-            (ngModelChange)="onInputChange($event)"
-          />
-          <datalist id="destinataires">
-            <ng-container *ngFor="let option of Destinataire">
-              <option [value]="option">{{option.value}}</option>
-              <!-- Affiche le texte formaté -->
-            </ng-container>
-          </datalist>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Statut paiement</label>
-          <div class="control">
-            <div class="select">
-              <select [(ngModel)]="editOperations.paiement_execute">
-                <option value="false"><span i18n>Non exécuté</span></option>
-                <option value="true"><span i18n>Exécuté</span></option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Mode de paiement</label>
-          <div class="control">
-            <div class="select">
-              <select [(ngModel)]="editOperations.mode">
-                <option value="0"><span i18n>Espèces</span></option>
-                <option value="1"><span i18n>Carte bancaire</span></option>
-                <option value="2"><span i18n>Virement</span></option>
-                <option value="3"><span i18n>Chèque</span></option>
-                <option value="4"><span i18n>Prélèvement</span></option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label" i18n>Flux Financier</label>
-          <p class="control">
-            <a (click)="GotoFF(editOperations.flux_financier_id)">{{
-                editOperations.flux_financier.libelle
-              }}</a>
-          </p>
-        </div>
-        <p>
-          Montant total comptabilisé :
-          {{ getFFMontant(editOperations.flux_financier_id) }}
-        </p>
-        <div *ngIf="editOperations" class="buttons">
-          <button
-            class="button is-primary is-rounded is-outlined"
-            type="button"
-            style="fill: hsl(171, 100%, 41%)"
-            (click)="Save()"
-          >
-            <i class="fa-solid fa-floppy-disk"></i>
-          </button>
-          <button (click)="Retour()" class="button is-danger is-rounded is-outlined" style="fill:hsl(348, 100%, 61%)">
-            <i class="fa-solid fa-backward-fast"></i>
-          </button>
         </div>
       </div>
 
-    </div>
-  </div>
+      <aside class="operation-editor-column" *ngIf="selected">
+        <div class="card operation-editor">
+          <header class="card-header">
+            <p class="card-header-title">
+              {{ selected.id ? 'Modifier opération' : 'Nouvelle opération' }}
+            </p>
+            <button class="delete m-3" (click)="cancel()"></button>
+          </header>
+
+          <div class="card-content operation-editor-content">
+            <div class="field">
+              <label class="label is-small">Flux financier</label>
+              <div class="select is-small is-fullwidth">
+                <select [(ngModel)]="selected.flux_financier_id">
+                  <option [ngValue]="null">Non rattachée</option>
+                  <option *ngFor="let f of flux" [ngValue]="f.id">
+                    {{ f.libelle }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="columns is-mobile">
+              <div class="column">
+                <label class="label is-small">Date prévue</label>
+                <input class="input is-small" type="date" [(ngModel)]="selected.date_previsionnelle" />
+              </div>
+
+              <div class="column">
+                <label class="label is-small">Date réelle</label>
+                <input class="input is-small" type="date" [(ngModel)]="selected.date_operation" />
+              </div>
+            </div>
+
+            <div class="columns is-mobile">
+              <div class="column">
+                <label class="label is-small">Compte</label>
+                <div class="select is-small is-fullwidth">
+                  <select [(ngModel)]="selected.compte_bancaire_id">
+                    <option *ngFor="let c of comptes" [ngValue]="c.id">
+                      {{ getCompteLabel(c.id) }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="column">
+                <label class="label is-small">Montant</label>
+                <input class="input is-small" type="number" [(ngModel)]="selected.solde" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label is-small">Destinataire</label>
+              <input class="input is-small" [(ngModel)]="selected.destinataire" />
+            </div>
+
+            <div class="field">
+              <label class="label is-small">Libellé bancaire</label>
+              <input class="input is-small" [(ngModel)]="selected.libelle_bancaire" />
+            </div>
+
+            <div class="field">
+              <label class="label is-small">Mode</label>
+              <input class="input is-small" type="number" [(ngModel)]="selected.mode" />
+            </div>
+
+            <label class="checkbox mb-3">
+              <input type="checkbox" [(ngModel)]="selected.paiement_execute" />
+              Paiement exécuté
+            </label>
+
+            <div class="field">
+              <label class="label is-small">Info</label>
+              <textarea class="textarea is-small" rows="2" [(ngModel)]="selected.info"></textarea>
+            </div>
+
+            <div class="buttons is-right">
+              <button class="button is-light" (click)="cancel()">Annuler</button>
+              <button class="button is-primary" (click)="save()" [disabled]="saving">
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </ng-container>
 </div>

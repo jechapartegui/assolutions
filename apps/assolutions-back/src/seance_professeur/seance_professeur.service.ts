@@ -2,7 +2,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
-import { RegistryService } from '../registry/registry.service';
+
 import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceEntity } from '../seance/seance.entity';
 import { CreateSeanceProfesseurDto, UpdateSeanceProfesseurDto } from './seance_professeur.dto';
@@ -15,7 +15,7 @@ export class SeanceProfesseurService {
     @InjectRepository(SeanceEntity) private readonly seanceRepo: Repository<SeanceEntity>,
     @InjectRepository(SaisonEntity) private readonly saisonRepo: Repository<SaisonEntity>,
     @InjectRepository(ContratProfEntity) private readonly contratRepo: Repository<ContratProfEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   private async assertSeanceInProject(seanceId: number, projectId: number) {
@@ -94,7 +94,6 @@ export class SeanceProfesseurService {
     await this.assertContratInProject(dto.professeurcontract_id, projectId);
 
     const saved = await this.repo.save(this.repo.create(dto as CreateSeanceProfesseurDto));
-    await this.registry.ensure('seance_professeur', saved.id);
     return saved;
   }
 
@@ -110,14 +109,12 @@ export class SeanceProfesseurService {
 
     Object.assign(item, dto, { updated_at: new Date() });
     const saved = await this.repo.save(item);
-    await this.registry.ensure('seance_professeur', id);
     return saved;
   }
 
   async remove(id: number, projectId: number) {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
-    await this.registry.remove('seance_professeur', id);
     return { ok: true };
   }
 

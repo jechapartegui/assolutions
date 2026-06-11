@@ -1,7 +1,7 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateContratProfDto, UpdateContratProfDto } from './contrat_prof.dto';
 import { ContratProfEntity } from './contrat_prof.entity';
@@ -11,7 +11,7 @@ export class ContratProfService {
   constructor(
     @InjectRepository(ContratProfEntity) private readonly repo: Repository<ContratProfEntity>,
     @InjectRepository(SaisonEntity) private readonly saisonRepo: Repository<SaisonEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   private async assertSaisonInProject(saisonId: number, projectId: number) {
@@ -45,7 +45,6 @@ export class ContratProfService {
     await this.assertSaisonInProject(dto.saison_id, projectId);
 
     const saved = await this.repo.save(this.repo.create(dto as CreateContratProfDto));
-    await this.registry.ensure('contrat_prof', saved.id);
     return saved;
   }
 
@@ -59,15 +58,12 @@ export class ContratProfService {
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('contrat_prof', id);
     return saved;
   }
 
   async remove(id: number, projectId: number) {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
-
-    await this.registry.remove('contrat_prof', id);
     return { ok: true };
   }
 }

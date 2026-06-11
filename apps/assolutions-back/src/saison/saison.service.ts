@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CreateSaisonDto, UpdateSaisonDto } from './saison.dto';
 import { SaisonEntity } from './saison.entity';
 
@@ -10,7 +10,7 @@ export class SaisonService {
   constructor(
     @InjectRepository(SaisonEntity)
     private readonly repo: Repository<SaisonEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
 async listForProject(projectId: number) {
@@ -93,7 +93,6 @@ private sortBySaisonPrecedenteOrId<T extends { id: number; saison_precedente?: n
     const entity = this.repo.create({ ...dto, project_id: projectId });
     const saved = await this.repo.save(entity);
 
-    await this.registry.ensure('saison', saved.id);
     return saved;
   }
 
@@ -102,7 +101,6 @@ private sortBySaisonPrecedenteOrId<T extends { id: number; saison_precedente?: n
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('saison', id);
     return saved;
   }
 
@@ -110,7 +108,6 @@ private sortBySaisonPrecedenteOrId<T extends { id: number; saison_precedente?: n
     const item = await this.get(id);
     await this.repo.remove(item);
 
-    await this.registry.remove('saison', id);
     return { ok: true };
   }
 }

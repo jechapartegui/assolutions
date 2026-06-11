@@ -1,7 +1,7 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateInscriptionSaisonDto, UpdateInscriptionSaisonDto } from './inscription_saison.dto';
 import { InscriptionSaisonEntity } from './inscription_saison.entity';
@@ -14,7 +14,7 @@ export class InscriptionSaisonService {
     private readonly repo: Repository<InscriptionSaisonEntity>,
     @InjectRepository(SaisonEntity)
     private readonly saisonRepo: Repository<SaisonEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   async listByPersonnes(personneIds: number[]) {
@@ -70,7 +70,6 @@ export class InscriptionSaisonService {
     const entity = this.repo.create(dto as CreateInscriptionSaisonDto);
     const saved = await this.repo.save(entity);
 
-    await this.registry.ensure('inscription_saison', saved.id);
     return saved;
   }
 
@@ -79,7 +78,6 @@ export class InscriptionSaisonService {
     Object.assign(item, dto);
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('inscription_saison', id);
     return saved;
   }
 
@@ -87,7 +85,6 @@ export class InscriptionSaisonService {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
 
-    await this.registry.remove('inscription_saison', id);
     return { ok: true };
   }
 

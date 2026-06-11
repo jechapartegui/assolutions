@@ -12,8 +12,20 @@ export class FluxFinancierApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<FluxFinancier[]> {
-    return this.api.GET<FluxFinancier[]>(this.base);
+  list(saisonId?: number, includeSysteme = false): Promise<FluxFinancier[]> {
+    const params: string[] = [];
+
+    if (saisonId) {
+      params.push(`saison_id=${saisonId}`);
+    }
+
+    if (includeSysteme) {
+      params.push('include_systeme=true');
+    }
+
+    const query = params.length ? `?${params.join('&')}` : '';
+
+    return this.api.GET<FluxFinancier[]>(`${this.base}${query}`);
   }
 
   get(id: number): Promise<FluxFinancier> {

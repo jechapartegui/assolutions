@@ -1,916 +1,581 @@
-
-<div class="container">
-  <ng-container *ngIf="vue == 'LISTE'">
-    <ng-container *ngIf="editFluxFlinancier">
-   <div class="columns page-fill">
-            <div class="column">
-              <div class="card card--scroller">
-      <header class="card-header" style="align-items: center">
-        <p class="card-header-title subtitle is-6">
-          <span *ngIf="editFluxFlinancier.id < 1">
-           <input [ngClass]="!rLibelle.key   ? 'input is-danger'   : 'input' " [(ngModel)]="editFluxFlinancier.libelle" (ngModelChange)="UpdateIE()">
-           <p *ngIf="!rLibelle.key" class="is-small help is-danger">{{rLibelle.value}}</p>
-          </span>
-          <span *ngIf="editFluxFlinancier.id > 0">
-            <span i18n>Editer</span> : {{ editFluxFlinancier.libelle }} 
-          </span>
-        </p>
-      </header> 
-      
-      <div class="scrollable-card-content columns is-multiline is-variable is-3 p-3">
-         <div class="column is-full-tablet is-half-desktop">
-                <div class="box is-light">
-                  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Informations essentielles
-                                </h3>
-                    <ng-container *ngIf="editFluxFlinancier.id > 0">
-                      <btn
-                        *ngIf="!edit_infoessentielle"
-                        class="mx-1"
-                        [type_button]="'EditerLight'"
-                        (click)="edit_infoessentielle = true"
-                      >
-                      </btn>
-
-                      <btn
-                        *ngIf="edit_infoessentielle"
-                        class="mx-1"
-                        [type_button]="'SauvegarderLight'"
-                        [disabled]="!is_valid"
-                        (click)="UpdateIE()"
-                      >
-                      </btn>
-
-                      <btn
-                        *ngIf="edit_infoessentielle"
-                        class="mx-1"
-                        [type_button]="'AnnulerLight'"
-                        (click)="(edit_infoessentielle = false) && AnnulerIE() "
-                      >
-                      </btn>
-                    </ng-container>
-                  </div>
-
-                  <ng-container *ngIf="edit_infoessentielle; else affichageFF">
-                                          <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Libellé</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <input [(ngModel)]="editFluxFlinancier.libelle" (ngModelChange)="updateLibelle($event)" type="text"  class="input" />
-                           <p *ngIf="!rLibelle.key" class="help is-danger is-small">
-                      {{ rLibelle.value }}
-                    </p>
-                          </div>
-                          </div>
-                                          <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Montant</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <input [(ngModel)]="editFluxFlinancier.montant" (ngModelChange)="updateValeurMontant($event)" type="number"  class="input" />
-                           <p *ngIf="!rMontant.key" class="help is-danger is-small">
-                      {{ rMontant.value }}
-                    </p>
-                          </div>
-                          </div>
-                          <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Recette / Dépense</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <span *ngIf="editFluxFlinancier.recette"class="dot dot-income" (click)="updateMontant()" aria-label="Recette">+</span>
-                          <span *ngIf="!editFluxFlinancier.recette" class="dot dot-expense"  (click)="updateMontant()" aria-label="Dépense">−</span>
-                          </div>
-                          </div>
-                               <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Date de la transaction</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <input [(ngModel)]="editFluxFlinancier.date"  (click)="updateDate($event)"  class="input" type="date" />
-                           <p *ngIf="!rDate.key" class="help is-danger is-small">
-                      {{ rDate.value }}
-                    </p>
-                          </div>
-                          </div>
-
-                                                         <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Info de la transaction</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <textarea [(ngModel)]="editFluxFlinancier.info"    rows="3" class="textarea"></textarea>
-                                                    </div>
-                          </div>
-                  </ng-container>
-                  <ng-template #affichageFF>
-                    <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Montant</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          {{editFluxFlinancier.montant}} €
-                          </div>
-                          </div>
-                          <div class="field">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Recette / Dépense</label
-                          > 
-                        </div>
-                        <div class="field-body
-">
-                          <span *ngIf="editFluxFlinancier.recette"class="dot dot-income" aria-label="Recette">+</span>
-                          <span *ngIf="!editFluxFlinancier.recette" class="dot dot-expense" aria-label="Dépense">−</span>
-                          </div>
-                          </div>
-                               <div class="field">  
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Date de la transaction</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          {{editFluxFlinancier.date | date : 'dd/MM/yyyy'}}
-                          </div>
-                          </div>
-                  </ng-template>
-                  </div>
-                  </div>
-                  <!-- ===================== PAIEMENTS : tableau d’édition ===================== -->
-<div class="column is-full">
-  <div class="box is-light">
-    <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-      <h3 class="subtitle is-6 has-text-primary has-text-weight-semibold" i18n>Paiements</h3>
-      <div class="buttons" style="flex-wrap: nowrap">
-        <btn [type_button]="'CreerLight'" (click)="addPaiement()" i18n-title title="Ajouter un paiement"></btn>
-        <btn [type_button]="'SauvegarderLight'" (click)="savePaiements()" i18n-title title="Sauvegarder les paiements"></btn>
-      </div>
+<div class="finance-page">
+  <header class="finance-header">
+    <div>
+      <p class="finance-kicker">Finances</p>
+      <h1 class="title is-4 mb-1">Suivi financier</h1>
+      <p class="has-text-grey is-size-7">Budget, flux financiers, paiements, documents et stocks.</p>
     </div>
+  </header>
 
-    <div class="table-container">
-      <table class="table is-fullwidth is-striped is-hoverable is-narrow">
-        <thead>
-          <tr>
-            <th style="white-space:nowrap" i18n>Date</th>
-            <th style="white-space:nowrap" i18n>Compte bancaire</th>
-            <th style="white-space:nowrap" i18n>Montant</th>
-            <th style="white-space:nowrap" i18n>Exécuté&nbsp;?</th>
-            <th style="white-space:nowrap" i18n>Action</th>
-          </tr>
-        </thead>
+  <nav class="tabs is-boxed finance-tabs">
+    <ul>
+      <li [class.is-active]="vue === 'DASHBOARD'">
+        <a (click)="setVue('DASHBOARD')">Tableau de bord</a>
+      </li>
+      <li [class.is-active]="vue === 'BUDGET'">
+        <a (click)="setVue('BUDGET')">Budget</a>
+      </li>
+      <li [class.is-active]="vue === 'FLUX'">
+        <a (click)="setVue('FLUX')">Flux financiers</a>
+      </li>
+    </ul>
+  </nav>
 
-        <tbody>
-          <tr *ngFor="let op of editFluxFlinancier.liste_operation; trackBy: trackOp">
-            <!-- Date -->
-            <td style="min-width: 10rem">
-              <input class="input"
-                     type="date"
-                     [(ngModel)]="op.date_operation"
-                     (ngModelChange)="onPaiementChange(op)" />
-            </td>
+  <article class="message is-info" *ngIf="loading">
+    <div class="message-body">Chargement des données financières...</div>
+  </article>
 
-            <!-- Compte -->
-            <td style="min-width: 14rem">
-              <div class="select is-fullwidth">
-                <select [(ngModel)]="op.compte_bancaire_id" (ngModelChange)="onPaiementChange(op)">
-                  <option [ngValue]="null" i18n *ngIf="!liste_compte_bancaire?.length">— Aucun compte —</option>
-                  <option *ngFor="let c of liste_compte_bancaire" [ngValue]="c.id">
-                    {{ c.nom  || ('Compte #' + c.id) }}
-                  </option>
-                </select>
-              </div>
-            </td>
-
-            <!-- Montant -->
-            <td style="min-width: 10rem">
-              <input class="input"
-                     type="number"
-                     step="0.01"
-                     [(ngModel)]="op.solde"
-                     (ngModelChange)="onPaiementChange(op)" />
-            </td>
-
-            <!-- Exécuté -->
-            <td class="has-text-centered">
-              <label class="checkbox">
-                <input type="checkbox"
-                       [(ngModel)]="op.paiement_execute"
-                       (ngModelChange)="onPaiementChange(op)" />
-              </label>
-            </td>
-
-            <!-- Actions -->
-            <td>
-              <div class="buttons" style="flex-wrap: nowrap">
-                <btn [type_button]="'VoirLight'"
-                     i18n-title
-                     title="Détail du paiement"
-                     (click)="openOperationModal(op)"></btn>
-
-                <btn [type_button]="'SupprimerLight'"
-                     i18n-title
-                     title="Supprimer ce paiement"
-                     (click)="removePaiement(op)"></btn>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-
-        <tfoot>
-          <tr>
-            <th colspan="2" class="has-text-right" i18n>Total des paiements</th>
-            <th>{{ totalPaiements | number:'1.2-2' }} €</th>
-            <th colspan="2">
-              <small class="has-text-grey"
-                     [ngClass]="{'has-text-success': deltaMontant === 0, 'has-text-danger': deltaMontant !== 0}">
-                <span i18n>Diff. avec la transaction</span> :
-                {{ deltaMontant | number:'1.2-2' }} €
-              </small>
-            </th>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MODAL DÉTAIL OPÉRATION ===================== -->
-<div class="modal" [ngClass]="{'is-active': showOperationModal}">
-  <div class="modal-background" (click)="closeOperationModal()"></div>
-  <div class="modal-card" style="max-width: 720px;">
-    <header class="modal-card-head">
-      <p class="modal-card-title" i18n>Éditer le paiement</p>
-      <button class="delete" aria-label="close" (click)="closeOperationModal()"></button>
-    </header>
-    <section class="modal-card-body" *ngIf="currentOperation">
-      <div class="columns is-multiline is-variable is-3">
-        <div class="column is-half">
-          <label class="label" i18n>Date de l’opération</label>
-          <input class="input" type="date" [(ngModel)]="currentOperation.date_operation" />
-        </div>
-
-        <div class="column is-half">
-          <label class="label" i18n>Montant</label>
-          <input class="input" type="number" step="0.01" [(ngModel)]="currentOperation.solde" />
-        </div>
-
-        <div class="column is-half">
-          <label class="label" i18n>Compte bancaire</label>
-          <div class="select is-fullwidth">
-            <select [(ngModel)]="currentOperation.compte_bancaire_id">
-              <option [ngValue]="null" i18n *ngIf="!liste_compte_bancaire?.length">— Aucun compte —</option>
-              <option *ngFor="let c of liste_compte_bancaire" [ngValue]="c.id">
-                {{ c.nom  || ('Compte #' + c.id) }}
+  <main class="finance-main" *ngIf="!loading">
+    <!-- DASHBOARD -->
+    <section *ngIf="vue === 'DASHBOARD'" class="finance-section dashboard-section">
+      <div class="dashboard-controls">
+        <div class="field dashboard-scenario-field">
+          <label class="label is-small">Scénario budget</label>
+          <div class="select is-small">
+            <select [(ngModel)]="selectedScenarioId" (ngModelChange)="onScenarioChange()">
+              <option [ngValue]="null">Aucun scénario</option>
+              <option *ngFor="let scenario of scenarios" [ngValue]="scenario.id">
+                {{ scenario.nom }}
               </option>
             </select>
           </div>
         </div>
 
-        <div class="column is-half">
-          <label class="label" i18n>Statut</label>
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="currentOperation.paiement_execute" />
-            <span class="ml-2" i18n>Paiement exécuté</span>
-          </label>
-        </div>
+        <label class="checkbox mt-5">
+          <input type="checkbox" [(ngModel)]="dashboardDetail" />
+          Afficher le détail des classes
+        </label>
+      </div>
 
-        <!-- Champs additionnels si tu veux étendre -->
-        <div class="column is-half">
-          <label class="label" i18n>Mode</label>
-          <input class="input" type="number" [(ngModel)]="currentOperation.mode" />
+      <div class="finance-kpi-grid">
+        <div class="finance-kpi">
+          <span>Budget prévu</span>
+          <strong>{{ formatMontant(totalBudget) }}</strong>
         </div>
+        <div class="finance-kpi">
+          <span>Recettes engagées</span>
+          <strong class="has-text-success">{{ formatMontant(totalEngageRecettes) }}</strong>
+        </div>
+        <div class="finance-kpi">
+          <span>Dépenses engagées</span>
+          <strong class="has-text-danger">{{ formatMontant(totalEngageDepenses) }}</strong>
+        </div>
+        <div class="finance-kpi">
+          <span>Solde engagé</span>
+          <strong [class.has-text-success]="soldeEngage >= 0" [class.has-text-danger]="soldeEngage < 0">
+            {{ formatMontant(soldeEngage) }}
+          </strong>
+        </div>
+        <div class="finance-kpi">
+          <span>Recettes payées</span>
+          <strong class="has-text-success">{{ formatMontant(totalPayeRecettes) }}</strong>
+        </div>
+        <div class="finance-kpi">
+          <span>Dépenses payées</span>
+          <strong class="has-text-danger">{{ formatMontant(totalPayeDepenses) }}</strong>
+        </div>
+        <div class="finance-kpi">
+          <span>Solde payé</span>
+          <strong [class.has-text-success]="soldePaye >= 0" [class.has-text-danger]="soldePaye < 0">
+            {{ formatMontant(soldePaye) }}
+          </strong>
+        </div>
+      </div>
 
-        <div class="column is-full">
-          <label class="label" i18n>Informations</label>
-          <textarea class="textarea" rows="3" [(ngModel)]="currentOperation.info"></textarea>
-        </div>
+      <div class="finance-card-scroll">
+        <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th class="has-text-right">Budget</th>
+              <th class="has-text-right">Engagé</th>
+              <th class="has-text-right">Payé</th>
+              <th class="has-text-right">Écart budget / engagé</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dashboardRows" [class.row-parent]="row.isParent">
+              <td [class.pl-5]="row.level === 1" [class.pl-6]="row.level === 2">
+                <strong>{{ row.classe.code }}</strong> {{ row.classe.libelle }}
+              </td>
+              <td class="has-text-right">{{ formatMontant(row.budget) }}</td>
+              <td class="has-text-right">{{ formatMontant(row.engage) }}</td>
+              <td class="has-text-right">{{ formatMontant(row.paye) }}</td>
+              <td class="has-text-right" [class.has-text-danger]="row.ecart < 0">
+                {{ formatMontant(row.ecart) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
-    <footer class="modal-card-foot">
-      <div class="buttons">
-        <btn [type_button]="'SauvegarderLight'" (click)="saveOperationModal()" i18n-title title="Sauvegarder"></btn>
-        <btn [type_button]="'AnnulerLight'" (click)="closeOperationModal()" i18n-title title="Fermer"></btn>
-      </div>
-    </footer>
-  </div>
-</div>
-<!-- ===================== /MODAL ===================== -->
 
-                  </div>
-      </div>
-      <footer class="card-footer">
-        <div class="columns is-mobile is-centered">
-          <div class="column is-half">
-             <div class="buttons" style="flex-wrap: nowrap">
-            <btn
-              [type_button]="'RetourSmall'"
-              (click)="Retour_menu()"
-            ></btn>
-            <btn *ngIf="editFluxFlinancier.id < 1"
-            [disabled]="!is_valid"
-              [type_button]="'SauvegarderSmall'"
-              (click)="Save_ff()"
-            ></btn>
+    <!-- BUDGET -->
+    <section *ngIf="vue === 'BUDGET'" class="finance-section budget-layout">
+      <aside class="budget-scenarios">
+        <div class="card full-height">
+          <header class="card-header">
+            <p class="card-header-title">Scénarios</p>
+          </header>
+
+          <div class="card-content scenario-content">
+            <div class="field has-addons mb-3">
+              <div class="control is-expanded">
+                <input class="input is-small" [(ngModel)]="newScenarioName" placeholder="Nouveau scénario" />
+              </div>
+              <div class="control">
+                <button class="button is-small is-primary" (click)="createScenario()" [disabled]="saving">Ajouter</button>
+              </div>
+            </div>
+
+            <div class="scenario-list">
+              <div class="scenario-item" *ngFor="let scenario of scenarios" [class.is-active]="scenario.id === selectedScenarioId">
+                <button class="button is-small is-white scenario-name" (click)="selectedScenarioId = scenario.id; onScenarioChange()">
+                  {{ scenario.nom }}
+                </button>
+                <button class="button is-small is-white has-text-danger" (click)="deleteScenario(scenario)">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-    </footer>
+      </aside>
+
+      <div class="budget-lines">
+        <div class="card full-height">
+          <header class="card-header">
+            <p class="card-header-title">Lignes de budget</p>
+          </header>
+
+          <div class="card-content budget-lines-content">
+            <div class="budget-add-row">
+              <div class="select is-small">
+                <select [(ngModel)]="newLigneClasseId">
+                  <option [ngValue]="null">Classe comptable</option>
+                  <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
+                    {{ c.code }} - {{ c.libelle }}
+                  </option>
+                </select>
+              </div>
+              <input class="input is-small budget-amount" type="number" [(ngModel)]="newLigneMontant" placeholder="Montant" />
+              <input class="input is-small" [(ngModel)]="newLigneInfo" placeholder="Commentaire" />
+              <button class="button is-small is-primary" (click)="addBudgetLigne()">Ajouter</button>
+            </div>
+
+            <div class="budget-table-wrapper">
+              <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+                <thead>
+                  <tr>
+                    <th>Classe</th>
+                    <th class="has-text-right">Montant</th>
+                    <th>Info</th>
+                    <th class="has-text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let ligne of lignes">
+                    <td>
+                      <div class="select is-small is-fullwidth">
+                        <select [(ngModel)]="ligne.classe_comptable_id" (change)="updateBudgetLigne(ligne)">
+                          <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
+                            {{ c.code }} - {{ c.libelle }}
+                          </option>
+                        </select>
+                      </div>
+                    </td>
+                    <td>
+                      <input class="input is-small has-text-right" type="number" [(ngModel)]="ligne.montant_budget" (blur)="updateBudgetLigne(ligne)" />
+                    </td>
+                    <td>
+                      <input class="input is-small" [(ngModel)]="ligne.info" (blur)="updateBudgetLigne(ligne)" />
+                    </td>
+                    <td class="has-text-right">
+                      <button class="button is-small is-white has-text-danger" (click)="deleteBudgetLigne(ligne)">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Total</th>
+                    <th class="has-text-right">{{ formatMontant(totalBudget) }}</th>
+                    <th colspan="2"></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLUX -->
+    <section *ngIf="vue === 'FLUX'" class="finance-section flux-section">
+      <div class="flux-toolbar">
+        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer libellé / destinataire" />
+
+        <div class="select is-small">
+          <select [(ngModel)]="filterClasseId">
+            <option [ngValue]="null">Toutes classes</option>
+            <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
+              {{ c.code }} - {{ c.libelle }}
+            </option>
+          </select>
+        </div>
+
+        <div class="select is-small">
+          <select [(ngModel)]="filterSens">
+            <option value="ALL">Recettes + dépenses</option>
+            <option value="RECETTE">Recettes</option>
+            <option value="DEPENSE">Dépenses</option>
+          </select>
+        </div>
+
+        <label class="checkbox is-size-7">
+          <input type="checkbox" [(ngModel)]="showSystemFlux" /> Afficher flux système
+        </label>
+
+        <button class="button is-small is-primary" (click)="createFlux()">Nouveau flux</button>
+      </div>
+
+      <div class="flux-layout">
+        <div class="flux-list" *ngIf="!selectedFlux">
+          <div class="card full-height">
+            <header class="card-header">
+              <p class="card-header-title">Flux financiers</p>
+            </header>
+
+            <div  class="card-content p-0 flux-table-wrapper">
+              <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Libellé</th>
+                    <th>Classe</th>
+                    <th>Destinataire</th>
+                    <th class="has-text-right">Montant</th>
+                    <th>Type</th>
+                    <th class="has-text-right">Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let f of filteredFlux" [class.is-selected]="selectedFlux?.id === f.id" [class.system-flux]="f.flux_systeme">
+                    <td>{{ f.date | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      <a (click)="editFlux(f)">{{ f.libelle }}</a>
+                      <span class="tag is-warning is-light ml-1" *ngIf="f.flux_systeme">système</span>
+                    </td>
+                    <td>{{ getClasseLabel(getFluxClasseId(f)) }}</td>
+                    <td>{{ f.destinataire }}</td>
+                    <td class="has-text-right">{{ formatMontant(f.montant) }}</td>
+                    <td>
+                      <span class="tag" [class.is-success]="f.recette" [class.is-danger]="!f.recette">
+                        {{ f.recette ? 'Recette' : 'Dépense' }}
+                      </span>
+                    </td>
+                    <td class="has-text-right">
+                      <button class="button is-small is-white" (click)="editFlux(f)">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button class="button is-small is-white has-text-danger" (click)="deleteFlux(f)" [disabled]="f.flux_systeme">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="flux-editor-column" *ngIf="selectedFlux">
+          <div class="card flux-editor">
+            <header class="card-header">
+              <p class="card-header-title">{{ selectedFlux.id ? 'Modifier le flux' : 'Nouveau flux' }}</p>
+              <button class="delete m-3" (click)="closeFlux()"></button>
+            </header>
+
+            <div class="card-content flux-editor-content">
+              <article class="message is-warning" *ngIf="selectedFlux.flux_systeme">
+                <div class="message-body">Flux système utilisé pour classer les opérations importées.</div>
+              </article>
+
+              <!-- Bloc 1 : Informations -->
+<section class="flux-block flux-block-compact">
+  <h3 class="title is-6">1. Informations</h3>
+
+  <div class="flux-info-grid">
+    <div class="field flux-field-wide">
+      <label class="label is-small">Libellé</label>
+      <input class="input is-small is-fullwidth" [(ngModel)]="selectedFlux.libelle" list="flux-libelles" />
+      <datalist id="flux-libelles">
+        <option *ngFor="let label of libelleSuggestions" [value]="label"></option>
+      </datalist>
     </div>
+
+    <div class="field">
+      <label class="label is-small">Date</label>
+      <input class="input is-small" type="date" [(ngModel)]="selectedFlux.date" />
     </div>
-    </ng-container>
-    <ng-container *ngIf="!editFluxFlinancier">
-                <div class="columns page-fill">
-            <div class="column" *ngIf="SC.CategorieStock && SC.ClassComptable && SC.TypeStock && SC.TypeTransaction">
-              <div class="card card--scroller">
-                <header class="card-header" style="align-items: center">
-                  <p class="card-header-title"
-                  *ngIf="
-                    FluxFinanciers
-                      | multifiltersFF : filters as filteredApplis
-                  "
-                >
-                  <span i18n>Liste des transactions</span>&nbsp;({{
-                    filteredApplis.length
-                  }})&nbsp;-&nbsp;<span i18n>Saison</span>&nbsp;{{
-                    getActiveSaison()
-                  }}
-                </p>
-               
-              </header>
-              <div class="card-content" #scrollableContent>
-                <div class="content">
-                  <table
-                    class="table"
-                    style="width: 100%; font-size: smaller"
-                    *ngIf="FluxFinanciers && FluxFinanciers.length > 0"
-                  >
+
+    <div class="field">
+      <label class="label is-small">Montant</label>
+      <input class="input is-small" type="number" [(ngModel)]="selectedFlux.montant" />
+    </div>
+
+    <div class="field">
+      <label class="label is-small">Type</label>
+      <div class="select is-small is-fullwidth">
+        <select [(ngModel)]="selectedFlux.recette">
+          <option [ngValue]="true">Recette</option>
+          <option [ngValue]="false">Dépense</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field ">
+      <label class="label is-small">Classe</label>
+      <div class="select is-small is-fullwidth">
+        <select [(ngModel)]="selectedFlux.classe_comptable_id">
+          <option [ngValue]="null">Non classé</option>
+          <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
+            {{ c.code }} - {{ c.libelle }}
+          </option>
+        </select>
+      </div>
+    </div>
+<div class="field">
+  <label class="label is-small">&nbsp;</label>
+  <button
+    class="button is-small is-light is-fullwidth"
+    type="button"
+    (click)="syncFluxMontantFromOperations()"
+  >
+    Montant = paiements
+  </button>
+</div>
+  </div>
+</section>
+
+              <!-- Bloc 2 : Destinataire -->
+              <section class="flux-block">
+                <h3 class="title is-6">2. Destinataire</h3>
+
+                <div class="field">
+                  <label class="label is-small">Mode</label>
+                  <div class="select is-small is-fullwidth">
+                    <select [(ngModel)]="destinataireMode">
+                      <option value="LIBRE">Texte libre</option>
+                      <option value="PERSONNE">Personne</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field" *ngIf="destinataireMode === 'LIBRE'">
+                  <label class="label is-small">Destinataire</label>
+                  <input class="input is-small" [(ngModel)]="selectedFlux.destinataire" list="flux-destinataires" />
+                  <datalist id="flux-destinataires">
+                    <option *ngFor="let label of destinataireSuggestions" [value]="label"></option>
+                  </datalist>
+                </div>
+
+                <div class="field" *ngIf="destinataireMode === 'PERSONNE'">
+                  <label class="label is-small">Personne liée</label>
+                  <app-personne-selector
+                    [(personneId)]="selectedFlux.personne_id"
+                    (selectedChange)="onFluxPersonneSelected($event)"
+                    placeholder="Rechercher adhérent / prof"
+                  ></app-personne-selector>
+                  <p class="help" *ngIf="selectedFlux.destinataire">Libellé retenu : {{ selectedFlux.destinataire }}</p>
+                </div>
+
+                <div class="field">
+                  <label class="label is-small">Info</label>
+                  <textarea class="textarea is-small" rows="2" [(ngModel)]="selectedFlux.info"></textarea>
+                </div>
+              </section>
+
+              <!-- Bloc 3 : Paiements -->
+              <section class="flux-block">
+                <div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
+                  <h3 class="title is-6 mb-0">3. Paiements</h3>
+                  <button class="button is-small" (click)="addOperation()">Ajouter</button>
+                </div>
+
+                <div class="operations-mini-table">
+                  <table class="table is-fullwidth is-narrow">
                     <thead>
                       <tr>
-                        <th>
-                          <span
-                            [ngClass]="
-                              filters.filter_libelle_ff ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Libellé</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="sort_libelle_ff === 'NO'"
-                              (click)="Sort_ff('ASC', 'libelle')"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="sort_libelle_ff === 'ASC'"
-                              (click)="Sort_ff('DESC', 'libelle')"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="sort_libelle_ff === 'DESC'"
-                              (click)="Sort_ff('ASC', 'libelle')"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </th>
-                      
-                      <th>
-                        <span>
-                            <span
-                              [ngClass]="
-                                filters.filter_date_debut_ff ||
-                                filters.filter_date_fin_ff
-                                  ? 'has-text-info'
-                                  : ''
-                              "
-                              i18n
-                              >Date</span
-                            >
-                            <span style="cursor: pointer">
-                              <i
-                                *ngIf="sort_date_ff === 'NO'"
-                                (click)="Sort_ff('ASC', 'date')"
-                                class="fa-solid fa-sort"
-                              ></i>
-                              <i
-                                *ngIf="sort_date_ff === 'ASC'"
-                                (click)="Sort_ff('DESC', 'date')"
-                                class="fa-solid fa-sort-up"
-                              ></i>
-                              <i
-                                *ngIf="sort_date_ff === 'DESC'"
-                                (click)="Sort_ff('ASC', 'date')"
-                                class="fa-solid fa-sort-down"
-                              ></i> </span
-                          ></span>
-                      </th>
-                       
-                        <th>
-                          <span
-                            [ngClass]="
-                              filters.filter_montant_min_ff || filters.filter_montant_max_ff  ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Montant</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="sort_montant_ff === 'NO'"
-                              (click)="Sort_ff('ASC', 'montant')"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="sort_montant_ff === 'ASC'"
-                              (click)="Sort_ff('DESC', 'montant')"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="sort_montant_ff === 'DESC'"
-                              (click)="Sort_ff('ASC', 'montant')"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </th>
-                        <th>
-                          <span
-                            [ngClass]="
-                              filters.filter_sens_operation_ff   ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >+/-</span
-                          >
-                          <span style="cursor: pointer">
-                            <i
-                              *ngIf="sort_sens_ff === 'NO'"
-                              (click)="Sort_ff('ASC', 'sens')"
-                              class="fa-solid fa-sort"
-                            ></i>
-                            <i
-                              *ngIf="sort_sens_ff === 'ASC'"
-                              (click)="Sort_ff('DESC', 'sens')"
-                              class="fa-solid fa-sort-up"
-                            ></i>
-                            <i
-                              *ngIf="sort_sens_ff === 'DESC'"
-                              (click)="Sort_ff('ASC', 'sens')"
-                              class="fa-solid fa-sort-down"
-                            ></i>
-                          </span>
-                        </th>
-                          <th>
-                          <span
-                            [ngClass]="
-                              filters.filter_destinataire_ff   ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Créantier / Débiteur</span
-                          >
-                        </th>
-                       <th>
-                          <span
-                            [ngClass]="
-                              filters.filter_classe_ff   ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Classe comptable</span
-                          >
-                        </th>
-                       <th>
-                          <span
-                            [ngClass]="
-                              filters.filter_classe_ff   ? 'has-text-info' : ''
-                            "
-                            i18n
-                            >Type transaction</span
-                          >
-                        </th>
-                        <th>Action</th>
+                        <th>Prévu</th>
+                        <th>Réel</th>
+                        <th>Compte</th>
+                        <th>Montant</th>
+                        <th>OK</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        *ngFor="
-                          let ff of FluxFinanciers
-                            | multifiltersFF : filters
-                        "
-                      >
+                      <tr *ngFor="let op of selectedFlux.liste_operation">
+                        <td><input class="input is-small" type="date" [(ngModel)]="op.date_previsionnelle" /></td>
+                        <td><input class="input is-small" type="date" [(ngModel)]="op.date_operation" /></td>
                         <td>
-                          {{ ff.libelle }}
-                        </td>
-                        <td>
-                          {{ff.date | date : 'dd/MM/yyyy'}}
-                        </td>
-                        <td>
-                          {{ ff.montant }} €
-                        </td>
-                        <td>
-                          <span *ngIf="ff.recette"class="dot dot-income" aria-label="Recette">+</span>
-                          <span *ngIf="!ff.recette" class="dot dot-expense" aria-label="Dépense">−</span>
-                        </td>
-                        <td>
-                          {{ ff.destinataire.value }}
-                        </td>
-                        <td>
-                          <a href="#" (click)="VoirClasse(ff.classe_comptable)">&nbsp;{{trouverclasse(ff.classe_comptable)}}</a>
-                        </td>
-                        <td>
-                         {{ff.type_depense}}
-                        <td>
-                          <div class="buttons" style="flex-wrap: nowrap">
-                            <btn
-                              i18n-title
-                              title="Supprimer"
-                              [type_button]="'SupprimerLight'"
-                              (click)="Delete_ff(ff.id)"
-                            ></btn>
-
-                            <btn
-                              i18n-title
-                              title="Editer"
-                              [type_button]="'EditerLight'"
-                              (click)="Edit_ff(ff.id)"
-                            ></btn>
+                          <div class="select is-small">
+                            <select [(ngModel)]="op.compte_bancaire_id">
+                              <option *ngFor="let c of comptes" [ngValue]="c.id">{{ getCompteLabel(c.id) }}</option>
+                            </select>
                           </div>
+                        </td>
+                        <td><input class="input is-small has-text-right" type="number" [(ngModel)]="op.solde" /></td>
+                        <td class="has-text-centered"><input type="checkbox" [(ngModel)]="op.paiement_execute" /></td>
+                        <td>
+                          <button class="button is-small is-white has-text-danger" (click)="deleteOperation(op)">
+                            <i class="fa-solid fa-trash"></i>
+                          </button>
                         </td>
                       </tr>
                     </tbody>
                   </table>
-                  <button
-                    class="scroll-to-top"
-                    *ngIf="showScrollToTop"
-                    (click)="scrollToTop()"
-                    title="Revenir en haut"
-                  >
-                    ↑
-                  </button>
-                  <p *ngIf="!FluxFinanciers || FluxFinanciers.length == 0">
-                    Pas de flux financier disponible
-                  </p>
                 </div>
-              </div>
-              <footer class="card-footer">
-                <div class="columns">
-                  <div class="column">
-                    <div *ngIf="!afficher_filtre" class="buttons">
-                      <btn [type_button]="'CreerSmall'" (click)="Ajouter()"></btn>
-                      <btn
-                        [type_button]="'FiltrerSmall'"
-                        (click)="
-                          afficher_filtre
-                            ? (afficher_filtre = false)
-                            : (afficher_filtre = true)
-                        "
-                      ></btn>
 
-                      <btn
-                        [type_button]="'ExporterSmall'"
-                        (click)="ExportExcel()"
-                      ></btn>
-                      <div class="field is-horizontal">
-                        <div class="field-label is-normal is-two-quarter">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Saison affichée</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <div class="field is-narrow">
-                            <div class="control">
-                              <div class="select is-fullwidth">
-                                <select
-                                  [(ngModel)]="active_saison"
-                                  (ngModelChange)="VoirSituation()"
-                                >
-                                  <ng-container
-                                    *ngFor="let saison of liste_saison"
-                                  >
-                                    <option [ngValue]="saison">
-                                      {{ saison.nom }}
-                                    </option>
-                                  </ng-container>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                <p class="help" [class.has-text-danger]="deltaSelectedFlux !== 0">
+                  Total paiements : {{ formatMontant(totalOperationsSelectedFlux) }} — Écart : {{ formatMontant(deltaSelectedFlux) }}
+                </p>
+              </section>
+
+              <!-- Bloc 4 : Documents -->
+              <section class="flux-block">
+                <h3 class="title is-6">4. Documents</h3>
+
+<div class="document-add-grid">
+  <div class="select is-small">
+    <select [(ngModel)]="newDocumentType">
+      <option *ngFor="let type of typedocLov" [ngValue]="type.libelle">
+        {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
+      </option>
+    </select>
+  </div>
+
+  <label class="button is-small is-link is-light">
+    <input type="file" hidden (change)="onDocumentFileSelected($event)" />
+    {{ newDocumentFile?.name || 'Fichier' }}
+  </label>
+
+  <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre" />
+
+  <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire" />
+
+  <button class="button is-small is-primary" (click)="addDocumentToFlux()">
+    Ajouter
+  </button>
+</div>
+                 
+
+                <div class="linked-list" *ngIf="documentsFlux.length; else noDocuments">
+                  <div class="linked-item" *ngFor="let doc of documentsFlux">
+                    <div>
+                      <strong>{{ doc.titre }}</strong>
+                      <span class="tag is-light ml-1">{{ doc.typedoc }}</span>
+                      <p class="is-size-7 has-text-grey" *ngIf="doc.file_path">{{ doc.file_path }}</p>
                     </div>
+                   <div class="linked-actions">
+  <button class="button is-small is-white" (click)="downloadDocument(doc)">
+    <i class="fa-solid fa-download"></i>
+  </button>
 
-                    <div class="buttons" *ngIf="afficher_filtre">
-                      <btn
-                        (click)="
-                          afficher_filtre = false; selected_filter = null
-                        "
-                        [type_button]="'RetourLight'"
-                      ></btn>
-                      <div
-                        class="field is-horizontal"
-                        style="gap: 0.5rem; align-items: center"
-                      >
-                        <div class="field-label is-normal">
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Sélection du filtre</label
-                          >
-                        </div>
-                        <div class="field-body">
-                          <div class="field is-narrow">
-                            <div class="control">
-                              <div
-                                class="select is-fullwidth ; font-size: smaller"
-                              >
-                                <select [(ngModel)]="selected_filter">
-                                  <option value="libellé" i18n>Libellé</option>
-                                  <option value="montant" i18n>Montant</option>
-                                  <option value="recette" i18n>+/-</option>
-                                  <option value="date" i18n>Date</option>
-                                  <option value="type_achat" i18n>Type achat</option>
-                                  <option value="classe_comptable" i18n>Classe comptable</option>
-                                  <option value="destinataire" i18n>Créancier / Débiteur</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          *ngIf="selected_filter"
-                          class="field-label is-normal"
-                        >
-                          <label class="label" style="white-space: nowrap" i18n
-                            >Valeur du filtre
-                          </label>
-                        </div>
-                        <div class="field-body" *ngIf="selected_filter">
-                          <div class="field is-narrow">
-                            <div class="control">
-                              <input
-                                *ngIf="selected_filter == 'libellé'"
-                                style="width: fit-content; font-size: smaller"
-                                class="input is-small"
-                                i18n-placeholder
-                                placeholder="Libellé de la dépense"
-                                type="text"
-                                [(ngModel)]="filters.filter_libelle_ff"
-                              />
-                              <div
-                                class="select"
-                                *ngIf="selected_filter == 'recette'"
-                              >
-                                <select
-                                  style="font-size: smaller"
-                                  [(ngModel)]="filters.filter_sens_operation_ff"
-                                >
-                                 <option [ngValue]="null" i18n>Tous</option>
-                                  <option [ngValue]="true" i18n>Recettes</option>
-                                  <option [ngValue]="false" i18n>Dépenses</option>
-                                </select>
-                              </div>
-                                                      <span
-                                *ngIf="selected_filter == 'date'"
-                                class="ligne"
-                              >
-                                <div
-                                  style="gap: 6px"
-                                  class="field is-small is-horizontal field-jecha"
-                                >
-                                  <label
-                                    for="groupe"
-                                    class="label is-small"
-                                    i18n
-                                    >Du</label
-                                  >
-                                  <input
-                                    style="width: fit-content"
-                                    class="input is-small"
-                                    i18n-placeholder
-                                    placeholder="Filtre date avant"
-                                    type="date"
-                                    [(ngModel)]="filters.filter_date_debut_ff"
-                                  />
-                                </div>
-                              </span>
-                              <span
-                                *ngIf="selected_filter == 'date'"
-                                class="ligne"
-                              >
-                                <div
-                                  style="gap: 6px"
-                                  class="field is-small is-horizontal field-jecha"
-                                >
-                                  <label
-                                    for="groupe"
-                                    class="label is-small"
-                                    i18n
-                                    >Au</label
-                                  >
-                                  <input
-                                    style="width: fit-content"
-                                    class="input is-small"
-                                    i18n-placeholder
-                                    placeholder="Filtre date après"
-                                    type="date"
-                                    [(ngModel)]="filters.filter_date_fin_ff"
-                                  />
-                                </div>
-                              </span>
-                              
-                            
-                              <div
-                                class="select"
-                                *ngIf="selected_filter == 'classe_comptable'"
-                              >
-                                <select
-                                  style="font-size: smaller"
-                                  [(ngModel)]="filters.filter_classe_ff"
-                                >
-                                  <option [ngValue]="null" i18n>Tous</option>
-                                  <ng-container
-                                    *ngFor="let cc of SC.ClassComptable"
-                                  >
-                                    <option [ngValue]="cc.numero">
-                                      {{ cc.libelle }}
-                                    </option>
-                                  </ng-container>
-                                </select>
-                              </div>
-                              <div
-                                class="select"
-                                *ngIf="selected_filter == 'type_achat'"
-                              >
-                                <select
-                                  style="font-size: smaller"
-                                  [(ngModel)]="filters.filter_type_achat_ff"
-                                >
-                                  <option [ngValue]="null" i18n>Tous</option>
-                                  <ng-container
-                                    *ngFor="let cc of SC.TypeTransaction"
-                                  >
-                                    <option [ngValue]="cc.libelle">
-                                      {{ cc.libelle }}
-                                    </option>
-                                  </ng-container>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="tags">
-                          <span
-                            *ngIf="filters.filter_libelle_ff"
-                            class="tag is-success"
-                          >
-                            <span i18n>Nom : </span>
-                            <span>{{ filters.filter_libelle_ff }}</span>
-                            <button
-                              class="delete"
-                              (click)="filters.filter_libelle_ff = null"
-                            ></button>
-                          </span>
-
-                          <span
-                            *ngIf="filters.filter_sens_operation_ff != null"
-                            class="tag is-success"
-                          >
-                            <span i18n>+/- : </span>
-                          <span *ngIf="filters.filter_sens_operation_ff" class="dot dot-income" aria-label="Recette">+</span>
-                          <span *ngIf="!filters.filter_sens_operation_ff" class="dot dot-expense" aria-label="Dépense">−</span>
-                            
-
-                            <button
-                              class="delete"
-                              (click)="filters.filter_sens_operation_ff = null"
-                            ></button>
-                          </span>
-                          <span
-                            *ngIf="filters.filter_destinataire_ff != null"
-                            class="tag is-success"
-                          >
-                            <span i18n>Créancier / Débiteur : </span>
-                            <span>{{ trouverDestinataire(filters.filter_destinataire_ff)}}</span>
-
-                            <button
-                              class="delete"
-                              (click)="filters.filter_destinataire_ff = null"
-                            ></button>
-                          </span>
-                          <span
-                            *ngIf="filters.filter_classe_ff != null"
-                            class="tag is-success"
-                          >
-                            <span i18n>Classe comptable : </span>
-                            <span i18n>{{ trouverclasse(filters.filter_classe_ff) }}</span>
-
-                            <button
-                              class="delete"
-                              (click)="filters.filter_classe_ff = null"
-                            ></button>
-                          </span>
-                           <span
-                            *ngIf="
-                              filters.filter_date_debut_ff ||
-                              filters.filter_date_fin_ff
-                            "
-                            class="tag is-success"
-                          >
-                            <span i18n>Date :&nbsp;</span>
-                            <span *ngIf="filters.filter_date_debut_ff"
-                              >&nbsp;>&nbsp;{{
-                                filters.filter_date_debut_ff | date : 'dd/MM/yyyy'
-                              }}</span
-                            >
-                            <span *ngIf="filters.filter_date_fin_ff"
-                              >&nbsp;<&nbsp;{{
-                                filters.filter_date_fin_ff | date : 'dd/MM/yyyy'
-                              }}&nbsp;</span
-                            >
-                            <button
-                              class="delete"
-                              (click)="
-                                filters.filter_date_debut_ff = null;
-                                filters.filter_date_fin_ff = null
-                              "
-                            ></button>
-                          </span>
-                                                <span
-                            *ngIf="
-                              filters.filter_montant_min_ff ||
-                              filters.filter_montant_max_ff
-                            "
-                            class="tag is-success"
-                          >
-                            <span i18n>Montant :&nbsp;</span>
-                            <span *ngIf="filters.filter_montant_min_ff"
-                              >&nbsp;>&nbsp;{{
-                                filters.filter_montant_min_ff 
-                              }}</span
-                            >
-                            <span *ngIf="filters.filter_montant_max_ff"
-                              >&nbsp;<&nbsp;{{
-                                filters.filter_montant_max_ff
-                              }}&nbsp;</span
-                            >
-                            <button
-                              class="delete"
-                              (click)="
-                                filters.filter_montant_min_ff = null;
-                                filters.filter_montant_max_ff = null
-                              "
-                            ></button>
-                          </span>
-                          <span
-                            *ngIf="filters.filter_classe_ff != null"
-                            class="tag is-success"
-                          >
-                            <span i18n>Type de transaction : </span>
-                            <span i18n>{{ filters.filter_type_achat_ff }}</span>
-
-                            <button
-                              class="delete"
-                              (click)="filters.filter_type_achat_ff = null"
-                            ></button>
-                          </span>
-                          <btn
-                            [type_button]="'SupprimerLight'"
-                            (click)="Reinit_Filter()"
-                            *ngIf="
-                              filters.filter_classe_ff ||
-                              filters.filter_date_debut_ff ||
-                              filters.filter_date_fin_ff ||
-                              filters.filter_destinataire_ff ||
-                              filters.filter_libelle_ff ||
-                              filters.filter_montant_max_ff ||
-                              filters.filter_montant_min_ff ||
-                              filters.filter_sens_operation_ff ||
-                              filters.filter_type_achat_ff
-                            "
-                          >
-                          </btn>
-                        </div>
-                      </div>
-                    </div>
+  <button class="button is-small is-white has-text-danger" (click)="removeDocumentFromFlux(doc)">
+    <i class="fa-solid fa-trash"></i>
+  </button>
+</div>
                   </div>
                 </div>
-              </footer>
+
+                <ng-template #noDocuments>
+                  <p class="help">Aucun document lié.</p>
+                </ng-template>
+              </section>
+
+              <!-- Bloc 5 : Stocks -->
+              <section class="flux-block">
+                <h3 class="title is-6">5. Stocks</h3>
+
+<div class="stock-add-grid stock-add-grid-compact">
+  <input class="input is-small stock-qte" type="number" [(ngModel)]="newStock.qte" placeholder="Qté" />
+
+  <div class="select is-small is-fullwidth stock-type">
+    <select [ngModel]="newStock.type_stock_id" (ngModelChange)="onStockTypeChange($event)">
+      <option [ngValue]="null">Type stock</option>
+      <option *ngFor="let type of stockTypeLov" [ngValue]="type.id">
+        {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
+      </option>
+    </select>
+  </div>
+
+  <input class="input is-small stock-libelle" [(ngModel)]="newStock.libelle" placeholder="Libellé" />
+
+  <div class="select is-small is-fullwidth stock-lieu-mode">
+    <select [(ngModel)]="lieuMode">
+      <option value="LIBRE">Libre</option>
+      <option value="EXISTE">Lieu</option>
+    </select>
+  </div>
+
+  <app-lieu-selector
+    *ngIf="lieuMode === 'EXISTE'"
+    class="stock-lieu"
+    [(lieuId)]="newStock.lieu_id"
+    (selectedChange)="onStockLieuSelected($event)"
+    placeholder="Lieu"
+  ></app-lieu-selector>
+
+  <input
+    *ngIf="lieuMode === 'LIBRE'"
+    class="input is-small stock-lieu"
+    [(ngModel)]="newStock.lieu_stockage"
+    placeholder="Lieu de stockage"
+  />
+
+  <input class="input is-small stock-valeur" type="number" [(ngModel)]="newStock.valeur_achat" placeholder="Valeur" />
+
+  <input class="input is-small stock-date" type="date" [(ngModel)]="newStock.date_achat" />
+
+  <button class="button is-small is-primary stock-add-button" (click)="addStockToFlux()">
+    Ajouter
+  </button>
+</div>
+
+                <div class="linked-list" *ngIf="stocksFlux.length; else noStocks">
+                  <div class="linked-item" *ngFor="let stock of stocksFlux">
+                    <div>
+                      <strong>{{ stock.libelle }}</strong>
+                      <span class="tag is-light ml-1">{{ stock.qte || 1 }} × {{ stock.type_stock }}</span>
+                      <p class="is-size-7 has-text-grey">
+                        {{ stock.lieu_stockage }} — {{ formatMontant(stock.valeur_achat) }}
+                      </p>
+                    </div>
+                    <button class="button is-small is-white has-text-danger" (click)="deleteStock(stock)">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template #noStocks>
+                  <p class="help">Aucun stock lié.</p>
+                </ng-template>
+              </section>
+
+              <div class="buttons is-right mt-4">
+                <button class="button is-light" (click)="closeFlux()">Annuler</button>
+                <button class="button is-primary" (click)="saveFlux()" [disabled]="saving">
+                  Sauvegarder
+                </button>
+              </div>
             </div>
           </div>
         </div>
-    </ng-container>
-    </ng-container>
-  <ng-container *ngIf="vue == 'COMPTA'">
-    
-    </ng-container>
-  <ng-container *ngIf="vue == 'BUDGET'">
-    
-    </ng-container>
+      </div>
+    </section>
+  </main>
 </div>

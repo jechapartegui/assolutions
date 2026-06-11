@@ -17,7 +17,7 @@ export class CreateDocumentDto {
   typedoc: string;
 
   @IsString()
-  storage_type: string; // enum DB
+  storage_type: string;
 
   @IsString()
   @MaxLength(255)
@@ -82,16 +82,15 @@ export class UpdateDocumentDto {
   auteur?: string | null;
 }
 
-
 export class SetPhotoDto {
   @IsInt()
   objet_id: number;
 
   @IsString()
   @MaxLength(25)
-  objet_type: string; // 'member'
+  objet_type: string;
 
   @IsOptional()
   @IsString()
-  photo?: string | null; // data:image/...;base64,...
+  photo?: string | null;
 }

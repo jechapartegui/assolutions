@@ -1,7 +1,6 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
 import { CreateAddinfoFieldDto, CreateAddInfoValueDto, SetAddinfoValueDto,  UpdateAddinfoFieldDto, UpdateAddInfoValueDto } from './addinfo.dto';
 import { AddinfoEntity } from './addinfo.entity';
 
@@ -9,8 +8,7 @@ import { AddinfoEntity } from './addinfo.entity';
 export class AddinfoService {
   constructor(
     @InjectRepository(AddinfoEntity)
-    private readonly repo: Repository<AddinfoEntity>,
-    private readonly registry: RegistryService,
+    private readonly repo: Repository<AddinfoEntity>
   ) {}
 
   listForProject(projectId: number) {
@@ -34,8 +32,6 @@ export class AddinfoService {
     // on force le project_id depuis le header (même si dto le contient)
     const entity = this.repo.create({ ...dto as CreateAddinfoFieldDto, project_id: projectId } );
     const saved = await this.repo.save(entity);
-
-    await this.registry.ensure('addinfo', saved.id);
     return saved;
   }
 
@@ -43,8 +39,7 @@ export class AddinfoService {
     const item = await this.getForProject(id, projectId);
     Object.assign(item, dto, { project_id: projectId }); // on refixe
     const saved = await this.repo.save(item);
-
-    await this.registry.ensure('addinfo', id);
+    
     return saved;
   }
 
@@ -52,7 +47,6 @@ export class AddinfoService {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
 
-    await this.registry.remove('addinfo', id);
     return { ok: true };
   }
   listFields(objectType: string, projectId: number) {
@@ -117,7 +111,6 @@ async setValue(dto: SetAddinfoValueDto, projectId: number) {
   entity.text = dto.text ?? '';
 
   const saved = await this.repo.save(entity);
-  await this.registry.ensure('addinfo', saved.id);
 
   return saved;
 }
@@ -131,7 +124,6 @@ async getLov(code: string, lang: string, projectId: number) {
       project_id: projectId,
     },
   });
-
   if (projectLov) return projectLov;
 
   return this.repo.findOne({
@@ -155,7 +147,6 @@ async createValue(dto: CreateAddInfoValueDto, projectId: number): Promise<Addinf
   if (existing) {
     existing.text = dto.text ?? '';
     const saved = await this.repo.save(existing);
-    await this.registry.ensure('addinfo', saved.id);
     return saved;
   }
 
@@ -168,7 +159,6 @@ async createValue(dto: CreateAddInfoValueDto, projectId: number): Promise<Addinf
   });
 
   const saved = await this.repo.save(entity);
-  await this.registry.ensure('addinfo', saved.id);
 
   return saved;
 }
@@ -184,7 +174,6 @@ async updateValue(id: number, dto: UpdateAddInfoValueDto): Promise<AddinfoEntity
   }
 
   const saved = await this.repo.save(entity);
-  await this.registry.ensure('addinfo', saved.id);
 
   return saved;
 }
@@ -194,6 +183,5 @@ async deleteValue(id: number): Promise<void> {
   if (!entity) return;
 
   await this.repo.remove(entity);
-  await this.registry.remove('addinfo', id);
 }
 }

@@ -1,15 +1,29 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AddInfoService } from '../../services/addinfo.service';
-import { ComptabiliteService } from '../../services/comptabilite.service';
-import { CompteBancaireService } from '../../services/compte-bancaire.service';
+
 import { ErrorService } from '../../services/error.service';
-import { OperationService } from '../../services/operation.service';
-import { SaisonService } from '../../services/saison.service';
-import { ClassComptable, StaticClass } from '../global';
-import { Saison_VM } from '@shared/lib/saison.interface';
-import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM } from '@shared/index';
+import { FinanceApiService } from '../../services/finance-api.service';
+import { FluxFinancierApiService } from '../../services/flux-financiers-api.service';
+import { CompteBancaireApiService } from '../../services/compte-bancaire-api.service';
+import { SaisonApiService } from '../../services/saison-api.service';
+import { FluxFinancier, CompteBancaire, Operation, Saison, CreateOperationDto, CreateFluxFinancierDto, ClasseComptable } from '@shared/index';
+import { AppStore } from '../app.store';
+
+type ImportStatus = 'OK' | 'DOUBLON' | 'PROCHE' | 'ERREUR';
+
+interface ImportPreviewRow {
+  selected: boolean;
+  status: ImportStatus;
+  message: string;
+  flux_financier_id: number | null;
+  date_operation: string;
+  libelle_bancaire: string;
+  montant: number;
+
+  destinataire: string;
+  import_key: string;
+
+  existingOperation?: Operation;
+}
 
 @Component({
   standalone: false,
@@ -18,322 +32,531 @@ import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM } fro
   styleUrls: ['./operations.component.css'],
 })
 export class OperationsComponent implements OnInit {
-  afficher_filtre: boolean = false;
-  filter_compte: number = 0;
-  filter_date_debut: Date;
-  filter_date_fin: Date;
-  filter_libelle: string;
-  filter_montant_min: number = 0;
-  filter_montant_max: number;
-  filter_sens_operation: boolean = null;
-  Operations: Operation_VM[];
-  editOperations: Operation_VM;
-  ClassesComptable: ClassComptable[];
-  Comptes: CompteBancaire_VM[];
-  saison_id: number;
-  saisons: Saison_VM[];
-  sort_libelle: string = 'NO';
-  sort_date: string = 'NO';
-  sort_sens: string = 'NO';
-  sort_montant: string = 'NO';
-  action = '';
-  Destinataire: GenericLink_VM[] = [];
-  FluxFinanciers: FluxFinancier_VM[];
-  context: 'LISTE' | 'EDIT' = 'LISTE';
+  loading = false;
+  saving = false;
+  importing = false;
+
+  operations: Operation[] = [];
+  flux: FluxFinancier[] = [];
+  comptes: CompteBancaire[] = [];
+  classes_comptables: ClasseComptable[] = [];
+  saisons: Saison[] = [];
+
+  selected: Operation | null = null;
+
+  active_saison = 0;
+  importCompteId: number | null = null;
+
+  filterTexte = '';
+  filterFluxId: number | null = null;
+  filterStatut: 'ALL' | 'PAYE' | 'A_PAYER' = 'ALL';
+  filterRattachement: 'ALL' | 'SYSTEME' | 'NORMAL' = 'ALL';
+
+  importPreview: ImportPreviewRow[] = [];
+  importResult: string | null = null;
+  importError: string | null = null;
 
   constructor(
-    public compta_serv: ComptabiliteService,
-    public trns_serv: OperationService,
-    public saison_sev: SaisonService,
-    public cb_serv: CompteBancaireService,
-    public ai_serv: AddInfoService,
-    public router: Router,
-    public route: ActivatedRoute,
-    public SC: StaticClass,
-    public addinfo_serv: AddInfoService
+    private financeApi: FinanceApiService,
+    private fluxApi: FluxFinancierApiService,
+    private compteApi: CompteBancaireApiService,
+    private saisonApi: SaisonApiService,
+    private store:AppStore,
   ) {}
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      if ('context' in params) {
-        this.context = params['context'];
+  async ngOnInit(): Promise<void> {
+    await this.loadAll();
+  }
+
+  async loadAll(): Promise<void> {
+    try {
+      this.loading = true;
+
+      const [saisons, comptes, classes_comptables] = await Promise.all([
+        this.saisonApi.list(),
+        this.compteApi.list(),
+        this.financeApi.listClasses(),
+      ]);
+
+      this.saisons = saisons ?? [];
+      this.classes_comptables = classes_comptables ?? [];
+      this.comptes = comptes ?? [];
+
+      this.active_saison = this.store.saison_active_id();
+
+      this.importCompteId = this.comptes[0]?.id ?? null;
+
+      await this.reloadData();
+    } catch (err) {
+      this.showError('Chargement opérations', err);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async reloadData(): Promise<void> {
+    const [operations, flux] = await Promise.all([
+      this.financeApi.listOperations(),
+      this.fluxApi.list(this.active_saison || undefined, true),
+    ]);
+
+    this.operations = operations ?? [];
+    this.flux = flux ?? [];
+  }
+
+  async onSaisonChange(): Promise<void> {
+    this.selected = null;
+    this.importPreview = [];
+    await this.reloadData();
+  }
+
+  get filteredOperations(): Operation[] {
+    const txt = this.filterTexte.trim().toLowerCase();
+
+    return this.operations.filter((op) => {
+      const flux = this.getFlux(op.flux_financier_id ?? null);
+
+      const matchTexte =
+        !txt ||
+        String(op.destinataire ?? '').toLowerCase().includes(txt) ||
+        String(op.libelle_bancaire ?? '').toLowerCase().includes(txt) ||
+        String(op.info ?? '').toLowerCase().includes(txt) ||
+        String(flux?.libelle ?? '').toLowerCase().includes(txt);
+
+      const matchFlux =
+        !this.filterFluxId || op.flux_financier_id === this.filterFluxId;
+
+      const matchStatut =
+        this.filterStatut === 'ALL' ||
+        (this.filterStatut === 'PAYE' && op.paiement_execute) ||
+        (this.filterStatut === 'A_PAYER' && !op.paiement_execute);
+
+      const isSysteme = !!flux?.flux_systeme;
+
+      const matchRattachement =
+        this.filterRattachement === 'ALL' ||
+        (this.filterRattachement === 'SYSTEME' && isSysteme) ||
+        (this.filterRattachement === 'NORMAL' && !isSysteme);
+
+      return matchTexte && matchFlux && matchStatut && matchRattachement;
+    });
+  }
+
+  get nbAClasser(): number {
+    return this.operations.filter((op) => this.getFlux(op.flux_financier_id ?? null)?.flux_systeme).length;
+  }
+
+  get totalOperations(): number {
+    return this.filteredOperations.reduce((sum, op) => sum + Number(op.solde ?? 0), 0);
+  }
+
+  get selectedPreviewCount(): number {
+    return this.importPreview.filter((r) => r.selected).length;
+  }
+
+  newOperation(): void {
+    this.selected = {
+      id: 0,
+      solde: 0,
+      date_operation: this.today(),
+      date_previsionnelle: this.today(),
+      mode: 1,
+      destinataire: '',
+      paiement_execute: false,
+      compte_bancaire_id: this.comptes[0]?.id ?? 0,
+      flux_financier_id: null,
+      saison_id: this.active_saison,
+      libelle_bancaire: null,
+      import_key: null,
+      source_import: null,
+      info: null,
+    };
+  }
+
+  edit(op: Operation): void {
+    this.selected = { ...op };
+  }
+
+  cancel(): void {
+    this.selected = null;
+  }
+
+  async save(): Promise<void> {
+    if (!this.selected) return;
+
+    try {
+      this.saving = true;
+
+      const dto = this.buildOperationDto(this.selected);
+
+      if (this.selected.id) {
+        await this.financeApi.updateOperation(this.selected.id, dto);
+      } else {
+        await this.financeApi.createOperation(dto as CreateOperationDto);
+      }
+
+      this.selected = null;
+      await this.reloadData();
+    } catch (err) {
+      this.showError('Sauvegarde opération', err);
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  async remove(op: Operation): Promise<void> {
+    if (!confirm('Supprimer cette opération ?')) return;
+
+    try {
+      await this.financeApi.removeOperation(op.id);
+      await this.reloadData();
+    } catch (err) {
+      this.showError('Suppression opération', err);
+    }
+  }
+
+  async rattacherFlux(op: Operation, fluxId: number | null): Promise<void> {
+    try {
+      await this.financeApi.updateOperation(op.id, {
+        flux_financier_id: fluxId,
+      });
+
+      op.flux_financier_id = fluxId;
+    } catch (err) {
+      this.showError('Rattachement au flux', err);
+    }
+  }
+
+  async creerFluxDepuisOperation(op: Operation): Promise<void> {
+    if (!this.active_saison) {
+      alert('Aucune saison active sélectionnée.');
+      return;
+    }
+
+    try {
+      const result = await this.financeApi.createFluxFromOperation(op.id, this.active_saison);
+
+      op.flux_financier_id = result.flux.id;
+
+      await this.reloadData();
+    } catch (err) {
+      this.showError('Création flux depuis opération', err);
+    }
+  }
+
+  async onCsvSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    this.importResult = null;
+    this.importError = null;
+    this.importPreview = [];
+
+    try {
+      if (!this.importCompteId) {
+        this.importError = 'Sélectionne un compte bancaire avant import.';
+        return;
+      }
+
+      if (!this.active_saison) {
+        this.importError = 'Sélectionne une saison avant import.';
+        return;
+      }
+
+      this.importPreview = await this.buildImportPreview(file, this.importCompteId);
+      input.value = '';
+    } catch (err) {
+      this.importError = err instanceof Error ? err.message : String(err);
+      this.showError('Prévisualisation import CSV', err);
+    }
+  }
+
+  async confirmImport(): Promise<void> {
+    if (!this.importCompteId || !this.active_saison) return;
+
+    const rows = this.importPreview.filter((r) => r.selected);
+
+    if (!rows.length) {
+      this.importError = 'Aucune ligne sélectionnée.';
+      return;
+    }
+
+    try {
+      this.importing = true;
+      this.importError = null;
+      this.importResult = null;
+
+      let imported = 0;
+      let failed = 0;
+      let classes_comptables6 = this.classes_comptables.find(x => x.code === '6');
+      let classes_comptables7 = this.classes_comptables.find(x => x.code === '7');
+      let ff_aclasser6 = this.flux.find((f) => f.classe_comptable_id === classes_comptables6?.id);
+      let ff_aclasser7 = this.flux.find((f) => f.classe_comptable_id === classes_comptables7?.id);
+      if(!ff_aclasser6)
+       ff_aclasser6 = await this.fluxApi.create({
+          libelle: 'À classer 6',
+          date: new Date().toISOString(),
+          destinataire: '',
+          recette: false,
+          classe_comptable_id: classes_comptables6?.id,
+          statut: 0,  
+          montant: 0,
+          nb_paiement: 0,
+          info: $localize`Flux système pour opérations à classer en classe 6`,
+          saison_id: this.store.saison_active_id() ?? undefined,
+      }as CreateFluxFinancierDto) ;
+      if(!ff_aclasser7) 
+        ff_aclasser7 = await this.fluxApi.create({
+          libelle: 'À classer 7',
+          date: new Date().toISOString(),
+          destinataire: '',
+          recette: true,
+          classe_comptable_id: classes_comptables7?.id,
+          statut: 0,
+          montant: 0,
+          nb_paiement: 0,
+          info: $localize`Flux système pour opérations à classer en classe 7`,
+          saison_id: this.store.saison_active_id() ?? undefined,
+      }as CreateFluxFinancierDto) ;
+
+
+      for (const row of rows) {
+        try {
+
+          if(row.montant < 0 && ff_aclasser6) {
+            row.flux_financier_id = ff_aclasser6.id;
+            ff_aclasser6.montant += row.montant;
+            ff_aclasser6.nb_paiement += 1;
+            await this.fluxApi.update(ff_aclasser6.id, ff_aclasser6);
+          } else if(row.montant >= 0 && ff_aclasser7) {
+            row.flux_financier_id = ff_aclasser7.id;
+            ff_aclasser7.montant += row.montant;
+            ff_aclasser7.nb_paiement += 1;
+            await this.fluxApi.update(ff_aclasser7.id, ff_aclasser7);
+          }
+
+          await this.financeApi.createOperation({
+            solde: row.montant,
+            date_operation: row.date_operation,
+            date_previsionnelle: row.date_operation,
+            mode: 1,
+            destinataire: row.destinataire,
+            paiement_execute: true,
+            compte_bancaire_id: this.importCompteId,
+            flux_financier_id: row.flux_financier_id,
+            saison_id: this.active_saison,
+            libelle_bancaire: row.libelle_bancaire,
+            source_import: 'CSV_BANQUE',
+            import_key: row.import_key,
+            info: null,
+          });
+
+          imported++;
+        } catch {
+          failed++;
+        }
+      }
+
+      this.importResult = `${imported} opération(s) importée(s). ${failed} erreur(s).`;
+      this.importPreview = [];
+      await this.reloadData();
+    } catch (err) {
+      this.importError = err instanceof Error ? err.message : String(err);
+      this.showError('Import CSV bancaire', err);
+    } finally {
+      this.importing = false;
+    }
+  }
+
+  cancelImportPreview(): void {
+    this.importPreview = [];
+    this.importResult = null;
+    this.importError = null;
+  }
+
+  toggleAllPreview(selected: boolean): void {
+    this.importPreview.forEach((r) => {
+      if (r.status !== 'DOUBLON') {
+        r.selected = selected;
       }
     });
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger les saisons`;
-    this.saison_sev
-      .GetAll()
-      .then((liste_saison) => {
-        this.saisons = liste_saison;
-        this.saison_id = liste_saison.find((x) => x.active == true).id;
-        this.action = $localize`Charger les comptes`;
-        this.cb_serv
-          .getAll()
-          .then((cpts) => {
-            this.Comptes = cpts;
-            this.action = $localize`Charger les classes comptables`;
-            if (!this.SC.ClassComptable || this.SC.ClassComptable.length == 0) {
-              this.addinfo_serv.get_lv('class_compta', false).then((liste) => {
-                this.SC.ClassComptable = JSON.parse(liste.text);
-                this.ClassesComptable = this.SC.ClassComptable;
-              });
-            } else {
-              this.ClassesComptable = this.SC.ClassComptable;
-            }
-            this.VoirSituation();
-            if (!this.SC.ListeObjet || this.SC.ListeObjet.length == 0) {
-              let ad: string[] = ['rider', 'compte','prof'];
-              this.addinfo_serv.getall_liste(ad).then((liste) => {
-                this.SC.ListeObjet = liste;
-                this.Destinataire = this.SC.ListeObjet.filter(
-                  (x) =>
-                    x.type == 'rider' || x.type == 'compte' || x.type == 'prof'
-                );
-              });
-            } else {
-              this.Destinataire = this.SC.ListeObjet.filter(
-                (x) =>
-                  x.type == 'rider' || x.type == 'compte' || x.type == 'prof'
-              );
-            }
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
   }
-  Sort(sens: 'NO' | 'ASC' | 'DESC', champ: string) {
-    switch (champ) {
-      case 'libelle':
-        this.sort_libelle = sens;
-        this.sort_date = 'NO';
-        this.sort_sens = 'NO';
-        this.sort_montant = 'NON';
-        this.Operations.sort((a, b) => {
-          const nomA = a.flux_financier.libelle.toUpperCase(); // Ignore la casse lors du tri
-          const nomB = b.flux_financier.libelle.toUpperCase();
-          let comparaison = 0;
-          if (nomA > nomB) {
-            comparaison = 1;
-          } else if (nomA < nomB) {
-            comparaison = -1;
-          }
 
-          return this.sort_libelle === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-      case 'sens':
-        this.sort_sens = sens;
-        this.sort_libelle = 'NO';
-        this.sort_date = 'NO';
-        this.sort_montant = 'NO';
-        this.Operations.sort((a, b) => {
-          const lieuA = a.solde < 0 ? false : true;
-          const lieuB = b.solde < 0 ? false : true;
+  private async buildImportPreview(file: File, compteBancaireId: number): Promise<ImportPreviewRow[]> {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-          let comparaison = 0;
-          if (lieuA > lieuB) {
-            comparaison = 1;
-          } else if (lieuA < lieuB) {
-            comparaison = -1;
-          }
-
-          return this.sort_sens === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-      case 'date':
-        this.sort_sens = 'NO';
-        this.sort_date = sens;
-        this.sort_libelle = 'NO';
-        this.sort_montant = 'NO';
-        this.Operations.sort((a, b) => {
-          let dateA = a.date_operation;
-          let dateB = b.date_operation;
-
-          let comparaison = 0;
-          if (dateA > dateB) {
-            comparaison = 1;
-          } else if (dateA < dateB) {
-            comparaison = -1;
-          }
-
-          return this.sort_date === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-      case 'montant':
-        this.sort_libelle = 'NO';
-        this.sort_date = 'NO';
-        this.sort_sens = 'NO';
-        this.sort_montant = sens;
-        this.Operations.sort((a, b) => {
-          const soldeA = a.solde; // Ignore la casse lors du tri
-          const soldeB = b.solde;
-          let comparaison = 0;
-          if (soldeA > soldeB) {
-            comparaison = 1;
-          } else if (soldeA < soldeB) {
-            comparaison = -1;
-          }
-
-          return this.sort_montant === 'ASC' ? comparaison : -comparaison; // Inverse pour le tri descendant
-        });
-        break;
-    }
-  }
-  ReinitFiltre() {
-    this.filter_compte = null;
-    this.filter_date_debut = null;
-    this.filter_libelle = null;
-    this.filter_montant_max = null;
-    this.filter_montant_min = null;
-    this.filter_sens_operation = null;
-    this.filter_date_fin = null;
-  }
-  GotoFF(id: number) {
-    this.router.navigate(['/comptabilite'], {
-      queryParams: { context: 'FLUXFIN', id: id },
-    });
-  }
-  onInputChange(displayText: GenericLink_VM) {
-    // Trouver l'objet complet correspondant à la valeur d'affichage
-    const selectedOption = this.Destinataire.find(
-      (option) => option === displayText
+    const headerIndex = lines.findIndex((l) =>
+      this.normalizeHeader(l).includes('date;libelle;montant'),
     );
-    if (selectedOption) {
-      // Mettre à jour l'affichage et le modèle avec l'objet sélectionné
-      this.editOperations.destinataire = displayText;
-    } else {
-      // Gérer les saisies libres si nécessaire
-      this.editOperations.destinataire = {
-        id: 0,
-        type: '',
-        value: displayText.value,
-      };
-     
+
+    if (headerIndex === -1) {
+      throw new Error('Format CSV bancaire non reconnu. Attendu : Date;Libellé;Montant');
     }
-  }
 
-  ExporterExcel() {}
+    const rows = lines.slice(headerIndex + 1);
+    const preview: ImportPreviewRow[] = [];
 
-  Save() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Mettre à jour une operation`;
-    this.trns_serv
-      .update(this.editOperations)
-      .then((ok) => {
-        if (ok) {
-          let o = errorService.OKMessage(this.action);
-          errorService.emitChange(o);
-          this.VoirSituation();
-        } else {
-          let o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-        }
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
+    for (const row of rows) {
+      const cols = this.splitCsvRow(row);
+      const dateFr = cols[0];
+      const libelle = cols[1];
+      const montantRaw = cols[2];
+
+      if (!dateFr || !libelle || !montantRaw) continue;
+
+      const date = this.parseDateFr(dateFr);
+      const montant = this.parseMontantFr(montantRaw);
+      const cleanLibelle = libelle.trim();
+
+      const importKey = [
+        compteBancaireId,
+        date,
+        cleanLibelle,
+        montant.toFixed(2),
+      ].join('|');
+
+      const exact = this.operations.find((op) => op.import_key === importKey);
+
+      const proche = this.operations.find((op) =>
+        op.compte_bancaire_id === compteBancaireId &&
+        this.toDateOnly(op.date_operation) === date &&
+        Math.abs(Number(op.solde ?? 0) - montant) < 0.001,
+      );
+
+      let status: ImportStatus = 'OK';
+      let message = 'Nouvelle opération';
+      let selected = true;
+
+      if (exact) {
+        status = 'DOUBLON';
+        message = 'Déjà importée';
+        selected = false;
+      } else if (proche) {
+        status = 'PROCHE';
+        message = 'Opération proche déjà existante';
+        selected = false;
+      }
+
+      preview.push({
+        selected,
+        status,
+        message,
+        date_operation: date,
+        libelle_bancaire: cleanLibelle,
+        montant,
+        destinataire: cleanLibelle,
+        import_key: importKey,
+        existingOperation: exact ?? proche,
+        flux_financier_id: null,
       });
+    }
+
+    return preview;
   }
 
-  Edit(t: Operation_VM) {
-    let id = t.id;
+  getFlux(id: number | null): FluxFinancier | undefined {
+    if (!id) return undefined;
+    return this.flux.find((f) => f.id === id);
+  }
+
+  getCompte(id: number | null | undefined): CompteBancaire | undefined {
+    if (!id) return undefined;
+    return this.comptes.find((c) => c.id === id);
+  }
+
+  getCompteLabel(id: number | null | undefined): string {
+    const c: CompteBancaire | undefined = this.getCompte(id);
+    return c?.nom  || (id ? `Compte #${id}` : '');
+  }
+
+  getSaisonLabel(saison: Saison): string {
+    const s: Saison = saison;
+    return s.nom || `Saison #${s.id}`;
+  }
+
+  getFluxLabel(id: number | null | undefined): string {
+    const f = this.getFlux(id ?? null);
+    return f?.libelle ?? '';
+  }
+
+  isSystemFlux(op: Operation): boolean {
+    return !!this.getFlux(op.flux_financier_id ?? null)?.flux_systeme;
+  }
+
+  formatMontant(value: number | string | null | undefined): string {
+    return `${Number(value ?? 0).toLocaleString('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} €`;
+  }
+
+  private buildOperationDto(op: Operation): Partial<Operation> {
+    return {
+      solde: Number(op.solde ?? 0),
+      date_operation: this.toDateOnly(op.date_operation),
+      date_previsionnelle: op.date_previsionnelle
+        ? this.toDateOnly(op.date_previsionnelle)
+        : null,
+      mode: Number(op.mode ?? 0),
+      destinataire: String(op.destinataire ?? ''),
+      paiement_execute: Boolean(op.paiement_execute),
+      compte_bancaire_id: Number(op.compte_bancaire_id ?? 0),
+      flux_financier_id: op.flux_financier_id ?? null,
+      saison_id: this.active_saison,
+      libelle_bancaire: op.libelle_bancaire ?? null,
+      source_import: op.source_import ?? null,
+      import_key: op.import_key ?? null,
+      info: op.info ?? null,
+    };
+  }
+
+  private today(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  private toDateOnly(value: any): string {
+    if (!value) return this.today();
+    if (typeof value === 'string') return value.slice(0, 10);
+    if (value instanceof Date) return value.toISOString().slice(0, 10);
+    return String(value).slice(0, 10);
+  }
+
+  private parseDateFr(value: string): string {
+    const [dd, mm, yyyy] = value.trim().split('/');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private parseMontantFr(value: string): number {
+    return Number(
+      value
+        .replace('€', '')
+        .replace(/\s/g, '')
+        .replace(',', '.')
+        .trim(),
+    );
+  }
+
+  private normalizeHeader(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  private splitCsvRow(row: string): string[] {
+    return row.split(';').map((x) => x.replace(/^"|"$/g, '').trim());
+  }
+
+  private showError(action: string, err: unknown): void {
     const errorService = ErrorService.instance;
-    this.action = $localize`Charger une operation`;
-    this.trns_serv
-      .get(id)
-      .then((tt) => {
-        this.compta_serv
-          .get(tt.flux_financier_id)
-          .then((ff) => {
-            this.editOperations = tt;
-            this.context = 'EDIT';
-          })
-          .catch((err: HttpErrorResponse) => {
-            let o = errorService.CreateError(this.action, err.message);
-            errorService.emitChange(o);
-          });
-      })
-      .catch((err: HttpErrorResponse) => {
-        let o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-      });
-  }
-
-  PrevueToExecute() {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Mettre à jour les paiements`;
-
-    // Récupère toutes les promesses de paiement
-    const paymentPromises = this.Operations.filter(
-      (t) => t.date_operation < new Date() && !t.paiement_execute
-    ).map((t) => this.Payer(t, true));
-
-    // Exécute toutes les promesses et attend la fin de toutes
-    Promise.all(paymentPromises)
-      .then(() => {
-        const successMessage = errorService.OKMessage(this.action);
-        errorService.emitChange(successMessage);
-      })
-      .catch((err: HttpErrorResponse) => {
-        const errorMessage = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(errorMessage);
-      });
-  }
-
-  // La fonction Payer reste inchangée, sauf pour garantir qu'elle retourne une promesse
-  Payer(t: Operation_VM, multi: boolean = false): Promise<boolean> {
-    t.paiement_execute = true;
-    const errorService = ErrorService.instance;
-    this.action = $localize`Mettre à jour le paiement`;
-
-    return this.trns_serv
-      .update(t)
-      .then((ok) => {
-        if (ok) {
-          if (!multi) {
-            const o = errorService.OKMessage(this.action);
-            errorService.emitChange(o);
-            this.VoirSituation();
-          }
-          return true; // succès
-        } else {
-          const o = errorService.UnknownError(this.action);
-          errorService.emitChange(o);
-          return false; // échec
-        }
-      })
-      .catch((err: HttpErrorResponse) => {
-        const o = errorService.CreateError(this.action, err.message);
-        errorService.emitChange(o);
-        throw err; // relance l'erreur pour la gérer dans `PrevueToExecute`
-      });
-  }
-
-  getCompte(id: number): CompteBancaire_VM {
-    return this.Comptes.find((x) => x.id == id);
-  }
-  formatDestinataire(destinataire: {
-    id: number;
-    type: string;
-    value: string;
-  }) {
-    return `${destinataire.value} (${destinataire.type})`;
-  }
-
-  getFFMontant(id) {
-    return this.FluxFinanciers.find((x) => x.id == id).montant;
-  }
-  VoirSituation() {
-   
-  }
-  Retour(){
-    this.context = "LISTE";
-    this.editOperations = null;
+    errorService.emitChange(
+      errorService.CreateError(
+        action,
+        err instanceof Error ? err.message : String(err),
+      ),
+    );
   }
 }

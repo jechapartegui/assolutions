@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
-import { Operation, CreateOperationDto, UpdateOperationDto } from '@shared/lib/operation.interface';
+import {
+  Operation,
+  CreateOperationDto,
+  UpdateOperationDto,
+} from '@shared/lib/operation.interface';
 
 @Injectable({ providedIn: 'root' })
 export class OperationApiService {
@@ -8,8 +12,12 @@ export class OperationApiService {
 
   constructor(private api: ApiClientService) {}
 
-  list(): Promise<Operation[]> {
-    return this.api.GET<Operation[]>(this.base);
+  list(fluxFinancierId?: number): Promise<Operation[]> {
+    const url = fluxFinancierId
+      ? `${this.base}?flux_financier_id=${fluxFinancierId}`
+      : this.base;
+
+    return this.api.GET<Operation[]>(url);
   }
 
   get(id: number): Promise<Operation> {

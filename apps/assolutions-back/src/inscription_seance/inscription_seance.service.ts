@@ -78,7 +78,6 @@ private readonly lienGroupeRepo: Repository<LienGroupeEntity>,
     result.map(r => Number(r.personne_id)),
   );
 
-  const totalPersonnesInscrites = result.length;
 
   const groupes = await this.repo.query(
     `

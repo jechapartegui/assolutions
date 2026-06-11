@@ -32,9 +32,24 @@ export class FluxFinancierEntity {
   @Column({ type: 'int' })
   saison_id: number;
 
-  @Column({ type: 'int' })
-  classe_comptable: number;
+  @Column({ type: 'int', nullable: true })
+  classe_comptable_id: number | null;
+
+  @Column({ type: 'int', default: 1 })
+  nb_paiement: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   type_frais: string | null;
+
+  @Column({ type: 'int', nullable: true })
+  personne_id: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  contrat_prof_id: number | null;
+
+  @Column({ type: 'boolean', default: false })
+  flux_systeme: boolean;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  origine: string | null;
 }

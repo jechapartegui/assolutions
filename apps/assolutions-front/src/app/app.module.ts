@@ -42,9 +42,12 @@ import { ProfesseurComponent } from './professeur/professeur.component';
 import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
+import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
+import { OperationsComponent } from './operations/operations.component';
+import { LieuSelectorComponent } from './component/lieu-selector/lieu-selector.component';
 @NgModule({
   declarations: [
-    AppComponent, PersonneSelectorComponent, ContratProfComponent, ProfesseurComponent, EnvoiMailComponent, ProjetMailComponent,
+    AppComponent, PersonneSelectorComponent, ContratProfComponent, ProfesseurComponent, EnvoiMailComponent, ProjetMailComponent, ComptabiliteComponent, OperationsComponent, LieuSelectorComponent,
     AppComponent, LoginComponent, MenuComponent,MultifiltersMenuPipe, CustomButtonComponent, SeanceComponent, SeanceEditorComponent,  LieuComponent, SaisonComponent,
     SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent, MailTemplatePreviewComponent, MaSeanceComponent, DashboardComponent, CompteBancaireComponent, MenuAdminComponent,
     NotifJechaComponent, DureeHHMMPipe, AdherentComponent, AdherentListComponent, AdherentEditorComponent, GroupeComponent, AddInfoEditorComponent, MenuAdminComponent],

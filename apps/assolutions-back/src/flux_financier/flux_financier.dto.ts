@@ -1,4 +1,12 @@
-﻿import { IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+﻿import {
+  IsBoolean,
+  IsDateString,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateFluxFinancierDto {
   @IsString()
@@ -24,18 +32,38 @@ export class CreateFluxFinancierDto {
   @IsString()
   info?: string | null;
 
-  // ✅ supprimé : project_id (vient du header via @ProjectId)
-
   @IsInt()
   saison_id: number;
 
+  @IsOptional()
   @IsInt()
-  classe_comptable: number;
+  classe_comptable_id?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  nb_paiement?: number;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
   type_frais?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  personne_id?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  contrat_prof_id?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  flux_systeme?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  origine?: string | null;
 }
 
 export class UpdateFluxFinancierDto {
@@ -72,12 +100,34 @@ export class UpdateFluxFinancierDto {
   @IsInt()
   saison_id?: number;
 
+
   @IsOptional()
   @IsInt()
-  classe_comptable?: number;
+  classe_comptable_id?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  nb_paiement?: number;
 
   @IsOptional()
   @IsString()
   @MaxLength(255)
   type_frais?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  personne_id?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  contrat_prof_id?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  flux_systeme?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  origine?: string | null;
 }

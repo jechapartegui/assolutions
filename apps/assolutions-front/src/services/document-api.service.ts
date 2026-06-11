@@ -8,6 +8,16 @@ export class DocumentApiService {
 
   constructor(private api: ApiClientService) {}
 
+  listRecent(limit = 50): Promise<Document[]> {
+    return this.api.GET<Document[]>(`${this.base}?limit=${limit}`);
+  }
+
+  listByObject(objet_type: string, objet_id: number): Promise<Document[]> {
+    return this.api.GET<Document[]>(
+      `${this.base}?objet_type=${encodeURIComponent(objet_type)}&objet_id=${objet_id}`,
+    );
+  }
+
   get(id: number): Promise<Document> {
     return this.api.GET<Document>(`${this.base}/${id}`);
   }
@@ -27,11 +37,16 @@ export class DocumentApiService {
   photo_by_id(ids: number[]): Promise<{ [id: number]: string | null }> {
     return this.api.POST<{ [id: number]: string | null }>(`${this.base}/photo-by-id`, ids);
   }
-  setPhoto(objet_id: number, photo: string | null, objet_type = 'member'): Promise<{ ok: boolean; photo: string | null }> {
-  return this.api.POST<{ ok: boolean; photo: string | null }>(`${this.base}/set-photo`, {
-    objet_id,
-    objet_type,
-    photo,
-  });
-}
+
+  setPhoto(
+    objet_id: number,
+    photo: string | null,
+    objet_type = 'member',
+  ): Promise<{ ok: boolean; photo: string | null }> {
+    return this.api.POST<{ ok: boolean; photo: string | null }>(`${this.base}/set-photo`, {
+      objet_id,
+      objet_type,
+      photo,
+    });
+  }
 }

@@ -1,7 +1,7 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { GroupesEntity } from '../groupes/groupes.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateLienGroupeDto, UpdateLienGroupeDto } from './lien_groupe.dto';
@@ -16,7 +16,7 @@ export class LienGroupeService {
     private readonly groupesRepo: Repository<GroupesEntity>,
     @InjectRepository(SaisonEntity)
     private readonly saisonRepo: Repository<SaisonEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   private async assertGroupeInProject(groupeId: number, projectId: number) {
@@ -78,7 +78,6 @@ export class LienGroupeService {
     const entity = this.repo.create(dto as CreateLienGroupeDto);
     const saved = await this.repo.save(entity);
 
-    await this.registry.ensure('lien_groupe', saved.id);
     return saved;
   }
 
@@ -88,7 +87,6 @@ export class LienGroupeService {
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('lien_groupe', id);
     return saved;
   }
 
@@ -96,7 +94,6 @@ export class LienGroupeService {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
 
-    await this.registry.remove('lien_groupe', id);
     return { ok: true };
   }
 

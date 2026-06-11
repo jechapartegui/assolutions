@@ -1,7 +1,7 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CreateMailAccountDto, UpdateMailAccountDto } from './mail_account.dto';
 import { MailAccountEntity } from './mail_account.entity';
 
@@ -9,7 +9,7 @@ import { MailAccountEntity } from './mail_account.entity';
 export class MailAccountService {
   constructor(
     @InjectRepository(MailAccountEntity) private readonly repo: Repository<MailAccountEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   list() {
@@ -24,7 +24,6 @@ export class MailAccountService {
 
   async create(dto: CreateMailAccountDto) {
     const saved = await this.repo.save(this.repo.create(dto as CreateMailAccountDto));
-    await this.registry.ensure('mail_account', saved.id);
     return saved;
   }
 
@@ -32,14 +31,12 @@ export class MailAccountService {
     const item = await this.get(id);
     Object.assign(item, dto);
     const saved = await this.repo.save(item);
-    await this.registry.ensure('mail_account', id);
     return saved;
   }
 
   async remove(id: number) {
     const item = await this.get(id);
     await this.repo.remove(item);
-    await this.registry.remove('mail_account', id);
     return { ok: true };
   }
 }

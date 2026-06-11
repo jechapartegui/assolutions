@@ -1,17 +1,64 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AddInfoService } from '../../services/addinfo.service';
-import { ComptabiliteService } from '../../services/comptabilite.service';
-import { CompteBancaireService } from '../../services/compte-bancaire.service';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
 import { ErrorService } from '../../services/error.service';
-import { OperationService } from '../../services/operation.service';
-import { SaisonService } from '../../services/saison.service';
-import { StockService } from '../../services/stock.service';
-import { StaticClass } from '../global';
-import { Saison_VM } from '@shared/lib/saison.interface';
-import { CompteBancaire_VM, FluxFinancier_VM, GenericLink_VM, Operation_VM, Stock_VM, ValidationItem } from '@shared/index';
-import { GlobalService } from '../../services/global.services';
+import { CompteBancaireApiService } from '../../services/compte-bancaire-api.service';
+import { SaisonApiService } from '../../services/saison-api.service';
+import { AppStore } from '../app.store';
+import { AddInfoApiService } from '../../services/addinfo-api.service';
+import { DocumentApiService } from '../../services/document-api.service';
+import { StockApiService } from '../../services/stock-api.service';
+import { BudgetRealiseItem, FinanceApiService } from '../../services/finance-api.service';
+import { FluxFinancierApiService } from '../../services/flux-financiers-api.service';
+
+import {
+  BudgetLigne,
+  BudgetScenario,
+  ClasseComptable,
+  CompteBancaire,
+  CreateBudgetLigneDto,
+  CreateBudgetScenarioDto,
+  CreateFluxFinancierDto,
+  CreateOperationDto,
+  FluxFinancier,
+  Operation,
+  Saison,
+  UpdateFluxFinancierDto,
+  UpdateOperationDto,
+} from '@shared/index';
+
+import { AddInfo } from '@shared/lib/addinfo.interface';
+import { CreateDocumentDto, Document, UpdateDocumentDto } from '@shared/lib/document.interface';
+import { CreateStockDto, Stock } from '@shared/lib/stock.interface';
+
+type FinanceVue = 'DASHBOARD' | 'BUDGET' | 'FLUX';
+type SensFilter = 'ALL' | 'RECETTE' | 'DEPENSE';
+type DestinataireMode = 'LIBRE' | 'PERSONNE';
+
+type FluxForm = Partial<FluxFinancier> & {
+  id?: number;
+  liste_operation?: Operation[];
+};
+
+interface LovItem {
+  id: number;
+  categorie?: string;
+  libelle: string;
+}
+
+interface StockDraft {
+  id?: number;
+  qte: number;
+  lieu_id: number | null;
+  lieu_stockage: string;
+  type_stock_id: number | null;
+  type_stock: string;
+  valeur_achat: number | null;
+  date_achat: string | null;
+  libelle: string;
+  info: string;
+}
 
 @Component({
   standalone: false,
@@ -20,735 +67,1121 @@ import { GlobalService } from '../../services/global.services';
   styleUrls: ['./comptabilite.component.css'],
 })
 export class ComptabiliteComponent implements OnInit {
-  // --- State (safely initialized) ---
-  active_saison: number = 0;
-  liste_saison: Saison_VM[] = [];
-  FluxFinanciers: FluxFinancier_VM[] = [];
-  editFluxFlinancier: FluxFinancier_VM | null = null;
-  stocks: GenericLink_VM[] = [];
-  liste_compte_bancaire: CompteBancaire_VM[] = [];
+  vue: FinanceVue = 'DASHBOARD';
 
-  public filters: filterFF = new filterFF();
-
-  sort_libelle_ff: 'NO' | 'ASC' | 'DESC' = 'NO';
-  sort_date_ff: 'NO' | 'ASC' | 'DESC' = 'NO';
-  sort_montant_ff: 'NO' | 'ASC' | 'DESC' = 'NO';
-  sort_sens_ff: 'NO' | 'ASC' | 'DESC' = 'NO';
-
+  loading = false;
+  saving = false;
   action = '';
-  liste_destintaire: GenericLink_VM[] = [];
-  liste_lieu: GenericLink_VM[] = [];
 
-  @ViewChild('scrollableContent', { static: false })
-  scrollableContent!: ElementRef | undefined;
-  showScrollToTop: boolean = false;
+  saisons: Saison[] = [];
+  active_saison = 0;
 
-  vue: 'COMPTA' | 'BUDGET' | 'LISTE' = 'LISTE';
+  comptes: CompteBancaire[] = [];
 
-  public loading: boolean = false;
-  public afficher_filtre: boolean = false;
-  public selected_filter: string | null = null;
+  classes: ClasseComptable[] = [];
+  scenarios: BudgetScenario[] = [];
+  lignes: BudgetLigne[] = [];
+  flux: FluxFinancier[] = [];
+  operations: Operation[] = [];
+  realise: BudgetRealiseItem[] = [];
 
-  rLibelle: ValidationItem = { key: true, value: '' };
-  rDate: ValidationItem = { key: true, value: '' };
-  rMontant: ValidationItem = { key: true, value: '' };
-  rDestinataire: ValidationItem = { key: true, value: '' };
-  rNbOperation: ValidationItem = { key: true, value: '' };
-  rTypeAchat: ValidationItem = { key: true, value: '' };
-  is_valid: boolean = false;
+  selectedScenarioId: number | null = null;
+  selectedFlux: FluxForm | null = null;
 
-  histo: string = '';
+  documentsFlux: Document[] = [];
+  recentDocuments: Document[] = [];
+  stocksFlux: Stock[] = [];
 
-  private scrollAttachAttempts = 0;
-  private readonly maxScrollAttachAttempts = 50; // safety
+  typedocLov: LovItem[] = [];
+  stockTypeLov: LovItem[] = [];
 
-  public edit_infoessentielle:boolean = false;
+  newDocumentType = 'Facture';
+  newDocumentTitle = '';
+  newDocumentComment = '';
+  newDocumentFile: File | null = null;
+  selectedExistingDocumentId: number | null = null;
+
+  newStock: StockDraft = this.emptyStockDraft();
+
+  newScenarioName = '';
+  newLigneClasseId: number | null = null;
+  newLigneMontant: number | null = null;
+  newLigneInfo = '';
+
+  filterTexte = '';
+  filterClasseId: number | null = null;
+  filterSens: SensFilter = 'ALL';
+  showSystemFlux = false;
+
+  dashboardDetail = true;
 
   constructor(
-    public compta_serv: ComptabiliteService,
-    public trns_serv: OperationService,
-    public saison_sev: SaisonService,
-    public cb_serv: CompteBancaireService,
-    public ai_serv: AddInfoService,
-    public router: Router,
-    public route: ActivatedRoute,
-    public SC: StaticClass,
-    public addinfo_serv: AddInfoService,
-    public stock_serv: StockService
+    private route: ActivatedRoute,
+    private saisonApiService: SaisonApiService,
+    private compteBancaireService: CompteBancaireApiService,
+    private financeApi: FinanceApiService,
+    private fluxApi: FluxFinancierApiService,
+    private addInfoApi: AddInfoApiService,
+    private documentApi: DocumentApiService,
+    private stockApi: StockApiService,
+    private store: AppStore,
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this.route.queryParams.subscribe((params) => {
+      const vue = params['vue'];
+      if (vue === 'BUDGET' || vue === 'FLUX' || vue === 'DASHBOARD') {
+        this.vue = vue;
+      }
+    });
+
+    await this.loadAll();
+  }
+
+  async loadAll(): Promise<void> {
+    this.loading = true;
+
     try {
-      this.route.queryParams.subscribe((params) => {
-        if ('vue' in params) {
-          this.vue = params['vue'] as any;
-        }
+      this.action = 'Charger les saisons et comptes';
+      const [saisons, comptes] = await Promise.all([
+        this.saisonApiService.list(),
+        this.compteBancaireService.list(),
+      ]);
+
+      this.saisons = saisons ?? [];
+      this.comptes = comptes ?? [];
+      this.active_saison = this.store.saison_active_id() || this.saisons[0]?.id || 0;
+
+      this.action = 'Charger les référentiels';
+      const [classes, typedocLov, stockTypeLov] = await Promise.all([
+        this.financeApi.listClasses('FR', 'fr'),
+        this.loadLov('TYPEDOC'),
+        this.loadLov('stock'),
+      ]);
+
+      this.classes = classes ?? [];
+      this.typedocLov = typedocLov;
+      this.stockTypeLov = stockTypeLov;
+
+      if (this.typedocLov.length) {
+        this.newDocumentType = this.typedocLov[0].libelle;
+      }
+
+      await this.reloadFinanceData();
+    } catch (err) {
+      this.showError(err);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  syncFluxMontantFromOperations(): void {
+  if (!this.selectedFlux) return;
+
+  const total = (this.selectedFlux.liste_operation ?? []).reduce(
+    (sum, op) => sum + Math.abs(Number(op.solde ?? 0)),
+    0,
+  );
+
+  /**
+   * En base / UI flux :
+   * - une recette reste positive
+   * - une dépense reste positive aussi
+   * Le signe réel est porté par l'opération bancaire.
+   */
+  this.selectedFlux.montant = Number(total.toFixed(2));
+}
+
+onStockLieuSelected(lieu: any | null): void {
+  if (!lieu) {
+    this.newStock.lieu_id = null;
+    this.newStock.lieu_stockage = '';
+    return;
+  }
+
+  this.newStock.lieu_id = lieu.id;
+  this.newStock.lieu_stockage =
+    lieu.nom ||
+    lieu.libelle ||
+    `Lieu #${lieu.id}`;
+}
+
+  async reloadFinanceData(): Promise<void> {
+    if (!this.active_saison) return;
+
+    this.action = 'Charger les données financières';
+
+    const [scenarios, flux, operations, realise, recentDocuments] = await Promise.all([
+      this.financeApi.listScenarios(this.active_saison),
+      this.fluxApi.list(this.active_saison, true),
+      this.financeApi.listOperations(),
+      this.financeApi.budgetRealise(this.active_saison),
+      this.documentApi.listRecent(50),
+    ]);
+
+    this.scenarios = scenarios ?? [];
+    this.flux = flux ?? [];
+    this.operations = operations ?? [];
+    this.realise = realise ?? [];
+    this.recentDocuments = recentDocuments ?? [];
+
+    if (!this.selectedScenarioId && this.scenarios.length) {
+      this.selectedScenarioId = this.scenarios[0]?.id ?? null;
+    }
+
+    if (this.selectedScenarioId && !this.scenarios.some((s) => s.id === this.selectedScenarioId)) {
+      this.selectedScenarioId = this.scenarios[0]?.id ?? null;
+    }
+
+    await this.reloadBudgetLignes();
+  }
+
+  async reloadBudgetLignes(): Promise<void> {
+    if (!this.selectedScenarioId) {
+      this.lignes = [];
+      return;
+    }
+
+    this.lignes = await this.financeApi.listLignes(this.selectedScenarioId);
+  }
+
+  async onSaisonChange(): Promise<void> {
+    this.selectedScenarioId = null;
+    this.selectedFlux = null;
+    await this.reloadFinanceData();
+  }
+
+  async onScenarioChange(): Promise<void> {
+    await this.reloadBudgetLignes();
+  }
+
+  setVue(vue: FinanceVue): void {
+    this.vue = vue;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dashboard
+  // ---------------------------------------------------------------------------
+
+isClasseRecette(classeId: number | null | undefined): boolean {
+  const c = this.getClasse(classeId);
+  return !!c?.recette;
+}
+
+get totalBudgetRecettes(): number {
+  return this.lignes
+    .filter(l => this.isClasseRecette(l.classe_comptable_id))
+    .reduce((sum, l) => sum + Math.abs(Number(l.montant_budget ?? 0)), 0);
+}
+
+get totalBudgetDepenses(): number {
+  return this.lignes
+    .filter(l => !this.isClasseRecette(l.classe_comptable_id))
+    .reduce((sum, l) => sum + Math.abs(Number(l.montant_budget ?? 0)), 0);
+}
+
+get totalBudgetNet(): number {
+  return this.totalBudgetRecettes - this.totalBudgetDepenses;
+}
+get totalBudget(): number {
+  return this.totalBudgetNet;
+}
+
+  get totalEngageRecettes(): number {
+    return this.realFlux.filter((f) => f.recette).reduce((sum, f) => sum + Math.abs(Number(f.montant ?? 0)), 0);
+  }
+
+  get totalEngageDepenses(): number {
+    return this.realFlux.filter((f) => !f.recette).reduce((sum, f) => sum + Math.abs(Number(f.montant ?? 0)), 0);
+  }
+
+  get totalPayeRecettes(): number {
+    return this.operations
+      .filter((op) => this.getFlux(op.flux_financier_id ?? null)?.recette)
+      .filter((op) => op.paiement_execute)
+      .reduce((sum, op) => sum + Math.abs(Number(op.solde ?? 0)), 0);
+  }
+
+  get totalPayeDepenses(): number {
+    return this.operations
+      .filter((op) => {
+        const f = this.getFlux(op.flux_financier_id ?? null);
+        return f && !f.recette;
+      })
+      .filter((op) => op.paiement_execute)
+      .reduce((sum, op) => sum + Math.abs(Number(op.solde ?? 0)), 0);
+  }
+
+  get soldeEngage(): number {
+    return this.totalEngageRecettes - this.totalEngageDepenses;
+  }
+
+  get soldePaye(): number {
+    return this.totalPayeRecettes - this.totalPayeDepenses;
+  }
+
+  get realFlux(): FluxFinancier[] {
+    return this.flux.filter((f) => !f.flux_systeme);
+  }
+
+  get dashboardRows() {
+    const rows: Array<{
+      classe: ClasseComptable;
+      level: number;
+      budget: number;
+      engage: number;
+      paye: number;
+      ecart: number;
+      isParent: boolean;
+    }> = [];
+
+    const roots = this.classes
+      .filter((c) => !c.parent_id)
+      .sort((a, b) => a.ordre - b.ordre || a.code.localeCompare(b.code));
+
+    for (const root of roots) {
+      const descendants = this.getDescendants(root.id);
+      const ids = [root.id, ...descendants.map((d) => d.id)];
+
+      rows.push({
+        classe: root,
+        level: 0,
+        budget: this.getBudgetForClasses(ids),
+        engage: this.getEngageForClasses(ids),
+        paye: this.getPayeForClasses(ids),
+        ecart: this.getBudgetForClasses(ids) - this.getEngageForClasses(ids),
+        isParent: true,
       });
 
-      const errorService = ErrorService.instance;
-      this.action = $localize`Charger les saisons`;
+      if (this.dashboardDetail) {
+        for (const child of descendants.filter((c) => c.parent_id === root.id)) {
+          const sub = this.getDescendants(child.id);
+          const childIds = [child.id, ...sub.map((s) => s.id)];
 
-      const liste_saison = await this.saison_sev.GetAll();
-      this.liste_saison = Array.isArray(liste_saison) ? liste_saison : [];
-      this.active_saison = this.liste_saison.find((x) => x.active)?.id ?? this.liste_saison[0]?.id ?? 0;
+          rows.push({
+            classe: child,
+            level: 1,
+            budget: this.getBudgetForClasses(childIds),
+            engage: this.getEngageForClasses(childIds),
+            paye: this.getPayeForClasses(childIds),
+            ecart: this.getBudgetForClasses(childIds) - this.getEngageForClasses(childIds),
+            isParent: false,
+          });
 
-      this.action = $localize`Charger les comptes`;
-      try {
-        const cpts = await this.cb_serv.getAll();
-        this.liste_compte_bancaire = Array.isArray(cpts) ? cpts : [];
-      } catch (err: any) {
-        const o = errorService.CreateError(this.action, (err as HttpErrorResponse)?.message ?? String(err));
-        errorService.emitChange(o);
-      }
-
-      // Charger les LV si besoin, puis VoirSituation
-      const needsLV = !this.SC?.ClassComptable?.length || !this.SC?.TypeStock?.length || !this.SC?.TypeTransaction?.length || !this.SC?.CategorieStock?.length;
-      if (needsLV) {
-        try {
-          await this.addinfo_serv.ChargerLV(true);
-        } catch (err) {
-          const o = ErrorService.instance.CreateError($localize`Charger les listes de valeurs`, (err as HttpErrorResponse)?.message ?? String(err));
-          ErrorService.instance.emitChange(o);
-        }
-      }
-
-      // Charger liste d'objets si absent
-      if (!this.SC?.ListeObjet?.length) {
-        try {
-          const types = ['rider', 'compte', 'lieu', 'prof'];
-          const liste = await this.addinfo_serv.getall_liste(types);
-          this.SC.ListeObjet = Array.isArray(liste) ? liste : [];
-        } catch (err) {
-          const o = ErrorService.instance.CreateError($localize`Charger la liste des destinataires/lieux`, (err as HttpErrorResponse)?.message ?? String(err));
-          ErrorService.instance.emitChange(o);
-          this.SC.ListeObjet = [];
-        }
-      }
-
-      // Dérivés
-      this.liste_destintaire = (this.SC?.ListeObjet ?? []).filter(
-        (x) => x.type === 'rider' || x.type === 'compte' || x.type === 'prof'
-      );
-      this.liste_lieu = (this.SC?.ListeObjet ?? []).filter(
-        (x) => x.type === 'rider' || x.type === 'lieu' || x.type === 'autre'
-      );
-
-      await this.VoirSituation();
-      this.waitForScrollableContainer();
-    } catch (err) {
-      const o = ErrorService.instance.CreateError(this.action || 'Init', (err as HttpErrorResponse)?.message ?? String(err));
-      ErrorService.instance.emitChange(o);
-    }
-  }
-
-  getActiveSaison(): string {
-    const s = (this.liste_saison ?? []).find((x) => x.id === this.active_saison);
-    return s?.nom ?? '';
-  }
-
-  async VoirSituation(): Promise<void> {
-    const errorService = ErrorService.instance;
-    try {
-      this.action = $localize`Charger la situation`;
-      const liste = await this.compta_serv.getAllSeason(this.active_saison);
-      this.FluxFinanciers = Array.isArray(liste) ? liste : [];
-    } catch (err) {
-      const o = errorService.CreateError(this.action, (err as HttpErrorResponse)?.message ?? String(err));
-      errorService.emitChange(o);
-      this.FluxFinanciers = [];
-    }
-  }
-
-  Sort_ff(sens: 'NO' | 'ASC' | 'DESC', champ: 'libelle' | 'date' | 'montant' | 'sens'): void {
-    if (!this.FluxFinanciers?.length) return;
-
-    const cmp = (a: number | string, b: number | string) => (a > b ? 1 : a < b ? -1 : 0);
-
-    switch (champ) {
-      case 'libelle': {
-        this.sort_libelle_ff = sens;
-        this.sort_date_ff = 'NO';
-        this.sort_montant_ff = 'NO';
-        this.sort_sens_ff = 'NO';
-        this.FluxFinanciers.sort((a, b) => {
-          const comparaison = cmp((a.libelle || '').toUpperCase(), (b.libelle || '').toUpperCase());
-          return sens === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-      }
-      case 'date': {
-        this.sort_date_ff = sens;
-        this.sort_libelle_ff = 'NO';
-        this.sort_montant_ff = 'NO';
-        this.sort_sens_ff = 'NO';
-        this.FluxFinanciers.sort((a, b) => {
-          const da = a.date ? new Date(a.date).getTime() : 0;
-          const db = b.date ? new Date(b.date).getTime() : 0;
-          const comparaison = cmp(da, db);
-          return sens === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-      }
-      case 'montant': {
-        this.sort_montant_ff = sens;
-        this.sort_libelle_ff = 'NO';
-        this.sort_date_ff = 'NO';
-        this.sort_sens_ff = 'NO';
-        this.FluxFinanciers.sort((a, b) => {
-          const ma = Number(a.montant) || 0;
-          const mb = Number(b.montant) || 0;
-          const comparaison = cmp(ma, mb);
-          return sens === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-      }
-      case 'sens': {
-        this.sort_sens_ff = sens;
-        this.sort_libelle_ff = 'NO';
-        this.sort_date_ff = 'NO';
-        this.sort_montant_ff = 'NO';
-        this.FluxFinanciers.sort((a, b) => {
-          const sa = !!a.recette;
-          const sb = !!b.recette;
-          const comparaison = cmp(Number(sa), Number(sb));
-          return sens === 'ASC' ? comparaison : -comparaison;
-        });
-        break;
-      }
-    }
-  }
-
-  Payer_ff(t: FluxFinancier_VM): void {
-    if (!t) return;
-    t.statut = 1;
-    const errorService = ErrorService.instance;
-    this.action = $localize`Mettre à jour un flux`;
-    this.compta_serv.update(t).then((ok) => {
-      if (ok) {
-        errorService.emitChange(errorService.OKMessage(this.action));
-        (t.liste_operation ?? []).forEach((ope) => {
-          this.action = $localize`Mettre à jour une opération`;
-          ope.paiement_execute = true;
-          this.trns_serv
-            .update(ope)
-            .then((ret) => {
-              if (!ret) {
-                errorService.emitChange(errorService.UnknownError(this.action));
-              }
-            })
-            .catch((err: HttpErrorResponse) => {
-              errorService.emitChange(errorService.CreateError(this.action, err.message));
+          for (const grandChild of sub.filter((c) => c.parent_id === child.id)) {
+            rows.push({
+              classe: grandChild,
+              level: 2,
+              budget: this.getBudgetForClasses([grandChild.id]),
+              engage: this.getEngageForClasses([grandChild.id]),
+              paye: this.getPayeForClasses([grandChild.id]),
+              ecart: this.getBudgetForClasses([grandChild.id]) - this.getEngageForClasses([grandChild.id]),
+              isParent: false,
             });
-        });
+          }
+        }
       }
+    }
+
+    return rows;
+  }
+
+  private getBudgetForClasses(ids: number[]): number {
+    return this.lignes
+      .filter((l) => ids.includes(l.classe_comptable_id))
+      .reduce((sum, l) => sum + Math.abs(Number(l.montant_budget ?? 0)), 0);
+  }
+
+  private getEngageForClasses(ids: number[]): number {
+    return this.realFlux
+      .filter((f) => ids.includes(this.getFluxClasseId(f) ?? -1))
+      .reduce((sum, f) => sum + Math.abs(Number(f.montant ?? 0)), 0);
+  }
+
+  private getPayeForClasses(ids: number[]): number {
+    return this.operations
+      .filter((op) => op.paiement_execute)
+      .filter((op) => {
+        const f = this.getFlux(op.flux_financier_id ?? null);
+        return f && ids.includes(this.getFluxClasseId(f) ?? -1);
+      })
+      .reduce((sum, op) => sum + Math.abs(Number(op.solde ?? 0)), 0);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Budget
+  // ---------------------------------------------------------------------------
+
+  async createScenario(): Promise<void> {
+    const nom = this.newScenarioName.trim();
+    if (!nom || !this.active_saison) return;
+
+    try {
+      this.saving = true;
+
+      const dto: CreateBudgetScenarioDto = {
+        saison_id: this.active_saison,
+        nom,
+        scenario_defaut: false,
+        info: null,
+      };
+
+      const created = await this.financeApi.createScenario(dto);
+      this.scenarios = [...this.scenarios, created];
+      this.selectedScenarioId = created.id;
+      this.newScenarioName = '';
+      await this.reloadBudgetLignes();
+    } catch (err) {
+      this.showError(err);
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  async deleteScenario(scenario: BudgetScenario): Promise<void> {
+    if (!confirm(`Supprimer le scénario "${scenario.nom}" ?`)) return;
+
+    try {
+      await this.financeApi.removeScenario(scenario.id);
+      this.scenarios = this.scenarios.filter((s) => s.id !== scenario.id);
+      if (this.selectedScenarioId === scenario.id) {
+        this.selectedScenarioId = this.scenarios[0]?.id ?? null;
+      }
+      await this.reloadBudgetLignes();
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async addBudgetLigne(): Promise<void> {
+    if (!this.selectedScenarioId || !this.newLigneClasseId || this.newLigneMontant === null) return;
+
+    try {
+      const dto: CreateBudgetLigneDto = {
+        budget_scenario_id: this.selectedScenarioId,
+        classe_comptable_id: this.newLigneClasseId,
+        montant_budget: Number(this.newLigneMontant),
+        info: this.newLigneInfo || null,
+      };
+
+      const created = await this.financeApi.createLigne(dto);
+      this.lignes = [...this.lignes, created];
+      this.newLigneClasseId = null;
+      this.newLigneMontant = null;
+      this.newLigneInfo = '';
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async updateBudgetLigne(ligne: BudgetLigne): Promise<void> {
+    try {
+      await this.financeApi.updateLigne(ligne.id, {
+        classe_comptable_id: ligne.classe_comptable_id,
+        montant_budget: Number(ligne.montant_budget ?? 0),
+        info: ligne.info,
+      });
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async deleteBudgetLigne(ligne: BudgetLigne): Promise<void> {
+    if (!confirm('Supprimer cette ligne de budget ?')) return;
+
+    try {
+      await this.financeApi.removeLigne(ligne.id);
+      this.lignes = this.lignes.filter((l) => l.id !== ligne.id);
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Flux financiers
+  // ---------------------------------------------------------------------------
+
+  get filteredFlux(): FluxFinancier[] {
+    const txt = this.filterTexte.trim().toLowerCase();
+
+    return this.flux.filter((f) => {
+      if (!this.showSystemFlux && f.flux_systeme) return false;
+
+      const matchTexte =
+        !txt ||
+        String(f.libelle ?? '').toLowerCase().includes(txt) ||
+        String(f.destinataire ?? '').toLowerCase().includes(txt) ||
+        String(f.info ?? '').toLowerCase().includes(txt);
+
+      const matchClasse = !this.filterClasseId || this.getFluxClasseId(f) === this.filterClasseId;
+
+      const matchSens =
+        this.filterSens === 'ALL' ||
+        (this.filterSens === 'RECETTE' && f.recette) ||
+        (this.filterSens === 'DEPENSE' && !f.recette);
+
+      return matchTexte && matchClasse && matchSens;
     });
   }
 
-
-  Save_ff(): void {
-    if (!this.editFluxFlinancier) return;
-    const errorService = ErrorService.instance;
-    this.action = $localize`Mettre à jour un flux`;
-
-    // snapshot pour détection de modifications
-    const h = JSON.stringify(this.histo);
-
-    const ensureArrays = () => {
-      this.editFluxFlinancier!.liste_operation = Array.isArray(this.editFluxFlinancier!.liste_operation)
-        ? this.editFluxFlinancier!.liste_operation
-        : [];
-      this.editFluxFlinancier!.liste_stock = Array.isArray(this.editFluxFlinancier!.liste_stock)
-        ? this.editFluxFlinancier!.liste_stock
-        : [];
+  createFlux(): void {
+    this.selectedFlux = {
+      id: 0,
+      libelle: '',
+      date: this.today(),
+      destinataire: '',
+      recette: false,
+      statut: 0,
+      montant: 0,
+      info: null,
+      saison_id: this.active_saison,
+      classe_comptable_id: null,
+      nb_paiement: 1,
+      flux_systeme: false,
+      origine: null,
+      personne_id: null,
+      contrat_prof_id: null,
+      liste_operation: [],
     };
-    ensureArrays();
-    console.log('Save_ff: ', this.editFluxFlinancier);
-    if ((this.editFluxFlinancier.id ?? 0) === -1) {
-      // CREATE
-      console.log("ici");
-      this.compta_serv
-        .add(this.editFluxFlinancier)
-        .then((ffx) => {
-          this.editFluxFlinancier!.id = ffx.id;
-          // opérations
-          (this.editFluxFlinancier!.liste_operation ?? []).forEach((ope) => {
-            ope.flux_financier_id = ffx.id;
-            this.action = $localize`Ajouter une opération`;
-            this.trns_serv
-              .add(ope)
-              .then((op) => (ope.id = op.id))
-              .catch((err: HttpErrorResponse) => {
-                errorService.emitChange(errorService.CreateError(this.action, err.message));
-              });
-          });
-          // stocks
-          (this.editFluxFlinancier!.liste_stock ?? []).forEach((stk) => {
-            stk.flux_financier_id = ffx.id;
-            this.action = $localize`Ajouter un stock`;
-            this.stock_serv
-              .add(stk)
-              .then((idop) => (stk.id = idop))
-              .catch((err: HttpErrorResponse) => {
-                errorService.emitChange(errorService.CreateError(this.action, err.message));
-              });
-          });
-        })
-        .catch((err: HttpErrorResponse) => {
-          errorService.emitChange(errorService.CreateError(this.action, err.message));
-        });
-    } else {
-      // UPDATE
-      console.log("là");
-      this.compta_serv
-        .update(this.editFluxFlinancier)
-        .then((ok) => {
-          if (ok) {
-            errorService.emitChange(errorService.OKMessage(this.action));
-            // opérations
-            (this.editFluxFlinancier!.liste_operation ?? []).forEach((ope) => {
-              if (!ope.id || ope.id === 0) {
-                ope.flux_financier_id = this.editFluxFlinancier!.id;
-                this.action = $localize`Ajouter une opération`;
-                this.trns_serv
-                  .add(ope)
-                  .then((operation_vm) => (ope.id = operation_vm.id))
-                  .catch((err: HttpErrorResponse) => {
-                    errorService.emitChange(errorService.CreateError(this.action, err.message));
-                  });
-              } else {
-                this.action = $localize`Mettre à jour une opération`;
-                this.trns_serv
-                  .update(ope)
-                  .then((ret) => {
-                    if (!ret) {
-                      errorService.emitChange(errorService.UnknownError(this.action));
-                    }
-                  })
-                  .catch((err: HttpErrorResponse) => {
-                    errorService.emitChange(errorService.CreateError(this.action, err.message));
-                  });
-              }
-            });
-            // stocks
-            (this.editFluxFlinancier!.liste_stock ?? []).forEach((stk) => {
-              if (!stk.id || stk.id === 0) {
-                stk.flux_financier_id = this.editFluxFlinancier!.id;
-                this.action = $localize`Ajouter un stock`;
-                this.stock_serv
-                  .add(stk)
-                  .then((idop) => (stk.id = idop))
-                  .catch((err: HttpErrorResponse) => {
-                    errorService.emitChange(errorService.CreateError(this.action, err.message));
-                  });
-              } else {
-                this.action = $localize`Mettre à jour un stock`;
-                this.stock_serv
-                  .update(stk)
-                  .then((ret) => {
-                    if (!ret) {
-                      errorService.emitChange(errorService.UnknownError(this.action));
-                    }
-                  })
-                  .catch((err: HttpErrorResponse) => {
-                    errorService.emitChange(errorService.CreateError(this.action, err.message));
-                  });
-              }
-            });
-          } else {
-            errorService.emitChange(errorService.UnknownError(this.action));
-          }
-        })
-        .catch((err: HttpErrorResponse) => {
-          errorService.emitChange(errorService.CreateError(this.action, err.message));
-        });
-    }
 
-    // Met à jour l'historique si nécessaire
-    this.histo = JSON.stringify(this.editFluxFlinancier ?? '');
+    this.documentsFlux = [];
+    this.stocksFlux = [];
+    this.newStock = this.emptyStockDraft();
+    this.resetDocumentForm();
   }
 
+  async editFlux(f: FluxFinancier): Promise<void> {
+    try {
+      const [full, ops] = await Promise.all([
+        this.fluxApi.get(f.id),
+        this.financeApi.listOperations(f.id),
+      ]);
 
-  isValid(): boolean {
-    this.rLibelle = { key: true, value: '' };
-    this.rDate = { key: true, value: '' };
-    this.rMontant = { key: true, value: '' };
-    this.rTypeAchat = { key: true, value: '' };
-    this.rLibelle = GlobalService.instance.validerChaine(this.editFluxFlinancier.libelle, 3, null, true, $localize`Libellé de la transaction`);
-    this.rDate = GlobalService.instance.validerDate(this.editFluxFlinancier.date, this.liste_saison.find(x => x.id == this.active_saison).date_debut ?? null,this.liste_saison.find(x => x.id == this.active_saison).date_fin ?? null , true, $localize`Date de la transaction`);
-    this.rMontant = GlobalService.instance.validerNombre(this.editFluxFlinancier.montant, 0.01, -1, true, $localize`Montant de la transaction`);
-    if(this.editFluxFlinancier.nb_paiement<1){
-      this.rNbOperation = { key: false, value: $localize`Le nombre de paiements doit être au moins égal à 1` };
-    } else {
-      let montant_op:number = 0;
-      (this.editFluxFlinancier.liste_operation ?? []).forEach(op=>{
-        montant_op += Number(op.solde ?? 0);
-      });
-      console.log('montant_op=', montant_op, ' editFluxFlinancier.montant=', this.editFluxFlinancier.montant);
-      if(montant_op != Number(this.editFluxFlinancier.montant)){
-        this.rNbOperation = { key: false, value: $localize`La somme des paiements doit être égale au montant total` };
+      this.selectedFlux = {
+        ...full,
+        liste_operation: ops ?? [],
+      };
+
+      await this.reloadFluxLinkedData(full.id);
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  closeFlux(): void {
+    this.selectedFlux = null;
+    this.documentsFlux = [];
+    this.stocksFlux = [];
+  }
+
+  async saveFlux(): Promise<void> {
+    if (!this.selectedFlux) return;
+
+    try {
+      this.saving = true;
+      const saved = await this.ensureSelectedFluxSaved();
+      await this.saveFluxOperations(saved.id);
+
+      this.selectedFlux = null;
+      await this.reloadFinanceData();
+    } catch (err) {
+      this.showError(err);
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  async deleteFlux(f: FluxFinancier): Promise<void> {
+    if (f.flux_systeme) {
+      alert('Un flux système ne peut pas être supprimé.');
+      return;
+    }
+
+    if (!confirm(`Supprimer le flux "${f.libelle}" ?`)) return;
+
+    try {
+      await this.fluxApi.remove(f.id);
+      await this.reloadFinanceData();
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  addOperation(): void {
+    if (!this.selectedFlux) return;
+
+    const compteId = this.comptes[0]?.id ?? 0;
+
+    const op: Operation = {
+      id: 0,
+      solde: this.selectedFlux.recette
+        ? Math.abs(Number(this.selectedFlux.montant ?? 0))
+        : -Math.abs(Number(this.selectedFlux.montant ?? 0)),
+      date_operation: this.today(),
+      date_previsionnelle: this.today(),
+      mode: 0,
+      destinataire: String(this.selectedFlux.destinataire ?? ''),
+      paiement_execute: false,
+      compte_bancaire_id: compteId,
+      flux_financier_id: this.selectedFlux.id ?? 0,
+      saison_id: this.active_saison,
+      libelle_bancaire: null,
+      import_key: null,
+      source_import: null,
+      info: null,
+    } as any;
+
+    this.selectedFlux.liste_operation = [...(this.selectedFlux.liste_operation ?? []), op];
+  }
+
+  async deleteOperation(op: Operation): Promise<void> {
+    if (!this.selectedFlux?.liste_operation) return;
+
+    if (op.id) {
+      await this.financeApi.removeOperation(op.id);
+    }
+
+    this.selectedFlux.liste_operation = this.selectedFlux.liste_operation.filter((x) => x !== op);
+  }
+
+  private async saveFluxOperations(fluxId: number): Promise<void> {
+    const ops = this.selectedFlux?.liste_operation ?? [];
+
+    for (const op of ops) {
+      const dto: CreateOperationDto | UpdateOperationDto = {
+        solde: Number(op.solde ?? 0),
+        date_operation: this.toDateOnly(op.date_operation),
+        date_previsionnelle: op.date_previsionnelle ? this.toDateOnly(op.date_previsionnelle) : null,
+        mode: Number(op.mode ?? 0),
+        destinataire: String(op.destinataire ?? ''),
+        paiement_execute: Boolean(op.paiement_execute),
+        compte_bancaire_id: Number(op.compte_bancaire_id ?? 0),
+        flux_financier_id: fluxId,
+        saison_id: this.active_saison,
+        libelle_bancaire: (op as any).libelle_bancaire ?? null,
+        source_import: (op as any).source_import ?? null,
+        import_key: (op as any).import_key ?? null,
+        info: op.info ?? null,
+      } as any;
+
+      if (op.id) {
+        await this.financeApi.updateOperation(op.id, dto as UpdateOperationDto);
       } else {
-        this.rNbOperation = { key: true, value: '' };
+        await this.financeApi.createOperation(dto as CreateOperationDto);
       }
     }
-
-    console.log('isValid:', this.rLibelle, this.rDate, this.rMontant, this.rDestinataire, this.rNbOperation, this.rTypeAchat);
-    return this.rLibelle.key && this.rDate.key && this.rMontant.key && this.rDestinataire.key && this.rNbOperation.key && this.rTypeAchat.key;
-
   }
 
-  FFByClass(ff: number): FluxFinancier_VM[] {
-    return (this.FluxFinanciers ?? []).filter((x) => x.classe_comptable === ff);
+  get totalOperationsSelectedFlux(): number {
+    return (this.selectedFlux?.liste_operation ?? []).reduce(
+      (sum, op) => sum + Math.abs(Number(op.solde ?? 0)),
+      0,
+    );
   }
 
-  VoirClasse(cl: number): void {
-    this.vue = 'COMPTA';
-    this.FluxFinanciers = this.FFByClass(cl);
-    this.editFluxFlinancier = null;
+  get deltaSelectedFlux(): number {
+    const montant = Math.abs(Number(this.selectedFlux?.montant ?? 0));
+    return Number((montant - this.totalOperationsSelectedFlux).toFixed(2));
   }
 
-  trouverclasse(cl: number): string {
-    const cc = (this.SC?.ClassComptable ?? []).find((x: any) => Number(x.numero) === Number(cl));
-    return cc?.libelle ?? '';
-  }
+  // ---------------------------------------------------------------------------
+  // Destinataire
+  // ---------------------------------------------------------------------------
 
-  trouverDestinataire(cl: string): string {
-    if (!cl) return '';
-    const d = (this.liste_destintaire ?? []).find((x) => (x.value ?? '').toLowerCase().includes(cl.toLowerCase()));
-    return d?.value ?? '';
-  }
+destinataireMode: 'LIBRE' | 'PERSONNE' = 'LIBRE';
+onDestinataireModeChange(): void {
+  if (!this.selectedFlux) return;
 
-  updateLibelle(event:any){
-      this.editFluxFlinancier!.libelle = event;
-      this.UpdateIE();
-  }
-  updateValeurMontant(event:any){
-      this.editFluxFlinancier!.montant = Number(event);
-      this.UpdateIE();
-  }
-
-  updateDate(event:any){
-      this.editFluxFlinancier!.date = new Date(event);
-      this.UpdateIE();
-  }
-
-  UpdateIE(){
-    this.is_valid = this.isValid(); 
-    if(this.is_valid && this.editFluxFlinancier.id>0){
-      this.Save_ff();
-    }
-  }
-
-  AnnulerIE(){
-    
-  }
-
-  updateMontant(){  
-    this.editFluxFlinancier.montant = -this.editFluxFlinancier.montant;
-    this.UpdateIE();
-  }
-
-  Retour_menu(): void {
-    const current = JSON.stringify(this.editFluxFlinancier ?? '');
-    if (current !== this.histo) {
-      const c = window.confirm($localize`Des modifications ont été détectées. En revenant en arrière, vous perdez les modifications non sauvegardées. Continuer ?`);
-      if (c) this.editFluxFlinancier = null;
-    } else {
-      this.editFluxFlinancier = null;
-    }
-  }
-
-  Edit_ff(id: number): void {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Charger un flux`;
-    this.compta_serv
-      .get(id)
-      .then((FF) => {
-        this.editFluxFlinancier = FF ?? null;
-        this.histo = JSON.stringify(this.editFluxFlinancier ?? '');
-      })
-      .catch((err: HttpErrorResponse) => {
-        errorService.emitChange(errorService.CreateError(this.action, err.message));
-      });
-  }
-
-  Delete_ff(_id: number): void {
-    // TODO: impl si nécessaire, sinon laisser vide pour éviter erreurs
-  }
-
-  onInputChange(displayText: GenericLink_VM): void {
-    const selectedOption = (this.liste_destintaire ?? []).find((option) => option === displayText);
-    if (!this.editFluxFlinancier) return;
-    if (selectedOption) {
-      this.editFluxFlinancier.destinataire = displayText;
-    } else {
-      this.editFluxFlinancier.destinataire = { id: 0, type: '', value: displayText?.value ?? '' };
-    }
-  }
-
-  onInputChangeList(displayText: GenericLink_VM, cpt: Operation_VM): void {
-    const selectedOption = (this.liste_destintaire ?? []).find((option) => option === displayText);
-    if (selectedOption) {
-      cpt.destinataire = displayText;
-    } else {
-      cpt.destinataire = { id: 0, type: '', value: displayText?.value ?? '' };
-    }
-  }
-
-  onInputChangeListStock(displayText: GenericLink_VM, cpt: Stock_VM): void {
-    const selectedOption = (this.liste_destintaire ?? []).find((option) => option === displayText);
-    if (selectedOption) {
-      cpt.lieu_stockage = displayText;
-    } else {
-      cpt.lieu_stockage = { id: 0, type: '', value: displayText?.value ?? '' };
-    }
-  }
-
-  Delete_stock(t: Stock_VM): void {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Supprimer un stock`;
-    if (!t) return;
-
-    if ((t.id ?? 0) > 0) {
-      this.stock_serv
-        .delete(t.id as number)
-        .then((ret) => {
-          if (ret) {
-            errorService.emitChange(errorService.OKMessage(this.action));
-            this.editFluxFlinancier!.liste_stock = (this.editFluxFlinancier!.liste_stock ?? []).filter((x) => x.id !== t.id);
-          } else {
-            errorService.emitChange(errorService.UnknownError(this.action));
-          }
-        })
-        .catch((err: HttpErrorResponse) => {
-          errorService.emitChange(errorService.CreateError(this.action, err.message));
-        });
-    } else {
-      this.editFluxFlinancier!.liste_stock = (this.editFluxFlinancier!.liste_stock ?? []).filter((x) => x.temp_id !== t.temp_id);
-      errorService.emitChange(errorService.OKMessage(this.action));
-    }
-  }
-
-  Reinit_Filter(): void {
-    this.filters = new filterFF();
-  }
-
-  Ajouter(numero: number | null = null): void {
-    const ff = new FluxFinancier_VM();
-    // valeurs par défaut robustes
-    ff.id = -1;
-    ff.libelle = ff.libelle ?? '';
-    ff.montant = Number(ff.montant ?? 0);
-    ff.date = new Date();
-    ff.nb_paiement = Number(ff.nb_paiement ?? 1);
-    ff.statut = Number(ff.statut ?? 0);
-    ff.recette = Boolean(ff.recette ?? false);
-    ff.classe_comptable = numero ?? ff.classe_comptable ?? (this.SC?.ClassComptable?.[0]?.numero ?? null);
-    ff.destinataire = ff.destinataire ?? { id: 0, type: '', value: '' } as GenericLink_VM;
-    ff.liste_operation = Array.isArray(ff.liste_operation) ? ff.liste_operation : [];
-    ff.liste_stock = Array.isArray(ff.liste_stock) ? ff.liste_stock : [];
-
-    this.editFluxFlinancier = ff;
-  }
-
-  getCompte(id: number): CompteBancaire_VM | undefined {
-    return (this.liste_compte_bancaire ?? []).find((x) => x.id === id);
-  }
-
-  GoToType(type_: string, id: number): void {
-    switch (type_) {
-      case 'rider':
-        this.router.navigate(['/adherent'], { queryParams: { id } });
-        break;
-      default:
-        break;
-    }
-  }
-
-  ExportExcel(): void {
-    // impl éventuelle; laisser vide sans effet si non utilisée
-  }
-
-  AppliquerPaiement(): void {
-    if (!this.editFluxFlinancier) return;
-    const f = this.editFluxFlinancier;
-    const nb = Math.max(1, Number(f.nb_paiement ?? 1));
-
-    f.liste_operation = [];
-    f.id = -1; // marquer comme nouveau s'il n'est pas encore créé
-
-    const montant = Number(f.montant ?? 0);
-    const parPaiement = nb > 0 ? montant / nb : 0;
-
-    for (let index = 1; index <= nb; index++) {
-      const ts = new Operation_VM();
-      ts.date_operation = f.date ? new Date(f.date) : new Date();
-      ts.flux_financier_id = f.id;
-      ts.paiement_execute = f.statut === 1 ? true : false;
-      ts.destinataire = f.destinataire;
-      ts.info = f.libelle ?? '';
-      ts.solde = parPaiement;
-      f.liste_operation.push(ts);
-    }
-  }
-
-  formatDestinataire(destinataire: GenericLink_VM | undefined): string {
-    if (!destinataire) return '';
-    const v = destinataire.value ?? '';
-    const t = destinataire.type ?? '';
-    return t ? `${v} (${t})` : v;
-  }
-
-  Delete(t: Operation_VM): void {
-    const errorService = ErrorService.instance;
-    this.action = $localize`Supprimer un paiement`;
-    if (!this.editFluxFlinancier) return;
-    const ops = this.editFluxFlinancier.liste_operation ?? [];
-    if (ops.length <= 1) {
-      errorService.emitChange(errorService.Warning(this.action + ' : ' + $localize`Il doit y avoir au moins 1 paiement`));
-    } else {
-      this.editFluxFlinancier.liste_operation = ops.filter((x) => x !== t);
-    }
-  }
-
-  private waitForScrollableContainer(): void {
-    setTimeout(() => {
-      if (this.scrollableContent?.nativeElement) {
-        this.scrollableContent.nativeElement.addEventListener('scroll', this.onContentScroll.bind(this));
-      } else if (this.scrollAttachAttempts++ < this.maxScrollAttachAttempts) {
-        this.waitForScrollableContainer(); // Re-tente
-      }
-    }, 100);
-  }
-
-  onContentScroll(): void {
-    const el = this.scrollableContent?.nativeElement;
-    const scrollTop = el ? el.scrollTop || 0 : 0;
-    this.showScrollToTop = scrollTop > 200;
-  }
-
-  scrollToTop(): void {
-    const el = this.scrollableContent?.nativeElement;
-    if (!el) return;
-    el.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-showOperationModal = false;
-  currentOperation: Operation_VM | null = null;
-private _tempIdSeq = -1;
-
-get totalPaiements(): number {
-  if (!this.editFluxFlinancier?.liste_operation?.length) return 0;
-  return this.editFluxFlinancier.liste_operation
-    .map(o => Number(o?.solde || 0))
-    .reduce((a, b) => a + b, 0);
-}
-
-// Écart entre le montant du FF et la somme des paiements.
-// (Pas de signe différent Recette/Dépense ici : on additionne ce qui est saisi.)
-get deltaMontant(): number {
-  const ff = this.editFluxFlinancier;
-  const total = this.totalPaiements;
-  const ffMontant = Number(ff?.montant || 0);
-  if(this.editFluxFlinancier.recette){
-    return +(ffMontant - total).toFixed(2);
+  if (this.destinataireMode === 'LIBRE') {
+    this.selectedFlux.personne_id = null;
   } else {
-  return +(ffMontant + total).toFixed(2);
+    this.selectedFlux.destinataire = '';
+  }
+}
+lieuMode: 'LIBRE' | 'EXISTE' = 'LIBRE';
+onLieuModeChange(): void {
+  if (!this.newStock) return;
+
+  if (this.lieuMode === 'LIBRE') {
+    this.newStock.lieu_id = null;
+  } else {
+    this.newStock.lieu_stockage = '';
   }
 }
 
-trackOp = (_: number, op: Operation_VM) => op.id ?? op.temp_id;
+async downloadDocument(doc: Document): Promise<void> {
+  try {
+    const fullDoc = await this.documentApi.get(doc.id);
+    const anyDoc: any = fullDoc;
 
-// ---- Actions ----
-addPaiement(): void {
-  if (!this.editFluxFlinancier) return;
-
-  const nowISO = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const defaultDate = (this.editFluxFlinancier.date as any) || nowISO;
-  const defaultCompte = this.liste_compte_bancaire?.[0]?.id ?? null;
-
-  const op: Operation_VM = {
-    id: 0,
-    temp_id: this._tempIdSeq--,
-    solde: 0,
-    date_operation: defaultDate as any,
-    mode: 0,
-    destinataire: this.editFluxFlinancier.destinataire,
-    paiement_execute: false,
-    compte_bancaire_id: defaultCompte as any,
-    flux_financier_id: this.editFluxFlinancier.id || 0,
-    flux_financier: this.editFluxFlinancier,
-    info: ''
-  };
-
-  this.editFluxFlinancier.liste_operation = [
-    ...(this.editFluxFlinancier.liste_operation || []),
-    op
-  ];
-
-  // Petite autosave si tu veux suivre la saisie
-  
-    this.is_valid = this.isValid(); 
-    if(this.is_valid && this.editFluxFlinancier.id>0){
-      this.Save_ff() ;
+    if (!anyDoc.file_data) {
+      alert('Aucun fichier disponible pour ce document.');
+      return;
     }
-}
 
-removePaiement(op: Operation_VM): void {
-  if (!this.editFluxFlinancier?.liste_operation) return;
-  this.editFluxFlinancier.liste_operation =
-    this.editFluxFlinancier.liste_operation.filter(x => (x.id || x.temp_id) !== (op.id || op.temp_id));
-  this.is_valid = this.isValid(); 
-    if(this.is_valid && this.editFluxFlinancier.id>0){
-      this.Save_ff() ;
+    let blob: Blob;
+
+    if (anyDoc.file_data instanceof Blob) {
+      blob = anyDoc.file_data;
+    } else if (typeof anyDoc.file_data === 'string') {
+      const base64 = anyDoc.file_data.includes(',')
+        ? anyDoc.file_data.split(',')[1]
+        : anyDoc.file_data;
+
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      blob = new Blob([bytes], {
+        type: anyDoc.mimetype || 'application/octet-stream',
+      });
+    } else if (Array.isArray(anyDoc.file_data?.data)) {
+      blob = new Blob([new Uint8Array(anyDoc.file_data.data)], {
+        type: anyDoc.mimetype || 'application/octet-stream',
+      });
+    } else {
+      alert('Format de fichier non reconnu.');
+      return;
     }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = fullDoc.titre || fullDoc.file_path || 'document';
+    a.click();
+
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    this.showError(err);
+  }
 }
 
-onPaiementChange(_op: Operation_VM): void {
-  // Hook : recalculs / validations légères si besoin
-  // Ici, on déclenche juste une autosave silencieuse
- 
-    this.is_valid = this.isValid(); 
-}
+  onFluxPersonneSelected(personne: any | null): void {
+    if (!this.selectedFlux) return;
 
-savePaiements(): void {
-  // Si tu as une méthode de sauvegarde globale, tu peux l’appeler.
-  // Sinon, laisse l’autoSave faire le job (comme pour le reste).
-    this.is_valid = this.isValid(); 
-    console.log('is_valid=', this.is_valid);
-    if(this.is_valid && this.editFluxFlinancier.id>0){
-      this.Save_ff() ;
+    if (!personne) {
+      this.selectedFlux.personne_id = null;
+      return;
     }
-}
 
-// ---- Modal ----
-openOperationModal(op: Operation_VM): void {
-  this.currentOperation = op;
-  this.showOperationModal = true;
-}
+    this.selectedFlux.personne_id = personne.id;
+    this.selectedFlux.destinataire =
+      personne.libelle ||
+      `${personne.prenom ?? ''} ${personne.nom ?? ''}`.trim() ||
+      `Personne #${personne.id}`;
+  }
 
-closeOperationModal(): void {
-  this.showOperationModal = false;
-  this.currentOperation = null;
-}
+  get destinataireSuggestions(): string[] {
+    return [...new Set(
+      this.flux
+        .map((f) => f.destinataire)
+        .filter((x): x is string => !!x && x.trim().length > 0)
+        .map((x) => x.trim()),
+    )].sort((a, b) => a.localeCompare(b, 'fr'));
+  }
 
-saveOperationModal(): void {
-  // Pas de sérialisation spéciale ici : les bindings ont déjà mis à jour currentOperation
-    this.is_valid = this.isValid(); 
-    if(this.is_valid && this.editFluxFlinancier.id>0){
-      this.Save_ff() ;
+  get libelleSuggestions(): string[] {
+    return [...new Set(
+      this.flux
+        .map((f) => f.libelle)
+        .filter((x): x is string => !!x && x.trim().length > 0)
+        .map((x) => x.trim()),
+    )].sort((a, b) => a.localeCompare(b, 'fr'));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Documents
+  // ---------------------------------------------------------------------------
+
+  async onDocumentFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    this.newDocumentFile = file;
+
+    if (file && !this.newDocumentTitle) {
+      this.newDocumentTitle = file.name;
     }
-  this.closeOperationModal();
-}
-}
 
-export class filterFF {
-  filter_date_debut_ff: Date | null = null;
-  filter_date_fin_ff: Date | null = null;
-  filter_libelle_ff: string | null = null;
-  filter_classe_ff: number | null = null;
-  filter_type_achat_ff: number | null = null;
-  filter_montant_min_ff: number | null = null;
-  filter_montant_max_ff: number | null = null;
-  filter_sens_operation_ff: boolean | null = null;
-  filter_destinataire_ff: string | null = null;
+    input.value = '';
+  }
+
+  async addDocumentToFlux(): Promise<void> {
+    if (!this.selectedFlux) return;
+
+    if (!this.newDocumentFile && !this.newDocumentTitle.trim()) {
+      alert('Choisis un fichier ou saisis un titre de document.');
+      return;
+    }
+
+    try {
+      const flux = await this.ensureSelectedFluxSaved();
+      const file = this.newDocumentFile;
+
+      const dto: CreateDocumentDto = {
+        titre: this.newDocumentTitle.trim() || file?.name || 'Document',
+        objet_id: flux.id,
+        objet_type: 'flux_financier',
+        typedoc: this.newDocumentType || 'Document libre',
+        storage_type: 'DB' ,
+        mimetype: file?.type || 'application/octet-stream',
+        file_path: file?.name || null,
+        file_data: file,
+        commentaire: this.newDocumentComment || null,
+        auteur: null,
+      } as CreateDocumentDto;
+
+      await this.documentApi.create(dto);
+      this.resetDocumentForm();
+      await this.reloadFluxLinkedData(flux.id);
+      await this.reloadFinanceData();
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async attachExistingDocument(): Promise<void> {
+    if (!this.selectedFlux || !this.selectedExistingDocumentId) return;
+
+    try {
+      const flux = await this.ensureSelectedFluxSaved();
+
+      await this.documentApi.update(this.selectedExistingDocumentId, {
+        objet_id: flux.id,
+        objet_type: 'flux_financier',
+      } as UpdateDocumentDto);
+
+      this.selectedExistingDocumentId = null;
+      await this.reloadFluxLinkedData(flux.id);
+      await this.reloadFinanceData();
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async removeDocumentFromFlux(doc: Document): Promise<void> {
+    if (!confirm(`Supprimer le document "${doc.titre}" ?`)) return;
+
+    try {
+      await this.documentApi.remove(doc.id);
+      if (this.selectedFlux?.id) {
+        await this.reloadFluxLinkedData(this.selectedFlux.id);
+      }
+      await this.reloadFinanceData();
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  resetDocumentForm(): void {
+    this.newDocumentFile = null;
+    this.newDocumentTitle = '';
+    this.newDocumentComment = '';
+    this.newDocumentType = this.typedocLov[0]?.libelle ?? 'Facture';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Stocks
+  // ---------------------------------------------------------------------------
+
+  async addStockToFlux(): Promise<void> {
+    if (!this.selectedFlux) return;
+
+    if (!this.newStock.libelle.trim()) {
+      alert('Saisis un libellé de stock.');
+      return;
+    }
+
+    if (!this.newStock.type_stock.trim()) {
+      alert('Choisis ou saisis un type de stock.');
+      return;
+    }
+
+    try {
+      const flux = await this.ensureSelectedFluxSaved();
+
+      const dto: CreateStockDto = {
+        qte: Number(this.newStock.qte ?? 1),
+        lieu_id: this.newStock.lieu_id ?? null,
+        lieu_stockage: this.newStock.lieu_stockage || 'Non renseigné',
+        type_stock_id: this.newStock.type_stock_id ?? null,
+        type_stock: this.newStock.type_stock,
+        valeur_achat: this.newStock.valeur_achat === null ? null : Number(this.newStock.valeur_achat),
+        date_achat: this.newStock.date_achat || this.toDateOnly(flux.date),
+        flux_financier_id: flux.id,
+        libelle: this.newStock.libelle,
+        info: this.newStock.info || '',
+      } as any;
+
+      await this.stockApi.create(dto);
+      this.newStock = this.emptyStockDraft();
+      await this.reloadFluxLinkedData(flux.id);
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async attachExistingStock(stock: Stock): Promise<void> {
+    if (!this.selectedFlux) return;
+
+    try {
+      const flux = await this.ensureSelectedFluxSaved();
+      await this.stockApi.update(stock.id, { flux_financier_id: flux.id } as any);
+      await this.reloadFluxLinkedData(flux.id);
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  async deleteStock(stock: Stock): Promise<void> {
+    if (!confirm(`Supprimer le stock "${stock.libelle}" ?`)) return;
+
+    try {
+      await this.stockApi.remove(stock.id);
+      if (this.selectedFlux?.id) {
+        await this.reloadFluxLinkedData(this.selectedFlux.id);
+      }
+    } catch (err) {
+      this.showError(err);
+    }
+  }
+
+  onStockTypeChange(typeId: number | null): void {
+    this.newStock.type_stock_id = typeId;
+
+    const item = this.stockTypeLov.find((x) => x.id === typeId);
+    if (item) {
+      this.newStock.type_stock = item.libelle;
+      if (!this.newStock.libelle) {
+        this.newStock.libelle = item.libelle;
+      }
+    }
+  }
+
+  private emptyStockDraft(): StockDraft {
+    return {
+      qte: 1,
+      lieu_id: null,
+      lieu_stockage: '',
+      type_stock_id: null,
+      type_stock: '',
+      valeur_achat: null,
+      date_achat: this.today(),
+      libelle: '',
+      info: '',
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  async ensureSelectedFluxSaved(): Promise<FluxFinancier> {
+    if (!this.selectedFlux) {
+      throw new Error('Aucun flux sélectionné');
+    }
+
+    const dto = this.buildFluxDto(this.selectedFlux);
+
+    let saved: FluxFinancier;
+    if (!this.selectedFlux.id) {
+      saved = await this.fluxApi.create(dto as CreateFluxFinancierDto);
+    } else {
+      saved = await this.fluxApi.update(this.selectedFlux.id, dto as UpdateFluxFinancierDto);
+    }
+
+    this.selectedFlux = {
+      ...this.selectedFlux,
+      ...saved,
+      liste_operation: this.selectedFlux.liste_operation ?? [],
+    };
+
+    const index = this.flux.findIndex((f) => f.id === saved.id);
+    if (index >= 0) {
+      this.flux[index] = saved;
+      this.flux = [...this.flux];
+    } else {
+      this.flux = [saved, ...this.flux];
+    }
+
+    return saved;
+  }
+
+  async reloadFluxLinkedData(fluxId: number): Promise<void> {
+    const [documents, stocks, recentDocuments] = await Promise.all([
+      this.documentApi.listByObject('flux_financier', fluxId),
+      this.stockApi.list(fluxId),
+      this.documentApi.listRecent(50),
+    ]);
+
+    this.documentsFlux = documents ?? [];
+    this.stocksFlux = stocks ?? [];
+    this.recentDocuments = recentDocuments ?? [];
+  }
+
+  getClasse(id: number | null | undefined): ClasseComptable | undefined {
+    return this.classes.find((c) => c.id === id);
+  }
+
+  getClasseLabel(id: number | null | undefined): string {
+    const c = this.getClasse(id);
+    return c ? `${c.code} - ${c.libelle}` : '';
+  }
+
+  getClasseChildren(): ClasseComptable[] {
+    return this.classes
+      .filter((c) => !!c.parent_id && c.actif)
+      .sort((a, b) => a.ordre - b.ordre || a.code.localeCompare(b.code));
+  }
+
+  getFlux(id: number | null): FluxFinancier | undefined {
+    if (!id) return undefined;
+    return this.flux.find((f) => f.id === id);
+  }
+
+  getFluxClasseId(f: any): number | null {
+    return f?.classe_comptable_id ?? null;
+  }
+
+  getDescendants(parentId: number): ClasseComptable[] {
+    const result: ClasseComptable[] = [];
+    const direct = this.classes.filter((c) => c.parent_id === parentId);
+
+    for (const child of direct) {
+      result.push(child);
+      result.push(...this.getDescendants(child.id));
+    }
+
+    return result;
+  }
+
+  getCompteLabel(id: number | null | undefined): string {
+    const c: any = this.comptes.find((x) => x.id === id);
+    return c?.nom || c?.libelle || (id ? `Compte #${id}` : '');
+  }
+
+  getSaisonLabel(saison: Saison): string {
+    const s: any = saison;
+    return s.nom || s.libelle || `Saison #${s.id}`;
+  }
+
+  formatMontant(value: number | string | null | undefined): string {
+    return `${Number(value ?? 0).toLocaleString('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} €`;
+  }
+
+  private buildFluxDto(f: FluxForm): CreateFluxFinancierDto | UpdateFluxFinancierDto {
+    return {
+      libelle: String(f.libelle ?? ''),
+      date: this.toDateOnly(f.date ?? this.today()),
+      destinataire: String(f.destinataire ?? ''),
+      recette: Boolean(f.recette),
+      statut: Number(f.statut ?? 0),
+      montant: Math.abs(Number(f.montant ?? 0)),
+      info: f.info ?? null,
+      saison_id: Number(f.saison_id ?? this.active_saison),
+      classe_comptable_id: f.classe_comptable_id ?? null,
+      nb_paiement: Number(f.nb_paiement ?? 1),
+      type_frais: f.type_frais ?? null,
+      personne_id: f.personne_id ?? null,
+      contrat_prof_id: f.contrat_prof_id ?? null,
+      flux_systeme: f.flux_systeme ?? false,
+      origine: f.origine ?? null,
+    } as any;
+  }
+
+  private async loadLov(code: string): Promise<LovItem[]> {
+    try {
+      const raw = await this.addInfoApi.getLov(code, 'FR');
+      return this.normalizeLov(raw);
+    } catch {
+      return this.defaultLov(code);
+    }
+  }
+
+  private normalizeLov(raw: AddInfo | LovItem[] | any | null): LovItem[] {
+    if (!raw) return [];
+
+    if (Array.isArray(raw)) {
+      return raw.map((x) => this.normalizeLovItem(x)).filter((x): x is LovItem => !!x);
+    }
+
+    const text = typeof raw.text === 'string' ? raw.text : '';
+    if (!text) return [];
+
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        return parsed.map((x) => this.normalizeLovItem(x)).filter((x): x is LovItem => !!x);
+      }
+    } catch {
+      // texte non JSON : on le traite comme une valeur simple
+    }
+
+    return [{ id: Number(raw.value_type ?? raw.id ?? 0), categorie: '', libelle: text }];
+  }
+
+  private normalizeLovItem(item: any): LovItem | null {
+    if (!item) return null;
+    const libelle = String(item.libelle ?? item.label ?? item.text ?? '').trim();
+    if (!libelle) return null;
+
+    return {
+      id: Number(item.id ?? item.value_type ?? 0),
+      categorie: item.categorie ?? item.category ?? '',
+      libelle,
+    };
+  }
+
+  private defaultLov(code: string): LovItem[] {
+    if (code === 'LV_TYPEDOC_FR') {
+      return [
+        { id: 1, categorie: 'Finance', libelle: 'Facture' },
+        { id: 2, categorie: 'Finance', libelle: 'Devis' },
+        { id: 3, categorie: 'Finance', libelle: 'Avoir' },
+        { id: 4, categorie: 'Finance', libelle: 'Bon de commande' },
+        { id: 5, categorie: 'Finance', libelle: 'Reçu' },
+        { id: 99, categorie: 'Autre', libelle: 'Document libre' },
+      ];
+    }
+
+    if (code === 'LV_STOCK_FR') {
+      return [
+        { id: 1, categorie: 'Tenue', libelle: 'Chaussette' },
+        { id: 2, categorie: 'Tenue', libelle: 'Maillot' },
+        { id: 3, categorie: 'Tenue', libelle: 'Short' },
+        { id: 21, categorie: 'Entraînement', libelle: 'Ballon RollBall Enfants' },
+        { id: 22, categorie: 'Entraînement', libelle: 'Ballon RollBall Adultes' },
+        { id: 31, categorie: 'Entraînement', libelle: 'Chasuble' },
+      ];
+    }
+
+    return [];
+  }
+
+  private today(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  private toDateOnly(value: any): string {
+    if (!value) return this.today();
+    if (typeof value === 'string') return value.slice(0, 10);
+    if (value instanceof Date) return value.toISOString().slice(0, 10);
+    return String(value).slice(0, 10);
+  }
+
+  private showError(err: unknown): void {
+    const message =
+      (err as HttpErrorResponse)?.message ??
+      (err instanceof Error ? err.message : String(err));
+
+    const errorService = ErrorService.instance;
+    errorService.emitChange(errorService.CreateError(this.action || 'Finance', message));
+  }
 }

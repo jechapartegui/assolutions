@@ -27,7 +27,8 @@
         </div>
 
         <div id="navMaSeance" [class]="isactive ? 'navbar-menu is-active' : 'navbar-menu'">
-          <div class="navbar-start" *ngIf="store.isLoggedIn() && store.hasProjet() && store.isProf()">
+          <div class="navbar-start" >
+            <ng-container *ngIf="store.isLoggedIn() && store.hasProjet() && store.isProf() && store.mode() !== 'ADMIN'">
             <a
               [class]="store.selectedMenu() === 'ADHERENT' ? 'navbar-item is-selected' : 'navbar-item'"
               (click)="selectMenu('ADHERENT')"
@@ -59,20 +60,41 @@
             >
               Groupes
             </a>
+            </ng-container> 
 
             <ng-container *ngIf="store.mode() === 'ADMIN'">
-              <a
-                [class]="store.selectedMenu() === 'MENU-ADMIN' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('MENU-ADMIN')"
-                [routerLink]="['/menu-admin']"
-              >
-                Admin
-              </a>
 
               <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">Gestion</a>
 
                 <div class="navbar-dropdown">
+                <a class="navbar-item"
+              (click)="selectMenu('ADHERENT')"
+              [routerLink]="['/adherent']"
+            >
+              Adhérents
+            </a>
+
+           <a class="navbar-item"
+              (click)="selectMenu('COURS')"
+              [routerLink]="['/cours']"
+            >
+              Cours
+            </a>
+
+          <a class="navbar-item"
+              (click)="selectMenu('SEANCE')"
+              [routerLink]="['/seance']"
+            >
+              Séances
+            </a>
+
+           <a class="navbar-item"
+              (click)="selectMenu('GROUPE')"
+              [routerLink]="['/groupe']"
+            >
+              Groupes
+            </a>
                   <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/inscription-saison']">
                     Inscriptions
                   </a>
@@ -86,19 +108,27 @@
                 <a class="navbar-link">Finances</a>
 
                 <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']">
-                    Comptabilité
+                  <a class="navbar-item" 
+                    (click)="selectMenu('COMPTA')"
+                    [routerLink]="['/comptabilite']"
+                     [queryParams]="{ vue: 'DASHBOARD' }">
+                    Tableau finance
+                  </a>
+                  <a class="navbar-item" 
+                    (click)="selectMenu('COMPTA')"
+                    [routerLink]="['/comptabilite']"
+                     [queryParams]="{ vue: 'BUDGET' }">
+                    Budget
                   </a>
                   <a
                     class="navbar-item"
-                    (click)="selectMenu('TRANSACTION')"
-                    [routerLink]="['/operations']"
-                    [queryParams]="{ context: 'LISTE' }"
-                  >
-                    Opérations
+                    (click)="selectMenu('COMPTA')"
+                    [routerLink]="['/comptabilite']"
+                     [queryParams]="{ vue: 'FLUX' }">
+                    Flux financiers
                   </a>
-                  <a class="navbar-item" (click)="selectMenu('PROJETMAIL')" [routerLink]="['/projet-mail']">
-                    Factures / paiements
+                  <a class="navbar-item" (click)="selectMenu('TRANSACTION')" [routerLink]="['/operations']" [queryParams]="{ context: 'LISTE' }">
+                    Opérations
                   </a>
                   <a class="navbar-item" (click)="selectMenu('STOCK')" [routerLink]="['/stock']">
                     Stocks

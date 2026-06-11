@@ -11,6 +11,9 @@ export class OperationEntity {
   @Column({ type: 'date' })
   date_operation: string;
 
+  @Column({ type: 'date', nullable: true })
+  date_previsionnelle: string | null;
+
   @Column({ type: 'int' })
   mode: number;
 
@@ -23,8 +26,17 @@ export class OperationEntity {
   @Column({ type: 'int' })
   compte_bancaire_id: number;
 
-  @Column({ type: 'int' })
-  flux_financier_id: number;
+  @Column({ type: 'int', nullable: true })
+  flux_financier_id: number | null;
+
+  @Column({ type: 'text', nullable: true })
+  libelle_bancaire: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  import_key: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  source_import: string | null;
 
   @Column({ type: 'text', nullable: true })
   info: string | null;

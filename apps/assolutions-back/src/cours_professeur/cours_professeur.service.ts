@@ -1,7 +1,7 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CoursEntity } from '../cours/cours.entity';
 import { CreateCoursProfesseurDto, UpdateCoursProfesseurDto } from './cours_professeur.dto';
 import { CoursProfesseurEntity } from './cours_professeur.entity';
@@ -13,7 +13,7 @@ export class CoursProfesseurService {
     @InjectRepository(CoursProfesseurEntity) private readonly repo: Repository<CoursProfesseurEntity>,
     @InjectRepository(CoursEntity) private readonly coursRepo: Repository<CoursEntity>,
     @InjectRepository(ContratProfEntity) private readonly contratRepo: Repository<ContratProfEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   private async assertCoursInProject(coursId: number, projectId: number) {
@@ -77,7 +77,6 @@ async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> 
     await this.assertCoursInProject(dto.cours_id, projectId);
 
     const saved = await this.repo.save(this.repo.create(dto as CreateCoursProfesseurDto));
-    await this.registry.ensure('cours_professeur', saved.id);
     return saved;
   }
 
@@ -91,7 +90,6 @@ async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> 
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('cours_professeur', id);
     return saved;
   }
 
@@ -99,7 +97,6 @@ async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> 
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
 
-    await this.registry.remove('cours_professeur', id);
     return { ok: true };
   }
 

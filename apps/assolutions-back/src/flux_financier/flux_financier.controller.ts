@@ -1,4 +1,13 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+﻿import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -11,8 +20,16 @@ export class FluxFinancierController {
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get()
-  list(@ProjectId() projectId: number) {
-    return this.service.listForProject(projectId);
+  list(
+    @ProjectId() projectId: number,
+    @Query('saison_id') saisonId?: string,
+    @Query('include_systeme') includeSysteme?: string,
+  ) {
+    return this.service.listForProject(
+      projectId,
+      saisonId ? +saisonId : undefined,
+      includeSysteme === 'true',
+    );
   }
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
@@ -27,7 +44,6 @@ export class FluxFinancierController {
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
   update(
@@ -38,7 +54,6 @@ export class FluxFinancierController {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {

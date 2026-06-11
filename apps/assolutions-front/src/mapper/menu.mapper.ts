@@ -145,7 +145,7 @@ toAdherentMenu(
   const rider = new AdherentMenu();
   const dateMin = new Date();
   if(profil === 'PROF') {
-    dateMin.setMonth(dateMin.getDay() - 2);
+    dateMin.setDate(dateMin.getDate() - 2);
   }
   const dateMax = new Date();
   dateMax.setMonth(dateMax.getMonth() + 1);

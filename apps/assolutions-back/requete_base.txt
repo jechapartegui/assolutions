@@ -115,3 +115,215 @@ ON CONFLICT (login_id, project_id) DO NOTHING;
 
 ALTER TABLE public.project
 ADD COLUMN public boolean NOT NULL DEFAULT true;
+
+
+/// budget and com
+ALTER TABLE flux_financier
+ADD COLUMN IF NOT EXISTS personne_id integer,
+ADD COLUMN IF NOT EXISTS contrat_prof_id integer,
+ADD COLUMN IF NOT EXISTS objet_type varchar(50),
+ADD COLUMN IF NOT EXISTS objet_id integer,
+ADD COLUMN IF NOT EXISTS classe_comptable_id integer;
+
+ALTER TABLE operation
+ADD COLUMN IF NOT EXISTS date_previsionnelle date;
+
+
+CREATE TABLE IF NOT EXISTS classe_comptable (
+  id serial PRIMARY KEY,
+  project_id integer NOT NULL,
+  parent_id integer NULL,
+  code varchar(20) NOT NULL,
+  libelle varchar(255) NOT NULL,
+  recette boolean NOT NULL,
+  actif boolean NOT NULL DEFAULT true,
+  ordre integer NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_classe_comptable_project_id
+ON classe_comptable(project_id);
+
+CREATE INDEX IF NOT EXISTS idx_classe_comptable_parent_id
+ON classe_comptable(parent_id);
+
+
+CREATE TABLE IF NOT EXISTS budget_scenario (
+  id serial PRIMARY KEY,
+  project_id integer NOT NULL,
+  saison_id integer NOT NULL,
+  nom varchar(255) NOT NULL,
+  scenario_defaut boolean NOT NULL DEFAULT false,
+  info text NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_budget_scenario_project_saison
+ON budget_scenario(project_id, saison_id);
+
+CREATE TABLE IF NOT EXISTS budget_ligne (
+  id serial PRIMARY KEY,
+  budget_scenario_id integer NOT NULL,
+  classe_comptable_id integer NOT NULL,
+  montant_budget double precision NOT NULL,
+  info text NULL,
+  CONSTRAINT fk_budget_ligne_scenario
+    FOREIGN KEY (budget_scenario_id)
+    REFERENCES budget_scenario(id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_budget_ligne_classe
+    FOREIGN KEY (classe_comptable_id)
+    REFERENCES classe_comptable(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_budget_ligne_scenario
+ON budget_ligne(budget_scenario_id);
+
+CREATE INDEX IF NOT EXISTS idx_budget_ligne_classe
+ON budget_ligne(classe_comptable_id);
+
+
+
+ALTER TABLE classe_comptable
+ALTER COLUMN project_id DROP NOT NULL;
+
+ALTER TABLE classe_comptable
+ADD COLUMN IF NOT EXISTS pays varchar(5),
+ADD COLUMN IF NOT EXISTS lang varchar(5) NOT NULL DEFAULT 'fr';
+
+DROP INDEX IF EXISTS ux_classe_comptable_project_code;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_classe_comptable_scope_code
+ON classe_comptable(
+  COALESCE(project_id, 0),
+  COALESCE(pays, 'GLOBAL'),
+  lang,
+  code
+);
+
+INSERT INTO classe_comptable
+(project_id, pays, lang, parent_id, code, libelle, recette, actif, ordre)
+VALUES
+(NULL, 'FR', 'fr', NULL, '6', 'Charges', false, true, 600),
+(NULL, 'FR', 'fr', NULL, '7', 'Produits', true, true, 700);
+
+
+WITH parents AS (
+  SELECT id, code
+  FROM classe_comptable
+  WHERE project_id IS NULL
+    AND pays = 'FR'
+    AND lang = 'fr'
+)
+INSERT INTO classe_comptable
+(project_id, pays, lang, parent_id, code, libelle, recette, actif, ordre)
+VALUES
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '601', 'Achats de marchandises', false, true, 601),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '602', 'Achats de matières premières', false, true, 602),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '606', 'Achats d''études et de prestations de services', false, true, 606),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '611', 'Charges externes', false, true, 611),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '621', 'Rémunérations du personnel', false, true, 621),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '622', 'Charges sociales', false, true, 622),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '623', 'Impôts et taxes', false, true, 623),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '624', 'Autres charges de gestion courante', false, true, 624),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '645', 'Charges financières', false, true, 645),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '681', 'Dotations aux amortissements et aux provisions', false, true, 681),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '6'), '689', 'Charges exceptionnelles', false, true, 689),
+
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '701', 'Ventes de marchandises', true, true, 701),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '706', 'Prestations de services', true, true, 706),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '707', 'Produits de cessions d''immobilisations', true, true, 707),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '708', 'Produits exceptionnels', true, true, 708),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '741', 'Subventions d''exploitation', true, true, 741),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '775', 'Produits financiers', true, true, 775),
+(NULL, 'FR', 'fr', (SELECT id FROM parents WHERE code = '7'), '797', 'Produits exceptionnels', true, true, 797);
+
+ALTER TABLE operation
+ALTER COLUMN flux_financier_id DROP NOT NULL;
+
+ALTER TABLE operation
+ADD COLUMN IF NOT EXISTS libelle_bancaire text,
+ADD COLUMN IF NOT EXISTS import_key varchar(255),
+ADD COLUMN IF NOT EXISTS source_import varchar(50);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_operation_import_key
+ON operation(import_key)
+WHERE import_key IS NOT NULL;
+
+
+SELECT setval(
+  'operation_id_seq',
+  COALESCE((SELECT MAX(id) FROM operation), 0) + 1,
+  false
+);
+
+SELECT setval(
+  'flux_financier_id_seq',
+  COALESCE((SELECT MAX(id) FROM flux_financier), 0) + 1,
+  false
+);
+
+ALTER TABLE operation
+ALTER COLUMN flux_financier_id DROP NOT NULL;
+
+ALTER TABLE operation
+ADD COLUMN IF NOT EXISTS libelle_bancaire text,
+ADD COLUMN IF NOT EXISTS import_key varchar(255),
+ADD COLUMN IF NOT EXISTS source_import varchar(50);
+
+ALTER TABLE flux_financier
+ADD COLUMN IF NOT EXISTS classe_comptable integer,
+ADD COLUMN IF NOT EXISTS nb_paiement integer NOT NULL DEFAULT 1,
+ADD COLUMN IF NOT EXISTS flux_systeme boolean NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS origine varchar(50);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_operation_import_key
+ON operation(import_key)
+WHERE import_key IS NOT NULL;
+
+
+Ajouter addinfo LV_typedoc_FR
+[
+  { "id": 1, "categorie": "Finance", "libelle": "Facture" },
+  { "id": 2, "categorie": "Finance", "libelle": "Devis" },
+  { "id": 3, "categorie": "Finance", "libelle": "Avoir" },
+  { "id": 4, "categorie": "Finance", "libelle": "Bon de commande" },
+  { "id": 5, "categorie": "Finance", "libelle": "Reçu" },
+
+  { "id": 20, "categorie": "Contrat", "libelle": "Convention" },
+  { "id": 21, "categorie": "Contrat", "libelle": "Contrat salarié" },
+  { "id": 22, "categorie": "Contrat", "libelle": "Contrat prestation" },
+
+  { "id": 40, "categorie": "Association", "libelle": "Statuts" },
+  { "id": 41, "categorie": "Association", "libelle": "Procès-verbal" },
+  { "id": 42, "categorie": "Association", "libelle": "Compte-rendu" },
+
+  { "id": 60, "categorie": "Sport", "libelle": "Feuille de match" },
+  { "id": 61, "categorie": "Sport", "libelle": "Résultat" },
+
+  { "id": 99, "categorie": "Autre", "libelle": "Document libre" }
+]
+
+ALTER TABLE document
+ADD COLUMN project_id integer;
+UPDATE DOCUMENT set project_id = 1
+
+CREATE INDEX IF NOT EXISTS idx_document_project_id
+ON document(project_id);
+
+CREATE INDEX IF NOT EXISTS idx_document_project_recent
+ON document(project_id, date_import DESC);
+
+-- FLUX FINANCIER : on retire les liens génériques inutiles
+ALTER TABLE flux_financier
+DROP COLUMN IF EXISTS objet_type,
+DROP COLUMN IF EXISTS objet_id;
+
+-- STOCK : ajout des champs souples
+ALTER TABLE stock
+ADD COLUMN IF NOT EXISTS lieu_id integer,
+ADD COLUMN IF NOT EXISTS type_stock_id integer;
+
+SELECT setval(
+  'stock_id_seq',
+  COALESCE((SELECT MAX(id) FROM stock), 0) + 1,
+  false
+);

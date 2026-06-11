@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectEntity } from './project.entity';
 
@@ -11,7 +11,7 @@ export class ProjectService {
   constructor(
     @InjectRepository(ProjectEntity)
     private readonly repo: Repository<ProjectEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
   
   async list() {
@@ -32,7 +32,6 @@ export class ProjectService {
     const entity = this.repo.create(dto as CreateProjectDto);
     const saved = await this.repo.save(entity);
 
-    await this.registry.ensure('project', saved.id);
     return saved;
   }
 
@@ -41,7 +40,6 @@ export class ProjectService {
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('project', id);
     return saved;
   }
 
@@ -49,7 +47,6 @@ export class ProjectService {
     const item = await this.get(id);
     await this.repo.remove(item);
 
-    await this.registry.remove('project', id);
     return { ok: true };
   }
   async isAdminOnProject(userId: number, projectId: number): Promise<boolean> {

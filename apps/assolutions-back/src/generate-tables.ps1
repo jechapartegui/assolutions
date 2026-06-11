@@ -82,7 +82,7 @@ export class Update${Pascal}Dto {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { ${Pascal}Entity } from './$t.entity';
 import { Create${Pascal}Dto, Update${Pascal}Dto } from './$t.dto';
 
@@ -91,7 +91,7 @@ export class ${Pascal}Service {
   constructor(
     @InjectRepository(${Pascal}Entity)
     private readonly repo: Repository<${Pascal}Entity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   // TODO: list/get/create/update/remove
@@ -113,13 +113,13 @@ export class ${Pascal}Controller {
   $module = @"
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RegistryModule } from '../registry/registry.module';
+
 import { ${Pascal}Controller } from './$t.controller';
 import { ${Pascal}Entity } from './$t.entity';
 import { ${Pascal}Service } from './$t.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([${Pascal}Entity]), RegistryModule],
+  imports: [TypeOrmModule.forFeature([${Pascal}Entity])],
   controllers: [${Pascal}Controller],
   providers: [${Pascal}Service],
 })

@@ -37,4 +37,7 @@ export class DocumentEntity {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   auteur: string | null;
+
+  @Column({ type: 'int', nullable: true })
+  project_id: number | null;
 }

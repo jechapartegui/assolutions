@@ -1,0 +1,55 @@
+<div class="lieu-selector">
+  <div class="field has-addons mb-0">
+    <div class="control is-expanded has-icons-left" [class.is-loading]="loading">
+      <input
+        class="input is-small"
+        type="text"
+        [disabled]="disabled"
+        [placeholder]="placeholder"
+        [ngModel]="searchText"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="opened = true"
+      />
+
+      <span class="icon is-small is-left">
+        <i class="fa-solid fa-user-magnifying-glass"></i>
+      </span>
+    </div>
+
+    <div class="control" *ngIf="lieuId">
+      <button
+        type="button"
+        class="button is-light is-small"
+        [disabled]="disabled"
+        (click)="clear()"
+        title="Vider"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="selector-dropdown" *ngIf="opened && results.length > 0">
+    <button
+      type="button"
+      class="selector-item is-small"
+      *ngFor="let lieu of results"
+      (click)="select(lieu)"
+    >
+      <span class="selector-main">
+        {{ getLabel(lieu) }}
+      </span>
+
+
+      <span class="selector-id">
+        #{{ lieu.id }}
+      </span>
+    </button>
+  </div>
+
+  <p class="help" *ngIf="opened && !loading && searchText.trim().length >= minLength && results.length === 0">
+    Aucun résultat.
+  </p>
+
+  
+</div>

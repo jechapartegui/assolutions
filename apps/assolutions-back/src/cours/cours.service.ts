@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import { CreateCoursDto, UpdateCoursDto } from './cours.dto';
 import { CoursEntity } from './cours.entity';
 import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
@@ -11,7 +11,7 @@ export class CoursService {
   constructor(
     @InjectRepository(CoursEntity)
     private readonly repo: Repository<CoursEntity>,
-    private readonly registry: RegistryService,
+    
 
     @InjectRepository(ContratProfEntity)
     private readonly repoContratProf: Repository<ContratProfEntity>,
@@ -36,8 +36,6 @@ export class CoursService {
     // sécurité: forcer le project_id depuis le header
     const entity = this.repo.create({ ...dto as CreateCoursDto, project_id: projectId });
     const saved = await this.repo.save(entity);
-
-    await this.registry.ensure('cours', saved.id);
     return saved;
   }
 
@@ -46,7 +44,7 @@ export class CoursService {
     Object.assign(item, dto, { date_maj: new Date() });
     const saved = await this.repo.save(item);
 
-    await this.registry.ensure('cours', id);
+    // await this.registry.update('cours', id, dto);
     return saved;
   }
 
@@ -54,7 +52,7 @@ export class CoursService {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
 
-    await this.registry.remove('cours', id);
+    // await this.registry.remove('cours', id);
     return { ok: true };
   }
 }

@@ -8,8 +8,14 @@ export class StockEntity {
   @Column({ type: 'double precision', default: 1 })
   qte: number;
 
+  @Column({ type: 'int', nullable: true })
+  lieu_id: number | null;
+
   @Column({ type: 'text' })
   lieu_stockage: string;
+
+  @Column({ type: 'int', nullable: true })
+  type_stock_id: number | null;
 
   @Column({ type: 'text' })
   type_stock: string;

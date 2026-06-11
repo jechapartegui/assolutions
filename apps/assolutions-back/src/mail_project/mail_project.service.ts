@@ -1,7 +1,7 @@
 ﻿import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegistryService } from '../registry/registry.service';
+
 import {
   InitMailProjectDto,
   MailProjectTemplateType,
@@ -52,7 +52,7 @@ export class MailProjectService {
   constructor(
     @InjectRepository(MailProjectEntity)
     private readonly repo: Repository<MailProjectEntity>,
-    private readonly registry: RegistryService,
+    
   ) {}
 
   async init(projectId: number, dto: InitMailProjectDto): Promise<MailProjectEntity> {
@@ -66,7 +66,6 @@ export class MailProjectService {
         });
 
     const saved = await this.repo.save(entity);
-    await this.registry.ensure('mail_project', projectId);
 
     return saved;
   }
