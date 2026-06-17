@@ -27,4 +27,20 @@ export class AuthController {
   changeMyPassword(@Req() req: any, @Body() body: { newPassword: string | null }) {
     return this.auth.changeMyPassword(req.user.id, body.newPassword ?? null);
   }
+@Post('reinit_mdp')
+reinit_mdp(@Body() body: { login: string }) {
+  return this.auth.reinit_mdp(body.login);
+}
+
+@Post('check-reset-token')
+checkResetToken(@Body() body: { login: string; token: string }) {
+  return this.auth.checkResetToken(body.login, body.token);
+}
+
+@Post('set-password-with-token')
+setPasswordWithToken(
+  @Body() body: { login: string; token: string; newPassword: string }
+) {
+  return this.auth.setPasswordWithToken(body.login, body.token, body.newPassword);
+}
 }

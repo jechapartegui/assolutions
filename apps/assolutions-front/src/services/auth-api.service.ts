@@ -31,9 +31,6 @@ export class AuthApiService {
     return await this.global.POST(this.url('/auth/prelogin'), { login });
   }
 
-  async reinit_mdp(login: string): Promise<PreloginResponse> {
-    return await this.global.POST(this.url('/auth/reinit_mdp'), { login });
-  }
 
   /**
    * POST /auth/login
@@ -72,4 +69,24 @@ export class AuthApiService {
   logout(): void {
     localStorage.removeItem('auth_token');
   }
+
+  async reinit_mdp(login: string): Promise<boolean> {
+  return await this.global.POST(this.url('/auth/reinit_mdp'), { login });
+}
+
+async checkResetToken(login: string, token: string): Promise<boolean> {
+  return await this.global.POST(this.url('/auth/check-reset-token'), { login, token });
+}
+
+async setPasswordWithToken(
+  login: string,
+  token: string,
+  newPassword: string
+): Promise<boolean> {
+  return await this.global.POST(this.url('/auth/set-password-with-token'), {
+    login,
+    token,
+    newPassword,
+  });
+}
 }

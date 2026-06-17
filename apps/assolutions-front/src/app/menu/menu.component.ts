@@ -236,7 +236,7 @@ getInitiales(personne: AdherentMenu): string {
   };
 
   Voir(id: number): void {
-    this.router.navigate(['/adherent-edit'], { queryParams: { id } });
+    this.router.navigate(['/adherent'], { queryParams: { id } });
   }
 
   VoirMaSeance(seance: any): void {

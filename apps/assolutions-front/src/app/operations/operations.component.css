@@ -36,7 +36,6 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-
   padding: 0.85rem 1rem;
   border: 1px solid #dbeafe;
   border-radius: 14px;
@@ -113,43 +112,31 @@
 }
 
 .operations-toolbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(220px, 340px) 170px 170px;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   flex: 0 0 auto;
-}
-
-.operations-toolbar .input {
-  max-width: 360px;
 }
 
 .operations-content {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  display: flex;
-  gap: 1rem;
 }
 
-.operations-list {
-  flex: 1 1 auto;
-  min-width: 0;
+.operations-content-list,
+.operations-card {
+  height: 100%;
   min-height: 0;
 }
 
-.operations-list.with-editor {
-  flex-basis: 62%;
-}
-
-.operations-list .card {
-  height: 100%;
+.operations-card {
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
-.operations-list .card-content {
+.operations-card .card-content {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -159,32 +146,114 @@
   min-height: 0;
 }
 
-.operation-editor-column {
-  flex: 0 0 430px;
-  min-width: 360px;
-  max-width: 520px;
-  min-height: 0;
-}
-
-.operation-editor {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.operation-editor-content {
-  flex: 1 1 auto;
-  overflow: auto;
-  min-height: 0;
-}
-
 .operation-system {
   background: #fffbeb;
 }
 
 .flux-cell {
-  min-width: 270px;
+  min-width: 290px;
+}
+
+.operation-edit-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+}
+
+.operation-edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex: 0 0 auto;
+}
+
+.operation-edit-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.operation-block {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.operation-block .title {
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.operation-block .field {
+  margin-bottom: 0;
+}
+
+.operation-info-grid {
+  display: grid;
+  grid-template-columns: 150px 150px 140px 110px minmax(220px, 320px) 180px;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.operation-label-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) minmax(340px, 1.4fr);
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.operation-flux-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(260px, 360px) minmax(260px, 1fr) 180px;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.operation-document-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(160px, 260px) minmax(220px, 1fr) minmax(220px, 1fr) 110px;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.operation-existing-document-select {
+  grid-column: 1 / 5;
+}
+
+.operation-paid-check {
+  align-self: center;
+  padding-bottom: 0.35rem;
+}
+
+.linked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.linked-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
 }
 
 .table td,
@@ -192,7 +261,21 @@
   vertical-align: middle;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
+  .operations-toolbar,
+  .operation-info-grid,
+  .operation-label-grid,
+  .operation-flux-grid,
+  .operation-document-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .operation-existing-document-select {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 700px) {
   .operations-page {
     height: auto;
     overflow: visible;
@@ -200,7 +283,8 @@
 
   .operations-header,
   .operations-import,
-  .import-preview-header {
+  .import-preview-header,
+  .operation-edit-header {
     flex-direction: column;
     align-items: stretch;
   }
@@ -211,28 +295,20 @@
     align-items: stretch;
   }
 
-  .operations-kpi-grid {
+  .operations-kpi-grid,
+  .operations-toolbar,
+  .operation-info-grid,
+  .operation-label-grid,
+  .operation-flux-grid,
+  .operation-document-grid {
     grid-template-columns: 1fr;
   }
 
-  .operations-toolbar .input,
-  .operations-toolbar .select {
-    width: 100%;
-    max-width: none;
-  }
-
-  .operations-content {
-    flex-direction: column;
-    overflow: visible;
-  }
-
-  .operation-editor-column {
-    flex: none;
-    max-width: none;
-    min-width: 0;
-  }
-
-  .operation-editor {
+  .operation-edit-page {
     height: auto;
+  }
+
+  .operation-edit-scroll {
+    overflow: visible;
   }
 }

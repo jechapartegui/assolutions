@@ -51,6 +51,53 @@ export class MessageService {
       },
     });
   }
+  async sendPasswordReset(login: string, resetUrl: string): Promise<void> {
+  const to = this.normalizeAddress({
+    email: login,
+    name: null,
+  });
+
+  const finalTo = this.isSandboxMode ? this.toYopmailAddress(to) : to;
+
+  const subject = this.isSandboxMode
+    ? this.prefixTestSubject('Assolutions - Définir votre mot de passe')
+    : 'Assolutions - Définir votre mot de passe';
+
+  const html = `
+    <p>Bonjour,</p>
+
+    <p>
+      Vous avez demandé à définir ou réinitialiser votre mot de passe Assolutions.
+    </p>
+
+    <p>
+      <a href="${resetUrl}" target="_blank">
+        Définir mon mot de passe
+      </a>
+    </p>
+
+    <p>
+      Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
+    </p>
+
+    <p style="word-break: break-all;">
+      ${resetUrl}
+    </p>
+
+    <p>
+      Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.
+    </p>
+  `;
+
+  await this.transporter.sendMail({
+    from: `"Assolutions" <${this.smtpUser}>`,
+    to: this.formatAddress(finalTo),
+    subject,
+    html,
+  });
+
+  this.logger.log(`Mail reset password envoyé vers ${finalTo.email}`);
+}
 
   async send(projectId: number, dto: SendMessagesDto) {
     const project = await this.projectRepo.findOne({ where: { id: projectId } });

@@ -57,6 +57,26 @@
                 <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn>
               </p>
             </div>
+            <div *ngIf="resetMode" class="field">
+  <label class="label is-small" i18n>Nouveau mot de passe</label>
+  <input
+    class="input"
+    [type]="showPassword ? 'text' : 'password'"
+    [(ngModel)]="newPassword"
+    placeholder="••••••••"
+  />
+
+  <label class="label is-small mt-3" i18n>Confirmer le mot de passe</label>
+  <input
+    class="input"
+    [type]="showPassword ? 'text' : 'password'"
+    [(ngModel)]="newPasswordConfirm"
+    placeholder="••••••••"
+  />
+<p class="help has-text-grey" i18n>
+  Vous pouvez laisser vide pour utiliser Assolutions sans mot de passe.
+</p>
+</div>
 
             <!-- Mot de passe -->
 <div *ngIf="VM.mdp_requis" class="field">
@@ -90,7 +110,6 @@
       <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
     </span>
   </p>
-
   <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
     Le mot de passe doit contenir au moins 8 caractères et un nombre.
   </p>
@@ -120,11 +139,20 @@
           <footer class="login-footer">
             <div class="columns">
               <div class="column">
+                <button
+  *ngIf="resetMode"
+  type="button"
+  class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+  (click)="ValiderNouveauMotDePasse()"
+  i18n
+>
+  Définir mon mot de passe
+</button>
                 <!-- Cas standard (sans projets) -->
                 <div class="field" *ngIf="!projets">
                   <p class="control stack-3">
                     <button
-                      *ngIf="(!store.isLoggedIn()) && !VM.mdp_requis"
+                     *ngIf="!resetMode && (!store.isLoggedIn()) && !VM.mdp_requis"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
                       (click)="Login()"
@@ -134,7 +162,7 @@
                     </button>
 
                     <button
-                      *ngIf="VM.mdp_requis && !store.isLoggedIn()"
+                     *ngIf="!resetMode && VM.mdp_requis && !store.isLoggedIn()"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
                       (click)="Login()"
@@ -144,7 +172,7 @@
                     </button>
 
                     <button
-                      *ngIf="VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ESSAI'"
+                      *ngIf="!resetMode && VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ESSAI'"
                       type="button"
                       class="btn-link has-text-centered"
                       (click)="ReinitMDP()"

@@ -13,6 +13,8 @@ import { ProjectEntity } from '../project/project.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
 import { SaisonEntity } from '../saison/saison.entity';
+import { MessageService } from '../message/message.service';
+import { MailRecordEntity } from '../mail_record/mail_record.entity';
 
 @Module({
   imports: [
@@ -26,10 +28,10 @@ import { SaisonEntity } from '../saison/saison.entity';
         signOptions: { expiresIn: '30d' },
       }),
     }),
-    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity, LoginProjectEntity, SaisonEntity]),
+    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity, LoginProjectEntity, SaisonEntity, MailRecordEntity]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, MessageService],
   exports: [AuthService],
 })
 export class AuthModule {}

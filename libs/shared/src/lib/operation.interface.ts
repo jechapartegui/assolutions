@@ -27,7 +27,7 @@ export interface Operation {
    * Permet au back de créer/récupérer le flux système de la saison.
    */
   saison_id?: number | null;
-
+  personne_id?: number | null;
   libelle_bancaire?: string | null;
   import_key?: string | null;
   source_import?: string | null;
@@ -63,6 +63,7 @@ export class Operation_VM {
   libelle_bancaire?: string | null;
   import_key?: string | null;
   source_import?: string | null;
+  personne_id?: number | null;
 
   info?: string | null;
 

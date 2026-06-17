@@ -16,6 +16,7 @@ import { PersonneEntity } from '../personne/personne.entity';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
 import { ProjetView } from '@shared/lib/compte.interface';
 import { SaisonEntity } from '../saison/saison.entity';
+import { MessageService } from '../message/message.service';
 
 type AppMode = 'ADMIN' | 'APPLI';
 
@@ -26,6 +27,7 @@ export class AuthService {
   constructor(
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly mailService: MessageService,
 
     @InjectRepository(CompteEntity)
     private readonly compteRepo: Repository<CompteEntity>,
@@ -236,7 +238,87 @@ export class AuthService {
 
     return compte;
   }
+
+ private createResetToken(): string {
+  return crypto.randomBytes(32).toString('hex');
 }
+
+private hashToken(token: string): string {
+  return crypto
+    .createHmac('sha256', this.pepper)
+    .update(token)
+    .digest('hex');
+}
+
+async reinit_mdp(login: string): Promise<boolean> {
+  const compte = await this.getByLogin(login);
+
+  const rawToken = this.createResetToken();
+  const hashedToken = this.hashToken(rawToken);
+
+  (compte as any).activation_token = hashedToken;
+  await this.compteRepo.save(compte);
+
+  const frontUrl = this.config.get<string>('FRONT_URL') ?? 'https://assolutions.club';
+
+  const resetUrl =
+    `${frontUrl}/login?context=REINIT` +
+    `&user=${encodeURIComponent(compte.login)}` +
+    `&token=${encodeURIComponent(rawToken)}`;
+
+  await this.mailService.sendPasswordReset(compte.login, resetUrl);
+
+  console.log('RESET PASSWORD URL:', resetUrl);
+
+  return true;
+}
+
+async checkResetToken(login: string, token: string): Promise<boolean> {
+  const compte = await this.getByLogin(login);
+
+  const expected = (compte as any).activation_token;
+  if (!expected) {
+    throw new BadRequestException('TOKEN_NOT_FOUND');
+  }
+
+  const received = this.hashToken(token);
+
+  if (received !== expected) {
+    throw new BadRequestException('INVALID_TOKEN');
+  }
+
+  return true;
+}
+
+async setPasswordWithToken(
+  login: string,
+  token: string,
+  newPassword: string,
+): Promise<boolean> {
+
+  const compte = await this.getByLogin(login);
+
+  const cleanPassword = newPassword?.trim() ?? '';
+
+if (cleanPassword.length > 0) {
+  if (cleanPassword.length < 8 || !/\d/.test(cleanPassword)) {
+    throw new BadRequestException('PASSWORD_TOO_WEAK');
+  }
+
+  compte.password = hashPasswordWithPepper(cleanPassword, this.pepper);
+} else {
+  compte.password = null;
+}
+
+(compte as any).activation_token = null;
+compte.actif = true;
+
+await this.compteRepo.save(compte);
+
+return true;
+}
+}
+
 
 export function hashPasswordWithPepper(password: string, pepper: string): string {
   return crypto

@@ -30,6 +30,11 @@ export class LoginComponent implements OnInit {
   selectedLogin = false;
   showPassword = false;
 
+  resetToken: string | null = null;
+resetMode = false;
+newPassword = '';
+newPasswordConfirm = '';
+
   /** Projet demandé depuis un lien externe : /login?context=CREATE&project=123 */
   requestedProjectId: number | null = null;
   requestedProject: any = null;
@@ -79,59 +84,40 @@ export class LoginComponent implements OnInit {
       switch (this.context) {
         case 'ACTIVATE':
         case 'REINIT': {
-          const token = params['token'];
-          const user = params['user'];
+  const token = params['token'];
+  const user = params['user'];
 
-          if (!token) {
-            const o = errorService.CreateError(this.action, $localize`Token absent sur la requête`);
-            errorService.emitChange(o);
-            this.router.navigate(['/login']);
-            return;
-          }
-          if (!user) {
-            const o = errorService.CreateError(this.action, $localize`Login absent sur la requête`);
-            errorService.emitChange(o);
-            this.router.navigate(['/login']);
-            return;
-          }
+  if (!token || !user) {
+    const o = errorService.CreateError(this.action, $localize`Lien de réinitialisation incomplet`);
+    errorService.emitChange(o);
+    this.router.navigate(['/login']);
+    return;
+  }
 
-          this.VM.compte.login = user;
-          this.VM.compte.activation_token = token;
+  this.loading = true;
 
-          this.compte_serv
-            .check_token(this.VM.compte.login, this.VM.compte.activation_token)
-            .then((cpt) => {
-              if (cpt) {
-                this.VM.compte = cpt;
+  try {
+    await this.login_serv_nest.checkResetToken(user, token);
 
-                if (this.context === 'REINIT') {
-                  this.action = $localize`Réinitialiser le mot de passe`;
-                  const o = errorService.OKMessage(this.action);
-                  errorService.emitChange(o);
-                  this.router.navigate(['/reinit-mdp']);
-                  return;
-                }
+    this.VM.compte.login = user;
+    this.resetToken = token;
+    this.resetMode = true;
+    this.VM.mdp_requis = false;
+    this.selectedLogin = true;
+    this.libelle_titre = $localize`Choisissez votre nouveau mot de passe`;
+  } catch (error: any) {
+    const o = errorService.CreateError(
+      $localize`Réinitialisation du mot de passe`,
+      error?.message ?? $localize`Lien invalide ou expiré`
+    );
+    errorService.emitChange(o);
+    this.router.navigate(['/login']);
+  } finally {
+    this.loading = false;
+  }
 
-                this.action = $localize`Activer le compte`;
-                const o = errorService.OKMessage(this.action);
-                errorService.emitChange(o);
-                this.router.navigate(['/login']);
-                return;
-              }
-
-              const o = errorService.UnknownError(this.action);
-              errorService.emitChange(o);
-              this.router.navigate(['/login']);
-            })
-            .catch((error: Error) => {
-              const o = errorService.CreateError(this.action, error.message);
-              this.resetProjectCaches();
-              this.store.clearSession();
-              errorService.emitChange(o);
-            });
-
-          break;
-        }
+  break;
+}
 
         case 'CREATE':
           await this.initCreateMode();
@@ -162,6 +148,55 @@ export class LoginComponent implements OnInit {
       }
     });
   }
+
+  async ValiderNouveauMotDePasse(): Promise<void> {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Définir le mot de passe`;
+
+  if (!this.resetToken) return;
+
+  if (this.newPassword !== this.newPasswordConfirm) {
+    const o = errorService.CreateError(this.action, $localize`Les mots de passe ne correspondent pas`);
+    errorService.emitChange(o);
+    return;
+  }
+
+const cleanPassword = this.newPassword?.trim() ?? '';
+
+if (cleanPassword.length > 0) {
+  this.validatePassword(cleanPassword);
+
+  if (!this.VM.isPasswordValid) {
+    const o = errorService.CreateError(
+      this.action,
+      $localize`Le mot de passe doit contenir au moins 8 caractères et un nombre`
+    );
+    errorService.emitChange(o);
+    return;
+  }
+}
+
+  try {
+  await this.login_serv_nest.setPasswordWithToken(
+  this.VM.compte.login,
+  this.resetToken,
+  cleanPassword
+);
+
+    const o = errorService.OKMessage(
+  $localize`Mot de passe enregistré. Vous pouvez maintenant vous connecter.`
+);
+errorService.emitChange(o);
+
+window.location.href = '/login';
+ 
+
+
+  } catch (error: any) {
+    const o = errorService.CreateError(this.action, error?.message ?? $localize`Erreur inconnue`);
+    errorService.emitChange(o);
+  }
+}
 
   private readProjectIdFromParams(params: any): number | null {
     const raw = params['projectId'] ?? params['project'] ?? params['projetId'] ?? params['idProjet'] ?? params['id'];

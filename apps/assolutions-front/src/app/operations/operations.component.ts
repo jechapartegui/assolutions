@@ -5,7 +5,20 @@ import { FinanceApiService } from '../../services/finance-api.service';
 import { FluxFinancierApiService } from '../../services/flux-financiers-api.service';
 import { CompteBancaireApiService } from '../../services/compte-bancaire-api.service';
 import { SaisonApiService } from '../../services/saison-api.service';
-import { FluxFinancier, CompteBancaire, Operation, Saison, CreateOperationDto, CreateFluxFinancierDto, ClasseComptable } from '@shared/index';
+import { AddInfoApiService } from '../../services/addinfo-api.service';
+import { DocumentApiService } from '../../services/document-api.service';
+import {
+  FluxFinancier,
+  CompteBancaire,
+  Operation,
+  Saison,
+  CreateOperationDto,
+  CreateFluxFinancierDto,
+  ClasseComptable,
+  UpdateOperationDto,
+  AddInfo,
+} from '@shared/index';
+import { CreateDocumentDto, Document, UpdateDocumentDto } from '@shared/lib/document.interface';
 import { AppStore } from '../app.store';
 
 type ImportStatus = 'OK' | 'DOUBLON' | 'PROCHE' | 'ERREUR';
@@ -18,11 +31,15 @@ interface ImportPreviewRow {
   date_operation: string;
   libelle_bancaire: string;
   montant: number;
-
   destinataire: string;
   import_key: string;
-
   existingOperation?: Operation;
+}
+
+interface LovItem {
+  id: number;
+  categorie?: string;
+  libelle: string;
 }
 
 @Component({
@@ -56,12 +73,26 @@ export class OperationsComponent implements OnInit {
   importResult: string | null = null;
   importError: string | null = null;
 
+  documentsOperation: Document[] = [];
+  recentDocuments: Document[] = [];
+  typedocLov: LovItem[] = [];
+  newDocumentType = 'Facture';
+  newDocumentTitle = '';
+  newDocumentComment = '';
+  newDocumentFile: File | null = null;
+  selectedExistingDocumentId: number | null = null;
+
+  createFluxClasseId: number | null = null;
+  createFluxLibelle = '';
+
   constructor(
     private financeApi: FinanceApiService,
     private fluxApi: FluxFinancierApiService,
     private compteApi: CompteBancaireApiService,
     private saisonApi: SaisonApiService,
-    private store:AppStore,
+    private addInfoApi: AddInfoApiService,
+    private documentApi: DocumentApiService,
+    private store: AppStore,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -72,18 +103,20 @@ export class OperationsComponent implements OnInit {
     try {
       this.loading = true;
 
-      const [saisons, comptes, classes_comptables] = await Promise.all([
+      const [saisons, comptes, classesComptables, typedocLov] = await Promise.all([
         this.saisonApi.list(),
         this.compteApi.list(),
         this.financeApi.listClasses(),
+        this.loadLov('TYPEDOC'),
       ]);
 
       this.saisons = saisons ?? [];
-      this.classes_comptables = classes_comptables ?? [];
+      this.classes_comptables = classesComptables ?? [];
       this.comptes = comptes ?? [];
+      this.typedocLov = typedocLov ?? [];
+      this.newDocumentType = this.typedocLov[0]?.libelle ?? 'Facture';
 
       this.active_saison = this.store.saison_active_id();
-
       this.importCompteId = this.comptes[0]?.id ?? null;
 
       await this.reloadData();
@@ -95,19 +128,15 @@ export class OperationsComponent implements OnInit {
   }
 
   async reloadData(): Promise<void> {
-    const [operations, flux] = await Promise.all([
+    const [operations, flux, recentDocuments] = await Promise.all([
       this.financeApi.listOperations(),
       this.fluxApi.list(this.active_saison || undefined, true),
+      this.documentApi.listRecent(50),
     ]);
 
     this.operations = operations ?? [];
     this.flux = flux ?? [];
-  }
-
-  async onSaisonChange(): Promise<void> {
-    this.selected = null;
-    this.importPreview = [];
-    await this.reloadData();
+    this.recentDocuments = recentDocuments ?? [];
   }
 
   get filteredOperations(): Operation[] {
@@ -123,8 +152,7 @@ export class OperationsComponent implements OnInit {
         String(op.info ?? '').toLowerCase().includes(txt) ||
         String(flux?.libelle ?? '').toLowerCase().includes(txt);
 
-      const matchFlux =
-        !this.filterFluxId || op.flux_financier_id === this.filterFluxId;
+      const matchFlux = !this.filterFluxId || op.flux_financier_id === this.filterFluxId;
 
       const matchStatut =
         this.filterStatut === 'ALL' ||
@@ -143,7 +171,7 @@ export class OperationsComponent implements OnInit {
   }
 
   get nbAClasser(): number {
-    return this.operations.filter((op) => this.getFlux(op.flux_financier_id ?? null)?.flux_systeme).length;
+    return this.operations.filter((op) => this.isSystemFlux(op)).length;
   }
 
   get totalOperations(): number {
@@ -152,6 +180,14 @@ export class OperationsComponent implements OnInit {
 
   get selectedPreviewCount(): number {
     return this.importPreview.filter((r) => r.selected).length;
+  }
+
+  get currentFlux(): FluxFinancier | undefined {
+    return this.getFlux(this.selected?.flux_financier_id ?? null);
+  }
+
+  get isSelectedSystemFlux(): boolean {
+    return !!this.currentFlux?.flux_systeme;
   }
 
   newOperation(): void {
@@ -171,14 +207,24 @@ export class OperationsComponent implements OnInit {
       source_import: null,
       info: null,
     };
+
+    this.createFluxClasseId = null;
+    this.createFluxLibelle = '';
+    this.documentsOperation = [];
+    this.resetDocumentForm();
   }
 
-  edit(op: Operation): void {
+  async edit(op: Operation): Promise<void> {
     this.selected = { ...op };
+    this.createFluxClasseId = this.getFlux(op.flux_financier_id ?? null)?.classe_comptable_id ?? null;
+    this.createFluxLibelle = op.libelle_bancaire || op.destinataire || `Opération ${op.id}`;
+    this.resetDocumentForm();
+    await this.reloadOperationLinkedData(op.id);
   }
 
   cancel(): void {
     this.selected = null;
+    this.documentsOperation = [];
   }
 
   async save(): Promise<void> {
@@ -186,15 +232,7 @@ export class OperationsComponent implements OnInit {
 
     try {
       this.saving = true;
-
-      const dto = this.buildOperationDto(this.selected);
-
-      if (this.selected.id) {
-        await this.financeApi.updateOperation(this.selected.id, dto);
-      } else {
-        await this.financeApi.createOperation(dto as CreateOperationDto);
-      }
-
+      await this.ensureSelectedOperationSaved();
       this.selected = null;
       await this.reloadData();
     } catch (err) {
@@ -202,6 +240,31 @@ export class OperationsComponent implements OnInit {
     } finally {
       this.saving = false;
     }
+  }
+
+  async ensureSelectedOperationSaved(): Promise<Operation> {
+    if (!this.selected) throw new Error('Aucune opération sélectionnée');
+
+    const dto = this.buildOperationDto(this.selected);
+    let saved: Operation;
+
+    if (this.selected.id) {
+      saved = await this.financeApi.updateOperation(this.selected.id, dto as UpdateOperationDto);
+    } else {
+      saved = await this.financeApi.createOperation(dto as CreateOperationDto);
+    }
+
+    this.selected = { ...this.selected, ...saved };
+
+    const index = this.operations.findIndex((op) => op.id === saved.id);
+    if (index >= 0) {
+      this.operations[index] = saved;
+      this.operations = [...this.operations];
+    } else {
+      this.operations = [saved, ...this.operations];
+    }
+
+    return saved;
   }
 
   async remove(op: Operation): Promise<void> {
@@ -217,31 +280,58 @@ export class OperationsComponent implements OnInit {
 
   async rattacherFlux(op: Operation, fluxId: number | null): Promise<void> {
     try {
-      await this.financeApi.updateOperation(op.id, {
-        flux_financier_id: fluxId,
-      });
-
+      await this.financeApi.updateOperation(op.id, { flux_financier_id: fluxId });
       op.flux_financier_id = fluxId;
+      if (this.selected?.id === op.id) this.selected.flux_financier_id = fluxId;
     } catch (err) {
       this.showError('Rattachement au flux', err);
     }
   }
 
-  async creerFluxDepuisOperation(op: Operation): Promise<void> {
+  async createFluxFromSelectedOperation(): Promise<void> {
+    if (!this.selected) return;
     if (!this.active_saison) {
       alert('Aucune saison active sélectionnée.');
       return;
     }
 
     try {
-      const result = await this.financeApi.createFluxFromOperation(op.id, this.active_saison);
+      this.saving = true;
+      const op = await this.ensureSelectedOperationSaved();
+      const libelle = this.createFluxLibelle.trim() || op.libelle_bancaire || op.destinataire || `Opération ${op.id}`;
+      const montant = Math.abs(Number(op.solde ?? 0));
+      const recette = Number(op.solde ?? 0) > 0;
 
-      op.flux_financier_id = result.flux.id;
+      const flux = await this.fluxApi.create({
+        libelle,
+        date: this.toDateOnly(op.date_operation),
+        destinataire: op.destinataire || libelle,
+        recette,
+        statut: 0,
+        montant,
+        info: op.info ?? null,
+        saison_id: this.active_saison,
+        classe_comptable_id: this.createFluxClasseId ?? null,
+        nb_paiement: 1,
+        type_frais: null,
+        personne_id: null,
+        contrat_prof_id: null,
+        flux_systeme: false,
+        origine: 'CREATED_FROM_OPERATION',
+      } as CreateFluxFinancierDto);
 
+      const updated = await this.financeApi.updateOperation(op.id, { flux_financier_id: flux.id });
+      this.selected = { ...this.selected, ...updated };
       await this.reloadData();
     } catch (err) {
       this.showError('Création flux depuis opération', err);
+    } finally {
+      this.saving = false;
     }
+  }
+
+  async creerFluxDepuisOperation(op: Operation): Promise<void> {
+    await this.edit(op);
   }
 
   async onCsvSelected(event: Event): Promise<void> {
@@ -261,7 +351,7 @@ export class OperationsComponent implements OnInit {
       }
 
       if (!this.active_saison) {
-        this.importError = 'Sélectionne une saison avant import.';
+        this.importError = 'Aucune saison active détectée.';
         return;
       }
 
@@ -290,52 +380,18 @@ export class OperationsComponent implements OnInit {
 
       let imported = 0;
       let failed = 0;
-      let classes_comptables6 = this.classes_comptables.find(x => x.code === '6');
-      let classes_comptables7 = this.classes_comptables.find(x => x.code === '7');
-      let ff_aclasser6 = this.flux.find((f) => f.classe_comptable_id === classes_comptables6?.id);
-      let ff_aclasser7 = this.flux.find((f) => f.classe_comptable_id === classes_comptables7?.id);
-      if(!ff_aclasser6)
-       ff_aclasser6 = await this.fluxApi.create({
-          libelle: 'À classer 6',
-          date: new Date().toISOString(),
-          destinataire: '',
-          recette: false,
-          classe_comptable_id: classes_comptables6?.id,
-          statut: 0,  
-          montant: 0,
-          nb_paiement: 0,
-          info: $localize`Flux système pour opérations à classer en classe 6`,
-          saison_id: this.store.saison_active_id() ?? undefined,
-      }as CreateFluxFinancierDto) ;
-      if(!ff_aclasser7) 
-        ff_aclasser7 = await this.fluxApi.create({
-          libelle: 'À classer 7',
-          date: new Date().toISOString(),
-          destinataire: '',
-          recette: true,
-          classe_comptable_id: classes_comptables7?.id,
-          statut: 0,
-          montant: 0,
-          nb_paiement: 0,
-          info: $localize`Flux système pour opérations à classer en classe 7`,
-          saison_id: this.store.saison_active_id() ?? undefined,
-      }as CreateFluxFinancierDto) ;
 
+      const fluxDepense = await this.getOrCreateFluxAClasser(false);
+      const fluxRecette = await this.getOrCreateFluxAClasser(true);
+      let totalDepense = 0;
+      let totalRecette = 0;
+      let nbDepense = 0;
+      let nbRecette = 0;
 
       for (const row of rows) {
         try {
-
-          if(row.montant < 0 && ff_aclasser6) {
-            row.flux_financier_id = ff_aclasser6.id;
-            ff_aclasser6.montant += row.montant;
-            ff_aclasser6.nb_paiement += 1;
-            await this.fluxApi.update(ff_aclasser6.id, ff_aclasser6);
-          } else if(row.montant >= 0 && ff_aclasser7) {
-            row.flux_financier_id = ff_aclasser7.id;
-            ff_aclasser7.montant += row.montant;
-            ff_aclasser7.nb_paiement += 1;
-            await this.fluxApi.update(ff_aclasser7.id, ff_aclasser7);
-          }
+          const isRecette = Number(row.montant) >= 0;
+          const fluxCible = isRecette ? fluxRecette : fluxDepense;
 
           await this.financeApi.createOperation({
             solde: row.montant,
@@ -345,7 +401,7 @@ export class OperationsComponent implements OnInit {
             destinataire: row.destinataire,
             paiement_execute: true,
             compte_bancaire_id: this.importCompteId,
-            flux_financier_id: row.flux_financier_id,
+            flux_financier_id: fluxCible.id,
             saison_id: this.active_saison,
             libelle_bancaire: row.libelle_bancaire,
             source_import: 'CSV_BANQUE',
@@ -353,10 +409,32 @@ export class OperationsComponent implements OnInit {
             info: null,
           });
 
+          if (isRecette) {
+            totalRecette += Math.abs(Number(row.montant ?? 0));
+            nbRecette++;
+          } else {
+            totalDepense += Math.abs(Number(row.montant ?? 0));
+            nbDepense++;
+          }
+
           imported++;
         } catch {
           failed++;
         }
+      }
+
+      if (nbDepense) {
+        await this.fluxApi.update(fluxDepense.id, {
+          montant: Math.abs(Number(fluxDepense.montant ?? 0)) + totalDepense,
+          nb_paiement: Number(fluxDepense.nb_paiement ?? 0) + nbDepense,
+        });
+      }
+
+      if (nbRecette) {
+        await this.fluxApi.update(fluxRecette.id, {
+          montant: Math.abs(Number(fluxRecette.montant ?? 0)) + totalRecette,
+          nb_paiement: Number(fluxRecette.nb_paiement ?? 0) + nbRecette,
+        });
       }
 
       this.importResult = `${imported} opération(s) importée(s). ${failed} erreur(s).`;
@@ -368,6 +446,41 @@ export class OperationsComponent implements OnInit {
     } finally {
       this.importing = false;
     }
+  }
+
+  async getOrCreateFluxAClasser(recette: boolean): Promise<FluxFinancier> {
+    const classeCode = recette ? '7' : '6';
+    const origine = recette ? 'IMPORT_A_CLASSER_RECETTE' : 'IMPORT_A_CLASSER_DEPENSE';
+    const libelle = recette ? 'À classer 7' : 'À classer 6';
+    const classe = this.classes_comptables.find((x) => x.code === classeCode);
+
+    const existing = this.flux.find((f) =>
+      f.saison_id === this.active_saison &&
+      (f.origine === origine || (f.flux_systeme && f.classe_comptable_id === classe?.id)),
+    );
+
+    if (existing) return existing;
+
+    const created = await this.fluxApi.create({
+      libelle,
+      date: this.today(),
+      destinataire: 'Import bancaire',
+      recette,
+      classe_comptable_id: classe?.id ?? null,
+      statut: 0,
+      montant: 0,
+      nb_paiement: 0,
+      type_frais: null,
+      personne_id: null,
+      contrat_prof_id: null,
+      flux_systeme: true,
+      origine,
+      info: `Flux système pour opérations à classer en classe ${classeCode}`,
+      saison_id: this.active_saison,
+    } as CreateFluxFinancierDto);
+
+    this.flux = [created, ...this.flux];
+    return created;
   }
 
   cancelImportPreview(): void {
@@ -388,9 +501,7 @@ export class OperationsComponent implements OnInit {
     const text = await file.text();
     const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-    const headerIndex = lines.findIndex((l) =>
-      this.normalizeHeader(l).includes('date;libelle;montant'),
-    );
+    const headerIndex = lines.findIndex((l) => this.normalizeHeader(l).includes('date;libelle;montant'));
 
     if (headerIndex === -1) {
       throw new Error('Format CSV bancaire non reconnu. Attendu : Date;Libellé;Montant');
@@ -411,12 +522,7 @@ export class OperationsComponent implements OnInit {
       const montant = this.parseMontantFr(montantRaw);
       const cleanLibelle = libelle.trim();
 
-      const importKey = [
-        compteBancaireId,
-        date,
-        cleanLibelle,
-        montant.toFixed(2),
-      ].join('|');
+      const importKey = [compteBancaireId, date, cleanLibelle, montant.toFixed(2)].join('|');
 
       const exact = this.operations.find((op) => op.import_key === importKey);
 
@@ -457,6 +563,102 @@ export class OperationsComponent implements OnInit {
     return preview;
   }
 
+  // ---------------------------------------------------------------------------
+  // Documents liés à l'opération
+  // ---------------------------------------------------------------------------
+
+  async onDocumentFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    this.newDocumentFile = file;
+
+    if (file && !this.newDocumentTitle) {
+      this.newDocumentTitle = file.name;
+    }
+
+    input.value = '';
+  }
+
+  async addDocumentToOperation(): Promise<void> {
+    if (!this.selected) return;
+
+    if (!this.newDocumentFile && !this.newDocumentTitle.trim()) {
+      alert('Choisis un fichier ou saisis un titre de document.');
+      return;
+    }
+
+    try {
+      const op = await this.ensureSelectedOperationSaved();
+      const file = this.newDocumentFile;
+
+      const dto: CreateDocumentDto = {
+        titre: this.newDocumentTitle.trim() || file?.name || 'Document',
+        objet_id: op.id,
+        objet_type: 'OPERATION',
+        typedoc: this.newDocumentType || 'Document libre',
+        storage_type: 'DB',
+        mimetype: file?.type || 'application/octet-stream',
+        file_path: file?.name || null,
+        commentaire: this.newDocumentComment || null,
+        auteur: null,
+      } as any;
+
+      await this.documentApi.create(dto);
+      this.resetDocumentForm();
+      await this.reloadOperationLinkedData(op.id);
+    } catch (err) {
+      this.showError('Ajout document', err);
+    }
+  }
+
+  async attachExistingDocument(): Promise<void> {
+    if (!this.selected || !this.selectedExistingDocumentId) return;
+
+    try {
+      const op = await this.ensureSelectedOperationSaved();
+
+      await this.documentApi.update(this.selectedExistingDocumentId, {
+        objet_id: op.id,
+        objet_type: 'OPERATION',
+      } as UpdateDocumentDto);
+
+      this.selectedExistingDocumentId = null;
+      await this.reloadOperationLinkedData(op.id);
+      await this.reloadData();
+    } catch (err) {
+      this.showError('Association document', err);
+    }
+  }
+
+  async removeDocumentFromOperation(doc: Document): Promise<void> {
+    if (!confirm(`Supprimer le document "${doc.titre}" ?`)) return;
+
+    try {
+      await this.documentApi.remove(doc.id);
+      if (this.selected?.id) await this.reloadOperationLinkedData(this.selected.id);
+    } catch (err) {
+      this.showError('Suppression document', err);
+    }
+  }
+
+  async reloadOperationLinkedData(operationId: number): Promise<void> {
+    const [documents, recentDocuments] = await Promise.all([
+      this.documentApi.listByObject('OPERATION', operationId),
+      this.documentApi.listRecent(50),
+    ]);
+
+    this.documentsOperation = documents ?? [];
+    this.recentDocuments = recentDocuments ?? [];
+  }
+
+  resetDocumentForm(): void {
+    this.newDocumentFile = null;
+    this.newDocumentTitle = '';
+    this.newDocumentComment = '';
+    this.newDocumentType = this.typedocLov[0]?.libelle ?? 'Facture';
+  }
+
   getFlux(id: number | null): FluxFinancier | undefined {
     if (!id) return undefined;
     return this.flux.find((f) => f.id === id);
@@ -469,12 +671,11 @@ export class OperationsComponent implements OnInit {
 
   getCompteLabel(id: number | null | undefined): string {
     const c: CompteBancaire | undefined = this.getCompte(id);
-    return c?.nom  || (id ? `Compte #${id}` : '');
+    return c?.nom || (id ? `Compte #${id}` : '');
   }
 
   getSaisonLabel(saison: Saison): string {
-    const s: Saison = saison;
-    return s.nom || `Saison #${s.id}`;
+    return saison.nom || `Saison #${saison.id}`;
   }
 
   getFluxLabel(id: number | null | undefined): string {
@@ -484,6 +685,17 @@ export class OperationsComponent implements OnInit {
 
   isSystemFlux(op: Operation): boolean {
     return !!this.getFlux(op.flux_financier_id ?? null)?.flux_systeme;
+  }
+
+  getClasseLabel(id: number | null | undefined): string {
+    const c = this.classes_comptables.find((x) => x.id === id);
+    return c ? `${c.code} - ${c.libelle}` : '';
+  }
+
+  getClasseChildren(): ClasseComptable[] {
+    return this.classes_comptables
+      .filter((c) => !!c.parent_id && c.actif)
+      .sort((a, b) => a.ordre - b.ordre || a.code.localeCompare(b.code));
   }
 
   formatMontant(value: number | string | null | undefined): string {
@@ -497,9 +709,7 @@ export class OperationsComponent implements OnInit {
     return {
       solde: Number(op.solde ?? 0),
       date_operation: this.toDateOnly(op.date_operation),
-      date_previsionnelle: op.date_previsionnelle
-        ? this.toDateOnly(op.date_previsionnelle)
-        : null,
+      date_previsionnelle: op.date_previsionnelle ? this.toDateOnly(op.date_previsionnelle) : null,
       mode: Number(op.mode ?? 0),
       destinataire: String(op.destinataire ?? ''),
       paiement_execute: Boolean(op.paiement_execute),
@@ -549,14 +759,113 @@ export class OperationsComponent implements OnInit {
   private splitCsvRow(row: string): string[] {
     return row.split(';').map((x) => x.replace(/^"|"$/g, '').trim());
   }
+  destinataireMode: 'LIBRE' | 'PERSONNE' = 'LIBRE';
+onDestinataireModeChange(): void {
+  if (!this.selected) return;
+
+  if (this.destinataireMode === 'LIBRE') {
+    this.selected.personne_id = null;
+  } else {
+    this.selected.destinataire = '';
+  }
+}
+
+  onOperationPersonneSelected(personne: any | null): void {
+    if (!this.selected) return;
+
+    if (!personne) {
+      this.selected.personne_id = null;
+      return;
+    }
+
+    this.selected.personne_id = personne.id;
+    this.selected.destinataire =
+      personne.libelle ||
+      `${personne.prenom ?? ''} ${personne.nom ?? ''}`.trim() ||
+      `Personne #${personne.id}`;
+  }
+
+ get destinataireSuggestions(): string[] {
+    return [...new Set(
+      this.operations
+        .map((f) => f.destinataire)
+        .filter((x): x is string => !!x && x.trim().length > 0)
+        .map((x) => x.trim()),
+    )].sort((a, b) => a.localeCompare(b, 'fr'));
+  }
+
+
+  private async loadLov(code: string): Promise<LovItem[]> {
+    try {
+      const raw = await this.addInfoApi.getLov(code, 'FR');
+      return this.normalizeLov(raw);
+    } catch {
+      return this.defaultLov(code);
+    }
+  }
+
+  private normalizeLov(raw: AddInfo | LovItem[] | any | null): LovItem[] {
+    if (!raw) return [];
+
+    if (Array.isArray(raw)) {
+      return raw.map((x) => this.normalizeLovItem(x)).filter((x): x is LovItem => !!x);
+    }
+
+    const text = typeof raw.text === 'string' ? raw.text : '';
+    if (!text) return [];
+
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        return parsed.map((x) => this.normalizeLovItem(x)).filter((x): x is LovItem => !!x);
+      }
+    } catch {
+      // texte non JSON : on le traite comme une valeur simple
+    }
+
+    return [{ id: Number(raw.value_type ?? raw.id ?? 0), categorie: '', libelle: text }];
+  }
+    private defaultLov(code: string): LovItem[] {
+    if (code === 'TYPEDOC') {
+      return [
+        { id: 1, categorie: 'Finance', libelle: 'Facture' },
+        { id: 2, categorie: 'Finance', libelle: 'Devis' },
+        { id: 3, categorie: 'Finance', libelle: 'Avoir' },
+        { id: 4, categorie: 'Finance', libelle: 'Bon de commande' },
+        { id: 5, categorie: 'Finance', libelle: 'Reçu' },
+        { id: 99, categorie: 'Autre', libelle: 'Document libre' },
+      ];
+    }
+
+    if (code === 'stock') {
+      return [
+        { id: 1, categorie: 'Tenue', libelle: 'Chaussette' },
+        { id: 2, categorie: 'Tenue', libelle: 'Maillot' },
+        { id: 3, categorie: 'Tenue', libelle: 'Short' },
+        { id: 21, categorie: 'Entraînement', libelle: 'Ballon RollBall Enfants' },
+        { id: 22, categorie: 'Entraînement', libelle: 'Ballon RollBall Adultes' },
+        { id: 31, categorie: 'Entraînement', libelle: 'Chasuble' },
+      ];
+    }
+
+    return [];
+  }
+   private normalizeLovItem(item: any): LovItem | null {
+    if (!item) return null;
+    const libelle = String(item.libelle ?? item.label ?? item.text ?? '').trim();
+    if (!libelle) return null;
+
+    return {
+      id: Number(item.id ?? item.value_type ?? 0),
+      categorie: item.categorie ?? item.category ?? '',
+      libelle,
+    };
+  }
 
   private showError(action: string, err: unknown): void {
     const errorService = ErrorService.instance;
     errorService.emitChange(
-      errorService.CreateError(
-        action,
-        err instanceof Error ? err.message : String(err),
-      ),
+      errorService.CreateError(action, err instanceof Error ? err.message : String(err)),
     );
   }
 }

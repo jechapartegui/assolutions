@@ -34,7 +34,6 @@ import { CreateStockDto, Stock } from '@shared/lib/stock.interface';
 
 type FinanceVue = 'DASHBOARD' | 'BUDGET' | 'FLUX';
 type SensFilter = 'ALL' | 'RECETTE' | 'DEPENSE';
-type DestinataireMode = 'LIBRE' | 'PERSONNE';
 
 type FluxForm = Partial<FluxFinancier> & {
   id?: number;
@@ -1140,7 +1139,7 @@ async downloadDocument(doc: Document): Promise<void> {
   }
 
   private defaultLov(code: string): LovItem[] {
-    if (code === 'LV_TYPEDOC_FR') {
+    if (code === 'TYPEDOC') {
       return [
         { id: 1, categorie: 'Finance', libelle: 'Facture' },
         { id: 2, categorie: 'Finance', libelle: 'Devis' },
@@ -1151,7 +1150,7 @@ async downloadDocument(doc: Document): Promise<void> {
       ];
     }
 
-    if (code === 'LV_STOCK_FR') {
+    if (code === 'stock') {
       return [
         { id: 1, categorie: 'Tenue', libelle: 'Chaussette' },
         { id: 2, categorie: 'Tenue', libelle: 'Maillot' },

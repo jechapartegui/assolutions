@@ -201,7 +201,7 @@
               </div>
 
               <div class="buttons account-actions">
-                <a
+                <a *ngIf="!store.isAdmin()"
                   class="button is-light is-rounded"
                   [routerLink]="['/mon-compte']"
                   (click)="selectMenu('MON_COMPTE')"
@@ -212,7 +212,7 @@
                 </a>
 
                 <a
-                  *ngIf="store.hasProjet()"
+                  *ngIf="store.hasProjet() && !store.isAdmin()"
                   class="button is-light is-rounded"
                   (click)="Dashboard()"
                   title="Tableau de bord"

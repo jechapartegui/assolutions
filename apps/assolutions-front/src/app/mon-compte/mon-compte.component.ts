@@ -10,6 +10,8 @@ import { PersonneApiService } from '../../services/personne-api.service';
 import { LoginProjectApiService } from '../../services/login-projet-api.service';
 import { InscriptionSaisonApiService } from '../../services/inscription-saison-api.service';
 import { InscriptionSaisonProjetVm } from '@shared/lib/inscription-saison.interface';
+import { ErrorService } from '../../services/error.service';
+import { AuthApiService } from '../../services/auth-api.service';
 
 @Component({
   standalone: true,
@@ -25,6 +27,8 @@ export class MonCompteComponent {
 private readonly personneapi  = inject(PersonneApiService);
 private readonly loginProjectApi = inject(LoginProjectApiService);
 private readonly inscriptionSaisonApi = inject(InscriptionSaisonApiService);
+private readonly authApiService = inject(AuthApiService);
+action = '';
 
 personneInscriptionsById = new Map<number, InscriptionSaisonProjetVm[]>();
 
@@ -162,19 +166,32 @@ async deletePersonne(personne: any): Promise<void> {
   await this.loadPage();
 }
   changePassword(): void {
-    // TODO route future
-    // this.router.navigate(['/change-password']);
+ this.router.navigate(['/reinit-mdp']);
   }
 
 reinitPassword(): void {
-  const login = this.store.compte?.()?.login ?? this.store.session()?.compte?.login;
-  if (!login) return;
-
-  this.router.navigate(['/login'], {
-    queryParams: {
-      context: 'REINIT',
-      login,
-    },
-  });
-}
+ 
+     const c = window.confirm($localize`Voulez-vous réinitialiser votre mot de passe ?`);
+     if (!c) return;
+ 
+     this.action = $localize`Réinitialiser le mot de passe`;
+     const errorService = ErrorService.instance;
+ 
+     this.authApiService
+       .reinit_mdp(this.store.session().compte.login)
+       .then((ok) => {
+         if (ok) {
+           const o = errorService.OKMessage(this.action);
+           errorService.emitChange(o);
+         } else {
+           const o = errorService.UnknownError(this.action);
+           errorService.emitChange(o);
+         }
+       })
+       .catch((error: Error) => {
+         const o = errorService.CreateError(this.action, error.message);
+         errorService.emitChange(o);
+         this.loading = false;
+       });
+   }
 }
