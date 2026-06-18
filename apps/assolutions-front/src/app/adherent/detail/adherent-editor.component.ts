@@ -114,8 +114,14 @@ addInfoEditor?: AddInfoEditorComponent;
     this.loading = true;
 
     try {
-      await this.store.init(saisonId);
-      await this.store.openAdherent(id, saisonId);
+    const context = this.route.snapshot.queryParamMap.get('context');
+
+if (context === 'MON_COMPTE') {
+  await this.store.openMonCompteAdherent(id, saisonId);
+} else {
+  await this.store.init(saisonId);
+  await this.store.openAdherent(id, saisonId);
+}
     } catch (err) {
       console.error('Chargement route adherent-edit impossible', err);
     } finally {

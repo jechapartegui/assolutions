@@ -234,14 +234,19 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
         saved = await this.repository.createAdherent(current);
       }
 
-      const refreshedListItem = this.toListItem(saved, saisonId);
-      const updatedList = this.upsertListItem(this.state().list, refreshedListItem);
+     const currentList = this.state().list ?? [];
 
-      this.patch({
-        list: updatedList,
-        editAdherent: saved,
-        action: '',
-      });
+const nextPatch: Partial<AdherentPageVm> = {
+  editAdherent: saved,
+  action: '',
+};
+
+if (currentList.length > 0) {
+  const refreshedListItem = this.toListItem(saved, saisonId);
+  nextPatch.list = this.upsertListItem(currentList, refreshedListItem);
+}
+
+this.patch(nextPatch);
 
       this.syncCurrentSnapshot();
       return saved;
@@ -449,4 +454,57 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
 
     return count;
   }
+  async initMonCompteCreate(saisonId: number): Promise<void> {
+  this.patch({
+    loading: true,
+    action: 'Préparation de la fiche adhérent',
+    list: [],
+    refreshAvailable: false,
+    pendingCount: 0,
+  });
+
+  try {
+    const shell = await this.repository.loadEditorShell(saisonId);
+    const editAdherent = new AdherentDetail_VM();
+
+    this.state.set({
+      ...createInitialVm(),
+      ...shell,
+      editAdherent,
+      loading: false,
+      readonly: false,
+      isValid: false,
+      lastLoadedAt: Date.now(),
+    });
+  } catch {
+    this.patch({ loading: false, action: '' });
+    throw new Error('Préparation de la fiche adhérent impossible');
+  }
+}
+
+async openMonCompteAdherent(id: number, saisonId: number): Promise<void> {
+  this.patch({
+    loading: true,
+    action: 'Chargement de votre fiche',
+    list: [],
+    refreshAvailable: false,
+    pendingCount: 0,
+  });
+
+  try {
+    const data = await this.repository.loadMonCompteDetail(id, saisonId);
+
+    this.state.set({
+      ...createInitialVm(),
+      ...data,
+      loading: false,
+      readonly: false,
+      editAdherent: data.editAdherent,
+      lastLoadedAt: Date.now(),
+    });
+  } catch {
+    this.patch({ loading: false, action: '' });
+    throw new Error('Chargement de votre fiche impossible');
+  }
+}
 }

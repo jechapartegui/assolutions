@@ -235,9 +235,14 @@ getInitiales(personne: AdherentMenu): string {
     this.cdr.markForCheck();
   };
 
-  Voir(id: number): void {
-    this.router.navigate(['/adherent'], { queryParams: { id } });
-  }
+Voir(id: number): void {
+  this.router.navigate(['/adherent'], {
+    queryParams: {
+      id,
+      context: 'MON_COMPTE',
+    },
+  });
+}
 
   VoirMaSeance(seance: any): void {
     this.router.navigate(['/ma-seance'], { queryParams: { id: seance.id } });

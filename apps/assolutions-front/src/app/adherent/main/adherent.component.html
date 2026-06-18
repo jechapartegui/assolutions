@@ -22,12 +22,12 @@
         </div>
 
         <div class="buttons adherent-hero-actions">
-          <button
-            *ngIf="hasRefreshAvailable"
-            class="button is-warning is-light"
-            type="button"
-            (click)="onApplyRefresh()"
-          >
+         <button
+  *ngIf="hasRefreshAvailable"
+  class="button is-warning is-light"
+  type="button"
+  (click)="onApplyRefresh()"
+>
             <span class="icon"><i class="fas fa-rotate"></i></span>
             <span>
               <ng-container *ngIf="pendingCountLabel; else refreshDefaultLabel">
@@ -39,11 +39,12 @@
             </span>
           </button>
 
-          <button
-            class="button is-info is-light"
-            type="button"
-            (click)="onRefreshNow()"
-          >
+<button
+  *ngIf="!isMonCompteContext"
+  class="button is-info is-light"
+  type="button"
+  (click)="onRefreshNow()"
+>
             <span class="icon"><i class="fas fa-arrows-rotate"></i></span>
             <span>Rafraîchir</span>
           </button>

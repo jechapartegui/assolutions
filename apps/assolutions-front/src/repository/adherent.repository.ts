@@ -133,6 +133,39 @@ for (const cont of contactslist ?? []) {
 
   return this.mapper.buildPageData(refs, list, activeSaison);
 }
+async loadEditorShell(saisonId: number): Promise<Partial<AdherentPageData>> {
+  const [saisons, groupes] = await Promise.all([
+    this.saisonService.list(),
+    this.refDataRepository.getGroupes(saisonId),
+  ]);
+
+  const activeSaison =
+    saisons.find((x) => x.id === saisonId) ??
+    saisons.find((x) => x.active) ??
+    saisons[0] ??
+    null;
+
+  const refs = this.mapper.buildReferencesVm(saisons, groupes);
+
+  return {
+    refs,
+    list: [],
+    activeSaison,
+  };
+}
+
+async loadMonCompteDetail(
+  id: number,
+  saisonId: number,
+): Promise<Partial<AdherentPageData> & { editAdherent: AdherentDetail_VM }> {
+  const shell = await this.loadEditorShell(saisonId);
+  const editAdherent = await this.loadAdherentDetail(id, saisonId);
+
+  return {
+    ...shell,
+    editAdherent,
+  };
+}
 
   async loadAdherentDetail(id: number, saisonId: number): Promise<AdherentDetail_VM> {
     const [personne, inscriptionsSaison, inscriptionsSeance, groupesParSaison, liste_groupes, contacts, photosByPersonne] = await Promise.all([
