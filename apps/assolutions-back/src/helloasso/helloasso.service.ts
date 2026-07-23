@@ -44,17 +44,17 @@ export class HelloAssoService {
     const payload = {
       totalAmount: 100,
       initialAmount: 100,
-      itemName: 'POC Assolutions - Test adhesion',
+      itemName: 'POC Assolutions - adhesion',
       backUrl,
       errorUrl,
       returnUrl,
       containsDonation: false,
 
       payer: {
-        firstName: 'Jean',
-        lastName: 'Test',
-        email: 'test@example.com',
-      },
+  firstName: 'Jean-Emmanuel',
+  lastName: 'Chapartegui',
+  email: 'jechapartegui@gmail.com',
+},
     };
 
     this.logger.log('[HELLOASSO] Payload checkout envoyé :');
