@@ -39,7 +39,7 @@ newPasswordConfirm = '';
   requestedProjectId: number | null = null;
   requestedProject: any = null;
 
-  @Input() context: 'REINIT' | 'ACTIVATE' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
+  @Input() context: 'REINIT' | 'ACTIVATION' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
   @Input() login_seance: string = null;
 
   loading = false;
@@ -62,33 +62,165 @@ newPasswordConfirm = '';
     this.validateLogin();
   }
 
-  ngOnInit(): void {
-    this.action = $localize`Chargement de la page`;
-    const errorService = ErrorService.instance;
+async ngOnInit(): Promise<void> {
+  this.action = $localize`Chargement de la page`;
+  const errorService = ErrorService.instance;
 
-    this.route.queryParams.subscribe(async (params) => {
-      if ('context' in params) {
-        try {
-          this.context = params['context'];
-          console.log(`Context de connexion : ${this.context}`);
-        } catch (error) {
-          const o = errorService.CreateError(this.action, $localize`Erreur sur la requête`);
-          errorService.emitChange(o);
-          this.router.navigate(['/login']);
-          return;
-        }
+  const initialContext = this.context ?? 'MENU';
+  const params = this.route.snapshot.queryParams;
+
+  if ('context' in params) {
+    try {
+      this.context = params['context'];
+      console.log(`Context de connexion : ${this.context}`);
+    } catch (error) {
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Erreur sur la requête`
+      );
+      errorService.emitChange(o);
+      await this.router.navigate(['/login']);
+      return;
+    }
+  } else {
+    this.context = initialContext;
+  }
+
+  if (params['user']) {
+    this.VM.compte.login = String(params['user']).trim().toLowerCase();
+    this.validateLogin();
+  }
+
+  this.requestedProjectId = this.readProjectIdFromParams(params);
+
+  switch (this.context) {
+    case 'ACTIVATION':
+      await this.handleActivationLink(params);
+      return;
+
+    case 'REINIT':
+      await this.handleResetPasswordLink(params);
+      return;
+
+    case 'CREATE':
+      await this.initCreateMode();
+      break;
+
+    case 'ESSAI':
+      this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
+      break;
+
+    case 'SEANCE':
+      this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
+
+      if (this.login_seance) {
+        this.VM.compte.login = this.login_seance;
+        this.validateLogin();
+        this.Login();
       }
 
-      this.requestedProjectId = this.readProjectIdFromParams(params);
+      break;
 
-      switch (this.context) {
-        case 'ACTIVATE':
-        case 'REINIT': {
+    case 'MENU':
+    default:
+      this.libelle_titre = $localize`Saisissez votre email pour vous connecter`;
+      break;
+  }
+
+  if (!this.VM.compte.login) {
+    this.VM.compte.login = environment.defaultlogin ?? '';
+    this.validateLogin();
+  }
+}private activationProcessingKey: string | null = null;
+private activationDoneKey: string | null = null;
+private async handleActivationLink(params: any): Promise<void> {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Activer le compte`;
+
   const token = params['token'];
   const user = params['user'];
 
   if (!token || !user) {
-    const o = errorService.CreateError(this.action, $localize`Lien de réinitialisation incomplet`);
+    const o = errorService.CreateError(
+      this.action,
+      $localize`Lien d'activation incomplet`
+    );
+    errorService.emitChange(o);
+
+    await this.router.navigate(['/login'], {
+      replaceUrl: true,
+    });
+
+    return;
+  }
+
+  const login = String(user).trim().toLowerCase();
+  const activationKey = `${login}|${token}`;
+
+  if (
+    this.activationProcessingKey === activationKey ||
+    this.activationDoneKey === activationKey
+  ) {
+    return;
+  }
+
+  this.activationProcessingKey = activationKey;
+  this.loading = true;
+
+  try {
+    await this.compte_serv.check_token(login, token);
+
+    this.activationDoneKey = activationKey;
+
+    this.resetMode = false;
+    this.resetToken = null;
+    this.newPassword = '';
+    this.newPasswordConfirm = '';
+    this.selectedLogin = false;
+    this.VM.mdp_requis = false;
+    this.VM.compte.login = login;
+    this.validateLogin();
+
+    const o = errorService.OKMessage(
+      $localize`Compte activé. Vous pouvez maintenant vous connecter.`
+    );
+    errorService.emitChange(o);
+
+    await this.router.navigate(['/login'], {
+      queryParams: {
+        user: login,
+        activated: 1,
+      },
+      replaceUrl: true,
+    });
+  } catch (error: any) {
+    const o = errorService.CreateError(
+      this.action,
+      error?.message ?? $localize`Lien d'activation invalide ou expiré`
+    );
+    errorService.emitChange(o);
+
+    await this.router.navigate(['/login'], {
+      replaceUrl: true,
+    });
+  } finally {
+    this.activationProcessingKey = null;
+    this.loading = false;
+  }
+}
+
+private async handleResetPasswordLink(params: any): Promise<void> {
+  const errorService = ErrorService.instance;
+  this.action = $localize`Réinitialiser le mot de passe`;
+
+  const token = params['token'];
+  const user = params['user'];
+
+  if (!token || !user) {
+    const o = errorService.CreateError(
+      this.action,
+      $localize`Lien de réinitialisation incomplet`
+    );
     errorService.emitChange(o);
     this.router.navigate(['/login']);
     return;
@@ -99,7 +231,7 @@ newPasswordConfirm = '';
   try {
     await this.login_serv_nest.checkResetToken(user, token);
 
-    this.VM.compte.login = user;
+    this.VM.compte.login = String(user).trim().toLowerCase();
     this.resetToken = token;
     this.resetMode = true;
     this.VM.mdp_requis = false;
@@ -107,7 +239,7 @@ newPasswordConfirm = '';
     this.libelle_titre = $localize`Choisissez votre nouveau mot de passe`;
   } catch (error: any) {
     const o = errorService.CreateError(
-      $localize`Réinitialisation du mot de passe`,
+      this.action,
       error?.message ?? $localize`Lien invalide ou expiré`
     );
     errorService.emitChange(o);
@@ -115,39 +247,7 @@ newPasswordConfirm = '';
   } finally {
     this.loading = false;
   }
-
-  break;
 }
-
-        case 'CREATE':
-          await this.initCreateMode();
-          break;
-
-        case 'ESSAI':
-          this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
-          break;
-
-        case 'SEANCE':
-          this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
-          if (this.login_seance) {
-            this.VM.compte.login = this.login_seance;
-            this.validateLogin();
-            this.Login();
-          }
-          break;
-
-        case 'MENU':
-        default:
-          this.libelle_titre = $localize`Saisissez votre email pour vous connecter`;
-          break;
-      }
-
-      if (!this.VM.compte.login) {
-        this.VM.compte.login = environment.defaultlogin ?? '';
-        this.validateLogin();
-      }
-    });
-  }
 
   async ValiderNouveauMotDePasse(): Promise<void> {
   const errorService = ErrorService.instance;

@@ -93,7 +93,11 @@
       </div>
     </section>
 
-    <ng-container *ngIf="Riders && !showContactClub">
+    <div *ngIf="!showContactClub && (!Riders || Riders.length === 0)" class="menu-empty">
+      Aucune séance disponible pour le moment.
+    </div>
+
+    <ng-container *ngIf="Riders?.length && !showContactClub">
       <div
         class="riders-scroll-container"
         [class.riders-scroll-container--compact]="hasOpenedRider()"

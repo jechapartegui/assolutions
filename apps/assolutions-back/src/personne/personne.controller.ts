@@ -31,7 +31,7 @@ export class PersonneController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreatePersonneDto) {
-    return this.service.create({ ...dto, compte: req.user.id });
+    return this.service.create(dto, req.user.id);
   }
 
   // ✅ UPDATE via POST
@@ -52,5 +52,11 @@ export class PersonneController {
   @Post('by-ids')
   list_by_id(@Body() ids: number[]) {
     return this.service.listByIds(ids);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('by-compte/:compte')
+  list_by_compte(@Param('compte', ParseIntPipe) compte: number) {
+    return this.service.listForCompte(compte);
   }
 }

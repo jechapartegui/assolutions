@@ -203,23 +203,79 @@
 
 .operation-info-grid {
   display: grid;
-  grid-template-columns: 150px 150px 140px 110px minmax(220px, 320px) 180px;
+  grid-template-columns: 150px 150px 105px 150px 140px minmax(220px, 320px) 180px;
   gap: 0.65rem;
   align-items: end;
 }
 
 .operation-label-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr) minmax(340px, 1.4fr);
+  grid-template-columns: minmax(220px, 360px) 170px minmax(260px, 1fr) minmax(340px, 1.4fr);
   gap: 0.65rem;
   align-items: end;
 }
 
+.operation-personne-field {
+  grid-column: span 2;
+}
+
+.operation-info-field {
+  grid-column: span 2;
+}
+
 .operation-flux-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(260px, 360px) minmax(260px, 1fr) 180px;
+  grid-template-columns: minmax(360px, 1fr) 190px;
   gap: 0.65rem;
   align-items: end;
+}
+
+.operation-flux-create-grid {
+  grid-template-columns: minmax(260px, 360px) minmax(280px, 1fr) 190px;
+}
+
+.operation-flux-mode {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.operation-flux-wide {
+  min-width: 0;
+}
+
+.operation-amount-control {
+  display: grid;
+  grid-template-columns: 1fr 32px;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.operation-sens-icon {
+  height: 30px;
+  width: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.operation-sens-icon.is-recette {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.operation-sens-icon.is-depense {
+  color: #be123c;
+  background: #ffe4e6;
+}
+
+.operation-same-date-check {
+  align-self: center;
+  padding-bottom: 0.35rem;
 }
 
 .operation-document-grid {
@@ -266,8 +322,14 @@
   .operation-info-grid,
   .operation-label-grid,
   .operation-flux-grid,
+  .operation-flux-create-grid,
   .operation-document-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .operation-personne-field,
+  .operation-info-field {
+    grid-column: auto;
   }
 
   .operation-existing-document-select {

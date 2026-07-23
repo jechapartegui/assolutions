@@ -1,12 +1,11 @@
 export const environment = {
- production: true,
-  apiUrl: 'https://assolutions.onrender.com/', // ton back Render
-  password:'jecha266',
-  defaultlogin:'',
-  defaultpassword:'',
+  production: true,
+  apiUrl: 'https://assolutions.onrender.com/api',
+  password: '',
+  defaultlogin: '',
+  defaultpassword: '',
   environment: 'prod',
-  defaultloginProjet:'',
-  defaultloginpassword:'',
-  frontUrl:'https://assolutions.club'
-  
+  defaultloginProjet: '',
+  defaultloginpassword: '',
+  frontUrl: 'https://assolutions.club'
 };

@@ -17,8 +17,8 @@ export interface Personne {
   archive?: boolean;
 }
 
-export type CreatePersonneDto = Omit<Personne, 'id' | 'compte'>;
-export type UpdatePersonneDto = Partial<Omit<Personne, 'id' | 'compte'>>;
+export type CreatePersonneDto = Omit<Personne, 'id'>;
+export type UpdatePersonneDto = Partial<Omit<Personne, 'id'>>;
 
 
 

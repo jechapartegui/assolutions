@@ -55,8 +55,11 @@ export class PersonneService {
     return item;
   }
 
-  async create(dto: CreatePersonneDto) {
-    const entity = this.repo.create(dto as CreatePersonneDto);
+  async create(dto: CreatePersonneDto, compteId: number) {
+    if(!dto.compte) {
+      dto.compte = compteId;
+    }
+    const entity = this.repo.create(dto);
     const saved = await this.repo.save(entity);
 
     return saved;

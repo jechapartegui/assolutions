@@ -11,7 +11,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (
       url.startsWith('/api/auth/login') ||
       url.startsWith('/api/auth/prelogin') ||
-      url.startsWith('/api/auth/get_project')
+      url.startsWith('/api/auth/get_project') ||
+      url.startsWith('/api/comptes/register-with-project') ||
+      url.startsWith('/api/auth/check-reset-token') ||
+      url.startsWith('/api/comptes/check-token') ||
+      url.startsWith('/api/auth/set-password-with-token') ||
+      url.startsWith('/api/auth/reinit_mdp')
     ) {
       console.log('JwtAuthGuard SKIP for', url);
       return true;

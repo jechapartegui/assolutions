@@ -48,6 +48,7 @@ import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
+import { CreerCompteComponent } from './creer-compte/creer-compte.component';
 
 // Raccourcis
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
@@ -57,6 +58,7 @@ const LOGGED_ANY = { auth: {} };
 const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'creer-compte', component: CreerCompteComponent },
 
   { path: 'menu', component: MenuComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'mon-compte', component: MonCompteComponent, canActivate: [AuthGuard], data: APPLI_ONLY },

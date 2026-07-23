@@ -65,13 +65,7 @@ export class AuthService {
 
     if (hasAdminProject) return 'ADMIN';
 
-    const hasPerson = await this.personneRepo.exist({
-      where: { compte: compteId } as any,
-    });
-
-    if (hasPerson) return 'APPLI';
-
-    throw new BadRequestException('ACCOUNT_NOT_ASSOCIATED');
+   return 'APPLI';
   }
 
   private async getProjectsForCompte(compteId: number): Promise<ProjectEntity[]> {
@@ -132,7 +126,7 @@ export class AuthService {
 
   async prelogin(login: string): Promise<{ password_required: boolean; mode: AppMode }> {
     const compte = await this.getByLogin(login);
-
+    console.warn('prelogin for', login, '=>', compte);
     if (!(compte as CompteEntity).actif) {
       throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     }

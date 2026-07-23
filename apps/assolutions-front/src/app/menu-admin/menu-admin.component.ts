@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AppStore } from '../app.store';
 import { SaisonApiService } from '../../services/saison-api.service';
 import { MenuType } from '../../store/session.store';
+import { HelloAssoService } from '../../services/helloasso.service';
 
 type AdminTile = {
   label: string;
@@ -28,7 +29,7 @@ type AdminSection = {
 })
 export class MenuAdminComponent implements OnInit {
   readonly saisonStorageKey = 'assolutions.consultationSaisonId';
-
+  
   saisons: any[] = [];
   selectedSaisonId: number | null = null;
   loadingSaisons = false;
@@ -131,6 +132,7 @@ export class MenuAdminComponent implements OnInit {
     public store: AppStore,
     private router: Router,
     private saisonApi: SaisonApiService,
+    private helloassoservice: HelloAssoService
   ) {}
 
   ngOnInit(): void {
@@ -157,6 +159,13 @@ export class MenuAdminComponent implements OnInit {
       this.loadingSaisons = false;
     }
   }
+  testHelloAsso(): void {
+this.helloassoservice.testHelloAsso().then(() => {
+  console.log('Test HelloAsso effectué avec succès.');
+}).catch((error) => {
+  console.error('Erreur lors du test HelloAsso :', error);  
+});
+}
 
   getActiveSaisonId(): number | null {
     const project: any = this.store.selectedProject?.();

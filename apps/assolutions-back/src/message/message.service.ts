@@ -99,6 +99,58 @@ export class MessageService {
   this.logger.log(`Mail reset password envoyé vers ${finalTo.email}`);
 }
 
+async sendActivationMail(login: string, activationUrl: string): Promise<void> {
+  const to = this.normalizeAddress({
+    email: login,
+    name: null,
+  });
+
+  const finalTo = this.isSandboxMode ? this.toYopmailAddress(to) : to;
+
+  const subject = this.isSandboxMode
+    ? this.prefixTestSubject('Assolutions - Activer votre compte')
+    : 'Assolutions - Activer votre compte';
+
+  const html = `
+    <p>Bonjour,</p>
+
+    <p>
+      Votre compte Assolutions vient d’être créé.
+    </p>
+
+    <p>
+      Pour l’activer, cliquez sur le lien ci-dessous :
+    </p>
+
+    <p>
+      <a href="${activationUrl}" target="_blank">
+        Activer mon compte
+      </a>
+    </p>
+
+    <p>
+      Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
+    </p>
+
+    <p style="word-break: break-all;">
+      ${activationUrl}
+    </p>
+
+    <p>
+      Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.
+    </p>
+  `;
+
+  await this.transporter.sendMail({
+    from: `"Assolutions" <${this.smtpUser}>`,
+    to: this.formatAddress(finalTo),
+    subject,
+    html,
+  });
+
+  this.logger.log(`Mail activation compte envoyé vers ${finalTo.email}`);
+}
+
   async send(projectId: number, dto: SendMessagesDto) {
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {

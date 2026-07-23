@@ -1,11 +1,16 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Cours_VM } from '@shared/index';
+import { Cours_VM, KeyValuePair, ProfLight_VM } from '@shared/index';
 
 import { CachedScreenStore } from './cached-screen.store';
-import { CoursRepository } from '../repository/cours.repository';
 import { CoursFilterVm } from '../vm/cours-filter.vm';
-import { CoursPageVm } from '../vm/cours-page.vm';
+import { CoursPageData, CoursPageVm } from '../vm/cours-page.vm';
 import { CoursMapper } from '../mapper/cours.mapper';
+
+import { SaisonApiService } from '../services/saison-api.service';
+import { CoursDataStore } from '../data-store/cours-data.store';
+import { LieuDataStore } from '../data-store/lieu-data.store';
+import { GroupeDataStore } from '../data-store/groupe-data.store';
+import { ContratProfDataStore } from '../data-store/contrat-prof-data.store';
 
 function createInitialVm(): CoursPageVm {
   return {
@@ -53,14 +58,21 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
   private silentRefreshPromise: Promise<void> | null = null;
   private hardRefreshPromise: Promise<void> | null = null;
 
-  constructor(private readonly repository: CoursRepository, private readonly mapper: CoursMapper) {
+  constructor(
+    private readonly coursDataStore: CoursDataStore,
+    private readonly lieuDataStore: LieuDataStore,
+    private readonly groupeDataStore: GroupeDataStore,
+    private readonly contratProfDataStore: ContratProfDataStore,
+    private readonly saisonService: SaisonApiService,
+    private readonly mapper: CoursMapper,
+  ) {
     super(CoursStore.TTL_MS);
   }
 
   async init(saisonId: number): Promise<void> {
     const current = this.state();
 
-    if (this.hasCurrentCache(current.activeSaison?.id === saisonId )) {
+    if (this.hasCurrentCache(current.activeSaison?.id === saisonId)) {
       if (this.shouldRefreshSilently(true, this.state().lastLoadedAt ?? null)) {
         void this.refreshSilently(saisonId);
       }
@@ -98,7 +110,7 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
     });
 
     try {
-      const data = await this.repository.loadPageData(saisonId);
+      const data = await this.loadPageData(saisonId);
 
       const nextVm: CoursPageVm = {
         ...this.state(),
@@ -114,6 +126,7 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
         lastLoadedAt: Date.now(),
         refreshAvailable: false,
         pendingCount: 0,
+        action: '',
       });
     } catch {
       this.patch({
@@ -123,182 +136,263 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
       throw new Error('Chargement de la page cours impossible');
     }
   }
+
+  private async loadPageData(
+    saisonId: number,
+    options: { force?: boolean } = {},
+  ): Promise<CoursPageData> {
+    const [saisons, profs, lieux, groupes, list] = await Promise.all([
+      this.saisonService.list(),
+      this.contratProfDataStore.loadProfLightsBySaison(saisonId, options),
+      this.lieuDataStore.loadAll(options),
+      this.groupeDataStore.loadBySaison(saisonId, options),
+      this.coursDataStore.loadBySaison(saisonId, options),
+    ]);
+
+    const activeSaison =
+      (saisons ?? []).find((x) => x.id === saisonId) ??
+      (saisons ?? []).find((x) => x.active === true) ??
+      (saisons ?? [])[0] ??
+      null;
+
+    const listeProfFilter = this.toProfFilter(profs ?? []);
+    const listeLieuFilter: KeyValuePair[] = (lieux ?? []).map((x: any) => ({
+      key: x.id ?? 0,
+      value: x.nom ?? '',
+    }));
+
+    const refs = this.mapper.buildReferencesVm(
+      list ?? [],
+      groupes ?? [],
+      listeLieuFilter,
+      listeProfFilter,
+      saisons ?? [],
+    );
+
+    return this.mapper.buildPageData(refs, list ?? [], activeSaison);
+  }
+
   toggleMultiSelectMode(): void {
-  const vm = this.state();
-  this.patch({
-    multiSelectMode: !vm.multiSelectMode,
-    selectedIds: !vm.multiSelectMode ? vm.selectedIds : [],
-  });
-}
-
-clearSelection(): void {
-  this.patch({
-    selectedIds: [],
-    multiSelectMode: false,
-  });
-}
-async duplicateCurrentCours(): Promise<void> {
-  const current = this.state().editCours;
-  if (!current) return;
-
-  let savedId = current.id;
-
-  if (current.id > 0) {
-    await this.repository.updateCours(current);
-    savedId = current.id;
-  } else {
-    const created = await this.repository.createCours(current);
-    savedId = created.id;
+    const vm = this.state();
+    this.patch({
+      multiSelectMode: !vm.multiSelectMode,
+      selectedIds: !vm.multiSelectMode ? vm.selectedIds : [],
+    });
   }
 
-  await this.repository.updateCoursProfs(savedId, current.professeursCours as any);
-  await this.repository.updateCoursGroupes(
-    savedId,
-    (current.groupes ?? [])
-      .map((g: any) => g.groupe_id ?? g.id)
-      .filter((id: number) => id > 0)
-  );
-
-  const clone = this.cloneAsNew(current);
-
-  this.patch({
-    editCours: clone,
-    isValid: true,
-  });
-}
-
-  async saveEditedCours(): Promise<Cours_VM> {
-  const current = this.state().editCours;
-  const saisonId = this.state().activeSaison?.id ?? 0;
-
-  if (!current) {
-    throw new Error('Aucun cours en cours d’édition');
-  }
-  if (!saisonId) {
-    throw new Error('Saison active introuvable');
+  clearSelection(): void {
+    this.patch({
+      selectedIds: [],
+      multiSelectMode: false,
+    });
   }
 
-  this.patch({
-    action: 'Sauvegarde du cours',
-  } as Partial<CoursPageVm>);
+  async duplicateCurrentCours(): Promise<void> {
+    const current = this.state().editCours;
+    const saisonId = this.state().activeSaison?.id ?? current?.saison_id ?? 0;
+    if (!current || !saisonId) return;
 
-  try {
-    let savedId = current.id ?? 0;
+    let savedId = current.id;
 
-    if (savedId > 0) {
-      await this.repository.updateCours(current);
+    if (current.id > 0) {
+      const saved = await this.coursDataStore.update(current, saisonId);
+      savedId = saved.id;
     } else {
-      const created = await this.repository.createCours(current);
+      const created = await this.coursDataStore.create(current, saisonId);
       savedId = created.id;
     }
 
-    await this.repository.updateCoursProfs(
-      savedId,
-      (current.professeursCours ?? []) as any
-    );
+    await this.coursDataStore.updateCoursProfs(savedId, current.professeursCours as any, saisonId);
+    await this.coursDataStore.updateCoursGroupes(savedId, this.extractGroupeIds(current), saisonId);
 
-    const groupeIds = (current.groupes ?? [])
-      .map((g: any) => g.groupe_id ?? g.id)
-      .filter((id: number) => typeof id === 'number' && id > 0);
-
-    await this.repository.updateCoursGroupes(savedId, groupeIds);
-
-    const reloaded = await this.repository.loadCoursById(savedId, saisonId);
-
+    const reloaded = await this.coursDataStore.getOrLoad(savedId, saisonId, { force: true });
     const updatedList = this.upsertCoursInList(this.state().list ?? [], reloaded);
+    const clone = this.cloneAsNew(reloaded);
 
     this.patch({
       list: updatedList,
-      editCours: reloaded,
-      action: '',
+      editCours: clone,
+      isValid: true,
     });
 
     this.syncCurrentSnapshot();
+  }
 
-    return reloaded;
-  } catch (e) {
+  async saveEditedCours(): Promise<Cours_VM> {
+    const current = this.state().editCours;
+    const saisonId = this.state().activeSaison?.id ?? current?.saison_id ?? 0;
+
+    if (!current) {
+      throw new Error('Aucun cours en cours d’édition');
+    }
+    if (!saisonId) {
+      throw new Error('Saison active introuvable');
+    }
+
     this.patch({
-      action: '',
+      action: 'Sauvegarde du cours',
     } as Partial<CoursPageVm>);
-    throw e;
-  }
-}
-private upsertCoursInList(list: Cours_VM[], saved: Cours_VM): Cours_VM[] {
-  const exists = list.some((x) => x.id === saved.id);
 
-  const next = exists
-    ? list.map((x) => (x.id === saved.id ? saved : x))
-    : [...list, saved];
+    try {
+      let saved: Cours_VM;
 
-  return this.applyCurrentSort(next);
-}
+      if ((current.id ?? 0) > 0) {
+        saved = await this.coursDataStore.update(current, saisonId);
+      } else {
+        saved = await this.coursDataStore.create(current, saisonId);
+      }
 
-private applyCurrentSort(list: Cours_VM[]): Cours_VM[] {
-  const vm = this.state();
+      await this.coursDataStore.updateCoursProfs(
+        saved.id,
+        (current.professeursCours ?? []) as any,
+        saisonId,
+      );
 
-  switch (vm.selectedSort) {
-    case 'nom':
-      return this.mapper.sortByNom(list, vm.selectedSortSens);
-    case 'lieu':
-      return this.mapper.sortByLieu(list, vm.selectedSortSens);
-    case 'jour':
-    default:
-      return this.mapper.sortByJour(list, vm.selectedSortSens);
-  }
-}
+      await this.coursDataStore.updateCoursGroupes(saved.id, this.extractGroupeIds(current), saisonId);
 
+      const reloaded = await this.coursDataStore.getOrLoad(saved.id, saisonId, { force: true });
+      const updatedList = this.upsertCoursInList(this.state().list ?? [], reloaded);
 
-private syncCurrentSnapshot(): void {
-  const snapshot: CoursPageVm = {
-    ...this.state(),
-    refreshAvailable: false,
-    pendingCount: 0,
-    lastLoadedAt: Date.now(),
-  };
+      this.patch({
+        list: updatedList,
+        editCours: reloaded,
+        action: '',
+      });
 
-  this.setCurrentData(snapshot);
-  this.setPendingData(null);
+      this.syncCurrentSnapshot();
 
-  this.state.set(snapshot);
-}
-
-private cloneAsNew(source: Cours_VM): Cours_VM {
-  const clone : Cours_VM = typeof structuredClone === 'function'
-    ? structuredClone(source)
-    : JSON.parse(JSON.stringify(source));
-
-  clone.id = 0;
-
-  return clone;
-}
-toggleSelectedCours(id: number): void {
-  const current = this.state().selectedIds ?? [];
-  const exists = current.includes(id);
-
-  this.patch({
-    selectedIds: exists
-      ? current.filter((x) => x !== id)
-      : [...current, id],
-  });
-}
-async deleteSelectedCours(): Promise<void> {
-  const ids = [...(this.state().selectedIds ?? [])];
-  if (!ids.length) return;
-
-  for (const id of ids) {
-    await this.repository.deleteCours(id);
+      return reloaded;
+    } catch (e) {
+      this.patch({
+        action: '',
+      } as Partial<CoursPageVm>);
+      throw e;
+    }
   }
 
-  const saisonId = this.state().activeSaison?.id ?? 0;
-  if (saisonId > 0) {
+  async updateCurrentCoursProfs(): Promise<void> {
+    const current = this.state().editCours;
+    const saisonId = this.state().activeSaison?.id ?? current?.saison_id ?? 0;
+    if (!current?.id || !saisonId) return;
+
+    const refreshed = await this.coursDataStore.updateCoursProfs(
+      current.id,
+      (current.professeursCours ?? []) as any,
+      saisonId,
+    );
+
+    if (refreshed) {
+      this.patch({
+        list: this.upsertCoursInList(this.state().list ?? [], refreshed),
+        editCours: refreshed,
+      });
+      this.syncCurrentSnapshot();
+    }
+  }
+
+  async updateSerieCurrentCours(fromDate: Date): Promise<void> {
+    const current = this.state().editCours;
+    const saisonId = this.state().activeSaison?.id ?? current?.saison_id ?? 0;
+    if (!current?.id || !saisonId) return;
+
+    await this.coursDataStore.update(current, saisonId);
+    await this.coursDataStore.updateSerie(current, fromDate);
     await this.refreshNow(saisonId);
   }
 
-  this.patch({
-    selectedIds: [],
-    multiSelectMode: false,
-  });
-}
+  async deleteCurrentCours(): Promise<void> {
+    const current = this.state().editCours;
+    const saisonId = this.state().activeSaison?.id ?? current?.saison_id ?? 0;
+    if (!current?.id || !saisonId) return;
+
+    await this.coursDataStore.delete(current.id, saisonId);
+
+    this.patch({
+      list: (this.state().list ?? []).filter((x) => x.id !== current.id),
+      editCours: null,
+      isValid: false,
+    });
+
+    this.syncCurrentSnapshot();
+  }
+
+  private upsertCoursInList(list: Cours_VM[], saved: Cours_VM): Cours_VM[] {
+    const exists = list.some((x) => x.id === saved.id);
+
+    const next = exists
+      ? list.map((x) => (x.id === saved.id ? saved : x))
+      : [...list, saved];
+
+    return this.applyCurrentSort(next);
+  }
+
+  private applyCurrentSort(list: Cours_VM[]): Cours_VM[] {
+    const vm = this.state();
+
+    switch (vm.selectedSort) {
+      case 'nom':
+        return this.mapper.sortByNom(list, vm.selectedSortSens);
+      case 'lieu':
+        return this.mapper.sortByLieu(list, vm.selectedSortSens);
+      case 'jour':
+      default:
+        return this.mapper.sortByJour(list, vm.selectedSortSens);
+    }
+  }
+
+  private syncCurrentSnapshot(): void {
+    const snapshot: CoursPageVm = {
+      ...this.state(),
+      refreshAvailable: false,
+      pendingCount: 0,
+      lastLoadedAt: Date.now(),
+    };
+
+    this.setCurrentData(snapshot);
+    this.setPendingData(null);
+
+    this.state.set(snapshot);
+  }
+
+  private cloneAsNew(source: Cours_VM): Cours_VM {
+    const clone: Cours_VM = typeof structuredClone === 'function'
+      ? structuredClone(source)
+      : JSON.parse(JSON.stringify(source));
+
+    clone.id = 0;
+
+    return clone;
+  }
+
+  toggleSelectedCours(id: number): void {
+    const current = this.state().selectedIds ?? [];
+    const exists = current.includes(id);
+
+    this.patch({
+      selectedIds: exists
+        ? current.filter((x) => x !== id)
+        : [...current, id],
+    });
+  }
+
+  async deleteSelectedCours(): Promise<void> {
+    const ids = [...(this.state().selectedIds ?? [])];
+    if (!ids.length) return;
+
+    const saisonId = this.state().activeSaison?.id ?? 0;
+
+    for (const id of ids) {
+      await this.coursDataStore.delete(id, saisonId);
+    }
+
+    this.patch({
+      list: (this.state().list ?? []).filter((x) => !ids.includes(x.id)),
+      selectedIds: [],
+      multiSelectMode: false,
+    });
+
+    this.syncCurrentSnapshot();
+  }
 
   async refreshSilently(saisonId: number): Promise<void> {
     if (this.silentRefreshPromise) {
@@ -316,7 +410,7 @@ async deleteSelectedCours(): Promise<void> {
 
   private async runSilentRefresh(saisonId: number): Promise<void> {
     try {
-      const data = await this.repository.loadPageData(saisonId);
+      const data = await this.loadPageData(saisonId, { force: true });
 
       const freshVm: CoursPageVm = {
         ...this.state(),
@@ -333,7 +427,7 @@ async deleteSelectedCours(): Promise<void> {
         readonly: this.state().readonly,
         isValid: this.state().isValid,
         multiSelectMode: false,
-selectedIds: [],
+        selectedIds: [],
       };
 
       const changed = this.hasVmChanged(this.currentData, freshVm);
@@ -379,13 +473,14 @@ selectedIds: [],
     });
 
     try {
-      const data = await this.repository.loadPageData(saisonId);
+      const data = await this.loadPageData(saisonId, { force: true });
 
       const nextVm: CoursPageVm = {
         ...this.state(),
         ...data,
         loading: false,
         filter: this.state().filter,
+        action: '',
       };
 
       this.setCurrentData(nextVm);
@@ -418,7 +513,7 @@ selectedIds: [],
   }
 
   async openCours(id: number, saisonId: number): Promise<void> {
-    const cours = await this.repository.loadCoursById(id, saisonId);
+    const cours = await this.coursDataStore.getOrLoad(id, saisonId);
     this.patch({ editCours: cours });
   }
 
@@ -479,6 +574,7 @@ selectedIds: [],
 
   invalidate(): void {
     this.clearCacheData();
+    this.coursDataStore.invalidateFull();
     this.state.set({
       ...createInitialVm(),
       refreshAvailable: false,
@@ -493,6 +589,21 @@ selectedIds: [],
     this.silentRefreshPromise = null;
     this.hardRefreshPromise = null;
     this.state.set(createInitialVm());
+  }
+
+  private toProfFilter(profs: ProfLight_VM[]): KeyValuePair[] {
+    return (profs ?? []).map((x: ProfLight_VM) => ({
+      // On manipule l'id du contrat professeur, pas l'id personne.
+      key: x.contrat_id ?? x.id ?? 0,
+      value: `${x.prenom ?? ''} ${x.nom ?? ''}`.trim(),
+    }));
+  }
+
+  private extractGroupeIds(cours: Cours_VM): number[] {
+    return (cours.groupes ?? [])
+      .map((g: any) => g.groupe_id ?? g.id)
+      .map((id: number) => Number(id))
+      .filter((id: number) => Number.isFinite(id) && id > 0);
   }
 
   private compareStrings(a: string, b: string, sens: 'ASC' | 'DESC'): number {
@@ -550,6 +661,10 @@ selectedIds: [],
           c.prof_principal_id ?? '',
           c.lieu_id ?? '',
           (c.groupes ?? []).map((g: any) => g.id).sort().join(','),
+          (c.professeursCours ?? [])
+            .map((p: any) => p.contrat_id ?? p.id)
+            .sort()
+            .join(','),
         ].join(':')
       )
       .sort()

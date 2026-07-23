@@ -37,4 +37,10 @@ export class LieuRepository {
   async deleteLieu(id: number): Promise<void> {
     await this.lieuApi.remove(id);
   }
+
+  async searchLieux(search: string): Promise<Lieu_VM[]> {
+  const list = await this.lieuApi.search(search);
+  return (list ?? []).map((x) => this.mapper.toLieuVm(x));
+}
+
 }

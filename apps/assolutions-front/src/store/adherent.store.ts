@@ -2,10 +2,12 @@ import { Injectable, computed, signal } from '@angular/core';
 import { CachedScreenStore } from './cached-screen.store';
 import { AdherentMapper } from '../mapper/adherent.mapper';
 import { AdherentRepository } from '../repository/adherent.repository';
+import { AdherentDataStore } from '../data-store/adherent-data.store';
 import {
   AdherentDetail_VM,
   AdherentFilterVm,
   AdherentListItem_VM,
+  AdherentPageData,
   AdherentPageVm,
 } from '../vm/adherent-page.vm';
 
@@ -14,7 +16,7 @@ function createInitialVm(): AdherentPageVm {
     refs: {
       listeSaison: [],
       listeArchive: [],
-      liste_groupe_filter:[]
+      liste_groupe_filter: [],
     },
     list: [],
     activeSaison: null,
@@ -56,6 +58,7 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
 
   constructor(
     private readonly repository: AdherentRepository,
+    private readonly adherentDataStore: AdherentDataStore,
     private readonly mapper: AdherentMapper,
   ) {
     super(AdherentStore.TTL_MS);
@@ -67,7 +70,8 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
     if (
       current.activeSaison &&
       current.activeSaison.id === saisonId &&
-      this.hasCurrentCache(true)
+      this.hasCurrentCache(true) &&
+      this.adherentDataStore.isFullLoadedFor(saisonId)
     ) {
       if (this.shouldRefreshSilently(true, current.lastLoadedAt ?? null)) {
         void this.refreshSilently(saisonId);
@@ -89,12 +93,21 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
     this.patch({ loading: true, action: 'Chargement des adhérents' });
 
     try {
-      const data = await this.repository.loadPageData(saisonId);
+      const [shell, list] = await Promise.all([
+        this.repository.loadEditorShell(saisonId),
+        this.adherentDataStore.loadBySaison(saisonId, { includePhotos: true }),
+      ]);
+
+      const data: Partial<AdherentPageData> = {
+        ...shell,
+        list,
+      };
 
       const nextVm: AdherentPageVm = {
         ...this.state(),
         ...data,
         loading: false,
+        action: '',
         filter: this.mapper.createDefaultFilter(),
       };
 
@@ -116,7 +129,7 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
     this.patch({ loading: true, action: 'Chargement de la fiche adhérent' });
 
     try {
-      const editAdherent = await this.repository.loadAdherentDetail(id, saisonId);
+      const editAdherent = await this.adherentDataStore.getOrLoadDetail(id, saisonId);
       this.patch({
         editAdherent,
         loading: false,
@@ -190,6 +203,14 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
     });
   }
 
+  toggleMultiSelectMode(): void {
+    const vm = this.state();
+    this.patch({
+      multiSelectMode: !vm.multiSelectMode,
+      selectedIds: !vm.multiSelectMode ? vm.selectedIds : [],
+    });
+  }
+
   clearSelection(): void {
     this.patch({
       selectedIds: [],
@@ -202,8 +223,12 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
     if (!ids.length) return;
 
     for (const id of ids) {
-      await this.repository.deleteAdherent(id);
+      await this.adherentDataStore.delete(id);
     }
+
+    this.patch({
+      list: this.state().list.filter((x) => !ids.includes(x.id)),
+    });
 
     const saisonId = this.state().activeSaison?.id ?? 0;
     if (saisonId > 0) {
@@ -227,27 +252,20 @@ export class AdherentStore extends CachedScreenStore<AdherentPageVm> {
     this.patch({ action: 'Sauvegarde de l’adhérent' });
 
     try {
-      let saved: AdherentDetail_VM;
-      if ((current.id ?? 0) > 0) {
-        saved = await this.repository.updateAdherent(current, saisonId);
-      } else {
-        saved = await this.repository.createAdherent(current);
-      }
+      const saved = (current.id ?? 0) > 0
+        ? await this.adherentDataStore.update(current, saisonId)
+        : await this.adherentDataStore.create(current, saisonId);
 
-     const currentList = this.state().list ?? [];
+      const currentList = this.state().list ?? [];
+      const refreshedListItem = this.toListItem(saved, saisonId);
 
-const nextPatch: Partial<AdherentPageVm> = {
-  editAdherent: saved,
-  action: '',
-};
+      const nextPatch: Partial<AdherentPageVm> = {
+        editAdherent: saved,
+        action: '',
+        list: this.upsertListItem(currentList, refreshedListItem),
+      };
 
-if (currentList.length > 0) {
-  const refreshedListItem = this.toListItem(saved, saisonId);
-  nextPatch.list = this.upsertListItem(currentList, refreshedListItem);
-}
-
-this.patch(nextPatch);
-
+      this.patch(nextPatch);
       this.syncCurrentSnapshot();
       return saved;
     } catch (e) {
@@ -269,12 +287,17 @@ this.patch(nextPatch);
 
   private async runSilentRefresh(saisonId: number): Promise<void> {
     try {
-      const data = await this.repository.loadPageData(saisonId);
+      const [shell, list] = await Promise.all([
+        this.repository.loadEditorShell(saisonId),
+        this.adherentDataStore.loadBySaison(saisonId, { force: true, includePhotos: true }),
+      ]);
 
       const freshVm: AdherentPageVm = {
         ...this.state(),
-        ...data,
+        ...shell,
+        list,
         loading: false,
+        action: '',
         filter: this.state().filter,
         selectedFilter: this.state().selectedFilter,
         selectedSort: this.state().selectedSort,
@@ -306,7 +329,7 @@ this.patch(nextPatch);
         refreshAvailable: true,
         pendingCount: this.computePendingCount(this.currentData, freshVm),
       });
-    } catch { /* empty */ }
+    } catch { /* refresh silencieux : pas de bruit UI */ }
   }
 
   async refreshNow(saisonId: number): Promise<void> {
@@ -324,12 +347,17 @@ this.patch(nextPatch);
     this.patch({ loading: true, action: 'Actualisation des adhérents' });
 
     try {
-      const data = await this.repository.loadPageData(saisonId);
+      const [shell, list] = await Promise.all([
+        this.repository.loadEditorShell(saisonId),
+        this.adherentDataStore.loadBySaison(saisonId, { force: true, includePhotos: true }),
+      ]);
 
       const nextVm: AdherentPageVm = {
         ...this.state(),
-        ...data,
+        ...shell,
+        list,
         loading: false,
+        action: '',
         filter: this.state().filter,
       };
 
@@ -367,6 +395,65 @@ this.patch(nextPatch);
     this.state.set(createInitialVm());
   }
 
+  async initMonCompteCreate(saisonId: number): Promise<void> {
+    this.patch({
+      loading: true,
+      action: 'Préparation de la fiche adhérent',
+      list: [],
+      refreshAvailable: false,
+      pendingCount: 0,
+    });
+
+    try {
+      const shell = await this.repository.loadEditorShell(saisonId);
+      const editAdherent = new AdherentDetail_VM();
+
+      this.state.set({
+        ...createInitialVm(),
+        ...shell,
+        editAdherent,
+        loading: false,
+        action: '',
+        readonly: false,
+        isValid: false,
+        lastLoadedAt: Date.now(),
+      });
+    } catch {
+      this.patch({ loading: false, action: '' });
+      throw new Error('Préparation de la fiche adhérent impossible');
+    }
+  }
+
+  async openMonCompteAdherent(id: number, saisonId: number): Promise<void> {
+    this.patch({
+      loading: true,
+      action: 'Chargement de votre fiche',
+      list: [],
+      refreshAvailable: false,
+      pendingCount: 0,
+    });
+
+    try {
+      const [shell, editAdherent] = await Promise.all([
+        this.repository.loadEditorShell(saisonId),
+        this.adherentDataStore.getOrLoadDetail(id, saisonId),
+      ]);
+
+      this.state.set({
+        ...createInitialVm(),
+        ...shell,
+        loading: false,
+        action: '',
+        readonly: false,
+        editAdherent,
+        lastLoadedAt: Date.now(),
+      });
+    } catch {
+      this.patch({ loading: false, action: '' });
+      throw new Error('Chargement de votre fiche impossible');
+    }
+  }
+
   private toListItem(detail: AdherentDetail_VM, saisonId: number): AdherentListItem_VM {
     const item = new AdherentListItem_VM();
     Object.assign(item, detail);
@@ -397,13 +484,6 @@ this.patch(nextPatch);
         return this.mapper.sortByNom(next, this.state().selectedSortSens);
     }
   }
-  toggleMultiSelectMode(): void {
-  const vm = this.state();
-  this.patch({
-    multiSelectMode: !vm.multiSelectMode,
-    selectedIds: !vm.multiSelectMode ? vm.selectedIds : [],
-  });
-}
 
   private syncCurrentSnapshot(): void {
     const snapshot: AdherentPageVm = {
@@ -433,7 +513,7 @@ this.patch(nextPatch);
           p.inscrit ?? '',
           p.archive ?? '',
           (p.groupesActifs ?? []).map((g) => g.id).sort().join(','),
-        ].join(':')
+        ].join(':'),
       )
       .sort()
       .join('|');
@@ -454,57 +534,4 @@ this.patch(nextPatch);
 
     return count;
   }
-  async initMonCompteCreate(saisonId: number): Promise<void> {
-  this.patch({
-    loading: true,
-    action: 'Préparation de la fiche adhérent',
-    list: [],
-    refreshAvailable: false,
-    pendingCount: 0,
-  });
-
-  try {
-    const shell = await this.repository.loadEditorShell(saisonId);
-    const editAdherent = new AdherentDetail_VM();
-
-    this.state.set({
-      ...createInitialVm(),
-      ...shell,
-      editAdherent,
-      loading: false,
-      readonly: false,
-      isValid: false,
-      lastLoadedAt: Date.now(),
-    });
-  } catch {
-    this.patch({ loading: false, action: '' });
-    throw new Error('Préparation de la fiche adhérent impossible');
-  }
-}
-
-async openMonCompteAdherent(id: number, saisonId: number): Promise<void> {
-  this.patch({
-    loading: true,
-    action: 'Chargement de votre fiche',
-    list: [],
-    refreshAvailable: false,
-    pendingCount: 0,
-  });
-
-  try {
-    const data = await this.repository.loadMonCompteDetail(id, saisonId);
-
-    this.state.set({
-      ...createInitialVm(),
-      ...data,
-      loading: false,
-      readonly: false,
-      editAdherent: data.editAdherent,
-      lastLoadedAt: Date.now(),
-    });
-  } catch {
-    this.patch({ loading: false, action: '' });
-    throw new Error('Chargement de votre fiche impossible');
-  }
-}
 }

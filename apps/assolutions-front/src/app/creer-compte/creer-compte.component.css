@@ -1,0 +1,102 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - var(--app-topbar-height, 52px));
+}
+
+.login-wrapper {
+  width: 100%;
+  min-height: calc(100vh - var(--app-topbar-height, 52px));
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+
+  display: grid;
+  place-items: center;
+}
+
+.login-wrapper > .columns {
+  width: min(100%, 440px);
+  margin: 0 !important;
+  display: block;
+}
+
+.login-wrapper > .columns > .column {
+  width: 100%;
+  max-width: none;
+  padding: 0 !important;
+}
+
+.login-card {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 18px;
+  box-sizing: border-box;
+}
+
+.login-header {
+  margin-bottom: 1.5rem;
+}
+
+.login-logo {
+  margin-bottom: 0.75rem;
+}
+
+.login-header .title {
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  white-space: normal;
+  word-break: normal;
+}
+
+.login-header .subtitle {
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.35;
+}
+
+.login-body {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-body .field {
+  margin-bottom: 0;
+}
+
+.login-body .control,
+.login-body .input {
+  width: 100%;
+}
+
+.login-footer {
+  margin-top: 1.5rem;
+}
+
+.login-footer .stack-3 {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.btn-block-mobile {
+  width: 100%;
+}
+
+.btn-link {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.35rem 0;
+}
+
+@media screen and (max-width: 480px) {
+  .login-wrapper {
+    padding: 1rem;
+  }
+
+  .login-card {
+    padding: 1.5rem;
+  }
+}

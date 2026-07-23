@@ -111,7 +111,6 @@ ORDER BY pr.nom;
       visible: true,
       adherent: r.has_active_inscription === true,
       prof: r.has_prof_contract === true,
-      essai: false, // à définir selon ta logique métier
     },
     saison_active: r.saison_id
       ? {

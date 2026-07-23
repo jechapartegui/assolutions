@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { ValidationItem } from '@shared/lib/autres.interface';
 import { Cours_VM, PersonneLight_VM } from '@shared/index';
 import { ErrorService } from '../../services/error.service';
-import { CoursRepository } from '../../repository/cours.repository';
 import { CoursPageVm } from '../../vm/cours-page.vm';
 import { CoursStore } from '../../store/cours.store';
 
@@ -25,7 +24,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     value: $localize`Un professeur responsable est nécessaire pour le cours`,
   };
 
-  constructor(private readonly repository: CoursRepository, private readonly store: CoursStore) {}
+  constructor(private readonly store: CoursStore) {}
 
   get cours(): Cours_VM {
     return this.vm.editCours as Cours_VM;
@@ -68,44 +67,47 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     return this.vm?.refs?.liste_jour_filter ?? [];
   }
 
-async save(): Promise<void> {
-  const errorService = ErrorService.instance;
-  this.checkall();
+  async save(): Promise<void> {
+    const errorService = ErrorService.instance;
+    this.checkall();
 
-  if (!this.vm.isValid || !this.cours) {
-    return;
+    if (!this.vm.isValid || !this.cours) {
+      return;
+    }
+
+    const wasExisting = (this.cours.id ?? 0) > 0;
+
+    try {
+      await this.store.saveEditedCours();
+
+      errorService.emitChange(
+        errorService.OKMessage(
+          wasExisting
+            ? $localize`Mettre à jour un cours`
+            : $localize`Ajouter un cours`
+        )
+      );
+
+      this.back.emit();
+    } catch (err: any) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Sauvegarder le cours`,
+          err?.message ?? $localize`Erreur inconnue`
+        )
+      );
+    }
   }
 
-  try {
-    await this.store.saveEditedCours();
-
-    errorService.emitChange(
-      errorService.OKMessage(
-        this.cours.id > 0
-          ? $localize`Mettre à jour un cours`
-          : $localize`Ajouter un cours`
-      )
-    );
-
-    this.back.emit();
-  } catch (err: any) {
-    errorService.emitChange(
-      errorService.CreateError(
-        $localize`Sauvegarder le cours`,
-        err?.message ?? $localize`Erreur inconnue`
-      )
-    );
-  }
-}
   async duplicateCours(): Promise<void> {
-  const confirmDuplication = window.confirm(
-    `Voulez-vous dupliquer le cours ? Cela implique de sauvegarder le cours et d'en créer un nouveau exactement identique.`
-  );
+    const confirmDuplication = window.confirm(
+      `Voulez-vous dupliquer le cours ? Cela implique de sauvegarder le cours et d'en créer un nouveau exactement identique.`
+    );
 
-  if (!confirmDuplication) return;
+    if (!confirmDuplication) return;
 
-  await this.store.duplicateCurrentCours();
-}
+    await this.store.duplicateCurrentCours();
+  }
 
   async deleteCours(): Promise<void> {
     if (!this.cours?.id) return;
@@ -113,52 +115,56 @@ async save(): Promise<void> {
     const confirmDelete = window.confirm($localize`Voulez-vous supprimer ce cours ?`);
     if (!confirmDelete) return;
 
-    await this.repository.deleteCours(this.cours.id);
+    await this.store.deleteCurrentCours();
     this.back.emit();
   }
 
   async modifierSerie(): Promise<void> {
-  if (!this.cours?.id) return;
+    if (!this.cours?.id) return;
 
-  const errorService = ErrorService.instance;
+    const errorService = ErrorService.instance;
 
-  try {
-    await this.repository.updateCours(this.cours);
-    await this.repository.updateSerieCours(this.cours, new Date());
+    try {
+      await this.store.updateSerieCurrentCours(new Date());
 
-    errorService.emitChange(
-      errorService.OKMessage($localize`Application des modifications à la série`)
-    );
-  } catch (err: any) {
-    errorService.emitChange(
-      errorService.CreateError(
-        $localize`Application des modifications à la série`,
-        err?.message ?? $localize`Erreur inconnue`
-      )
-    );
+      errorService.emitChange(
+        errorService.OKMessage($localize`Application des modifications à la série`)
+      );
+    } catch (err: any) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Application des modifications à la série`,
+          err?.message ?? $localize`Erreur inconnue`
+        )
+      );
+    }
   }
-}
 
   async ajouterProf(): Promise<void> {
     if (!this.currentProfId) return;
 
-    const prof = (this.vm.refs.listeProf ?? []).find((x) => x.key === this.currentProfId);
+    const prof = (this.vm.refs.listeProf ?? []).find((x) => Number(x.key) === Number(this.currentProfId));
     if (!prof) return;
 
+    const labelParts = String(prof.value ?? '').trim().split(' ').filter(Boolean);
     const person: PersonneLight_VM = {
-      id: prof.key,
-      prenom: prof.value.split(' ')[0] ?? '',
-      nom: prof.value.split(' ').slice(1).join(' ') ?? '',
+      id: Number(prof.key),
+      contrat_id: Number(prof.key),
+      prenom: labelParts[0] ?? '',
+      nom: labelParts.slice(1).join(' ') ?? '',
+      surnom: '',
+      date_naissance: null as any,
+      sexe: null as any,
     } as PersonneLight_VM;
 
     this.cours.professeursCours.push(person);
 
     if (!this.cours.prof_principal_id || this.cours.prof_principal_id <= 0) {
-      this.cours.prof_principal_id = person.id;
+      this.cours.prof_principal_id = Number((person as any).contrat_id ?? person.id);
     }
 
     if (this.cours.id > 0) {
-      await this.repository.updateCoursProfs(this.cours.id, this.cours.professeursCours);
+      await this.store.updateCurrentCoursProfs();
     }
 
     this.currentProfId = null;
@@ -167,16 +173,19 @@ async save(): Promise<void> {
   }
 
   async removeProf(item: PersonneLight_VM): Promise<void> {
+    const itemId = this.profKey(item);
+
     this.cours.professeursCours = (this.cours.professeursCours ?? []).filter(
-      (x: PersonneLight_VM) => x.id !== item.id
+      (x: PersonneLight_VM) => this.profKey(x) !== itemId
     );
 
-    if (this.cours.prof_principal_id === item.id) {
-      this.cours.prof_principal_id = this.cours.professeursCours?.[0]?.id ?? 0;
+    if (Number(this.cours.prof_principal_id) === itemId) {
+      const next = this.cours.professeursCours?.[0] as any;
+      this.cours.prof_principal_id = Number(next?.contrat_id ?? next?.id ?? 0);
     }
 
     if (this.cours.id > 0) {
-      await this.repository.updateCoursProfs(this.cours.id, this.cours.professeursCours);
+      await this.store.updateCurrentCoursProfs();
     }
 
     this.majListeProf();
@@ -184,7 +193,9 @@ async save(): Promise<void> {
   }
 
   majListeProf(): void {
-    const idsPris = new Set((this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => x.id));
+    const idsPris = new Set(
+      (this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => this.profKey(x))
+    );
 
     this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((x) => !idsPris.has(Number(x.key)));
   }
@@ -255,5 +266,9 @@ async save(): Promise<void> {
       default:
         return jour ?? '';
     }
+  }
+
+  private profKey(p: PersonneLight_VM | any): number {
+    return Number(p?.contrat_id ?? p?.contratId ?? p?.id ?? 0);
   }
 }

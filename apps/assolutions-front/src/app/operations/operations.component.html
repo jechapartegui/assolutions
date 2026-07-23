@@ -117,7 +117,7 @@
         <div class="select is-small">
           <select [(ngModel)]="filterFluxId">
             <option [ngValue]="null">Tous les flux</option>
-            <option *ngFor="let f of flux" [ngValue]="f.id">{{ f.libelle }}</option>
+            <option *ngFor="let f of sortedFlux" [ngValue]="f.id">{{ f.libelle }}</option>
           </select>
         </div>
 
@@ -168,7 +168,7 @@
                     <div class="select is-small is-fullwidth">
                       <select [ngModel]="op.flux_financier_id ?? null" (ngModelChange)="rattacherFlux(op, $event)">
                         <option [ngValue]="null">Non rattachée</option>
-                        <option *ngFor="let f of flux" [ngValue]="f.id">{{ f.libelle }}</option>
+                        <option *ngFor="let f of sortedFlux" [ngValue]="f.id">{{ f.libelle }}</option>
                       </select>
                     </div>
 
@@ -223,7 +223,12 @@
           <div class="operation-info-grid">
             <div class="field">
               <label class="label is-small">Date réelle</label>
-              <input class="input is-small" type="date" [(ngModel)]="selected.date_operation" />
+              <input
+                class="input is-small"
+                type="date"
+                [(ngModel)]="selected.date_operation"
+                (ngModelChange)="onOperationDateChange()"
+              />
             </div>
 
             <div class="field">
@@ -231,14 +236,39 @@
               <input class="input is-small" type="date" [(ngModel)]="selected.date_previsionnelle" />
             </div>
 
+            <label class="checkbox operation-same-date-check">
+              <input
+                type="checkbox"
+                [(ngModel)]="operationSameDate"
+                (ngModelChange)="onOperationSameDateChange()"
+              />
+              Même date
+            </label>
+
             <div class="field">
               <label class="label is-small">Montant</label>
-              <input class="input is-small has-text-right" type="number" [(ngModel)]="selected.solde" />
+              <div class="operation-amount-control">
+                <input class="input is-small has-text-right" type="number" [(ngModel)]="selected.solde" />
+                <span
+                  class="operation-sens-icon"
+                  [class.is-recette]="selected.solde > 0"
+                  [class.is-depense]="selected.solde < 0"
+                  [title]="operationSensLabel"
+                >
+                  <i class="fa-solid" [ngClass]="operationSensIcon"></i>
+                </span>
+              </div>
             </div>
 
             <div class="field">
               <label class="label is-small">Mode</label>
-              <input class="input is-small" type="number" [(ngModel)]="selected.mode" />
+              <div class="select is-small is-fullwidth">
+                <select [(ngModel)]="selected.mode">
+                  <option [ngValue]="1">Virement</option>
+                  <option [ngValue]="2">Liquide</option>
+                  <option [ngValue]="3">Chèque</option>
+                </select>
+              </div>
             </div>
 
             <div class="field">
@@ -267,42 +297,34 @@
             </div>
 
             <div class="field">
-
-                <div class="field">
-                  <label class="label is-small">Mode</label>
-                  <div class="select is-small is-fullwidth">
-                    <select [(ngModel)]="destinataireMode">
-                      <option value="LIBRE">Texte libre</option>
-                      <option value="PERSONNE">Personne</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="field" *ngIf="destinataireMode === 'LIBRE'">
-                  <label class="label is-small">Destinataire</label>
-                  <input class="input is-small" [(ngModel)]="selected.destinataire" list="flux-destinataires" />
-                  <datalist id="flux-destinataires">
-                    <option *ngFor="let label of destinataireSuggestions" [value]="label"></option>
-                  </datalist>
-                </div>
-
-                <div class="field" *ngIf="destinataireMode === 'PERSONNE'">
-                  <label class="label is-small">Personne liée</label>
-                  <app-personne-selector
-                    [(personneId)]="selected.personne_id"
-                    (selectedChange)="onOperationPersonneSelected($event)"
-                    placeholder="Rechercher adhérent / prof"
-                  ></app-personne-selector>
-                  <p class="help" *ngIf="selected.destinataire">Libellé retenu : {{ selected.destinataire }}</p>
-                </div>
-
-                <div class="field">
-                  <label class="label is-small">Info</label>
-                  <textarea class="textarea is-small" rows="2" [(ngModel)]="selected.info"></textarea>
-                </div>
+              <label class="label is-small">Mode destinataire</label>
+              <div class="select is-small is-fullwidth">
+                <select [(ngModel)]="destinataireMode" (ngModelChange)="onDestinataireModeChange()">
+                  <option value="LIBRE">Texte libre</option>
+                  <option value="PERSONNE">Personne</option>
+                </select>
+              </div>
             </div>
 
-            <div class="field">
+            <div class="field" *ngIf="destinataireMode === 'LIBRE'">
+              <label class="label is-small">Destinataire</label>
+              <input class="input is-small" [(ngModel)]="selected.destinataire" list="operation-destinataires" />
+              <datalist id="operation-destinataires">
+                <option *ngFor="let label of destinataireSuggestions" [value]="label"></option>
+              </datalist>
+            </div>
+
+            <div class="field operation-personne-field" *ngIf="destinataireMode === 'PERSONNE'">
+              <label class="label is-small">Personne liée</label>
+              <app-personne-selector
+                [(personneId)]="$any(selected).personne_id"
+                (selectedChange)="onOperationPersonneSelected($event)"
+                placeholder="Rechercher adhérent / prof"
+              ></app-personne-selector>
+              <p class="help" *ngIf="selected.destinataire">Libellé retenu : {{ selected.destinataire }}</p>
+            </div>
+
+            <div class="field operation-info-field">
               <label class="label is-small">Info</label>
               <textarea class="textarea is-small" rows="2" [(ngModel)]="selected.info"></textarea>
             </div>
@@ -312,17 +334,41 @@
         <section class="operation-block">
           <h3 class="title is-6">3. Flux financier</h3>
 
-          <div class="operation-flux-grid">
-            <div class="field">
+          <div class="operation-flux-mode">
+            <label class="radio">
+              <input type="radio" name="fluxLinkMode" value="ATTACH" [(ngModel)]="fluxLinkMode" />
+              Rattacher à un flux existant
+            </label>
+
+            <label class="radio">
+              <input type="radio" name="fluxLinkMode" value="CREATE" [(ngModel)]="fluxLinkMode" />
+              Créer un nouveau flux
+            </label>
+          </div>
+
+          <div class="operation-flux-grid" *ngIf="fluxLinkMode === 'ATTACH'">
+            <div class="field operation-flux-wide">
               <label class="label is-small">Flux lié</label>
               <div class="select is-small is-fullwidth">
-                <select [(ngModel)]="selected.flux_financier_id">
+                <select
+                  [ngModel]="selected.flux_financier_id ?? null"
+                  (ngModelChange)="onOperationFluxSelected($event)"
+                >
                   <option [ngValue]="null">Non rattachée</option>
-                  <option *ngFor="let f of flux" [ngValue]="f.id">{{ f.libelle }}</option>
+                  <option *ngFor="let f of sortedFlux" [ngValue]="f.id">{{ f.libelle }}</option>
                 </select>
               </div>
             </div>
 
+            <div class="field operation-create-flux-action">
+              <label class="label is-small">&nbsp;</label>
+              <button class="button is-small is-primary is-fullwidth" (click)="applyFluxAttachment()" [disabled]="saving">
+                Rattacher et recalculer
+              </button>
+            </div>
+          </div>
+
+          <div class="operation-flux-grid operation-flux-create-grid" *ngIf="fluxLinkMode === 'CREATE'">
             <div class="field">
               <label class="label is-small">Classe du flux à créer</label>
               <div class="select is-small is-fullwidth">
@@ -341,7 +387,7 @@
             <div class="field operation-create-flux-action">
               <label class="label is-small">&nbsp;</label>
               <button class="button is-small is-primary is-fullwidth" (click)="createFluxFromSelectedOperation()" [disabled]="saving">
-                Créer / rattacher un flux
+                Créer et rattacher
               </button>
             </div>
           </div>

@@ -84,6 +84,11 @@ export class OperationsComponent implements OnInit {
 
   createFluxClasseId: number | null = null;
   createFluxLibelle = '';
+  fluxLinkMode: 'ATTACH' | 'CREATE' = 'ATTACH';
+
+  destinataireMode: 'LIBRE' | 'PERSONNE' = 'LIBRE';
+  private lastDestinataireMode: 'LIBRE' | 'PERSONNE' = 'LIBRE';
+  operationSameDate = false;
 
   constructor(
     private financeApi: FinanceApiService,
@@ -198,7 +203,7 @@ export class OperationsComponent implements OnInit {
       date_previsionnelle: this.today(),
       mode: 1,
       destinataire: '',
-      paiement_execute: false,
+      paiement_execute: true,
       compte_bancaire_id: this.comptes[0]?.id ?? 0,
       flux_financier_id: null,
       saison_id: this.active_saison,
@@ -210,6 +215,12 @@ export class OperationsComponent implements OnInit {
 
     this.createFluxClasseId = null;
     this.createFluxLibelle = '';
+    this.fluxLinkMode = 'ATTACH';
+    this.destinataireMode = this.lastDestinataireMode;
+    this.operationSameDate = true;
+    if (this.destinataireMode === 'PERSONNE') {
+      this.selected.destinataire = '';
+    }
     this.documentsOperation = [];
     this.resetDocumentForm();
   }
@@ -218,6 +229,12 @@ export class OperationsComponent implements OnInit {
     this.selected = { ...op };
     this.createFluxClasseId = this.getFlux(op.flux_financier_id ?? null)?.classe_comptable_id ?? null;
     this.createFluxLibelle = op.libelle_bancaire || op.destinataire || `Opération ${op.id}`;
+    this.fluxLinkMode = this.isSystemFlux(op) || !op.flux_financier_id ? 'CREATE' : 'ATTACH';
+    this.destinataireMode = (op as any).personne_id != null ? 'PERSONNE' : 'LIBRE';
+    this.lastDestinataireMode = this.destinataireMode;
+    this.operationSameDate =
+      !op.date_previsionnelle ||
+      this.toDateOnly(op.date_previsionnelle) === this.toDateOnly(op.date_operation);
     this.resetDocumentForm();
     await this.reloadOperationLinkedData(op.id);
   }
@@ -280,9 +297,13 @@ export class OperationsComponent implements OnInit {
 
   async rattacherFlux(op: Operation, fluxId: number | null): Promise<void> {
     try {
+      const oldFluxId = op.flux_financier_id ?? null;
       await this.financeApi.updateOperation(op.id, { flux_financier_id: fluxId });
       op.flux_financier_id = fluxId;
       if (this.selected?.id === op.id) this.selected.flux_financier_id = fluxId;
+
+      await this.syncFluxMontant(oldFluxId);
+      await this.syncFluxMontant(fluxId);
     } catch (err) {
       this.showError('Rattachement au flux', err);
     }
@@ -322,6 +343,7 @@ export class OperationsComponent implements OnInit {
 
       const updated = await this.financeApi.updateOperation(op.id, { flux_financier_id: flux.id });
       this.selected = { ...this.selected, ...updated };
+      this.fluxLinkMode = 'ATTACH';
       await this.reloadData();
     } catch (err) {
       this.showError('Création flux depuis opération', err);
@@ -712,6 +734,7 @@ export class OperationsComponent implements OnInit {
       date_previsionnelle: op.date_previsionnelle ? this.toDateOnly(op.date_previsionnelle) : null,
       mode: Number(op.mode ?? 0),
       destinataire: String(op.destinataire ?? ''),
+      personne_id: (op as any).personne_id ?? null,
       paiement_execute: Boolean(op.paiement_execute),
       compte_bancaire_id: Number(op.compte_bancaire_id ?? 0),
       flux_financier_id: op.flux_financier_id ?? null,
@@ -720,7 +743,7 @@ export class OperationsComponent implements OnInit {
       source_import: op.source_import ?? null,
       import_key: op.import_key ?? null,
       info: op.info ?? null,
-    };
+    } as any;
   }
 
   private today(): string {
@@ -759,26 +782,103 @@ export class OperationsComponent implements OnInit {
   private splitCsvRow(row: string): string[] {
     return row.split(';').map((x) => x.replace(/^"|"$/g, '').trim());
   }
-  destinataireMode: 'LIBRE' | 'PERSONNE' = 'LIBRE';
-onDestinataireModeChange(): void {
-  if (!this.selected) return;
+  onDestinataireModeChange(): void {
+    if (!this.selected) return;
 
-  if (this.destinataireMode === 'LIBRE') {
-    this.selected.personne_id = null;
-  } else {
-    this.selected.destinataire = '';
+    this.lastDestinataireMode = this.destinataireMode;
+
+    if (this.destinataireMode === 'LIBRE') {
+      (this.selected as any).personne_id = null;
+    } else {
+      this.selected.destinataire = '';
+    }
   }
-}
+
+  onOperationDateChange(): void {
+    if (!this.selected) return;
+
+    if (this.operationSameDate || !this.selected.date_previsionnelle) {
+      this.selected.date_previsionnelle = this.selected.date_operation;
+      this.operationSameDate = true;
+    }
+  }
+
+  onOperationSameDateChange(): void {
+    if (!this.selected) return;
+
+    if (this.operationSameDate) {
+      this.selected.date_previsionnelle = this.selected.date_operation;
+    }
+  }
+
+  onOperationFluxSelected(fluxId: number | null): void {
+    if (!this.selected) return;
+    this.selected.flux_financier_id = fluxId;
+  }
+
+  async applyFluxAttachment(): Promise<void> {
+    if (!this.selected?.id) {
+      await this.ensureSelectedOperationSaved();
+    }
+
+    if (!this.selected) return;
+
+    await this.rattacherFlux(this.selected, this.selected.flux_financier_id ?? null);
+  }
+
+  get sortedFlux(): FluxFinancier[] {
+    return [...this.flux].sort((a, b) => (a.libelle || '').localeCompare(b.libelle || '', 'fr'));
+  }
+
+  get operationSensLabel(): string {
+    const solde = Number(this.selected?.solde ?? 0);
+    if (solde > 0) return 'Recette';
+    if (solde < 0) return 'Dépense';
+    return 'Neutre';
+  }
+
+  get operationSensIcon(): string {
+    const solde = Number(this.selected?.solde ?? 0);
+    if (solde > 0) return 'fa-arrow-trend-up';
+    if (solde < 0) return 'fa-arrow-trend-down';
+    return 'fa-minus';
+  }
+
+  async syncFluxMontant(fluxId: number | null | undefined): Promise<void> {
+    if (!fluxId) return;
+
+    const flux = this.getFlux(fluxId);
+    if (!flux) return;
+
+    const total = this.operations
+      .filter((op) => op.flux_financier_id === fluxId)
+      .reduce((sum, op) => sum + Math.abs(Number(op.solde ?? 0)), 0);
+
+    const selectedShouldCount =
+      this.selected?.flux_financier_id === fluxId &&
+      !this.operations.some((op) => op.id === this.selected?.id);
+
+    const totalWithSelected = selectedShouldCount
+      ? total + Math.abs(Number(this.selected?.solde ?? 0))
+      : total;
+
+    await this.fluxApi.update(fluxId, {
+      montant: Number(totalWithSelected.toFixed(2)),
+      nb_paiement: this.operations.filter((op) => op.flux_financier_id === fluxId).length + (selectedShouldCount ? 1 : 0),
+    });
+
+    flux.montant = Number(totalWithSelected.toFixed(2));
+  }
 
   onOperationPersonneSelected(personne: any | null): void {
     if (!this.selected) return;
 
     if (!personne) {
-      this.selected.personne_id = null;
+      (this.selected as any).personne_id = null;
       return;
     }
 
-    this.selected.personne_id = personne.id;
+    (this.selected as any).personne_id = personne.id;
     this.selected.destinataire =
       personne.libelle ||
       `${personne.prenom ?? ''} ${personne.nom ?? ''}`.trim() ||

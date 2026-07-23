@@ -172,7 +172,7 @@
                     </button>
 
                     <button
-                      *ngIf="!resetMode && VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ESSAI'"
+                      *ngIf="!resetMode && VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ACTIVATION' && context != 'ESSAI'"
                       type="button"
                       class="btn-link has-text-centered"
                       (click)="ReinitMDP()"

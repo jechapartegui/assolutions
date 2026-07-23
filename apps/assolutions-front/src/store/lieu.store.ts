@@ -1,7 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Lieu_VM } from '@shared/lib/lieu.interface';
 import { Adresse } from '@shared/lib/adresse.interface';
-import { LieuRepository } from '../repository/lieu.repository';
+import { LieuDataStore } from '../data-store/lieu-data.store';
 import { LieuMapper } from '../mapper/lieu.mapper';
 import { LieuPageVm, LieuSortField, SortDirection } from '../vm/lieu-page.vm';
 import { AppStore } from '../app/app.store';
@@ -35,7 +35,7 @@ private readonly state = signal<LieuPageVm>({
   private initPromise: Promise<void> | null = null;
 
   constructor(
-    private readonly repository: LieuRepository,
+    private readonly lieuDataStore: LieuDataStore,
     private readonly mapper: LieuMapper,
   ) {}
 
@@ -58,7 +58,7 @@ private readonly state = signal<LieuPageVm>({
     this.patch({ refreshing: true, action: 'Mise à jour des lieux' });
 
     try {
-      const list = await this.repository.loadLieux();
+      const list = await this.lieuDataStore.refresh();
 
       this.patch({
         list,
@@ -83,7 +83,7 @@ private readonly state = signal<LieuPageVm>({
     this.patch({ loading: true, action: 'Chargement des lieux' });
 
     try {
-      const list = await this.repository.loadLieux();
+      const list = await this.lieuDataStore.loadAll();
 
       this.patch({
         list,
@@ -113,7 +113,7 @@ private readonly state = signal<LieuPageVm>({
     this.patch({ action: 'Chargement du lieu' });
 
     try {
-      const item = await this.repository.loadLieuById(id);
+      const item = await this.lieuDataStore.getOrLoad(id);
 
       this.patch({
         editLieu: item,
@@ -180,8 +180,8 @@ private readonly state = signal<LieuPageVm>({
     try {
       const saved =
         current.id > 0
-          ? await this.repository.updateLieu(current)
-          : await this.repository.createLieu(current);
+          ? await this.lieuDataStore.update(current)
+          : await this.lieuDataStore.create(current);
 
       const list = this.upsert(this.state().list, saved);
 
@@ -210,7 +210,7 @@ private readonly state = signal<LieuPageVm>({
     this.patch({ action: 'Suppression du lieu' });
 
     try {
-      await this.repository.deleteLieu(id);
+      await this.lieuDataStore.delete(id);
 
       const list = this.state().list.filter((x) => x.id !== id);
 
@@ -236,7 +236,7 @@ private readonly state = signal<LieuPageVm>({
     let count = 0;
 
     for (const id of ids) {
-      await this.repository.deleteLieu(id);
+      await this.lieuDataStore.delete(id);
       count++;
     }
 
@@ -268,7 +268,7 @@ private readonly state = signal<LieuPageVm>({
       copy.id = 0;
       copy.nom = `${item.nom} (copie)`;
 
-      const created = await this.repository.createLieu(copy);
+      const created = await this.lieuDataStore.create(copy);
       list = this.upsert(list, created);
       count++;
     }

@@ -45,8 +45,9 @@ import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
 import { LieuSelectorComponent } from './component/lieu-selector/lieu-selector.component';
+import { CreerCompteComponent } from './creer-compte/creer-compte.component';
 @NgModule({
-  declarations: [
+  declarations: [ CreerCompteComponent,
     AppComponent, PersonneSelectorComponent, ContratProfComponent, ProfesseurComponent, EnvoiMailComponent, ProjetMailComponent, ComptabiliteComponent, OperationsComponent, LieuSelectorComponent,
     AppComponent, LoginComponent, MenuComponent,MultifiltersMenuPipe, CustomButtonComponent, SeanceComponent, SeanceEditorComponent,  LieuComponent, SaisonComponent,
     SeanceListComponent, CoursComponent, CoursEditorComponent, CoursListComponent, MailTemplatePreviewComponent, MaSeanceComponent, DashboardComponent, CompteBancaireComponent, MenuAdminComponent,

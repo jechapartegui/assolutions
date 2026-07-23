@@ -37,4 +37,8 @@ export class PersonneApiService {
   list_by_id(ids: number[]): Promise<Personne[]> {
     return this.api.POST<Personne[]>(`${this.base}/by-ids`, ids); 
   }
+
+  list_by_compte(compte:number): Promise<Personne[]> {
+    return this.api.GET<Personne[]>(`${this.base}/by-compte/${compte}`);
+  }
 }

@@ -1,13 +1,19 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { InscriptionStatus_VM, Seance_VM } from '@shared/index';
-import { MenuRepository } from '../repository/menu.repository';
+
+import { MenuDataStore } from '../data-store/menu-data.store';
 import { CachedScreenStore } from './cached-screen.store';
 import {
   createEmptyMenuVm,
   MenuPendingRefresh,
 } from '../vm/menu.vm';
 
-type MenuRights = { visible?: boolean; adherent?: boolean; prof?: boolean; essai?: boolean } | null;
+type MenuRights = {
+  visible?: boolean;
+  adherent?: boolean;
+  prof?: boolean;
+  essai?: boolean;
+} | null;
 
 @Injectable({ providedIn: 'root' })
 export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
@@ -21,7 +27,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   private hardRefreshPromise: Promise<void> | null = null;
 
   constructor(
-    private readonly menuRepository: MenuRepository,
+    private readonly menuDataStore: MenuDataStore,
   ) {
     super(MenuStore.TTL_MS);
   }
@@ -33,7 +39,6 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   ): Promise<void> {
     const state = this._vm();
 
-    // Si on a déjà des données en mémoire, on les réutilise immédiatement
     if (this.hasCurrentCache(state.initialized)) {
       if (this.shouldRefreshSilently(state.initialized, state.lastLoadedAt)) {
         void this.refreshSilently(projectId, saisonId, rights);
@@ -41,10 +46,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
       return;
     }
 
-    // Empêche plusieurs init simultanés
-    if (this.initPromise) {
-      return this.initPromise;
-    }
+    if (this.initPromise) return this.initPromise;
 
     this.initPromise = this.loadInitialData(projectId, saisonId, rights);
 
@@ -66,20 +68,24 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
       action: $localize`Chargement du menu`,
     }));
 
-    const fresh = await this.menuRepository.loadMenuData(projectId, saisonId, rights);
-
-    this.setCurrentData(fresh);
-
-    this._vm.set({
-      ...fresh.refs,
-      riders: fresh.riders,
-      anniversaire: fresh.anniversaire,
-      loading: false,
-      initialized: true,
-      refreshAvailable: false,
-      lastLoadedAt: Date.now(),
-      action: '',
-    });
+    try {
+      const fresh = await this.menuDataStore.load(projectId, saisonId, rights);
+      this.setCurrentData(fresh);
+      this.applyDataToVm(fresh, {
+        loading: false,
+        initialized: true,
+        refreshAvailable: false,
+        lastLoadedAt: Date.now(),
+        action: '',
+      });
+    } catch {
+      this._vm.update((s) => ({
+        ...s,
+        loading: false,
+        action: '',
+      }));
+      throw new Error('Chargement du menu impossible');
+    }
   }
 
   async refreshSilently(
@@ -87,9 +93,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
     saisonId: number,
     rights: MenuRights,
   ): Promise<void> {
-    if (this.silentRefreshPromise) {
-      return this.silentRefreshPromise;
-    }
+    if (this.silentRefreshPromise) return this.silentRefreshPromise;
 
     this.silentRefreshPromise = this.runSilentRefresh(projectId, saisonId, rights);
 
@@ -106,12 +110,12 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
     rights: MenuRights,
   ): Promise<void> {
     try {
-      const fresh = await this.menuRepository.loadMenuData(projectId, saisonId, rights);
-
-      const changed = this.menuRepository.hasChanged(this.currentData, fresh);
+      const fresh = await this.menuDataStore.refresh(projectId, saisonId, rights);
+      const changed = this.menuDataStore.hasChanged(this.currentData, fresh);
 
       if (!changed) {
         this.setPendingData(null);
+        this.setCurrentData(fresh);
         this._vm.update((s) => ({
           ...s,
           refreshAvailable: false,
@@ -121,13 +125,12 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
       }
 
       this.setPendingData(fresh);
-
       this._vm.update((s) => ({
         ...s,
         refreshAvailable: true,
       }));
     } catch {
-      // Refresh silencieux : on n’écrase jamais l’affichage courant
+      // Refresh silencieux : on n’écrase jamais l’affichage courant.
     }
   }
 
@@ -136,9 +139,7 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
     saisonId: number,
     rights: MenuRights,
   ): Promise<void> {
-    if (this.hardRefreshPromise) {
-      return this.hardRefreshPromise;
-    }
+    if (this.hardRefreshPromise) return this.hardRefreshPromise;
 
     this.hardRefreshPromise = this.runHardRefresh(projectId, saisonId, rights);
 
@@ -161,14 +162,9 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
     }));
 
     try {
-      const fresh = await this.menuRepository.loadMenuData(projectId, saisonId, rights);
-
+      const fresh = await this.menuDataStore.refresh(projectId, saisonId, rights);
       this.setCurrentData(fresh);
-
-      this._vm.set({
-        ...fresh.refs,
-        riders: fresh.riders,
-        anniversaire: fresh.anniversaire,
+      this.applyDataToVm(fresh, {
         loading: false,
         initialized: true,
         refreshAvailable: false,
@@ -189,14 +185,11 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
     const applied = this.applyPendingData();
     if (!applied) return;
 
-    this._vm.update((s) => ({
-      ...s,
-      ...applied.refs,
-      riders: applied.riders,
-      anniversaire: applied.anniversaire,
+    this.menuDataStore.setCurrent(applied);
+    this.applyDataToVm(applied, {
       refreshAvailable: false,
       lastLoadedAt: Date.now(),
-    }));
+    });
   }
 
   patchLocalInscription(
@@ -204,6 +197,17 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
     seanceId: number,
     statut: InscriptionStatus_VM | null,
   ): void {
+    this.menuDataStore.patchLocalInscription(riderId, seanceId, statut);
+    const patched = this.menuDataStore.current();
+
+    if (patched) {
+      this.setCurrentData(patched);
+      this.applyDataToVm(patched, {
+        lastLoadedAt: this._vm().lastLoadedAt,
+      });
+      return;
+    }
+
     this._vm.update((state) => {
       for (const rider of state.riders) {
         if (rider.id !== riderId) continue;
@@ -219,48 +223,52 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
         riders: [...state.riders],
       };
     });
-
-    // Comme currentData et le VM partagent les mêmes objets au chargement,
-    // la mutation locale est déjà reflétée. On garde simplement le cache vivant.
-    if (this.currentData) {
-      this._vm.update((s) => ({
-        ...s,
-        lastLoadedAt: s.lastLoadedAt,
-      }));
-    }
   }
-patchLocalSeance(seance: Seance_VM): void {
-  this._vm.update((state) => {
-    const updatedRiders = state.riders.map((rider) => {
-      const clonedRider = Object.assign(
-        Object.create(Object.getPrototypeOf(rider)),
-        rider
-      ) as typeof rider;
 
-      clonedRider.MesSeances = (rider.MesSeances ?? []).map((ms) => {
-        if (ms.seance?.id !== seance.id) return ms;
+  patchLocalSeance(seance: Seance_VM): void {
+    this.menuDataStore.patchLocalSeance(seance);
+    const patched = this.menuDataStore.current();
 
-        return {
-          ...ms,
-          seance: {
-            ...ms.seance,
-            ...seance,
-          },
-        };
+    if (patched) {
+      this.setCurrentData(patched);
+      this.applyDataToVm(patched, {
+        lastLoadedAt: this._vm().lastLoadedAt,
+      });
+      return;
+    }
+
+    this._vm.update((state) => {
+      const updatedRiders = state.riders.map((rider) => {
+        const clonedRider = Object.assign(
+          Object.create(Object.getPrototypeOf(rider)),
+          rider,
+        ) as typeof rider;
+
+        clonedRider.MesSeances = (rider.MesSeances ?? []).map((ms) => {
+          if (ms.seance?.id !== seance.id) return ms;
+
+          return {
+            ...ms,
+            seance: {
+              ...ms.seance,
+              ...seance,
+            },
+          };
+        });
+
+        return clonedRider;
       });
 
-      return clonedRider;
+      return {
+        ...state,
+        riders: updatedRiders,
+      };
     });
-
-    return {
-      ...state,
-      riders: updatedRiders,
-    };
-  });
-}
+  }
 
   invalidate(): void {
     this.clearCacheData();
+    this.menuDataStore.clear();
     this._vm.update((s) => ({
       ...s,
       initialized: false,
@@ -271,9 +279,23 @@ patchLocalSeance(seance: Seance_VM): void {
 
   reset(): void {
     this.clearCacheData();
+    this.menuDataStore.clear();
     this.initPromise = null;
     this.silentRefreshPromise = null;
     this.hardRefreshPromise = null;
     this._vm.set(createEmptyMenuVm());
+  }
+
+  private applyDataToVm(
+    data: MenuPendingRefresh,
+    patch: Partial<ReturnType<typeof createEmptyMenuVm>> = {},
+  ): void {
+    this._vm.set({
+      ...this._vm(),
+      ...data.refs,
+      riders: data.riders,
+      anniversaire: data.anniversaire,
+      ...patch,
+    });
   }
 }
