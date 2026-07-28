@@ -7,6 +7,21 @@ export interface Groupe {
 
   whatsapp?: string | null;
   visible?: boolean | null;
+
+  /** Âge minimum requis pour proposer le groupe dans le tunnel. */
+  age_min?: number | null;
+
+  /** Âge maximum autorisé pour proposer le groupe dans le tunnel. */
+  age_max?: number | null;
+
+  /** Année de naissance minimale autorisée. */
+  annee_min?: number | null;
+
+  /** Année de naissance maximale autorisée. */
+  annee_max?: number | null;
+
+  /** Nombre maximal de personnes dans le groupe. */
+  limit_nb?: number | null;
 }
 
 export type CreateGroupeDto = Omit<Groupe, 'id' | 'project_id'>;

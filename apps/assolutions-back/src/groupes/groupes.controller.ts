@@ -1,4 +1,5 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -11,33 +12,47 @@ export class GroupesController {
 
   @UseGuards(JwtAuthGuard)
   @Get('saison/:saisonId')
-  list(@Param('saisonId', ParseIntPipe) saisonId: number) {
-    return this.service.listForProject(saisonId);
+  list(
+    @Param('saisonId', ParseIntPipe) saisonId: number,
+    @ProjectId() projectId: number,
+  ) {
+    return this.service.listForProject(saisonId, projectId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  get(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.getForProject(id, projectId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@ProjectId() projectId: number, @Body() dto: CreateGroupesDto) {
+  create(
+    @ProjectId() projectId: number,
+    @Body() dto: CreateGroupesDto,
+  ) {
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateGroupesDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateGroupesDto,
+  ) {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.remove(id, projectId);
   }
 }

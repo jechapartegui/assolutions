@@ -1,4 +1,4 @@
-﻿import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'groupes' })
 export class GroupesEntity {
@@ -22,4 +22,19 @@ export class GroupesEntity {
 
   @Column({ type: 'boolean', nullable: true })
   visible: boolean | null;
+
+  @Column({ type: 'int', nullable: true })
+  age_min: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  age_max: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  annee_min: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  annee_max: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  limit_nb: number | null;
 }

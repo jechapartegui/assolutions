@@ -1,4 +1,11 @@
-﻿import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateGroupesDto {
   @IsString()
@@ -16,6 +23,31 @@ export class CreateGroupesDto {
   @IsOptional()
   @IsBoolean()
   visible?: boolean | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  age_min?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  age_max?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  annee_min?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  annee_max?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  limit_nb?: number | null;
 }
 
 export class UpdateGroupesDto {
@@ -36,4 +68,29 @@ export class UpdateGroupesDto {
   @IsOptional()
   @IsBoolean()
   visible?: boolean | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  age_min?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  age_max?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  annee_min?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  annee_max?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  limit_nb?: number | null;
 }

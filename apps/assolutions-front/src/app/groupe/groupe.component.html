@@ -11,7 +11,12 @@
         <p class="subtitle is-7 mb-0">{{ vm.groupes.length }} groupe(s)</p>
       </div>
 
-      <button class="button is-primary is-light" type="button" (click)="groupeStore.startCreate()">
+      <button
+        class="button is-primary is-light"
+        type="button"
+        (click)="groupeStore.startCreate()"
+        [disabled]="vm.loading"
+      >
         <span class="icon"><i class="fas fa-plus"></i></span>
         <span>Créer</span>
       </button>
@@ -24,10 +29,16 @@
           class="groupe-list-item"
           type="button"
           [class.is-active]="vm.selectedGroupeId === groupe.id"
+          [class.is-full]="isCapacityReached(groupe)"
           (click)="groupeStore.selectGroupe(groupe.id)"
         >
           <span class="groupe-list-name">{{ groupe.nom }}</span>
-          <span class="tag is-light">{{ countMembers(groupe.id) }}</span>
+          <span
+            class="tag"
+            [ngClass]="isCapacityReached(groupe) ? 'is-danger is-light' : 'is-light'"
+          >
+            {{ countMembersLabel(groupe) }}
+          </span>
         </button>
 
         <div class="groupe-empty" *ngIf="vm.groupes.length === 0">
@@ -39,66 +50,225 @@
         <article class="groupe-edit-card" *ngIf="vm.editGroupe as edit">
           <header class="groupe-section-header">
             <div>
-              <p class="title is-6 mb-1">{{ edit.id ? 'Modifier le groupe' : 'Créer un groupe' }}</p>
-              <p class="subtitle is-7 mb-0">Une seule fiche groupe est éditable à la fois.</p>
+              <p class="title is-6 mb-1">
+                {{ edit.id ? 'Modifier le groupe' : 'Créer un groupe' }}
+              </p>
+              <p class="subtitle is-7 mb-0">
+                Tous les critères d’éligibilité sont facultatifs.
+              </p>
+            </div>
+
+            <div class="buttons mb-0 groupe-editor-header-actions">
+              <button
+                class="button is-primary"
+                type="button"
+                (click)="saveGroupe()"
+                [disabled]="!edit.nom?.trim() || vm.loading"
+              >
+                <span class="icon"><i class="fas fa-floppy-disk"></i></span>
+                <span>{{ edit.id ? 'Enregistrer' : 'Créer le groupe' }}</span>
+              </button>
+
+              <button
+                class="button is-light"
+                type="button"
+                (click)="groupeStore.cancelEdit()"
+                [disabled]="vm.loading"
+              >
+                <span class="icon"><i class="fas fa-xmark"></i></span>
+                <span>Annuler</span>
+              </button>
             </div>
           </header>
 
-          <div class="columns is-multiline is-variable is-2">
-            <div class="column is-12-tablet is-5-desktop">
-              <label class="label">Nom</label>
-              <input class="input" [ngModel]="edit.nom" (ngModelChange)="groupeStore.patchEdit({ nom: $event })" />
+          <div class="groupe-edit-content">
+            <div class="columns is-multiline is-variable is-2 mb-0">
+              <div class="column is-12-tablet is-5-desktop">
+                <label class="label">Nom</label>
+                <input
+                  class="input"
+                  [ngModel]="edit.nom"
+                  (ngModelChange)="groupeStore.patchEdit({ nom: $event })"
+                />
+              </div>
+
+              <div class="column is-12-tablet is-5-desktop">
+                <label class="label">Lien WhatsApp</label>
+                <input
+                  class="input"
+                  [ngModel]="edit.whatsapp"
+                  (ngModelChange)="groupeStore.patchEdit({ whatsapp: $event })"
+                />
+              </div>
+
+              <div class="column is-12-tablet is-2-desktop groupe-checkbox-column">
+                <label class="checkbox">
+                  <input
+                    type="checkbox"
+                    [ngModel]="edit.visible"
+                    (ngModelChange)="groupeStore.patchEdit({ visible: $event })"
+                  />
+                  Public
+                </label>
+              </div>
             </div>
 
-            <div class="column is-12-tablet is-5-desktop">
-              <label class="label">Lien WhatsApp</label>
-              <input class="input" [ngModel]="edit.whatsapp" (ngModelChange)="groupeStore.patchEdit({ whatsapp: $event })" />
-            </div>
+            <section class="groupe-criteria-box">
+              <div class="groupe-criteria-heading">
+                <div>
+                  <p class="title is-7 mb-1">Critères d’éligibilité</p>
+                  <p class="is-size-7 has-text-grey mb-0">
+                    Laisse un champ vide pour ne pas appliquer cette contrainte.
+                  </p>
+                </div>
+                <span class="tag is-info is-light">Tunnel de souscription</span>
+              </div>
 
-            <div class="column is-12-tablet is-2-desktop groupe-checkbox-column">
-              <label class="checkbox">
-                <input type="checkbox" [ngModel]="edit.visible" (ngModelChange)="groupeStore.patchEdit({ visible: $event })" />
-                Visible
-              </label>
-            </div>
+              <div class="columns is-multiline is-variable is-2 mb-0">
+                <div class="column is-6-mobile is-3-desktop">
+                  <label class="label">Âge minimum</label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Aucun"
+                    [ngModel]="edit.age_min"
+                    (ngModelChange)="groupeStore.patchEdit({ age_min: $event })"
+                  />
+                </div>
+
+                <div class="column is-6-mobile is-3-desktop">
+                  <label class="label">Âge maximum</label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Aucun"
+                    [ngModel]="edit.age_max"
+                    (ngModelChange)="groupeStore.patchEdit({ age_max: $event })"
+                  />
+                </div>
+
+                <div class="column is-6-mobile is-3-desktop">
+                  <label class="label">Année naissance min.</label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Aucune"
+                    [ngModel]="edit.annee_min"
+                    (ngModelChange)="groupeStore.patchEdit({ annee_min: $event })"
+                  />
+                </div>
+
+                <div class="column is-6-mobile is-3-desktop">
+                  <label class="label">Année naissance max.</label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Aucune"
+                    [ngModel]="edit.annee_max"
+                    (ngModelChange)="groupeStore.patchEdit({ annee_max: $event })"
+                  />
+                </div>
+
+                <div class="column is-12-mobile is-4-tablet is-3-desktop">
+                  <label class="label">Nombre maximal de places</label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="Illimité"
+                    [ngModel]="edit.limit_nb"
+                    (ngModelChange)="groupeStore.patchEdit({ limit_nb: $event })"
+                  />
+                </div>
+              </div>
+            </section>
           </div>
 
-          <div class="buttons mb-0">
-            <button class="button is-primary" type="button" (click)="saveGroupe()" [disabled]="!edit.nom?.trim()">
-              <span class="icon"><i class="fas fa-floppy-disk"></i></span>
-              <span>Enregistrer</span>
-            </button>
-            <button class="button is-light" type="button" (click)="groupeStore.cancelEdit()">
-              <span class="icon"><i class="fas fa-xmark"></i></span>
-              <span>Annuler</span>
-            </button>
-          </div>
         </article>
 
-        <article class="groupe-detail-card" *ngIf="selectedGroupe() as groupe">
+        <article
+          class="groupe-detail-card"
+          *ngIf="displayedGroupe() as groupe"
+        >
           <header class="groupe-section-header">
             <div>
               <p class="title is-6 mb-1">{{ groupe.nom }}</p>
               <div class="tags mb-0">
-                <span class="tag" [ngClass]="groupe.visible ? 'is-success is-light' : 'is-warning is-light'">
+                <span
+                  class="tag"
+                  [ngClass]="groupe.visible ? 'is-success is-light' : 'is-warning is-light'"
+                >
                   {{ groupe.visible ? 'Public' : 'Privé' }}
                 </span>
-                <span class="tag is-info is-light">{{ membersOfSelectedGroupe().length }} adhérent(s)</span>
+                <span
+                  class="tag"
+                  [ngClass]="isCapacityReached(groupe) ? 'is-danger is-light' : 'is-info is-light'"
+                >
+                  {{ countMembersLabel(groupe) }} adhérent(s)
+                </span>
                 <span class="tag is-light" *ngIf="groupe.whatsapp">WhatsApp</span>
+                <span class="tag is-danger is-light" *ngIf="isCapacityReached(groupe)">
+                  Complet
+                </span>
               </div>
             </div>
 
             <div class="buttons mb-0">
-              <button class="button is-light" type="button" (click)="groupeStore.startEdit(groupe)">
+              <button
+                class="button is-light"
+                type="button"
+                (click)="groupeStore.startEdit(groupe)"
+              >
                 <span class="icon"><i class="fas fa-pen"></i></span>
                 <span>Modifier</span>
               </button>
-              <button class="button is-danger is-light" type="button" (click)="deleteGroupe(groupe)">
+              <button
+                class="button is-danger is-light"
+                type="button"
+                (click)="deleteGroupe(groupe)"
+              >
                 <span class="icon"><i class="fas fa-trash"></i></span>
                 <span>Supprimer</span>
               </button>
             </div>
           </header>
+
+          <section class="groupe-criteria-summary">
+            <div class="groupe-criteria-summary-title">
+              <span class="icon"><i class="fas fa-filter"></i></span>
+              <span>Éligibilité dans le tunnel</span>
+            </div>
+
+            <div class="tags mb-0" *ngIf="hasEligibilityCriteria(groupe); else noCriteria">
+              <span class="tag is-info is-light" *ngIf="getAgeCriteriaLabel(groupe) as ageLabel">
+                {{ ageLabel }}
+              </span>
+              <span
+                class="tag is-info is-light"
+                *ngIf="getBirthYearCriteriaLabel(groupe) as yearLabel"
+              >
+                {{ yearLabel }}
+              </span>
+              <span class="tag is-info is-light" *ngIf="groupe.limit_nb != null">
+                {{ groupe.limit_nb }} place(s) maximum
+              </span>
+            </div>
+
+            <ng-template #noCriteria>
+              <p class="is-size-7 has-text-grey mb-0">
+                Aucun critère : ce groupe n’est pas filtré par âge, année de naissance ou capacité.
+              </p>
+            </ng-template>
+          </section>
 
           <div class="groupe-add-panel">
             <div class="field mb-0 groupe-filter-field">
@@ -106,30 +276,47 @@
               <input
                 class="input"
                 placeholder="Filtrer nom / prénom / surnom"
-                [ngModel]="vm.filterAdherent" (ngModelChange)="groupeStore.setFilterAdherent($event)"
+                [ngModel]="vm.filterAdherent"
+                (ngModelChange)="groupeStore.setFilterAdherent($event)"
               />
             </div>
 
             <div class="field mb-0 groupe-select-field">
               <label class="label">Adhérent</label>
               <div class="select is-fullwidth">
-                <select [ngModel]="vm.adherentToAddId" (ngModelChange)="groupeStore.setAdherentToAddId($event)">
+                <select
+                  [ngModel]="vm.adherentToAddId"
+                  (ngModelChange)="groupeStore.setAdherentToAddId($event)"
+                >
                   <option [ngValue]="null">---</option>
-                  <option *ngFor="let adherent of availableAdherentsForSelectedGroupe()" [ngValue]="adherent.id">
+                  <option
+                    *ngFor="let adherent of availableAdherentsForSelectedGroupe()"
+                    [ngValue]="adherent.id"
+                  >
                     {{ adherent.libelle || (adherent.prenom + ' ' + adherent.nom) }}
                   </option>
                 </select>
               </div>
             </div>
 
-            <button class="button is-primary" type="button" [disabled]="!vm.adherentToAddId" (click)="addAdherent()">
+            <button
+              class="button is-primary"
+              type="button"
+              [disabled]="!vm.adherentToAddId"
+              (click)="addAdherent()"
+            >
               <span class="icon"><i class="fas fa-plus"></i></span>
               <span>Ajouter</span>
             </button>
           </div>
 
-          <div class="groupe-members-zone" *ngIf="membersOfSelectedGroupe().length > 0">
-            <table class="table is-fullwidth is-hoverable groupe-members-table is-hidden-touch">
+          <div
+            class="groupe-members-zone"
+            *ngIf="membersOfSelectedGroupe().length > 0"
+          >
+            <table
+              class="table is-fullwidth is-hoverable groupe-members-table is-hidden-touch"
+            >
               <thead>
                 <tr>
                   <th>Adhérent</th>
@@ -142,17 +329,32 @@
                   <td>
                     <div class="groupe-identite">
                       <div class="groupe-avatar">
-                        <img *ngIf="adherent.photo" [src]="adherent.photo" [alt]="adherent.libelle || 'Photo adhérent'" />
-                        <div *ngIf="!adherent.photo" class="groupe-avatar-fallback">{{ getInitiales(adherent) }}</div>
+                        <img
+                          *ngIf="adherent.photo"
+                          [src]="adherent.photo"
+                          [alt]="adherent.libelle || 'Photo adhérent'"
+                        />
+                        <div
+                          *ngIf="!adherent.photo"
+                          class="groupe-avatar-fallback"
+                        >
+                          {{ getInitiales(adherent) }}
+                        </div>
                       </div>
                       <div class="groupe-identite-text">
-                        <div class="groupe-identite-nom">{{ adherent.libelle || (adherent.prenom + ' ' + adherent.nom) }}</div>
+                        <div class="groupe-identite-nom">
+                          {{ adherent.libelle || (adherent.prenom + ' ' + adherent.nom) }}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td>{{ adherent.contact?.[0]?.Value || '' }}</td>
                   <td class="has-text-right">
-                    <button class="button is-small is-danger is-light" type="button" (click)="removeAdherent(adherent)">
+                    <button
+                      class="button is-small is-danger is-light"
+                      type="button"
+                      (click)="removeAdherent(adherent)"
+                    >
                       <span class="icon"><i class="fas fa-user-minus"></i></span>
                       <span>Retirer</span>
                     </button>
@@ -162,26 +364,49 @@
             </table>
 
             <div class="groupe-mobile-list is-hidden-desktop">
-              <article class="groupe-member-tile" *ngFor="let adherent of membersOfSelectedGroupe()">
+              <article
+                class="groupe-member-tile"
+                *ngFor="let adherent of membersOfSelectedGroupe()"
+              >
                 <div class="groupe-identite">
                   <div class="groupe-avatar groupe-avatar--mobile">
-                    <img *ngIf="adherent.photo" [src]="adherent.photo" [alt]="adherent.libelle || 'Photo adhérent'" />
-                    <div *ngIf="!adherent.photo" class="groupe-avatar-fallback">{{ getInitiales(adherent) }}</div>
+                    <img
+                      *ngIf="adherent.photo"
+                      [src]="adherent.photo"
+                      [alt]="adherent.libelle || 'Photo adhérent'"
+                    />
+                    <div
+                      *ngIf="!adherent.photo"
+                      class="groupe-avatar-fallback"
+                    >
+                      {{ getInitiales(adherent) }}
+                    </div>
                   </div>
                   <div class="groupe-identite-text">
-                    <div class="groupe-identite-nom">{{ adherent.libelle || 'Adhérent sans nom' }}</div>
-                    <p class="is-size-7 has-text-grey mb-0">{{ adherent.contact?.[0]?.Value || '' }}</p>
+                    <div class="groupe-identite-nom">
+                      {{ adherent.libelle || 'Adhérent sans nom' }}
+                    </div>
+                    <p class="is-size-7 has-text-grey mb-0">
+                      {{ adherent.contact?.[0]?.Value || '' }}
+                    </p>
                   </div>
                 </div>
 
-                <button class="button is-small is-danger is-light" type="button" (click)="removeAdherent(adherent)">
+                <button
+                  class="button is-small is-danger is-light"
+                  type="button"
+                  (click)="removeAdherent(adherent)"
+                >
                   <span class="icon"><i class="fas fa-user-minus"></i></span>
                 </button>
               </article>
             </div>
           </div>
 
-          <div class="groupe-empty" *ngIf="membersOfSelectedGroupe().length === 0">
+          <div
+            class="groupe-empty"
+            *ngIf="membersOfSelectedGroupe().length === 0"
+          >
             Aucun adhérent dans ce groupe.
           </div>
         </article>

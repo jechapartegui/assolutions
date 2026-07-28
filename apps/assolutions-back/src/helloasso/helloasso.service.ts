@@ -20,6 +20,7 @@ export class HelloAssoService {
   private readonly logger = new Logger(HelloAssoService.name);
 
   async createTestCheckout() {
+    
     this.logger.log('=== HELLOASSO POC / createTestCheckout START ===');
 
     this.logEnvState();

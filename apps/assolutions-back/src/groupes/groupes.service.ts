@@ -1,10 +1,20 @@
-﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateGroupesDto, UpdateGroupesDto } from './groupes.dto';
 import { GroupesEntity } from './groupes.entity';
+
+type GroupeEligibilityCriteria = Pick<
+  GroupesEntity,
+  'age_min' | 'age_max' | 'annee_min' | 'annee_max' | 'limit_nb'
+>;
 
 @Injectable()
 export class GroupesService {
@@ -13,54 +23,157 @@ export class GroupesService {
     private readonly repo: Repository<GroupesEntity>,
     @InjectRepository(SaisonEntity)
     private readonly saisonRepo: Repository<SaisonEntity>,
-    
   ) {}
 
-  private async assertSaisonInProject(saisonId: number, projectId: number) {
+  private async assertSaisonInProject(
+    saisonId: number,
+    projectId: number,
+  ): Promise<void> {
     const saison = await this.saisonRepo.findOne({ where: { id: saisonId } });
-    if (!saison) throw new NotFoundException(`saison ${saisonId} introuvable`);
-    if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
+
+    if (!saison) {
+      throw new NotFoundException(`saison ${saisonId} introuvable`);
+    }
+
+    if (saison.project_id !== projectId) {
+      throw new ForbiddenException('WRONG_PROJECT');
+    }
   }
 
-  listForProject(saisonId: number) {
-    return this.repo
-      .createQueryBuilder('g')
-      .innerJoin('saison', 's', 's.id = g.saison_id')
-      .where('s.id = :saisonId', { saisonId })
-      .orderBy('g.id', 'ASC')
-      .getMany();
+  private assertEligibilityCriteria(
+    criteria: GroupeEligibilityCriteria,
+  ): void {
+    if (
+      criteria.age_min !== null &&
+      criteria.age_max !== null &&
+      criteria.age_min > criteria.age_max
+    ) {
+      throw new BadRequestException(
+        "L'âge minimum ne peut pas être supérieur à l'âge maximum",
+      );
+    }
+
+    if (
+      criteria.annee_min !== null &&
+      criteria.annee_max !== null &&
+      criteria.annee_min > criteria.annee_max
+    ) {
+      throw new BadRequestException(
+        "L'année minimum ne peut pas être supérieure à l'année maximum",
+      );
+    }
   }
 
-  async getForProject(id: number, projectId: number) {
+  private criteriaFromCreateDto(
+    dto: CreateGroupesDto,
+  ): GroupeEligibilityCriteria {
+    return {
+      age_min: dto.age_min ?? null,
+      age_max: dto.age_max ?? null,
+      annee_min: dto.annee_min ?? null,
+      annee_max: dto.annee_max ?? null,
+      limit_nb: dto.limit_nb ?? null,
+    };
+  }
+
+  private criteriaAfterUpdate(
+    item: GroupesEntity,
+    dto: UpdateGroupesDto,
+  ): GroupeEligibilityCriteria {
+    return {
+      age_min: dto.age_min !== undefined ? dto.age_min : item.age_min,
+      age_max: dto.age_max !== undefined ? dto.age_max : item.age_max,
+      annee_min:
+        dto.annee_min !== undefined ? dto.annee_min : item.annee_min,
+      annee_max:
+        dto.annee_max !== undefined ? dto.annee_max : item.annee_max,
+      limit_nb:
+        dto.limit_nb !== undefined ? dto.limit_nb : item.limit_nb,
+    };
+  }
+
+  async listForProject(
+    saisonId: number,
+    projectId: number,
+  ): Promise<GroupesEntity[]> {
+    await this.assertSaisonInProject(saisonId, projectId);
+
+    return this.repo.find({
+      where: { saison_id: saisonId },
+      order: { id: 'ASC' },
+    });
+  }
+
+  async getForProject(
+    id: number,
+    projectId: number,
+  ): Promise<GroupesEntity> {
     const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException(`groupes ${id} introuvable`);
+
+    if (!item) {
+      throw new NotFoundException(`groupes ${id} introuvable`);
+    }
+
     await this.assertSaisonInProject(item.saison_id, projectId);
     return item;
   }
 
-  async create(dto: CreateGroupesDto, projectId: number) {
+  async create(
+    dto: CreateGroupesDto,
+    projectId: number,
+  ): Promise<GroupesEntity> {
     await this.assertSaisonInProject(dto.saison_id, projectId);
 
-    const entity = this.repo.create(dto as CreateGroupesDto);
-    const saved = await this.repo.save(entity);
+    const criteria = this.criteriaFromCreateDto(dto);
+    this.assertEligibilityCriteria(criteria);
 
-    return saved;
+    const entity = this.repo.create({
+      ...dto,
+      nom: dto.nom.trim(),
+      whatsapp: dto.whatsapp?.trim() || null,
+      visible: dto.visible ?? null,
+      ...criteria,
+    });
+
+    return this.repo.save(entity);
   }
 
-  async update(id: number, dto: UpdateGroupesDto, projectId: number) {
+  async update(
+    id: number,
+    dto: UpdateGroupesDto,
+    projectId: number,
+  ): Promise<GroupesEntity> {
     const item = await this.getForProject(id, projectId);
 
-    if (dto.saison_id && dto.saison_id !== item.saison_id) {
+    if (
+      dto.saison_id !== undefined &&
+      dto.saison_id !== item.saison_id
+    ) {
       await this.assertSaisonInProject(dto.saison_id, projectId);
     }
 
-    Object.assign(item, dto, { date_maj: new Date() });
-    const saved = await this.repo.save(item);
+    const criteria = this.criteriaAfterUpdate(item, dto);
+    this.assertEligibilityCriteria(criteria);
 
-    return saved;
+    Object.assign(item, dto, criteria, {
+      date_maj: new Date(),
+    });
+
+    if (dto.nom !== undefined) {
+      item.nom = dto.nom.trim();
+    }
+
+    if (dto.whatsapp !== undefined) {
+      item.whatsapp = dto.whatsapp?.trim() || null;
+    }
+
+    return this.repo.save(item);
   }
 
-  async remove(id: number, projectId: number) {
+  async remove(
+    id: number,
+    projectId: number,
+  ): Promise<{ ok: true }> {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
 

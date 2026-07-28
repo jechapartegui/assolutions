@@ -61,7 +61,9 @@ export class GroupeStore {
         this.adherentDataStore.loadBySaison(saisonId),
       ]);
 
-      const selectedStillExists = groupes.some((g) => g.id === this.state().selectedGroupeId);
+      const selectedStillExists = groupes.some(
+        (g) => g.id === this.state().selectedGroupeId,
+      );
       const selectedGroupeId = selectedStillExists
         ? this.state().selectedGroupeId
         : groupes[0]?.id ?? null;
@@ -86,18 +88,30 @@ export class GroupeStore {
   }
 
   selectGroupe(id: number): void {
-    this.patch({ selectedGroupeId: id, editGroupe: null, adherentToAddId: null });
+    this.patch({
+      selectedGroupeId: id,
+      editGroupe: null,
+      adherentToAddId: null,
+    });
   }
 
   startCreate(): void {
     this.patch({
+      // En création, aucun groupe existant ne doit paraître sélectionné.
+      selectedGroupeId: null,
+      adherentToAddId: null,
       editGroupe: {
         id: 0,
-        saison_id: this.state().activeSaisonId,
+        saison_id: this.state().activeSaisonId ?? 0,
         project_id: this.appstore.selectedProjectId(),
         nom: '',
-        whatsapp: '',
+        whatsapp: null,
         visible: false,
+        age_min: null,
+        age_max: null,
+        annee_min: null,
+        annee_max: null,
+        limit_nb: null,
       },
     });
   }
@@ -105,12 +119,29 @@ export class GroupeStore {
   startEdit(groupe: Groupe): void {
     this.patch({
       selectedGroupeId: groupe.id,
-      editGroupe: { ...groupe },
+      editGroupe: {
+        ...groupe,
+        whatsapp: groupe.whatsapp ?? null,
+        visible: groupe.visible ?? false,
+        age_min: groupe.age_min ?? null,
+        age_max: groupe.age_max ?? null,
+        annee_min: groupe.annee_min ?? null,
+        annee_max: groupe.annee_max ?? null,
+        limit_nb: groupe.limit_nb ?? null,
+      },
     });
   }
 
   cancelEdit(): void {
-    this.patch({ editGroupe: null });
+    const current = this.state();
+    const selectedGroupeId =
+      current.selectedGroupeId ?? current.groupes[0]?.id ?? null;
+
+    this.patch({
+      editGroupe: null,
+      selectedGroupeId,
+      adherentToAddId: null,
+    });
   }
 
   patchEdit(partial: Partial<Groupe>): void {
@@ -129,23 +160,31 @@ export class GroupeStore {
     if (!nom) throw new Error('Le nom du groupe est obligatoire');
 
     const duplicate = this.state().groupes.some(
-      (g) => g.id !== current.id && g.nom.trim().toLowerCase() === nom.toLowerCase(),
+      (g) =>
+        g.id !== current.id &&
+        g.nom.trim().toLowerCase() === nom.toLowerCase(),
     );
     if (duplicate) throw new Error('Un groupe existe déjà avec ce nom');
 
-    this.patch({ loading: true, action: current.id ? 'Mise à jour du groupe' : 'Création du groupe' });
+    const groupeToSave = this.normalizeGroupe({ ...current, nom });
+    this.validateEligibilityCriteria(groupeToSave);
+
+    this.patch({
+      loading: true,
+      action: current.id ? 'Mise à jour du groupe' : 'Création du groupe',
+    });
 
     try {
       const wasExisting = !!current.id;
       const saved = wasExisting
-        ? await this.groupeDataStore.update({ ...current, nom }, saisonId)
-        : await this.groupeDataStore.create({ ...current, nom }, saisonId);
+        ? await this.groupeDataStore.update(groupeToSave, saisonId)
+        : await this.groupeDataStore.create(groupeToSave, saisonId);
 
       if (wasExisting) {
         this.adherentDataStore.updateGroupeNameLocal(saved.id, saved.nom);
       }
 
-      const groupes = current.id
+      const groupes = wasExisting
         ? this.state().groupes.map((g) => (g.id === saved.id ? saved : g))
         : [...this.state().groupes, saved];
 
@@ -156,9 +195,11 @@ export class GroupeStore {
         loading: false,
         action: '',
       });
-    } catch {
+    } catch (e) {
       this.patch({ loading: false, action: '' });
-      throw new Error('Sauvegarde du groupe impossible');
+      throw e instanceof Error
+        ? e
+        : new Error('Sauvegarde du groupe impossible');
     }
   }
 
@@ -172,7 +213,9 @@ export class GroupeStore {
       this.adherentDataStore.removeGroupeFromAllLocal(groupe.id);
 
       const groupes = this.state().groupes.filter((g) => g.id !== groupe.id);
-      const adherents = this.state().adherents.map((a) => this.withoutGroupe(a, groupe.id));
+      const adherents = this.state().adherents.map((a) =>
+        this.withoutGroupe(a, groupe.id),
+      );
 
       this.patch({
         groupes,
@@ -203,7 +246,10 @@ export class GroupeStore {
     this.patch({ loading: true, action: 'Ajout de l’adhérent au groupe' });
 
     try {
-      const lienId = await this.repository.addAdherentToGroupe(adherent.id, groupe.id);
+      const lienId = await this.repository.addAdherentToGroupe(
+        adherent.id,
+        groupe.id,
+      );
 
       const adherents = this.state().adherents.map((a) => {
         if (a.id !== adherent.id) return a;
@@ -211,24 +257,39 @@ export class GroupeStore {
           ...a,
           groupesActifs: [
             ...(a.groupesActifs ?? []),
-            { id: groupe.id, groupe_id: groupe.id, nom: groupe.nom, id_lien: lienId ?? 0 } as LienGroupe_VM,
+            {
+              id: groupe.id,
+              groupe_id: groupe.id,
+              nom: groupe.nom,
+              id_lien: lienId ?? 0,
+            } as LienGroupe_VM,
           ],
         } as AdherentListItem_VM;
       });
 
       this.adherentDataStore.addGroupeLocal(adherent.id, groupe);
-      this.patch({ adherents, adherentToAddId: null, loading: false, action: '' });
+      this.patch({
+        adherents,
+        adherentToAddId: null,
+        loading: false,
+        action: '',
+      });
     } catch {
       this.patch({ loading: false, action: '' });
       throw new Error('Ajout de l’adhérent au groupe impossible');
     }
   }
 
-  async removeAdherentFromSelectedGroupe(adherent: AdherentListItem_VM): Promise<void> {
+  async removeAdherentFromSelectedGroupe(
+    adherent: AdherentListItem_VM,
+  ): Promise<void> {
     const groupe = this.selectedGroupe();
     if (!groupe) return;
 
-    this.patch({ loading: true, action: 'Suppression de l’adhérent du groupe' });
+    this.patch({
+      loading: true,
+      action: 'Suppression de l’adhérent du groupe',
+    });
 
     try {
       await this.repository.removeAdherentFromGroupe(adherent, groupe.id);
@@ -253,7 +314,9 @@ export class GroupeStore {
   membersOfSelectedGroupe(): AdherentListItem_VM[] {
     const groupe = this.selectedGroupe();
     if (!groupe) return [];
-    return this.state().adherents.filter((a) => this.isAdherentInGroupe(a, groupe.id));
+    return this.state().adherents.filter((a) =>
+      this.isAdherentInGroupe(a, groupe.id),
+    );
   }
 
   availableAdherentsForSelectedGroupe(): AdherentListItem_VM[] {
@@ -267,15 +330,26 @@ export class GroupeStore {
         const label = `${a.libelle ?? ''} ${a.prenom ?? ''} ${a.nom ?? ''} ${a.surnom ?? ''}`.toLowerCase();
         return !filter || label.includes(filter);
       })
-      .sort((a, b) => (a.libelle ?? '').localeCompare(b.libelle ?? '', 'fr', { sensitivity: 'base' }));
+      .sort((a, b) =>
+        (a.libelle ?? '').localeCompare(b.libelle ?? '', 'fr', {
+          sensitivity: 'base',
+        }),
+      );
   }
 
-  isAdherentInGroupe(adherent: AdherentListItem_VM, groupeId: number): boolean {
-    return (adherent.groupesActifs ?? []).some((g: LienGroupe_VM) => g.id === Number(groupeId));
+  isAdherentInGroupe(
+    adherent: AdherentListItem_VM,
+    groupeId: number,
+  ): boolean {
+    return (adherent.groupesActifs ?? []).some(
+      (g: LienGroupe_VM) => g.id === Number(groupeId),
+    );
   }
 
   countMembers(groupeId: number): number {
-    return this.state().adherents.filter((a) => this.isAdherentInGroupe(a, groupeId)).length;
+    return this.state().adherents.filter((a) =>
+      this.isAdherentInGroupe(a, groupeId),
+    ).length;
   }
 
   setFilterAdherent(value: string): void {
@@ -286,16 +360,103 @@ export class GroupeStore {
     this.patch({ adherentToAddId: value });
   }
 
-  private withoutGroupe(adherent: AdherentListItem_VM, groupeId: number): AdherentListItem_VM {
+  private normalizeGroupe(groupe: Groupe): Groupe {
+    return {
+      ...groupe,
+      nom: (groupe.nom ?? '').trim(),
+      whatsapp: (groupe.whatsapp ?? '').trim() || null,
+      visible: !!groupe.visible,
+      age_min: this.normalizeOptionalInteger(groupe.age_min),
+      age_max: this.normalizeOptionalInteger(groupe.age_max),
+      annee_min: this.normalizeOptionalInteger(groupe.annee_min),
+      annee_max: this.normalizeOptionalInteger(groupe.annee_max),
+      limit_nb: this.normalizeOptionalInteger(groupe.limit_nb),
+    };
+  }
+
+  private normalizeOptionalInteger(
+    value: number | string | null | undefined,
+  ): number | null {
+    if (value === null || value === undefined || value === '') return null;
+
+    const normalized = Number(value);
+    return Number.isFinite(normalized) ? normalized : null;
+  }
+
+  private validateEligibilityCriteria(groupe: Groupe): void {
+    const integerFields: Array<{
+      label: string;
+      value: number | null | undefined;
+    }> = [
+      { label: 'L’âge minimum', value: groupe.age_min },
+      { label: 'L’âge maximum', value: groupe.age_max },
+      { label: 'L’année minimale', value: groupe.annee_min },
+      { label: 'L’année maximale', value: groupe.annee_max },
+      { label: 'La limite de places', value: groupe.limit_nb },
+    ];
+
+    for (const field of integerFields) {
+      if (field.value != null && !Number.isInteger(field.value)) {
+        throw new Error(`${field.label} doit être un nombre entier`);
+      }
+    }
+
+    if (groupe.age_min != null && groupe.age_min < 0) {
+      throw new Error('L’âge minimum ne peut pas être négatif');
+    }
+
+    if (groupe.age_max != null && groupe.age_max < 0) {
+      throw new Error('L’âge maximum ne peut pas être négatif');
+    }
+
+    if (
+      groupe.age_min != null &&
+      groupe.age_max != null &&
+      groupe.age_min > groupe.age_max
+    ) {
+      throw new Error("L’âge minimum ne peut pas dépasser l’âge maximum");
+    }
+
+    if (groupe.annee_min != null && groupe.annee_min < 0) {
+      throw new Error("L’année minimale ne peut pas être négative");
+    }
+
+    if (groupe.annee_max != null && groupe.annee_max < 0) {
+      throw new Error("L’année maximale ne peut pas être négative");
+    }
+
+    if (
+      groupe.annee_min != null &&
+      groupe.annee_max != null &&
+      groupe.annee_min > groupe.annee_max
+    ) {
+      throw new Error(
+        "L’année minimale ne peut pas dépasser l’année maximale",
+      );
+    }
+
+    if (groupe.limit_nb != null && groupe.limit_nb < 1) {
+      throw new Error('La limite de places doit être supérieure à zéro');
+    }
+  }
+
+  private withoutGroupe(
+    adherent: AdherentListItem_VM,
+    groupeId: number,
+  ): AdherentListItem_VM {
     return {
       ...adherent,
-      groupesActifs: (adherent.groupesActifs ?? []).filter((g: LienGroupe_VM) => g.id !== Number(groupeId)),
+      groupesActifs: (adherent.groupesActifs ?? []).filter(
+        (g: LienGroupe_VM) => g.id !== Number(groupeId),
+      ),
     } as AdherentListItem_VM;
   }
 
   private sortGroupes(groupes: Groupe[]): Groupe[] {
     return [...(groupes ?? [])].sort((a, b) =>
-      (a.nom ?? '').localeCompare(b.nom ?? '', 'fr', { sensitivity: 'base' }),
+      (a.nom ?? '').localeCompare(b.nom ?? '', 'fr', {
+        sensitivity: 'base',
+      }),
     );
   }
 }

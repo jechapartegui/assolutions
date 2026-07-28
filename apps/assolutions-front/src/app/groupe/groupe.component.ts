@@ -13,10 +13,6 @@ import { Groupe } from '@shared/index';
   styleUrls: ['./groupe.component.css'],
 })
 export class GroupeComponent implements OnInit {
-  /**
-   * Petit bouton rouge nucléaire de debug :
-   * dans la console navigateur, lancer : window.groupeStore.debugCurrentState()
-   */
   constructor(
     public readonly groupeStore: GroupeStore,
     private readonly router: Router,
@@ -31,7 +27,10 @@ export class GroupeComponent implements OnInit {
     const errorService = ErrorService.instance;
 
     if (!this.store.isLoggedIn) {
-      const error = errorService.CreateError($localize`Charger les groupes`, $localize`Accès impossible, vous n'êtes pas connecté`);
+      const error = errorService.CreateError(
+        $localize`Charger les groupes`,
+        $localize`Accès impossible, vous n'êtes pas connecté`,
+      );
       errorService.emitChange(error);
       this.router.navigate(['/login']);
       return;
@@ -40,12 +39,18 @@ export class GroupeComponent implements OnInit {
     try {
       await this.groupeStore.init(this.store.saison_active_id());
     } catch (e) {
-      errorService.emitChange(errorService.CreateError($localize`Chargement des groupes`, e));
+      errorService.emitChange(
+        errorService.CreateError($localize`Chargement des groupes`, e),
+      );
     }
   }
 
   selectedGroupe(): Groupe | null {
     return this.groupeStore.selectedGroupe();
+  }
+
+  displayedGroupe(): Groupe | null {
+    return this.vm.editGroupe ? null : this.groupeStore.selectedGroupe();
   }
 
   membersOfSelectedGroupe(): AdherentListItem_VM[] {
@@ -60,20 +65,71 @@ export class GroupeComponent implements OnInit {
     return this.groupeStore.countMembers(groupeId);
   }
 
+  countMembersLabel(groupe: Groupe): string {
+    const count = this.countMembers(groupe.id);
+    return groupe.limit_nb != null ? `${count} / ${groupe.limit_nb}` : `${count}`;
+  }
+
+  isCapacityReached(groupe: Groupe): boolean {
+    return (
+      groupe.limit_nb != null &&
+      this.countMembers(groupe.id) >= groupe.limit_nb
+    );
+  }
+
+  hasEligibilityCriteria(groupe: Groupe): boolean {
+    return (
+      groupe.age_min != null ||
+      groupe.age_max != null ||
+      groupe.annee_min != null ||
+      groupe.annee_max != null ||
+      groupe.limit_nb != null
+    );
+  }
+
+  getAgeCriteriaLabel(groupe: Groupe): string | null {
+    const min = groupe.age_min;
+    const max = groupe.age_max;
+
+    if (min == null && max == null) return null;
+    if (min != null && max != null) return `Âge : de ${min} à ${max} ans`;
+    if (min != null) return `Âge : ${min} ans minimum`;
+    return `Âge : ${max} ans maximum`;
+  }
+
+  getBirthYearCriteriaLabel(groupe: Groupe): string | null {
+    const min = groupe.annee_min;
+    const max = groupe.annee_max;
+
+    if (min == null && max == null) return null;
+    if (min != null && max != null) {
+      return `Année de naissance : de ${min} à ${max}`;
+    }
+    if (min != null) return `Année de naissance : ${min} minimum`;
+    return `Année de naissance : ${max} maximum`;
+  }
+
   getInitiales(adherent: AdherentListItem_VM): string {
     const prenom = (adherent.prenom ?? '').trim();
     const nom = (adherent.nom ?? '').trim();
     const surnom = (adherent.surnom ?? '').trim();
-    return `${prenom.charAt(0) || surnom.charAt(0) || ''}${nom.charAt(0) || ''}`.trim() || '?';
+    return (
+      `${prenom.charAt(0) || surnom.charAt(0) || ''}${nom.charAt(0) || ''}`.trim() ||
+      '?'
+    );
   }
 
   async saveGroupe(): Promise<void> {
     const errorService = ErrorService.instance;
     try {
       await this.groupeStore.saveEdit();
-      errorService.emitChange(errorService.OKMessage($localize`Sauvegarde du groupe`));
+      errorService.emitChange(
+        errorService.OKMessage($localize`Sauvegarde du groupe`),
+      );
     } catch (e) {
-      errorService.emitChange(errorService.CreateError($localize`Sauvegarde du groupe`, e));
+      errorService.emitChange(
+        errorService.CreateError($localize`Sauvegarde du groupe`, e),
+      );
     }
   }
 
@@ -89,9 +145,13 @@ export class GroupeComponent implements OnInit {
     const errorService = ErrorService.instance;
     try {
       await this.groupeStore.deleteGroupe(groupe);
-      errorService.emitChange(errorService.OKMessage($localize`Suppression du groupe`));
+      errorService.emitChange(
+        errorService.OKMessage($localize`Suppression du groupe`),
+      );
     } catch (e) {
-      errorService.emitChange(errorService.CreateError($localize`Suppression du groupe`, e));
+      errorService.emitChange(
+        errorService.CreateError($localize`Suppression du groupe`, e),
+      );
     }
   }
 
@@ -99,9 +159,16 @@ export class GroupeComponent implements OnInit {
     const errorService = ErrorService.instance;
     try {
       await this.groupeStore.addSelectedAdherentToSelectedGroupe();
-      errorService.emitChange(errorService.OKMessage($localize`Ajout de l’adhérent au groupe`));
+      errorService.emitChange(
+        errorService.OKMessage($localize`Ajout de l’adhérent au groupe`),
+      );
     } catch (e) {
-      errorService.emitChange(errorService.CreateError($localize`Ajout de l’adhérent au groupe`, e));
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Ajout de l’adhérent au groupe`,
+          e,
+        ),
+      );
     }
   }
 
@@ -109,15 +176,24 @@ export class GroupeComponent implements OnInit {
     const groupe = this.selectedGroupe();
     if (!groupe) return;
 
-    const confirmDelete = window.confirm($localize`Retirer ${adherent.libelle} du groupe ${groupe.nom} ?`);
+    const confirmDelete = window.confirm(
+      $localize`Retirer ${adherent.libelle} du groupe ${groupe.nom} ?`,
+    );
     if (!confirmDelete) return;
 
     const errorService = ErrorService.instance;
     try {
       await this.groupeStore.removeAdherentFromSelectedGroupe(adherent);
-      errorService.emitChange(errorService.OKMessage($localize`Suppression de l’adhérent du groupe`));
+      errorService.emitChange(
+        errorService.OKMessage($localize`Suppression de l’adhérent du groupe`),
+      );
     } catch (e) {
-      errorService.emitChange(errorService.CreateError($localize`Suppression de l’adhérent du groupe`, e));
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Suppression de l’adhérent du groupe`,
+          e,
+        ),
+      );
     }
   }
 }
