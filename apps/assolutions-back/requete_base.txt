@@ -1,8 +1,8 @@
 ALTER TABLE groupes
 ADD COLUMN IF NOT EXISTS age_min integer NULL,
 ADD COLUMN IF NOT EXISTS age_max integer NULL,
-ADD COLUMN IF NOT EXISTS annee_min integer NULL,
-ADD COLUMN IF NOT EXISTS annee_max integer NULL,
+ADD COLUMN IF NOT EXISTS naissance_avant integer NULL,
+ADD COLUMN IF NOT EXISTS naissance_apres integer NULL,
 ADD COLUMN IF NOT EXISTS limit_nb integer NULL;
 
 CREATE TABLE IF NOT EXISTS tarif_inscription (
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS tarif_inscription (
 
   age_min integer NULL,
   age_max integer NULL,
-  annee_min integer NULL,
-  annee_max integer NULL,
+  naissance_avant integer NULL,
+  naissance_apres integer NULL,
   limit_nb integer NULL,
 
   actif boolean NOT NULL DEFAULT true,

@@ -44,8 +44,8 @@ export class GroupeRepository {
       visible: !!vm.visible,
       age_min: this.normalizeOptionalInteger(vm.age_min),
       age_max: this.normalizeOptionalInteger(vm.age_max),
-      annee_min: this.normalizeOptionalInteger(vm.annee_min),
-      annee_max: this.normalizeOptionalInteger(vm.annee_max),
+      naissance_avant: this.normalizeOptionalInteger(vm.naissance_avant),
+      naissance_apres: this.normalizeOptionalInteger(vm.naissance_apres),
       limit_nb: this.normalizeOptionalInteger(vm.limit_nb),
     };
 
@@ -62,8 +62,8 @@ export class GroupeRepository {
       visible: !!vm.visible,
       age_min: this.normalizeOptionalInteger(vm.age_min),
       age_max: this.normalizeOptionalInteger(vm.age_max),
-      annee_min: this.normalizeOptionalInteger(vm.annee_min),
-      annee_max: this.normalizeOptionalInteger(vm.annee_max),
+      naissance_avant: this.normalizeOptionalInteger(vm.naissance_avant),
+      naissance_apres: this.normalizeOptionalInteger(vm.naissance_apres),
       limit_nb: this.normalizeOptionalInteger(vm.limit_nb),
     };
 
@@ -158,8 +158,8 @@ export class GroupeRepository {
       visible: !!source.visible,
       age_min: this.normalizeOptionalInteger(source.age_min),
       age_max: this.normalizeOptionalInteger(source.age_max),
-      annee_min: this.normalizeOptionalInteger(source.annee_min),
-      annee_max: this.normalizeOptionalInteger(source.annee_max),
+      naissance_avant: this.normalizeOptionalInteger(source.naissance_avant),
+      naissance_apres: this.normalizeOptionalInteger(source.naissance_apres),
       limit_nb: this.normalizeOptionalInteger(source.limit_nb),
     };
   }

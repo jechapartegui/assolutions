@@ -15,10 +15,10 @@ export interface Groupe {
   age_max?: number | null;
 
   /** Année de naissance minimale autorisée. */
-  annee_min?: number | null;
+  naissance_avant?: number | null;
 
   /** Année de naissance maximale autorisée. */
-  annee_max?: number | null;
+  naissance_apres?: number | null;
 
   /** Nombre maximal de personnes dans le groupe. */
   limit_nb?: number | null;

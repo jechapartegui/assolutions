@@ -81,8 +81,8 @@ export class GroupeComponent implements OnInit {
     return (
       groupe.age_min != null ||
       groupe.age_max != null ||
-      groupe.annee_min != null ||
-      groupe.annee_max != null ||
+      groupe.naissance_avant != null ||
+      groupe.naissance_apres != null ||
       groupe.limit_nb != null
     );
   }
@@ -98,8 +98,8 @@ export class GroupeComponent implements OnInit {
   }
 
   getBirthYearCriteriaLabel(groupe: Groupe): string | null {
-    const min = groupe.annee_min;
-    const max = groupe.annee_max;
+    const min = groupe.naissance_avant;
+    const max = groupe.naissance_apres;
 
     if (min == null && max == null) return null;
     if (min != null && max != null) {

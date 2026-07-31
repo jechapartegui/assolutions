@@ -152,28 +152,28 @@
                 </div>
 
                 <div class="column is-6-mobile is-3-desktop">
-                  <label class="label">Année naissance min.</label>
+                  <label class="label">Né(e) au plus tôt en.</label>
                   <input
                     class="input"
                     type="number"
                     min="0"
                     step="1"
                     placeholder="Aucune"
-                    [ngModel]="edit.annee_min"
-                    (ngModelChange)="groupeStore.patchEdit({ annee_min: $event })"
+                    [ngModel]="edit.naissance_avant"
+                    (ngModelChange)="groupeStore.patchEdit({ naissance_avant: $event })"
                   />
                 </div>
 
                 <div class="column is-6-mobile is-3-desktop">
-                  <label class="label">Année naissance max.</label>
+                  <label class="label">Né(e) au plus tard en.</label>
                   <input
                     class="input"
                     type="number"
                     min="0"
                     step="1"
                     placeholder="Aucune"
-                    [ngModel]="edit.annee_max"
-                    (ngModelChange)="groupeStore.patchEdit({ annee_max: $event })"
+                    [ngModel]="edit.naissance_apres"
+                    (ngModelChange)="groupeStore.patchEdit({ naissance_apres: $event })"
                   />
                 </div>
 

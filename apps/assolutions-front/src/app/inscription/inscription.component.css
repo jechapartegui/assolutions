@@ -1,1 +1,366 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
 
+.inscription-page {
+  height: calc(100dvh - var(--desktop-topbar-h));
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+
+.inscription-main-card {
+  height: 100%;
+  min-height: 0;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.inscription-card-header,
+.inscription-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.99),
+    rgba(248, 250, 252, 0.96)
+  );
+}
+
+.inscription-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+}
+
+.inscription-list-panel {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem;
+  border-right: 1px solid rgba(15, 23, 42, 0.07);
+  background: #f8fafc;
+}
+
+.inscription-list-tools {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.inscription-list-item {
+  width: 100%;
+  margin-bottom: 0.55rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inscription-list-item:hover {
+  border-color: rgba(15, 118, 110, 0.3);
+}
+
+.inscription-list-item.is-active {
+  border-color: hsl(171, 100%, 41%);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.inscription-list-item.is-inactive {
+  opacity: 0.65;
+}
+
+.inscription-list-main {
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.inscription-list-name {
+  overflow: hidden;
+  color: #0f172a;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inscription-list-meta {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inscription-list-price {
+  flex-shrink: 0;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.inscription-detail-panel {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.inscription-edit-card,
+.inscription-detail-card,
+.inscription-empty {
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 17px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.inscription-edit-card {
+  overflow: visible;
+}
+
+.inscription-editor-actions {
+  flex-shrink: 0;
+}
+
+.inscription-edit-content {
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.inscription-form-section,
+.inscription-detail-section {
+  padding: 0.85rem;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.inscription-criteria-box {
+  border-color: rgba(14, 116, 144, 0.16);
+  background: linear-gradient(
+    180deg,
+    rgba(240, 249, 255, 0.78),
+    rgba(255, 255, 255, 0.98)
+  );
+}
+
+.inscription-form-section-title {
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.inscription-checkboxes {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding-bottom: 1rem;
+}
+
+.inscription-group-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(210px, 1fr)
+  );
+  gap: 0.55rem;
+}
+
+.inscription-group-option {
+  min-height: 46px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+}
+
+.inscription-group-option:hover {
+  border-color: rgba(15, 118, 110, 0.32);
+}
+
+.inscription-group-option.is-selected {
+  border-color: hsl(171, 100%, 41%);
+  background: rgba(0, 209, 178, 0.06);
+}
+
+.inscription-group-option input {
+  flex-shrink: 0;
+}
+
+.inscription-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.inscription-price {
+  color: #0f766e;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.inscription-summary-grid {
+  padding: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(
+    4,
+    minmax(0, 1fr)
+  );
+  gap: 0.65rem;
+}
+
+.inscription-summary-block {
+  padding: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 13px;
+  background: #f8fafc;
+}
+
+.inscription-summary-label {
+  margin-bottom: 0.25rem;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inscription-summary-value {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.inscription-detail-section {
+  margin: 0 0.8rem 0.8rem;
+  background: #f8fafc;
+}
+
+.inscription-detail-section-title {
+  margin-bottom: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.inscription-empty {
+  padding: 1rem;
+  color: #667085;
+  text-align: center;
+}
+
+.inscription-empty-inline {
+  margin: 0;
+  color: #667085;
+  font-size: 0.85rem;
+}
+
+.inscription-loading {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 20;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  background: #0f172a;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+@media screen and (max-width: 1100px) {
+  .inscription-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .inscription-page {
+    height: calc(100dvh - var(--mobile-footer-h));
+    padding-bottom: calc(
+      var(--mobile-footer-h)
+      + 12px
+      + var(--safe-bottom)
+    );
+    overflow: auto;
+  }
+
+  .inscription-main-card {
+    min-height: 100%;
+    height: auto;
+  }
+
+  .inscription-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .inscription-list-panel {
+    max-height: 35vh;
+    border-right: 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+  }
+
+  .inscription-card-header,
+  .inscription-section-header,
+  .inscription-form-section-title {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inscription-editor-actions {
+    width: 100%;
+  }
+
+  .inscription-editor-actions .button {
+    flex: 1 1 auto;
+  }
+
+  .inscription-checkboxes {
+    padding-bottom: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .inscription-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inscription-group-grid {
+    grid-template-columns: 1fr;
+  }
+}

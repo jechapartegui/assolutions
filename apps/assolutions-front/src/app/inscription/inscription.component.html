@@ -1,33 +1,703 @@
-<div class="card">
-  <div class="card-header">
-    <p class="card-header-title" i18n>Inscription</p>
+<div class="inscription-page">
+  <div
+    class="inscription-loading"
+    *ngIf="vm.loading"
+  >
+    <span class="icon">
+      <i class="fas fa-spinner fa-spin"></i>
+    </span>
+    <span>
+      {{ vm.action || 'Chargement...' }}
+    </span>
   </div>
-  <div class="card-content">
-    <div class="content">
-      <div class="field">
-        <label class="label" for="adherent">Adhérent</label>
-        <div>{{ thisAdherent.libelle }}</div>
+
+  <section class="inscription-main-card">
+    <header class="inscription-card-header">
+      <div>
+        <p class="title is-6 mb-1">
+          Tarifs d'inscription
+        </p>
+        <p class="subtitle is-7 mb-0">
+          {{ vm.tarifs.length }} tarif(s) pour la saison consultée
+        </p>
       </div>
-      <div class="field">
-        <label class="label"  class="label" for="adherent">Saison</label>
-        <div  class="select">
-          <select [(ngModel)]="thisSaison" (change)="onSaisonChange($event)">
-            <option *ngFor="let saison of saisons" [value]="saison.id">
-              {{ saison.nom }}
-            </option>
-          </select>
+
+      <button
+        class="button is-primary is-light"
+        type="button"
+        [disabled]="vm.loading"
+        (click)="tarifStore.startCreate()"
+      >
+        <span class="icon">
+          <i class="fas fa-plus"></i>
+        </span>
+        <span>Créer un tarif</span>
+      </button>
+    </header>
+
+    <div class="inscription-layout">
+      <aside class="inscription-list-panel">
+        <div class="inscription-list-tools">
+          <div class="field mb-2">
+            <label class="label is-size-7">
+              Rechercher
+            </label>
+            <input
+              class="input is-small"
+              placeholder="Nom ou groupe"
+              [ngModel]="vm.filter"
+              (ngModelChange)="tarifStore.setFilter($event)"
+            />
+          </div>
+
+          <label class="checkbox is-size-7">
+            <input
+              type="checkbox"
+              [ngModel]="vm.showInactive"
+              (ngModelChange)="tarifStore.setShowInactive($event)"
+            />
+            Afficher les tarifs inactifs
+          </label>
         </div>
-      </div>
-    </div>
-  </div>
-  <footer class="card-footer">
-    <div class="columns">
-      <div class="column">
-        <div class="buttons">
-          <btn [type_button]="'InscrireSmall'" (click)="Adherer()"></btn>
-          <btn [type_button]="'RetourSmall'" (click)="close()"></btn>
+
+        <button
+          *ngFor="
+            let tarif of displayedTarifs();
+            trackBy: trackById
+          "
+          class="inscription-list-item"
+          type="button"
+          [class.is-active]="
+            vm.selectedTarifId === tarif.id
+          "
+          [class.is-inactive]="!tarif.actif"
+          (click)="tarifStore.selectTarif(tarif.id)"
+        >
+          <span class="inscription-list-main">
+            <span class="inscription-list-name">
+              {{ tarif.nom }}
+            </span>
+
+            <span class="inscription-list-meta">
+              {{ getGroupSummary(tarif) }}
+            </span>
+          </span>
+
+          <span class="inscription-list-price">
+            {{ formatPrice(tarif) }}
+          </span>
+        </button>
+
+        <div
+          class="inscription-empty"
+          *ngIf="displayedTarifs().length === 0"
+        >
+          Aucun tarif ne correspond au filtre.
         </div>
-      </div>
+      </aside>
+
+      <main class="inscription-detail-panel">
+        <article
+          class="inscription-edit-card"
+          *ngIf="vm.editTarif as edit"
+        >
+          <header class="inscription-section-header">
+            <div>
+              <p class="title is-6 mb-1">
+                {{
+                  edit.id
+                    ? "Modifier le tarif"
+                    : "Créer un tarif"
+                }}
+              </p>
+              <p class="subtitle is-7 mb-0">
+                Cet écran paramètre une offre ; il ne crée pas encore de souscription.
+              </p>
+            </div>
+
+            <div class="buttons mb-0 inscription-editor-actions">
+              <button
+                class="button is-primary"
+                type="button"
+                [disabled]="
+                  !edit.nom?.trim() || vm.loading
+                "
+                (click)="saveTarif()"
+              >
+                <span class="icon">
+                  <i class="fas fa-floppy-disk"></i>
+                </span>
+                <span>
+                  {{
+                    edit.id
+                      ? "Enregistrer"
+                      : "Créer le tarif"
+                  }}
+                </span>
+              </button>
+
+              <button
+                class="button is-light"
+                type="button"
+                [disabled]="vm.loading"
+                (click)="tarifStore.cancelEdit()"
+              >
+                <span class="icon">
+                  <i class="fas fa-xmark"></i>
+                </span>
+                <span>Annuler</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="inscription-edit-content">
+            <section class="inscription-form-section">
+              <div class="inscription-form-section-title">
+                <div>
+                  <p class="title is-7 mb-1">
+                    Informations principales
+                  </p>
+                  <p class="is-size-7 has-text-grey mb-0">
+                    Le prix est saisi en euros et stocké en centimes.
+                  </p>
+                </div>
+              </div>
+
+              <div class="columns is-multiline is-variable is-2 mb-0">
+                <div class="column is-12-tablet is-5-desktop">
+                  <label class="label">
+                    Nom
+                  </label>
+                  <input
+                    class="input"
+                    placeholder="Ex. Nouvelle adhésion"
+                    [ngModel]="edit.nom"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        nom: $event
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-6-tablet is-3-desktop">
+                  <label class="label">
+                    Prix
+                  </label>
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input
+                        class="input"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="160,00"
+                        [ngModel]="priceInputValue(edit)"
+                        (ngModelChange)="
+                          tarifStore.setPriceEuros($event)
+                        "
+                      />
+                    </div>
+                    <div class="control">
+                      <span class="button is-static">
+                        €
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-6-tablet is-2-desktop">
+                  <label class="label">
+                    Ordre
+                  </label>
+                  <input
+                    class="input"
+                    type="number"
+                    step="1"
+                    [ngModel]="edit.ordre"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        ordre: $event
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-12-tablet is-2-desktop inscription-checkboxes">
+                  <label class="checkbox">
+                    <input
+                      type="checkbox"
+                      [ngModel]="edit.actif"
+                      (ngModelChange)="
+                        tarifStore.patchEdit({
+                          actif: $event
+                        })
+                      "
+                    />
+                    Actif
+                  </label>
+
+                  <label class="checkbox">
+                    <input
+                      type="checkbox"
+                      [ngModel]="edit.reinscription"
+                      (ngModelChange)="
+                        tarifStore.patchEdit({
+                          reinscription: $event
+                        })
+                      "
+                    />
+                    Réinscriptions uniquement
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <section class="inscription-form-section">
+              <div class="inscription-form-section-title">
+                <div>
+                  <p class="title is-7 mb-1">
+                    Validité et paiement
+                  </p>
+                  <p class="is-size-7 has-text-grey mb-0">
+                    Les dates sont facultatives et inclusives.
+                  </p>
+                </div>
+              </div>
+
+              <div class="columns is-multiline is-variable is-2 mb-0">
+                <div class="column is-12-mobile is-4-tablet">
+                  <label class="label">
+                    Disponible à partir du
+                  </label>
+                  <input
+                    class="input"
+                    type="date"
+                    [ngModel]="edit.date_debut_validite"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        date_debut_validite: $event || null
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-12-mobile is-4-tablet">
+                  <label class="label">
+                    Disponible jusqu'au
+                  </label>
+                  <input
+                    class="input"
+                    type="date"
+                    [ngModel]="edit.date_fin_validite"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        date_fin_validite: $event || null
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-12-mobile is-4-tablet">
+                  <label class="label">
+                    Paiement maximal
+                  </label>
+                  <div class="select is-fullwidth">
+                    <select
+                      [ngModel]="edit.paiement_plusieurs_fois"
+                      (ngModelChange)="
+                        tarifStore.patchEdit({
+                          paiement_plusieurs_fois: $event
+                        })
+                      "
+                    >
+                      <option
+                        *ngFor="let count of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+                        [ngValue]="count"
+                      >
+                        {{
+                          count === 1
+                            ? "1 fois"
+                            : count + " fois"
+                        }}
+                      </option>
+                    </select>
+                  </div>
+                  <p class="help">
+                    3 signifie : paiement en 1, 2 ou 3 fois.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section class="inscription-form-section inscription-criteria-box">
+              <div class="inscription-form-section-title">
+                <div>
+                  <p class="title is-7 mb-1">
+                    Critères d'éligibilité
+                  </p>
+                  <p class="is-size-7 has-text-grey mb-0">
+                    Un champ vide n'applique aucune contrainte.
+                  </p>
+                </div>
+
+                <span class="tag is-info is-light">
+                  Futur tunnel
+                </span>
+              </div>
+
+              <div class="columns is-multiline is-variable is-2 mb-0">
+                <div class="column is-6-mobile is-2-desktop">
+                  <label class="label">
+                    Âge minimum
+                  </label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Aucun"
+                    [ngModel]="edit.age_min"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        age_min: $event
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-6-mobile is-2-desktop">
+                  <label class="label">
+                    Âge maximum
+                  </label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Aucun"
+                    [ngModel]="edit.age_max"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        age_max: $event
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-6-mobile is-3-desktop">
+                  <label class="label">
+                    Né(e) au plus tôt en
+                  </label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Ex. 2008"
+                    [ngModel]="edit.naissance_avant"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        naissance_avant: $event
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-6-mobile is-3-desktop">
+                  <label class="label">
+                    Né(e) au plus tard en
+                  </label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Ex. 2013"
+                    [ngModel]="edit.naissance_apres"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        naissance_apres: $event
+                      })
+                    "
+                  />
+                </div>
+
+                <div class="column is-12-mobile is-2-desktop">
+                  <label class="label">
+                    Limite
+                  </label>
+                  <input
+                    class="input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="Illimitée"
+                    [ngModel]="edit.limit_nb"
+                    (ngModelChange)="
+                      tarifStore.patchEdit({
+                        limit_nb: $event
+                      })
+                    "
+                  />
+                  <p class="help">
+                    Nombre maximal de souscriptions.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section class="inscription-form-section">
+              <div class="inscription-form-section-title">
+                <div>
+                  <p class="title is-7 mb-1">
+                    Groupes compatibles
+                  </p>
+                  <p class="is-size-7 has-text-grey mb-0">
+                    Aucun groupe coché = tarif général. Plusieurs groupes peuvent utiliser le même tarif.
+                  </p>
+                </div>
+
+                <span class="tag is-light">
+                  {{ edit.groupe_ids.length }} sélectionné(s)
+                </span>
+              </div>
+
+              <div
+                class="inscription-group-grid"
+                *ngIf="vm.groupes.length > 0; else noGroups"
+              >
+                <label
+                  class="inscription-group-option"
+                  *ngFor="
+                    let groupe of vm.groupes;
+                    trackBy: trackById
+                  "
+                  [class.is-selected]="
+                    tarifStore.isGroupeSelected(groupe.id)
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="
+                      tarifStore.isGroupeSelected(groupe.id)
+                    "
+                    (change)="
+                      tarifStore.toggleGroupe(groupe.id)
+                    "
+                  />
+                  <span>{{ groupe.nom }}</span>
+                </label>
+              </div>
+
+              <ng-template #noGroups>
+                <p class="inscription-empty-inline">
+                  Aucun groupe n'existe pour cette saison.
+                </p>
+              </ng-template>
+            </section>
+          </div>
+        </article>
+
+        <article
+          class="inscription-detail-card"
+          *ngIf="displayedTarif() as tarif"
+        >
+          <header class="inscription-section-header">
+            <div>
+              <div class="inscription-title-row">
+                <p class="title is-5 mb-0">
+                  {{ tarif.nom }}
+                </p>
+                <span class="inscription-price">
+                  {{ formatPrice(tarif) }}
+                </span>
+              </div>
+
+              <div class="tags mt-2 mb-0">
+                <span
+                  class="tag"
+                  [ngClass]="getAvailabilityClass(tarif)"
+                >
+                  {{ getAvailabilityLabel(tarif) }}
+                </span>
+
+                <span
+                  class="tag is-warning is-light"
+                  *ngIf="tarif.reinscription"
+                >
+                  Réinscriptions uniquement
+                </span>
+
+                <span class="tag is-light">
+                  {{ getPaymentLabel(tarif) }}
+                </span>
+
+                <span class="tag is-info is-light">
+                  {{ getGroupSummary(tarif) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="buttons mb-0">
+              <button
+                class="button is-light"
+                type="button"
+                (click)="tarifStore.startEdit(tarif)"
+              >
+                <span class="icon">
+                  <i class="fas fa-pen"></i>
+                </span>
+                <span>Modifier</span>
+              </button>
+
+              <button
+                class="button is-danger is-light"
+                type="button"
+                (click)="deleteTarif(tarif)"
+              >
+                <span class="icon">
+                  <i class="fas fa-trash"></i>
+                </span>
+                <span>Supprimer</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="inscription-summary-grid">
+            <section class="inscription-summary-block">
+              <p class="inscription-summary-label">
+                Validité
+              </p>
+              <p class="inscription-summary-value">
+                {{ getValidityLabel(tarif) }}
+              </p>
+            </section>
+
+            <section class="inscription-summary-block">
+              <p class="inscription-summary-label">
+                Public
+              </p>
+              <p class="inscription-summary-value">
+                {{
+                  tarif.reinscription
+                    ? "Personnes en réinscription"
+                    : "Aucune restriction de réinscription"
+                }}
+              </p>
+            </section>
+
+            <section class="inscription-summary-block">
+              <p class="inscription-summary-label">
+                Paiement
+              </p>
+              <p class="inscription-summary-value">
+                {{ getPaymentLabel(tarif) }}
+              </p>
+            </section>
+
+            <section class="inscription-summary-block">
+              <p class="inscription-summary-label">
+                Ordre d'affichage
+              </p>
+              <p class="inscription-summary-value">
+                {{ tarif.ordre }}
+              </p>
+            </section>
+          </div>
+
+          <section class="inscription-detail-section">
+            <div class="inscription-detail-section-title">
+              <span class="icon">
+                <i class="fas fa-filter"></i>
+              </span>
+              <span>Critères d'éligibilité</span>
+            </div>
+
+            <div
+              class="tags mb-0"
+              *ngIf="
+                hasEligibilityCriteria(tarif);
+                else noCriteria
+              "
+            >
+              <span
+                class="tag is-info is-light"
+                *ngIf="
+                  getAgeCriteriaLabel(tarif) as ageLabel
+                "
+              >
+                {{ ageLabel }}
+              </span>
+
+              <span
+                class="tag is-info is-light"
+                *ngIf="
+                  getBirthYearCriteriaLabel(tarif) as yearLabel
+                "
+              >
+                {{ yearLabel }}
+              </span>
+
+              <span
+                class="tag is-info is-light"
+                *ngIf="tarif.limit_nb != null"
+              >
+                {{ tarif.limit_nb }} souscription(s) maximum
+              </span>
+            </div>
+
+            <ng-template #noCriteria>
+              <p class="is-size-7 has-text-grey mb-0">
+                Aucun critère d'âge, d'année de naissance ou de quantité.
+              </p>
+            </ng-template>
+          </section>
+
+          <section class="inscription-detail-section">
+            <div class="inscription-detail-section-title">
+              <span class="icon">
+                <i class="fas fa-layer-group"></i>
+              </span>
+              <span>Groupes compatibles</span>
+            </div>
+
+            <div
+              class="tags mb-0"
+              *ngIf="
+                getGroups(tarif).length > 0;
+                else generalTarif
+              "
+            >
+              <span
+                class="tag is-primary is-light"
+                *ngFor="
+                  let groupe of getGroups(tarif);
+                  trackBy: trackById
+                "
+              >
+                {{ groupe.nom }}
+              </span>
+            </div>
+
+            <ng-template #generalTarif>
+              <p class="is-size-7 has-text-grey mb-0">
+                Tarif général : aucun groupe n'est imposé.
+              </p>
+            </ng-template>
+          </section>
+        </article>
+
+        <div
+          class="inscription-empty"
+          *ngIf="
+            !displayedTarif() && !vm.editTarif
+          "
+        >
+          Sélectionne un tarif ou crée-en un nouveau.
+        </div>
+      </main>
     </div>
-  </footer>
+  </section>
 </div>

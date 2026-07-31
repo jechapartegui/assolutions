@@ -40,7 +40,7 @@ export class MenuAdminComponent implements OnInit {
       subtitle: 'Le quotidien de la saison consultée',
       tiles: [
         { label: 'Adhérents', icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
-        { label: 'Inscriptions', icon: 'fa-id-card-clip', menu: 'INSCRIPTION', route: '/inscription-saison' },
+        { label: 'Inscriptions', icon: 'fa-id-card-clip', menu: 'INSCRIPTION', route: '/inscription' },
         { label: 'Cours', icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
         { label: 'Séances', icon: 'fa-calendar-days', menu: 'SEANCE', route: '/seance' },
         { label: 'Groupes', icon: 'fa-layer-group', menu: 'GROUPE', route: '/groupe' },

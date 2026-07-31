@@ -109,8 +109,8 @@ export class GroupeStore {
         visible: false,
         age_min: null,
         age_max: null,
-        annee_min: null,
-        annee_max: null,
+        naissance_avant: null,
+        naissance_apres: null,
         limit_nb: null,
       },
     });
@@ -125,8 +125,8 @@ export class GroupeStore {
         visible: groupe.visible ?? false,
         age_min: groupe.age_min ?? null,
         age_max: groupe.age_max ?? null,
-        annee_min: groupe.annee_min ?? null,
-        annee_max: groupe.annee_max ?? null,
+        naissance_avant: groupe.naissance_avant ?? null,
+        naissance_apres: groupe.naissance_apres ?? null,
         limit_nb: groupe.limit_nb ?? null,
       },
     });
@@ -368,8 +368,8 @@ export class GroupeStore {
       visible: !!groupe.visible,
       age_min: this.normalizeOptionalInteger(groupe.age_min),
       age_max: this.normalizeOptionalInteger(groupe.age_max),
-      annee_min: this.normalizeOptionalInteger(groupe.annee_min),
-      annee_max: this.normalizeOptionalInteger(groupe.annee_max),
+      naissance_avant: this.normalizeOptionalInteger(groupe.naissance_avant),
+      naissance_apres: this.normalizeOptionalInteger(groupe.naissance_apres),
       limit_nb: this.normalizeOptionalInteger(groupe.limit_nb),
     };
   }
@@ -390,8 +390,8 @@ export class GroupeStore {
     }> = [
       { label: 'L’âge minimum', value: groupe.age_min },
       { label: 'L’âge maximum', value: groupe.age_max },
-      { label: 'L’année minimale', value: groupe.annee_min },
-      { label: 'L’année maximale', value: groupe.annee_max },
+      { label: 'L’année minimale', value: groupe.naissance_avant },
+      { label: 'L’année maximale', value: groupe.naissance_apres },
       { label: 'La limite de places', value: groupe.limit_nb },
     ];
 
@@ -417,18 +417,18 @@ export class GroupeStore {
       throw new Error("L’âge minimum ne peut pas dépasser l’âge maximum");
     }
 
-    if (groupe.annee_min != null && groupe.annee_min < 0) {
+    if (groupe.naissance_avant != null && groupe.naissance_avant < 0) {
       throw new Error("L’année minimale ne peut pas être négative");
     }
 
-    if (groupe.annee_max != null && groupe.annee_max < 0) {
+    if (groupe.naissance_apres != null && groupe.naissance_apres < 0) {
       throw new Error("L’année maximale ne peut pas être négative");
     }
 
     if (
-      groupe.annee_min != null &&
-      groupe.annee_max != null &&
-      groupe.annee_min > groupe.annee_max
+      groupe.naissance_avant != null &&
+      groupe.naissance_apres != null &&
+      groupe.naissance_avant > groupe.naissance_apres
     ) {
       throw new Error(
         "L’année minimale ne peut pas dépasser l’année maximale",

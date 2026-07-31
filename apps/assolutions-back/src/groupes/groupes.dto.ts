@@ -37,12 +37,12 @@ export class CreateGroupesDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  annee_min?: number | null;
+  naissance_avant?: number | null;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  annee_max?: number | null;
+  naissance_apres?: number | null;
 
   @IsOptional()
   @IsInt()
@@ -82,12 +82,12 @@ export class UpdateGroupesDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  annee_min?: number | null;
+  naissance_avant?: number | null;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  annee_max?: number | null;
+  naissance_apres?: number | null;
 
   @IsOptional()
   @IsInt()

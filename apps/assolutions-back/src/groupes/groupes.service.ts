@@ -13,7 +13,7 @@ import { GroupesEntity } from './groupes.entity';
 
 type GroupeEligibilityCriteria = Pick<
   GroupesEntity,
-  'age_min' | 'age_max' | 'annee_min' | 'annee_max' | 'limit_nb'
+  'age_min' | 'age_max' | 'naissance_avant' | 'naissance_apres' | 'limit_nb'
 >;
 
 @Injectable()
@@ -54,12 +54,12 @@ export class GroupesService {
     }
 
     if (
-      criteria.annee_min !== null &&
-      criteria.annee_max !== null &&
-      criteria.annee_min > criteria.annee_max
+      criteria.naissance_avant !== null &&
+      criteria.naissance_apres !== null &&
+      criteria.naissance_avant > criteria.naissance_apres
     ) {
       throw new BadRequestException(
-        "L'année minimum ne peut pas être supérieure à l'année maximum",
+        "La date de naissance minimum ne peut pas être supérieure à la date de naissance maximum",
       );
     }
   }
@@ -70,8 +70,8 @@ export class GroupesService {
     return {
       age_min: dto.age_min ?? null,
       age_max: dto.age_max ?? null,
-      annee_min: dto.annee_min ?? null,
-      annee_max: dto.annee_max ?? null,
+      naissance_avant: dto.naissance_avant ?? null,
+      naissance_apres: dto.naissance_apres ?? null,
       limit_nb: dto.limit_nb ?? null,
     };
   }
@@ -83,10 +83,10 @@ export class GroupesService {
     return {
       age_min: dto.age_min !== undefined ? dto.age_min : item.age_min,
       age_max: dto.age_max !== undefined ? dto.age_max : item.age_max,
-      annee_min:
-        dto.annee_min !== undefined ? dto.annee_min : item.annee_min,
-      annee_max:
-        dto.annee_max !== undefined ? dto.annee_max : item.annee_max,
+      naissance_avant:
+        dto.naissance_avant !== undefined ? dto.naissance_avant : item.naissance_avant,
+      naissance_apres:
+        dto.naissance_apres !== undefined ? dto.naissance_apres : item.naissance_apres,
       limit_nb:
         dto.limit_nb !== undefined ? dto.limit_nb : item.limit_nb,
     };

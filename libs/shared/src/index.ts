@@ -36,4 +36,5 @@ export * from './lib/mes-seances.interface';
 export * from './lib/commande.interface';
 export * from './lib/login-projet.interface';
 export * from './lib/finance.interface';
+export * from './lib/tarif-inscription.interface'
 

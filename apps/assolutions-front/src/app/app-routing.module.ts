@@ -49,6 +49,7 @@ import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
 import { CreerCompteComponent } from './creer-compte/creer-compte.component';
+import { InscriptionComponent } from './inscription/inscription.component';
 
 // Raccourcis
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
@@ -81,6 +82,7 @@ const routes: Routes = [
   {path: 'professeur', component: ProfesseurComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   {path: 'projet-mail', component: ProjetMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   {path: 'envoi-mail', component: EnvoiMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  {path: 'inscription', component: InscriptionComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
 
   {
   path: 'comptabilite',
