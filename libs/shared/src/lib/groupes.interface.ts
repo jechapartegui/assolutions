@@ -8,19 +8,22 @@ export interface Groupe {
   whatsapp?: string | null;
   visible?: boolean | null;
 
-  /** Âge minimum requis pour proposer le groupe dans le tunnel. */
+  /** Groupe présélectionné dans le tunnel lorsqu'il est éligible. */
+  par_defaut?: boolean;
+
+  /** Âge minimum dans l'année civile de début de saison. */
   age_min?: number | null;
 
-  /** Âge maximum autorisé pour proposer le groupe dans le tunnel. */
+  /** Âge maximum dans l'année civile de début de saison. */
   age_max?: number | null;
 
-  /** Année de naissance minimale autorisée. */
+  /** Né(e) au plus tôt en : borne basse inclusive, ex. 2008. */
   naissance_avant?: number | null;
 
-  /** Année de naissance maximale autorisée. */
+  /** Né(e) au plus tard en : borne haute inclusive, ex. 2013. */
   naissance_apres?: number | null;
 
-  /** Nombre maximal de personnes dans le groupe. */
+  /** Nombre maximal d'inscriptions actives dans le groupe. */
   limit_nb?: number | null;
 }
 
