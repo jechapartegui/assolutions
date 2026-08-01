@@ -17,12 +17,11 @@ export type CodePromoTypeRemise = 'POURCENTAGE' | 'MONTANT';
 export interface SouscriptionGroupeOption {
   id: number;
   nom: string;
-  /** Compatibilité transitoire : toujours false, aucun groupe n'est imposé. */
-  par_defaut: boolean;
   visible: boolean;
   eligible: boolean;
   complet: boolean;
   raison_indisponibilite?: string | null;
+  critere_eligibilite?: string | null;
   nb_actifs: number;
   limit_nb?: number | null;
 }
@@ -32,6 +31,7 @@ export interface SouscriptionTarifOption {
   nom: string;
   prix_centimes: number;
   paiement_plusieurs_fois: number;
+  reinscription: boolean;
   general: boolean;
   groupe_ids: number[];
   eligible: boolean;
@@ -51,7 +51,7 @@ export interface SouscriptionPersonneContexte {
   reinscription: boolean;
   informations_completes: boolean;
   champs_manquants: string[];
-  groupe_ids_precedents: number[];
+  groupes_precedents: string[];
   groupes: SouscriptionGroupeOption[];
   tarifs: SouscriptionTarifOption[];
 }
@@ -74,9 +74,16 @@ export interface SouscriptionPersonneChoixDto {
   tarif_inscription_id: number;
 }
 
+export interface SouscriptionPayeurDto {
+  personne_id?: number | null;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
 export interface SaveSouscriptionDto {
   saison_id: number;
-  payeur_personne_id: number;
+  payeur: SouscriptionPayeurDto;
   nb_echeances: number;
   code_promo?: string | null;
   personnes: SouscriptionPersonneChoixDto[];
@@ -111,7 +118,10 @@ export interface SouscriptionView {
   project_id: number;
   saison_id: number;
   compte_id: number;
-  payeur_personne_id: number;
+  payeur_personne_id?: number | null;
+  payeur_prenom: string;
+  payeur_nom: string;
+  payeur_email: string;
   statut: SouscriptionStatut;
   montant_initial_centimes: number;
   montant_remise_centimes: number;
@@ -147,4 +157,38 @@ export interface CodePromoValidationView {
   libelle?: string | null;
   montant_remise_centimes: number;
   message?: string | null;
+}
+
+export interface CodePromo {
+  id: number;
+  project_id: number;
+  saison_id: number;
+  code: string;
+  libelle: string;
+  type_remise: CodePromoTypeRemise;
+  valeur: number;
+  montant_min_centimes?: number | null;
+  max_remise_centimes?: number | null;
+  date_debut?: string | null;
+  date_fin?: string | null;
+  limit_nb?: number | null;
+  actif: boolean;
+  tarif_ids: number[];
+  created_at?: string | Date;
+  updated_at?: string | Date | null;
+}
+
+export interface SaveCodePromoDto {
+  saison_id: number;
+  code: string;
+  libelle: string;
+  type_remise: CodePromoTypeRemise;
+  valeur: number;
+  montant_min_centimes?: number | null;
+  max_remise_centimes?: number | null;
+  date_debut?: string | null;
+  date_fin?: string | null;
+  limit_nb?: number | null;
+  actif: boolean;
+  tarif_ids: number[];
 }
