@@ -25,10 +25,6 @@ export class CreateGroupesDto {
   visible?: boolean | null;
 
   @IsOptional()
-  @IsBoolean()
-  par_defaut?: boolean;
-
-  @IsOptional()
   @IsInt()
   @Min(0)
   age_min?: number | null;
@@ -72,10 +68,6 @@ export class UpdateGroupesDto {
   @IsOptional()
   @IsBoolean()
   visible?: boolean | null;
-
-  @IsOptional()
-  @IsBoolean()
-  par_defaut?: boolean;
 
   @IsOptional()
   @IsInt()
