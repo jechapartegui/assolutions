@@ -7,17 +7,15 @@
   - naissance_avant = année la plus ancienne admise, ex. 2008 ;
   - naissance_apres = année la plus récente admise, ex. 2013 ;
   - une inscription active compte dans la capacité d'un groupe ;
-  - une souscription payée en plusieurs fois est active dès le premier paiement confirmé.
+  - une souscription payée en plusieurs fois est active dès le premier paiement confirmé ;
+  - aucun groupe n'est configuré ni imposé par défaut.
 */
 
 BEGIN;
 
-ALTER TABLE public.groupes
-  ADD COLUMN IF NOT EXISTS par_defaut boolean NOT NULL DEFAULT false;
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_groupes_un_defaut_par_saison
-  ON public.groupes (saison_id)
-  WHERE par_defaut = true;
+/* Nettoyage au cas où une première version de la migration aurait été exécutée. */
+DROP INDEX IF EXISTS public.uq_groupes_un_defaut_par_saison;
+ALTER TABLE public.groupes DROP COLUMN IF EXISTS par_defaut;
 
 ALTER TABLE public.souscription
   ADD COLUMN IF NOT EXISTS project_id integer NULL,
