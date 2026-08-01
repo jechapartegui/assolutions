@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -41,7 +40,7 @@ export class CodePromoController {
     return this.service.update(id, dto, projectId);
   }
 
-  @Delete(':id')
+  @Post(':id/delete')
   remove(
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
