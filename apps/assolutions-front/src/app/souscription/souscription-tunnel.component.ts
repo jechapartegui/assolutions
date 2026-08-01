@@ -93,13 +93,8 @@ export class SouscriptionTunnelComponent implements OnInit {
     }
 
     this.selectedPersonIds.add(person.id);
-    const preferred =
-      person.groupes.find((group) => group.par_defaut && group.eligible) ??
-      person.groupes.find((group) => group.eligible) ??
-      null;
-
     this.choices[person.id] = {
-      groupIds: preferred ? [preferred.id] : [],
+      groupIds: [],
       tariffId: null,
     };
     this.ensureCompatibleTariff(person);
