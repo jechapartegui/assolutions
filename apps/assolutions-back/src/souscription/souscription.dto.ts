@@ -32,14 +32,35 @@ export class SouscriptionPersonneChoixDto {
   tarif_inscription_id: number;
 }
 
+export class SouscriptionPayeurDto {
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  personne_id?: number | null;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  first_name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  last_name: string;
+
+  @IsEmail()
+  @MaxLength(250)
+  email: string;
+}
+
 export class SaveSouscriptionDto {
   @IsInt()
   @Type(() => Number)
   saison_id: number;
 
-  @IsInt()
-  @Type(() => Number)
-  payeur_personne_id: number;
+  @ValidateNested()
+  @Type(() => SouscriptionPayeurDto)
+  payeur: SouscriptionPayeurDto;
 
   @IsInt()
   @Min(1)
