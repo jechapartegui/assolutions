@@ -19,6 +19,7 @@ export type HelloAssoCheckoutPayer = {
 export type HelloAssoCheckoutRequest = {
   totalAmount: number;
   initialAmount: number;
+  installments: number;
   itemName: string;
   payer: HelloAssoCheckoutPayer;
   returnPath: string;
@@ -40,6 +41,7 @@ export class HelloAssoService {
     const checkout = await this.createCheckout({
       totalAmount: 100,
       initialAmount: 100,
+      installments: 1,
       itemName: 'POC Assolutions - adhesion',
       payer: {
         firstName: 'Jean-Emmanuel',
@@ -63,10 +65,16 @@ export class HelloAssoService {
   ): Promise<HelloAssoCheckoutResponse> {
     const token = await this.getAccessToken();
     const frontUrl = this.getFrontUrl();
+    const installments = Math.max(1, Math.trunc(request.installments || 1));
+    const totalAmount = Math.round(request.totalAmount);
+    const initialAmount =
+      installments <= 1
+        ? totalAmount
+        : Math.min(totalAmount, Math.round(request.initialAmount));
 
-    const payload = {
-      totalAmount: Math.round(request.totalAmount),
-      initialAmount: Math.round(request.initialAmount),
+    const payload: Record<string, unknown> = {
+      totalAmount,
+      initialAmount,
       itemName: request.itemName,
       backUrl: this.buildFrontUrl(frontUrl, request.backPath),
       errorUrl: this.buildFrontUrl(frontUrl, request.errorPath),
@@ -75,8 +83,18 @@ export class HelloAssoService {
       payer: request.payer,
     };
 
+    if (installments > 1) {
+      payload.terms = this.buildPaymentTerms(
+        totalAmount - initialAmount,
+        installments - 1,
+      );
+    }
+
     this.logger.log(
-      `[HELLOASSO] Création checkout total=${payload.totalAmount} initial=${payload.initialAmount}`,
+      `[HELLOASSO] environnement=${this.environment()} api=${this.apiBaseUrl()} total=${totalAmount} initial=${initialAmount} echeances=${installments}`,
+    );
+    this.logger.debug(
+      `[HELLOASSO] callbacks back=${String(payload.backUrl)} return=${String(payload.returnUrl)} error=${String(payload.errorUrl)}`,
     );
 
     const response = await this.request(
@@ -155,9 +173,7 @@ export class HelloAssoService {
 
     const clientId = process.env.HELLOASSO_CLIENT_ID;
     const clientSecret = process.env.HELLOASSO_CLIENT_SECRET;
-    const oauthUrl =
-      process.env.HELLOASSO_OAUTH_URL ??
-      'https://api.helloasso.com/oauth2/token';
+    const oauthUrl = this.oauthTokenUrl();
 
     if (!clientId || !clientSecret) {
       throw new InternalServerErrorException(
@@ -219,9 +235,8 @@ export class HelloAssoService {
     if (!response.ok) {
       this.logger.error(`[HELLOASSO] ${method} ${url} -> ${response.status}`);
       this.logger.error(text);
-      throw new InternalServerErrorException(
-        `Erreur HelloAsso ${response.status} : ${text}`,
-      );
+      const message = this.extractHelloAssoError(text);
+      throw new InternalServerErrorException(message);
     }
 
     if (!text.trim()) return {};
@@ -232,27 +247,68 @@ export class HelloAssoService {
     }
   }
 
+  private buildPaymentTerms(remainingAmount: number, count: number) {
+    if (remainingAmount <= 0 || count <= 0) return [];
+    const base = Math.floor(remainingAmount / count);
+    let remainder = remainingAmount - base * count;
+    const today = new Date();
+
+    return Array.from({ length: count }, (_, index) => {
+      const amount = base + (remainder-- > 0 ? 1 : 0);
+      const date = new Date(today);
+      date.setUTCMonth(date.getUTCMonth() + index + 1);
+      return {
+        amount,
+        date: date.toISOString().slice(0, 10),
+      };
+    });
+  }
+
+  private environment(): 'sandbox' | 'production' {
+    const explicit = (process.env.HELLOASSO_ENV ?? '').trim().toLowerCase();
+    if (explicit === 'production' || explicit === 'prod') return 'production';
+    return 'sandbox';
+  }
+
+  private apiBaseUrl(): string {
+    const configured = process.env.HELLOASSO_API_URL?.trim();
+    if (configured) return configured.replace(/\/+$/, '');
+    return this.environment() === 'production'
+      ? 'https://api.helloasso.com/v5'
+      : 'https://api.helloasso-sandbox.com/v5';
+  }
+
+  private oauthTokenUrl(): string {
+    const configured = process.env.HELLOASSO_OAUTH_URL?.trim();
+    if (configured) return configured.replace(/\/+$/, '');
+    return this.environment() === 'production'
+      ? 'https://api.helloasso.com/oauth2/token'
+      : 'https://api.helloasso-sandbox.com/oauth2/token';
+  }
+
   private checkoutCollectionUrl(): string {
-    const apiUrl =
-      process.env.HELLOASSO_API_URL ?? 'https://api.helloasso.com/v5';
     const organizationSlug = process.env.HELLOASSO_ORGANIZATION_SLUG;
     if (!organizationSlug) {
       throw new InternalServerErrorException(
         'Configuration HelloAsso manquante : HELLOASSO_ORGANIZATION_SLUG',
       );
     }
-    return `${apiUrl.replace(/\/+$/, '')}/organizations/${organizationSlug}/checkout-intents`;
+    return `${this.apiBaseUrl()}/organizations/${organizationSlug}/checkout-intents`;
   }
 
   private getFrontUrl(): string {
-    const raw = process.env.FRONT_URL;
+    const raw = process.env.HELLOASSO_FRONT_URL ?? process.env.FRONT_URL;
     if (!raw) {
-      throw new InternalServerErrorException('Configuration manquante : FRONT_URL');
+      throw new InternalServerErrorException(
+        'Configuration manquante : HELLOASSO_FRONT_URL ou FRONT_URL',
+      );
     }
     const normalized = raw.trim().replace(/\/+$/, '');
     const parsed = new URL(normalized);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new InternalServerErrorException(`FRONT_URL invalide : ${raw}`);
+    if (parsed.protocol !== 'https:') {
+      throw new InternalServerErrorException(
+        `URL de retour HelloAsso invalide : ${normalized}. HelloAsso exige une URL HTTPS publique. Utilise HELLOASSO_FRONT_URL avec un tunnel HTTPS ou une URL déployée.`,
+      );
     }
     return normalized;
   }
@@ -260,6 +316,21 @@ export class HelloAssoService {
   private buildFrontUrl(frontUrl: string, path: string): string {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     return `${frontUrl}${normalizedPath}`;
+  }
+
+  private extractHelloAssoError(text: string): string {
+    try {
+      const parsed = JSON.parse(text);
+      const messages = Array.isArray(parsed?.errors)
+        ? parsed.errors
+            .map((error: any) => String(error?.message ?? '').trim())
+            .filter(Boolean)
+        : [];
+      if (messages.length) return `HelloAsso : ${messages.join(' · ')}`;
+    } catch {
+      // Le corps brut est conservé ci-dessous.
+    }
+    return `Erreur HelloAsso : ${text || 'réponse vide'}`;
   }
 
   private collectStateValues(payload: unknown): string[] {
