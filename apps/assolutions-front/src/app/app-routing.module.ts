@@ -26,6 +26,7 @@ import { OperationsComponent } from './operations/operations.component';
 import { CreerCompteComponent } from './creer-compte/creer-compte.component';
 import { InscriptionComponent } from './inscription/inscription.component';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
+import { CodePromoComponent } from './code-promo/code-promo.component';
 
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
 const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
@@ -56,6 +57,7 @@ const routes: Routes = [
   { path: 'projet-mail', component: ProjetMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'envoi-mail', component: EnvoiMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'inscription', component: InscriptionComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'codes-promo', component: CodePromoComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'comptabilite', component: ComptabiliteComponent, canActivate: [AuthGuard] },
   { path: 'operations', component: OperationsComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: 'login' },
