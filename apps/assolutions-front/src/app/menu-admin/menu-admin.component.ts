@@ -29,7 +29,7 @@ type AdminSection = {
 })
 export class MenuAdminComponent implements OnInit {
   readonly saisonStorageKey = 'assolutions.consultationSaisonId';
-  
+
   saisons: any[] = [];
   selectedSaisonId: number | null = null;
   loadingSaisons = false;
@@ -40,53 +40,25 @@ export class MenuAdminComponent implements OnInit {
       subtitle: 'Le quotidien de la saison consultée',
       tiles: [
         { label: 'Adhérents', icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
-        { label: 'Inscriptions', icon: 'fa-id-card-clip', menu: 'INSCRIPTION', route: '/inscription' },
+        { label: "Tarifs d'inscription", icon: 'fa-tags', menu: 'INSCRIPTION', route: '/inscription' },
+        { label: 'Codes promotionnels', icon: 'fa-ticket', menu: 'INSCRIPTION', route: '/codes-promo' },
         { label: 'Cours', icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
         { label: 'Séances', icon: 'fa-calendar-days', menu: 'SEANCE', route: '/seance' },
         { label: 'Groupes', icon: 'fa-layer-group', menu: 'GROUPE', route: '/groupe' },
         { label: 'Contrats professeurs', icon: 'fa-file-signature', menu: 'CONTRAT_PROF', route: '/contrat-prof' },
       ],
     },
-   {
-  title: 'Finances',
-  subtitle: 'Budget, flux financiers, paiements et trésorerie',
-  tiles: [
     {
-      label: 'Tableau finance',
-      icon: 'fa-chart-pie',
-      menu: 'COMPTA',
-      route: '/comptabilite',
-      queryParams: { vue: 'DASHBOARD' },
+      title: 'Finances',
+      subtitle: 'Budget, flux financiers, paiements et trésorerie',
+      tiles: [
+        { label: 'Tableau finance', icon: 'fa-chart-pie', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'DASHBOARD' } },
+        { label: 'Budget', icon: 'fa-calculator', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'BUDGET' } },
+        { label: 'Flux financiers', icon: 'fa-scale-balanced', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'FLUX' } },
+        { label: 'Opérations', icon: 'fa-right-left', menu: 'TRANSACTION', route: '/operations', queryParams: { context: 'LISTE' } },
+        { label: 'Stocks', icon: 'fa-boxes-stacked', menu: 'STOCK', route: '/stock' },
+      ],
     },
-    {
-      label: 'Budget',
-      icon: 'fa-calculator',
-      menu: 'COMPTA',
-      route: '/comptabilite',
-      queryParams: { vue: 'BUDGET' },
-    },
-    {
-      label: 'Flux financiers',
-      icon: 'fa-scale-balanced',
-      menu: 'COMPTA',
-      route: '/comptabilite',
-      queryParams: { vue: 'FLUX' },
-    },
-    {
-      label: 'Opérations',
-      icon: 'fa-right-left',
-      menu: 'TRANSACTION',
-      route: '/operations',
-      queryParams: { context: 'LISTE' },
-    },
-    {
-      label: 'Stocks',
-      icon: 'fa-boxes-stacked',
-      menu: 'STOCK',
-      route: '/stock',
-    },
-  ],
-},
     {
       title: 'Communication',
       subtitle: 'Mails, modèles et suivi',
@@ -132,7 +104,7 @@ export class MenuAdminComponent implements OnInit {
     public store: AppStore,
     private router: Router,
     private saisonApi: SaisonApiService,
-    private helloassoservice: HelloAssoService
+    private helloassoservice: HelloAssoService,
   ) {}
 
   ngOnInit(): void {
@@ -141,16 +113,13 @@ export class MenuAdminComponent implements OnInit {
 
   async loadSaisons(): Promise<void> {
     this.loadingSaisons = true;
-
     try {
       const saisons = await this.saisonApi.list();
       this.saisons = [...(saisons ?? [])].sort((a: any, b: any) =>
         String(b?.nom ?? b?.libelle ?? '').localeCompare(String(a?.nom ?? a?.libelle ?? '')),
       );
-
       const stored = Number(localStorage.getItem(this.saisonStorageKey));
       const activeId = this.getActiveSaisonId();
-
       this.selectedSaisonId =
         Number.isFinite(stored) && this.saisons.some((s: any) => Number(s.id) === stored)
           ? stored
@@ -159,13 +128,12 @@ export class MenuAdminComponent implements OnInit {
       this.loadingSaisons = false;
     }
   }
+
   testHelloAsso(): void {
-this.helloassoservice.testHelloAsso().then(() => {
-  console.log('Test HelloAsso effectué avec succès.');
-}).catch((error) => {
-  console.error('Erreur lors du test HelloAsso :', error);  
-});
-}
+    this.helloassoservice.testHelloAsso().catch((error) => {
+      console.error('Erreur lors du test HelloAsso :', error);
+    });
+  }
 
   getActiveSaisonId(): number | null {
     const project: any = this.store.selectedProject?.();
@@ -179,13 +147,11 @@ this.helloassoservice.testHelloAsso().then(() => {
   onSaisonChange(value: string | number | null): void {
     const saisonId = value === null || value === '' ? null : Number(value);
     this.selectedSaisonId = Number.isFinite(saisonId) ? saisonId : null;
-
     if (this.selectedSaisonId) {
       localStorage.setItem(this.saisonStorageKey, String(this.selectedSaisonId));
     } else {
       localStorage.removeItem(this.saisonStorageKey);
     }
-
     window.dispatchEvent(
       new CustomEvent('assolutions:consultation-saison-changed', {
         detail: { saisonId: this.selectedSaisonId },
@@ -195,10 +161,7 @@ this.helloassoservice.testHelloAsso().then(() => {
 
   open(tile: AdminTile): void {
     if (tile.disabled || !tile.route) return;
-
     this.store.updateSelectedMenu(tile.menu);
-    this.router.navigate([tile.route], {
-      queryParams: tile.queryParams,
-    });
+    this.router.navigate([tile.route], { queryParams: tile.queryParams });
   }
 }

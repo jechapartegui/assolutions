@@ -1,4 +1,4 @@
-import { Injectable, ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
@@ -7,7 +7,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const req = context.switchToHttp().getRequest();
     const url: string = req.url;
 
-    // 👉 On laisse passer TOUT ce qui est auth "public"
     if (
       url.startsWith('/api/auth/login') ||
       url.startsWith('/api/auth/prelogin') ||
@@ -16,9 +15,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       url.startsWith('/api/auth/check-reset-token') ||
       url.startsWith('/api/comptes/check-token') ||
       url.startsWith('/api/auth/set-password-with-token') ||
-      url.startsWith('/api/auth/reinit_mdp')
+      url.startsWith('/api/auth/reinit_mdp') ||
+      url.startsWith('/api/souscriptions/helloasso/webhook')
     ) {
-      console.log('JwtAuthGuard SKIP for', url);
       return true;
     }
 

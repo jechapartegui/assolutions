@@ -10,7 +10,24 @@ type HelloAssoTokenResponse = {
   expires_in: number;
 };
 
-type HelloAssoCheckoutResponse = {
+export type HelloAssoCheckoutPayer = {
+  firstName: string;
+  lastName: string;
+  email: string;
+};
+
+export type HelloAssoCheckoutRequest = {
+  totalAmount: number;
+  initialAmount: number;
+  installments: number;
+  itemName: string;
+  payer: HelloAssoCheckoutPayer;
+  returnPath: string;
+  backPath: string;
+  errorPath: string;
+};
+
+export type HelloAssoCheckoutResponse = {
   id: number;
   redirectUrl: string;
 };
@@ -18,54 +35,23 @@ type HelloAssoCheckoutResponse = {
 @Injectable()
 export class HelloAssoService {
   private readonly logger = new Logger(HelloAssoService.name);
+  private cachedToken: { value: string; expiresAt: number } | null = null;
 
   async createTestCheckout() {
-    
-    this.logger.log('=== HELLOASSO POC / createTestCheckout START ===');
-
-    this.logEnvState();
-
-    const accessToken = await this.getAccessToken();
-
-    const frontUrl = this.getFrontUrl();
-
-    const backUrl = `${frontUrl}/helloasso-test`;
-    const errorUrl = `${frontUrl}/helloasso-test-erreur`;
-    const returnUrl = `${frontUrl}/helloasso-test-ok`;
-
-    this.logger.log(`[HELLOASSO] backUrl   = ${backUrl}`);
-    this.logger.log(`[HELLOASSO] errorUrl  = ${errorUrl}`);
-    this.logger.log(`[HELLOASSO] returnUrl = ${returnUrl}`);
-
-    /**
-     * POC minimal :
-     * 1 paiement de 1 €
-     * PAS de metadata pour éviter une erreur parasite.
-     */
-    const payload = {
+    const checkout = await this.createCheckout({
       totalAmount: 100,
       initialAmount: 100,
+      installments: 1,
       itemName: 'POC Assolutions - adhesion',
-      backUrl,
-      errorUrl,
-      returnUrl,
-      containsDonation: false,
-
       payer: {
-  firstName: 'Jean-Emmanuel',
-  lastName: 'Chapartegui',
-  email: 'jechapartegui@gmail.com',
-},
-    };
-
-    this.logger.log('[HELLOASSO] Payload checkout envoyé :');
-    this.logger.log(JSON.stringify(payload, null, 2));
-
-    const checkout = await this.createCheckoutIntent(accessToken, payload);
-
-    this.logger.log(`[HELLOASSO] Checkout OK id=${checkout.id}`);
-    this.logger.log(`[HELLOASSO] redirectUrl=${checkout.redirectUrl}`);
-    this.logger.log('=== HELLOASSO POC / createTestCheckout END ===');
+        firstName: 'Jean-Emmanuel',
+        lastName: 'Chapartegui',
+        email: 'jechapartegui@gmail.com',
+      },
+      backPath: '/helloasso-test',
+      errorPath: '/helloasso-test-erreur',
+      returnPath: '/helloasso-test-ok',
+    });
 
     return {
       ok: true,
@@ -74,21 +60,120 @@ export class HelloAssoService {
     };
   }
 
+  async createCheckout(
+    request: HelloAssoCheckoutRequest,
+  ): Promise<HelloAssoCheckoutResponse> {
+    const token = await this.getAccessToken();
+    const frontUrl = this.getFrontUrl();
+    const installments = Math.max(1, Math.trunc(request.installments || 1));
+    const totalAmount = Math.round(request.totalAmount);
+    const initialAmount =
+      installments <= 1
+        ? totalAmount
+        : Math.min(totalAmount, Math.round(request.initialAmount));
+
+    const payload: Record<string, unknown> = {
+      totalAmount,
+      initialAmount,
+      itemName: request.itemName,
+      backUrl: this.buildFrontUrl(frontUrl, request.backPath),
+      errorUrl: this.buildFrontUrl(frontUrl, request.errorPath),
+      returnUrl: this.buildFrontUrl(frontUrl, request.returnPath),
+      containsDonation: false,
+      payer: request.payer,
+    };
+
+    if (installments > 1) {
+      payload.terms = this.buildPaymentTerms(
+        totalAmount - initialAmount,
+        installments - 1,
+      );
+    }
+
+    this.logger.log(
+      `[HELLOASSO] environnement=${this.environment()} api=${this.apiBaseUrl()} total=${totalAmount} initial=${initialAmount} echeances=${installments}`,
+    );
+    this.logger.debug(
+      `[HELLOASSO] callbacks back=${String(payload.backUrl)} return=${String(payload.returnUrl)} error=${String(payload.errorUrl)}`,
+    );
+
+    const response = await this.request(
+      'POST',
+      this.checkoutCollectionUrl(),
+      token,
+      payload,
+    );
+
+    const id = Number((response as any)?.id);
+    const redirectUrl = String((response as any)?.redirectUrl ?? '');
+    if (!id || !redirectUrl) {
+      throw new InternalServerErrorException(
+        `Réponse HelloAsso invalide : ${JSON.stringify(response)}`,
+      );
+    }
+
+    return { id, redirectUrl };
+  }
+
+  async getCheckoutIntent(id: number): Promise<unknown> {
+    const token = await this.getAccessToken();
+    return this.request(
+      'GET',
+      `${this.checkoutCollectionUrl()}/${Number(id)}`,
+      token,
+    );
+  }
+
+  isPaid(payload: unknown): boolean {
+    const states = this.collectStateValues(payload);
+    return states.some((state) =>
+      [
+        'AUTHORIZED',
+        'AUTHORISED',
+        'PAID',
+        'PROCESSED',
+        'SUCCESS',
+        'SUCCEEDED',
+      ].includes(state),
+    );
+  }
+
+  extractPaymentState(payload: unknown): string {
+    const states = this.collectStateValues(payload);
+    const preferred = states.find((state) =>
+      [
+        'AUTHORIZED',
+        'AUTHORISED',
+        'PAID',
+        'PROCESSED',
+        'SUCCESS',
+        'SUCCEEDED',
+        'PENDING',
+        'REFUSED',
+        'CANCELED',
+        'CANCELLED',
+      ].includes(state),
+    );
+    return preferred ?? states[0] ?? 'UNKNOWN';
+  }
+
+  extractCheckoutIntentId(payload: unknown): number | null {
+    const found = this.findNumericValue(
+      payload,
+      new Set(['checkoutintentid', 'checkout_intent_id', 'checkoutid']),
+    );
+    return found && found > 0 ? found : null;
+  }
+
   private async getAccessToken(): Promise<string> {
+    const now = Date.now();
+    if (this.cachedToken && this.cachedToken.expiresAt > now + 30_000) {
+      return this.cachedToken.value;
+    }
+
     const clientId = process.env.HELLOASSO_CLIENT_ID;
     const clientSecret = process.env.HELLOASSO_CLIENT_SECRET;
-    const oauthUrl =
-      process.env.HELLOASSO_OAUTH_URL ??
-      'https://api.helloasso.com/oauth2/token';
-
-    this.logger.log('[HELLOASSO] Demande token OAuth');
-    this.logger.log(`[HELLOASSO] oauthUrl = ${oauthUrl}`);
-    this.logger.log(
-      `[HELLOASSO] clientId présent = ${clientId ? 'OUI' : 'NON'}`,
-    );
-    this.logger.log(
-      `[HELLOASSO] clientSecret présent = ${clientSecret ? 'OUI' : 'NON'}`,
-    );
+    const oauthUrl = this.oauthTokenUrl();
 
     if (!clientId || !clientSecret) {
       throw new InternalServerErrorException(
@@ -108,191 +193,191 @@ export class HelloAssoService {
       },
       body,
     });
-
     const responseText = await response.text();
-
-    this.logger.log(`[HELLOASSO] Token HTTP status = ${response.status}`);
-
     if (!response.ok) {
-      this.logger.error('[HELLOASSO] Erreur token brute :');
       this.logger.error(responseText);
-
       throw new InternalServerErrorException(
         `Erreur token HelloAsso ${response.status} : ${responseText}`,
       );
     }
 
-    let data: HelloAssoTokenResponse;
-
-    try {
-      data = JSON.parse(responseText) as HelloAssoTokenResponse;
-    } catch (error) {
-      this.logger.error('[HELLOASSO] Réponse token non JSON :');
-      this.logger.error(responseText);
-
-      throw new InternalServerErrorException(
-        'Réponse token HelloAsso non JSON',
-      );
-    }
-
+    const data = JSON.parse(responseText) as HelloAssoTokenResponse;
     if (!data.access_token) {
-      this.logger.error('[HELLOASSO] Réponse token sans access_token :');
-      this.logger.error(JSON.stringify(data, null, 2));
-
       throw new InternalServerErrorException(
         'Réponse HelloAsso invalide : access_token absent',
       );
     }
 
-    this.logger.log(
-      `[HELLOASSO] Token OK type=${data.token_type}, expires_in=${data.expires_in}`,
-    );
-
+    this.cachedToken = {
+      value: data.access_token,
+      expiresAt: now + Math.max(60, Number(data.expires_in ?? 300)) * 1000,
+    };
     return data.access_token;
   }
 
-  private async createCheckoutIntent(
-    accessToken: string,
-    payload: unknown,
-  ): Promise<HelloAssoCheckoutResponse> {
-    const apiUrl =
-      process.env.HELLOASSO_API_URL ?? 'https://api.helloasso.com/v5';
+  private async request(
+    method: 'GET' | 'POST',
+    url: string,
+    token: string,
+    body?: unknown,
+  ): Promise<unknown> {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}),
+      },
+      ...(method === 'POST' ? { body: JSON.stringify(body ?? {}) } : {}),
+    });
 
+    const text = await response.text();
+    if (!response.ok) {
+      this.logger.error(`[HELLOASSO] ${method} ${url} -> ${response.status}`);
+      this.logger.error(text);
+      const message = this.extractHelloAssoError(text);
+      throw new InternalServerErrorException(message);
+    }
+
+    if (!text.trim()) return {};
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new InternalServerErrorException('Réponse HelloAsso non JSON');
+    }
+  }
+
+  private buildPaymentTerms(remainingAmount: number, count: number) {
+    if (remainingAmount <= 0 || count <= 0) return [];
+    const base = Math.floor(remainingAmount / count);
+    let remainder = remainingAmount - base * count;
+    const today = new Date();
+
+    return Array.from({ length: count }, (_, index) => {
+      const amount = base + (remainder-- > 0 ? 1 : 0);
+      const date = new Date(today);
+      date.setUTCMonth(date.getUTCMonth() + index + 1);
+      return {
+        amount,
+        date: date.toISOString().slice(0, 10),
+      };
+    });
+  }
+
+  private environment(): 'sandbox' | 'production' {
+    const explicit = (process.env.HELLOASSO_ENV ?? '').trim().toLowerCase();
+    if (explicit === 'production' || explicit === 'prod') return 'production';
+    return 'sandbox';
+  }
+
+  private apiBaseUrl(): string {
+    const configured = process.env.HELLOASSO_API_URL?.trim();
+    if (configured) return configured.replace(/\/+$/, '');
+    return this.environment() === 'production'
+      ? 'https://api.helloasso.com/v5'
+      : 'https://api.helloasso-sandbox.com/v5';
+  }
+
+  private oauthTokenUrl(): string {
+    const configured = process.env.HELLOASSO_OAUTH_URL?.trim();
+    if (configured) return configured.replace(/\/+$/, '');
+    return this.environment() === 'production'
+      ? 'https://api.helloasso.com/oauth2/token'
+      : 'https://api.helloasso-sandbox.com/oauth2/token';
+  }
+
+  private checkoutCollectionUrl(): string {
     const organizationSlug = process.env.HELLOASSO_ORGANIZATION_SLUG;
-
-    this.logger.log('[HELLOASSO] Création checkout intent');
-    this.logger.log(`[HELLOASSO] apiUrl = ${apiUrl}`);
-    this.logger.log(
-      `[HELLOASSO] organizationSlug = ${organizationSlug || 'ABSENT'}`,
-    );
-
     if (!organizationSlug) {
       throw new InternalServerErrorException(
         'Configuration HelloAsso manquante : HELLOASSO_ORGANIZATION_SLUG',
       );
     }
-
-    const url = `${apiUrl}/organizations/${organizationSlug}/checkout-intents`;
-
-    this.logger.log(`[HELLOASSO] POST ${url}`);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const responseText = await response.text();
-
-    this.logger.log(`[HELLOASSO] Checkout HTTP status = ${response.status}`);
-
-    if (!response.ok) {
-      this.logger.error('[HELLOASSO] Erreur checkout brute :');
-      this.logger.error(responseText);
-
-      this.logger.error('[HELLOASSO] Payload qui a provoqué erreur :');
-      this.logger.error(JSON.stringify(payload, null, 2));
-
-      throw new InternalServerErrorException(
-        `Erreur checkout HelloAsso ${response.status} : ${responseText}`,
-      );
-    }
-
-    let data: HelloAssoCheckoutResponse;
-
-    try {
-      data = JSON.parse(responseText) as HelloAssoCheckoutResponse;
-    } catch (error) {
-      this.logger.error('[HELLOASSO] Réponse checkout non JSON :');
-      this.logger.error(responseText);
-
-      throw new InternalServerErrorException(
-        'Réponse checkout HelloAsso non JSON',
-      );
-    }
-
-    if (!data.id || !data.redirectUrl) {
-      this.logger.error('[HELLOASSO] Réponse checkout invalide :');
-      this.logger.error(JSON.stringify(data, null, 2));
-
-      throw new InternalServerErrorException(
-        `Réponse HelloAsso invalide : ${JSON.stringify(data)}`,
-      );
-    }
-
-    return data;
+    return `${this.apiBaseUrl()}/organizations/${organizationSlug}/checkout-intents`;
   }
 
   private getFrontUrl(): string {
-    const rawFrontUrl = process.env.FRONT_URL;
-
-    if (!rawFrontUrl) {
+    const raw = process.env.HELLOASSO_FRONT_URL ?? process.env.FRONT_URL;
+    if (!raw) {
       throw new InternalServerErrorException(
-        'Configuration manquante : FRONT_URL',
+        'Configuration manquante : HELLOASSO_FRONT_URL ou FRONT_URL',
       );
     }
-
-    const frontUrl = rawFrontUrl.trim().replace(/\/+$/, '');
-
-    try {
-      const parsed = new URL(frontUrl);
-
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
-        throw new Error('Protocole invalide');
-      }
-
-      /**
-       * Pour HelloAsso, privilégier une vraie URL publique HTTPS.
-       * On laisse http://localhost possible pour test local,
-       * mais si HelloAsso le refuse, utiliser la recette.
-       */
-      if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
-        this.logger.warn(
-          `[HELLOASSO] FRONT_URL pointe vers localhost : ${frontUrl}. Si HelloAsso refuse BackUrl, utilise une URL publique HTTPS.`,
-        );
-      }
-
-      return frontUrl;
-    } catch (error) {
+    const normalized = raw.trim().replace(/\/+$/, '');
+    const parsed = new URL(normalized);
+    if (parsed.protocol !== 'https:') {
       throw new InternalServerErrorException(
-        `FRONT_URL invalide : "${rawFrontUrl}"`,
+        `URL de retour HelloAsso invalide : ${normalized}. HelloAsso exige une URL HTTPS publique. Utilise HELLOASSO_FRONT_URL avec un tunnel HTTPS ou une URL déployée.`,
       );
     }
+    return normalized;
   }
 
-  private logEnvState(): void {
-    this.logger.log(`[ENV] NODE_ENV = ${process.env.NODE_ENV || 'non défini'}`);
-    this.logger.log(
-      `[ENV] HELLOASSO_CLIENT_ID présent = ${
-        process.env.HELLOASSO_CLIENT_ID ? 'OUI' : 'NON'
-      }`,
-    );
-    this.logger.log(
-      `[ENV] HELLOASSO_CLIENT_SECRET présent = ${
-        process.env.HELLOASSO_CLIENT_SECRET ? 'OUI' : 'NON'
-      }`,
-    );
-    this.logger.log(
-      `[ENV] HELLOASSO_ORGANIZATION_SLUG = ${
-        process.env.HELLOASSO_ORGANIZATION_SLUG || 'ABSENT'
-      }`,
-    );
-    this.logger.log(
-      `[ENV] HELLOASSO_API_URL = ${
-        process.env.HELLOASSO_API_URL || 'valeur par défaut'
-      }`,
-    );
-    this.logger.log(
-      `[ENV] HELLOASSO_OAUTH_URL = ${
-        process.env.HELLOASSO_OAUTH_URL || 'valeur par défaut'
-      }`,
-    );
-    this.logger.log(
-      `[ENV] FRONT_URL = ${process.env.FRONT_URL || 'ABSENT'}`,
-    );
+  private buildFrontUrl(frontUrl: string, path: string): string {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${frontUrl}${normalizedPath}`;
+  }
+
+  private extractHelloAssoError(text: string): string {
+    try {
+      const parsed = JSON.parse(text);
+      const messages = Array.isArray(parsed?.errors)
+        ? parsed.errors
+            .map((error: any) => String(error?.message ?? '').trim())
+            .filter(Boolean)
+        : [];
+      if (messages.length) return `HelloAsso : ${messages.join(' · ')}`;
+    } catch {
+      // Le corps brut est conservé ci-dessous.
+    }
+    return `Erreur HelloAsso : ${text || 'réponse vide'}`;
+  }
+
+  private collectStateValues(payload: unknown): string[] {
+    const values: string[] = [];
+    const walk = (value: unknown, key = ''): void => {
+      if (Array.isArray(value)) {
+        value.forEach((item) => walk(item, key));
+        return;
+      }
+      if (value && typeof value === 'object') {
+        Object.entries(value as Record<string, unknown>).forEach(
+          ([childKey, child]) => walk(child, childKey),
+        );
+        return;
+      }
+      if (
+        typeof value === 'string' &&
+        ['state', 'status', 'paymentstate', 'payment_state'].includes(
+          key.replace(/[^a-z_]/gi, '').toLowerCase(),
+        )
+      ) {
+        values.push(value.trim().toUpperCase());
+      }
+    };
+    walk(payload);
+    return Array.from(new Set(values));
+  }
+
+  private findNumericValue(payload: unknown, keys: Set<string>): number | null {
+    if (Array.isArray(payload)) {
+      for (const item of payload) {
+        const found = this.findNumericValue(item, keys);
+        if (found) return found;
+      }
+      return null;
+    }
+    if (!payload || typeof payload !== 'object') return null;
+
+    for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
+      const normalizedKey = key.replace(/[^a-z_]/gi, '').toLowerCase();
+      if (keys.has(normalizedKey)) {
+        const numberValue = Number(value);
+        if (Number.isFinite(numberValue) && numberValue > 0) return numberValue;
+      }
+      const nested = this.findNumericValue(value, keys);
+      if (nested) return nested;
+    }
+    return null;
   }
 }

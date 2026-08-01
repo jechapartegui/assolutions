@@ -1,0 +1,122 @@
+<div class="promo-page">
+  <section class="promo-card">
+    <header class="promo-header">
+      <div>
+        <h1 class="title is-4 mb-1">Codes promotionnels</h1>
+        <p class="subtitle is-7 mb-0">Remises applicables au tunnel de souscription.</p>
+      </div>
+      <button class="button is-primary" type="button" (click)="startCreate()">
+        <span class="icon"><i class="fas fa-plus"></i></span>
+        <span>Créer</span>
+      </button>
+    </header>
+
+    <div class="promo-content">
+      <div class="promo-list">
+        <article class="promo-item" *ngFor="let promo of promos">
+          <div>
+            <div class="is-flex is-align-items-center is-flex-wrap-wrap mb-1">
+              <strong class="mr-2">{{ promo.code }}</strong>
+              <span class="tag is-success is-light mr-1">{{ displayValue(promo) }}</span>
+              <span class="tag" [ngClass]="promo.actif ? 'is-info is-light' : 'is-light'">
+                {{ promo.actif ? 'Actif' : 'Inactif' }}
+              </span>
+            </div>
+            <p>{{ promo.libelle }}</p>
+            <p class="is-size-7 has-text-grey">
+              {{ promo.tarif_ids.length ? promo.tarif_ids.length + ' tarif(s) ciblé(s)' : 'Tous les tarifs' }}
+            </p>
+          </div>
+          <div class="buttons mb-0">
+            <button class="button is-light" type="button" (click)="startEdit(promo)">Modifier</button>
+            <button class="button is-danger is-light" type="button" (click)="remove(promo)">Supprimer</button>
+          </div>
+        </article>
+
+        <div class="notification is-light" *ngIf="!promos.length && !loading">
+          Aucun code promotionnel pour cette saison.
+        </div>
+      </div>
+
+      <aside class="promo-editor" *ngIf="edit as item">
+        <h2 class="title is-5">{{ item.id ? 'Modifier le code' : 'Créer un code' }}</h2>
+
+        <div class="columns is-multiline is-variable is-2">
+          <div class="column is-4">
+            <label class="label">Code</label>
+            <input class="input" [(ngModel)]="item.code" />
+          </div>
+          <div class="column is-8">
+            <label class="label">Libellé</label>
+            <input class="input" [(ngModel)]="item.libelle" />
+          </div>
+          <div class="column is-6">
+            <label class="label">Type de remise</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="item.type_remise">
+                <option value="POURCENTAGE">Pourcentage</option>
+                <option value="MONTANT">Montant fixe en centimes</option>
+              </select>
+            </div>
+          </div>
+          <div class="column is-6">
+            <label class="label">Valeur</label>
+            <input class="input" type="number" min="1" [(ngModel)]="item.valeur" />
+            <p class="help">Ex. 10 = 10 %, ou 1000 = 10,00 €.</p>
+          </div>
+          <div class="column is-6">
+            <label class="label">Date de début</label>
+            <input class="input" type="date" [(ngModel)]="item.date_debut" />
+          </div>
+          <div class="column is-6">
+            <label class="label">Date de fin</label>
+            <input class="input" type="date" [(ngModel)]="item.date_fin" />
+          </div>
+          <div class="column is-4">
+            <label class="label">Montant minimal (centimes)</label>
+            <input class="input" type="number" min="0" [(ngModel)]="item.montant_min_centimes" />
+          </div>
+          <div class="column is-4">
+            <label class="label">Remise maximale (centimes)</label>
+            <input class="input" type="number" min="1" [(ngModel)]="item.max_remise_centimes" />
+          </div>
+          <div class="column is-4">
+            <label class="label">Nombre maximal d'utilisations</label>
+            <input class="input" type="number" min="1" [(ngModel)]="item.limit_nb" />
+          </div>
+          <div class="column is-12">
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="item.actif" />
+              Actif
+            </label>
+          </div>
+        </div>
+
+        <section class="tariff-targets">
+          <h3 class="title is-6 mb-1">Tarifs concernés</h3>
+          <p class="is-size-7 has-text-grey mb-2">Aucun tarif coché = code valable sur tous les tarifs.</p>
+          <label class="checkbox tariff-checkbox" *ngFor="let tarif of tarifs">
+            <input
+              type="checkbox"
+              [checked]="isTarifSelected(tarif.id)"
+              (change)="toggleTarif(tarif.id)"
+            />
+            {{ tarif.nom }}
+          </label>
+        </section>
+
+        <div class="buttons mt-4">
+          <button
+            class="button is-primary"
+            type="button"
+            [disabled]="loading || !item.code.trim() || !item.libelle.trim()"
+            (click)="save()"
+          >
+            Enregistrer
+          </button>
+          <button class="button is-light" type="button" (click)="edit = null">Annuler</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+</div>
