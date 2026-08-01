@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   CompleteSouscriptionPersonneDto,
@@ -19,6 +19,8 @@ type PersonChoice = {
   tariffId: number | null;
 };
 
+type PayerMode = number | 'OTHER';
+
 @Component({
   standalone: false,
   selector: 'app-souscription-tunnel',
@@ -26,13 +28,19 @@ type PersonChoice = {
   styleUrls: ['./souscription-tunnel.component.css'],
 })
 export class SouscriptionTunnelComponent implements OnInit {
+  @ViewChild('scrollContainer') scrollContainer?: ElementRef<HTMLElement>;
+
   context: SouscriptionContexte | null = null;
   choices: Record<number, PersonChoice> = {};
   selectedPersonIds = new Set<number>();
-  payeurPersonId: number | null = null;
+  payerMode: PayerMode | null = null;
+  payerFirstName = '';
+  payerLastName = '';
+  payerEmail = '';
   installments = 1;
   promoCode = '';
   promoMessage = '';
+  promoError = '';
   promoDiscount = 0;
   step = 1;
   loading = false;
@@ -63,12 +71,10 @@ export class SouscriptionTunnelComponent implements OnInit {
 
     const sid = Number(this.route.snapshot.queryParamMap.get('sid'));
     this.isReturnMode = this.router.url.startsWith('/souscription/retour');
-
     if (this.isReturnMode && sid > 0) {
       await this.confirmReturn(sid);
       return;
     }
-
     await this.loadContext();
   }
 
@@ -86,19 +92,19 @@ export class SouscriptionTunnelComponent implements OnInit {
     if (this.selectedPersonIds.has(person.id)) {
       this.selectedPersonIds.delete(person.id);
       delete this.choices[person.id];
-      if (this.payeurPersonId === person.id) {
-        this.payeurPersonId = this.selectedPeople[0]?.id ?? null;
+      if (this.payerMode === person.id) {
+        this.payerMode = this.selectedPeople[0]?.id ?? 'OTHER';
+        this.onPayerModeChange();
       }
       return;
     }
 
     this.selectedPersonIds.add(person.id);
-    this.choices[person.id] = {
-      groupIds: [],
-      tariffId: null,
-    };
-    this.ensureCompatibleTariff(person);
-    this.payeurPersonId ??= person.id;
+    this.choices[person.id] = { groupIds: [], tariffId: null };
+    if (this.payerMode == null) {
+      this.payerMode = person.id;
+      this.onPayerModeChange();
+    }
   }
 
   isSelected(personId: number): boolean {
@@ -114,10 +120,10 @@ export class SouscriptionTunnelComponent implements OnInit {
     group: SouscriptionGroupeOption,
   ): void {
     if (!group.eligible) return;
-    const choice = this.choice(person.id);
-    const ids = new Set(choice.groupIds);
+    const current = this.choice(person.id);
+    const ids = new Set(current.groupIds);
     ids.has(group.id) ? ids.delete(group.id) : ids.add(group.id);
-    choice.groupIds = Array.from(ids);
+    current.groupIds = Array.from(ids);
     this.ensureCompatibleTariff(person);
   }
 
@@ -159,8 +165,7 @@ export class SouscriptionTunnelComponent implements OnInit {
 
   get initialTotal(): number {
     return this.selectedPeople.reduce((sum, person) => {
-      const tariffId = this.choice(person.id).tariffId;
-      const tariff = person.tarifs.find((item) => item.id === tariffId);
+      const tariff = this.tariffFor(person);
       return sum + Number(tariff?.prix_centimes ?? 0);
     }, 0);
   }
@@ -186,18 +191,18 @@ export class SouscriptionTunnelComponent implements OnInit {
         (person) => this.choice(person.id).tariffId != null,
       );
     }
-    return true;
+    return this.isPayerValid();
   }
 
   next(): void {
     if (!this.canContinue()) return;
     this.step = Math.min(4, this.step + 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.scrollTop();
   }
 
   previous(): void {
     this.step = Math.max(1, this.step - 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.scrollTop();
   }
 
   async savePerson(person: SouscriptionPersonneContexte): Promise<void> {
@@ -209,26 +214,51 @@ export class SouscriptionTunnelComponent implements OnInit {
       email: person.email ?? '',
       telephone: person.telephone ?? '',
     };
-
     await this.run('Mise à jour des informations', async () => {
       await this.api.completePerson(person.id, dto);
       await this.loadContext(true);
     });
   }
 
-  async validatePromo(): Promise<void> {
-    if (!this.promoCode.trim()) {
-      this.clearPromoResult();
+  onPayerModeChange(): void {
+    if (this.payerMode === 'OTHER') {
+      this.payerFirstName = '';
+      this.payerLastName = '';
+      this.payerEmail = '';
       return;
     }
-    await this.saveDraft();
+    const person = this.selectedPeople.find((item) => item.id === this.payerMode);
+    this.payerFirstName = person?.first_name ?? '';
+    this.payerLastName = person?.last_name ?? '';
+    this.payerEmail = person?.email ?? '';
+  }
+
+  async validatePromo(): Promise<void> {
+    this.clearPromoResult();
+    const code = this.promoCode.trim();
+    if (!code) return;
+    const tariffIds = this.selectedPeople
+      .map((person) => this.choice(person.id).tariffId)
+      .filter((id): id is number => id != null);
+    try {
+      const result = await this.api.validatePromo(this.seasonId, code, tariffIds);
+      this.promoDiscount = result.montant_remise_centimes;
+      this.promoMessage = result.message || `Code ${result.code ?? code} appliqué`;
+    } catch (error) {
+      this.promoError = this.errorMessage(error);
+    }
   }
 
   async saveDraft(): Promise<SouscriptionView | null> {
-    if (!this.payeurPersonId) return null;
+    if (!this.isPayerValid()) return null;
     const dto: SaveSouscriptionDto = {
       saison_id: this.seasonId,
-      payeur_personne_id: this.payeurPersonId,
+      payeur: {
+        personne_id: this.payerMode === 'OTHER' ? null : Number(this.payerMode),
+        first_name: this.payerFirstName.trim(),
+        last_name: this.payerLastName.trim(),
+        email: this.payerEmail.trim(),
+      },
       nb_echeances: this.installments,
       code_promo: this.promoCode.trim() || null,
       personnes: this.selectedPeople.map((person) => ({
@@ -253,7 +283,6 @@ export class SouscriptionTunnelComponent implements OnInit {
   async pay(): Promise<void> {
     const draft = await this.saveDraft();
     if (!draft) return;
-
     await this.run('Ouverture du paiement HelloAsso', async () => {
       const checkout = await this.api.checkout(draft.id);
       this.draft = checkout.souscription;
@@ -279,15 +308,18 @@ export class SouscriptionTunnelComponent implements OnInit {
 
   groupNames(person: SouscriptionPersonneContexte): string[] {
     const ids = new Set(this.choice(person.id).groupIds);
-    return person.groupes
-      .filter((group) => ids.has(group.id))
-      .map((group) => group.nom);
+    return person.groupes.filter((group) => ids.has(group.id)).map((group) => group.nom);
   }
 
   private async loadContext(preserveSelection = false): Promise<void> {
     const selected = new Set(this.selectedPersonIds);
     const oldChoices = structuredClone(this.choices);
-    const oldPayer = this.payeurPersonId;
+    const oldPayerMode = this.payerMode;
+    const oldPayer = {
+      firstName: this.payerFirstName,
+      lastName: this.payerLastName,
+      email: this.payerEmail,
+    };
 
     await this.run('Chargement du tunnel', async () => {
       this.context = await this.api.context(Number(this.appStore.saison_active_id()));
@@ -295,7 +327,10 @@ export class SouscriptionTunnelComponent implements OnInit {
       if (preserveSelection) {
         this.selectedPersonIds = selected;
         this.choices = oldChoices;
-        this.payeurPersonId = oldPayer;
+        this.payerMode = oldPayerMode;
+        this.payerFirstName = oldPayer.firstName;
+        this.payerLastName = oldPayer.lastName;
+        this.payerEmail = oldPayer.email;
       } else if (this.draft) {
         this.restoreDraft(this.draft);
       }
@@ -312,7 +347,10 @@ export class SouscriptionTunnelComponent implements OnInit {
         tariffId: line.tarif_inscription_id,
       };
     });
-    this.payeurPersonId = draft.payeur_personne_id;
+    this.payerMode = draft.payeur_personne_id ?? 'OTHER';
+    this.payerFirstName = draft.payeur_prenom ?? '';
+    this.payerLastName = draft.payeur_nom ?? '';
+    this.payerEmail = draft.payeur_email ?? '';
     this.installments = draft.nb_echeances;
     this.promoCode = draft.code_promo_applique ?? '';
     this.promoDiscount = draft.montant_remise_centimes;
@@ -328,8 +366,18 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.clearPromoResult();
   }
 
+  private isPayerValid(): boolean {
+    return (
+      this.payerMode != null &&
+      !!this.payerFirstName.trim() &&
+      !!this.payerLastName.trim() &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.payerEmail.trim())
+    );
+  }
+
   private clearPromoResult(): void {
     this.promoMessage = '';
+    this.promoError = '';
     this.promoDiscount = 0;
   }
 
@@ -342,6 +390,20 @@ export class SouscriptionTunnelComponent implements OnInit {
     });
   }
 
+  private scrollTop(): void {
+    this.scrollContainer?.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  private errorMessage(error: any): string {
+    const value =
+      error?.error?.message ??
+      error?.error?.error?.message ??
+      error?.message ??
+      error?.statusText ??
+      'Une erreur est survenue';
+    return Array.isArray(value) ? value.join(' · ') : String(value);
+  }
+
   private async run(label: string, action: () => Promise<void>): Promise<void> {
     this.loading = true;
     this.action = label;
@@ -349,7 +411,7 @@ export class SouscriptionTunnelComponent implements OnInit {
       await action();
     } catch (error) {
       ErrorService.instance.emitChange(
-        ErrorService.instance.CreateError(label, error),
+        ErrorService.instance.CreateError(label, this.errorMessage(error)),
       );
     } finally {
       this.loading = false;
