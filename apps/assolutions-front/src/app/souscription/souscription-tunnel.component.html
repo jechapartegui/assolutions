@@ -51,11 +51,6 @@
                 </span>
               </label>
 
-              <div class="previous-groups" *ngIf="person.groupes_precedents.length">
-                <span class="icon"><i class="fas fa-clock-rotate-left"></i></span>
-                <span>Saison précédente : {{ person.groupes_precedents.join(' · ') }}</span>
-              </div>
-
               <div class="tags mt-2" *ngIf="isSelected(person.id)">
                 <span class="tag" [ngClass]="person.informations_completes ? 'is-success is-light' : 'is-warning is-light'">
                   {{ person.informations_completes ? 'Informations complètes' : 'À compléter' }}
