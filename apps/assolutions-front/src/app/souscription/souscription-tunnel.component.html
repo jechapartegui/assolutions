@@ -1,4 +1,4 @@
-<div class="subscription-page">
+<div class="subscription-page" #scrollContainer>
   <div class="subscription-loading" *ngIf="loading">
     <i class="fas fa-spinner fa-spin"></i>
     <span>{{ action }}</span>
@@ -38,12 +38,8 @@
 
       <main class="subscription-content">
         <section *ngIf="step === 1">
-          <div class="section-title">
-            <div>
-              <h2 class="title is-5 mb-1">Qui souhaites-tu inscrire ?</h2>
-              <p class="has-text-grey">Les informations obligatoires doivent être complètes avant de continuer.</p>
-            </div>
-          </div>
+          <h2 class="title is-5 mb-1">Qui souhaites-tu inscrire ?</h2>
+          <p class="has-text-grey mb-4">Les informations obligatoires doivent être complètes avant de continuer.</p>
 
           <div class="person-grid">
             <article class="person-card" *ngFor="let person of ctx.personnes" [class.is-selected]="isSelected(person.id)">
@@ -54,6 +50,11 @@
                   <small>{{ person.age_civil }} ans dans l'année · {{ person.reinscription ? 'Réinscription' : 'Nouvelle inscription' }}</small>
                 </span>
               </label>
+
+              <div class="previous-groups" *ngIf="person.groupes_precedents.length">
+                <span class="icon"><i class="fas fa-clock-rotate-left"></i></span>
+                <span>Saison précédente : {{ person.groupes_precedents.join(' · ') }}</span>
+              </div>
 
               <div class="tags mt-2" *ngIf="isSelected(person.id)">
                 <span class="tag" [ngClass]="person.informations_completes ? 'is-success is-light' : 'is-warning is-light'">
@@ -82,13 +83,17 @@
           <p class="has-text-grey mb-4">Choisis au moins un groupe éligible pour chaque personne.</p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
-            <h3 class="title is-6">{{ person.first_name }} {{ person.last_name }}</h3>
+            <h3 class="title is-6 mb-1">{{ person.first_name }} {{ person.last_name }}</h3>
+            <p class="previous-groups mb-3" *ngIf="person.groupes_precedents.length">
+              Saison précédente : {{ person.groupes_precedents.join(' · ') }}
+            </p>
             <div class="option-grid">
               <label class="option-card" *ngFor="let group of person.groupes" [class.is-selected]="isGroupSelected(person.id, group.id)" [class.is-disabled]="!group.eligible">
                 <input type="checkbox" [checked]="isGroupSelected(person.id, group.id)" [disabled]="!group.eligible" (change)="toggleGroup(person, group)" />
                 <span class="option-main">
                   <strong>{{ group.nom }}</strong>
                   <small>{{ group.nb_actifs }}<ng-container *ngIf="group.limit_nb != null"> / {{ group.limit_nb }}</ng-container> inscrit(s)</small>
+                  <small *ngIf="group.critere_eligibilite">Critère : {{ group.critere_eligibilite }}</small>
                   <small class="has-text-danger" *ngIf="group.raison_indisponibilite">{{ group.raison_indisponibilite }}</small>
                 </span>
               </label>
@@ -98,7 +103,7 @@
 
         <section *ngIf="step === 3">
           <h2 class="title is-5 mb-1">Choix du tarif</h2>
-          <p class="has-text-grey mb-4">Les tarifs généraux sont proposés en premier, puis les tarifs spécifiques compatibles avec tous les groupes choisis.</p>
+          <p class="has-text-grey mb-4">Le tarif proposé dépend automatiquement d'une nouvelle adhésion ou d'un renouvellement.</p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <h3 class="title is-6">{{ person.first_name }} {{ person.last_name }}</h3>
@@ -113,7 +118,7 @@
                 </span>
               </label>
             </div>
-            <p class="notification is-warning is-light" *ngIf="compatibleTariffs(person).length === 0">Aucun tarif n'est compatible avec les groupes sélectionnés.</p>
+            <p class="notification is-warning is-light" *ngIf="compatibleTariffs(person).length === 0">Aucun tarif n'est compatible avec cette personne et les groupes sélectionnés.</p>
           </article>
         </section>
 
@@ -132,19 +137,51 @@
             </article>
           </div>
 
-          <div class="columns is-multiline mt-3">
-            <div class="column is-12-tablet is-4">
-              <label class="label">Payeur</label>
-              <div class="select is-fullwidth"><select [(ngModel)]="payeurPersonId"><option *ngFor="let person of selectedPeople" [ngValue]="person.id">{{ person.first_name }} {{ person.last_name }}</option></select></div>
+          <section class="payer-box mt-4">
+            <h3 class="title is-6 mb-3">Payeur</h3>
+            <div class="field">
+              <label class="label">Qui effectue le paiement ?</label>
+              <div class="select is-fullwidth">
+                <select [(ngModel)]="payerMode" (ngModelChange)="onPayerModeChange()">
+                  <option *ngFor="let person of selectedPeople" [ngValue]="person.id">{{ person.first_name }} {{ person.last_name }}</option>
+                  <option [ngValue]="'OTHER'">Une autre personne</option>
+                </select>
+              </div>
             </div>
-            <div class="column is-12-tablet is-4">
+
+            <div class="columns is-multiline is-variable is-2">
+              <div class="column is-12-mobile is-4-tablet">
+                <label class="label">Prénom</label>
+                <input class="input" [(ngModel)]="payerFirstName" />
+              </div>
+              <div class="column is-12-mobile is-4-tablet">
+                <label class="label">Nom</label>
+                <input class="input" [(ngModel)]="payerLastName" />
+              </div>
+              <div class="column is-12-mobile is-4-tablet">
+                <label class="label">Email</label>
+                <input class="input" type="email" [(ngModel)]="payerEmail" />
+              </div>
+            </div>
+          </section>
+
+          <div class="columns is-multiline mt-2">
+            <div class="column is-12-tablet is-5">
               <label class="label">Paiement</label>
-              <div class="select is-fullwidth"><select [(ngModel)]="installments"><option *ngFor="let count of [1,2,3,4,5,6,7,8,9,10,11,12].slice(0, maxInstallments)" [ngValue]="count">{{ count }} fois</option></select></div>
+              <div class="select is-fullwidth">
+                <select [(ngModel)]="installments">
+                  <option *ngFor="let count of [1,2,3,4,5,6,7,8,9,10,11,12].slice(0, maxInstallments)" [ngValue]="count">{{ count }} fois</option>
+                </select>
+              </div>
             </div>
-            <div class="column is-12-tablet is-4">
+            <div class="column is-12-tablet is-7">
               <label class="label">Code promotionnel</label>
-              <div class="field has-addons"><div class="control is-expanded"><input class="input" [(ngModel)]="promoCode" /></div><div class="control"><button class="button" type="button" (click)="validatePromo()">Appliquer</button></div></div>
+              <div class="field has-addons">
+                <div class="control is-expanded"><input class="input" [(ngModel)]="promoCode" /></div>
+                <div class="control"><button class="button" type="button" (click)="validatePromo()">Appliquer</button></div>
+              </div>
               <p class="help is-success" *ngIf="promoMessage">{{ promoMessage }}</p>
+              <p class="help is-danger" *ngIf="promoError">{{ promoError }}</p>
             </div>
           </div>
 
@@ -154,7 +191,7 @@
             <div class="total-final"><span>Total à payer</span><strong>{{ formatMoney(finalTotal) }}</strong></div>
           </div>
 
-          <button class="button is-primary is-medium is-fullwidth mt-4" type="button" [disabled]="loading" (click)="pay()">
+          <button class="button is-primary is-medium is-fullwidth mt-4" type="button" [disabled]="loading || !canContinue()" (click)="pay()">
             <span class="icon"><i class="fas fa-lock"></i></span>
             <span>Payer avec HelloAsso</span>
           </button>
