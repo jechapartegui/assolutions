@@ -11,7 +11,9 @@ import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { GroupeTarifInscriptionEntity } from '../tarif_inscription/groupe_tarif_inscription.entity';
 import { TarifInscriptionEntity } from '../tarif_inscription/tarif_inscription.entity';
+import { CodePromoController } from './code-promo.controller';
 import { CodePromoEntity } from './code-promo.entity';
+import { CodePromoService } from './code-promo.service';
 import { CodePromoTarifEntity } from './code-promo-tarif.entity';
 import { SouscriptionController } from './souscription.controller';
 import { SouscriptionEntity } from './souscription.entity';
@@ -41,7 +43,7 @@ import { SouscriptionService } from './souscription.service';
     ]),
     HelloAssoModule,
   ],
-  controllers: [SouscriptionController],
-  providers: [SouscriptionService],
+  controllers: [SouscriptionController, CodePromoController],
+  providers: [SouscriptionService, CodePromoService],
 })
 export class SouscriptionModule {}
