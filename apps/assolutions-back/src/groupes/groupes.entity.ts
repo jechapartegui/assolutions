@@ -23,6 +23,12 @@ export class GroupesEntity {
   @Column({ type: 'boolean', nullable: true })
   visible: boolean | null;
 
+  /**
+   * Compatibilité temporaire avec le contexte du tunnel.
+   * Ce champ n'est volontairement PAS une colonne : aucun groupe n'est imposé.
+   */
+  readonly par_defaut = false;
+
   @Column({ type: 'int', nullable: true })
   age_min: number | null;
 
