@@ -79,7 +79,7 @@
 
         <section *ngIf="step === 2">
           <h2 class="title is-5 mb-1">Choix des groupes</h2>
-          <p class="has-text-grey mb-4">Au moins un groupe par personne. Le groupe par défaut est présélectionné s'il est éligible.</p>
+          <p class="has-text-grey mb-4">Choisis au moins un groupe éligible pour chaque personne.</p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <h3 class="title is-6">{{ person.first_name }} {{ person.last_name }}</h3>
@@ -88,7 +88,6 @@
                 <input type="checkbox" [checked]="isGroupSelected(person.id, group.id)" [disabled]="!group.eligible" (change)="toggleGroup(person, group)" />
                 <span class="option-main">
                   <strong>{{ group.nom }}</strong>
-                  <small *ngIf="group.par_defaut">Groupe par défaut</small>
                   <small>{{ group.nb_actifs }}<ng-container *ngIf="group.limit_nb != null"> / {{ group.limit_nb }}</ng-container> inscrit(s)</small>
                   <small class="has-text-danger" *ngIf="group.raison_indisponibilite">{{ group.raison_indisponibilite }}</small>
                 </span>
