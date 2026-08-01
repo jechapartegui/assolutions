@@ -23,9 +23,6 @@ export class GroupesEntity {
   @Column({ type: 'boolean', nullable: true })
   visible: boolean | null;
 
-  @Column({ type: 'boolean', default: false })
-  par_defaut: boolean;
-
   @Column({ type: 'int', nullable: true })
   age_min: number | null;
 
