@@ -17,6 +17,15 @@ export class SouscriptionEntity {
   @Column({ type: 'int', nullable: true })
   payeur_personne_id: number | null;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  payeur_prenom: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  payeur_nom: string | null;
+
+  @Column({ type: 'varchar', length: 250, nullable: true })
+  payeur_email: string | null;
+
   @Column({ type: 'varchar', length: 40, default: 'BROUILLON' })
   statut: string;
 
