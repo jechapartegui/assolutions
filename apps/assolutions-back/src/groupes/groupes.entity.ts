@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  VirtualColumn,
+} from 'typeorm';
 
 @Entity({ name: 'groupes' })
 export class GroupesEntity {
@@ -24,10 +29,14 @@ export class GroupesEntity {
   visible: boolean | null;
 
   /**
-   * Compatibilité temporaire avec le contexte du tunnel.
-   * Ce champ n'est volontairement PAS une colonne : aucun groupe n'est imposé.
+   * Compatibilité transitoire avec le premier brouillon du tunnel.
+   * Valeur toujours fausse, calculée en SQL : aucune colonne et aucun groupe imposé.
    */
-  readonly par_defaut = false;
+  @VirtualColumn({
+    type: 'boolean',
+    query: () => 'false',
+  })
+  par_defaut: boolean;
 
   @Column({ type: 'int', nullable: true })
   age_min: number | null;
