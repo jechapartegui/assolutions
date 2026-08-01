@@ -43,3 +43,13 @@ Thumbs.db
 
 .angular
 .tsc.out
+
+# Environment files: never commit secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+apps/assolutions-back/.env
+apps/assolutions-back/.env.*
+!apps/assolutions-back/.env.example
+!apps/assolutions-back/.env.*.example
