@@ -43,14 +43,33 @@ import { TarifInscriptionModule } from '../tarif_inscription/tarif_inscription.m
 import { AdhesionModule } from './adhesion/adhesion.module';
 import { MesSeancesModule } from './mes_seances/mes_seances.module';
 
+function resolveEnvironmentFile(): string {
+  const explicit = (process.env.APP_ENV ?? '').trim().toLowerCase();
+
+  if (explicit === 'preprod' || explicit === 'preproduction') {
+    return '.env.preprod';
+  }
+
+  if (
+    explicit === 'production' ||
+    explicit === 'prod' ||
+    (!explicit && (process.env.NODE_ENV ?? '').toLowerCase() === 'production')
+  ) {
+    return '.env.production';
+  }
+
+  return '.env.local';
+}
+
+const environmentFile = resolveEnvironmentFile();
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
-        join(process.cwd(), 'apps/assolutions-back/.env.development'),
-        join(process.cwd(), 'apps/assolutions-back/.env'),
-        join(process.cwd(), '.env'),
+        join(process.cwd(), `apps/assolutions-back/${environmentFile}`),
+        join(process.cwd(), environmentFile),
       ],
     }),
     TypeOrmModule.forRootAsync({
@@ -84,7 +103,7 @@ import { MesSeancesModule } from './mes_seances/mes_seances.module';
         const password = cfg.get<string>('PGPASSWORD');
         if (typeof password !== 'string') {
           throw new Error(
-            'PGPASSWORD manquant. Vérifie apps/assolutions-back/.env ou .env.development',
+            `PGPASSWORD manquant. Vérifie apps/assolutions-back/${environmentFile}`,
           );
         }
 
