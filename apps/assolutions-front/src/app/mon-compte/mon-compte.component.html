@@ -14,26 +14,37 @@
   </div>
 
   <div *ngIf="!loading" class="account-grid">
-    <!-- MON COMPTE -->
     <section class="box account-card">
       <h2 class="title is-5" i18n>Mon compte</h2>
-
       <div class="account-line">
         <span class="label-inline" i18n>Email</span>
         <strong>{{ store.compte?.()?.login || '—' }}</strong>
       </div>
-
       <div class="account-actions">
-       <button class="button is-light" (click)="reinitPassword()" i18n>
-  Recevoir un lien pour définir / réinitialiser mon mot de passe
-</button>
+        <button class="button is-light" (click)="reinitPassword()" i18n>
+          Recevoir un lien pour définir / réinitialiser mon mot de passe
+        </button>
       </div>
     </section>
 
-    <!-- MES PROJETS -->
+    <section class="box account-card account-subscription-card" *ngIf="selectedProject()">
+      <div>
+        <h2 class="title is-5 mb-1">Inscription au club</h2>
+        <p class="has-text-grey is-size-7">
+          Inscrire ou renouveler une ou plusieurs personnes pour {{ selectedProject()?.nom }}.
+        </p>
+      </div>
+      <a
+        class="button is-primary"
+        [routerLink]="['/souscription']"
+      >
+        <span class="icon"><i class="fas fa-id-card"></i></span>
+        <span>Commencer une inscription</span>
+      </a>
+    </section>
+
     <section class="box account-card">
       <h2 class="title is-5" i18n>Mes projets</h2>
-
       <p *ngIf="!hasProjects()" class="has-text-grey" i18n>
         Vous n’êtes rattaché à aucun projet pour le moment.
       </p>
@@ -45,17 +56,23 @@
             Projet courant
           </p>
         </div>
-
-        <button class="button is-success is-light" (click)="enterProject(project)" i18n>
-          Entrer
-        </button>
+        <div class="buttons mb-0">
+          <button class="button is-success is-light" (click)="enterProject(project)" i18n>
+            Entrer
+          </button>
+          <a
+            class="button is-primary is-light"
+            (click)="store.selectProject(project.id)"
+            [routerLink]="['/souscription']"
+          >
+            S'inscrire
+          </a>
+        </div>
       </div>
     </section>
 
-    <!-- REJOINDRE UN PROJET -->
     <section class="box account-card">
       <h2 class="title is-5" i18n>Rejoindre un projet</h2>
-
       <div class="field">
         <label class="label is-small" i18n>Code ou token d’invitation</label>
         <div class="field has-addons">
@@ -83,9 +100,7 @@
 
       <div *ngIf="publicProjectsToJoin.length">
         <hr />
-
         <h3 class="title is-6" i18n>Projets publics</h3>
-
         <div *ngFor="let project of publicProjects" class="project-row">
           <div>
             <strong>{{ project.nom }}</strong>
@@ -93,22 +108,19 @@
               {{ project.activite }}
             </p>
           </div>
-
           <button class="button is-link is-light" (click)="joinPublicProject(project)" i18n>
             Rejoindre
           </button>
         </div>
       </div>
       <p *ngIf="!publicProjectsToJoin.length" class="has-text-grey is-size-7 mt-3" i18n>
-  Tous les projets publics disponibles sont déjà rattachés à votre compte.
-</p>
+        Tous les projets publics disponibles sont déjà rattachés à votre compte.
+      </p>
     </section>
 
-    <!-- MES PERSONNES -->
     <section class="box account-card account-card-wide">
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
         <h2 class="title is-5 mb-0" i18n>Mes personnes</h2>
-
         <button class="button is-primary is-light" (click)="addPersonne()" i18n>
           Ajouter une personne
         </button>
@@ -118,51 +130,42 @@
         Aucune personne n’est encore rattachée à ce compte.
       </p>
 
-<div *ngFor="let personne of personnes" class="person-row">
-  <div>
-    <strong>
-      {{ personne.first_name || personne.prenom }}
-      {{ personne.last_name || personne.nom }}
-    </strong>
-
-    <p class="has-text-grey is-size-7">
-      {{ personne.date_naissance || '' }}
-    </p>
-
-    <div class="person-projects mt-2">
-      <ng-container *ngIf="getInscriptionsForPersonne(personne.id).length; else noProjectForPersonne">
-        <span
-          class="tag mr-1 mb-1"
-          [class.is-success]="ins.active"
-          [class.is-light]="true"
-          *ngFor="let ins of getInscriptionsForPersonne(personne.id)"
-        >
-          {{ ins.project_nom }} · {{ ins.saison_nom }}
-          <span *ngIf="ins.active">&nbsp;· active</span>
-        </span>
-      </ng-container>
-
-      <ng-template #noProjectForPersonne>
-        <span class="tag is-warning is-light" i18n>Aucune inscription projet</span>
-      </ng-template>
-    </div>
-  </div>
-
-  <div class="buttons mb-0">
-    <button class="button is-light" (click)="editPersonne(personne)" i18n>
-      Modifier
-    </button>
-
-    <button
-      *ngIf="canDeletePersonne(personne)"
-      class="button is-danger is-light"
-      (click)="deletePersonne(personne)"
-      i18n
-    >
-      Supprimer
-    </button>
-  </div>
-</div>
+      <div *ngFor="let personne of personnes" class="person-row">
+        <div>
+          <strong>
+            {{ personne.first_name || personne.prenom }}
+            {{ personne.last_name || personne.nom }}
+          </strong>
+          <p class="has-text-grey is-size-7">{{ personne.date_naissance || '' }}</p>
+          <div class="person-projects mt-2">
+            <ng-container *ngIf="getInscriptionsForPersonne(personne.id).length; else noProjectForPersonne">
+              <span
+                class="tag mr-1 mb-1"
+                [class.is-success]="ins.active"
+                [class.is-light]="true"
+                *ngFor="let ins of getInscriptionsForPersonne(personne.id)"
+              >
+                {{ ins.project_nom }} · {{ ins.saison_nom }}
+                <span *ngIf="ins.active">&nbsp;· active</span>
+              </span>
+            </ng-container>
+            <ng-template #noProjectForPersonne>
+              <span class="tag is-warning is-light" i18n>Aucune inscription projet</span>
+            </ng-template>
+          </div>
+        </div>
+        <div class="buttons mb-0">
+          <button class="button is-light" (click)="editPersonne(personne)" i18n>Modifier</button>
+          <button
+            *ngIf="canDeletePersonne(personne)"
+            class="button is-danger is-light"
+            (click)="deletePersonne(personne)"
+            i18n
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
     </section>
   </div>
 </div>
