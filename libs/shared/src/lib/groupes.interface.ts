@@ -8,9 +8,6 @@ export interface Groupe {
   whatsapp?: string | null;
   visible?: boolean | null;
 
-  /** Groupe présélectionné dans le tunnel lorsqu'il est éligible. */
-  par_defaut?: boolean;
-
   /** Âge minimum dans l'année civile de début de saison. */
   age_min?: number | null;
 
