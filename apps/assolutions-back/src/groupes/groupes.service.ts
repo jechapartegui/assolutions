@@ -88,7 +88,7 @@ export class GroupesService {
     await this.assertSaisonInProject(saisonId, projectId);
     return this.repo.find({
       where: { saison_id: saisonId },
-      order: { par_defaut: 'DESC', nom: 'ASC' },
+      order: { nom: 'ASC' },
     });
   }
 
@@ -104,24 +104,15 @@ export class GroupesService {
     const criteria = this.criteriaFromCreateDto(dto);
     this.assertEligibilityCriteria(criteria);
 
-    return this.repo.manager.transaction(async (manager) => {
-      const repo = manager.getRepository(GroupesEntity);
-      if (dto.par_defaut) {
-        await repo.update(
-          { saison_id: dto.saison_id, par_defaut: true },
-          { par_defaut: false },
-        );
-      }
-      const entity = repo.create({
-        ...dto,
-        nom: dto.nom.trim(),
-        whatsapp: dto.whatsapp?.trim() || null,
-        visible: dto.visible ?? null,
-        par_defaut: !!dto.par_defaut,
-        ...criteria,
-      });
-      return repo.save(entity);
+    const entity = this.repo.create({
+      ...dto,
+      nom: dto.nom.trim(),
+      whatsapp: dto.whatsapp?.trim() || null,
+      visible: dto.visible ?? null,
+      ...criteria,
     });
+
+    return this.repo.save(entity);
   }
 
   async update(
@@ -131,32 +122,23 @@ export class GroupesService {
   ): Promise<GroupesEntity> {
     const item = await this.getForProject(id, projectId);
     const targetSeasonId = dto.saison_id ?? item.saison_id;
+
     if (targetSeasonId !== item.saison_id) {
       await this.assertSaisonInProject(targetSeasonId, projectId);
     }
+
     const criteria = this.criteriaAfterUpdate(item, dto);
     this.assertEligibilityCriteria(criteria);
 
-    return this.repo.manager.transaction(async (manager) => {
-      const repo = manager.getRepository(GroupesEntity);
-      if (dto.par_defaut === true) {
-        await repo
-          .createQueryBuilder()
-          .update(GroupesEntity)
-          .set({ par_defaut: false })
-          .where('saison_id = :saisonId', { saisonId: targetSeasonId })
-          .andWhere('id <> :id', { id })
-          .execute();
-      }
-      Object.assign(item, dto, criteria, {
-        saison_id: targetSeasonId,
-        date_maj: new Date(),
-      });
-      if (dto.nom !== undefined) item.nom = dto.nom.trim();
-      if (dto.whatsapp !== undefined) item.whatsapp = dto.whatsapp?.trim() || null;
-      if (dto.par_defaut !== undefined) item.par_defaut = !!dto.par_defaut;
-      return repo.save(item);
+    Object.assign(item, dto, criteria, {
+      saison_id: targetSeasonId,
+      date_maj: new Date(),
     });
+
+    if (dto.nom !== undefined) item.nom = dto.nom.trim();
+    if (dto.whatsapp !== undefined) item.whatsapp = dto.whatsapp?.trim() || null;
+
+    return this.repo.save(item);
   }
 
   async remove(id: number, projectId: number): Promise<{ ok: true }> {
