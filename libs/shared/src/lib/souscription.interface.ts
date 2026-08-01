@@ -17,6 +17,8 @@ export type CodePromoTypeRemise = 'POURCENTAGE' | 'MONTANT';
 export interface SouscriptionGroupeOption {
   id: number;
   nom: string;
+  /** Compatibilité transitoire : toujours false, aucun groupe n'est imposé. */
+  par_defaut: boolean;
   visible: boolean;
   eligible: boolean;
   complet: boolean;
