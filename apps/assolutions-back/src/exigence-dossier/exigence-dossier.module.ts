@@ -13,6 +13,9 @@ import { ExigenceDossierEntity } from './exigence-dossier.entity';
 import { ExigenceDossierPorteeEntity } from './exigence-dossier-portee.entity';
 import { ReponseExigenceDossierEntity } from './reponse-exigence-dossier.entity';
 import { ExigenceDossierService } from './exigence-dossier.service';
+import { PreuveMedicaleController } from './preuve-medicale.controller';
+import { PreuveMedicaleEntity } from './preuve-medicale.entity';
+import { PreuveMedicaleService } from './preuve-medicale.service';
 
 @Module({
   imports: [
@@ -20,6 +23,7 @@ import { ExigenceDossierService } from './exigence-dossier.service';
       ExigenceDossierEntity,
       ExigenceDossierPorteeEntity,
       ReponseExigenceDossierEntity,
+      PreuveMedicaleEntity,
       PersonneEntity,
       Contact,
       DocumentEntity,
@@ -28,8 +32,16 @@ import { ExigenceDossierService } from './exigence-dossier.service';
       TarifInscriptionEntity,
     ]),
   ],
-  controllers: [ExigenceDossierController, DossierPersonneController],
-  providers: [ExigenceDossierService],
-  exports: [ExigenceDossierService, TypeOrmModule],
+  controllers: [
+    ExigenceDossierController,
+    DossierPersonneController,
+    PreuveMedicaleController,
+  ],
+  providers: [ExigenceDossierService, PreuveMedicaleService],
+  exports: [
+    ExigenceDossierService,
+    PreuveMedicaleService,
+    TypeOrmModule,
+  ],
 })
 export class ExigenceDossierModule {}
