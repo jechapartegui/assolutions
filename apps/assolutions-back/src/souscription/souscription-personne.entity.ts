@@ -26,6 +26,9 @@ export class SouscriptionPersonneEntity {
   @Column({ type: 'varchar', length: 40, default: 'BROUILLON' })
   statut: string;
 
+  @Column({ type: 'varchar', length: 30, default: 'LOISIR' })
+  type_licence: 'LOISIR' | 'COMPETITION';
+
   @Column({ type: 'int', nullable: true })
   inscription_saison_id: number | null;
 
