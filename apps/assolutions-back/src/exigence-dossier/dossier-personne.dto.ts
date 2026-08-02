@@ -4,12 +4,10 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsIn,
   IsInt,
   IsOptional,
   IsString,
   MaxLength,
-  ValidateIf,
 } from 'class-validator';
 
 export class EvaluerDossierPersonneDto {
@@ -64,9 +62,4 @@ export class SauverReponseExigenceDto extends EvaluerDossierPersonneDto {
   @IsInt()
   @Type(() => Number)
   repondu_par_personne_id?: number | null;
-
-  @ValidateIf((item: SauverReponseExigenceDto) => item.valeur_boolean == null)
-  @IsOptional()
-  @IsIn([null])
-  valeur_absente?: null;
 }
