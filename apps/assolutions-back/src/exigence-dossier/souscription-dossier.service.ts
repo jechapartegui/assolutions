@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 
 import { Contact } from '../contact/contact.entity';
+import { DocumentEntity } from '../document/document.entity';
 import { InscriptionSaisonEntity } from '../inscription_saison/inscription_saison.entity';
 import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
 import { PersonneEntity } from '../personne/personne.entity';
@@ -16,6 +17,7 @@ import { SouscriptionPersonneEntity } from '../souscription/souscription-personn
 import { SouscriptionPersonneGroupeEntity } from '../souscription/souscription-personne-groupe.entity';
 import { SaveSouscriptionDto } from '../souscription/souscription.dto';
 import { DossierPersonneSaisonEntity } from './dossier-personne-saison.entity';
+import { SaveDossierDocumentDto } from './dossier-document.dto';
 import { ExigenceDossierService } from './exigence-dossier.service';
 import { PreuveMedicaleService } from './preuve-medicale.service';
 
@@ -32,6 +34,8 @@ export class SouscriptionDossierService {
     private readonly personneRepo: Repository<PersonneEntity>,
     @InjectRepository(Contact)
     private readonly contactRepo: Repository<Contact>,
+    @InjectRepository(DocumentEntity)
+    private readonly documentRepo: Repository<DocumentEntity>,
     @InjectRepository(DossierPersonneSaisonEntity)
     private readonly dossierRepo: Repository<DossierPersonneSaisonEntity>,
     private readonly exigences: ExigenceDossierService,
@@ -44,6 +48,41 @@ export class SouscriptionDossierService {
     personne.pays = pays.trim() || 'France';
     personne.date_maj = new Date();
     await this.personneRepo.save(personne);
+  }
+
+  async saveDocument(
+    dto: SaveDossierDocumentDto,
+    projectId: number,
+    compteId: number,
+  ) {
+    await this.getOwnedPerson(dto.personne_id, compteId);
+    const raw = dto.data_base64.includes(',')
+      ? dto.data_base64.split(',').pop() ?? ''
+      : dto.data_base64;
+    if (!raw) throw new BadRequestException('Fichier vide');
+    const file = Buffer.from(raw, 'base64');
+    if (!file.length) throw new BadRequestException('Fichier invalide');
+    if (file.length > 10 * 1024 * 1024) {
+      throw new BadRequestException('Le fichier dépasse 10 Mo');
+    }
+    return this.documentRepo.save(
+      this.documentRepo.create({
+        titre: dto.titre.trim(),
+        objet_id: dto.personne_id,
+        objet_type: 'rider',
+        typedoc: dto.typedoc.trim().toUpperCase(),
+        file_data: file,
+        file_path: null,
+        storage_type: 'DB',
+        mimetype: dto.mimetype,
+        date_document: dto.date_document?.slice(0, 10) ?? null,
+        date_expiration: null,
+        valide: true,
+        commentaire: null,
+        auteur: null,
+        project_id: projectId,
+      }),
+    );
   }
 
   async syncDraft(
@@ -61,7 +100,6 @@ export class SouscriptionDossierService {
       where: { souscription_id: subscription.id },
     });
     const lineByPerson = new Map(lines.map((line) => [line.personne_id, line]));
-
     for (const choice of dto.personnes) {
       const line = lineByPerson.get(Number(choice.personne_id));
       if (!line) continue;
@@ -122,11 +160,22 @@ export class SouscriptionDossierService {
         projectId,
         compteId,
       );
-      const snapshot = this.snapshot(person, contacts);
+      const otherLicenceMissing = evaluation.exigences.some(
+        (item) =>
+          item.usage === 'LICENCE' &&
+          item.obligatoire &&
+          item.type_exigence !== 'PREUVE_MEDICALE' &&
+          !item.satisfait,
+      );
+      const medicalRequired = evaluation.exigences.some(
+        (item) =>
+          item.usage === 'LICENCE' &&
+          item.obligatoire &&
+          item.type_exigence === 'PREUVE_MEDICALE',
+      );
       const licenceEligible =
-        line.type_licence === 'LOISIR'
-          ? evaluation.licence_complete
-          : evaluation.licence_complete && medical.eligible;
+        !otherLicenceMissing && (!medicalRequired || medical.eligible);
+      const snapshot = this.snapshot(person, contacts);
 
       line.donnees_personne_snapshot = snapshot;
       line.informations_validees_at = new Date();
@@ -142,7 +191,6 @@ export class SouscriptionDossierService {
         evaluation.inscription_complete,
         licenceEligible,
       );
-
       results.push({
         personne_id: person.id,
         personne_nom: `${person.first_name} ${person.last_name}`.trim(),
@@ -189,19 +237,14 @@ export class SouscriptionDossierService {
       projectId,
       compteId,
     );
-
     if (result === 'KO') {
       subscription.statut = 'ERREUR';
       subscription.helloasso_payment_state = 'SIMULATED_REFUSED';
       subscription.error_message = 'Paiement refusé en simulation locale';
       subscription.updated_at = new Date();
       await this.souscriptionRepo.save(subscription);
-      return {
-        paiement_confirme: false,
-        message: 'Paiement refusé simulé',
-      };
+      return { paiement_confirme: false, message: 'Paiement refusé simulé' };
     }
-
     await this.validateAndSnapshot(subscription.id, projectId, compteId, true);
     await this.finalize(subscription.id);
     return {
@@ -232,7 +275,6 @@ export class SouscriptionDossierService {
             where: { souscription_personne_id: In(lines.map((line) => line.id)) },
           })
         : [];
-
       for (const line of lines) {
         let registration = await registrationRepo.findOne({
           where: {
@@ -251,7 +293,6 @@ export class SouscriptionDossierService {
           registration.date_inscription = new Date();
         }
         registration = await registrationRepo.save(registration);
-
         for (const selected of links.filter(
           (item) => item.souscription_personne_id === line.id,
         )) {
@@ -278,7 +319,6 @@ export class SouscriptionDossierService {
         line.updated_at = new Date();
         await lineRepo.save(line);
       }
-
       subscription.statut = 'FINALISEE';
       subscription.helloasso_payment_state = 'SIMULATED_PAID';
       subscription.paid_at = new Date();
@@ -304,18 +344,16 @@ export class SouscriptionDossierService {
         personne_id: personId,
       },
     });
-    if (!dossier) {
-      dossier = this.dossierRepo.create({
-        project_id: projectId,
-        saison_id: seasonId,
-        personne_id: personId,
-        type_licence: licenceType,
-        informations_validees_at: null,
-        donnees_personne_snapshot: null,
-        inscription_complete: false,
-        licence_eligible: false,
-      });
-    }
+    dossier ??= this.dossierRepo.create({
+      project_id: projectId,
+      saison_id: seasonId,
+      personne_id: personId,
+      type_licence: licenceType,
+      informations_validees_at: null,
+      donnees_personne_snapshot: null,
+      inscription_complete: false,
+      licence_eligible: false,
+    });
     dossier.type_licence = licenceType;
     dossier.informations_validees_at = new Date();
     dossier.donnees_personne_snapshot = snapshot;
@@ -354,12 +392,12 @@ export class SouscriptionDossierService {
       process.env.FRONT_URL ??
       ''
     ).toLowerCase();
-    const local =
-      !explicit ||
-      explicit === 'local' ||
-      front.includes('localhost') ||
-      front.includes('127.0.0.1');
-    if (!local) {
+    if (
+      explicit &&
+      explicit !== 'local' &&
+      !front.includes('localhost') &&
+      !front.includes('127.0.0.1')
+    ) {
       throw new ForbiddenException('Simulation disponible uniquement en local');
     }
   }
