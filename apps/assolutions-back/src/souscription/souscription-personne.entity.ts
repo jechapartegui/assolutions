@@ -29,6 +29,15 @@ export class SouscriptionPersonneEntity {
   @Column({ type: 'int', nullable: true })
   inscription_saison_id: number | null;
 
+  @Column({ type: 'jsonb', nullable: true })
+  donnees_personne_snapshot: Record<string, unknown> | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  informations_validees_at: Date | null;
+
+  @Column({ type: 'boolean', default: false })
+  dossier_complet: boolean;
+
   @Column({ type: 'timestamp', default: () => 'now()' })
   created_at: Date;
 
