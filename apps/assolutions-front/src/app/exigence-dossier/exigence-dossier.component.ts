@@ -118,6 +118,20 @@ export class ExigenceDossierComponent implements OnInit {
     } else if (item.type_exigence === 'DOCUMENT') {
       item.source_code = this.documentTypes[0].code;
       item.type_reponse = 'DOCUMENT';
+    } else if (item.type_exigence === 'PREUVE_MEDICALE') {
+      item.usage = 'LICENCE';
+      item.source_code = null;
+      item.type_reponse = 'AUCUNE';
+      item.obligatoire = true;
+      item.bloquante = false;
+      item.validite_mois = null;
+      item.portees = [
+        {
+          type_portee: 'TYPE_LICENCE',
+          cible_id: null,
+          cible_code: 'COMPETITION',
+        },
+      ];
     } else if (item.type_exigence === 'CONSENTEMENT') {
       item.source_code = null;
       item.type_reponse = 'BOOLEEN';
@@ -130,7 +144,11 @@ export class ExigenceDossierComponent implements OnInit {
   addScope(type: ExigencePorteeType = 'GENERAL'): void {
     if (!this.edit) return;
     if (type === 'GENERAL') this.edit.portees = [];
-    else this.edit.portees = this.edit.portees.filter((scope) => scope.type_portee !== 'GENERAL');
+    else {
+      this.edit.portees = this.edit.portees.filter(
+        (scope) => scope.type_portee !== 'GENERAL',
+      );
+    }
     this.edit.portees.push(this.newScope(type));
   }
 
@@ -149,10 +167,16 @@ export class ExigenceDossierComponent implements OnInit {
   scopeLabel(scope: ExigenceDossierPortee): string {
     if (scope.type_portee === 'GENERAL') return 'Tous les dossiers';
     if (scope.type_portee === 'GROUPE') {
-      return `Groupe : ${this.groupes.find((item) => item.id === scope.cible_id)?.nom ?? '#' + scope.cible_id}`;
+      return `Groupe : ${
+        this.groupes.find((item) => item.id === scope.cible_id)?.nom ??
+        '#' + scope.cible_id
+      }`;
     }
     if (scope.type_portee === 'TARIF') {
-      return `Tarif : ${this.tarifs.find((item) => item.id === scope.cible_id)?.nom ?? '#' + scope.cible_id}`;
+      return `Tarif : ${
+        this.tarifs.find((item) => item.id === scope.cible_id)?.nom ??
+        '#' + scope.cible_id
+      }`;
     }
     return `Licence : ${scope.cible_code || 'à préciser'}`;
   }
@@ -225,7 +249,8 @@ export class ExigenceDossierComponent implements OnInit {
   }
 
   private errorMessage(error: any): string {
-    const value = error?.error?.message ?? error?.message ?? 'Une erreur est survenue';
+    const value =
+      error?.error?.message ?? error?.message ?? 'Une erreur est survenue';
     return Array.isArray(value) ? value.join(' · ') : String(value);
   }
 
