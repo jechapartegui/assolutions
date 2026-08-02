@@ -48,11 +48,19 @@ export class SaveExigenceDossierDto {
   @IsIn(['INSCRIPTION', 'LICENCE'])
   usage: 'INSCRIPTION' | 'LICENCE';
 
-  @IsIn(['CHAMP_PERSONNE', 'CONTACT', 'DOCUMENT', 'CONSENTEMENT', 'DECLARATION'])
+  @IsIn([
+    'CHAMP_PERSONNE',
+    'CONTACT',
+    'DOCUMENT',
+    'PREUVE_MEDICALE',
+    'CONSENTEMENT',
+    'DECLARATION',
+  ])
   type_exigence:
     | 'CHAMP_PERSONNE'
     | 'CONTACT'
     | 'DOCUMENT'
+    | 'PREUVE_MEDICALE'
     | 'CONSENTEMENT'
     | 'DECLARATION';
 
@@ -106,7 +114,10 @@ export class SaveExigenceDossierDto {
   actif: boolean;
 
   @IsArray()
-  @ArrayUnique((item: ExigencePorteeDto) => `${item.type_portee}:${item.cible_id ?? ''}:${item.cible_code ?? ''}`)
+  @ArrayUnique(
+    (item: ExigencePorteeDto) =>
+      `${item.type_portee}:${item.cible_id ?? ''}:${item.cible_code ?? ''}`,
+  )
   @ValidateNested({ each: true })
   @Type(() => ExigencePorteeDto)
   portees: ExigencePorteeDto[];
