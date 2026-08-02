@@ -31,6 +31,17 @@ export class DossierPersonneApiService {
     );
   }
 
+  saveDocument(dto: {
+    personne_id: number;
+    typedoc: string;
+    titre: string;
+    mimetype: string;
+    data_base64: string;
+    date_document?: string | null;
+  }): Promise<{ id: number }> {
+    return this.api.POST<{ id: number }>('/dossiers-personnes/document', dto);
+  }
+
   listMedicalProofs(
     personId: number,
     seasonId: number,
