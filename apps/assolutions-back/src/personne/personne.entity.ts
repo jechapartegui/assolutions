@@ -37,8 +37,8 @@ export class PersonneEntity {
   @Column({ type: 'varchar', length: 255 })
   address: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  pays: string | null;
+  @Column({ type: 'varchar', length: 100, default: 'France' })
+  pays: string;
 
   @Column({ type: 'boolean', default: false })
   archive: boolean;
