@@ -12,6 +12,7 @@ import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
+import { SouscriptionNotificationService } from '../exigence-dossier/souscription-notification.service';
 import { SouscriptionViewEnricherService } from '../exigence-dossier/souscription-view-enricher.service';
 import {
   CompleteSouscriptionPersonneDto,
@@ -31,6 +32,7 @@ export class SouscriptionController {
     private readonly service: SouscriptionService,
     private readonly dossiers: SouscriptionDossierService,
     private readonly views: SouscriptionViewEnricherService,
+    private readonly notifications: SouscriptionNotificationService,
   ) {}
 
   @Get('contexte/:saisonId')
@@ -119,31 +121,39 @@ export class SouscriptionController {
   ) {
     const accountId = this.accountId(req);
     await this.dossiers.validateAndSnapshot(id, projectId, accountId, true);
-    return this.service.createCheckout(id, projectId, accountId);
+    const result = await this.service.createCheckout(id, projectId, accountId);
+    await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
   }
 
   @Post(':id/simuler-paiement')
-  simulate(
+  async simulate(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: SimulerPaiementDto,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.dossiers.simulatePayment(
+    const accountId = this.accountId(req);
+    const result = await this.dossiers.simulatePayment(
       id,
       dto.resultat,
       projectId,
-      this.accountId(req),
+      accountId,
     );
+    await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
   }
 
   @Post(':id/confirmer')
-  confirm(
+  async confirm(
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.confirmPayment(id, projectId, this.accountId(req));
+    const accountId = this.accountId(req);
+    const result = await this.service.confirmPayment(id, projectId, accountId);
+    await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
   }
 
   @Post(':id/annuler')
@@ -156,8 +166,10 @@ export class SouscriptionController {
   }
 
   @Post('helloasso/webhook')
-  webhook(@Body() payload: unknown) {
-    return this.service.handleHelloAssoWebhook(payload);
+  async webhook(@Body() payload: unknown) {
+    const result = await this.service.handleHelloAssoWebhook(payload);
+    await this.notifications.sendFromWebhook(payload);
+    return result;
   }
 
   private accountId(req: AuthenticatedRequest): number {
