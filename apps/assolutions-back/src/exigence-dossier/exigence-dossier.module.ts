@@ -23,6 +23,7 @@ import { PreuveMedicaleController } from './preuve-medicale.controller';
 import { PreuveMedicaleEntity } from './preuve-medicale.entity';
 import { PreuveMedicaleService } from './preuve-medicale.service';
 import { SouscriptionDossierService } from './souscription-dossier.service';
+import { SouscriptionViewEnricherService } from './souscription-view-enricher.service';
 
 @Module({
   imports: [
@@ -54,11 +55,13 @@ import { SouscriptionDossierService } from './souscription-dossier.service';
     ExigenceDossierService,
     PreuveMedicaleService,
     SouscriptionDossierService,
+    SouscriptionViewEnricherService,
   ],
   exports: [
     ExigenceDossierService,
     PreuveMedicaleService,
     SouscriptionDossierService,
+    SouscriptionViewEnricherService,
     TypeOrmModule,
   ],
 })
