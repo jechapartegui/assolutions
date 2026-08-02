@@ -1,7 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  CompleteSouscriptionPersonneDto,
   DossierPersonneEvaluation,
   EvaluationPreuveMedicale,
   ExigenceEvaluation,
@@ -37,6 +36,16 @@ type MedicalForm = {
   rpps: string;
 };
 
+type StoredTunnelState = {
+  selectedPersonIds: number[];
+  choices: Record<number, PersonChoice>;
+  payerMode: PayerMode | null;
+  payerFirstName: string;
+  payerLastName: string;
+  payerEmail: string;
+  step: number;
+};
+
 @Component({
   standalone: false,
   selector: 'app-souscription-tunnel',
@@ -45,6 +54,8 @@ type MedicalForm = {
 })
 export class SouscriptionTunnelComponent implements OnInit {
   @ViewChild('scrollContainer') scrollContainer?: ElementRef<HTMLElement>;
+
+  private readonly storageKey = 'assolutions.souscription.tunnel';
 
   context: SouscriptionContexte | null = null;
   choices: Record<number, PersonChoice> = {};
@@ -98,7 +109,10 @@ export class SouscriptionTunnelComponent implements OnInit {
       await this.confirmReturn(sid);
       return;
     }
+
     await this.loadContext();
+    this.restoreStoredState();
+    await this.loadSelectedBasicStatuses();
   }
 
   get selectedPeople(): SouscriptionPersonneContexte[] {
@@ -111,7 +125,7 @@ export class SouscriptionTunnelComponent implements OnInit {
     return Number(this.context?.saison.id ?? this.appStore.saison_active_id());
   }
 
-  togglePerson(person: SouscriptionPersonneContexte): void {
+  async togglePerson(person: SouscriptionPersonneContexte): Promise<void> {
     if (this.selectedPersonIds.has(person.id)) {
       this.selectedPersonIds.delete(person.id);
       delete this.choices[person.id];
@@ -121,6 +135,7 @@ export class SouscriptionTunnelComponent implements OnInit {
         this.payerMode = this.selectedPeople[0]?.id ?? 'OTHER';
         this.onPayerModeChange();
       }
+      this.storeState();
       return;
     }
 
@@ -135,6 +150,8 @@ export class SouscriptionTunnelComponent implements OnInit {
       this.payerMode = person.id;
       this.onPayerModeChange();
     }
+    await this.loadBasicPersonStatus(person);
+    this.storeState();
   }
 
   isSelected(personId: number): boolean {
@@ -153,6 +170,16 @@ export class SouscriptionTunnelComponent implements OnInit {
     return (this.medicalForms[personId] ??= this.newMedicalForm());
   }
 
+  eligibleGroups(person: SouscriptionPersonneContexte): SouscriptionGroupeOption[] {
+    return person.groupes
+      .filter((group) => group.visible && group.eligible)
+      .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  }
+
+  hiddenGroupCount(person: SouscriptionPersonneContexte): number {
+    return person.groupes.length - this.eligibleGroups(person).length;
+  }
+
   toggleGroup(
     person: SouscriptionPersonneContexte,
     group: SouscriptionGroupeOption,
@@ -163,6 +190,7 @@ export class SouscriptionTunnelComponent implements OnInit {
     ids.has(group.id) ? ids.delete(group.id) : ids.add(group.id);
     current.groupIds = Array.from(ids);
     this.ensureCompatibleTariff(person);
+    this.storeState();
   }
 
   isGroupSelected(personId: number, groupId: number): boolean {
@@ -188,11 +216,62 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.choice(person.id).tariffId = Number(tariffId);
     this.installments = Math.min(this.installments, this.maxInstallments);
     this.clearPromoResult();
+    this.storeState();
   }
 
-  async selectLicence(person: SouscriptionPersonneContexte, type: TypeLicence) {
+  async selectLicence(
+    person: SouscriptionPersonneContexte,
+    type: TypeLicence,
+  ): Promise<void> {
     this.choice(person.id).licenceType = type;
     await this.loadPersonDossier(person);
+    this.storeState();
+  }
+
+  photoRequirement(personId: number): ExigenceEvaluation | null {
+    return (
+      this.dossiers[personId]?.exigences.find(
+        (item) =>
+          item.type_exigence === 'DOCUMENT' &&
+          item.source_code?.toUpperCase() === 'PHOTO',
+      ) ?? null
+    );
+  }
+
+  photoPresent(personId: number): boolean {
+    return this.photoRequirement(personId)?.satisfait === true;
+  }
+
+  photoKnown(personId: number): boolean {
+    return !!this.photoRequirement(personId);
+  }
+
+  requirementAnswered(requirement: ExigenceEvaluation): boolean {
+    if (requirement.type_reponse === 'BOOLEEN') {
+      return typeof requirement.valeur_boolean === 'boolean';
+    }
+    return requirement.satisfait;
+  }
+
+  dossierRequirements(personId: number): ExigenceEvaluation[] {
+    return (this.dossiers[personId]?.exigences ?? [])
+      .filter((item) => item.type_exigence !== 'PREUVE_MEDICALE')
+      .sort((a, b) => {
+        if (a.usage !== b.usage) return a.usage === 'INSCRIPTION' ? -1 : 1;
+        return a.libelle.localeCompare(b.libelle, 'fr');
+      });
+  }
+
+  async editPerson(person: SouscriptionPersonneContexte): Promise<void> {
+    this.storeState();
+    await this.router.navigate(['/adherent'], {
+      queryParams: {
+        context: 'MON_COMPTE',
+        action: 'EDIT',
+        id: person.id,
+        returnUrl: '/souscription',
+      },
+    });
   }
 
   get maxInstallments(): number {
@@ -244,32 +323,16 @@ export class SouscriptionTunnelComponent implements OnInit {
 
   async next(): Promise<void> {
     if (!this.canContinue()) return;
-    if (this.step === 3) {
-      await this.loadDossiers();
-    }
+    if (this.step === 3) await this.loadDossiers();
     this.step = Math.min(5, this.step + 1);
+    this.storeState();
     this.scrollTop();
   }
 
   previous(): void {
     this.step = Math.max(1, this.step - 1);
+    this.storeState();
     this.scrollTop();
-  }
-
-  async savePerson(person: SouscriptionPersonneContexte): Promise<void> {
-    const dto: CompleteSouscriptionPersonneDto = {
-      first_name: person.first_name,
-      last_name: person.last_name,
-      date_naissance: person.date_naissance,
-      address: person.address,
-      pays: person.pays || 'France',
-      email: person.email ?? '',
-      telephone: person.telephone ?? '',
-    };
-    await this.run('Mise à jour des informations', async () => {
-      await this.api.completePerson(person.id, dto);
-      await this.loadContext(true);
-    });
   }
 
   async saveRequirement(
@@ -298,13 +361,15 @@ export class SouscriptionTunnelComponent implements OnInit {
       date_document: form.date,
       qs_reponses_negatives:
         form.type === 'QS_SPORT' ? form.qsNegative : null,
-      valable_competition: form.type === 'CERTIFICAT',
+      valable_competition:
+        form.type === 'CERTIFICAT' &&
+        this.choice(person.id).licenceType === 'COMPETITION',
       medecin_nom: form.type === 'CERTIFICAT' ? form.doctorName : null,
       medecin_rpps: form.type === 'CERTIFICAT' ? form.rpps : null,
       document_id: null,
       commentaire: null,
     };
-    await this.run('Enregistrement de la preuve médicale', async () => {
+    await this.run('Enregistrement de la situation médicale', async () => {
       await this.dossierApi.saveMedicalProof(dto);
       this.medicalForms[person.id] = this.newMedicalForm();
       await this.loadPersonDossier(person);
@@ -316,12 +381,14 @@ export class SouscriptionTunnelComponent implements OnInit {
       this.payerFirstName = '';
       this.payerLastName = '';
       this.payerEmail = '';
+      this.storeState();
       return;
     }
     const person = this.selectedPeople.find((item) => item.id === this.payerMode);
     this.payerFirstName = person?.first_name ?? '';
     this.payerLastName = person?.last_name ?? '';
     this.payerEmail = person?.email ?? '';
+    this.storeState();
   }
 
   async validatePromo(): Promise<void> {
@@ -385,6 +452,7 @@ export class SouscriptionTunnelComponent implements OnInit {
         this.returnConfirmed = true;
         this.returnMessage = 'Inscription finalisée sans paiement';
         this.isReturnMode = true;
+        this.clearStoredState();
       }
     });
   }
@@ -398,6 +466,7 @@ export class SouscriptionTunnelComponent implements OnInit {
       this.returnConfirmed = response.paiement_confirme;
       this.returnMessage = response.message;
       this.isReturnMode = true;
+      if (result === 'OK') this.clearStoredState();
     });
   }
 
@@ -412,7 +481,31 @@ export class SouscriptionTunnelComponent implements OnInit {
 
   groupNames(person: SouscriptionPersonneContexte): string[] {
     const ids = new Set(this.choice(person.id).groupIds);
-    return person.groupes.filter((group) => ids.has(group.id)).map((group) => group.nom);
+    return person.groupes
+      .filter((group) => ids.has(group.id))
+      .map((group) => group.nom);
+  }
+
+  private async loadSelectedBasicStatuses(): Promise<void> {
+    for (const person of this.selectedPeople) {
+      await this.loadBasicPersonStatus(person);
+    }
+  }
+
+  private async loadBasicPersonStatus(
+    person: SouscriptionPersonneContexte,
+  ): Promise<void> {
+    try {
+      this.dossiers[person.id] = await this.dossierApi.evaluate({
+        saison_id: this.seasonId,
+        personne_id: person.id,
+        groupe_ids: [],
+        tarif_inscription_id: null,
+        type_licence: this.choice(person.id).licenceType,
+      });
+    } catch {
+      // Le statut détaillé sera rechargé à l'étape Dossier.
+    }
   }
 
   private async loadDossiers(): Promise<void> {
@@ -455,7 +548,9 @@ export class SouscriptionTunnelComponent implements OnInit {
     };
 
     await this.run('Chargement du tunnel', async () => {
-      this.context = await this.api.context(Number(this.appStore.saison_active_id()));
+      this.context = await this.api.context(
+        Number(this.appStore.saison_active_id()),
+      );
       this.context.personnes.forEach((person) => {
         person.pays ||= 'France';
       });
@@ -523,6 +618,47 @@ export class SouscriptionTunnelComponent implements OnInit {
     };
   }
 
+  private storeState(): void {
+    const state: StoredTunnelState = {
+      selectedPersonIds: Array.from(this.selectedPersonIds),
+      choices: this.choices,
+      payerMode: this.payerMode,
+      payerFirstName: this.payerFirstName,
+      payerLastName: this.payerLastName,
+      payerEmail: this.payerEmail,
+      step: this.step,
+    };
+    sessionStorage.setItem(this.storageKey, JSON.stringify(state));
+  }
+
+  private restoreStoredState(): void {
+    const raw = sessionStorage.getItem(this.storageKey);
+    if (!raw) return;
+    try {
+      const state = JSON.parse(raw) as StoredTunnelState;
+      this.selectedPersonIds = new Set(
+        state.selectedPersonIds.filter((id) =>
+          this.context?.personnes.some((person) => person.id === id),
+        ),
+      );
+      this.choices = state.choices ?? {};
+      this.payerMode = state.payerMode;
+      this.payerFirstName = state.payerFirstName ?? '';
+      this.payerLastName = state.payerLastName ?? '';
+      this.payerEmail = state.payerEmail ?? '';
+      this.step = Math.max(1, Math.min(5, Number(state.step || 1)));
+      this.selectedPeople.forEach((person) => {
+        this.medicalForms[person.id] = this.newMedicalForm();
+      });
+    } catch {
+      this.clearStoredState();
+    }
+  }
+
+  private clearStoredState(): void {
+    sessionStorage.removeItem(this.storageKey);
+  }
+
   private clearPromoResult(): void {
     this.promoMessage = '';
     this.promoError = '';
@@ -535,11 +671,15 @@ export class SouscriptionTunnelComponent implements OnInit {
       this.returnSubscription = result.souscription;
       this.returnConfirmed = result.paiement_confirme;
       this.returnMessage = result.message;
+      if (result.paiement_confirme) this.clearStoredState();
     });
   }
 
   private scrollTop(): void {
-    this.scrollContainer?.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
+    this.scrollContainer?.nativeElement.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
   }
 
   private errorMessage(error: any): string {
