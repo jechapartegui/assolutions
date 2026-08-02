@@ -72,6 +72,30 @@ export class SouscriptionNotificationService {
     return this.sendPerPerson(subscriptionId, projectId, accountId, 'KO');
   }
 
+  async sendCurrentState(
+    subscriptionId: number,
+    projectId: number,
+    accountId: number,
+  ): Promise<void> {
+    const subscription = await this.souscriptionRepo.findOne({
+      where: {
+        id: subscriptionId,
+        project_id: projectId,
+        compte_id: accountId,
+      },
+    });
+    if (!subscription) return;
+
+    if (subscription.statut === 'FINALISEE') {
+      await this.sendSuccess(subscriptionId, projectId, accountId);
+      return;
+    }
+
+    if (this.isFailureState(subscription.helloasso_payment_state)) {
+      await this.sendFailure(subscriptionId, projectId, accountId);
+    }
+  }
+
   async sendFromWebhook(payload: unknown): Promise<void> {
     const checkoutId = this.helloAsso.extractCheckoutIntentId(payload);
     if (!checkoutId) return;
@@ -81,22 +105,11 @@ export class SouscriptionNotificationService {
     });
     if (!subscription) return;
 
-    if (subscription.statut === 'FINALISEE') {
-      await this.sendSuccess(
-        subscription.id,
-        subscription.project_id,
-        subscription.compte_id,
-      );
-      return;
-    }
-
-    if (this.isFailureState(subscription.helloasso_payment_state)) {
-      await this.sendFailure(
-        subscription.id,
-        subscription.project_id,
-        subscription.compte_id,
-      );
-    }
+    await this.sendCurrentState(
+      subscription.id,
+      subscription.project_id,
+      subscription.compte_id,
+    );
   }
 
   private async sendPerPerson(
