@@ -12,6 +12,7 @@ import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
+import { SouscriptionViewEnricherService } from '../exigence-dossier/souscription-view-enricher.service';
 import {
   CompleteSouscriptionPersonneDto,
   SaveSouscriptionDto,
@@ -29,15 +30,24 @@ export class SouscriptionController {
   constructor(
     private readonly service: SouscriptionService,
     private readonly dossiers: SouscriptionDossierService,
+    private readonly views: SouscriptionViewEnricherService,
   ) {}
 
   @Get('contexte/:saisonId')
-  getContext(
+  async getContext(
     @Param('saisonId', ParseIntPipe) saisonId: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.getContext(saisonId, projectId, this.accountId(req));
+    const context = await this.service.getContext(
+      saisonId,
+      projectId,
+      this.accountId(req),
+    );
+    if (context.brouillon) {
+      context.brouillon = await this.views.subscription(context.brouillon);
+    }
+    return this.views.context(context);
   }
 
   @Post('personnes/:id/completer')
@@ -69,16 +79,22 @@ export class SouscriptionController {
     const accountId = this.accountId(req);
     const saved = await this.service.saveDraft(dto, projectId, accountId);
     await this.dossiers.syncDraft(saved.id, dto, projectId, accountId);
-    return this.service.getForAccount(saved.id, projectId, accountId);
+    const view = await this.service.getForAccount(saved.id, projectId, accountId);
+    return this.views.subscription(view);
   }
 
   @Get(':id')
-  get(
+  async get(
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.getForAccount(id, projectId, this.accountId(req));
+    const view = await this.service.getForAccount(
+      id,
+      projectId,
+      this.accountId(req),
+    );
+    return this.views.subscription(view);
   }
 
   @Post(':id/dossier')
