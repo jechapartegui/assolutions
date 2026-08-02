@@ -5,7 +5,6 @@ export class HelloAssoConfigGuard implements OnModuleInit {
   private readonly logger = new Logger(HelloAssoConfigGuard.name);
 
   onModuleInit(): void {
-    const appEnvironment = this.appEnvironment();
     const helloAssoEnvironment = (process.env.HELLOASSO_ENV ?? 'sandbox')
       .trim()
       .toLowerCase();
@@ -16,6 +15,7 @@ export class HelloAssoConfigGuard implements OnModuleInit {
     )
       .trim()
       .replace(/\/+$/, '');
+    const appEnvironment = this.appEnvironment(frontUrl);
     const apiUrl = (process.env.HELLOASSO_API_URL ?? '')
       .trim()
       .toLowerCase();
@@ -105,11 +105,18 @@ export class HelloAssoConfigGuard implements OnModuleInit {
     );
   }
 
-  private appEnvironment(): 'local' | 'preprod' | 'production' {
-    const explicit = (process.env.APP_ENV ?? '')
-      .trim()
-      .toLowerCase();
+  private appEnvironment(frontUrl: string): 'local' | 'preprod' | 'production' {
+    if (frontUrl) {
+      try {
+        const hostname = new URL(frontUrl).hostname.toLowerCase();
+        if (hostname === 'preprod.assolutions.club') return 'preprod';
+        if (hostname === 'assolutions.club') return 'production';
+      } catch {
+        // Le message détaillé sur l'URL invalide sera produit plus bas.
+      }
+    }
 
+    const explicit = (process.env.APP_ENV ?? '').trim().toLowerCase();
     if (explicit === 'preprod' || explicit === 'preproduction') {
       return 'preprod';
     }
