@@ -28,6 +28,7 @@ export class ExigenceDossierEntity {
     | 'CHAMP_PERSONNE'
     | 'CONTACT'
     | 'DOCUMENT'
+    | 'PREUVE_MEDICALE'
     | 'CONSENTEMENT'
     | 'DECLARATION';
 
