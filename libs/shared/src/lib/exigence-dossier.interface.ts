@@ -3,6 +3,7 @@ export type ExigenceType =
   | 'CHAMP_PERSONNE'
   | 'CONTACT'
   | 'DOCUMENT'
+  | 'PREUVE_MEDICALE'
   | 'CONSENTEMENT'
   | 'DECLARATION';
 export type ExigenceReponseType =
@@ -12,6 +13,7 @@ export type ExigenceReponseType =
   | 'DATE'
   | 'DOCUMENT';
 export type ExigencePorteeType = 'GENERAL' | 'GROUPE' | 'TARIF' | 'TYPE_LICENCE';
+export type TypeLicence = 'LOISIR' | 'COMPETITION';
 
 export interface ExigenceDossierPortee {
   id?: number;
@@ -48,3 +50,88 @@ export type SaveExigenceDossierDto = Omit<
   ExigenceDossier,
   'id' | 'project_id'
 >;
+
+export interface EvaluerDossierPersonneDto {
+  saison_id: number;
+  personne_id: number;
+  groupe_ids: number[];
+  tarif_inscription_id?: number | null;
+  type_licence?: TypeLicence | null;
+}
+
+export interface SauverReponseExigenceDto extends EvaluerDossierPersonneDto {
+  exigence_id: number;
+  valeur_boolean?: boolean | null;
+  valeur_texte?: string | null;
+  valeur_date?: string | null;
+  document_id?: number | null;
+  repondu_par_personne_id?: number | null;
+}
+
+export interface ExigenceEvaluation {
+  id: number;
+  code: string;
+  libelle: string;
+  description: string | null;
+  usage: ExigenceUsage;
+  type_exigence: ExigenceType;
+  source_code: string | null;
+  type_reponse: ExigenceReponseType;
+  obligatoire: boolean;
+  bloquante: boolean;
+  texte_consentement: string | null;
+  version_texte: string | null;
+  satisfait: boolean;
+  raison: string | null;
+  valeur_boolean: boolean | null;
+  valeur_texte: string | null;
+  valeur_date: string | null;
+  document_id: number | null;
+}
+
+export interface DossierPersonneEvaluation {
+  personne_id: number;
+  saison_id: number;
+  inscription_complete: boolean;
+  licence_complete: boolean;
+  exigences_manquantes_bloquantes: string[];
+  exigences_licence_manquantes: string[];
+  exigences: ExigenceEvaluation[];
+}
+
+export interface PreuveMedicale {
+  id: number;
+  project_id: number;
+  personne_id: number;
+  saison_id: number;
+  type_preuve: 'CERTIFICAT' | 'QS_SPORT';
+  date_document: string;
+  qs_reponses_negatives: boolean | null;
+  valable_competition: boolean;
+  medecin_nom: string | null;
+  medecin_rpps: string | null;
+  document_id: number | null;
+  valide: boolean;
+  commentaire: string | null;
+}
+
+export interface SavePreuveMedicaleDto {
+  personne_id: number;
+  saison_id: number;
+  type_preuve: 'CERTIFICAT' | 'QS_SPORT';
+  date_document: string;
+  qs_reponses_negatives?: boolean | null;
+  valable_competition: boolean;
+  medecin_nom?: string | null;
+  medecin_rpps?: string | null;
+  document_id?: number | null;
+  commentaire?: string | null;
+}
+
+export interface EvaluationPreuveMedicale {
+  eligible: boolean;
+  statut: string;
+  message: string;
+  certificat: PreuveMedicale | null;
+  qs_sport: PreuveMedicale | null;
+}
