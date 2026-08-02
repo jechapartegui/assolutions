@@ -1,4 +1,4 @@
-﻿import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'document' })
 export class DocumentEntity {
@@ -31,6 +31,15 @@ export class DocumentEntity {
 
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_import: Date;
+
+  @Column({ type: 'date', nullable: true })
+  date_document: string | null;
+
+  @Column({ type: 'date', nullable: true })
+  date_expiration: string | null;
+
+  @Column({ type: 'boolean', default: true })
+  valide: boolean;
 
   @Column({ type: 'text', nullable: true })
   commentaire: string | null;
