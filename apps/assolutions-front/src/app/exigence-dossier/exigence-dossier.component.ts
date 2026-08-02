@@ -62,7 +62,9 @@ export class ExigenceDossierComponent implements OnInit {
   }
 
   get saisonId(): number {
-    const stored = Number(localStorage.getItem('assolutions.consultationSaisonId'));
+    const stored = Number(
+      localStorage.getItem('assolutions.consultationSaisonId'),
+    );
     return Number.isInteger(stored) && stored > 0
       ? stored
       : Number(this.store.saison_active_id());
@@ -125,16 +127,11 @@ export class ExigenceDossierComponent implements OnInit {
       item.obligatoire = true;
       item.bloquante = false;
       item.validite_mois = null;
-      item.portees = [
-        {
-          type_portee: 'TYPE_LICENCE',
-          cible_id: null,
-          cible_code: 'COMPETITION',
-        },
-      ];
+      item.portees = [this.newScope('GENERAL')];
     } else if (item.type_exigence === 'CONSENTEMENT') {
       item.source_code = null;
       item.type_reponse = 'BOOLEEN';
+      item.portees ||= [this.newScope('GENERAL')];
     } else {
       item.source_code = null;
       item.type_reponse = 'TEXTE';
@@ -214,11 +211,7 @@ export class ExigenceDossierComponent implements OnInit {
   }
 
   private newScope(type: ExigencePorteeType): ExigenceDossierPortee {
-    return {
-      type_portee: type,
-      cible_id: null,
-      cible_code: null,
-    };
+    return { type_portee: type, cible_id: null, cible_code: null };
   }
 
   private toDto(item: ExigenceDossier): SaveExigenceDossierDto {
