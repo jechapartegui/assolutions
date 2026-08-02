@@ -170,8 +170,8 @@
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'CONSENTEMENT'">
                         <p class="consent-text">{{ requirement.texte_consentement }}</p>
                         <div class="boolean-choice">
-                          <label><input type="radio" [name]="'req-' + person.id + '-' + requirement.id" [(ngModel)]="requirement.valeur_boolean" [ngValue]="true" /> Oui</label>
-                          <label><input type="radio" [name]="'req-' + person.id + '-' + requirement.id" [(ngModel)]="requirement.valeur_boolean" [ngValue]="false" /> Non</label>
+                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === true" (click)="requirement.valeur_boolean = true">Oui</button>
+                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === false" (click)="requirement.valeur_boolean = false">Non</button>
                           <button class="button is-small is-primary" type="button" [disabled]="requirement.valeur_boolean == null" (click)="saveRequirement(person, requirement)">Enregistrer</button>
                         </div>
                       </div>
@@ -180,8 +180,8 @@
                         <input *ngIf="requirement.type_reponse === 'TEXTE'" class="input" [(ngModel)]="requirement.valeur_texte" />
                         <input *ngIf="requirement.type_reponse === 'DATE'" class="input" type="date" [(ngModel)]="requirement.valeur_date" />
                         <div class="boolean-choice" *ngIf="requirement.type_reponse === 'BOOLEEN'">
-                          <label><input type="radio" [name]="'decl-' + person.id + '-' + requirement.id" [(ngModel)]="requirement.valeur_boolean" [ngValue]="true" /> Oui</label>
-                          <label><input type="radio" [name]="'decl-' + person.id + '-' + requirement.id" [(ngModel)]="requirement.valeur_boolean" [ngValue]="false" /> Non</label>
+                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === true" (click)="requirement.valeur_boolean = true">Oui</button>
+                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === false" (click)="requirement.valeur_boolean = false">Non</button>
                         </div>
                         <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)">Enregistrer</button>
                       </div>
