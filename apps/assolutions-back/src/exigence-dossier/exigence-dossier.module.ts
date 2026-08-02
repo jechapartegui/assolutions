@@ -4,11 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Contact } from '../contact/contact.entity';
 import { DocumentEntity } from '../document/document.entity';
 import { GroupesEntity } from '../groupes/groupes.entity';
+import { HelloAssoModule } from '../helloasso/helloasso.module';
 import { InscriptionSaisonEntity } from '../inscription_saison/inscription_saison.entity';
 import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SouscriptionEntity } from '../souscription/souscription.entity';
+import { SouscriptionEvenementEntity } from '../souscription/souscription-evenement.entity';
 import { SouscriptionPersonneEntity } from '../souscription/souscription-personne.entity';
 import { SouscriptionPersonneGroupeEntity } from '../souscription/souscription-personne-groupe.entity';
 import { TarifInscriptionEntity } from '../tarif_inscription/tarif_inscription.entity';
@@ -23,10 +25,12 @@ import { PreuveMedicaleController } from './preuve-medicale.controller';
 import { PreuveMedicaleEntity } from './preuve-medicale.entity';
 import { PreuveMedicaleService } from './preuve-medicale.service';
 import { SouscriptionDossierService } from './souscription-dossier.service';
+import { SouscriptionNotificationService } from './souscription-notification.service';
 import { SouscriptionViewEnricherService } from './souscription-view-enricher.service';
 
 @Module({
   imports: [
+    HelloAssoModule,
     TypeOrmModule.forFeature([
       ExigenceDossierEntity,
       ExigenceDossierPorteeEntity,
@@ -42,6 +46,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
       SouscriptionEntity,
       SouscriptionPersonneEntity,
       SouscriptionPersonneGroupeEntity,
+      SouscriptionEvenementEntity,
       InscriptionSaisonEntity,
       LienGroupeEntity,
     ]),
@@ -56,12 +61,14 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
     PreuveMedicaleService,
     SouscriptionDossierService,
     SouscriptionViewEnricherService,
+    SouscriptionNotificationService,
   ],
   exports: [
     ExigenceDossierService,
     PreuveMedicaleService,
     SouscriptionDossierService,
     SouscriptionViewEnricherService,
+    SouscriptionNotificationService,
     TypeOrmModule,
   ],
 })
