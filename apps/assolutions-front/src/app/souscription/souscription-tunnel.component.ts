@@ -2,14 +2,21 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   CompleteSouscriptionPersonneDto,
+  DossierPersonneEvaluation,
+  EvaluationPreuveMedicale,
+  ExigenceEvaluation,
+  SavePreuveMedicaleDto,
   SaveSouscriptionDto,
   SouscriptionContexte,
   SouscriptionGroupeOption,
   SouscriptionPersonneContexte,
   SouscriptionTarifOption,
   SouscriptionView,
+  TypeLicence,
 } from '@shared/index';
 
+import { environment } from '../../environments/environment';
+import { DossierPersonneApiService } from '../../services/dossier-personne-api.service';
 import { ErrorService } from '../../services/error.service';
 import { SouscriptionApiService } from '../../services/souscription-api.service';
 import { AppStore } from '../app.store';
@@ -17,9 +24,18 @@ import { AppStore } from '../app.store';
 type PersonChoice = {
   groupIds: number[];
   tariffId: number | null;
+  licenceType: TypeLicence;
 };
 
 type PayerMode = number | 'OTHER';
+
+type MedicalForm = {
+  type: 'QS_SPORT' | 'CERTIFICAT';
+  date: string;
+  qsNegative: boolean;
+  doctorName: string;
+  rpps: string;
+};
 
 @Component({
   standalone: false,
@@ -33,6 +49,9 @@ export class SouscriptionTunnelComponent implements OnInit {
   context: SouscriptionContexte | null = null;
   choices: Record<number, PersonChoice> = {};
   selectedPersonIds = new Set<number>();
+  dossiers: Record<number, DossierPersonneEvaluation> = {};
+  medical: Record<number, EvaluationPreuveMedicale> = {};
+  medicalForms: Record<number, MedicalForm> = {};
   payerMode: PayerMode | null = null;
   payerFirstName = '';
   payerLastName = '';
@@ -51,6 +70,9 @@ export class SouscriptionTunnelComponent implements OnInit {
   returnConfirmed = false;
   isReturnMode = false;
 
+  readonly isLocal =
+    environment.environment === 'dev' || environment.apiUrl.startsWith('/');
+
   private readonly money = new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
@@ -58,6 +80,7 @@ export class SouscriptionTunnelComponent implements OnInit {
 
   constructor(
     private readonly api: SouscriptionApiService,
+    private readonly dossierApi: DossierPersonneApiService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     public readonly appStore: AppStore,
@@ -92,6 +115,8 @@ export class SouscriptionTunnelComponent implements OnInit {
     if (this.selectedPersonIds.has(person.id)) {
       this.selectedPersonIds.delete(person.id);
       delete this.choices[person.id];
+      delete this.dossiers[person.id];
+      delete this.medical[person.id];
       if (this.payerMode === person.id) {
         this.payerMode = this.selectedPeople[0]?.id ?? 'OTHER';
         this.onPayerModeChange();
@@ -100,7 +125,12 @@ export class SouscriptionTunnelComponent implements OnInit {
     }
 
     this.selectedPersonIds.add(person.id);
-    this.choices[person.id] = { groupIds: [], tariffId: null };
+    this.choices[person.id] = {
+      groupIds: [],
+      tariffId: null,
+      licenceType: 'LOISIR',
+    };
+    this.medicalForms[person.id] = this.newMedicalForm();
     if (this.payerMode == null) {
       this.payerMode = person.id;
       this.onPayerModeChange();
@@ -112,7 +142,15 @@ export class SouscriptionTunnelComponent implements OnInit {
   }
 
   choice(personId: number): PersonChoice {
-    return (this.choices[personId] ??= { groupIds: [], tariffId: null });
+    return (this.choices[personId] ??= {
+      groupIds: [],
+      tariffId: null,
+      licenceType: 'LOISIR',
+    });
+  }
+
+  medicalForm(personId: number): MedicalForm {
+    return (this.medicalForms[personId] ??= this.newMedicalForm());
   }
 
   toggleGroup(
@@ -150,6 +188,11 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.choice(person.id).tariffId = Number(tariffId);
     this.installments = Math.min(this.installments, this.maxInstallments);
     this.clearPromoResult();
+  }
+
+  async selectLicence(person: SouscriptionPersonneContexte, type: TypeLicence) {
+    this.choice(person.id).licenceType = type;
+    await this.loadPersonDossier(person);
   }
 
   get maxInstallments(): number {
@@ -191,12 +234,20 @@ export class SouscriptionTunnelComponent implements OnInit {
         (person) => this.choice(person.id).tariffId != null,
       );
     }
+    if (this.step === 4) {
+      return this.selectedPeople.every(
+        (person) => this.dossiers[person.id]?.inscription_complete === true,
+      );
+    }
     return this.isPayerValid();
   }
 
-  next(): void {
+  async next(): Promise<void> {
     if (!this.canContinue()) return;
-    this.step = Math.min(4, this.step + 1);
+    if (this.step === 3) {
+      await this.loadDossiers();
+    }
+    this.step = Math.min(5, this.step + 1);
     this.scrollTop();
   }
 
@@ -211,12 +262,52 @@ export class SouscriptionTunnelComponent implements OnInit {
       last_name: person.last_name,
       date_naissance: person.date_naissance,
       address: person.address,
+      pays: person.pays || 'France',
       email: person.email ?? '',
       telephone: person.telephone ?? '',
     };
     await this.run('Mise à jour des informations', async () => {
       await this.api.completePerson(person.id, dto);
       await this.loadContext(true);
+    });
+  }
+
+  async saveRequirement(
+    person: SouscriptionPersonneContexte,
+    requirement: ExigenceEvaluation,
+  ): Promise<void> {
+    await this.run('Enregistrement de la réponse', async () => {
+      this.dossiers[person.id] = await this.dossierApi.saveResponse({
+        ...this.dossierRequest(person),
+        exigence_id: requirement.id,
+        valeur_boolean: requirement.valeur_boolean,
+        valeur_texte: requirement.valeur_texte,
+        valeur_date: requirement.valeur_date,
+        document_id: requirement.document_id,
+        repondu_par_personne_id: person.id,
+      });
+    });
+  }
+
+  async saveMedicalProof(person: SouscriptionPersonneContexte): Promise<void> {
+    const form = this.medicalForm(person.id);
+    const dto: SavePreuveMedicaleDto = {
+      personne_id: person.id,
+      saison_id: this.seasonId,
+      type_preuve: form.type,
+      date_document: form.date,
+      qs_reponses_negatives:
+        form.type === 'QS_SPORT' ? form.qsNegative : null,
+      valable_competition: form.type === 'CERTIFICAT',
+      medecin_nom: form.type === 'CERTIFICAT' ? form.doctorName : null,
+      medecin_rpps: form.type === 'CERTIFICAT' ? form.rpps : null,
+      document_id: null,
+      commentaire: null,
+    };
+    await this.run('Enregistrement de la preuve médicale', async () => {
+      await this.dossierApi.saveMedicalProof(dto);
+      this.medicalForms[person.id] = this.newMedicalForm();
+      await this.loadPersonDossier(person);
     });
   }
 
@@ -265,6 +356,7 @@ export class SouscriptionTunnelComponent implements OnInit {
         personne_id: person.id,
         groupe_ids: [...this.choice(person.id).groupIds],
         tarif_inscription_id: Number(this.choice(person.id).tariffId),
+        type_licence: this.choice(person.id).licenceType,
       })),
     };
 
@@ -297,6 +389,18 @@ export class SouscriptionTunnelComponent implements OnInit {
     });
   }
 
+  async simulate(result: 'OK' | 'KO'): Promise<void> {
+    const draft = await this.saveDraft();
+    if (!draft) return;
+    await this.run('Simulation du paiement', async () => {
+      const response = await this.api.simulate(draft.id, result);
+      this.returnSubscription = await this.api.get(draft.id);
+      this.returnConfirmed = response.paiement_confirme;
+      this.returnMessage = response.message;
+      this.isReturnMode = true;
+    });
+  }
+
   formatMoney(centimes: number): string {
     return this.money.format(Number(centimes ?? 0) / 100);
   }
@@ -311,6 +415,35 @@ export class SouscriptionTunnelComponent implements OnInit {
     return person.groupes.filter((group) => ids.has(group.id)).map((group) => group.nom);
   }
 
+  private async loadDossiers(): Promise<void> {
+    await this.run('Vérification des dossiers', async () => {
+      for (const person of this.selectedPeople) {
+        await this.loadPersonDossier(person);
+      }
+    });
+  }
+
+  private async loadPersonDossier(person: SouscriptionPersonneContexte) {
+    this.dossiers[person.id] = await this.dossierApi.evaluate(
+      this.dossierRequest(person),
+    );
+    this.medical[person.id] = await this.dossierApi.evaluateMedicalProof(
+      person.id,
+      this.seasonId,
+      this.choice(person.id).licenceType,
+    );
+  }
+
+  private dossierRequest(person: SouscriptionPersonneContexte) {
+    return {
+      saison_id: this.seasonId,
+      personne_id: person.id,
+      groupe_ids: [...this.choice(person.id).groupIds],
+      tarif_inscription_id: this.choice(person.id).tariffId,
+      type_licence: this.choice(person.id).licenceType,
+    };
+  }
+
   private async loadContext(preserveSelection = false): Promise<void> {
     const selected = new Set(this.selectedPersonIds);
     const oldChoices = structuredClone(this.choices);
@@ -323,6 +456,9 @@ export class SouscriptionTunnelComponent implements OnInit {
 
     await this.run('Chargement du tunnel', async () => {
       this.context = await this.api.context(Number(this.appStore.saison_active_id()));
+      this.context.personnes.forEach((person) => {
+        person.pays ||= 'France';
+      });
       this.draft = this.context.brouillon ?? null;
       if (preserveSelection) {
         this.selectedPersonIds = selected;
@@ -345,7 +481,9 @@ export class SouscriptionTunnelComponent implements OnInit {
       this.choices[line.personne_id] = {
         groupIds: [...line.groupe_ids],
         tariffId: line.tarif_inscription_id,
+        licenceType: line.type_licence ?? 'LOISIR',
       };
+      this.medicalForms[line.personne_id] = this.newMedicalForm();
     });
     this.payerMode = draft.payeur_personne_id ?? 'OTHER';
     this.payerFirstName = draft.payeur_prenom ?? '';
@@ -373,6 +511,16 @@ export class SouscriptionTunnelComponent implements OnInit {
       !!this.payerLastName.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.payerEmail.trim())
     );
+  }
+
+  private newMedicalForm(): MedicalForm {
+    return {
+      type: 'QS_SPORT',
+      date: new Date().toISOString().slice(0, 10),
+      qsNegative: true,
+      doctorName: '',
+      rpps: '',
+    };
   }
 
   private clearPromoResult(): void {
