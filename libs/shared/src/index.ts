@@ -38,3 +38,4 @@ export * from './lib/login-projet.interface';
 export * from './lib/finance.interface';
 export * from './lib/tarif-inscription.interface';
 export * from './lib/souscription.interface';
+export * from './lib/exigence-dossier.interface';
