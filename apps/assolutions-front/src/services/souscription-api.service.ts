@@ -56,10 +56,24 @@ export class SouscriptionApiService {
     return this.api.GET<SouscriptionView>(`${this.base}/${Number(id)}`);
   }
 
+  dossier(id: number): Promise<unknown[]> {
+    return this.api.POST<unknown[]>(`${this.base}/${Number(id)}/dossier`, {});
+  }
+
   checkout(id: number): Promise<SouscriptionCheckoutResponse> {
     return this.api.POST<SouscriptionCheckoutResponse>(
       `${this.base}/${Number(id)}/checkout`,
       {},
+    );
+  }
+
+  simulate(
+    id: number,
+    resultat: 'OK' | 'KO',
+  ): Promise<{ paiement_confirme: boolean; message: string }> {
+    return this.api.POST<{ paiement_confirme: boolean; message: string }>(
+      `${this.base}/${Number(id)}/simuler-paiement`,
+      { resultat },
     );
   }
 
