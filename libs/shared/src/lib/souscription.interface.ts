@@ -1,3 +1,5 @@
+import { TypeLicence } from './exigence-dossier.interface';
+
 export type SouscriptionStatut =
   | 'BROUILLON'
   | 'EN_ATTENTE_PAIEMENT'
@@ -45,6 +47,7 @@ export interface SouscriptionPersonneContexte {
   nickname?: string | null;
   date_naissance: string;
   address: string;
+  pays: string;
   email?: string | null;
   telephone?: string | null;
   age_civil: number;
@@ -72,6 +75,7 @@ export interface SouscriptionPersonneChoixDto {
   personne_id: number;
   groupe_ids: number[];
   tarif_inscription_id: number;
+  type_licence: TypeLicence;
 }
 
 export interface SouscriptionPayeurDto {
@@ -94,6 +98,7 @@ export interface CompleteSouscriptionPersonneDto {
   last_name: string;
   date_naissance: string;
   address: string;
+  pays: string;
   email: string;
   telephone: string;
 }
@@ -110,6 +115,8 @@ export interface SouscriptionPersonneView {
   remise_centimes: number;
   prix_final_centimes: number;
   statut: SouscriptionLigneStatut;
+  type_licence: TypeLicence;
+  dossier_complet: boolean;
   inscription_saison_id?: number | null;
 }
 
