@@ -32,8 +32,9 @@ export class SouscriptionPersonneChoixDto {
   @Type(() => Number)
   tarif_inscription_id: number;
 
+  @IsOptional()
   @IsIn(['LOISIR', 'COMPETITION'])
-  type_licence: 'LOISIR' | 'COMPETITION';
+  type_licence?: 'LOISIR' | 'COMPETITION';
 }
 
 export class SouscriptionPayeurDto {
