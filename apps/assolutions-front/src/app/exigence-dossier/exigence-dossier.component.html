@@ -3,24 +3,13 @@
     <header class="requirements-header">
       <div>
         <h1 class="title is-4 mb-1">Exigences des dossiers</h1>
-        <p class="subtitle is-7 mb-0">
-          Paramètre les informations, documents et consentements attendus pour l'inscription ou la licence.
-        </p>
+        <p class="subtitle is-7 mb-0">Paramètre les informations, documents et consentements attendus pour l'inscription ou la licence.</p>
       </div>
-      <button class="button is-primary" type="button" (click)="startCreate()">
-        <span class="icon"><i class="fas fa-plus"></i></span>
-        <span>Créer une exigence</span>
-      </button>
+      <button class="button is-primary" type="button" (click)="startCreate()"><span class="icon"><i class="fas fa-plus"></i></span><span>Créer une exigence</span></button>
     </header>
 
     <div class="requirements-toolbar">
-      <div class="tabs is-toggle is-small mb-0">
-        <ul>
-          <li [class.is-active]="filterUsage === 'TOUS'"><a (click)="filterUsage = 'TOUS'">Toutes</a></li>
-          <li [class.is-active]="filterUsage === 'INSCRIPTION'"><a (click)="filterUsage = 'INSCRIPTION'">Inscription</a></li>
-          <li [class.is-active]="filterUsage === 'LICENCE'"><a (click)="filterUsage = 'LICENCE'">Licence</a></li>
-        </ul>
-      </div>
+      <div class="tabs is-toggle is-small mb-0"><ul><li [class.is-active]="filterUsage === 'TOUS'"><a (click)="filterUsage = 'TOUS'">Toutes</a></li><li [class.is-active]="filterUsage === 'INSCRIPTION'"><a (click)="filterUsage = 'INSCRIPTION'">Inscription</a></li><li [class.is-active]="filterUsage === 'LICENCE'"><a (click)="filterUsage = 'LICENCE'">Licence</a></li></ul></div>
       <span class="tag is-light">Saison #{{ saisonId }}</span>
     </div>
 
@@ -28,209 +17,63 @@
       <div class="requirements-list">
         <article class="requirement-item" *ngFor="let item of visibleRequirements">
           <div class="requirement-main">
-            <div class="tags mb-2">
-              <span class="tag" [ngClass]="item.usage === 'INSCRIPTION' ? 'is-primary is-light' : 'is-link is-light'">
-                {{ item.usage === 'INSCRIPTION' ? 'Inscription' : 'Licence' }}
-              </span>
-              <span class="tag" [ngClass]="item.bloquante ? 'is-danger is-light' : 'is-warning is-light'">
-                {{ item.bloquante ? 'Bloquante' : 'Non bloquante' }}
-              </span>
-              <span class="tag is-light" *ngIf="!item.actif">Inactive</span>
-            </div>
+            <div class="tags mb-2"><span class="tag" [ngClass]="item.usage === 'INSCRIPTION' ? 'is-primary is-light' : 'is-link is-light'">{{ item.usage === 'INSCRIPTION' ? 'Inscription' : 'Licence' }}</span><span class="tag" [ngClass]="item.bloquante ? 'is-danger is-light' : 'is-warning is-light'">{{ item.bloquante ? 'Bloquante' : 'Non bloquante' }}</span><span class="tag is-light" *ngIf="!item.actif">Inactive</span></div>
             <strong>{{ item.libelle }}</strong>
             <p class="is-size-7 has-text-grey">{{ item.code }} · {{ item.type_exigence }}</p>
             <p class="requirement-description" *ngIf="item.description">{{ item.description }}</p>
-            <div class="scope-list">
-              <span class="scope-pill" *ngFor="let scope of item.portees">{{ scopeLabel(scope) }}</span>
-            </div>
+            <div class="scope-list"><span class="scope-pill" *ngFor="let scope of item.portees">{{ scopeLabel(scope) }}</span></div>
           </div>
-          <div class="buttons are-small mb-0">
-            <button class="button is-light" type="button" (click)="startEdit(item)">Modifier</button>
-            <button class="button is-danger is-light" type="button" (click)="remove(item)">Supprimer</button>
-          </div>
+          <div class="buttons are-small mb-0"><button class="button is-light" type="button" (click)="startEdit(item)">Modifier</button><button class="button is-danger is-light" type="button" (click)="remove(item)">Supprimer</button></div>
         </article>
-
-        <div class="notification is-light" *ngIf="!visibleRequirements.length && !loading">
-          Aucune exigence configurée pour ce filtre.
-        </div>
+        <div class="notification is-light" *ngIf="!visibleRequirements.length && !loading">Aucune exigence configurée pour ce filtre.</div>
       </div>
 
       <aside class="requirements-editor" *ngIf="edit as item">
         <h2 class="title is-5">{{ item.id ? 'Modifier l’exigence' : 'Créer une exigence' }}</h2>
+        <div class="notification is-info is-light is-size-7">
+          <strong>Lecture rapide :</strong> l’utilisation indique ce que l’exigence complète. Une exigence de licence obligatoire mais non bloquante n’empêche pas l’adhésion : elle rend seulement la licence inéligible tant que la pièce manque. La nature indique où chercher la réponse.
+        </div>
 
         <div class="columns is-multiline is-variable is-2">
-          <div class="column is-4">
-            <label class="label">Code</label>
-            <input class="input" [(ngModel)]="item.code" placeholder="CERTIFICAT_MEDICAL" />
-          </div>
-          <div class="column is-8">
-            <label class="label">Libellé</label>
-            <input class="input" [(ngModel)]="item.libelle" />
-          </div>
-          <div class="column is-12">
-            <label class="label">Description</label>
-            <textarea class="textarea" rows="2" [(ngModel)]="item.description"></textarea>
-          </div>
+          <div class="column is-4"><label class="label">Code</label><input class="input" [(ngModel)]="item.code" placeholder="PREUVE_MEDICALE_COMPETITION" /><p class="help">Identifiant technique stable et unique.</p></div>
+          <div class="column is-8"><label class="label">Libellé</label><input class="input" [(ngModel)]="item.libelle" /></div>
+          <div class="column is-12"><label class="label">Description</label><textarea class="textarea" rows="2" [(ngModel)]="item.description"></textarea></div>
 
-          <div class="column is-6">
-            <label class="label">Utilisation</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="item.usage">
-                <option value="INSCRIPTION">Inscription</option>
-                <option value="LICENCE">Licence</option>
-              </select>
-            </div>
-            <p class="help">Une exigence de licence peut rester non bloquante pour l'adhésion.</p>
-          </div>
-          <div class="column is-6">
-            <label class="label">Nature</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="item.type_exigence" (ngModelChange)="onTypeChange()">
-                <option value="CHAMP_PERSONNE">Champ de la personne</option>
-                <option value="CONTACT">Contact</option>
-                <option value="DOCUMENT">Document</option>
-                <option value="CONSENTEMENT">Consentement</option>
-                <option value="DECLARATION">Réponse saisie pour le dossier</option>
-              </select>
-            </div>
-          </div>
+          <div class="column is-6"><label class="label">Utilisation</label><div class="select is-fullwidth"><select [(ngModel)]="item.usage"><option value="INSCRIPTION">Inscription</option><option value="LICENCE">Licence</option></select></div><p class="help">Licence = suivi d’éligibilité, sans bloquer l’adhésion sauf choix explicite.</p></div>
+          <div class="column is-6"><label class="label">Nature</label><div class="select is-fullwidth"><select [(ngModel)]="item.type_exigence" (ngModelChange)="onTypeChange()"><option value="CHAMP_PERSONNE">Champ de la personne</option><option value="CONTACT">Contact</option><option value="DOCUMENT">Document</option><option value="PREUVE_MEDICALE">Preuve médicale : QS Sport ou certificat</option><option value="CONSENTEMENT">Consentement</option><option value="DECLARATION">Réponse saisie pour le dossier</option></select></div></div>
 
-          <div class="column is-6" *ngIf="item.type_exigence === 'CHAMP_PERSONNE'">
-            <label class="label">Champ contrôlé</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="item.source_code">
-                <option *ngFor="let field of personFields" [value]="field.code">{{ field.label }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="column is-6" *ngIf="item.type_exigence === 'CONTACT'">
-            <label class="label">Type de contact</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="item.source_code">
-                <option *ngFor="let contact of contactTypes" [value]="contact.code">{{ contact.label }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="column is-6" *ngIf="item.type_exigence === 'DOCUMENT'">
-            <label class="label">Type de document</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="item.source_code">
-                <option *ngFor="let document of documentTypes" [value]="document.code">{{ document.label }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="column is-6" *ngIf="item.type_exigence === 'DECLARATION'">
-            <label class="label">Type de réponse</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="item.type_reponse">
-                <option value="BOOLEEN">Oui / non</option>
-                <option value="TEXTE">Texte</option>
-                <option value="DATE">Date</option>
-                <option value="DOCUMENT">Document</option>
-              </select>
-            </div>
-          </div>
+          <div class="column is-12" *ngIf="item.type_exigence === 'PREUVE_MEDICALE'"><div class="notification is-link is-light mb-0"><strong>Règle médicale compétition :</strong> l’écran proposera soit le questionnaire de santé, soit un certificat avec date, médecin et RPPS. Cette exigence est automatiquement ciblée sur la licence COMPETITION et reste non bloquante pour l’adhésion.</div></div>
 
-          <div class="column is-4">
-            <label class="label">Âge minimum</label>
-            <input class="input" type="number" min="0" [(ngModel)]="item.age_min" />
-          </div>
-          <div class="column is-4">
-            <label class="label">Âge maximum</label>
-            <input class="input" type="number" min="0" [(ngModel)]="item.age_max" />
-          </div>
-          <div class="column is-4" *ngIf="item.type_exigence === 'DOCUMENT'">
-            <label class="label">Validité (mois)</label>
-            <input class="input" type="number" min="1" [(ngModel)]="item.validite_mois" />
-            <p class="help">Ex. 36 pour un certificat valable trois ans.</p>
-          </div>
+          <div class="column is-6" *ngIf="item.type_exigence === 'CHAMP_PERSONNE'"><label class="label">Champ contrôlé</label><div class="select is-fullwidth"><select [(ngModel)]="item.source_code"><option *ngFor="let field of personFields" [value]="field.code">{{ field.label }}</option></select></div></div>
+          <div class="column is-6" *ngIf="item.type_exigence === 'CONTACT'"><label class="label">Type de contact</label><div class="select is-fullwidth"><select [(ngModel)]="item.source_code"><option *ngFor="let contact of contactTypes" [value]="contact.code">{{ contact.label }}</option></select></div></div>
+          <div class="column is-6" *ngIf="item.type_exigence === 'DOCUMENT'"><label class="label">Type de document</label><div class="select is-fullwidth"><select [(ngModel)]="item.source_code"><option *ngFor="let document of documentTypes" [value]="document.code">{{ document.label }}</option></select></div></div>
+          <div class="column is-6" *ngIf="item.type_exigence === 'DECLARATION'"><label class="label">Type de réponse</label><div class="select is-fullwidth"><select [(ngModel)]="item.type_reponse"><option value="BOOLEEN">Oui / non</option><option value="TEXTE">Texte</option><option value="DATE">Date</option><option value="DOCUMENT">Document</option></select></div></div>
 
-          <div class="column is-12" *ngIf="item.type_exigence === 'CONSENTEMENT'">
-            <label class="label">Texte accepté</label>
-            <textarea class="textarea" rows="4" [(ngModel)]="item.texte_consentement"></textarea>
-          </div>
-          <div class="column is-5" *ngIf="item.type_exigence === 'CONSENTEMENT'">
-            <label class="label">Version du texte</label>
-            <input class="input" [(ngModel)]="item.version_texte" placeholder="2026-01" />
-          </div>
+          <div class="column is-4"><label class="label">Âge minimum</label><input class="input" type="number" min="0" [(ngModel)]="item.age_min" /><p class="help">Vide = aucun minimum.</p></div>
+          <div class="column is-4"><label class="label">Âge maximum</label><input class="input" type="number" min="0" [(ngModel)]="item.age_max" /><p class="help">Vide = aucun maximum.</p></div>
+          <div class="column is-4" *ngIf="item.type_exigence === 'DOCUMENT'"><label class="label">Validité (mois)</label><input class="input" type="number" min="1" [(ngModel)]="item.validite_mois" /><p class="help">Le moteur contrôle la date du document.</p></div>
 
-          <div class="column is-4">
-            <label class="label">Ordre d'affichage</label>
-            <input class="input" type="number" min="0" [(ngModel)]="item.ordre" />
-          </div>
-          <div class="column is-8 flags-column">
-            <label class="checkbox mr-4">
-              <input type="checkbox" [(ngModel)]="item.obligatoire" /> Obligatoire
-            </label>
-            <label class="checkbox mr-4">
-              <input type="checkbox" [(ngModel)]="item.bloquante" /> Bloquante
-            </label>
-            <label class="checkbox">
-              <input type="checkbox" [(ngModel)]="item.actif" /> Active
-            </label>
-          </div>
+          <div class="column is-12" *ngIf="item.type_exigence === 'CONSENTEMENT'"><label class="label">Texte accepté</label><textarea class="textarea" rows="4" [(ngModel)]="item.texte_consentement"></textarea></div>
+          <div class="column is-5" *ngIf="item.type_exigence === 'CONSENTEMENT'"><label class="label">Version du texte</label><input class="input" [(ngModel)]="item.version_texte" placeholder="2026-01" /><p class="help">Changer la version impose une nouvelle acceptation.</p></div>
+
+          <div class="column is-4"><label class="label">Ordre d'affichage</label><input class="input" type="number" min="0" [(ngModel)]="item.ordre" /></div>
+          <div class="column is-8 flags-column"><label class="checkbox mr-4"><input type="checkbox" [(ngModel)]="item.obligatoire" /> Obligatoire</label><label class="checkbox mr-4"><input type="checkbox" [(ngModel)]="item.bloquante" /> Bloquante pour l’inscription</label><label class="checkbox"><input type="checkbox" [(ngModel)]="item.actif" /> Active</label></div>
         </div>
 
         <section class="scope-editor">
-          <div class="scope-editor-header">
-            <div>
-              <h3 class="title is-6 mb-1">Portées</h3>
-              <p class="is-size-7 has-text-grey">Une exigence peut cibler toute la saison ou seulement certains groupes, tarifs ou licences.</p>
-            </div>
-            <button class="button is-small is-light" type="button" (click)="addScope('GENERAL')">Générale</button>
-          </div>
-
+          <div class="scope-editor-header"><div><h3 class="title is-6 mb-1">Portées</h3><p class="is-size-7 has-text-grey">Cible tous les dossiers, certains groupes, tarifs ou types de licence.</p></div><button class="button is-small is-light" type="button" (click)="addScope('GENERAL')">Générale</button></div>
           <article class="scope-row" *ngFor="let scope of item.portees; let index = index">
-            <div class="select">
-              <select [(ngModel)]="scope.type_portee" (ngModelChange)="changeScope(scope)">
-                <option value="GENERAL">Tous les dossiers</option>
-                <option value="GROUPE">Un groupe</option>
-                <option value="TARIF">Un tarif</option>
-                <option value="TYPE_LICENCE">Un type de licence</option>
-              </select>
-            </div>
-            <div class="select is-expanded" *ngIf="scope.type_portee === 'GROUPE'">
-              <select [(ngModel)]="scope.cible_id">
-                <option [ngValue]="null">Choisir un groupe</option>
-                <option *ngFor="let groupe of groupes" [ngValue]="groupe.id">{{ groupe.nom }}</option>
-              </select>
-            </div>
-            <div class="select is-expanded" *ngIf="scope.type_portee === 'TARIF'">
-              <select [(ngModel)]="scope.cible_id">
-                <option [ngValue]="null">Choisir un tarif</option>
-                <option *ngFor="let tarif of tarifs" [ngValue]="tarif.id">{{ tarif.nom }}</option>
-              </select>
-            </div>
-            <input
-              class="input"
-              *ngIf="scope.type_portee === 'TYPE_LICENCE'"
-              [(ngModel)]="scope.cible_code"
-              placeholder="COMPETITION"
-            />
+            <div class="select"><select [(ngModel)]="scope.type_portee" (ngModelChange)="changeScope(scope)"><option value="GENERAL">Tous les dossiers</option><option value="GROUPE">Un groupe</option><option value="TARIF">Un tarif</option><option value="TYPE_LICENCE">Un type de licence</option></select></div>
+            <div class="select is-expanded" *ngIf="scope.type_portee === 'GROUPE'"><select [(ngModel)]="scope.cible_id"><option [ngValue]="null">Choisir un groupe</option><option *ngFor="let groupe of groupes" [ngValue]="groupe.id">{{ groupe.nom }}</option></select></div>
+            <div class="select is-expanded" *ngIf="scope.type_portee === 'TARIF'"><select [(ngModel)]="scope.cible_id"><option [ngValue]="null">Choisir un tarif</option><option *ngFor="let tarif of tarifs" [ngValue]="tarif.id">{{ tarif.nom }}</option></select></div>
+            <input class="input" *ngIf="scope.type_portee === 'TYPE_LICENCE'" [(ngModel)]="scope.cible_code" placeholder="COMPETITION" />
             <span class="scope-general-label" *ngIf="scope.type_portee === 'GENERAL'">Applicable à tous</span>
-            <button class="button is-small is-danger is-light" type="button" (click)="removeScope(index)">
-              <span class="icon"><i class="fas fa-trash"></i></span>
-            </button>
+            <button class="button is-small is-danger is-light" type="button" (click)="removeScope(index)"><span class="icon"><i class="fas fa-trash"></i></span></button>
           </article>
-
-          <div class="buttons are-small mt-3">
-            <button class="button is-light" type="button" (click)="addScope('GROUPE')">+ Groupe</button>
-            <button class="button is-light" type="button" (click)="addScope('TARIF')">+ Tarif</button>
-            <button class="button is-light" type="button" (click)="addScope('TYPE_LICENCE')">+ Type de licence</button>
-          </div>
+          <div class="buttons are-small mt-3"><button class="button is-light" type="button" (click)="addScope('GROUPE')">+ Groupe</button><button class="button is-light" type="button" (click)="addScope('TARIF')">+ Tarif</button><button class="button is-light" type="button" (click)="addScope('TYPE_LICENCE')">+ Type de licence</button></div>
         </section>
 
-        <div class="buttons mt-4">
-          <button
-            class="button is-primary"
-            type="button"
-            [disabled]="loading || !item.code.trim() || !item.libelle.trim() || !item.portees.length"
-            (click)="save()"
-          >
-            Enregistrer
-          </button>
-          <button class="button is-light" type="button" (click)="edit = null">Annuler</button>
-        </div>
+        <div class="buttons mt-4"><button class="button is-primary" type="button" [disabled]="loading || !item.code.trim() || !item.libelle.trim() || !item.portees.length" (click)="save()">Enregistrer</button><button class="button is-light" type="button" (click)="edit = null">Annuler</button></div>
       </aside>
     </div>
   </section>
