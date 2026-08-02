@@ -2,7 +2,7 @@ import { IsBoolean, IsDateString, IsInt, IsOptional, IsString, MaxLength } from 
 
 export class CreatePersonneDto {
   @IsDateString()
-  date_naissance: string; // YYYY-MM-DD
+  date_naissance: string;
 
   @IsInt()
   compte: number;
@@ -27,6 +27,11 @@ export class CreatePersonneDto {
   @IsString()
   @MaxLength(255)
   address: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  pays?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -65,6 +70,11 @@ export class UpdatePersonneDto {
   @IsString()
   @MaxLength(255)
   address?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  pays?: string;
 
   @IsOptional()
   @IsBoolean()
