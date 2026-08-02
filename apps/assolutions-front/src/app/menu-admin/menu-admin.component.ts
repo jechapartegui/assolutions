@@ -42,6 +42,7 @@ export class MenuAdminComponent implements OnInit {
         { label: 'Adhérents', icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
         { label: "Tarifs d'inscription", icon: 'fa-tags', menu: 'INSCRIPTION', route: '/inscription' },
         { label: 'Codes promotionnels', icon: 'fa-ticket', menu: 'INSCRIPTION', route: '/codes-promo' },
+        { label: 'Exigences des dossiers', icon: 'fa-list-check', menu: 'INSCRIPTION', route: '/exigences-dossier' },
         { label: 'Cours', icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
         { label: 'Séances', icon: 'fa-calendar-days', menu: 'SEANCE', route: '/seance' },
         { label: 'Groupes', icon: 'fa-layer-group', menu: 'GROUPE', route: '/groupe' },
