@@ -101,6 +101,6 @@ export class CoursComponent implements OnInit {
   }
 
   onBackToList(): void {
-    this.coursStore.closeDetail();
+    this.coursStore.closeEditor();
   }
 }
