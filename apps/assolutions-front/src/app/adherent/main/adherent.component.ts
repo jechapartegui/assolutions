@@ -76,14 +76,14 @@ export class AdherentComponent implements OnInit {
 
     this.route.queryParams.subscribe(async (params) => {
       try {
-        const saisonId = this.store.saison_active_id();
+        const saisonId = this.resolveConsultedSeasonId(params['saisonId']);
         const context = params['context'];
         const action = params['action'];
         const rawId = params['id'];
         const id = rawId ? Number(rawId) : 0;
 
         if (context === 'MON_COMPTE') {
-          await this.loadMonCompteMode(action, id, saisonId);
+          await this.loadMonCompteMode(action, id, this.activeSeasonId());
           return;
         }
 
@@ -126,9 +126,7 @@ export class AdherentComponent implements OnInit {
   async onRefreshNow(): Promise<void> {
     if (this.isMonCompteContext) return;
     try {
-      const saisonId =
-        this.vm?.activeSaison?.id ?? this.store.saison_active_id();
-      await this.adherentStore.refreshNow(saisonId);
+      await this.adherentStore.refreshNow(this.consultedSeasonId());
     } catch (err: any) {
       ErrorService.instance.emitChange(
         ErrorService.instance.CreateError(
@@ -144,9 +142,7 @@ export class AdherentComponent implements OnInit {
   }
 
   async onOpen(id: number): Promise<void> {
-    const saisonId =
-      this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    await this.adherentStore.openAdherent(id, saisonId);
+    await this.adherentStore.openAdherent(id, this.consultedSeasonId());
   }
 
   onCreate(): void {
@@ -166,9 +162,7 @@ export class AdherentComponent implements OnInit {
       return;
     }
 
-    const saisonId =
-      this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    await this.adherentStore.refreshNow(saisonId);
+    await this.adherentStore.refreshNow(this.consultedSeasonId());
   }
 
   async onBackToList(): Promise<void> {
@@ -177,8 +171,25 @@ export class AdherentComponent implements OnInit {
       await this.router.navigateByUrl(this.returnUrl);
       return;
     }
-    const saisonId =
-      this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    await this.adherentStore.refreshNow(saisonId);
+    await this.adherentStore.refreshNow(this.consultedSeasonId());
+  }
+
+  private resolveConsultedSeasonId(raw?: string | number | null): number {
+    const requested = Number(raw);
+    if (Number.isInteger(requested) && requested > 0) {
+      this.store.setConsultationSaison(
+        requested === this.activeSeasonId() ? null : requested,
+      );
+      return requested;
+    }
+    return this.consultedSeasonId();
+  }
+
+  private consultedSeasonId(): number {
+    return Number(this.store.saison_consultation_id() ?? this.activeSeasonId());
+  }
+
+  private activeSeasonId(): number {
+    return Number(this.store.saison_active_id() ?? 0);
   }
 }
