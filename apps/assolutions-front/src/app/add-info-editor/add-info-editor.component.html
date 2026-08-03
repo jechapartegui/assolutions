@@ -58,3 +58,15 @@
     [showHistory]="true"
   ></app-medical-proof-editor>
 </section>
+
+<section class="box editor-box" *ngIf="showMedicalSection && appStore.isAdmin()">
+  <h3 class="subtitle is-6 has-text-primary mb-2">Souscription administrateur</h3>
+  <p class="help mb-3">Crée un dossier pour le compte de cette personne, puis valide manuellement le paiement reçu.</p>
+  <a
+    class="button is-warning is-light"
+    [routerLink]="['/souscription']"
+    [queryParams]="{ adminPersonId: objectId }"
+  >
+    Créer une souscription pour cette personne
+  </a>
+</section>
