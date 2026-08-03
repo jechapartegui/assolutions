@@ -2,7 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import { ProjetView, Session } from '@shared/index';
 
 export type MenuType =
-  | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE' | 'MA-SEANCE' 
+  | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE' | 'MA-SEANCE'
   | 'SAISON' | 'LIEU' | 'MENU' | 'MENU-ADMIN'
   | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL'
   | 'PROJETINFO' | 'PROJETMAIL' | 'COMPTA' | 'CB'
@@ -21,6 +21,9 @@ export type MenuType =
 
 @Injectable({ providedIn: 'root' })
 export class SessionStore {
+  private readonly consultationSaisonStorageKey =
+    'assolutions.consultationSaisonId';
+
   readonly session = signal<Session | null>(null);
   readonly selectedMenu = signal<MenuType>('MENU');
 
@@ -28,6 +31,9 @@ export class SessionStore {
   readonly publicProjetId = signal<number | null>(null);
 
   private readonly _language = signal(localStorage.getItem('language') ?? 'fr');
+  private readonly _saisonConsultationId = signal<number | null>(
+    this.readStoredConsultationSaisonId(),
+  );
 
   readonly language = computed(() => this._language());
   readonly isLoggedIn = computed(() => this.session() !== null);
@@ -59,6 +65,10 @@ export class SessionStore {
   readonly saisonActive = computed(() => {
     return this.selectedProject()?.saison_active ?? null;
   });
+
+  readonly saisonConsultationId = computed(
+    () => this._saisonConsultationId() ?? this.saisonActiveId(),
+  );
 
   readonly rights = computed(() => {
     const p = this.selectedProject();
@@ -104,16 +114,21 @@ export class SessionStore {
 
   clearSession(): void {
     this.session.set(null);
+    this._saisonConsultationId.set(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_mode');
     localStorage.removeItem('selected_projet');
+    localStorage.removeItem(this.consultationSaisonStorageKey);
   }
 
   setProjects(projects: ProjetView[]): void {
     const s = this.session();
     if (!s) return;
 
-    const selectedProjectId = this.cleanSelectedProjectId(s.selectedProjectId ?? null, projects);
+    const selectedProjectId = this.cleanSelectedProjectId(
+      s.selectedProjectId ?? null,
+      projects,
+    );
 
     this.session.set({
       ...s,
@@ -132,7 +147,9 @@ export class SessionStore {
     const s = this.session();
     if (!s) return;
 
-    const projectExists = s.projects.some((p) => Number(p.id) === Number(projectId));
+    const projectExists = s.projects.some(
+      (p) => Number(p.id) === Number(projectId),
+    );
     if (!projectExists) return;
 
     this.session.set({
@@ -141,6 +158,7 @@ export class SessionStore {
     });
 
     localStorage.setItem('selected_projet', String(projectId));
+    this.setConsultationSaison(null);
   }
 
   updateSaisonActive(saisonId: number): void {
@@ -163,6 +181,21 @@ export class SessionStore {
     this.session.set({ ...s, projects });
   }
 
+  setConsultationSaison(saisonId: number | null): void {
+    const normalized = Number(saisonId);
+    const value = Number.isInteger(normalized) && normalized > 0
+      ? normalized
+      : null;
+
+    this._saisonConsultationId.set(value);
+
+    if (value) {
+      localStorage.setItem(this.consultationSaisonStorageKey, String(value));
+    } else {
+      localStorage.removeItem(this.consultationSaisonStorageKey);
+    }
+  }
+
   setPublicContext(projectId: number | null, saisonId: number | null): void {
     this.publicProjetId.set(projectId);
     this.publicSaisonActiveId.set(saisonId);
@@ -177,12 +210,19 @@ export class SessionStore {
     this.selectedMenu.set(menu);
   }
 
+  private readStoredConsultationSaisonId(): number | null {
+    const value = Number(localStorage.getItem(this.consultationSaisonStorageKey));
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }
+
   private cleanSelectedProjectId(
     selectedProjectId: number | null,
     projects: ProjetView[],
   ): number | null {
     if (selectedProjectId != null) {
-      const exists = projects.some((p) => Number(p.id) === Number(selectedProjectId));
+      const exists = projects.some(
+        (p) => Number(p.id) === Number(selectedProjectId),
+      );
       if (exists) return selectedProjectId;
     }
 
