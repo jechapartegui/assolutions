@@ -13,6 +13,7 @@ import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
+import { SouscriptionAdminService } from '../exigence-dossier/souscription-admin.service';
 import { SouscriptionContextEnricherService } from '../exigence-dossier/souscription-context-enricher.service';
 import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
 import { SouscriptionNotificationService } from '../exigence-dossier/souscription-notification.service';
@@ -26,13 +27,13 @@ import {
 import { SouscriptionService } from './souscription.service';
 
 type AuthenticatedRequest = Request & { user?: { id?: number } };
-
 type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
 
 @Controller('souscriptions')
 export class SouscriptionController {
   constructor(
     private readonly service: SouscriptionService,
+    private readonly admin: SouscriptionAdminService,
     private readonly contexts: SouscriptionContextEnricherService,
     private readonly dossiers: SouscriptionDossierService,
     private readonly views: SouscriptionViewEnricherService,
@@ -190,7 +191,7 @@ export class SouscriptionController {
     @Param('compteId', ParseIntPipe) compteId: number,
     @ProjectId() projectId: number,
   ) {
-    const result = await this.dossiers.validateManualPayment(
+    const result = await this.admin.validateManualPayment(
       id,
       projectId,
       compteId,
