@@ -14,6 +14,7 @@ import { SouscriptionEvenementEntity } from '../souscription/souscription-evenem
 import { SouscriptionPersonneEntity } from '../souscription/souscription-personne.entity';
 import { SouscriptionPersonneGroupeEntity } from '../souscription/souscription-personne-groupe.entity';
 import { TarifInscriptionEntity } from '../tarif_inscription/tarif_inscription.entity';
+import { DossierDocumentService } from './dossier-document.service';
 import { DossierPersonneController } from './dossier-personne.controller';
 import { DossierPersonneSaisonEntity } from './dossier-personne-saison.entity';
 import { ExigenceDossierController } from './exigence-dossier.controller';
@@ -53,12 +54,9 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
       LienGroupeEntity,
     ]),
   ],
-  controllers: [
-    ExigenceDossierController,
-    DossierPersonneController,
-    PreuveMedicaleController,
-  ],
+  controllers: [ExigenceDossierController, DossierPersonneController, PreuveMedicaleController],
   providers: [
+    DossierDocumentService,
     ExigenceDossierService,
     PreuveMedicaleService,
     SouscriptionAdminService,
@@ -68,6 +66,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
     SouscriptionNotificationService,
   ],
   exports: [
+    DossierDocumentService,
     ExigenceDossierService,
     PreuveMedicaleService,
     SouscriptionAdminService,
