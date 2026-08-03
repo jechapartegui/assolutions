@@ -1,9 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { DocumentEntity } from '../document/document.entity';
 import { InscriptionSaisonEntity } from '../inscription_saison/inscription_saison.entity';
+import { PersonneEntity } from '../personne/personne.entity';
 import { SaveSouscriptionDto } from '../souscription/souscription.dto';
 
 @Injectable()
@@ -13,7 +18,19 @@ export class SouscriptionContextEnricherService {
     private readonly documentRepo: Repository<DocumentEntity>,
     @InjectRepository(InscriptionSaisonEntity)
     private readonly inscriptionRepo: Repository<InscriptionSaisonEntity>,
+    @InjectRepository(PersonneEntity)
+    private readonly personneRepo: Repository<PersonneEntity>,
   ) {}
+
+  async accountIdForPerson(personId: number): Promise<number> {
+    const person = await this.personneRepo.findOne({ where: { id: personId } });
+    if (!person) throw new NotFoundException('Personne introuvable');
+    const accountId = Number(person.compte);
+    if (!accountId) {
+      throw new BadRequestException('La personne n’est rattachée à aucun compte');
+    }
+    return accountId;
+  }
 
   async enrich<T extends { personnes?: any[] }>(
     context: T,
@@ -54,9 +71,7 @@ export class SouscriptionContextEnricherService {
     return context;
   }
 
-  async assertNotAlreadyRegistered(
-    dto: SaveSouscriptionDto,
-  ): Promise<void> {
+  async assertNotAlreadyRegistered(dto: SaveSouscriptionDto): Promise<void> {
     const ids = (dto.personnes ?? []).map((item) => Number(item.personne_id));
     if (!ids.length) return;
 
