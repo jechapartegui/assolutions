@@ -19,28 +19,26 @@ export class SouscriptionApiService {
   constructor(private readonly api: ApiClientService) {}
 
   context(saisonId: number): Promise<SouscriptionContexte> {
-    return this.api.GET<SouscriptionContexte>(
-      `${this.base}/contexte/${Number(saisonId)}`,
-    );
+    return this.api.GET<SouscriptionContexte>(`${this.base}/contexte/${Number(saisonId)}`);
   }
 
-  adminContext(
-    saisonId: number,
-    compteId: number,
-  ): Promise<SouscriptionContexte> {
+  adminContext(saisonId: number, compteId: number): Promise<SouscriptionContexte> {
     return this.api.GET<SouscriptionContexte>(
       `${this.base}/admin/contexte/${Number(saisonId)}/${Number(compteId)}`,
     );
   }
 
-  completePerson(
-    personId: number,
-    dto: CompleteSouscriptionPersonneDto,
-  ): Promise<{ ok: true }> {
-    return this.api.POST<{ ok: true }>(
-      `${this.base}/personnes/${Number(personId)}/completer`,
-      dto,
+  adminContextFromPerson(
+    saisonId: number,
+    personneId: number,
+  ): Promise<SouscriptionContexte & { admin_compte_id: number; admin_personne_id: number }> {
+    return this.api.GET<SouscriptionContexte & { admin_compte_id: number; admin_personne_id: number }>(
+      `${this.base}/admin/contexte-personne/${Number(saisonId)}/${Number(personneId)}`,
     );
+  }
+
+  completePerson(personId: number, dto: CompleteSouscriptionPersonneDto): Promise<{ ok: true }> {
+    return this.api.POST<{ ok: true }>(`${this.base}/personnes/${Number(personId)}/completer`, dto);
   }
 
   validatePromo(
@@ -48,14 +46,11 @@ export class SouscriptionApiService {
     code: string,
     tariffIds: number[],
   ): Promise<CodePromoValidationView> {
-    return this.api.POST<CodePromoValidationView>(
-      `${this.base}/codes-promo/valider`,
-      {
-        saison_id: Number(saisonId),
-        code,
-        tarif_ids: tariffIds,
-      },
-    );
+    return this.api.POST<CodePromoValidationView>(`${this.base}/codes-promo/valider`, {
+      saison_id: Number(saisonId),
+      code,
+      tarif_ids: tariffIds,
+    });
   }
 
   saveDraft(dto: SaveSouscriptionDto): Promise<SouscriptionView> {
@@ -85,10 +80,7 @@ export class SouscriptionApiService {
   }
 
   checkout(id: number): Promise<SouscriptionCheckoutResponse> {
-    return this.api.POST<SouscriptionCheckoutResponse>(
-      `${this.base}/${Number(id)}/checkout`,
-      {},
-    );
+    return this.api.POST<SouscriptionCheckoutResponse>(`${this.base}/${Number(id)}/checkout`, {});
   }
 
   simulate(
@@ -102,16 +94,10 @@ export class SouscriptionApiService {
   }
 
   confirm(id: number): Promise<SouscriptionConfirmationResponse> {
-    return this.api.POST<SouscriptionConfirmationResponse>(
-      `${this.base}/${Number(id)}/confirmer`,
-      {},
-    );
+    return this.api.POST<SouscriptionConfirmationResponse>(`${this.base}/${Number(id)}/confirmer`, {});
   }
 
   cancel(id: number): Promise<{ ok: true }> {
-    return this.api.POST<{ ok: true }>(
-      `${this.base}/${Number(id)}/annuler`,
-      {},
-    );
+    return this.api.POST<{ ok: true }>(`${this.base}/${Number(id)}/annuler`, {});
   }
 }
