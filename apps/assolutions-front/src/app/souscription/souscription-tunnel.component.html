@@ -18,10 +18,13 @@
       <header class="subscription-header">
         <div>
           <p class="eyebrow">Saison {{ ctx.saison.nom }}</p>
-          <h1 class="title is-4 mb-1">Mon inscription</h1>
+          <h1 class="title is-4 mb-1">{{ isAdminMode ? 'Souscription administrateur' : 'Mon inscription' }}</h1>
           <p class="subtitle is-7 mb-0">Personnes, groupes, tarifs, dossier puis paiement.</p>
         </div>
-        <span class="tag is-info is-light" *ngIf="draft">Brouillon #{{ draft.id }}</span>
+        <div class="tags">
+          <span class="tag is-warning is-light" *ngIf="isAdminMode">Mode administrateur</span>
+          <span class="tag is-info is-light" *ngIf="draft">Brouillon #{{ draft.id }}</span>
+        </div>
       </header>
 
       <nav class="steps" aria-label="Étapes de l'inscription">
@@ -34,17 +37,19 @@
       <main class="subscription-content">
         <section *ngIf="step === 1">
           <h2 class="title is-5 mb-1">Qui souhaites-tu inscrire ?</h2>
-          <p class="has-text-grey mb-4">Le parcours est bloqué tant que les informations obligatoires d’une personne sélectionnée sont incomplètes.</p>
+          <p class="has-text-grey mb-4">Une personne déjà inscrite sur cette saison ne peut pas être sélectionnée une seconde fois.</p>
 
           <div class="person-grid">
-            <article class="person-card" *ngFor="let person of ctx.personnes" [class.is-selected]="isSelected(person.id)">
+            <article class="person-card" *ngFor="let person of ctx.personnes" [class.is-selected]="isSelected(person.id)" [class.is-disabled]="person.inscription_active">
               <label class="person-select">
-                <input type="checkbox" [checked]="isSelected(person.id)" (change)="togglePerson(person)" />
+                <input type="checkbox" [disabled]="person.inscription_active" [checked]="isSelected(person.id)" (change)="togglePerson(person)" />
                 <span>
                   <strong>{{ person.first_name }} {{ person.last_name }}</strong>
                   <small>{{ person.age_civil }} ans · {{ person.reinscription ? 'Réinscription' : 'Nouvelle inscription' }}</small>
                 </span>
               </label>
+
+              <span class="tag is-success is-light mt-3" *ngIf="person.inscription_active">Déjà inscrit sur cette saison</span>
 
               <ng-container *ngIf="isSelected(person.id)">
                 <div class="person-statuses">
@@ -52,9 +57,9 @@
                     <i class="fas" [ngClass]="person.informations_completes ? 'fa-check' : 'fa-exclamation'"></i>
                     {{ person.informations_completes ? 'Informations complètes' : 'Informations incomplètes' }}
                   </span>
-                  <span class="status-pill" [class.is-ok]="photoPresent(person.id)" [class.is-warning]="!photoPresent(person.id)">
+                  <span class="status-pill" [class.is-ok]="photoPresent(person)" [class.is-warning]="!photoPresent(person)">
                     <i class="fas fa-camera"></i>
-                    {{ photoPresent(person.id) ? 'Photo présente' : 'Photo absente' }}
+                    {{ photoPresent(person) ? 'Photo présente' : 'Photo absente' }}
                   </span>
                 </div>
                 <p class="help is-danger mt-2" *ngIf="!person.informations_completes">Manquant : {{ person.champs_manquants.join(', ') }}</p>
@@ -68,7 +73,7 @@
 
         <section *ngIf="step === 2">
           <h2 class="title is-5 mb-1">Choix des groupes</h2>
-          <p class="has-text-grey mb-4">Seuls les groupes visibles et éligibles sont proposés.</p>
+          <p class="has-text-grey mb-4">Seuls les groupes visibles, éligibles et disposant encore de places sont proposés.</p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <div class="block-heading">
@@ -76,7 +81,7 @@
                 <h3 class="title is-6 mb-1">{{ person.first_name }} {{ person.last_name }}</h3>
                 <p class="previous-groups" *ngIf="person.groupes_precedents.length">Saison précédente : {{ person.groupes_precedents.join(' · ') }}</p>
               </div>
-              <span class="tag is-light" *ngIf="hiddenGroupCount(person) > 0">{{ hiddenGroupCount(person) }} groupe(s) masqué(s)</span>
+              <span class="tag is-light" *ngIf="hiddenGroupCount(person) > 0">{{ hiddenGroupCount(person) }} groupe(s) non applicable(s)</span>
             </div>
 
             <div class="option-grid" *ngIf="eligibleGroups(person).length; else noEligibleGroup">
@@ -114,7 +119,7 @@
 
         <section *ngIf="step === 4">
           <h2 class="title is-5 mb-1">Dossiers des personnes</h2>
-          <p class="has-text-grey mb-4">Tous les éléments applicables sont affichés, qu’ils soient bloquants ou non.</p>
+          <p class="has-text-grey mb-4">Les informations de licence restent complétables même lorsqu’elles ne bloquent pas l’adhésion.</p>
 
           <article class="dossier-card" *ngFor="let person of selectedPeople">
             <header class="dossier-header">
@@ -142,6 +147,10 @@
                     <span><strong>Compétition</strong><small>Soumise aux conditions fédérales.</small></span>
                   </label>
                 </div>
+                <div *ngIf="choice(person.id).licenceType === 'COMPETITION'" class="notification mt-3 mb-0" [ngClass]="competitionEligible(person.id) ? 'is-success is-light' : 'is-warning is-light'">
+                  <strong>{{ competitionEligible(person.id) ? 'Éligible à la licence compétition' : 'Licence compétition à compléter' }}</strong>
+                  <p>{{ competitionMessage(person.id) }}</p>
+                </div>
               </div>
             </section>
 
@@ -151,7 +160,7 @@
                 <h4 class="title is-6 mb-2">Informations, documents et consentements</h4>
                 <div class="information-summary">
                   <span [class.is-ok]="person.informations_completes"><i class="fas" [ngClass]="person.informations_completes ? 'fa-check' : 'fa-exclamation'"></i>{{ person.informations_completes ? 'Informations obligatoires présentes' : 'Informations obligatoires manquantes' }}</span>
-                  <span [class.is-ok]="photoPresent(person.id)"><i class="fas fa-camera"></i>{{ photoPresent(person.id) ? 'Photo présente' : 'Photo absente' }}</span>
+                  <span [class.is-ok]="photoPresent(person)"><i class="fas fa-camera"></i>{{ photoPresent(person) ? 'Photo présente' : 'Photo absente' }}</span>
                 </div>
 
                 <div class="requirement-list">
@@ -162,27 +171,25 @@
                     <div class="requirement-body">
                       <div class="requirement-title-line">
                         <strong>{{ requirement.libelle }}</strong>
-                        <span class="tag is-light">{{ requirement.obligatoire ? 'Réponse requise' : 'Information utile' }}</span>
+                        <span class="tag is-light">{{ requirement.obligatoire ? 'Réponse attendue' : 'Information utile' }}</span>
                       </div>
                       <p class="has-text-grey mb-2" *ngIf="requirement.description">{{ requirement.description }}</p>
                       <p class="help is-warning" *ngIf="requirement.raison && !requirementAnswered(requirement)">{{ requirement.raison }}</p>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'CONSENTEMENT'">
                         <p class="consent-text">{{ requirement.texte_consentement }}</p>
-                        <div class="boolean-choice">
-                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === true" (click)="requirement.valeur_boolean = true">Oui</button>
-                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === false" (click)="requirement.valeur_boolean = false">Non</button>
-                          <button class="button is-small is-primary" type="button" [disabled]="requirement.valeur_boolean == null" (click)="saveRequirement(person, requirement)">Enregistrer</button>
-                        </div>
+                        <label class="checkbox checkbox-card">
+                          <input type="checkbox" [(ngModel)]="requirement.valeur_boolean" />
+                          Oui, j’accepte
+                        </label>
+                        <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)">Enregistrer ma réponse</button>
+                        <p class="help">Une case non cochée enregistre un refus. Aucun consentement n’est précoché par défaut.</p>
                       </div>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'DECLARATION'">
                         <input *ngIf="requirement.type_reponse === 'TEXTE'" class="input" [(ngModel)]="requirement.valeur_texte" />
                         <input *ngIf="requirement.type_reponse === 'DATE'" class="input" type="date" [(ngModel)]="requirement.valeur_date" />
-                        <div class="boolean-choice" *ngIf="requirement.type_reponse === 'BOOLEEN'">
-                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === true" (click)="requirement.valeur_boolean = true">Oui</button>
-                          <button class="button is-small" type="button" [class.is-primary]="requirement.valeur_boolean === false" (click)="requirement.valeur_boolean = false">Non</button>
-                        </div>
+                        <label *ngIf="requirement.type_reponse === 'BOOLEEN'" class="checkbox checkbox-card"><input type="checkbox" [(ngModel)]="requirement.valeur_boolean" /> Oui</label>
                         <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)">Enregistrer</button>
                       </div>
 
@@ -197,22 +204,13 @@
               <div class="section-number">3</div>
               <div class="section-content">
                 <h4 class="title is-6 mb-2">Situation médicale</h4>
-                <div class="medical-status" [class.is-ok]="medical[person.id]?.eligible">
-                  <i class="fas" [ngClass]="medical[person.id]?.eligible ? 'fa-check-circle' : 'fa-circle-exclamation'"></i>
-                  <span>{{ medical[person.id]?.message || 'Vérification en cours' }}</span>
-                </div>
-
-                <div class="medical-form" *ngIf="!medical[person.id]?.eligible">
-                  <p class="help mb-3">Saisis le QS Sport de la saison ou un certificat médical déjà existant.</p>
-                  <div class="columns is-multiline is-variable is-2">
-                    <div class="column is-4"><label class="label">Justificatif</label><div class="select is-fullwidth"><select [(ngModel)]="medicalForm(person.id).type"><option value="QS_SPORT">Questionnaire de santé</option><option value="CERTIFICAT">Certificat médical existant</option></select></div></div>
-                    <div class="column is-4"><label class="label">Date</label><input class="input" type="date" [(ngModel)]="medicalForm(person.id).date" /></div>
-                    <div class="column is-4" *ngIf="medicalForm(person.id).type === 'QS_SPORT'"><label class="label">Résultat</label><label class="checkbox medical-checkbox"><input type="checkbox" [(ngModel)]="medicalForm(person.id).qsNegative" /> Toutes les réponses sont négatives</label></div>
-                    <div class="column is-6" *ngIf="medicalForm(person.id).type === 'CERTIFICAT'"><label class="label">Nom du médecin</label><input class="input" [(ngModel)]="medicalForm(person.id).doctorName" /></div>
-                    <div class="column is-6" *ngIf="medicalForm(person.id).type === 'CERTIFICAT'"><label class="label">RPPS</label><input class="input" [(ngModel)]="medicalForm(person.id).rpps" /></div>
-                    <div class="column is-12"><button class="button is-primary" type="button" (click)="saveMedicalProof(person)">Enregistrer la situation médicale</button></div>
-                  </div>
-                </div>
+                <app-medical-proof-editor
+                  [personId]="person.id"
+                  [seasonId]="seasonId"
+                  [licenceType]="choice(person.id).licenceType"
+                  [showHistory]="true"
+                  (evaluationChange)="updateMedicalEvaluation(person.id, $event)"
+                ></app-medical-proof-editor>
               </div>
             </section>
           </article>
@@ -220,7 +218,8 @@
 
         <section *ngIf="step === 5">
           <h2 class="title is-5 mb-1">Récapitulatif et paiement</h2>
-          <p class="has-text-grey mb-4">Le serveur revérifie les places, les prix et les exigences bloquantes avant paiement.</p>
+          <p class="has-text-grey mb-4">Le serveur revérifie les places, les prix et les exigences bloquantes avant validation.</p>
+
           <div class="summary-list">
             <article class="summary-person" *ngFor="let person of selectedPeople">
               <div><strong>{{ person.first_name }} {{ person.last_name }}</strong><p>{{ groupNames(person).join(' · ') }}</p><small>{{ tariffFor(person)?.nom }} · Licence {{ choice(person.id).licenceType === 'COMPETITION' ? 'compétition' : 'loisir' }}</small></div>
@@ -241,14 +240,20 @@
 
           <div class="totals mt-4"><div><span>Total initial</span><strong>{{ formatMoney(initialTotal) }}</strong></div><div *ngIf="promoDiscount"><span>Remise</span><strong>- {{ formatMoney(promoDiscount) }}</strong></div><div class="total-final"><span>À payer</span><strong>{{ formatMoney(finalTotal) }}</strong></div></div>
 
-          <div class="simulation-box mt-4" *ngIf="isLocal"><strong>Mode local</strong><p class="is-size-7 mb-2">Teste la vraie finalisation sans appeler HelloAsso.</p><div class="buttons mb-0"><button class="button is-success is-light" type="button" (click)="simulate('OK')">Simuler paiement OK</button><button class="button is-danger is-light" type="button" (click)="simulate('KO')">Simuler paiement KO</button></div></div>
+          <div class="notification is-warning is-light mt-4" *ngIf="isAdminMode">
+            <strong>Validation administrative</strong>
+            <p>Le bouton ci-dessous crée l’inscription et les groupes sans passer par HelloAsso. Il enregistre l’état MANUAL_PAID.</p>
+            <button class="button is-warning mt-2" type="button" (click)="validateManualPayment()">Valider le paiement reçu</button>
+          </div>
+
+          <div class="simulation-box mt-4" *ngIf="isLocal && !isAdminMode"><strong>Mode local</strong><p class="is-size-7 mb-2">Teste la vraie finalisation sans appeler HelloAsso.</p><div class="buttons mb-0"><button class="button is-success is-light" type="button" (click)="simulate('OK')">Simuler paiement OK</button><button class="button is-danger is-light" type="button" (click)="simulate('KO')">Simuler paiement KO</button></div></div>
         </section>
       </main>
 
       <footer class="subscription-footer">
         <button class="button is-light" type="button" [disabled]="step === 1 || loading" (click)="previous()">Précédent</button>
         <button *ngIf="step < 5" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="next()">Continuer</button>
-        <button *ngIf="step === 5" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="pay()">Payer {{ formatMoney(finalTotal) }}</button>
+        <button *ngIf="step === 5 && !isAdminMode" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="pay()">Payer {{ formatMoney(finalTotal) }}</button>
       </footer>
     </section>
   </ng-template>
