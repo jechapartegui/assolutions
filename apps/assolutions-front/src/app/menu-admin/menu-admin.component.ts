@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { AppStore } from '../app.store';
 import { SaisonApiService } from '../../services/saison-api.service';
 import { MenuType } from '../../store/session.store';
-import { HelloAssoService } from '../../services/helloasso.service';
 
 type AdminTile = {
   label: string;
@@ -28,8 +27,6 @@ type AdminSection = {
   styleUrls: ['./menu-admin.component.css'],
 })
 export class MenuAdminComponent implements OnInit {
-  readonly saisonStorageKey = 'assolutions.consultationSaisonId';
-
   saisons: any[] = [];
   selectedSaisonId: number | null = null;
   loadingSaisons = false;
@@ -105,11 +102,22 @@ export class MenuAdminComponent implements OnInit {
     public store: AppStore,
     private router: Router,
     private saisonApi: SaisonApiService,
-    private helloassoservice: HelloAssoService,
   ) {}
 
   ngOnInit(): void {
-    this.loadSaisons();
+    void this.loadSaisons();
+  }
+
+  get activeSaisonId(): number | null {
+    return Number(this.store.saison_active_id() ?? 0) || null;
+  }
+
+  get consultationSaisonId(): number | null {
+    return Number(this.store.saison_consultation_id() ?? 0) || null;
+  }
+
+  get isConsultingActiveSeason(): boolean {
+    return this.consultationSaisonId === this.activeSaisonId;
   }
 
   async loadSaisons(): Promise<void> {
@@ -117,52 +125,57 @@ export class MenuAdminComponent implements OnInit {
     try {
       const saisons = await this.saisonApi.list();
       this.saisons = [...(saisons ?? [])].sort((a: any, b: any) =>
-        String(b?.nom ?? b?.libelle ?? '').localeCompare(String(a?.nom ?? a?.libelle ?? '')),
+        String(b?.nom ?? b?.libelle ?? '').localeCompare(
+          String(a?.nom ?? a?.libelle ?? ''),
+        ),
       );
-      const stored = Number(localStorage.getItem(this.saisonStorageKey));
-      const activeId = this.getActiveSaisonId();
-      this.selectedSaisonId =
-        Number.isFinite(stored) && this.saisons.some((s: any) => Number(s.id) === stored)
-          ? stored
-          : activeId;
+
+      const requested = this.consultationSaisonId ?? this.activeSaisonId;
+      this.selectedSaisonId = this.saisons.some(
+        (saison: any) => Number(saison.id) === Number(requested),
+      )
+        ? Number(requested)
+        : this.activeSaisonId;
+
+      this.store.setConsultationSaison(
+        this.selectedSaisonId === this.activeSaisonId
+          ? null
+          : this.selectedSaisonId,
+      );
     } finally {
       this.loadingSaisons = false;
     }
   }
 
-  testHelloAsso(): void {
-    this.helloassoservice.testHelloAsso().catch((error) => {
-      console.error('Erreur lors du test HelloAsso :', error);
-    });
-  }
-
-  getActiveSaisonId(): number | null {
-    const project: any = this.store.selectedProject?.();
-    return project?.saison_active?.id ?? project?.saison_active_id ?? null;
-  }
-
   getSaisonLabel(saison: any): string {
-    return saison?.nom ?? saison?.libelle ?? saison?.name ?? `Saison #${saison?.id}`;
+    const label =
+      saison?.nom ?? saison?.libelle ?? saison?.name ?? `Saison #${saison?.id}`;
+    return Number(saison?.id) === this.activeSaisonId
+      ? `${label} — active`
+      : label;
   }
 
   onSaisonChange(value: string | number | null): void {
-    const saisonId = value === null || value === '' ? null : Number(value);
-    this.selectedSaisonId = Number.isFinite(saisonId) ? saisonId : null;
-    if (this.selectedSaisonId) {
-      localStorage.setItem(this.saisonStorageKey, String(this.selectedSaisonId));
-    } else {
-      localStorage.removeItem(this.saisonStorageKey);
-    }
-    window.dispatchEvent(
-      new CustomEvent('assolutions:consultation-saison-changed', {
-        detail: { saisonId: this.selectedSaisonId },
-      }),
+    const saisonId = Number(value);
+    this.selectedSaisonId = Number.isInteger(saisonId) && saisonId > 0
+      ? saisonId
+      : this.activeSaisonId;
+
+    this.store.setConsultationSaison(
+      this.selectedSaisonId === this.activeSaisonId
+        ? null
+        : this.selectedSaisonId,
     );
   }
 
   open(tile: AdminTile): void {
     if (tile.disabled || !tile.route) return;
     this.store.updateSelectedMenu(tile.menu);
-    this.router.navigate([tile.route], { queryParams: tile.queryParams });
+    this.router.navigate([tile.route], {
+      queryParams: {
+        ...(tile.queryParams ?? {}),
+        saisonId: this.consultationSaisonId,
+      },
+    });
   }
 }
