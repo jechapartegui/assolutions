@@ -10,52 +10,18 @@
       <label class="label">{{ item.label }}</label>
 
       <ng-container [ngSwitch]="getFieldKind(item.fieldType)">
-        <input
-          *ngSwitchCase="'number'"
-          class="input"
-          type="number"
-          [(ngModel)]="item.value"
-        />
-
-        <input
-          *ngSwitchCase="'date'"
-          class="input"
-          type="date"
-          [(ngModel)]="item.value"
-        />
-
-        <input
-          *ngSwitchCase="'email'"
-          class="input"
-          type="email"
-          [(ngModel)]="item.value"
-        />
-
-        <input
-          *ngSwitchCase="'phone'"
-          class="input"
-          type="tel"
-          [(ngModel)]="item.value"
-        />
-
-        <input
-          *ngSwitchCase="'url'"
-          class="input"
-          type="url"
-          [(ngModel)]="item.value"
-        />
+        <input *ngSwitchCase="'number'" class="input" type="number" [(ngModel)]="item.value" />
+        <input *ngSwitchCase="'date'" class="input" type="date" [(ngModel)]="item.value" />
+        <input *ngSwitchCase="'email'" class="input" type="email" [(ngModel)]="item.value" />
+        <input *ngSwitchCase="'phone'" class="input" type="tel" [(ngModel)]="item.value" />
+        <input *ngSwitchCase="'url'" class="input" type="url" [(ngModel)]="item.value" />
 
         <label *ngSwitchCase="'boolean'" class="checkbox">
           <input type="checkbox" [(ngModel)]="item.boolValue" />
           <span> Oui</span>
         </label>
 
-        <textarea
-          *ngSwitchCase="'textarea'"
-          class="textarea"
-          rows="3"
-          [(ngModel)]="item.value"
-        ></textarea>
+        <textarea *ngSwitchCase="'textarea'" class="textarea" rows="3" [(ngModel)]="item.value"></textarea>
 
         <div *ngSwitchCase="'select'" class="select is-fullwidth">
           <select [(ngModel)]="item.value">
@@ -66,19 +32,10 @@
           </select>
         </div>
 
-        <input
-          *ngSwitchDefault
-          class="input"
-          type="text"
-          [(ngModel)]="item.value"
-        />
+        <input *ngSwitchDefault class="input" type="text" [(ngModel)]="item.value" />
       </ng-container>
 
-      <button
-        class="button is-small is-light mt-2"
-        type="button"
-        (click)="removeItem(item)"
-      >
+      <button class="button is-small is-light mt-2" type="button" (click)="removeItem(item)">
         Retirer
       </button>
     </div>
@@ -100,15 +57,101 @@
       </div>
 
       <div class="control">
-        <button
-          class="button is-primary is-light"
-          type="button"
-          [disabled]="!selectedFieldId"
-          (click)="addSelectedField()"
-        >
+        <button class="button is-primary is-light" type="button" [disabled]="!selectedFieldId" (click)="addSelectedField()">
           Ajouter
         </button>
       </div>
     </div>
   </div>
+</section>
+
+<section class="box editor-box" *ngIf="showMedicalSection">
+  <div class="editor-box-title-row">
+    <div>
+      <h3 class="subtitle is-6 has-text-primary mb-0">Situation médicale</h3>
+      <p class="help mb-0">
+        Les justificatifs sont liés à la personne et peuvent être réutilisés d'une saison à l'autre selon leur validité.
+      </p>
+    </div>
+    <span class="tag is-light">Saison #{{ seasonId }}</span>
+  </div>
+
+  <div class="notification is-light" *ngIf="medicalLoading">
+    Chargement de la situation médicale…
+  </div>
+
+  <div class="mb-4" *ngIf="medicalProofs.length">
+    <article class="notification is-success is-light mb-2" *ngFor="let proof of medicalProofs">
+      <strong>{{ proofLabel(proof) }}</strong>
+      <p class="is-size-7 mt-1">
+        Date : {{ proof.date_document }}
+        <ng-container *ngIf="proof.medecin_nom"> · Médecin : {{ proof.medecin_nom }}</ng-container>
+        <ng-container *ngIf="proof.medecin_rpps"> · RPPS : {{ proof.medecin_rpps }}</ng-container>
+      </p>
+      <p class="is-size-7" *ngIf="proof.commentaire">{{ proof.commentaire }}</p>
+    </article>
+  </div>
+
+  <p class="empty-state mb-4" *ngIf="!medicalLoading && !medicalProofs.length">
+    Aucune situation médicale enregistrée pour cette personne.
+  </p>
+
+  <div class="editor-fields editor-fields--two">
+    <div class="field">
+      <label class="label">Justificatif</label>
+      <div class="select is-fullwidth">
+        <select [(ngModel)]="medicalType">
+          <option value="QS_SPORT">Questionnaire de santé</option>
+          <option value="CERTIFICAT">Certificat médical</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Date</label>
+      <input class="input" type="date" [(ngModel)]="medicalDate" />
+    </div>
+
+    <div class="field" *ngIf="medicalType === 'QS_SPORT'">
+      <label class="label">Résultat du questionnaire</label>
+      <label class="checkbox">
+        <input type="checkbox" [(ngModel)]="medicalQsNegative" />
+        Toutes les réponses sont négatives
+      </label>
+    </div>
+
+    <ng-container *ngIf="medicalType === 'CERTIFICAT'">
+      <div class="field">
+        <label class="label">Nom du médecin *</label>
+        <input class="input" [(ngModel)]="medicalDoctorName" />
+      </div>
+
+      <div class="field">
+        <label class="label">RPPS *</label>
+        <input class="input" [(ngModel)]="medicalRpps" />
+      </div>
+
+      <div class="field">
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="medicalCompetition" />
+          Le certificat mentionne la pratique en compétition
+        </label>
+      </div>
+    </ng-container>
+
+    <div class="field">
+      <label class="label">Commentaire</label>
+      <textarea class="textarea" rows="2" [(ngModel)]="medicalComment"></textarea>
+    </div>
+  </div>
+
+  <button
+    class="button is-primary"
+    type="button"
+    [class.is-loading]="medicalLoading"
+    [disabled]="medicalLoading || !medicalDate || (medicalType === 'CERTIFICAT' && (!medicalDoctorName.trim() || !medicalRpps.trim()))"
+    (click)="saveMedicalProof()"
+  >
+    Enregistrer la situation médicale
+  </button>
 </section>
