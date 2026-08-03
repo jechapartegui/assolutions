@@ -24,6 +24,7 @@ import { ExigenceDossierService } from './exigence-dossier.service';
 import { PreuveMedicaleController } from './preuve-medicale.controller';
 import { PreuveMedicaleEntity } from './preuve-medicale.entity';
 import { PreuveMedicaleService } from './preuve-medicale.service';
+import { SouscriptionAdminService } from './souscription-admin.service';
 import { SouscriptionContextEnricherService } from './souscription-context-enricher.service';
 import { SouscriptionDossierService } from './souscription-dossier.service';
 import { SouscriptionNotificationService } from './souscription-notification.service';
@@ -60,6 +61,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
   providers: [
     ExigenceDossierService,
     PreuveMedicaleService,
+    SouscriptionAdminService,
     SouscriptionContextEnricherService,
     SouscriptionDossierService,
     SouscriptionViewEnricherService,
@@ -68,6 +70,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
   exports: [
     ExigenceDossierService,
     PreuveMedicaleService,
+    SouscriptionAdminService,
     SouscriptionContextEnricherService,
     SouscriptionDossierService,
     SouscriptionViewEnricherService,
