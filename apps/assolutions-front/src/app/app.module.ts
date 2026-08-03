@@ -42,6 +42,7 @@ import { CreerCompteComponent } from './creer-compte/creer-compte.component';
 import { InscriptionComponent } from './inscription/inscription.component';
 import { DossierDocumentUploadComponent } from './souscription/dossier-document-upload.component';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
+import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proof-editor.component';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -91,6 +92,7 @@ import { CoursStore } from '../store/cours.store';
     InscriptionComponent,
     DossierDocumentUploadComponent,
     SouscriptionTunnelComponent,
+    MedicalProofEditorComponent,
   ],
   imports: [
     BrowserModule,
