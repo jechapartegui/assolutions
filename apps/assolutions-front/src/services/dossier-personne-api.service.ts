@@ -15,31 +15,41 @@ import { ApiClientService } from './api-client.service';
 export class DossierPersonneApiService {
   constructor(private readonly api: ApiClientService) {}
 
-  evaluate(dto: EvaluerDossierPersonneDto): Promise<DossierPersonneEvaluation> {
-    return this.api.POST<DossierPersonneEvaluation>(
-      '/dossiers-personnes/evaluer',
-      dto,
-    );
+  evaluate(
+    dto: EvaluerDossierPersonneDto,
+    adminCompteId?: number | null,
+  ): Promise<DossierPersonneEvaluation> {
+    const url = adminCompteId
+      ? `/dossiers-personnes/admin/evaluer/${Number(adminCompteId)}`
+      : '/dossiers-personnes/evaluer';
+    return this.api.POST<DossierPersonneEvaluation>(url, dto);
   }
 
   saveResponse(
     dto: SauverReponseExigenceDto,
+    adminCompteId?: number | null,
   ): Promise<DossierPersonneEvaluation> {
-    return this.api.POST<DossierPersonneEvaluation>(
-      '/dossiers-personnes/reponse',
-      dto,
-    );
+    const url = adminCompteId
+      ? `/dossiers-personnes/admin/reponse/${Number(adminCompteId)}`
+      : '/dossiers-personnes/reponse';
+    return this.api.POST<DossierPersonneEvaluation>(url, dto);
   }
 
-  saveDocument(dto: {
-    personne_id: number;
-    typedoc: string;
-    titre: string;
-    mimetype: string;
-    data_base64: string;
-    date_document?: string | null;
-  }): Promise<{ id: number }> {
-    return this.api.POST<{ id: number }>('/dossiers-personnes/document', dto);
+  saveDocument(
+    dto: {
+      personne_id: number;
+      typedoc: string;
+      titre: string;
+      mimetype: string;
+      data_base64: string;
+      date_document?: string | null;
+    },
+    adminCompteId?: number | null,
+  ): Promise<{ id: number }> {
+    const url = adminCompteId
+      ? `/dossiers-personnes/admin/document/${Number(adminCompteId)}`
+      : '/dossiers-personnes/document';
+    return this.api.POST<{ id: number }>(url, dto);
   }
 
   listMedicalProofs(
