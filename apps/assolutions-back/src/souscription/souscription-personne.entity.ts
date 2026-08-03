@@ -26,8 +26,20 @@ export class SouscriptionPersonneEntity {
   @Column({ type: 'varchar', length: 40, default: 'BROUILLON' })
   statut: string;
 
+  @Column({ type: 'varchar', length: 30, default: 'LOISIR' })
+  type_licence: 'LOISIR' | 'COMPETITION';
+
   @Column({ type: 'int', nullable: true })
   inscription_saison_id: number | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  donnees_personne_snapshot: Record<string, unknown> | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  informations_validees_at: Date | null;
+
+  @Column({ type: 'boolean', default: false })
+  dossier_complet: boolean;
 
   @Column({ type: 'timestamp', default: () => 'now()' })
   created_at: Date;

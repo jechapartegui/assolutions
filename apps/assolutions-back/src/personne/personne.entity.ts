@@ -13,8 +13,8 @@ export class PersonneEntity {
   compte: number;
 
   @ManyToOne(() => CompteEntity, { nullable: true })
-@JoinColumn({ name: 'compte' })
-compte_rel?: CompteEntity;
+  @JoinColumn({ name: 'compte' })
+  compte_rel?: CompteEntity;
 
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_creation: Date;
@@ -36,6 +36,9 @@ compte_rel?: CompteEntity;
 
   @Column({ type: 'varchar', length: 255 })
   address: string;
+
+  @Column({ type: 'varchar', length: 100, default: 'France' })
+  pays: string;
 
   @Column({ type: 'boolean', default: false })
   archive: boolean;

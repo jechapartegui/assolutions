@@ -4,7 +4,7 @@
       <p class="admin-kicker">Administration</p>
       <h1 class="title is-4 mb-1">Centre de pilotage</h1>
       <p class="has-text-grey is-size-7">
-        Choisis une saison consultée, puis accède aux rubriques de gestion du projet.
+        Choisis la saison à consulter. La saison active reste la destination des nouvelles inscriptions et réinscriptions.
       </p>
     </div>
 
@@ -17,21 +17,25 @@
           [ngModel]="selectedSaisonId"
           (ngModelChange)="onSaisonChange($event)"
         >
-          <option [ngValue]="null">Saison active</option>
           <option *ngFor="let saison of saisons" [ngValue]="saison.id">
             {{ getSaisonLabel(saison) }}
           </option>
         </select>
       </div>
 
-      <p class="help mb-0">
-        N’impacte pas la saison active en base.
+      <p class="help mb-1">
+        Saison active :
+        <strong>{{ activeSaisonId ? ('#' + activeSaisonId) : 'non définie' }}</strong>
+      </p>
+      <p class="help mb-0" *ngIf="!isConsultingActiveSeason">
+        Tu consultes une saison historique ; les actions de renouvellement ciblent toujours la saison active.
+      </p>
+      <p class="help mb-0" *ngIf="isConsultingActiveSeason">
+        Tu consultes actuellement la saison active.
       </p>
     </div>
   </section>
-<button class="button is-primary" type="button" (click)="testHelloAsso()">
-  Tester paiement HelloAsso
-</button>
+
   <section class="admin-grid">
     <article class="admin-section" *ngFor="let section of sections">
       <header class="section-header">

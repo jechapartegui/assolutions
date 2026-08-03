@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
+  AdminSaveSouscriptionDto,
   CodePromoValidationView,
   CompleteSouscriptionPersonneDto,
   SaveSouscriptionDto,
@@ -18,19 +19,26 @@ export class SouscriptionApiService {
   constructor(private readonly api: ApiClientService) {}
 
   context(saisonId: number): Promise<SouscriptionContexte> {
+    return this.api.GET<SouscriptionContexte>(`${this.base}/contexte/${Number(saisonId)}`);
+  }
+
+  adminContext(saisonId: number, compteId: number): Promise<SouscriptionContexte> {
     return this.api.GET<SouscriptionContexte>(
-      `${this.base}/contexte/${Number(saisonId)}`,
+      `${this.base}/admin/contexte/${Number(saisonId)}/${Number(compteId)}`,
     );
   }
 
-  completePerson(
-    personId: number,
-    dto: CompleteSouscriptionPersonneDto,
-  ): Promise<{ ok: true }> {
-    return this.api.POST<{ ok: true }>(
-      `${this.base}/personnes/${Number(personId)}/completer`,
-      dto,
+  adminContextFromPerson(
+    saisonId: number,
+    personneId: number,
+  ): Promise<SouscriptionContexte & { admin_compte_id: number; admin_personne_id: number }> {
+    return this.api.GET<SouscriptionContexte & { admin_compte_id: number; admin_personne_id: number }>(
+      `${this.base}/admin/contexte-personne/${Number(saisonId)}/${Number(personneId)}`,
     );
+  }
+
+  completePerson(personId: number, dto: CompleteSouscriptionPersonneDto): Promise<{ ok: true }> {
+    return this.api.POST<{ ok: true }>(`${this.base}/personnes/${Number(personId)}/completer`, dto);
   }
 
   validatePromo(
@@ -38,42 +46,58 @@ export class SouscriptionApiService {
     code: string,
     tariffIds: number[],
   ): Promise<CodePromoValidationView> {
-    return this.api.POST<CodePromoValidationView>(
-      `${this.base}/codes-promo/valider`,
-      {
-        saison_id: Number(saisonId),
-        code,
-        tarif_ids: tariffIds,
-      },
-    );
+    return this.api.POST<CodePromoValidationView>(`${this.base}/codes-promo/valider`, {
+      saison_id: Number(saisonId),
+      code,
+      tarif_ids: tariffIds,
+    });
   }
 
   saveDraft(dto: SaveSouscriptionDto): Promise<SouscriptionView> {
     return this.api.POST<SouscriptionView>(`${this.base}/brouillon`, dto);
   }
 
+  saveAdminDraft(dto: AdminSaveSouscriptionDto): Promise<SouscriptionView> {
+    return this.api.POST<SouscriptionView>(`${this.base}/admin/brouillon`, dto);
+  }
+
+  validateManualPayment(
+    id: number,
+    compteId: number,
+  ): Promise<{ paiement_confirme: boolean; message: string }> {
+    return this.api.POST<{ paiement_confirme: boolean; message: string }>(
+      `${this.base}/admin/${Number(id)}/valider-paiement/${Number(compteId)}`,
+      {},
+    );
+  }
+
   get(id: number): Promise<SouscriptionView> {
     return this.api.GET<SouscriptionView>(`${this.base}/${Number(id)}`);
   }
 
+  dossier(id: number): Promise<unknown[]> {
+    return this.api.POST<unknown[]>(`${this.base}/${Number(id)}/dossier`, {});
+  }
+
   checkout(id: number): Promise<SouscriptionCheckoutResponse> {
-    return this.api.POST<SouscriptionCheckoutResponse>(
-      `${this.base}/${Number(id)}/checkout`,
-      {},
+    return this.api.POST<SouscriptionCheckoutResponse>(`${this.base}/${Number(id)}/checkout`, {});
+  }
+
+  simulate(
+    id: number,
+    resultat: 'OK' | 'KO',
+  ): Promise<{ paiement_confirme: boolean; message: string }> {
+    return this.api.POST<{ paiement_confirme: boolean; message: string }>(
+      `${this.base}/${Number(id)}/simuler-paiement`,
+      { resultat },
     );
   }
 
   confirm(id: number): Promise<SouscriptionConfirmationResponse> {
-    return this.api.POST<SouscriptionConfirmationResponse>(
-      `${this.base}/${Number(id)}/confirmer`,
-      {},
-    );
+    return this.api.POST<SouscriptionConfirmationResponse>(`${this.base}/${Number(id)}/confirmer`, {});
   }
 
   cancel(id: number): Promise<{ ok: true }> {
-    return this.api.POST<{ ok: true }>(
-      `${this.base}/${Number(id)}/annuler`,
-      {},
-    );
+    return this.api.POST<{ ok: true }>(`${this.base}/${Number(id)}/annuler`, {});
   }
 }

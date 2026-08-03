@@ -23,8 +23,15 @@ export class CoursComponent implements OnInit {
   }
 
   get isAdmin(): boolean {
-  return this.store.mode?.() === 'ADMIN';
-}
+    return this.store.mode?.() === 'ADMIN';
+  }
+
+  get saisonId(): number {
+    return Number(
+      this.store.saison_consultation_id() ?? this.store.saison_active_id(),
+    );
+  }
+
   get hasRefreshAvailable(): boolean {
     return !!this.vm.refreshAvailable;
   }
@@ -42,27 +49,26 @@ export class CoursComponent implements OnInit {
       errorService.emitChange(
         errorService.CreateError(
           $localize`Charger les cours`,
-          $localize`Accès impossible, vous n'êtes pas connecté`
-        )
+          $localize`Accès impossible, vous n'êtes pas connecté`,
+        ),
       );
       this.router.navigate(['/login']);
       return;
     }
 
     try {
-      const saisonId = this.store.saison_active_id();
-      await this.coursStore.init(saisonId);
+      await this.coursStore.init(this.saisonId);
       this.route.queryParams.subscribe(async (params) => {
         if (params['id']) {
-          await this.coursStore.openCours(+params['id'], saisonId);
+          await this.coursStore.openCours(+params['id'], this.saisonId);
         }
       });
     } catch (err: any) {
       errorService.emitChange(
         errorService.CreateError(
           $localize`Charger les cours`,
-          err?.message ?? $localize`Erreur inconnue`
-        )
+          err?.message ?? $localize`Erreur inconnue`,
+        ),
       );
     }
   }
@@ -71,14 +77,13 @@ export class CoursComponent implements OnInit {
     const errorService = ErrorService.instance;
 
     try {
-      const saisonId = this.vm?.activeSaison?.id ?? this.store.saison_active_id();
-      await this.coursStore.refreshNow(saisonId);
+      await this.coursStore.refreshNow(this.saisonId);
     } catch (err: any) {
       errorService.emitChange(
         errorService.CreateError(
           $localize`Actualiser les cours`,
-          err?.message ?? $localize`Erreur inconnue`
-        )
+          err?.message ?? $localize`Erreur inconnue`,
+        ),
       );
     }
   }
@@ -88,18 +93,14 @@ export class CoursComponent implements OnInit {
   }
 
   async onOpen(id: number): Promise<void> {
-    const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    await this.coursStore.openCours(id, saisonId);
+    await this.coursStore.openCours(id, this.saisonId);
   }
 
   onCreate(): void {
-    const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    this.coursStore.createEmpty(saisonId);
+    this.coursStore.createEmpty(this.saisonId);
   }
 
   onBackToList(): void {
     this.coursStore.closeEditor();
-    const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    void this.coursStore.refreshNow(saisonId);
   }
 }

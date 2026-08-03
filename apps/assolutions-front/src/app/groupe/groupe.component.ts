@@ -23,10 +23,16 @@ export class GroupeComponent implements OnInit {
     return this.groupeStore.vm();
   }
 
+  get saisonId(): number {
+    return Number(
+      this.store.saison_consultation_id() ?? this.store.saison_active_id(),
+    );
+  }
+
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
 
-    if (!this.store.isLoggedIn) {
+    if (!this.store.isLoggedIn()) {
       const error = errorService.CreateError(
         $localize`Charger les groupes`,
         $localize`Accès impossible, vous n'êtes pas connecté`,
@@ -37,7 +43,7 @@ export class GroupeComponent implements OnInit {
     }
 
     try {
-      await this.groupeStore.init(this.store.saison_active_id());
+      await this.groupeStore.init(this.saisonId);
     } catch (e) {
       errorService.emitChange(
         errorService.CreateError($localize`Chargement des groupes`, e),
@@ -185,12 +191,12 @@ export class GroupeComponent implements OnInit {
     try {
       await this.groupeStore.removeAdherentFromSelectedGroupe(adherent);
       errorService.emitChange(
-        errorService.OKMessage($localize`Suppression de l’adhérent du groupe`),
+        errorService.OKMessage($localize`Retrait de l’adhérent du groupe`),
       );
     } catch (e) {
       errorService.emitChange(
         errorService.CreateError(
-          $localize`Suppression de l’adhérent du groupe`,
+          $localize`Retirer l’adhérent du groupe`,
           e,
         ),
       );

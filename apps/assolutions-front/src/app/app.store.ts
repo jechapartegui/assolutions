@@ -16,6 +16,7 @@ export class AppStore {
   get selectedProjectId() { return this.sessionStore.selectedProjectId; }
   get saison_active_id() { return this.sessionStore.saisonActiveId; }
   get saison_active() { return this.sessionStore.saisonActive; }
+  get saison_consultation_id() { return this.sessionStore.saisonConsultationId; }
   get rights() { return this.sessionStore.rights; }
   get isAdmin() { return this.sessionStore.isAdmin; }
   get isProf() { return this.sessionStore.isProf; }
@@ -65,6 +66,10 @@ export class AppStore {
 
   updateSaisonActive(saisonId: number): void {
     this.sessionStore.updateSaisonActive(saisonId);
+  }
+
+  setConsultationSaison(saisonId: number | null): void {
+    this.sessionStore.setConsultationSaison(saisonId);
   }
 
   setLanguage(lang: string): void {

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CompteEntity } from '../compte/compte.entity';
 import { Contact } from '../contact/contact.entity';
+import { ExigenceDossierModule } from '../exigence-dossier/exigence-dossier.module';
 import { GroupesEntity } from '../groupes/groupes.entity';
 import { HelloAssoModule } from '../helloasso/helloasso.module';
 import { InscriptionSaisonEntity } from '../inscription_saison/inscription_saison.entity';
@@ -42,6 +43,7 @@ import { SouscriptionService } from './souscription.service';
       LienGroupeEntity,
     ]),
     HelloAssoModule,
+    ExigenceDossierModule,
   ],
   controllers: [SouscriptionController, CodePromoController],
   providers: [SouscriptionService, CodePromoService],

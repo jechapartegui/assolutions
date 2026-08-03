@@ -5,6 +5,7 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -30,6 +31,10 @@ export class SouscriptionPersonneChoixDto {
   @IsInt()
   @Type(() => Number)
   tarif_inscription_id: number;
+
+  @IsOptional()
+  @IsIn(['LOISIR', 'COMPETITION'])
+  type_licence?: 'LOISIR' | 'COMPETITION';
 }
 
 export class SouscriptionPayeurDto {
@@ -99,6 +104,11 @@ export class CompleteSouscriptionPersonneDto {
   @MaxLength(255)
   address: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  pays: string;
+
   @IsEmail()
   @MaxLength(250)
   email: string;
@@ -124,4 +134,9 @@ export class ValidateCodePromoDto {
   @IsInt({ each: true })
   @Type(() => Number)
   tarif_ids: number[];
+}
+
+export class SimulerPaiementDto {
+  @IsIn(['OK', 'KO'])
+  resultat: 'OK' | 'KO';
 }

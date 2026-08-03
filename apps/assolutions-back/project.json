@@ -6,7 +6,7 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
         "main": "apps/assolutions-back/src/main.ts",
@@ -15,6 +15,7 @@
         "platform": "node",
         "format": ["cjs"],
         "outputPath": "dist/apps/assolutions-back",
+        "generatePackageJson": false,
         "assets": [
           {
             "glob": "**/*",
@@ -24,8 +25,14 @@
         ]
       },
       "configurations": {
-        "development": {},
-        "production": {}
+        "development": {
+          "sourceMap": true,
+          "minify": false
+        },
+        "production": {
+          "sourceMap": false,
+          "minify": false
+        }
       }
     },
     "serve": {

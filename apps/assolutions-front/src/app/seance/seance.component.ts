@@ -21,9 +21,16 @@ export class SeanceComponent implements OnInit {
   get vm() {
     return this.seanceStore.vm();
   }
+
   get isAdmin(): boolean {
-  return this.store.mode?.() === 'ADMIN';
-}
+    return this.store.mode?.() === 'ADMIN';
+  }
+
+  get saisonId(): number {
+    return Number(
+      this.store.saison_consultation_id() ?? this.store.saison_active_id(),
+    );
+  }
 
   get hasRefreshAvailable(): boolean {
     return !!this.vm.refreshAvailable;
@@ -42,28 +49,27 @@ export class SeanceComponent implements OnInit {
       errorService.emitChange(
         errorService.CreateError(
           $localize`Charger les séances`,
-          $localize`Accès impossible, vous n'êtes pas connecté`
-        )
+          $localize`Accès impossible, vous n'êtes pas connecté`,
+        ),
       );
       this.router.navigate(['/login']);
       return;
     }
 
     try {
-      const saisonId = this.store.saison_active_id();
-      await this.seanceStore.init(saisonId);
+      await this.seanceStore.init(this.saisonId);
 
       this.route.queryParams.subscribe(async (params) => {
         if (params['id']) {
-          await this.seanceStore.openSeance(+params['id'], saisonId);
+          await this.seanceStore.openSeance(+params['id'], this.saisonId);
         }
       });
     } catch (err: any) {
       errorService.emitChange(
         errorService.CreateError(
           $localize`Charger les séances`,
-          err?.message ?? $localize`Erreur inconnue`
-        )
+          err?.message ?? $localize`Erreur inconnue`,
+        ),
       );
     }
   }
@@ -72,14 +78,13 @@ export class SeanceComponent implements OnInit {
     const errorService = ErrorService.instance;
 
     try {
-      const saisonId = this.vm?.activeSaison?.id ?? this.store.saison_active_id();
-      await this.seanceStore.refreshNow(saisonId);
+      await this.seanceStore.refreshNow(this.saisonId);
     } catch (err: any) {
       errorService.emitChange(
         errorService.CreateError(
           $localize`Actualiser les séances`,
-          err?.message ?? $localize`Erreur inconnue`
-        )
+          err?.message ?? $localize`Erreur inconnue`,
+        ),
       );
     }
   }
@@ -89,13 +94,11 @@ export class SeanceComponent implements OnInit {
   }
 
   async onOpen(id: number): Promise<void> {
-    const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    await this.seanceStore.openSeance(id, saisonId);
+    await this.seanceStore.openSeance(id, this.saisonId);
   }
 
   onCreate(serie = false): void {
-    const saisonId = this.vm.activeSaison?.id ?? this.store.saison_active_id();
-    this.seanceStore.createEmpty(saisonId, serie);
+    this.seanceStore.createEmpty(this.saisonId, serie);
   }
 
   onBackToList(): void {

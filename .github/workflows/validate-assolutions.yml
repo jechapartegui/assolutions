@@ -1,0 +1,21 @@
+name: Validate Assolutions
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx nx build assolutions-back --configuration=production --skip-nx-cache
+      - run: npx nx build assolutions-front --configuration=preprod --skip-nx-cache

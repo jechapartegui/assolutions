@@ -1,0 +1,78 @@
+<section class="medical-proof-editor">
+  <div class="medical-status" [class.is-ok]="evaluation?.eligible">
+    <i class="fas" [ngClass]="evaluation?.eligible ? 'fa-check-circle' : 'fa-circle-exclamation'"></i>
+    <span>{{ evaluation?.message || 'Situation médicale à renseigner' }}</span>
+  </div>
+
+  <div class="medical-history" *ngIf="showHistory && proofs.length">
+    <div class="medical-history-item" *ngFor="let proof of proofs">
+      <div>
+        <strong>{{ proofLabel(proof) }}</strong>
+        <small>{{ proof.date_document | date:'dd/MM/yyyy' }}</small>
+      </div>
+      <span class="tag" [ngClass]="proof.valide ? 'is-success is-light' : 'is-light'">
+        {{ proof.valide ? 'Valide' : 'Archivé' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="medical-proof-form">
+    <div class="medical-proof-grid">
+      <div class="field">
+        <label class="label">Justificatif</label>
+        <div class="select is-fullwidth">
+          <select [(ngModel)]="type">
+            <option value="QS_SPORT">Questionnaire de santé</option>
+            <option value="CERTIFICAT">Certificat médical</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Date</label>
+        <input class="input" type="date" [(ngModel)]="date" />
+      </div>
+
+      <div class="field" *ngIf="type === 'QS_SPORT'">
+        <label class="label">Résultat</label>
+        <label class="checkbox checkbox-card">
+          <input type="checkbox" [(ngModel)]="qsNegative" />
+          Toutes les réponses sont négatives
+        </label>
+      </div>
+
+      <div class="field" *ngIf="type === 'CERTIFICAT'">
+        <label class="label">Nom du médecin</label>
+        <input class="input" [(ngModel)]="doctorName" />
+      </div>
+
+      <div class="field" *ngIf="type === 'CERTIFICAT'">
+        <label class="label">RPPS</label>
+        <input class="input" [(ngModel)]="rpps" />
+      </div>
+
+      <div class="field" *ngIf="type === 'CERTIFICAT'">
+        <label class="checkbox checkbox-card">
+          <input type="checkbox" [(ngModel)]="competition" />
+          Le certificat mentionne la pratique en compétition
+        </label>
+      </div>
+
+      <div class="field medical-file-field">
+        <label class="label">Fichier justificatif *</label>
+        <input #fileInput class="input" type="file" accept="application/pdf,image/*" (change)="onFileSelected($event)" />
+        <p class="help" *ngIf="selectedFileName">{{ selectedFileName }}</p>
+        <button *ngIf="selectedFileName" class="button is-small is-light mt-2" type="button" (click)="clearFile(fileInput)">Retirer le fichier</button>
+      </div>
+
+      <div class="field medical-comment-field">
+        <label class="label">Commentaire</label>
+        <textarea class="textarea" rows="2" [(ngModel)]="comment"></textarea>
+      </div>
+    </div>
+
+    <button class="button is-primary" type="button" [class.is-loading]="loading" [disabled]="loading || !canSave" (click)="save()">
+      Enregistrer la situation médicale
+    </button>
+  </div>
+</section>

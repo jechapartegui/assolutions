@@ -7,85 +7,181 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
+import { SouscriptionAdminService } from '../exigence-dossier/souscription-admin.service';
+import { SouscriptionContextEnricherService } from '../exigence-dossier/souscription-context-enricher.service';
+import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
+import { SouscriptionNotificationService } from '../exigence-dossier/souscription-notification.service';
+import { SouscriptionViewEnricherService } from '../exigence-dossier/souscription-view-enricher.service';
 import {
   CompleteSouscriptionPersonneDto,
   SaveSouscriptionDto,
+  SimulerPaiementDto,
   ValidateCodePromoDto,
 } from './souscription.dto';
 import { SouscriptionService } from './souscription.service';
 
-type AuthenticatedRequest = Request & {
-  user?: { id?: number };
-};
+type AuthenticatedRequest = Request & { user?: { id?: number } };
+type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
 
 @Controller('souscriptions')
 export class SouscriptionController {
-  constructor(private readonly service: SouscriptionService) {}
+  constructor(
+    private readonly service: SouscriptionService,
+    private readonly admin: SouscriptionAdminService,
+    private readonly contexts: SouscriptionContextEnricherService,
+    private readonly dossiers: SouscriptionDossierService,
+    private readonly views: SouscriptionViewEnricherService,
+    private readonly notifications: SouscriptionNotificationService,
+  ) {}
 
   @Get('contexte/:saisonId')
-  getContext(
+  async getContext(
     @Param('saisonId', ParseIntPipe) saisonId: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.getContext(saisonId, projectId, this.accountId(req));
+    const context = await this.service.getContext(saisonId, projectId, this.accountId(req));
+    await this.contexts.enrich(context, saisonId);
+    if (context.brouillon) context.brouillon = await this.views.subscription(context.brouillon);
+    return this.views.context(context);
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/contexte/:saisonId/:compteId')
+  async getAdminContext(
+    @Param('saisonId', ParseIntPipe) saisonId: number,
+    @Param('compteId', ParseIntPipe) compteId: number,
+    @ProjectId() projectId: number,
+  ) {
+    return this.buildAdminContext(saisonId, compteId, projectId);
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/contexte-personne/:saisonId/:personneId')
+  async getAdminContextFromPerson(
+    @Param('saisonId', ParseIntPipe) saisonId: number,
+    @Param('personneId', ParseIntPipe) personneId: number,
+    @ProjectId() projectId: number,
+  ) {
+    const compteId = await this.contexts.accountIdForPerson(personneId);
+    return this.buildAdminContext(saisonId, compteId, projectId, personneId);
   }
 
   @Post('personnes/:id/completer')
-  completePerson(
+  async completePerson(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CompleteSouscriptionPersonneDto,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.completePerson(id, dto, this.accountId(req));
+    const accountId = this.accountId(req);
+    await this.service.completePerson(id, dto, accountId);
+    await this.dossiers.completeCountry(id, dto.pays, accountId);
+    return { ok: true };
   }
 
   @Post('codes-promo/valider')
-  validatePromo(
-    @Body() dto: ValidateCodePromoDto,
-    @ProjectId() projectId: number,
-  ) {
+  validatePromo(@Body() dto: ValidateCodePromoDto, @ProjectId() projectId: number) {
     return this.service.validateCodePromo(dto, projectId);
   }
 
   @Post('brouillon')
-  saveDraft(
+  async saveDraft(
     @Body() dto: SaveSouscriptionDto,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.saveDraft(dto, projectId, this.accountId(req));
+    await this.contexts.assertNotAlreadyRegistered(dto);
+    const accountId = this.accountId(req);
+    const saved = await this.service.saveDraft(dto, projectId, accountId);
+    await this.dossiers.syncDraft(saved.id, dto, projectId, accountId);
+    return this.views.subscription(await this.service.getForAccount(saved.id, projectId, accountId));
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('admin/brouillon')
+  async saveAdminDraft(@Body() dto: AdminSaveSouscriptionDto, @ProjectId() projectId: number) {
+    const { compte_id, ...payload } = dto;
+    await this.contexts.assertNotAlreadyRegistered(payload);
+    const accountId = Number(compte_id);
+    const saved = await this.service.saveDraft(payload, projectId, accountId);
+    await this.dossiers.syncDraft(saved.id, payload, projectId, accountId);
+    return this.views.subscription(await this.service.getForAccount(saved.id, projectId, accountId));
   }
 
   @Get(':id')
-  get(
+  async get(
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.getForAccount(id, projectId, this.accountId(req));
+    return this.views.subscription(
+      await this.service.getForAccount(id, projectId, this.accountId(req)),
+    );
+  }
+
+  @Post(':id/dossier')
+  dossier(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.dossiers.validateAndSnapshot(id, projectId, this.accountId(req), false);
   }
 
   @Post(':id/checkout')
-  checkout(
+  async checkout(
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.createCheckout(id, projectId, this.accountId(req));
+    const accountId = this.accountId(req);
+    await this.dossiers.validateAndSnapshot(id, projectId, accountId, true);
+    const result = await this.service.createCheckout(id, projectId, accountId);
+    await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
+  }
+
+  @Post(':id/simuler-paiement')
+  async simulate(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: SimulerPaiementDto,
+    @ProjectId() projectId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const accountId = this.accountId(req);
+    const result = await this.dossiers.simulatePayment(id, dto.resultat, projectId, accountId);
+    await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('admin/:id/valider-paiement/:compteId')
+  async validateManualPayment(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('compteId', ParseIntPipe) compteId: number,
+    @ProjectId() projectId: number,
+  ) {
+    const result = await this.admin.validateManualPayment(id, projectId, compteId);
+    await this.notifications.sendCurrentState(id, projectId, compteId);
+    return result;
   }
 
   @Post(':id/confirmer')
-  confirm(
+  async confirm(
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.confirmPayment(id, projectId, this.accountId(req));
+    const accountId = this.accountId(req);
+    const result = await this.service.confirmPayment(id, projectId, accountId);
+    await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
   }
 
   @Post(':id/annuler')
@@ -98,8 +194,24 @@ export class SouscriptionController {
   }
 
   @Post('helloasso/webhook')
-  webhook(@Body() payload: unknown) {
-    return this.service.handleHelloAssoWebhook(payload);
+  async webhook(@Body() payload: unknown) {
+    const result = await this.service.handleHelloAssoWebhook(payload);
+    await this.notifications.sendFromWebhook(payload);
+    return result;
+  }
+
+  private async buildAdminContext(
+    saisonId: number,
+    compteId: number,
+    projectId: number,
+    selectedPersonId?: number,
+  ) {
+    const context: any = await this.service.getContext(saisonId, projectId, compteId);
+    await this.contexts.enrich(context, saisonId);
+    context.admin_compte_id = compteId;
+    context.admin_personne_id = selectedPersonId ?? null;
+    if (context.brouillon) context.brouillon = await this.views.subscription(context.brouillon);
+    return this.views.context(context);
   }
 
   private accountId(req: AuthenticatedRequest): number {

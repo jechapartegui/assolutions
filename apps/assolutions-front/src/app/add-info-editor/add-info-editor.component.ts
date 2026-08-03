@@ -1,12 +1,14 @@
-import { AddInfo, AddInfoEditorItem_VM } from "@shared/index";
-import { AddInfoApiService } from "../../services/addinfo-api.service";
-import { Component, Input, OnChanges, OnInit } from "@angular/core";
+import { AddInfo, AddInfoEditorItem_VM } from '@shared/index';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
+
+import { AddInfoApiService } from '../../services/addinfo-api.service';
+import { AppStore } from '../app.store';
 
 @Component({
   selector: 'app-add-info-editor',
   templateUrl: './add-info-editor.component.html',
   styleUrls: ['./add-info-editor.component.css'],
-  standalone: false
+  standalone: false,
 })
 export class AddInfoEditorComponent implements OnInit, OnChanges {
   @Input() objectType!: string;
@@ -17,44 +19,50 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
   values: AddInfo[] = [];
   selectedFieldId = 0;
 
-  constructor(private addInfoApi: AddInfoApiService) {}
+  constructor(
+    private readonly addInfoApi: AddInfoApiService,
+    public readonly appStore: AppStore,
+  ) {}
 
-  async ngOnInit() {
-    await this.load();
+  get activeSeasonId(): number {
+    return Number(this.appStore.saison_active_id() ?? 0);
   }
 
-  async ngOnChanges() {
-    if (this.objectType && this.objectId !== undefined) {
-      await this.load();
-    }
+  get showMedicalSection(): boolean {
+    return (
+      this.objectType?.trim().toUpperCase() === 'PERSONNE' &&
+      Number(this.objectId) > 0 &&
+      this.activeSeasonId > 0
+    );
+  }
+
+  async ngOnInit(): Promise<void> { await this.load(); }
+
+  async ngOnChanges(): Promise<void> {
+    if (this.objectType && this.objectId !== undefined) await this.load();
   }
 
   get availableFields(): AddInfo[] {
-    const usedFieldIds = new Set(this.items.map(x => x.fieldId));
-    return this.fields.filter(f => !usedFieldIds.has(f.id));
+    const usedFieldIds = new Set(this.items.map((item) => item.fieldId));
+    return this.fields.filter((field) => !usedFieldIds.has(field.id));
   }
 
   async load(): Promise<void> {
     if (!this.objectType || this.objectId === undefined || this.objectId === null) return;
-
     const [fields, values] = await Promise.all([
       this.addInfoApi.listFields(this.objectType),
       this.objectId > 0
         ? this.addInfoApi.listValues(this.objectType, this.objectId)
         : Promise.resolve([]),
     ]);
-
     this.fields = fields ?? [];
     this.values = values ?? [];
-
     this.items = this.values
-      .map(value => {
-        const field = this.fields.find(f => String(f.id) === value.value_type);
-        if (!field) return null;
-
-        return this.toVm(field, value);
+      .map((value) => {
+        const field = this.fields.find((candidate) => String(candidate.id) === value.value_type);
+        return field ? this.toVm(field, value) : null;
       })
-      .filter((x): x is AddInfoEditorItem_VM => !!x);
+      .filter((item): item is AddInfoEditorItem_VM => !!item);
   }
 
   toVm(field: AddInfo, value?: AddInfo | null): AddInfoEditorItem_VM {
@@ -73,40 +81,28 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
   }
 
   addSelectedField(): void {
-    const field = this.fields.find(f => f.id === this.selectedFieldId);
+    const field = this.fields.find((candidate) => candidate.id === this.selectedFieldId);
     if (!field) return;
-
     this.items.push(this.toVm(field, null));
     this.selectedFieldId = 0;
   }
 
   removeItem(item: AddInfoEditorItem_VM): void {
-    this.items = this.items.filter(x => x !== item);
+    this.items = this.items.filter((candidate) => candidate !== item);
   }
 
   getFieldKind(valueType: string): string {
     if (!valueType) return 'string';
-
-    if (valueType.startsWith('select:')) return 'select';
-    if (valueType.startsWith('select[')) return 'select';
-
+    if (valueType.startsWith('select:') || valueType.startsWith('select[')) return 'select';
     return valueType;
   }
 
   extractOptions(valueType: string): string[] {
     if (!valueType?.startsWith('select:')) return [];
-
     const raw = valueType.substring('select:'.length);
-
     if (raw.startsWith('[')) {
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return [];
-      }
+      try { return JSON.parse(raw); } catch { return []; }
     }
-
-    // Pour LV_xxx : à brancher ensuite sur getLov()
     return [];
   }
 
@@ -114,40 +110,33 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
     if (this.getFieldKind(item.fieldType) === 'boolean') {
       return item.boolValue ? 'true' : 'false';
     }
-
     return item.value ?? '';
   }
 
   async save(): Promise<void> {
     if (!this.objectType || !this.objectId || this.objectId <= 0) return;
-
-    const currentFieldIds = new Set(this.items.map(x => x.fieldId));
-
-    const deleted = this.values.filter(v => !currentFieldIds.has(Number(v.value_type)));
-
-    const existingToUpdate = this.items.filter(x =>
-      x.valueId > 0 && this.normalizeValue(x) !== x.initialValue
+    const currentFieldIds = new Set(this.items.map((item) => item.fieldId));
+    const deleted = this.values.filter(
+      (value) => !currentFieldIds.has(Number(value.value_type)),
     );
-
-    const created = this.items.filter(x => x.valueId === 0);
-
+    const existingToUpdate = this.items.filter(
+      (item) => item.valueId > 0 && this.normalizeValue(item) !== item.initialValue,
+    );
+    const created = this.items.filter((item) => item.valueId === 0);
     await Promise.all([
-      ...deleted.map(v => this.addInfoApi.deleteValue(v.id)),
-      ...existingToUpdate.map(x =>
-        this.addInfoApi.updateValue(x.valueId, {
-          text: this.normalizeValue(x),
-        })
+      ...deleted.map((value) => this.addInfoApi.deleteValue(value.id)),
+      ...existingToUpdate.map((item) =>
+        this.addInfoApi.updateValue(item.valueId, { text: this.normalizeValue(item) }),
       ),
-      ...created.map(x =>
+      ...created.map((item) =>
         this.addInfoApi.createValue({
           object_type: this.objectType,
           object_id: this.objectId,
-          field_id: x.fieldId,
-          text: this.normalizeValue(x),
-        })
+          field_id: item.fieldId,
+          text: this.normalizeValue(item),
+        }),
       ),
     ]);
-
     await this.load();
   }
 }
