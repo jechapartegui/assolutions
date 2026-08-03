@@ -5,9 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { PersonneEntity } from '../personne/personne.entity';
+import { ProjectEntity } from '../project/project.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import {
   EvaluerPreuveMedicaleDto,
@@ -24,6 +25,7 @@ export class PreuveMedicaleService {
     private readonly personneRepo: Repository<PersonneEntity>,
     @InjectRepository(SaisonEntity)
     private readonly saisonRepo: Repository<SaisonEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async list(
@@ -33,7 +35,7 @@ export class PreuveMedicaleService {
     compteId: number,
   ) {
     await this.assertSeason(saisonId, projectId);
-    await this.getOwnedPerson(personneId, compteId);
+    await this.getAuthorizedPerson(personneId, compteId, projectId);
     return this.repo.find({
       where: { project_id: projectId, personne_id: personneId },
       order: { date_document: 'DESC', id: 'DESC' },
@@ -46,10 +48,10 @@ export class PreuveMedicaleService {
     compteId: number,
   ) {
     await this.assertSeason(dto.saison_id, projectId);
-    await this.getOwnedPerson(dto.personne_id, compteId);
+    await this.getAuthorizedPerson(dto.personne_id, compteId, projectId);
     this.validate(dto);
 
-    const saved = await this.repo.save(
+    return this.repo.save(
       this.repo.create({
         project_id: projectId,
         personne_id: dto.personne_id,
@@ -75,7 +77,6 @@ export class PreuveMedicaleService {
         updated_at: new Date(),
       }),
     );
-    return saved;
   }
 
   async evaluate(
@@ -84,7 +85,11 @@ export class PreuveMedicaleService {
     compteId: number,
   ) {
     const saison = await this.assertSeason(dto.saison_id, projectId);
-    const personne = await this.getOwnedPerson(dto.personne_id, compteId);
+    const personne = await this.getAuthorizedPerson(
+      dto.personne_id,
+      compteId,
+      projectId,
+    );
     const proofs = await this.repo.find({
       where: {
         project_id: projectId,
@@ -215,17 +220,15 @@ export class PreuveMedicaleService {
   }
 
   private validate(dto: SavePreuveMedicaleDto) {
+    if (!dto.date_document) {
+      throw new BadRequestException('La date du justificatif est obligatoire');
+    }
     if (dto.type_preuve === 'CERTIFICAT') {
       if (!this.text(dto.medecin_nom)) {
         throw new BadRequestException('Le nom du médecin est obligatoire');
       }
       if (!this.text(dto.medecin_rpps)) {
         throw new BadRequestException('Le numéro RPPS est obligatoire');
-      }
-      if (dto.valable_competition && !this.text(dto.medecin_rpps)) {
-        throw new BadRequestException(
-          'Le numéro RPPS est obligatoire pour un certificat compétition',
-        );
       }
     }
     if (
@@ -247,12 +250,31 @@ export class PreuveMedicaleService {
     return season;
   }
 
-  private async getOwnedPerson(id: number, compteId: number) {
+  private async getAuthorizedPerson(
+    id: number,
+    compteId: number,
+    projectId: number,
+  ) {
     const personne = await this.personneRepo.findOne({ where: { id } });
     if (!personne) throw new NotFoundException('Personne introuvable');
-    if (personne.compte !== compteId) {
+
+    if (personne.compte === compteId) return personne;
+
+    const project = await this.dataSource
+      .getRepository(ProjectEntity)
+      .findOne({ where: { id: projectId } as any });
+    const ownerId = Number(
+      (project as any)?.compte_id ??
+        (project as any)?.compteId ??
+        (project as any)?.compte?.id ??
+        (project as any)?.compte ??
+        0,
+    );
+
+    if (ownerId !== compteId) {
       throw new ForbiddenException('PERSONNE_HORS_COMPTE');
     }
+
     return personne;
   }
 
