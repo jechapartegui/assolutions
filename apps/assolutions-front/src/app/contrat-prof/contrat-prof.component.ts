@@ -16,8 +16,6 @@ type ProfesseurWithPersonne = Professeur & {
   styleUrls: ['./contrat-prof.component.css'],
 })
 export class ContratProfComponent implements OnInit {
-  readonly saisonStorageKey = 'assolutions.consultationSaisonId';
-
   loading = false;
   saving = false;
 
@@ -35,11 +33,14 @@ export class ContratProfComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.load();
+    void this.load();
   }
 
   get saisonId(): number {
-    return this.appStore.saison_active().id;  
+    return Number(
+      this.appStore.saison_consultation_id() ??
+        this.appStore.saison_active_id(),
+    );
   }
 
   async load(): Promise<void> {
@@ -64,7 +65,7 @@ export class ContratProfComponent implements OnInit {
     const ids = [
       ...new Set(
         this.profs
-          .map(prof => prof.id)
+          .map((prof) => prof.id)
           .filter((id): id is number => Number.isFinite(id) && id > 0),
       ),
     ];
@@ -76,9 +77,10 @@ export class ContratProfComponent implements OnInit {
     const personnes = await this.personneApi.list_personnelight(ids, false);
 
     this.personnesById = Object.fromEntries(
-      personnes.map(p => [p.id, p]),
+      personnes.map((personne) => [personne.id, personne]),
     );
   }
+
   create(): void {
     this.editing = {
       id: 0,
@@ -161,12 +163,13 @@ export class ContratProfComponent implements OnInit {
   }
 
   getProfLabel(profId: number): string {
-    const prof = this.profs.find(p => p.id === profId);
+    const prof = this.profs.find((candidate) => candidate.id === profId);
     if (!prof) return `Prof #${profId}`;
     const personne = profId ? this.personnesById[profId] : null;
     return (
-      [personne?.prenom, personne?.nom, personne?.surnom].filter(Boolean).join(' ') ||
-      `Prof #${profId}`
+      [personne?.prenom, personne?.nom, personne?.surnom]
+        .filter(Boolean)
+        .join(' ') || `Prof #${profId}`
     );
   }
 
