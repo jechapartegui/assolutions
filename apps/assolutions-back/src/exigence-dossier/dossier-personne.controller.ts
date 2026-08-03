@@ -13,12 +13,12 @@ import { Request } from 'express';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SaveDossierDocumentDto } from './dossier-document.dto';
+import { DossierDocumentService } from './dossier-document.service';
 import {
   EvaluerDossierPersonneDto,
   SauverReponseExigenceDto,
 } from './dossier-personne.dto';
 import { ExigenceDossierService } from './exigence-dossier.service';
-import { SouscriptionDossierService } from './souscription-dossier.service';
 
 type AuthenticatedRequest = Request & { user?: { id?: number } };
 
@@ -26,7 +26,7 @@ type AuthenticatedRequest = Request & { user?: { id?: number } };
 export class DossierPersonneController {
   constructor(
     private readonly service: ExigenceDossierService,
-    private readonly dossiers: SouscriptionDossierService,
+    private readonly documents: DossierDocumentService,
   ) {}
 
   @Post('evaluer')
@@ -73,7 +73,7 @@ export class DossierPersonneController {
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.dossiers.saveDocument(dto, projectId, this.accountId(req));
+    return this.documents.save(dto, projectId, this.accountId(req));
   }
 
   @UseGuards(ProjectAdminGuard)
@@ -83,7 +83,7 @@ export class DossierPersonneController {
     @Body() dto: SaveDossierDocumentDto,
     @ProjectId() projectId: number,
   ) {
-    return this.dossiers.saveDocument(dto, projectId, compteId);
+    return this.documents.save(dto, projectId, compteId);
   }
 
   private accountId(req: AuthenticatedRequest): number {
