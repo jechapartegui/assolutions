@@ -52,6 +52,8 @@ export interface SouscriptionPersonneContexte {
   telephone?: string | null;
   age_civil: number;
   reinscription: boolean;
+  inscription_active: boolean;
+  photo_presente: boolean;
   informations_completes: boolean;
   champs_manquants: string[];
   groupes_precedents: string[];
@@ -91,6 +93,10 @@ export interface SaveSouscriptionDto {
   nb_echeances: number;
   code_promo?: string | null;
   personnes: SouscriptionPersonneChoixDto[];
+}
+
+export interface AdminSaveSouscriptionDto extends SaveSouscriptionDto {
+  compte_id: number;
 }
 
 export interface CompleteSouscriptionPersonneDto {
