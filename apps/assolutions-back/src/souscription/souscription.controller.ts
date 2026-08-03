@@ -7,10 +7,13 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
+import { SouscriptionContextEnricherService } from '../exigence-dossier/souscription-context-enricher.service';
 import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
 import { SouscriptionNotificationService } from '../exigence-dossier/souscription-notification.service';
 import { SouscriptionViewEnricherService } from '../exigence-dossier/souscription-view-enricher.service';
@@ -22,14 +25,15 @@ import {
 } from './souscription.dto';
 import { SouscriptionService } from './souscription.service';
 
-type AuthenticatedRequest = Request & {
-  user?: { id?: number };
-};
+type AuthenticatedRequest = Request & { user?: { id?: number } };
+
+type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
 
 @Controller('souscriptions')
 export class SouscriptionController {
   constructor(
     private readonly service: SouscriptionService,
+    private readonly contexts: SouscriptionContextEnricherService,
     private readonly dossiers: SouscriptionDossierService,
     private readonly views: SouscriptionViewEnricherService,
     private readonly notifications: SouscriptionNotificationService,
@@ -46,6 +50,22 @@ export class SouscriptionController {
       projectId,
       this.accountId(req),
     );
+    await this.contexts.enrich(context, saisonId);
+    if (context.brouillon) {
+      context.brouillon = await this.views.subscription(context.brouillon);
+    }
+    return this.views.context(context);
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/contexte/:saisonId/:compteId')
+  async getAdminContext(
+    @Param('saisonId', ParseIntPipe) saisonId: number,
+    @Param('compteId', ParseIntPipe) compteId: number,
+    @ProjectId() projectId: number,
+  ) {
+    const context = await this.service.getContext(saisonId, projectId, compteId);
+    await this.contexts.enrich(context, saisonId);
     if (context.brouillon) {
       context.brouillon = await this.views.subscription(context.brouillon);
     }
@@ -78,10 +98,29 @@ export class SouscriptionController {
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
+    await this.contexts.assertNotAlreadyRegistered(dto);
     const accountId = this.accountId(req);
     const saved = await this.service.saveDraft(dto, projectId, accountId);
     await this.dossiers.syncDraft(saved.id, dto, projectId, accountId);
     const view = await this.service.getForAccount(saved.id, projectId, accountId);
+    return this.views.subscription(view);
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('admin/brouillon')
+  async saveAdminDraft(
+    @Body() dto: AdminSaveSouscriptionDto,
+    @ProjectId() projectId: number,
+  ) {
+    const { compte_id, ...payload } = dto;
+    await this.contexts.assertNotAlreadyRegistered(payload);
+    const saved = await this.service.saveDraft(payload, projectId, Number(compte_id));
+    await this.dossiers.syncDraft(saved.id, payload, projectId, Number(compte_id));
+    const view = await this.service.getForAccount(
+      saved.id,
+      projectId,
+      Number(compte_id),
+    );
     return this.views.subscription(view);
   }
 
@@ -141,6 +180,22 @@ export class SouscriptionController {
       accountId,
     );
     await this.notifications.sendCurrentState(id, projectId, accountId);
+    return result;
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('admin/:id/valider-paiement/:compteId')
+  async validateManualPayment(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('compteId', ParseIntPipe) compteId: number,
+    @ProjectId() projectId: number,
+  ) {
+    const result = await this.dossiers.validateManualPayment(
+      id,
+      projectId,
+      compteId,
+    );
+    await this.notifications.sendCurrentState(id, projectId, compteId);
     return result;
   }
 
