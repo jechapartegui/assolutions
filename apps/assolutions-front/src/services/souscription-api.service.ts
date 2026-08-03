@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
+  AdminSaveSouscriptionDto,
   CodePromoValidationView,
   CompleteSouscriptionPersonneDto,
   SaveSouscriptionDto,
@@ -20,6 +21,15 @@ export class SouscriptionApiService {
   context(saisonId: number): Promise<SouscriptionContexte> {
     return this.api.GET<SouscriptionContexte>(
       `${this.base}/contexte/${Number(saisonId)}`,
+    );
+  }
+
+  adminContext(
+    saisonId: number,
+    compteId: number,
+  ): Promise<SouscriptionContexte> {
+    return this.api.GET<SouscriptionContexte>(
+      `${this.base}/admin/contexte/${Number(saisonId)}/${Number(compteId)}`,
     );
   }
 
@@ -50,6 +60,20 @@ export class SouscriptionApiService {
 
   saveDraft(dto: SaveSouscriptionDto): Promise<SouscriptionView> {
     return this.api.POST<SouscriptionView>(`${this.base}/brouillon`, dto);
+  }
+
+  saveAdminDraft(dto: AdminSaveSouscriptionDto): Promise<SouscriptionView> {
+    return this.api.POST<SouscriptionView>(`${this.base}/admin/brouillon`, dto);
+  }
+
+  validateManualPayment(
+    id: number,
+    compteId: number,
+  ): Promise<{ paiement_confirme: boolean; message: string }> {
+    return this.api.POST<{ paiement_confirme: boolean; message: string }>(
+      `${this.base}/admin/${Number(id)}/valider-paiement/${Number(compteId)}`,
+      {},
+    );
   }
 
   get(id: number): Promise<SouscriptionView> {
