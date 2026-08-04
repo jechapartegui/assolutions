@@ -1,5 +1,6 @@
-# Adapter la version majeure à celle des deux bases Render si elle diffère.
-FROM postgres:16-alpine
+# Les outils client doivent être au moins de la même version majeure que la
+# base source Render. La production est actuellement en PostgreSQL 18.
+FROM postgres:18-alpine
 
 RUN apk add --no-cache bash
 
