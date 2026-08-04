@@ -1,9 +1,16 @@
-{  "name": "@assolutions/front",
+{
+  "name": "@assolutions/front",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "ng serve --port 2211 --proxy-config proxy.conf.json",
-    "build": "ng build --configuration production"
+    "start": "npm run start:local",
+    "start:local": "nx serve assolutions-front --configuration=development",
+    "start:local:en": "nx serve assolutions-front --configuration=development-en",
+    "build": "npm run build:prod",
+    "build:preprod": "nx build assolutions-front --configuration=preprod --skip-nx-cache",
+    "build:prod": "nx build assolutions-front --configuration=production --skip-nx-cache",
+    "deploy:preprod": "npm run build:preprod",
+    "deploy:prod": "npm run build:prod"
   },
   "dependencies": {
     "@angular/animations": "20.3.15",
@@ -22,6 +29,5 @@
     "xlsx": "^0.18.5",
     "zone.js": "~0.15.1"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
