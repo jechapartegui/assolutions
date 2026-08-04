@@ -25,9 +25,6 @@ if [[ "$PROD_DATABASE_URL" == "$PREPROD_DATABASE_URL" ]]; then
   exit 1
 fi
 
-# Dans l'image Docker Render, le dépôt est copié sous /app. Le script lui-même
-# est installé dans /usr/local/bin : il ne faut donc pas déduire le chemin du
-# dépôt depuis BASH_SOURCE.
 ROOT_DIR="${APP_ROOT:-/app}"
 
 if [[ ! -x "$ROOT_DIR/database/scripts/apply_complete_subscription_upgrade.sh" ]]; then
@@ -35,8 +32,6 @@ if [[ ! -x "$ROOT_DIR/database/scripts/apply_complete_subscription_upgrade.sh" ]
   exit 1
 fi
 
-# BusyBox/Alpine impose que les XXXXXX de mktemp soient en fin de modèle.
-# Un nom explicite et unique évite cette incompatibilité.
 DUMP_FILE="/tmp/assolutions-prod-$(date +%s)-$$.dump"
 
 cleanup() {
@@ -47,6 +42,10 @@ trap cleanup EXIT
 echo "==> Outils PostgreSQL"
 pg_dump --version
 pg_restore --version
+
+echo "==> Vérification de la base cible préproduction"
+psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 --tuples-only --no-align \
+  --command="SELECT current_database();"
 
 echo "==> Export logique de la production vers $DUMP_FILE"
 pg_dump "$PROD_DATABASE_URL" \
@@ -60,15 +59,10 @@ if [[ ! -s "$DUMP_FILE" ]]; then
   exit 1
 fi
 
-echo "==> Fermeture des connexions applicatives sur la préproduction"
-psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 <<'SQL'
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = current_database()
-  AND pid <> pg_backend_pid();
-SQL
-
-echo "==> Restauration complète vers la préproduction"
+echo "==> Restauration directe production vers préproduction"
+# Render conserve des connexions système que l'utilisateur PostgreSQL géré ne
+# peut pas terminer. Ce n'est pas nécessaire : pg_restore nettoie directement
+# les objets applicatifs de la base cible puis les recrée depuis le dump.
 pg_restore \
   --clean \
   --if-exists \
