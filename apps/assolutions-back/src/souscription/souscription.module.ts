@@ -16,6 +16,7 @@ import { CodePromoController } from './code-promo.controller';
 import { CodePromoEntity } from './code-promo.entity';
 import { CodePromoService } from './code-promo.service';
 import { CodePromoTarifEntity } from './code-promo-tarif.entity';
+import { SouscriptionConfirmationService } from './souscription-confirmation.service';
 import { SouscriptionController } from './souscription.controller';
 import { SouscriptionEntity } from './souscription.entity';
 import { SouscriptionEvenementEntity } from './souscription-evenement.entity';
@@ -46,6 +47,10 @@ import { SouscriptionService } from './souscription.service';
     ExigenceDossierModule,
   ],
   controllers: [SouscriptionController, CodePromoController],
-  providers: [SouscriptionService, CodePromoService],
+  providers: [
+    SouscriptionService,
+    SouscriptionConfirmationService,
+    CodePromoService,
+  ],
 })
 export class SouscriptionModule {}
