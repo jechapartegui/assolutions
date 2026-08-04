@@ -4,12 +4,44 @@
   </div>
 
   <section class="subscription-card" *ngIf="isReturnMode; else tunnel">
-    <div class="return-state" [class.is-success]="returnConfirmed">
-      <span class="return-icon"><i class="fas" [ngClass]="returnConfirmed ? 'fa-circle-check' : 'fa-circle-xmark'"></i></span>
-      <h1 class="title is-4">{{ returnConfirmed ? 'Inscription confirmée' : 'Paiement non confirmé' }}</h1>
+    <div
+      class="return-state"
+      [class.is-success]="returnConfirmed"
+      [class.is-pending]="!returnConfirmed && returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'"
+    >
+      <span class="return-icon">
+        <i
+          class="fas"
+          [ngClass]="returnConfirmed
+            ? 'fa-circle-check'
+            : returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'
+              ? 'fa-clock'
+              : 'fa-circle-xmark'"
+        ></i>
+      </span>
+      <h1 class="title is-4">
+        {{ returnConfirmed
+          ? 'Inscription confirmée'
+          : returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'
+            ? 'Confirmation du paiement en cours'
+            : 'Paiement refusé ou annulé' }}
+      </h1>
       <p>{{ returnMessage }}</p>
-      <p *ngIf="returnSubscription" class="return-total">Dossier #{{ returnSubscription.id }} · {{ formatMoney(returnSubscription.montant_total_centimes) }}</p>
-      <a class="button is-primary mt-4" routerLink="/menu">Retour au menu</a>
+      <p *ngIf="returnSubscription" class="return-total">
+        Dossier #{{ returnSubscription.id }} · {{ formatMoney(returnSubscription.montant_total_centimes) }}
+      </p>
+      <div class="buttons is-centered mt-4">
+        <button
+          *ngIf="!returnConfirmed && returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'"
+          class="button is-warning is-light"
+          type="button"
+          [disabled]="loading"
+          (click)="ngOnInit()"
+        >
+          Vérifier à nouveau
+        </button>
+        <a class="button is-primary" routerLink="/menu">Retour au menu</a>
+      </div>
     </div>
   </section>
 
