@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "start": "npm run start:local",
-    "start:local": "nx serve assolutions-front --configuration=development",
-    "start:local:en": "nx serve assolutions-front --configuration=development-en",
+    "start:local": "cd ../.. && nx serve assolutions-front --configuration=development",
+    "start:local:en": "cd ../.. && nx serve assolutions-front --configuration=development-en",
     "build": "npm run build:prod",
-    "build:preprod": "nx build assolutions-front --configuration=preprod --skip-nx-cache",
-    "build:prod": "nx build assolutions-front --configuration=production --skip-nx-cache",
+    "build:preprod": "cd ../.. && nx build assolutions-front --configuration=preprod --skip-nx-cache",
+    "build:prod": "cd ../.. && nx build assolutions-front --configuration=production --skip-nx-cache",
     "deploy:preprod": "npm run build:preprod",
-    "deploy:prod": "npm run build:prod"
+    "deploy:prod": "npm run build:prod",
+    "nx:reset": "cd ../.. && nx reset"
   },
   "dependencies": {
     "@angular/animations": "20.3.15",
