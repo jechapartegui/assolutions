@@ -256,6 +256,7 @@
 .return-state { padding: 3rem 1rem; text-align: center; }
 .return-icon { display: inline-grid; place-items: center; width: 72px; height: 72px; margin-bottom: 1rem; border-radius: 999px; color: #b91c1c; background: #fee2e2; font-size: 2rem; }
 .return-state.is-success .return-icon { color: #047857; background: #d1fae5; }
+.return-state.is-pending .return-icon { color: #b45309; background: #fef3c7; }
 .return-total { margin-top: 0.7rem; font-weight: 700; }
 
 @media (max-width: 767px) {
