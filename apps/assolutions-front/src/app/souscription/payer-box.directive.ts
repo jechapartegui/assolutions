@@ -41,13 +41,17 @@ export class PayerBoxDirective implements AfterViewInit, OnDestroy {
     const host = this.elementRef.nativeElement;
     const select = host.querySelector('select');
     const emailInput = host.querySelector<HTMLInputElement>('input[type="email"]');
-    const textInputs = host.querySelectorAll<HTMLInputElement>('input:not([type]), input[type="text"]');
+    const textInputs = host.querySelectorAll<HTMLInputElement>(
+      'input:not([type]), input[type="text"]',
+    );
 
     if (!select || !emailInput) return;
 
     this.ensurePlaceholder(select);
 
-    textInputs.forEach((input) => this.renderer.setAttribute(input, 'required', ''));
+    textInputs.forEach((input) =>
+      this.renderer.setAttribute(input, 'required', ''),
+    );
     this.renderer.setAttribute(emailInput, 'required', '');
     this.renderer.setAttribute(emailInput, 'autocomplete', 'email');
     this.renderer.setAttribute(emailInput, 'inputmode', 'email');
@@ -59,6 +63,7 @@ export class PayerBoxDirective implements AfterViewInit, OnDestroy {
       const hasPayer = this.tunnel.payerMode != null;
       const email = this.tunnel.payerEmail.trim();
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const emailInvalid = hasPayer && !emailValid;
 
       this.setHelp(
         selectHelp,
@@ -66,16 +71,20 @@ export class PayerBoxDirective implements AfterViewInit, OnDestroy {
       );
       this.setHelp(
         emailHelp,
-        hasPayer && !emailValid
+        emailInvalid
           ? 'Une adresse email valide est obligatoire pour le payeur.'
           : '',
       );
 
-      this.renderer.setClass(emailInput, 'is-danger', hasPayer && !emailValid);
+      if (emailInvalid) {
+        this.renderer.addClass(emailInput, 'is-danger');
+      } else {
+        this.renderer.removeClass(emailInput, 'is-danger');
+      }
       this.renderer.setAttribute(
         emailInput,
         'aria-invalid',
-        String(hasPayer && !emailValid),
+        String(emailInvalid),
       );
     };
 
