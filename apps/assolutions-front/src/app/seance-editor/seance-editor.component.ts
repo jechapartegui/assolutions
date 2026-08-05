@@ -149,7 +149,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     const prof = this.vm.refs.listeProf.find((item) => item.key === this.currentProfId);
     if (!prof) return;
 
-    this.seance.seanceProfesseurs.push(this.profFromReference(prof.key, prof.value) as any);
+    this.seance.seanceProfesseurs.push(this.profFromReference(Number(prof.key), prof.value) as any);
     if (this.seance.id > 0) {
       await this.repository.updateSeanceProfs(this.seance.id, this.seance.seanceProfesseurs as any);
     }
