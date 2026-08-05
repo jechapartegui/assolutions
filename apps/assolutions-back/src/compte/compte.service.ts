@@ -40,7 +40,6 @@ export class CompteService {
 
   async listByProject(projectId: number): Promise<CompteEntity[]> {
     if (!projectId) throw new NotFoundException('projet introuvable');
-
     const comptes = await this.repo
       .createQueryBuilder('compte')
       .innerJoin(
@@ -51,7 +50,6 @@ export class CompteService {
       )
       .orderBy('compte.login', 'ASC')
       .getMany();
-
     return comptes.map((compte) => this.hideSensitiveData(compte));
   }
 
@@ -64,7 +62,6 @@ export class CompteService {
   async create(dto: CreateCompteDto): Promise<CompteEntity> {
     const login = this.resolveLogin(dto);
     await this.ensureLoginAvailable(login);
-
     const saved = await this.repo.save(
       this.repo.create({
         login,
@@ -75,7 +72,6 @@ export class CompteService {
         activation_token: dto.activation_token ?? null,
       }),
     );
-
     return this.hideSensitiveData(saved);
   }
 
@@ -87,14 +83,27 @@ export class CompteService {
     );
   }
 
-  async registerWithProject(
-    dto: RegisterCompteWithProjectDto,
-  ): Promise<CompteEntity> {
+  async registerWithProject(dto: RegisterCompteWithProjectDto): Promise<CompteEntity> {
     return this.createAccountAndQueueActivation(
       this.normalizeLogin(dto.email),
       Number(dto.project_id),
       dto.password,
     );
+  }
+
+  async resendActivation(email: string): Promise<{ ok: true }> {
+    const login = this.normalizeLogin(email);
+    const account = await this.repo.findOne({ where: { login } });
+
+    if (!account || account.actif || account.mail_actif) {
+      return { ok: true };
+    }
+
+    const rawToken = this.createRawToken();
+    account.activation_token = this.hashToken(rawToken);
+    await this.repo.save(account);
+    this.queueActivationMail(login, rawToken);
+    return { ok: true };
   }
 
   async check_token(login: string, token: string): Promise<CompteEntity> {
@@ -138,7 +147,6 @@ export class CompteService {
         ? this.hashToken(dto.activation_token)
         : null;
     }
-
     return this.hideSensitiveData(await this.repo.save(item));
   }
 
@@ -164,7 +172,6 @@ export class CompteService {
     await this.ensureLoginAvailable(login);
     const rawToken = this.createRawToken();
     const hashedToken = this.hashToken(rawToken);
-
     const compte = await this.dataSource.transaction(async (manager) => {
       const created = await manager.save(CompteEntity, {
         login,
@@ -174,7 +181,6 @@ export class CompteService {
         echec_connexion: false,
         activation_token: hashedToken,
       });
-
       await manager.save(LoginProjectEntity, {
         login_id: created.id,
         project_id: projectId,
