@@ -34,13 +34,16 @@ export class CompteController {
     return this.service.listByProject(projectId);
   }
 
-  /** Public : création depuis la page login / créer-compte. */
   @Post('register-with-project')
   registerWithProject(@Body() dto: RegisterCompteWithProjectDto) {
     return this.service.registerWithProject(dto);
   }
 
-  /** Admin : création d’un compte directement depuis la fiche adhérent. */
+  @Post('resend-activation')
+  resendActivation(@Body() body: { email: string }) {
+    return this.service.resendActivation(body.email);
+  }
+
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post('with-project')
   createWithProject(@Body() dto: CreateCompteWithProjectDto) {
