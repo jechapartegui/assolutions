@@ -29,6 +29,7 @@ import { PreuveMedicaleService } from './preuve-medicale.service';
 import { SouscriptionAdminService } from './souscription-admin.service';
 import { SouscriptionContextEnricherService } from './souscription-context-enricher.service';
 import { SouscriptionDossierService } from './souscription-dossier.service';
+import { SouscriptionMedicalGuardService } from './souscription-medical-guard.service';
 import { SouscriptionNotificationService } from './souscription-notification.service';
 import { SouscriptionViewEnricherService } from './souscription-view-enricher.service';
 
@@ -56,7 +57,11 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
       LienGroupeEntity,
     ]),
   ],
-  controllers: [ExigenceDossierController, DossierPersonneController, PreuveMedicaleController],
+  controllers: [
+    ExigenceDossierController,
+    DossierPersonneController,
+    PreuveMedicaleController,
+  ],
   providers: [
     DossierDocumentService,
     ExigenceDossierService,
@@ -64,6 +69,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
     SouscriptionAdminService,
     SouscriptionContextEnricherService,
     SouscriptionDossierService,
+    SouscriptionMedicalGuardService,
     SouscriptionViewEnricherService,
     SouscriptionNotificationService,
   ],
@@ -74,6 +80,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
     SouscriptionAdminService,
     SouscriptionContextEnricherService,
     SouscriptionDossierService,
+    SouscriptionMedicalGuardService,
     SouscriptionViewEnricherService,
     SouscriptionNotificationService,
     TypeOrmModule,
