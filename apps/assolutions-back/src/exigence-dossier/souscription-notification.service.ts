@@ -44,6 +44,37 @@ export class SouscriptionNotificationService {
     projectId: number,
     accountId: number,
   ): Promise<void> {
+    this.runDetached(
+      this.processCurrentState(subscriptionId, projectId, accountId),
+      `souscription ${subscriptionId}`,
+    );
+  }
+
+  async sendFromWebhook(payload: unknown): Promise<void> {
+    this.runDetached(this.processWebhook(payload), 'webhook HelloAsso');
+  }
+
+  private async processWebhook(payload: unknown): Promise<void> {
+    const checkoutId = this.helloAsso.extractCheckoutIntentId(payload);
+    if (!checkoutId) return;
+
+    const subscription = await this.souscriptionRepo.findOne({
+      where: { helloasso_checkout_intent_id: checkoutId },
+    });
+    if (!subscription) return;
+
+    await this.processCurrentState(
+      subscription.id,
+      subscription.project_id,
+      subscription.compte_id,
+    );
+  }
+
+  private async processCurrentState(
+    subscriptionId: number,
+    projectId: number,
+    accountId: number,
+  ): Promise<void> {
     const subscription = await this.souscriptionRepo.findOne({
       where: { id: subscriptionId, project_id: projectId, compte_id: accountId },
     });
@@ -54,22 +85,6 @@ export class SouscriptionNotificationService {
     } else if (this.isFailureState(subscription.helloasso_payment_state)) {
       await this.sendFailure(subscriptionId, projectId, accountId);
     }
-  }
-
-  async sendFromWebhook(payload: unknown): Promise<void> {
-    const checkoutId = this.helloAsso.extractCheckoutIntentId(payload);
-    if (!checkoutId) return;
-
-    const subscription = await this.souscriptionRepo.findOne({
-      where: { helloasso_checkout_intent_id: checkoutId },
-    });
-    if (!subscription) return;
-
-    await this.sendCurrentState(
-      subscription.id,
-      subscription.project_id,
-      subscription.compte_id,
-    );
   }
 
   private async sendPerPerson(
@@ -150,6 +165,13 @@ export class SouscriptionNotificationService {
         );
       }
     }
+  }
+
+  private runDetached(task: Promise<void>, context: string): void {
+    void task.catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Échec notification ${context}: ${message}`);
+    });
   }
 
   private isFailureState(value: unknown): boolean {
