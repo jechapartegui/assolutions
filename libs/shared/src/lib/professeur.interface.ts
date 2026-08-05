@@ -10,5 +10,14 @@ export interface Professeur {
   info?: string | null;
 }
 
-export type CreateProfesseurDto = Omit<Professeur, 'project_id'>;
-export type UpdateProfesseurDto = Partial<Omit<Professeur, 'project_id'>>;
+export interface CreateProfesseurDto {
+  id: number;
+  hourly_rate?: number | null;
+  status?: string | null;
+  num_tva?: string | null;
+  num_siren?: number | null;
+  iban?: string | null;
+  info?: string | null;
+}
+
+export type UpdateProfesseurDto = Partial<Omit<Professeur, 'project_id' | 'id'>>;
