@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Compte } from '@shared/lib/compte.interface';
 
 import { environment } from '../../environments/environment.prod';
+import { ApiError } from '../../services/api-client.service';
 import { CompteApiService } from '../../services/compte-api.service';
 import { ErrorService } from '../../services/error.service';
 import { Login_VM } from '../../vm/login.vm';
@@ -44,7 +45,6 @@ export class CreerCompteComponent implements OnInit {
 
   private resolveProjectFromRoute(): void {
     if (this.projectId && this.projectId > 0) return;
-
     const raw =
       this.route.snapshot.queryParamMap.get('project_id') ??
       this.route.snapshot.queryParamMap.get('projectId') ??
@@ -79,7 +79,6 @@ export class CreerCompteComponent implements OnInit {
         value: $localize`Impossible de créer un compte sans projet associé.`,
       };
     }
-
     this.VM.isValid =
       this.VM.isLoginValid &&
       (!this.VM.mdp_requis || this.VM.isPasswordValid) &&
@@ -148,11 +147,28 @@ export class CreerCompteComponent implements OnInit {
           $localize`Compte créé. Un mail d’activation a été envoyé à ${email}. Pensez à vérifier vos courriers indésirables.`
         )
       );
-
       this.router.navigate(['/login'], {
         queryParams: { user: email, created: 1, activationMail: 1 },
       });
     } catch (error: unknown) {
+      const details = error instanceof ApiError ? (error.details as any) : null;
+      if (
+        error instanceof ApiError &&
+        error.code === 'ACCOUNT_ALREADY_EXISTS' &&
+        details?.mail_actif === false
+      ) {
+        await this.compteApi.resendActivation(email);
+        errors.emitChange(
+          errors.OKMessage(
+            this.action,
+            $localize`Ce compte existait déjà mais n’était pas activé. Un nouveau mail d’activation a été envoyé à ${email}.`
+          )
+        );
+        this.router.navigate(['/login'], {
+          queryParams: { user: email, activationMail: 1 },
+        });
+        return;
+      }
       errors.emitChange(errors.CreateError(this.action, error));
     } finally {
       this.loading = false;
