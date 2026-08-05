@@ -22,6 +22,8 @@ run_sql() {
 run_sql "$ROOT_DIR/database/scripts/20260803_upgrade_production_souscription.sql"
 run_sql "$ROOT_DIR/database/migrations/20260803_photo_fiche_dossier_compat.sql"
 run_sql "$ROOT_DIR/database/migrations/20260803_droit_image_facultatif.sql"
+run_sql "$ROOT_DIR/database/migrations/20260805_normalise_personne_archive.sql"
+run_sql "$ROOT_DIR/database/migrations/20260805_preuve_medicale_bloquante.sql"
 
 echo "==> Vérification finale"
 psql "$DATABASE_URL" --set=ON_ERROR_STOP=1 <<'SQL'
@@ -34,6 +36,21 @@ UNION ALL SELECT 'photo_sync_trigger', EXISTS (
   FROM pg_trigger
   WHERE tgname = 'trg_sync_photo_member_vers_dossier'
     AND NOT tgisinternal
+)
+UNION ALL SELECT 'archive_not_null', EXISTS (
+  SELECT 1
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'personne'
+    AND column_name = 'archive'
+    AND is_nullable = 'NO'
+)
+UNION ALL SELECT 'medical_blocking', EXISTS (
+  SELECT 1
+  FROM public.exigence_dossier
+  WHERE type_exigence = 'PREUVE_MEDICALE'
+    AND obligatoire = true
+    AND bloquante = true
 );
 SQL
 

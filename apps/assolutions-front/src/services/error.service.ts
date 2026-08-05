@@ -2,143 +2,97 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { notification } from '../app/custom-notification/custom-notification.component';
 import { code_alert } from '../app/global';
-@Injectable({
-  providedIn: 'root'
-})
+import { ApiError } from './api-client.service';
+
+@Injectable({ providedIn: 'root' })
 export class ErrorService {
   static instance: ErrorService;
-  private emitChangeSource = new Subject<any>();
+  private readonly emitChangeSource = new Subject<notification>();
+  changeEmitted$ = this.emitChangeSource.asObservable();
+
   constructor() {
     ErrorService.instance = this;
   }
-  changeEmitted$ = this.emitChangeSource.asObservable();
 
-  emitChange(err) {
-    this.emitChangeSource.next(err);
-  }
-
-  CreateError(action, statusText): notification {
-    let o = new notification();
-    o.content = this.interpret_error(statusText);
-    o.object = action;
-    o.color = code_alert.KO;
-    return o;
-  }
-  Create(action, content, _code_alert): notification {
-    let o = new notification();
-    o.color = code_alert.KO;
-    if (_code_alert == "OK") {
-      o.color = code_alert.OK;
-    }
-    if (_code_alert == "Warning") {
-      o.color = code_alert.Warning;
-    }
-    if (_code_alert == "Info") {
-      o.color = code_alert.Info;
-    }
-    o.content = content;
-    o.object = action;
-    return o;
+  emitChange(error: notification): void {
+    this.emitChangeSource.next(error);
   }
 
-  OKMessage(action: string): notification {
-    let o = new notification();
-    o.content = "OK";
-    o.object = action;
-    o.color = code_alert.OK;
-    return o;
+  CreateError(action: string, error: unknown): notification {
+    return this.Create(action, this.getMessage(error), 'KO');
   }
-  Warning(action: string): notification {
-    let o = new notification();
-    o.content = $localize`Attention`;
-    o.object = action;
-    o.color = code_alert.Warning;
-    return o;
+
+  Create(action: string, content: string, alert: string): notification {
+    const item = new notification();
+    item.color =
+      alert === 'OK'
+        ? code_alert.OK
+        : alert === 'Warning'
+          ? code_alert.Warning
+          : alert === 'Info'
+            ? code_alert.Info
+            : code_alert.KO;
+    item.content = content;
+    item.object = action;
+    return item;
   }
+
+  OKMessage(action: string, content = 'OK'): notification {
+    return this.Create(action, content, 'OK');
+  }
+
+  Warning(action: string, content = $localize`Attention`): notification {
+    return this.Create(action, content, 'Warning');
+  }
+
   UnknownError(action: string): notification {
-    let o = new notification();
-    o.content = $localize`Erreur inconnue`;
-    o.object = action;
-    o.color = code_alert.KO;
-    return o;
+    return this.CreateError(action, 'UNKNOWN_ERROR');
   }
 
-  interpret_code_error(code: number): string {
-    switch (code) {
-      case 206:
-        return "Erreur fonctionnelle : ";
-      default:
-      case 401:
-        return "Non autorisé";
+  getMessage(error: unknown): string {
+    if (error instanceof ApiError) {
+      return this.interpret_error(error.code, error.message);
     }
-  }
-  interpret_error(text: string): string {
-     console.trace();
-     console.log("ErrorService interpret_error : " + text);
-    switch (text) {
-       case "NO_SESSION_FOUND":
-        return $localize`Pas de séances trouvées`;
-      case "NO_ACCOUNT_FOUND":
-      case "ACCOUNT_NOT_FOUND":
-      case "Unauthorized ACCOUNT_NOT_FOUND":
-        return $localize`Compte non trouvé`;
-      case "ACCOUNT_NOT_ACTIVE":
-      case "Unauthorized ACCOUNT_NOT_ACTIVE":
-        return $localize`Compte non actif`;
-      case "DELETE_FAILED":
-      case "Unauthorized DELETE_FAILED":
-        return $localize`Erreur lors de la suppression`;
-      default:
-        return "Erreur inconnue : " + text;
-      case "NO_USER_FOUND":
-        return "Login incorrect";
-      case "LOGIN_ALREADY_EXISTS":
-      case "Unauthorized LOGIN_ALREADY_EXISTS":
-        return "Le login existe déjà merci d'en choisir un autre"
-      case "NO_OBJECT_FOUND":
-      case "Unauthorized NO_OBJECT_FOUND":
-        return "Pas d'objet trouvé";
-      case "NO_ID_FOUND":
-      case "Unauthorized NO_ID_FOUND":
-        return "Pas d'ID trouvé";
-      case "Unauthorized NO_COMMAND_FOUND":
-        return "Pas de commande trouvée";
-      case "Unauthorized NO_NAME_FOUND":
-        return "Pas de nom trouvé"
-      case "Unauthorized NO_LOGIN_FOUND":
-        return "Pas de login trouvé";
-      case "INCORRECT_LOGIN":
-      case "Unauthorized INCORRECT_LOGIN":
-        return "Login incorrect";
-      case "INCORRECT_TOKEN":
-      case "Unauthorized INCORRECT_TOKEN":
-        return "Token incorrect";
-      case "INCORRECT_PASSWORD":
-      case "Unauthorized INCORRECT_PASSWORD":
-        return $localize`Mot de passe incorrect`;
-      case "Unauthorized NO_VALUE_SET":
-        return "Valeur non saisie";
-      case "UPDATE_FAILED":
-        return $localize`Erreur lors de la mise à jour`;
-      case "Unauthorized TOKEN_INVALID":
-      case "TOKEN_INVALID":
-        return $localize`Jeton invalide`;
-      case "Unauthorized INACTIVE_ACCOUNT":
-      case "INACTIVE_ACCOUNT":
-        return $localize`Compte inactif`;
-      case "Unauthorized NO_RIDER_ATTACHED":
-      case "NO_RIDER_ATTACHED":
-        return $localize`Pas d'adhérent rattaché au compte`;
-      case "Unauthorized NO_PROJECT_LINKED":
-      case "NO_PROJECT_LINKED":
-        return $localize`Aucun projet rattaché au compte`;
-      case "Unauthorized NO_TOKEN_ACCOUNT":
-      case "NO_TOKEN_ACCOUNT":
-        return $localize`Ce compte possède un mot de passe, renvoi de Token impossible.`;
-      case "Unauthorized NO_PASSWORD_ACCOUNT":
-      case "NO_PASSWORD_ACCOUNT":
-        return $localize`Ce compte ne possède pas de mot de passe, connexion avec Token uniquement.`;
+
+    if (error instanceof Error) {
+      return this.interpret_error(error.message, error.message);
     }
+
+    if (typeof error === 'string') {
+      return this.interpret_error(error, error);
+    }
+
+    return $localize`Une erreur inconnue est survenue.`;
   }
 
+  interpret_error(codeOrText: string, fallback?: string): string {
+    const code = String(codeOrText ?? '').replace(/^Unauthorized\s+/i, '').trim();
+    const messages: Record<string, string> = {
+      TIMEOUT_ERROR: $localize`Le serveur met trop de temps à répondre. Réessayez dans quelques instants.`,
+      NETWORK_ERROR: $localize`Impossible de joindre le serveur. Vérifiez votre connexion puis réessayez.`,
+      SERVER_ERROR: $localize`Le serveur a rencontré une erreur. Réessayez dans quelques instants.`,
+      ACCOUNT_ALREADY_EXISTS: $localize`Un compte existe déjà avec cette adresse. Connectez-vous ou demandez un nouveau lien d’activation.`,
+      LOGIN_ALREADY_EXISTS: $localize`Un compte existe déjà avec cette adresse.`,
+      ACCOUNT_NOT_FOUND: $localize`Compte non trouvé.`,
+      NO_ACCOUNT_FOUND: $localize`Compte non trouvé.`,
+      ACCOUNT_NOT_ACTIVE: $localize`Ce compte n’est pas encore actif.`,
+      INACTIVE_ACCOUNT: $localize`Ce compte n’est pas encore actif.`,
+      INCORRECT_PASSWORD: $localize`Mot de passe incorrect.`,
+      INCORRECT_LOGIN: $localize`Identifiant incorrect.`,
+      INCORRECT_TOKEN: $localize`Le lien utilisé est incorrect ou expiré.`,
+      TOKEN_INVALID: $localize`Le lien utilisé est incorrect ou expiré.`,
+      NO_PROJECT_LINKED: $localize`Aucun projet n’est rattaché à ce compte.`,
+      NO_RIDER_ATTACHED: $localize`Aucun adhérent n’est rattaché à ce compte.`,
+      DELETE_FAILED: $localize`Erreur lors de la suppression.`,
+      UPDATE_FAILED: $localize`Erreur lors de la mise à jour.`,
+      NO_SESSION_FOUND: $localize`Aucune séance trouvée.`,
+      UNAUTHORIZED: $localize`Vous devez vous reconnecter.`,
+      FORBIDDEN: $localize`Vous n’êtes pas autorisé à effectuer cette action.`,
+      NOT_FOUND: $localize`La ressource demandée est introuvable.`,
+      CONFLICT: $localize`Cette opération entre en conflit avec une donnée existante.`,
+      UNKNOWN_ERROR: $localize`Une erreur inconnue est survenue.`,
+    };
+
+    return messages[code] ?? fallback ?? code ?? messages['UNKNOWN_ERROR'];
+  }
 }

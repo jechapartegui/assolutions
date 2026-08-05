@@ -19,6 +19,7 @@ import {
   SauverReponseExigenceDto,
 } from './dossier-personne.dto';
 import { ExigenceDossierService } from './exigence-dossier.service';
+import { PreuveMedicaleService } from './preuve-medicale.service';
 
 type AuthenticatedRequest = Request & { user?: { id?: number } };
 
@@ -27,6 +28,7 @@ export class DossierPersonneController {
   constructor(
     private readonly service: ExigenceDossierService,
     private readonly documents: DossierDocumentService,
+    private readonly medical: PreuveMedicaleService,
   ) {}
 
   @Post('evaluer')
@@ -35,7 +37,7 @@ export class DossierPersonneController {
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.evaluate(dto, projectId, this.accountId(req));
+    return this.evaluateComplete(dto, projectId, this.accountId(req));
   }
 
   @UseGuards(ProjectAdminGuard)
@@ -45,26 +47,29 @@ export class DossierPersonneController {
     @Body() dto: EvaluerDossierPersonneDto,
     @ProjectId() projectId: number,
   ) {
-    return this.service.evaluate(dto, projectId, compteId);
+    return this.evaluateComplete(dto, projectId, compteId);
   }
 
   @Post('reponse')
-  saveResponse(
+  async saveResponse(
     @Body() dto: SauverReponseExigenceDto,
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.service.saveResponse(dto, projectId, this.accountId(req));
+    const accountId = this.accountId(req);
+    await this.service.saveResponse(dto, projectId, accountId);
+    return this.evaluateComplete(dto, projectId, accountId);
   }
 
   @UseGuards(ProjectAdminGuard)
   @Post('admin/reponse/:compteId')
-  saveAdminResponse(
+  async saveAdminResponse(
     @Param('compteId', ParseIntPipe) compteId: number,
     @Body() dto: SauverReponseExigenceDto,
     @ProjectId() projectId: number,
   ) {
-    return this.service.saveResponse(dto, projectId, compteId);
+    await this.service.saveResponse(dto, projectId, compteId);
+    return this.evaluateComplete(dto, projectId, compteId);
   }
 
   @Post('document')
@@ -84,6 +89,43 @@ export class DossierPersonneController {
     @ProjectId() projectId: number,
   ) {
     return this.documents.save(dto, projectId, compteId);
+  }
+
+  private async evaluateComplete(
+    dto: EvaluerDossierPersonneDto,
+    projectId: number,
+    accountId: number,
+  ) {
+    const typeLicence =
+      dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR';
+    const [dossier, medical] = await Promise.all([
+      this.service.evaluate(dto, projectId, accountId),
+      this.medical.evaluate(
+        {
+          personne_id: dto.personne_id,
+          saison_id: dto.saison_id,
+          type_licence: typeLicence,
+        },
+        projectId,
+        accountId,
+      ),
+    ]);
+
+    if (medical.eligible) {
+      return { ...dossier, preuve_medicale: medical };
+    }
+
+    return {
+      ...dossier,
+      inscription_complete: false,
+      exigences_manquantes_bloquantes: Array.from(
+        new Set([
+          ...(dossier.exigences_manquantes_bloquantes ?? []),
+          'PREUVE_MEDICALE',
+        ]),
+      ),
+      preuve_medicale: medical,
+    };
   }
 
   private accountId(req: AuthenticatedRequest): number {

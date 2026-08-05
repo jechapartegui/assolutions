@@ -16,6 +16,7 @@ import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SouscriptionAdminService } from '../exigence-dossier/souscription-admin.service';
 import { SouscriptionContextEnricherService } from '../exigence-dossier/souscription-context-enricher.service';
 import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
+import { SouscriptionMedicalGuardService } from '../exigence-dossier/souscription-medical-guard.service';
 import { SouscriptionNotificationService } from '../exigence-dossier/souscription-notification.service';
 import { SouscriptionViewEnricherService } from '../exigence-dossier/souscription-view-enricher.service';
 import {
@@ -38,6 +39,7 @@ export class SouscriptionController {
     private readonly admin: SouscriptionAdminService,
     private readonly contexts: SouscriptionContextEnricherService,
     private readonly dossiers: SouscriptionDossierService,
+    private readonly medicalGuard: SouscriptionMedicalGuardService,
     private readonly views: SouscriptionViewEnricherService,
     private readonly notifications: SouscriptionNotificationService,
   ) {}
@@ -169,6 +171,7 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
+    await this.medicalGuard.assertComplete(id, projectId, accountId);
     await this.dossiers.validateAndSnapshot(id, projectId, accountId, true);
     const result = await this.service.createCheckout(id, projectId, accountId);
     await this.notifications.sendCurrentState(id, projectId, accountId);
@@ -183,6 +186,9 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
+    if (dto.resultat === 'OK') {
+      await this.medicalGuard.assertComplete(id, projectId, accountId);
+    }
     const result = await this.dossiers.simulatePayment(
       id,
       dto.resultat,
@@ -200,6 +206,7 @@ export class SouscriptionController {
     @Param('compteId', ParseIntPipe) compteId: number,
     @ProjectId() projectId: number,
   ) {
+    await this.medicalGuard.assertComplete(id, projectId, compteId);
     const result = await this.admin.validateManualPayment(
       id,
       projectId,

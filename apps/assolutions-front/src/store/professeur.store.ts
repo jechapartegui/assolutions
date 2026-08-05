@@ -25,11 +25,9 @@ export class ProfesseurStore {
   private readonly contratProfDataStore = inject(ContratProfDataStore);
 
   readonly vm = computed(() => this.stateSig());
-
   readonly profs = this.professeurDataStore.list;
   readonly personnesById = this.professeurDataStore.personnesById;
   readonly contratsExistByProfId = this.contratProfDataStore.existsByProfId;
-
   readonly loading = computed(
     () => this.professeurDataStore.loading() || this.contratProfDataStore.loading(),
   );
@@ -40,10 +38,7 @@ export class ProfesseurStore {
   private initPromise: Promise<void> | null = null;
 
   async init(force = false): Promise<void> {
-    if (!force && this.stateSig().lastLoadedAt && this.professeurDataStore.fullLoaded()) {
-      return;
-    }
-
+    if (!force && this.stateSig().lastLoadedAt && this.professeurDataStore.fullLoaded()) return;
     if (this.initPromise && !force) return this.initPromise;
 
     this.initPromise = this.load(force);
@@ -56,21 +51,16 @@ export class ProfesseurStore {
 
   async load(force = false): Promise<void> {
     this.patch({ action: 'Chargement des professeurs' });
-
     try {
       const profs = await this.professeurDataStore.loadAll({ force });
       await this.contratProfDataStore.loadExistsForProfIds(
         profs.map((prof) => prof.id),
         { force },
       );
-
-      this.patch({
-        action: '',
-        lastLoadedAt: Date.now(),
-      });
-    } catch {
+      this.patch({ action: '', lastLoadedAt: Date.now() });
+    } catch (error) {
       this.patch({ action: '' });
-      throw new Error('Chargement des professeurs impossible');
+      throw error;
     }
   }
 
@@ -91,23 +81,18 @@ export class ProfesseurStore {
     if (!personneId) return;
 
     this.patch({ saving: true, action: 'Ajout du professeur' });
-
     try {
-      const created = await this.professeurDataStore.create({
-        personne_id: personneId,
-      } as any);
-
+      const created = await this.professeurDataStore.create({ id: personneId });
       await this.contratProfDataStore.exists(created.id, { force: true });
-
       this.patch({
         selectedPersonneId: null,
         saving: false,
         action: '',
         lastLoadedAt: Date.now(),
       });
-    } catch {
+    } catch (error) {
       this.patch({ saving: false, action: '' });
-      throw new Error('Création du professeur impossible');
+      throw error;
     }
   }
 
@@ -122,13 +107,7 @@ export class ProfesseurStore {
   patchEditing(field: keyof Professeur, value: any): void {
     const editing = this.stateSig().editing;
     if (!editing) return;
-
-    this.patch({
-      editing: {
-        ...editing,
-        [field]: value,
-      },
-    });
+    this.patch({ editing: { ...editing, [field]: value } });
   }
 
   async save(): Promise<void> {
@@ -136,26 +115,24 @@ export class ProfesseurStore {
     if (!editing) return;
 
     this.patch({ saving: true, action: 'Sauvegarde du professeur' });
-
     try {
       await this.professeurDataStore.update(editing.id, {
-        taux: (editing as any).hourly_rate,
-        statut: (editing as any).status,
-        num_tva: (editing as any).num_tva,
-        num_siren: (editing as any).num_siren,
-        iban: (editing as any).iban,
-        info: (editing as any).info,
-      } as any);
-
+        hourly_rate: editing.hourly_rate,
+        status: editing.status,
+        num_tva: editing.num_tva,
+        num_siren: editing.num_siren,
+        iban: editing.iban,
+        info: editing.info,
+      });
       this.patch({
         editing: null,
         saving: false,
         action: '',
         lastLoadedAt: Date.now(),
       });
-    } catch {
+    } catch (error) {
       this.patch({ saving: false, action: '' });
-      throw new Error('Sauvegarde du professeur impossible');
+      throw error;
     }
   }
 
@@ -165,23 +142,17 @@ export class ProfesseurStore {
     }
 
     this.patch({ saving: true, action: 'Suppression du professeur' });
-
     try {
       await this.professeurDataStore.delete(prof.id);
       this.contratProfDataStore.invalidateExistFor(prof.id);
-
-      this.patch({
-        saving: false,
-        action: '',
-        lastLoadedAt: Date.now(),
-      });
-    } catch {
+      this.patch({ saving: false, action: '', lastLoadedAt: Date.now() });
+    } catch (error) {
       this.patch({ saving: false, action: '' });
-      throw new Error('Suppression du professeur impossible');
+      throw error;
     }
   }
 
   private patch(partial: Partial<ProfesseurPageState>): void {
-    this.stateSig.update((s) => ({ ...s, ...partial }));
+    this.stateSig.update((state) => ({ ...state, ...partial }));
   }
 }

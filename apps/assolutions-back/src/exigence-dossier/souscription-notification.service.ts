@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as nodemailer from 'nodemailer';
 import { In, Repository } from 'typeorm';
 
 import { Contact } from '../contact/contact.entity';
 import { HelloAssoService } from '../helloasso/helloasso.service';
+import { MessageService } from '../message/message.service';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SouscriptionEntity } from '../souscription/souscription.entity';
 import { SouscriptionEvenementEntity } from '../souscription/souscription-evenement.entity';
@@ -15,8 +15,6 @@ type NotificationKind = 'OK' | 'KO';
 @Injectable()
 export class SouscriptionNotificationService {
   private readonly logger = new Logger(SouscriptionNotificationService.name);
-  private readonly transporter: nodemailer.Transporter;
-  private readonly smtpUser: string;
 
   constructor(
     @InjectRepository(SouscriptionEntity)
@@ -30,45 +28,14 @@ export class SouscriptionNotificationService {
     @InjectRepository(SouscriptionEvenementEntity)
     private readonly evenementRepo: Repository<SouscriptionEvenementEntity>,
     private readonly helloAsso: HelloAssoService,
-  ) {
-    this.smtpUser =
-      process.env.MAIL_SMTP_USER ||
-      process.env.SMTP_USER ||
-      'assolutions.club@gmail.com';
-    this.transporter = nodemailer.createTransport({
-      host:
-        process.env.MAIL_SMTP_HOST ||
-        process.env.SMTP_HOST ||
-        'smtp.gmail.com',
-      port: Number(
-        process.env.MAIL_SMTP_PORT || process.env.SMTP_PORT || 587,
-      ),
-      secure:
-        String(
-          process.env.MAIL_SMTP_SECURE ||
-            process.env.SMTP_SECURE ||
-            'false',
-        ).toLowerCase() === 'true',
-      auth: {
-        user: this.smtpUser,
-        pass: process.env.MAIL_SMTP_PASS || process.env.SMTP_PASS || '',
-      },
-    });
-  }
+    private readonly messages: MessageService,
+  ) {}
 
-  sendSuccess(
-    subscriptionId: number,
-    projectId: number,
-    accountId: number,
-  ): Promise<void> {
+  sendSuccess(subscriptionId: number, projectId: number, accountId: number): Promise<void> {
     return this.sendPerPerson(subscriptionId, projectId, accountId, 'OK');
   }
 
-  sendFailure(
-    subscriptionId: number,
-    projectId: number,
-    accountId: number,
-  ): Promise<void> {
+  sendFailure(subscriptionId: number, projectId: number, accountId: number): Promise<void> {
     return this.sendPerPerson(subscriptionId, projectId, accountId, 'KO');
   }
 
@@ -77,26 +44,17 @@ export class SouscriptionNotificationService {
     projectId: number,
     accountId: number,
   ): Promise<void> {
-    const subscription = await this.souscriptionRepo.findOne({
-      where: {
-        id: subscriptionId,
-        project_id: projectId,
-        compte_id: accountId,
-      },
-    });
-    if (!subscription) return;
-
-    if (subscription.statut === 'FINALISEE') {
-      await this.sendSuccess(subscriptionId, projectId, accountId);
-      return;
-    }
-
-    if (this.isFailureState(subscription.helloasso_payment_state)) {
-      await this.sendFailure(subscriptionId, projectId, accountId);
-    }
+    this.runDetached(
+      this.processCurrentState(subscriptionId, projectId, accountId),
+      `souscription ${subscriptionId}`,
+    );
   }
 
   async sendFromWebhook(payload: unknown): Promise<void> {
+    this.runDetached(this.processWebhook(payload), 'webhook HelloAsso');
+  }
+
+  private async processWebhook(payload: unknown): Promise<void> {
     const checkoutId = this.helloAsso.extractCheckoutIntentId(payload);
     if (!checkoutId) return;
 
@@ -105,11 +63,28 @@ export class SouscriptionNotificationService {
     });
     if (!subscription) return;
 
-    await this.sendCurrentState(
+    await this.processCurrentState(
       subscription.id,
       subscription.project_id,
       subscription.compte_id,
     );
+  }
+
+  private async processCurrentState(
+    subscriptionId: number,
+    projectId: number,
+    accountId: number,
+  ): Promise<void> {
+    const subscription = await this.souscriptionRepo.findOne({
+      where: { id: subscriptionId, project_id: projectId, compte_id: accountId },
+    });
+    if (!subscription) return;
+
+    if (subscription.statut === 'FINALISEE') {
+      await this.sendSuccess(subscriptionId, projectId, accountId);
+    } else if (this.isFailureState(subscription.helloasso_payment_state)) {
+      await this.sendFailure(subscriptionId, projectId, accountId);
+    }
   }
 
   private async sendPerPerson(
@@ -119,11 +94,7 @@ export class SouscriptionNotificationService {
     kind: NotificationKind,
   ): Promise<void> {
     const subscription = await this.souscriptionRepo.findOne({
-      where: {
-        id: subscriptionId,
-        project_id: projectId,
-        compte_id: accountId,
-      },
+      where: { id: subscriptionId, project_id: projectId, compte_id: accountId },
     });
     if (!subscription) return;
 
@@ -149,10 +120,7 @@ export class SouscriptionNotificationService {
 
       const eventType = `MAIL_SOUSCRIPTION_${kind}_${person.id}`;
       const alreadySent = await this.evenementRepo.findOne({
-        where: {
-          souscription_id: subscription.id,
-          type_evenement: eventType,
-        },
+        where: { souscription_id: subscription.id, type_evenement: eventType },
       });
       if (alreadySent) continue;
 
@@ -165,59 +133,45 @@ export class SouscriptionNotificationService {
         )?.contact_value?.trim() || subscription.payeur_email;
       if (!email) continue;
 
-      const destination = this.sandboxAddress(email);
       const name = `${person.first_name} ${person.last_name}`.trim();
-
       try {
-        await this.transporter.sendMail({
-          from: `"Assolutions" <${this.smtpUser}>`,
-          to: destination,
-          subject: this.subject(
-            kind === 'OK'
-              ? `Inscription confirmée pour ${name || 'une personne'}`
-              : `Inscription non finalisée pour ${name || 'une personne'}`,
-          ),
-          html:
-            kind === 'OK'
-              ? this.successBody(subscription, name)
-              : this.failureBody(subscription, name),
-        });
+        if (kind === 'OK') {
+          await this.messages.sendSouscriptionSuccess(
+            email,
+            name,
+            subscription.id,
+            projectId,
+          );
+        } else {
+          await this.messages.sendSouscriptionFailure(
+            email,
+            name,
+            subscription.id,
+            projectId,
+          );
+        }
 
         await this.evenementRepo.save(
           this.evenementRepo.create({
             souscription_id: subscription.id,
             type_evenement: eventType,
-            details: {
-              personne_id: person.id,
-              destination,
-              resultat: kind,
-            },
+            details: { personne_id: person.id, email, resultat: kind },
           }),
         );
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Mail ${kind} souscription ${subscription.id} vers ${destination}: ${error?.message || error}`,
+          `Mail ${kind} souscription ${subscription.id} vers ${email}: ${message}`,
         );
       }
     }
   }
 
-  private successBody(subscription: SouscriptionEntity, name: string): string {
-    return `
-      <p>Bonjour,</p>
-      <p>Le paiement du dossier <strong>#${subscription.id}</strong> est confirmé.</p>
-      <p>L’inscription de <strong>${this.escape(name)}</strong> est finalisée et ses groupes ont été enregistrés.</p>
-      <p>Les éventuelles pièces de licence non bloquantes peuvent encore être complétées depuis Assolutions.</p>
-    `;
-  }
-
-  private failureBody(subscription: SouscriptionEntity, name: string): string {
-    return `
-      <p>Bonjour,</p>
-      <p>Le paiement du dossier <strong>#${subscription.id}</strong> n’a pas pu être confirmé pour <strong>${this.escape(name)}</strong>.</p>
-      <p>Aucune inscription ni affectation définitive aux groupes n’a été créée pour cette personne.</p>
-      <p>Vous pouvez reprendre le dossier depuis Assolutions et réessayer le paiement.</p>
-    `;
+  private runDetached(task: Promise<void>, context: string): void {
+    void task.catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Échec notification ${context}: ${message}`);
+    });
   }
 
   private isFailureState(value: unknown): boolean {
@@ -229,36 +183,5 @@ export class SouscriptionNotificationService {
       'ERROR',
       'SIMULATED_REFUSED',
     ].includes(String(value ?? '').trim().toUpperCase());
-  }
-
-  private sandboxAddress(email: string): string {
-    const appEnv = String(
-      process.env.APP_ENV || process.env.NODE_ENV || '',
-    ).toLowerCase();
-    const sandbox =
-      String(process.env.MAIL_SANDBOX || '').toLowerCase() === 'true' ||
-      ['local', 'development', 'dev', 'test', 'preprod', 'preproduction'].includes(
-        appEnv,
-      );
-    if (!sandbox) return email;
-    const localPart =
-      email.split('@')[0]?.replace(/[^a-z0-9._-]/gi, '') || 'test';
-    return `${localPart}@yopmail.com`;
-  }
-
-  private subject(value: string): string {
-    const appEnv = String(
-      process.env.APP_ENV || process.env.NODE_ENV || '',
-    ).toLowerCase();
-    return ['local', 'development', 'dev', 'test', 'preprod'].includes(appEnv)
-      ? `TEST : ${value}`
-      : value;
-  }
-
-  private escape(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
   }
 }
