@@ -96,13 +96,15 @@ export class DossierPersonneController {
     projectId: number,
     accountId: number,
   ) {
+    const typeLicence =
+      dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR';
     const [dossier, medical] = await Promise.all([
       this.service.evaluate(dto, projectId, accountId),
       this.medical.evaluate(
         {
           personne_id: dto.personne_id,
           saison_id: dto.saison_id,
-          type_licence: dto.type_licence,
+          type_licence: typeLicence,
         },
         projectId,
         accountId,
