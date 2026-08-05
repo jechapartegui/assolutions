@@ -89,7 +89,9 @@ export class PayerBoxDirective implements AfterViewInit, OnDestroy {
     };
 
     this.cleanups.push(
-      this.renderer.listen(select, 'change', () => setTimeout(refresh)),
+      this.renderer.listen(select, 'change', () => {
+        setTimeout(refresh);
+      }),
       this.renderer.listen(emailInput, 'input', refresh),
       this.renderer.listen(emailInput, 'blur', refresh),
     );
