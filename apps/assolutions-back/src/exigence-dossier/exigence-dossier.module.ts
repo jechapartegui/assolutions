@@ -7,6 +7,7 @@ import { GroupesEntity } from '../groupes/groupes.entity';
 import { HelloAssoModule } from '../helloasso/helloasso.module';
 import { InscriptionSaisonEntity } from '../inscription_saison/inscription_saison.entity';
 import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
+import { MessageModule } from '../message/message.module';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SouscriptionEntity } from '../souscription/souscription.entity';
@@ -34,6 +35,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
 @Module({
   imports: [
     HelloAssoModule,
+    MessageModule,
     TypeOrmModule.forFeature([
       ExigenceDossierEntity,
       ExigenceDossierPorteeEntity,
