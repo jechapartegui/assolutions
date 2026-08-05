@@ -1,17 +1,21 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
-import { OutgoingMessageDto, SendMessagesDto } from './message.dto';
-import { ProjectEntity } from '../project/project.entity';
-import { MailRecordEntity } from '../mail_record/mail_record.entity';
 import { MailAddressVm } from '@shared/lib/mail-input.interface';
 
+import { MailRecordEntity } from '../mail_record/mail_record.entity';
+import { ProjectEntity } from '../project/project.entity';
+import { OutgoingMessageDto, SendMessagesDto } from './message.dto';
 
+export interface AutomaticMailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  name?: string | null;
+  record?: string;
+  projectId?: number | null;
+}
 
 @Injectable()
 export class MessageService {
@@ -27,135 +31,173 @@ export class MessageService {
     @InjectRepository(ProjectEntity)
     private readonly projectRepo: Repository<ProjectEntity>,
   ) {
-    this.smtpUser = process.env.MAIL_SMTP_USER || 'assolutions.club@gmail.com';
+    this.smtpUser =
+      process.env.MAIL_SMTP_USER ||
+      process.env.SMTP_USER ||
+      'assolutions.club@gmail.com';
 
-    const host = process.env.MAIL_SMTP_HOST || 'smtp.gmail.com';
-    const port = Number(process.env.MAIL_SMTP_PORT || 465);
-    const secure = String(process.env.MAIL_SMTP_SECURE || 'true') === 'true';
-    const pass = process.env.MAIL_SMTP_PASS || '';
+    const host =
+      process.env.MAIL_SMTP_HOST ||
+      process.env.SMTP_HOST ||
+      'smtp.gmail.com';
+    const port = Number(
+      process.env.MAIL_SMTP_PORT || process.env.SMTP_PORT || 465,
+    );
+    const secure =
+      String(
+        process.env.MAIL_SMTP_SECURE ||
+          process.env.SMTP_SECURE ||
+          (port === 465 ? 'true' : 'false'),
+      ).toLowerCase() === 'true';
+    const pass = process.env.MAIL_SMTP_PASS || process.env.SMTP_PASS || '';
 
     this.sendDelayMs = Number(process.env.MAIL_SEND_DELAY_MS || 2000);
-
-    this.isSandboxMode =
-      ['development', 'dev', 'test', 'recette'].includes(
-        String(process.env.APP_ENV || process.env.NODE_ENV || '').toLowerCase(),
-      );
+    this.isSandboxMode = this.resolveSandboxMode();
 
     this.transporter = nodemailer.createTransport({
       host,
       port,
       secure,
-      auth: {
-        user: this.smtpUser,
-        pass,
-      },
+      auth: { user: this.smtpUser, pass },
+      connectionTimeout: Number(process.env.MAIL_CONNECTION_TIMEOUT_MS || 10_000),
+      greetingTimeout: Number(process.env.MAIL_GREETING_TIMEOUT_MS || 10_000),
+      socketTimeout: Number(process.env.MAIL_SOCKET_TIMEOUT_MS || 20_000),
     });
   }
+
+  async verifyConnection(): Promise<boolean> {
+    await this.transporter.verify();
+    return true;
+  }
+
   async sendPasswordReset(login: string, resetUrl: string): Promise<void> {
-  const to = this.normalizeAddress({
-    email: login,
-    name: null,
-  });
+    await this.sendAutomaticMail({
+      to: login,
+      subject: 'Assolutions - Définir votre mot de passe',
+      record: 'PASSWORD_RESET',
+      html: this.automaticTemplate(
+        'Définir votre mot de passe',
+        `
+          <p>Vous avez demandé à définir ou réinitialiser votre mot de passe Assolutions.</p>
+          ${this.actionButton('Définir mon mot de passe', resetUrl)}
+          ${this.fallbackLink(resetUrl)}
+          <p>Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.</p>
+        `,
+      ),
+    });
+  }
 
-  const finalTo = this.isSandboxMode ? this.toYopmailAddress(to) : to;
+  async sendActivationMail(login: string, activationUrl: string): Promise<void> {
+    await this.sendAutomaticMail({
+      to: login,
+      subject: 'Assolutions - Activer votre compte',
+      record: 'ACCOUNT_ACTIVATION',
+      html: this.automaticTemplate(
+        'Bienvenue sur Assolutions',
+        `
+          <p>Votre compte vient d’être créé.</p>
+          <p>Activez-le pour accéder à votre espace :</p>
+          ${this.actionButton('Activer mon compte', activationUrl)}
+          ${this.fallbackLink(activationUrl)}
+          <p>Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.</p>
+        `,
+      ),
+    });
+  }
 
-  const subject = this.isSandboxMode
-    ? this.prefixTestSubject('Assolutions - Définir votre mot de passe')
-    : 'Assolutions - Définir votre mot de passe';
+  async sendSouscriptionSuccess(
+    email: string,
+    personName: string,
+    subscriptionId: number,
+    projectId?: number,
+  ): Promise<void> {
+    await this.sendAutomaticMail({
+      to: email,
+      name: personName || null,
+      projectId,
+      record: `MAIL_SOUSCRIPTION_OK_${subscriptionId}`,
+      subject: `Inscription confirmée pour ${personName || 'un adhérent'}`,
+      html: this.automaticTemplate(
+        'Inscription confirmée',
+        `
+          <p>Le paiement du dossier <strong>#${subscriptionId}</strong> est confirmé.</p>
+          <p>L’inscription de <strong>${this.escapeHtml(personName)}</strong> est finalisée et ses groupes ont été enregistrés.</p>
+          <p>Les éventuelles pièces non bloquantes peuvent encore être complétées depuis Assolutions.</p>
+        `,
+      ),
+    });
+  }
 
-  const html = `
-    <p>Bonjour,</p>
+  async sendSouscriptionFailure(
+    email: string,
+    personName: string,
+    subscriptionId: number,
+    projectId?: number,
+  ): Promise<void> {
+    await this.sendAutomaticMail({
+      to: email,
+      name: personName || null,
+      projectId,
+      record: `MAIL_SOUSCRIPTION_KO_${subscriptionId}`,
+      subject: `Inscription non finalisée pour ${personName || 'un adhérent'}`,
+      html: this.automaticTemplate(
+        'Inscription non finalisée',
+        `
+          <p>Le paiement du dossier <strong>#${subscriptionId}</strong> n’a pas pu être confirmé pour <strong>${this.escapeHtml(personName)}</strong>.</p>
+          <p>Aucune inscription ni affectation définitive aux groupes n’a été créée.</p>
+          <p>Vous pouvez reprendre le dossier depuis Assolutions et réessayer le paiement.</p>
+        `,
+      ),
+    });
+  }
 
-    <p>
-      Vous avez demandé à définir ou réinitialiser votre mot de passe Assolutions.
-    </p>
+  async sendAutomaticMail(options: AutomaticMailOptions): Promise<void> {
+    const original = this.normalizeAddress({
+      email: options.to,
+      name: options.name ?? null,
+    });
+    const destination = this.isSandboxMode
+      ? this.toYopmailAddress(original)
+      : original;
+    const subject = this.isSandboxMode
+      ? this.prefixTestSubject(options.subject)
+      : options.subject;
+    const startedAt = Date.now();
 
-    <p>
-      <a href="${resetUrl}" target="_blank">
-        Définir mon mot de passe
-      </a>
-    </p>
+    try {
+      const info = await this.transporter.sendMail({
+        from: `"Assolutions" <${this.smtpUser}>`,
+        to: this.formatAddress(destination),
+        subject,
+        html: options.html,
+      });
 
-    <p>
-      Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
-    </p>
+      if (options.projectId) {
+        await this.mailRecordRepo.save(
+          this.mailRecordRepo.create({
+            record: (options.record || 'automatic-mail').slice(0, 200),
+            to: destination.email.slice(0, 200),
+            subject: subject.slice(0, 200),
+            project_id: options.projectId,
+          }),
+        );
+      }
 
-    <p style="word-break: break-all;">
-      ${resetUrl}
-    </p>
-
-    <p>
-      Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.
-    </p>
-  `;
-
-  await this.transporter.sendMail({
-    from: `"Assolutions" <${this.smtpUser}>`,
-    to: this.formatAddress(finalTo),
-    subject,
-    html,
-  });
-
-  this.logger.log(`Mail reset password envoyé vers ${finalTo.email}`);
-}
-
-async sendActivationMail(login: string, activationUrl: string): Promise<void> {
-  const to = this.normalizeAddress({
-    email: login,
-    name: null,
-  });
-
-  const finalTo = this.isSandboxMode ? this.toYopmailAddress(to) : to;
-
-  const subject = this.isSandboxMode
-    ? this.prefixTestSubject('Assolutions - Activer votre compte')
-    : 'Assolutions - Activer votre compte';
-
-  const html = `
-    <p>Bonjour,</p>
-
-    <p>
-      Votre compte Assolutions vient d’être créé.
-    </p>
-
-    <p>
-      Pour l’activer, cliquez sur le lien ci-dessous :
-    </p>
-
-    <p>
-      <a href="${activationUrl}" target="_blank">
-        Activer mon compte
-      </a>
-    </p>
-
-    <p>
-      Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :
-    </p>
-
-    <p style="word-break: break-all;">
-      ${activationUrl}
-    </p>
-
-    <p>
-      Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.
-    </p>
-  `;
-
-  await this.transporter.sendMail({
-    from: `"Assolutions" <${this.smtpUser}>`,
-    to: this.formatAddress(finalTo),
-    subject,
-    html,
-  });
-
-  this.logger.log(`Mail activation compte envoyé vers ${finalTo.email}`);
-}
+      this.logger.log(
+        `Mail ${options.record || 'automatique'} envoyé vers ${destination.email} en ${Date.now() - startedAt} ms (${info.messageId || 'sans messageId'})`,
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Échec mail ${options.record || 'automatique'} vers ${destination.email} après ${Date.now() - startedAt} ms : ${message}`,
+      );
+      throw error;
+    }
+  }
 
   async send(projectId: number, dto: SendMessagesDto) {
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
-    if (!project) {
-      throw new BadRequestException(`Projet ${projectId} introuvable`);
-    }
+    if (!project) throw new BadRequestException(`Projet ${projectId} introuvable`);
 
     const results: {
       to: string;
@@ -163,6 +205,7 @@ async sendActivationMail(login: string, activationUrl: string): Promise<void> {
       success: boolean;
       error?: string | null;
     }[] = [];
+
     for (const message of dto.messages) {
       try {
         const prepared = this.prepareMessage(project, message);
@@ -183,85 +226,125 @@ async sendActivationMail(login: string, activationUrl: string): Promise<void> {
             project_id: projectId,
           }),
         );
-
         results.push({
           to: prepared.traceTo,
           subject: prepared.subject,
           success: true,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Erreur envoi mail projet ${projectId} vers ${message?.to?.email}: ${error?.message || error}`,
+          `Erreur envoi mail projet ${projectId} vers ${message?.to?.email}: ${errorMessage}`,
         );
-
         results.push({
           to: message?.to?.email || '',
           subject: message?.subject || '',
           success: false,
-          error: error?.message || 'Erreur inconnue',
+          error: errorMessage,
         });
       }
-
       await this.wait(this.sendDelayMs);
     }
 
     return {
       total: results.length,
-      sent: results.filter((x) => x.success).length,
-      failed: results.filter((x) => !x.success).length,
+      sent: results.filter((item) => item.success).length,
+      failed: results.filter((item) => !item.success).length,
       results,
     };
   }
 
   private prepareMessage(project: ProjectEntity, message: OutgoingMessageDto) {
     const to = this.normalizeAddress(message.to);
-    const cc = [
-      ...(message.cc ?? []).map((x) => this.normalizeAddress(x)),
-    ];
-
+    const cc = (message.cc ?? []).map((item) => this.normalizeAddress(item));
     if (project.login) {
       cc.push(this.normalizeAddress({ email: project.login, name: project.nom }));
     }
-
-    const bcc = (message.bcc ?? []).map((x) => this.normalizeAddress(x));
-
+    const bcc = (message.bcc ?? []).map((item) => this.normalizeAddress(item));
     const finalTo = this.isSandboxMode ? this.toYopmailAddress(to) : to;
-    const finalCc = this.isSandboxMode ? cc.map((x) => this.toYopmailAddress(x)) : cc;
-    const finalBcc = this.isSandboxMode ? bcc.map((x) => this.toYopmailAddress(x)) : bcc;
-
-    const finalSubject = this.isSandboxMode
-      ? this.prefixTestSubject(message.subject)
-      : message.subject;
+    const finalCc = this.isSandboxMode
+      ? cc.map((item) => this.toYopmailAddress(item))
+      : cc;
+    const finalBcc = this.isSandboxMode
+      ? bcc.map((item) => this.toYopmailAddress(item))
+      : bcc;
 
     return {
       from: `"${this.escapeDisplayName(project.nom || 'Assolutions')}" <${this.smtpUser}>`,
       to: this.formatAddress(finalTo),
-      cc: finalCc.length ? finalCc.map((x) => this.formatAddress(x)).join(', ') : undefined,
-      bcc: finalBcc.length ? finalBcc.map((x) => this.formatAddress(x)).join(', ') : undefined,
-      subject: finalSubject,
+      cc: finalCc.length
+        ? finalCc.map((item) => this.formatAddress(item)).join(', ')
+        : undefined,
+      bcc: finalBcc.length
+        ? finalBcc.map((item) => this.formatAddress(item)).join(', ')
+        : undefined,
+      subject: this.isSandboxMode
+        ? this.prefixTestSubject(message.subject)
+        : message.subject,
       html: message.html,
       record: (message.record || 'mail').slice(0, 200),
       traceTo: finalTo.email.slice(0, 200),
     };
   }
 
+  private resolveSandboxMode(): boolean {
+    const explicit = process.env.MAIL_SANDBOX;
+    if (explicit != null && explicit !== '') {
+      return String(explicit).toLowerCase() === 'true';
+    }
+
+    const environment = String(
+      process.env.APP_ENV || process.env.NODE_ENV || '',
+    ).toLowerCase();
+    return [
+      'local',
+      'development',
+      'dev',
+      'test',
+      'recette',
+      'preprod',
+      'preproduction',
+    ].includes(environment);
+  }
+
+  private automaticTemplate(title: string, body: string): string {
+    return `
+      <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;color:#222;line-height:1.5">
+        <div style="padding:20px 24px;background:#1e3a5f;color:white;border-radius:8px 8px 0 0">
+          <strong style="font-size:20px">Assolutions</strong>
+        </div>
+        <div style="padding:24px;border:1px solid #ddd;border-top:0">
+          <h1 style="font-size:22px;margin:0 0 20px">${this.escapeHtml(title)}</h1>
+          <p>Bonjour,</p>
+          ${body}
+          <p style="margin-top:28px;color:#666;font-size:13px">Message automatique envoyé par Assolutions.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  private actionButton(label: string, url: string): string {
+    return `<p style="margin:24px 0"><a href="${this.escapeHtml(url)}" target="_blank" style="display:inline-block;padding:12px 18px;background:#1e3a5f;color:white;text-decoration:none;border-radius:5px">${this.escapeHtml(label)}</a></p>`;
+  }
+
+  private fallbackLink(url: string): string {
+    return `<p>Si le bouton ne fonctionne pas, copiez-collez ce lien :</p><p style="word-break:break-all">${this.escapeHtml(url)}</p>`;
+  }
+
   private normalizeAddress(address: MailAddressVm): MailAddressVm {
-    return {
-      email: address.email.trim().toLowerCase(),
-      name: address.name?.trim() || null,
-    };
+    const email = address.email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new BadRequestException(`Adresse email invalide: ${address.email}`);
+    }
+    return { email, name: address.name?.trim() || null };
   }
 
   private toYopmailAddress(address: MailAddressVm): MailAddressVm {
-    const localPart = address.email.split('@')[0]?.trim();
+    const localPart = address.email.split('@')[0]?.replace(/[^a-z0-9._-]/gi, '');
     if (!localPart) {
       throw new BadRequestException(`Adresse email invalide: ${address.email}`);
     }
-
-    return {
-      ...address,
-      email: `${localPart}@yopmail.com`,
-    };
+    return { ...address, email: `${localPart}@yopmail.com` };
   }
 
   private prefixTestSubject(subject: string): string {
@@ -269,14 +352,21 @@ async sendActivationMail(login: string, activationUrl: string): Promise<void> {
   }
 
   private formatAddress(address: MailAddressVm): string {
-    if (address.name) {
-      return `"${this.escapeDisplayName(address.name)}" <${address.email}>`;
-    }
-    return address.email;
+    return address.name
+      ? `"${this.escapeDisplayName(address.name)}" <${address.email}>`
+      : address.email;
   }
 
   private escapeDisplayName(value: string): string {
     return value.replace(/"/g, "'");
+  }
+
+  private escapeHtml(value: string): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   private wait(ms: number): Promise<void> {
