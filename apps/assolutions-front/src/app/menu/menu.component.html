@@ -477,7 +477,7 @@
 
                                       <span
                                         (click)="MAJInscription(ms, rider, true)"
-                                        *ngIf="isEssaiPossible(ms)"
+                                        *ngIf="isEssaiPossible(ms, rider)"
                                         class="icon is-large action-icon trial-action-icon"
                                         title="Demander un essai"
                                       ><span class="fa-stack fa-lg"><i class="fas fa-lg fa-flask has-text-warning"></i></span></span>
@@ -494,7 +494,7 @@
                                         *ngIf="
                                           ms.statutInscription == 'absent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          (ms.statutInscription == null && !isEssaiPossible(ms))
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
                                         "
                                         class="icon is-large action-icon"
                                       >
@@ -565,7 +565,7 @@
                                       </ng-container>
                                       : {{ ms.seance.nom }}
                                     </span>
-                                    <span *ngIf="isEssaiPossible(ms)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>
+                                    <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>
                                     <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>
                                   </button>
 
@@ -611,7 +611,7 @@
 
                                   <ng-template #ProfilAdherentMobile>
                                     <ng-container *ngIf="ms.seance.statut === 'prévue'">
-                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms)" title="Demander un essai">
+                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms, rider)" title="Demander un essai">
                                         <i class="fas fa-flask has-text-warning"></i>
                                       </button>
                                       <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, null)" *ngIf="isEssai(ms)" title="Essai demandé">
@@ -625,7 +625,7 @@
                                         *ngIf="
                                           ms.statutInscription == 'absent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          (ms.statutInscription == null && !isEssaiPossible(ms))
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
                                         "
                                       >
                                         <i class="far fa-thumbs-up has-text-success"></i>

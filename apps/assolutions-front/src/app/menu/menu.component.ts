@@ -177,7 +177,7 @@ getInitiales(personne: AdherentMenu): string {
     present: boolean | null,
   ): Promise<void> {
     let statut_inscription: InscriptionStatus_VM | null = null;
-    const demandeEssai = present === true && this.isEssaiPossible(ms);
+    const demandeEssai = present === true && this.isEssaiPossible(ms, rider);
 
     if (demandeEssai) {
       const confirme = window.confirm(
@@ -207,12 +207,21 @@ getInitiales(personne: AdherentMenu): string {
     return ms?.statutInscription === InscriptionStatus_VM.ESSAI;
   }
 
-  isEssaiPossible(ms: MesSeances_VM): boolean {
-    return !!ms?.seance?.essai_possible && !ms?.statutInscription;
+  isEssaiPossible(ms: MesSeances_VM, rider: AdherentMenu): boolean {
+    return (
+      rider?.profil === 'ADH' &&
+      rider.inscrit === false &&
+      !!ms?.seance?.essai_possible &&
+      !ms?.statutInscription
+    );
   }
 
   hasEssaiPossible(rider: AdherentMenu): boolean {
-    return rider?.profil === 'ADH' && rider.inscrit === false && (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms));
+    return (
+      rider?.profil === 'ADH' &&
+      rider.inscrit === false &&
+      (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms, rider))
+    );
   }
 
   private async sendEssaiConfirmation(ms: MesSeances_VM, rider: AdherentMenu): Promise<void> {

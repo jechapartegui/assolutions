@@ -12,6 +12,7 @@ type StatutPresence = 'présent' | 'absent' | null;
 
 type Row = {
   personne_id: number;
+  est_adherent: boolean;
   seance_id: number;
   statut_inscription: StatutInscription;
   statut_presence: StatutPresence;
@@ -154,6 +155,7 @@ export class MesSeancesQueryService {
 
       SELECT
         pc.personne_id,
+        pc.est_adherent,
         s.seance_id,
         ins.statut_inscription,
         ins.statut_seance AS statut_presence
@@ -192,7 +194,10 @@ export class MesSeancesQueryService {
     for (const r of rows) {
       if (!byPerson.has(r.personne_id)) {
         byPerson.set(r.personne_id, {
-          personne: { id: r.personne_id },
+          personne: {
+            id: r.personne_id,
+            inscrit: r.est_adherent,
+          },
           mes_seances: [],
         });
       }
