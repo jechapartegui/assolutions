@@ -1091,3 +1091,27 @@
 }
 }
 .rider-trial-tag{margin-top:.25rem;white-space:normal;text-align:center;line-height:1.15}.trial-status-tag{margin-left:.5rem;vertical-align:middle;font-weight:700}.trial-action-icon,.trial-action-btn{background:#fff8db!important;border:1px solid #f2c94c!important;border-radius:999px}@media(max-width:767px){.trial-status-tag{display:inline-flex;margin:.35rem 0 0}}
+
+
+/* Ajustements visuels des séances d'essai */
+.rider-trial-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  margin-top: .15rem;
+  color: #8a5a00;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.desktop-view .trial-status-tag {
+  margin-left: .35rem;
+  padding: .1rem .4rem;
+  font-size: .72rem;
+}
+
+@media (min-width: 768px) {
+  .desktop-view .trial-status-tag.is-light {
+    display: none;
+  }
+}

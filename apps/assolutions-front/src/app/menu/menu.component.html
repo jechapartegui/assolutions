@@ -142,8 +142,8 @@
               >
                 {{ getLibelleProfil(personne.profil) }}
               </p>
-              <span *ngIf="hasEssaiPossible(personne)" class="tag is-warning is-light rider-trial-tag">
-                <i class="fas fa-flask mr-1"></i> Non inscrit · essais possibles
+              <span *ngIf="hasEssaiPossible(personne)" class="rider-trial-hint" title="Non inscrit au club · séances d'essai disponibles">
+                <i class="fas fa-flask"></i> Essai
               </span>
 
               <div *ngIf="personne.profil === 'ADH'" class="rider-stats">
@@ -397,7 +397,6 @@
                                   </span>
                                 </ng-container>
                                 : {{ ms.seance.cours_nom }}
-                                <span *ngIf="isEssaiPossible(ms)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>
                                 <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>
                               </td>
 
@@ -626,7 +625,7 @@
                                         *ngIf="
                                           ms.statutInscription == 'absent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          ms.statutInscription == null
+                                          (ms.statutInscription == null && !isEssaiPossible(ms))
                                         "
                                       >
                                         <i class="far fa-thumbs-up has-text-success"></i>

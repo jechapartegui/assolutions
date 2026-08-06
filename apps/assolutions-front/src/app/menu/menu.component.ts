@@ -212,7 +212,7 @@ getInitiales(personne: AdherentMenu): string {
   }
 
   hasEssaiPossible(rider: AdherentMenu): boolean {
-    return rider?.profil === 'ADH' && (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms));
+    return rider?.profil === 'ADH' && rider.inscrit === false && (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms));
   }
 
   private async sendEssaiConfirmation(ms: MesSeances_VM, rider: AdherentMenu): Promise<void> {
