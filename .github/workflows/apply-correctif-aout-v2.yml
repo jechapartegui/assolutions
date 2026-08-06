@@ -1,0 +1,61 @@
+name: Apply correctif aout v2
+on:
+  push:
+    branches: [correction-aout]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: correction-aout
+          fetch-depth: 0
+      - name: Patch files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def rep(path, old, new):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              if old not in s: raise SystemExit(f'Motif absent: {path}: {old[:80]}')
+              p.write_text(s.replace(old,new,1),encoding='utf-8')
+
+          ts='apps/assolutions-front/src/app/menu/menu.component.ts'
+          old='''  async MAJInscription(\n    ms: MesSeances_VM,\n    rider: AdherentMenu,\n    present: boolean | null,\n  ): Promise<void> {\n  let statut_inscription: InscriptionStatus_VM | null = null;\n\n  if (present === true) {\n    statut_inscription = InscriptionStatus_VM.PRESENT;\n  } else if (present === false) {\n    statut_inscription = InscriptionStatus_VM.ABSENT;\n  }\n\n    await this.menuRepository.updateInscription(ms.seance.id, rider.id, statut_inscription);\n\n    \n\n    this.menuStore.patchLocalInscription(rider.id, (ms.seance as Seance_VM).id, statut_inscription);\n  }\n'''
+          new='''  async MAJInscription(\n    ms: MesSeances_VM,\n    rider: AdherentMenu,\n    present: boolean | null,\n  ): Promise<void> {\n    let statut_inscription: InscriptionStatus_VM | null = null;\n    const demandeEssai = present === true && this.isEssaiPossible(ms);\n\n    if (demandeEssai) {\n      const confirme = window.confirm(\n        `Confirmez-vous la demande de séance d'essai pour ${rider.prenom} ${rider.nom} ?\\n\\n` +\n        `${ms.seance.nom || ms.seance.cours_nom} - ${new Date(ms.seance.date_seance).toLocaleDateString('fr-FR')} à ${ms.seance.heure_debut}`,\n      );\n      if (!confirme) return;\n      statut_inscription = InscriptionStatus_VM.ESSAI;\n    } else if (present === true) {\n      statut_inscription = InscriptionStatus_VM.PRESENT;\n    } else if (present === false) {\n      statut_inscription = InscriptionStatus_VM.ABSENT;\n    }\n\n    await this.menuRepository.updateInscription(ms.seance.id, rider.id, statut_inscription);\n    this.menuStore.patchLocalInscription(rider.id, (ms.seance as Seance_VM).id, statut_inscription);\n\n    if (demandeEssai) {\n      await this.sendEssaiConfirmation(ms, rider);\n      ErrorService.instance.emitChange(\n        ErrorService.instance.OKMessage($localize`Votre demande d'essai est enregistrée.`),\n      );\n    }\n  }\n\n  isEssai(ms: MesSeances_VM): boolean {\n    return ms?.statutInscription === InscriptionStatus_VM.ESSAI || ms?.statutInscription === 'essai';\n  }\n\n  isEssaiPossible(ms: MesSeances_VM): boolean {\n    return !!ms?.seance?.essai_possible && !ms?.statutInscription;\n  }\n\n  hasEssaiPossible(rider: AdherentMenu): boolean {\n    return rider?.profil === 'ADH' && (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms));\n  }\n\n  private async sendEssaiConfirmation(ms: MesSeances_VM, rider: AdherentMenu): Promise<void> {\n    const email = this.store.compte()?.login;\n    if (!email) return;\n    try {\n      await this.messageservice.send({\n        to: { email, name: `${rider.prenom ?? ''} ${rider.nom ?? ''}`.trim() || email },\n        subject: `Confirmation de séance d'essai - ${ms.seance.nom || ms.seance.cours_nom}`,\n        html: `<p>Bonjour,</p><p>La demande de séance d'essai pour <strong>${rider.prenom ?? ''} ${rider.nom ?? ''}</strong> est bien enregistrée.</p><p><strong>${ms.seance.nom || ms.seance.cours_nom}</strong><br>${new Date(ms.seance.date_seance).toLocaleDateString('fr-FR')} à ${ms.seance.heure_debut}<br>${ms.seance.lieu_nom ?? ''}</p><p>Le club dispose désormais de cette information dans la feuille de présence.</p>`,\n      });\n    } catch (error) {\n      ErrorService.instance.emitChange(ErrorService.instance.CreateError($localize`Envoyer la confirmation d'essai`, error));\n    }\n  }\n'''
+          rep(ts,old,new)
+
+          h='apps/assolutions-front/src/app/menu/menu.component.html'
+          rep(h,'''              </p>\n\n              <div *ngIf="personne.profil === 'ADH'" class="rider-stats">''','''              </p>\n              <span *ngIf="hasEssaiPossible(personne)" class="tag is-warning is-light rider-trial-tag">\n                <i class="fas fa-flask mr-1"></i> Non inscrit · essais possibles\n              </span>\n\n              <div *ngIf="personne.profil === 'ADH'" class="rider-stats">''')
+          rep(h,''': {{ ms.seance.cours_nom }}\n                              </td>''',''': {{ ms.seance.cours_nom }}\n                                <span *ngIf="isEssaiPossible(ms)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>\n                                <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>\n                              </td>''')
+          rep(h,'''                                          ms.statutInscription == 'présent' ||\n                                          ms.statutInscription === 'essai'\n''','''                                          ms.statutInscription == 'présent'\n''')
+          rep(h,'''                                      <span\n                                        (click)="MAJInscription(ms, rider, true)"\n                                        *ngIf="\n                                          ms.statutInscription == 'absent' ||''','''                                      <span\n                                        (click)="MAJInscription(ms, rider, true)"\n                                        *ngIf="isEssaiPossible(ms)"\n                                        class="icon is-large action-icon trial-action-icon"\n                                        title="Demander un essai"\n                                      ><span class="fa-stack fa-lg"><i class="fas fa-lg fa-flask has-text-warning"></i></span></span>\n\n                                      <span\n                                        (click)="MAJInscription(ms, rider, null)"\n                                        *ngIf="isEssai(ms)"\n                                        class="icon is-large action-icon trial-action-icon"\n                                        title="Essai demandé"\n                                      ><span class="fa-stack fa-lg"><i class="fas fa-lg fa-flask has-text-warning"></i></span></span>\n\n                                      <span\n                                        (click)="MAJInscription(ms, rider, true)"\n                                        *ngIf="\n                                          ms.statutInscription == 'absent' ||''')
+          s=Path(h).read_text(encoding='utf-8').replace("ms.statutInscription == null\n                                        \"", "(ms.statutInscription == null && !isEssaiPossible(ms))\n                                        \"",1)
+          Path(h).write_text(s,encoding='utf-8')
+          rep(h,''': {{ ms.seance.nom }}\n                                    </span>''',''': {{ ms.seance.nom }}\n                                    </span>\n                                    <span *ngIf="isEssaiPossible(ms)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>\n                                    <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>''')
+          rep(h,'''                                      <button\n                                        type="button"\n                                        class="mobile-action-btn"\n                                        (click)="MAJInscription(ms, rider, true)"\n                                        *ngIf="''','''                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms)" title="Demander un essai">\n                                        <i class="fas fa-flask has-text-warning"></i>\n                                      </button>\n                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, null)" *ngIf="isEssai(ms)" title="Essai demandé">\n                                        <i class="fas fa-flask has-text-warning"></i>\n                                      </button>\n\n                                      <button\n                                        type="button"\n                                        class="mobile-action-btn"\n                                        (click)="MAJInscription(ms, rider, true)"\n                                        *ngIf="''')
+
+          css=Path('apps/assolutions-front/src/app/menu/menu.component.css')
+          css.write_text(css.read_text(encoding='utf-8')+'''\n.rider-trial-tag{margin-top:.25rem;white-space:normal;text-align:center;line-height:1.15}.trial-status-tag{margin-left:.5rem;vertical-align:middle;font-weight:700}.trial-action-icon,.trial-action-btn{background:#fff8db!important;border:1px solid #f2c94c!important;border-radius:999px}@media(max-width:767px){.trial-status-tag{display:inline-flex;margin:.35rem 0 0}}\n''',encoding='utf-8')
+
+          rep('apps/assolutions-front/src/app/ma-seance/ma-seance.component.ts','''      case "essai":\n        return "fa-question";''','''      case "essai":\n        return "fa-flask has-text-warning";''')
+          rep('apps/assolutions-front/src/app/ma-seance/ma-seance.component.html','''                <span\n                  class="tag is-light"\n                  *ngIf="potentiel.statut_inscription && !isSeanceStatus"\n                >\n                  {{ potentiel.statut_inscription }}\n                </span>''','''                <span class="tag" [ngClass]="potentiel.statut_inscription === 'essai' ? 'is-warning' : 'is-light'" *ngIf="potentiel.statut_inscription && !isSeanceStatus">\n                  <i *ngIf="potentiel.statut_inscription === 'essai'" class="fas fa-flask mr-1"></i>\n                  {{ potentiel.statut_inscription === 'essai' ? 'Essai' : potentiel.statut_inscription }}\n                </span>''')
+          Path('.github/workflows/apply-correctif-aout.yml').unlink(missing_ok=True)
+          Path('.github/workflows/apply-correctif-aout-v2.yml').unlink(missing_ok=True)
+          PY
+      - name: Build
+        run: |
+          npm ci
+          npx nx build assolutions-back --configuration=production
+          npx nx build assolutions-front --configuration=preprod
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(essai): distingue et enregistre les séances d'essai"
+          git push origin correction-aout
