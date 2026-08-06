@@ -204,7 +204,7 @@ getInitiales(personne: AdherentMenu): string {
   }
 
   isEssai(ms: MesSeances_VM): boolean {
-    return ms?.statutInscription === InscriptionStatus_VM.ESSAI || ms?.statutInscription === 'essai';
+    return ms?.statutInscription === InscriptionStatus_VM.ESSAI;
   }
 
   isEssaiPossible(ms: MesSeances_VM): boolean {
