@@ -57,6 +57,12 @@ export class MesSeancesQueryService {
           EXISTS (
             SELECT 1
             FROM inscription_saison i
+            JOIN lien_groupe lg_inscription
+              ON lg_inscription.object_type = 'rider'
+             AND lg_inscription.object_id = p.id
+            JOIN groupes g_inscription
+              ON g_inscription.id = lg_inscription.groupe_id
+             AND g_inscription.saison_id = i.saison_id
             WHERE i.personne_id = p.id
               AND i.saison_id = $2
               AND i.active = true
