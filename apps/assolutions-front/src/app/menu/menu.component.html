@@ -455,7 +455,7 @@
                               <td>
                                 <div class="presence-actions">
                                 <button
-                                  *ngIf="ms.seance.afficher_present"
+                                  *ngIf="ms.seance.afficher_present && (rider.profil === 'PROF' || ms.accesInscription === true)"
                                   type="button"
                                   class="presence-view-btn"
                                   title="Afficher les présents"
@@ -488,14 +488,14 @@
                                         *ngIf="isEssaiPossible(ms, rider)"
                                         class="icon is-large action-icon trial-action-icon"
                                         title="Demander un essai"
-                                      ><span class="fa-stack fa-lg"><i class="fas fa-lg fa-flask has-text-warning"></i></span></span>
+                                      ><i class="fas fa-flask has-text-warning"></i></span>
 
                                       <span
                                         (click)="MAJInscription(ms, rider, null)"
                                         *ngIf="isEssai(ms)"
                                         class="icon is-large action-icon trial-action-icon"
                                         title="Essai demandé"
-                                      ><span class="fa-stack fa-lg"><i class="fas fa-lg fa-flask has-text-warning"></i></span></span>
+                                      ><i class="fas fa-flask has-text-warning"></i></span>
 
                                       <span
                                         (click)="MAJInscription(ms, rider, true)"
@@ -612,7 +612,7 @@
 
                                 <div class="mobile-item-actions">
                                   <button
-                                    *ngIf="ms.seance.afficher_present"
+                                    *ngIf="ms.seance.afficher_present && (rider.profil === 'PROF' || ms.accesInscription === true)"
                                     type="button"
                                     class="mobile-action-btn presence-view-btn"
                                     title="Afficher les présents"

@@ -1126,3 +1126,22 @@
 .presence-view-btn:hover { background:#edf3f8; color:#162a3d; }
 .trial-status-tag { display:inline-flex; align-items:center; gap:.2rem; vertical-align:middle; line-height:1; }
 @media (max-width:1023px) { .rider-trial-hint span { display:none; } .rider-trial-hint { padding:.2rem .35rem; } .mobile-item-actions { align-items:center; } .mobile-item-actions .presence-view-btn, .mobile-item-actions .trial-action-btn { width:2.15rem; height:2.15rem; min-width:2.15rem; } }
+
+
+/* Alignement final des actions de présence */
+.trial-action-icon > i,
+.trial-action-btn > i,
+.presence-view-btn > i {
+  display: block;
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  transform: none;
+}
+
+.trial-action-icon {
+  line-height: 1;
+}
