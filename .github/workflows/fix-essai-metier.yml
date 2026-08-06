@@ -1,0 +1,71 @@
+name: Fix essai metier
+on:
+  push:
+    branches: [correction-aout]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: correction-aout
+          fetch-depth: 0
+      - name: Appliquer le correctif métier
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def replace(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8-sig')
+              if old not in text:
+                  raise SystemExit(f'Motif introuvable dans {path}: {old[:120]!r}')
+              p.write_text(text.replace(old, new, count), encoding='utf-8')
+
+          back = 'apps/assolutions-back/src/app/mes_seances/mes_seances.query.service.ts'
+          replace(back,
+          '''type Row = {\n  personne_id: number;\n  seance_id: number;''',
+          '''type Row = {\n  personne_id: number;\n  est_adherent: boolean;\n  seance_id: number;''')
+          replace(back,
+          '''      SELECT\n        pc.personne_id,\n        s.seance_id,''',
+          '''      SELECT\n        pc.personne_id,\n        pc.est_adherent,\n        s.seance_id,''')
+          replace(back,
+          '''          personne: { id: r.personne_id },\n          mes_seances: [],''',
+          '''          personne: {\n            id: r.personne_id,\n            inscrit: r.est_adherent,\n          },\n          mes_seances: [],''')
+
+          mapper = 'apps/assolutions-front/src/mapper/menu.mapper.ts'
+          replace(mapper,
+          '''  rider.photo = hydrated.personne.photo ?? null;\n  rider.libelle = `${rider.prenom} ${rider.nom}`.trim();''',
+          '''  rider.photo = hydrated.personne.photo ?? null;\n  // Valeur calculée côté back depuis inscription_saison.active et les groupes de la saison.\n  rider.inscrit = (hydrated.personne as any).inscrit === true;\n  rider.libelle = `${rider.prenom} ${rider.nom}`.trim();''')
+
+          menu_ts = 'apps/assolutions-front/src/app/menu/menu.component.ts'
+          replace(menu_ts,
+          '''  isEssaiPossible(ms: MesSeances_VM): boolean {\n    return !!ms?.seance?.essai_possible && !ms?.statutInscription;\n  }\n\n  hasEssaiPossible(rider: AdherentMenu): boolean {\n    return rider?.profil === 'ADH' && rider.inscrit === false && (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms));\n  }''',
+          '''  isEssaiPossible(ms: MesSeances_VM, rider: AdherentMenu): boolean {\n    return (\n      rider?.profil === 'ADH' &&\n      rider.inscrit === false &&\n      !!ms?.seance?.essai_possible &&\n      !ms?.statutInscription\n    );\n  }\n\n  hasEssaiPossible(rider: AdherentMenu): boolean {\n    return (\n      rider?.profil === 'ADH' &&\n      rider.inscrit === false &&\n      (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms, rider))\n    );\n  }''')
+          replace(menu_ts,
+          '''    const demandeEssai = present === true && this.isEssaiPossible(ms);''',
+          '''    const demandeEssai = present === true && this.isEssaiPossible(ms, rider);''')
+
+          menu_html = Path('apps/assolutions-front/src/app/menu/menu.component.html')
+          html = menu_html.read_text(encoding='utf-8')
+          html = html.replace('isEssaiPossible(ms)', 'isEssaiPossible(ms, rider)')
+          html = html.replace('Non inscrit · essais possibles', 'Non inscrit cette saison')
+          menu_html.write_text(html, encoding='utf-8')
+
+          # Nettoyage des workflows temporaires de correction.
+          for name in [
+              'fix-essai-metier.yml',
+              'fix-essai-ui.yml',
+              'fix-essai-type.yml',
+          ]:
+              Path('.github/workflows', name).unlink(missing_ok=True)
+      - name: Committer les vrais fichiers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(essai): base l'éligibilité sur l'inscription active de saison"
+          git push origin correction-aout
