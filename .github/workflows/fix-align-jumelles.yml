@@ -1,0 +1,59 @@
+name: Fix alignement fiole et jumelles
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-align-jumelles.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: correction-aout
+          fetch-depth: 0
+      - name: Appliquer les corrections
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def patch(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8-sig')
+              if old not in text:
+                  raise SystemExit(f'Motif introuvable dans {path}: {old[:120]!r}')
+              text = text.replace(old, new, count)
+              p.write_text(text, encoding='utf-8')
+
+          html = 'apps/assolutions-front/src/app/menu/menu.component.html'
+
+          # Jumelles : visibles pour les profs, ou pour un adhérent ayant un accès normal à la séance.
+          patch(
+              html,
+              '*ngIf="ms.seance.afficher_present"',
+              '*ngIf="ms.seance.afficher_present && (rider.profil === \'PROF\' || ms.accesInscription === true)"',
+              2,
+          )
+
+          # Fiole desktop : supprimer fa-stack, responsable du décalage vertical dans le bouton rond.
+          patch(
+              html,
+              '<span class="fa-stack fa-lg"><i class="fas fa-lg fa-flask has-text-warning"></i></span>',
+              '<i class="fas fa-flask has-text-warning"></i>',
+              2,
+          )
+
+          css = Path('apps/assolutions-front/src/app/menu/menu.component.css')
+          text = css.read_text(encoding='utf-8-sig')
+          text += '''\n\n/* Alignement final des actions de présence */\n.trial-action-icon > i,\n.trial-action-btn > i,\n.presence-view-btn > i {\n  display: block;\n  position: static;\n  width: auto;\n  height: auto;\n  margin: 0;\n  padding: 0;\n  line-height: 1;\n  transform: none;\n}\n\n.trial-action-icon {\n  line-height: 1;\n}\n'''
+          css.write_text(text, encoding='utf-8')
+          PY
+      - name: Committer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-align-jumelles.yml
+          git add apps/assolutions-front/src/app/menu/menu.component.html apps/assolutions-front/src/app/menu/menu.component.css
+          git commit -m "fix(menu): aligne la fiole et masque les présents aux non-inscrits"
+          git push origin correction-aout
