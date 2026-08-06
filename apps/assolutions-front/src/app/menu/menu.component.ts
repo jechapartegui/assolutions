@@ -176,19 +176,57 @@ getInitiales(personne: AdherentMenu): string {
     rider: AdherentMenu,
     present: boolean | null,
   ): Promise<void> {
-  let statut_inscription: InscriptionStatus_VM | null = null;
+    let statut_inscription: InscriptionStatus_VM | null = null;
+    const demandeEssai = present === true && this.isEssaiPossible(ms);
 
-  if (present === true) {
-    statut_inscription = InscriptionStatus_VM.PRESENT;
-  } else if (present === false) {
-    statut_inscription = InscriptionStatus_VM.ABSENT;
-  }
+    if (demandeEssai) {
+      const confirme = window.confirm(
+        `Confirmez-vous la demande de séance d'essai pour ${rider.prenom} ${rider.nom} ?\n\n` +
+        `${ms.seance.nom || ms.seance.cours_nom} - ${new Date(ms.seance.date_seance).toLocaleDateString('fr-FR')} à ${ms.seance.heure_debut}`,
+      );
+      if (!confirme) return;
+      statut_inscription = InscriptionStatus_VM.ESSAI;
+    } else if (present === true) {
+      statut_inscription = InscriptionStatus_VM.PRESENT;
+    } else if (present === false) {
+      statut_inscription = InscriptionStatus_VM.ABSENT;
+    }
 
     await this.menuRepository.updateInscription(ms.seance.id, rider.id, statut_inscription);
-
-    
-
     this.menuStore.patchLocalInscription(rider.id, (ms.seance as Seance_VM).id, statut_inscription);
+
+    if (demandeEssai) {
+      await this.sendEssaiConfirmation(ms, rider);
+      ErrorService.instance.emitChange(
+        ErrorService.instance.OKMessage($localize`Votre demande d'essai est enregistrée.`),
+      );
+    }
+  }
+
+  isEssai(ms: MesSeances_VM): boolean {
+    return ms?.statutInscription === InscriptionStatus_VM.ESSAI || ms?.statutInscription === 'essai';
+  }
+
+  isEssaiPossible(ms: MesSeances_VM): boolean {
+    return !!ms?.seance?.essai_possible && !ms?.statutInscription;
+  }
+
+  hasEssaiPossible(rider: AdherentMenu): boolean {
+    return rider?.profil === 'ADH' && (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms));
+  }
+
+  private async sendEssaiConfirmation(ms: MesSeances_VM, rider: AdherentMenu): Promise<void> {
+    const email = this.store.compte()?.login;
+    if (!email) return;
+    try {
+      await this.messageservice.send({
+        to: { email, name: `${rider.prenom ?? ''} ${rider.nom ?? ''}`.trim() || email },
+        subject: `Confirmation de séance d'essai - ${ms.seance.nom || ms.seance.cours_nom}`,
+        html: `<p>Bonjour,</p><p>La demande de séance d'essai pour <strong>${rider.prenom ?? ''} ${rider.nom ?? ''}</strong> est bien enregistrée.</p><p><strong>${ms.seance.nom || ms.seance.cours_nom}</strong><br>${new Date(ms.seance.date_seance).toLocaleDateString('fr-FR')} à ${ms.seance.heure_debut}<br>${ms.seance.lieu_nom ?? ''}</p><p>Le club dispose désormais de cette information dans la feuille de présence.</p>`,
+      });
+    } catch (error) {
+      ErrorService.instance.emitChange(ErrorService.instance.CreateError($localize`Envoyer la confirmation d'essai`, error));
+    }
   }
 
   hasOpenedRider(): boolean {

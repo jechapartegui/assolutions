@@ -555,11 +555,9 @@
               <div class="ms-person-topline">
                 <span class="ms-person-name">{{ potentiel.person.libelle }}</span>
 
-                <span
-                  class="tag is-light"
-                  *ngIf="potentiel.statut_inscription && !isSeanceStatus"
-                >
-                  {{ potentiel.statut_inscription }}
+                <span class="tag" [ngClass]="potentiel.statut_inscription === 'essai' ? 'is-warning' : 'is-light'" *ngIf="potentiel.statut_inscription && !isSeanceStatus">
+                  <i *ngIf="potentiel.statut_inscription === 'essai'" class="fas fa-flask mr-1"></i>
+                  {{ potentiel.statut_inscription === 'essai' ? 'Essai' : potentiel.statut_inscription }}
                 </span>
 
                 <span
