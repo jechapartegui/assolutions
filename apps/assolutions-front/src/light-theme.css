@@ -1,0 +1,68 @@
+:root {
+  color-scheme: light only !important;
+}
+
+html,
+body,
+app-root {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body,
+  app-root,
+  .container-box,
+  .navbar,
+  .navbar.is-fixed-top,
+  .mobile .footer,
+  .card,
+  .card-header,
+  .card-content,
+  .card-footer,
+  .box,
+  .modal-card,
+  .modal-card-head,
+  .modal-card-body,
+  .modal-card-foot,
+  .dropdown-content,
+  .menu-shell,
+  .menu-main-card,
+  .mobile-item,
+  .ms-shell,
+  .ms-section-card,
+  .ms-panel,
+  .ms-form-card {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+  }
+
+  .title,
+  .subtitle,
+  .label,
+  .table,
+  .table th,
+  .table td,
+  .content,
+  p,
+  span {
+    color: inherit;
+  }
+
+  .input,
+  .textarea,
+  .select select {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border-color: #dbdbdb !important;
+  }
+
+  .table:not(.is-striped) tbody tr:nth-child(odd):not(.is-selected):not([class*="has-background-"]) {
+    background-color: rgba(0, 0, 0, 0.025) !important;
+  }
+
+  .table.is-hoverable tbody tr:hover:not(.is-selected):not([class*="has-background-"]) {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+  }
+}

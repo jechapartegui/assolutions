@@ -48,6 +48,7 @@ export type UpdateSeanceDto = Partial<Omit<Seance, 'id' | 'project_id'>>;
 
 export interface MesSeances_VM {
     seance:Seance_VM
+    accesInscription?: boolean; // accès normal via groupe, convocation ou inscription existante
     statutInscription?: 'présent' | 'absent' | 'convoqué' | 'essai'; // Peut être null -> optionnel
     statutPrésence?: 'présent' | 'absent'; // Peut être null -> optionnel
   }

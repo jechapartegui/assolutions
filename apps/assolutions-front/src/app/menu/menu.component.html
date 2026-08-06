@@ -142,6 +142,9 @@
               >
                 {{ getLibelleProfil(personne.profil) }}
               </p>
+              <span *ngIf="hasEssaiPossible(personne)" class="rider-trial-hint" title="Séances d'essai accessibles">
+                <i class="fas fa-flask"></i><span>Essai disponible</span>
+              </span>
 
               <div *ngIf="personne.profil === 'ADH'" class="rider-stats">
                 <div class="rider-stat has-text-success">
@@ -394,6 +397,7 @@
                                   </span>
                                 </ng-container>
                                 : {{ ms.seance.cours_nom }}
+                                <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>
                               </td>
 
                               <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
@@ -449,6 +453,14 @@
                               </td>
 
                               <td>
+                                <div class="presence-actions">
+                                <button
+                                  *ngIf="ms.seance.afficher_present && (rider.profil === 'PROF' || ms.accesInscription === true)"
+                                  type="button"
+                                  class="presence-view-btn"
+                                  title="Afficher les présents"
+                                  (click)="VoirMaSeance(ms.seance)"
+                                ><i class="fas fa-binoculars"></i></button>
                                 <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherentDesktop">
                                   <btn
                                     [type_button]="'VoirLight'"
@@ -462,8 +474,7 @@
                                       <span
                                         (click)="MAJInscription(ms, rider, null)"
                                         *ngIf="
-                                          ms.statutInscription == 'présent' ||
-                                          ms.statutInscription === 'essai'
+                                          ms.statutInscription == 'présent'
                                         "
                                         class="icon is-large action-icon"
                                       >
@@ -474,10 +485,24 @@
 
                                       <span
                                         (click)="MAJInscription(ms, rider, true)"
+                                        *ngIf="isEssaiPossible(ms, rider)"
+                                        class="icon is-large action-icon trial-action-icon"
+                                        title="Demander un essai"
+                                      ><i class="fas fa-flask has-text-warning"></i></span>
+
+                                      <span
+                                        (click)="MAJInscription(ms, rider, null)"
+                                        *ngIf="isEssai(ms)"
+                                        class="icon is-large action-icon trial-action-icon"
+                                        title="Essai demandé"
+                                      ><i class="fas fa-flask has-text-warning"></i></span>
+
+                                      <span
+                                        (click)="MAJInscription(ms, rider, true)"
                                         *ngIf="
                                           ms.statutInscription == 'absent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          ms.statutInscription == null
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
                                         "
                                         class="icon is-large action-icon"
                                       >
@@ -501,7 +526,7 @@
                                         *ngIf="
                                           ms.statutInscription == 'présent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          ms.statutInscription == null ||
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider)) ||
                                           ms.statutInscription == 'essai'
                                         "
                                         class="icon is-large action-icon"
@@ -513,6 +538,7 @@
                                     </span>
                                   </ng-container>
                                 </ng-template>
+                                </div>
                               </td>
                             </tr>
                           </tbody>
@@ -548,6 +574,8 @@
                                       </ng-container>
                                       : {{ ms.seance.nom }}
                                     </span>
+                                    <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>
+                                    <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>
                                   </button>
 
                                   <p class="mobile-item-meta">
@@ -583,6 +611,13 @@
                                 </div>
 
                                 <div class="mobile-item-actions">
+                                  <button
+                                    *ngIf="ms.seance.afficher_present && (rider.profil === 'PROF' || ms.accesInscription === true)"
+                                    type="button"
+                                    class="mobile-action-btn presence-view-btn"
+                                    title="Afficher les présents"
+                                    (click)="VoirMaSeance(ms.seance)"
+                                  ><i class="fas fa-binoculars"></i></button>
                                   <ng-container *ngIf="rider.profil === 'PROF'; else ProfilAdherentMobile">
                                     <btn
                                       [type_button]="'VoirLight'"
@@ -592,6 +627,13 @@
 
                                   <ng-template #ProfilAdherentMobile>
                                     <ng-container *ngIf="ms.seance.statut === 'prévue'">
+                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms, rider)" title="Demander un essai">
+                                        <i class="fas fa-flask has-text-warning"></i>
+                                      </button>
+                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, null)" *ngIf="isEssai(ms)" title="Essai demandé">
+                                        <i class="fas fa-flask has-text-warning"></i>
+                                      </button>
+
                                       <button
                                         type="button"
                                         class="mobile-action-btn"
@@ -599,7 +641,7 @@
                                         *ngIf="
                                           ms.statutInscription == 'absent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          ms.statutInscription == null
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
                                         "
                                       >
                                         <i class="far fa-thumbs-up has-text-success"></i>
@@ -625,7 +667,7 @@
                                           ms.statutInscription == 'présent' ||
                                           ms.statutInscription == 'convoqué' ||
                                           ms.statutInscription == 'essai' ||
-                                          ms.statutInscription == null
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
                                         "
                                       >
                                         <i class="far fa-thumbs-down has-text-danger"></i>

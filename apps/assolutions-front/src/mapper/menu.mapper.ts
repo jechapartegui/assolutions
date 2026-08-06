@@ -131,6 +131,7 @@ toMesSeancesVm(
 
     return {
       seance: seanceVm,
+      accesInscription: ms.accesInscription === true,
       statutInscription: ms.statutInscription ?? null,
       statutPrésence: ms.statutPrésence ?? null,
     };
@@ -155,6 +156,8 @@ toAdherentMenu(
   rider.prenom = hydrated.personne.prenom ?? '';
   rider.surnom = hydrated.personne.surnom ?? '';
   rider.photo = hydrated.personne.photo ?? null;
+  // Valeur calculée côté back depuis inscription_saison.active et les groupes de la saison.
+  rider.inscrit = (hydrated.personne as any).inscrit === true;
   rider.libelle = `${rider.prenom} ${rider.nom}`.trim();
   rider.profil = profil;
   rider.afficher = false;

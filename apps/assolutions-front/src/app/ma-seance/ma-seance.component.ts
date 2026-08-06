@@ -939,7 +939,7 @@ async LoadLogin(compte: Compte): Promise<void> {
       case "absent":
         return "fa-thumbs-down has-text-danger";
       case "essai":
-        return "fa-question";
+        return "fa-flask has-text-warning";
       case "convoqué":
       case "convoque":
       case "convque":

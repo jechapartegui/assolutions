@@ -18,6 +18,7 @@ export interface MesSeanceDto {
   seance: {
     id: number;
   };
+  accesInscription?: boolean;
   statutInscription?: InscriptionStatusDto;
   statutPrésence?: PresenceStatusDto;
 }
@@ -34,6 +35,7 @@ export interface AdhMenDto {
 export interface MesSeanceHydrated {
   seance: Seance;
   seanceProfesseurs: SeanceProfesseur_Light[];
+  accesInscription?: boolean;
   statutInscription: InscriptionStatusDto;
   statutPrésence: PresenceStatusDto;
 }
