@@ -13,6 +13,7 @@ type StatutPresence = 'présent' | 'absent' | null;
 type Row = {
   personne_id: number;
   est_adherent: boolean;
+  acces_inscription: boolean;
   seance_id: number;
   statut_inscription: StatutInscription;
   statut_presence: StatutPresence;
@@ -162,6 +163,22 @@ export class MesSeancesQueryService {
       SELECT
         pc.personne_id,
         pc.est_adherent,
+        (
+          EXISTS (
+            SELECT 1 FROM seances_par_groupes spg
+            WHERE spg.personne_id = pc.personne_id
+              AND spg.seance_id = s.seance_id
+          )
+          OR EXISTS (
+            SELECT 1 FROM seances_nominatives_inscrites sni
+            WHERE sni.personne_id = pc.personne_id
+              AND sni.seance_id = s.seance_id
+          )
+          OR (
+            ins.statut_inscription IS NOT NULL
+            AND ins.statut_inscription <> 'essai'
+          )
+        ) AS acces_inscription,
         s.seance_id,
         ins.statut_inscription,
         ins.statut_seance AS statut_presence
@@ -210,6 +227,7 @@ export class MesSeancesQueryService {
 
       byPerson.get(r.personne_id).mes_seances.push({
         seance: { id: r.seance_id },
+        accesInscription: r.acces_inscription,
         statutInscription: r.statut_inscription ?? undefined,
         statutPrésence: r.statut_presence ?? undefined,
       });

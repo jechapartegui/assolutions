@@ -142,8 +142,8 @@
               >
                 {{ getLibelleProfil(personne.profil) }}
               </p>
-              <span *ngIf="hasEssaiPossible(personne)" class="rider-trial-hint" title="Non inscrit au club · séances d'essai disponibles">
-                <i class="fas fa-flask"></i> Essai
+              <span *ngIf="hasEssaiPossible(personne)" class="rider-trial-hint" title="Séances d'essai accessibles">
+                <i class="fas fa-flask"></i><span>Essai disponible</span>
               </span>
 
               <div *ngIf="personne.profil === 'ADH'" class="rider-stats">
@@ -453,6 +453,14 @@
                               </td>
 
                               <td>
+                                <div class="presence-actions">
+                                <button
+                                  *ngIf="ms.seance.afficher_present"
+                                  type="button"
+                                  class="presence-view-btn"
+                                  title="Afficher les présents"
+                                  (click)="VoirMaSeance(ms.seance)"
+                                ><i class="fas fa-binoculars"></i></button>
                                 <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherentDesktop">
                                   <btn
                                     [type_button]="'VoirLight'"
@@ -518,7 +526,7 @@
                                         *ngIf="
                                           ms.statutInscription == 'présent' ||
                                           ms.statutInscription == 'convoqué' ||
-                                          ms.statutInscription == null ||
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider)) ||
                                           ms.statutInscription == 'essai'
                                         "
                                         class="icon is-large action-icon"
@@ -530,6 +538,7 @@
                                     </span>
                                   </ng-container>
                                 </ng-template>
+                                </div>
                               </td>
                             </tr>
                           </tbody>
@@ -602,6 +611,13 @@
                                 </div>
 
                                 <div class="mobile-item-actions">
+                                  <button
+                                    *ngIf="ms.seance.afficher_present"
+                                    type="button"
+                                    class="mobile-action-btn presence-view-btn"
+                                    title="Afficher les présents"
+                                    (click)="VoirMaSeance(ms.seance)"
+                                  ><i class="fas fa-binoculars"></i></button>
                                   <ng-container *ngIf="rider.profil === 'PROF'; else ProfilAdherentMobile">
                                     <btn
                                       [type_button]="'VoirLight'"
@@ -651,7 +667,7 @@
                                           ms.statutInscription == 'présent' ||
                                           ms.statutInscription == 'convoqué' ||
                                           ms.statutInscription == 'essai' ||
-                                          ms.statutInscription == null
+                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
                                         "
                                       >
                                         <i class="far fa-thumbs-down has-text-danger"></i>

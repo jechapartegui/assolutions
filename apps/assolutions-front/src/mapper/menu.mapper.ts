@@ -131,6 +131,7 @@ toMesSeancesVm(
 
     return {
       seance: seanceVm,
+      accesInscription: ms.accesInscription === true,
       statutInscription: ms.statutInscription ?? null,
       statutPrésence: ms.statutPrésence ?? null,
     };

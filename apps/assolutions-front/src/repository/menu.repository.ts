@@ -255,6 +255,7 @@ export class MenuRepository {
             return {
               seance,
               seanceProfesseurs: profsBySeanceId.get(seance.seance_id) ?? [],
+              accesInscription: ms.accesInscription === true,
               statutInscription: ms.statutInscription ?? null,
               statutPrésence: ms.statutPrésence ?? null,
             };

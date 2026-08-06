@@ -210,7 +210,7 @@ getInitiales(personne: AdherentMenu): string {
   isEssaiPossible(ms: MesSeances_VM, rider: AdherentMenu): boolean {
     return (
       rider?.profil === 'ADH' &&
-      rider.inscrit === false &&
+      ms?.accesInscription !== true &&
       !!ms?.seance?.essai_possible &&
       !ms?.statutInscription
     );
@@ -219,7 +219,6 @@ getInitiales(personne: AdherentMenu): string {
   hasEssaiPossible(rider: AdherentMenu): boolean {
     return (
       rider?.profil === 'ADH' &&
-      rider.inscrit === false &&
       (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms, rider))
     );
   }

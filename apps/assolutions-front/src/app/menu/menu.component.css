@@ -1115,3 +1115,14 @@
     display: none;
   }
 }
+
+
+/* Correctif essai / présence : signalétique compacte et alignée */
+.rider-trial-hint { display:inline-flex; align-items:center; justify-content:center; gap:.3rem; min-height:1.35rem; margin-top:.15rem; padding:.1rem .45rem; border-radius:999px; background:#fff7dc; color:#725200; font-size:.72rem; line-height:1; white-space:nowrap; }
+.presence-actions { display:inline-flex; align-items:center; gap:.25rem; min-height:2.5rem; }
+.trial-action-icon, .presence-view-btn { display:inline-flex !important; align-items:center; justify-content:center; width:2.35rem; height:2.35rem; min-width:2.35rem; padding:0; border-radius:999px; vertical-align:middle; }
+.trial-action-icon { border:1px solid #f1bd32; background:#fff9e8; }
+.presence-view-btn { border:1px solid #c8d5e3; background:#f7f9fb; color:#30475e; cursor:pointer; }
+.presence-view-btn:hover { background:#edf3f8; color:#162a3d; }
+.trial-status-tag { display:inline-flex; align-items:center; gap:.2rem; vertical-align:middle; line-height:1; }
+@media (max-width:1023px) { .rider-trial-hint span { display:none; } .rider-trial-hint { padding:.2rem .35rem; } .mobile-item-actions { align-items:center; } .mobile-item-actions .presence-view-btn, .mobile-item-actions .trial-action-btn { width:2.15rem; height:2.15rem; min-width:2.15rem; } }
