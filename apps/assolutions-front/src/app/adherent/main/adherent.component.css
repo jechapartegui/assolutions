@@ -78,16 +78,86 @@
 }
 
 @media screen and (max-width: 767px) {
+  .adherent-shell {
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .adherent-hero {
+    position: relative;
+    z-index: 5;
+    border-radius: 12px;
+    padding: 0.42rem 0.55rem;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  }
+
   .adherent-hero-header {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .adherent-hero-title {
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .adherent-hero-title .title {
+    font-size: 0.95rem !important;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .adherent-hero-title .subtitle {
+    display: none;
+  }
+
+  .adherent-refresh-info {
+    margin-top: 0.12rem;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .adherent-hero-actions {
-    justify-content: stretch;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.3rem;
+    justify-content: flex-end;
+    margin: 0 !important;
   }
 
   .adherent-hero-actions .button {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
+    min-width: 38px;
+    min-height: 36px;
+    margin: 0 !important;
+    padding: 0.35rem 0.55rem;
+    border-radius: 10px;
+  }
+
+  .adherent-hero-actions .button .icon {
+    margin: 0 !important;
+  }
+
+  .adherent-hero-actions .button .icon + span,
+  .adherent-hero-actions .button > span:not(.icon) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  :host ::ng-deep app-adherent-editor .adherent-editor-actions {
+    bottom: calc(56px + env(safe-area-inset-bottom)) !important;
+    left: 0.25rem !important;
+    right: 0.25rem !important;
+    z-index: 80 !important;
+    border-radius: 12px 12px 0 0;
+  }
+
+  :host ::ng-deep app-adherent-editor .adherent-editor-body {
+    padding-bottom: calc(7.8rem + env(safe-area-inset-bottom)) !important;
   }
 }
