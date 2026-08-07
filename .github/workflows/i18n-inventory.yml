@@ -20,8 +20,10 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Annotate current templates
-        run: node tools/i18n/annotate-assolutions-templates.mjs
+      - name: Prepare current i18n sources
+        run: |
+          node tools/i18n/annotate-assolutions-templates.mjs
+          node tools/i18n/build-en-translations.mjs
 
       - name: Extract current Angular messages
         run: |
@@ -29,23 +31,36 @@ jobs:
           mkdir -p /tmp/assolutions-i18n
           npx nx run assolutions-front:extract-i18n --outputPath=/tmp/assolutions-i18n --outFile=messages.xlf --skip-nx-cache
 
-      - name: Build translation inventory
+      - name: Verify English catalog coverage
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const xml = fs.readFileSync('/tmp/assolutions-i18n/messages.xlf', 'utf8');
+          const english = JSON.parse(fs.readFileSync('apps/assolutions-front/src/locale/messages.en.json', 'utf8')).translations ?? {};
           const units = [...xml.matchAll(/<trans-unit\s+([^>]*\bid="([^"]+)"[^>]*)>([\s\S]*?)<\/trans-unit>/g)];
-          const rows = [];
+          const sourceById = new Map();
           for (const [, , id, body] of units) {
-            const source = body.match(/<source>([\s\S]*?)<\/source>/)?.[1];
-            if (source !== undefined) rows.push({ id, source: source.replace(/\s+/g, ' ').trim() });
+            const source = body.match(/<source>([\s\S]*?)<\/source>/)?.[1]?.replace(/\s+/g, ' ').trim() ?? '';
+            const previous = sourceById.get(id);
+            if (previous && previous !== source) {
+              throw new Error(`Conflicting source messages for i18n id ${id}: ${previous} / ${source}`);
+            }
+            sourceById.set(id, source);
           }
-          fs.writeFileSync('/tmp/assolutions-i18n/inventory.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + '\n');
-          console.log(`I18N_INVENTORY=${rows.length}`);
+          const missing = [...sourceById.entries()].filter(([id]) => !Object.prototype.hasOwnProperty.call(english, id));
+          const empty = [...sourceById.entries()].filter(([id]) => Object.prototype.hasOwnProperty.call(english, id) && !String(english[id] ?? '').trim());
+          console.log(`I18N_SOURCE_UNITS=${sourceById.size}`);
+          console.log(`I18N_ENGLISH_UNITS=${Object.keys(english).length}`);
+          console.log(`I18N_MISSING_ENGLISH=${missing.length}`);
+          console.log(`I18N_EMPTY_ENGLISH=${empty.length}`);
+          if (missing.length) {
+            for (const [id, source] of missing) console.error(`MISSING ${id}: ${source}`);
+          }
+          if (empty.length) {
+            for (const [id, source] of empty) console.error(`EMPTY ${id}: ${source}`);
+          }
+          if (missing.length || empty.length) process.exit(1);
           NODE
-
-      - name: Generate English translations
-        run: python tools/i18n/generate-english-translations.py
 
       - name: Check residual template strings
         run: |
@@ -86,17 +101,12 @@ jobs:
             }
             for (const node of parsed.rootNodes) visit(node, false);
           }
-          fs.writeFileSync('/tmp/assolutions-i18n/unmarked.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + (rows.length ? '\n' : ''));
           console.log(`UNMARKED_I18N=${rows.length}`);
-          if (rows.length) process.exitCode = 1;
+          if (rows.length) {
+            for (const row of rows.slice(0, 100)) console.error(JSON.stringify(row));
+            process.exit(1);
+          }
           NODE
 
-      - name: Package annotated templates
-        run: cp -a apps/assolutions-front/src/app /tmp/assolutions-i18n/app
-
-      - name: Upload i18n inventory artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: assolutions-i18n-inventory
-          path: /tmp/assolutions-i18n
-          if-no-files-found: error
+      - name: Build English frontend explicitly
+        run: npx nx build assolutions-front --configuration=development-en --skip-nx-cache
