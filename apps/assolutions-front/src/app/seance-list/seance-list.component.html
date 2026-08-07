@@ -1,310 +1,73 @@
 <div class="seance-main-card">
   <header class="seance-card-header">
     <div class="seance-card-title">
-      <p class="title is-6 mb-1" i18n>
-        Liste des séances ({{ getFilteredSeances().length }})
-      </p>
-      <p class="subtitle is-7 mb-0" i18n>
-        Saison {{ vm.activeSaison?.nom || 'non définie' }}
-      </p>
+      <p class="title is-6 mb-1" i18n>Liste des séances ({{ getFilteredSeances().length }})</p>
+      <p class="subtitle is-7 mb-0" i18n>Saison {{ vm.activeSaison?.nom || 'non définie' }}</p>
     </div>
 
     <div class="buttons is-flex-wrap-wrap seance-card-actions">
-      <button
-        class="button is-light"
-        type="button"
-        (click)="vm.showFilterPanel = !vm.showFilterPanel"
-      >
-        <span class="icon"><i class="fas fa-sliders"></i></span>
-        <span i18n>Filtres</span>
-      </button>
-<button
-  class="button is-success is-light"
-  type="button"
-  (click)="exportExcel()"
->
-  <span class="icon"><i class="fas fa-file-excel"></i></span>
-  <span>Excel</span>
-</button>
-
-      <button
-        class="button is-primary is-light"
-        type="button"
-        (click)="createSeance.emit(false)"
-      >
-        <span class="icon"><i class="fas fa-plus"></i></span>
-        <span i18n>Créer</span>
-      </button>
-
-      <button
-        class="button is-link is-light"
-        type="button"
-        (click)="createSeance.emit(true)"
-      >
-        <span class="icon"><i class="fas fa-layer-group"></i></span>
-        <span i18n>Créer une série</span>
-      </button>
-      <button
-  *ngIf="isAdmin"
-  class="button is-warning is-light"
-  type="button"
-  (click)="toggleMultiSelectMode()"
->
-  <span class="icon"><i class="fas fa-check-double"></i></span>
-  <span *ngIf="!vm.multiSelectMode">Sélection multiple</span>
-  <span *ngIf="vm.multiSelectMode">Quitter la sélection</span>
-</button>
+      <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel"><span class="icon"><i class="fas fa-sliders"></i></span><span i18n>Filtres</span></button>
+      <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()"><span class="icon"><i class="fas fa-file-excel"></i></span><span>Excel</span></button>
+      <button class="button is-primary is-light" type="button" (click)="createSeance.emit(false)"><span class="icon"><i class="fas fa-plus"></i></span><span i18n>Créer</span></button>
+      <button class="button is-link is-light" type="button" (click)="createSeance.emit(true)"><span class="icon"><i class="fas fa-layer-group"></i></span><span i18n>Créer une série</span></button>
+      <button *ngIf="isAdmin" class="button is-warning is-light seance-multi-action" type="button" (click)="toggleMultiSelectMode()"><span class="icon"><i class="fas fa-check-double"></i></span><span *ngIf="!vm.multiSelectMode">Sélection multiple</span><span *ngIf="vm.multiSelectMode">Quitter la sélection</span></button>
     </div>
+
     <div class="seance-bulk-toolbar" *ngIf="isAdmin && vm.multiSelectMode">
-  <div class="seance-bulk-toolbar-left">
-    <span class="tag is-warning is-light">
-      {{ vm.selectedIds?.length || 0 }} sélectionnée(s)
-    </span>
-  </div>
-
-  <div class="buttons mb-0">
-    <button
-      class="button is-danger is-light"
-      type="button"
-      [disabled]="!(vm.selectedIds?.length)"
-      (click)="deleteSelection()"
-    >
-      <span class="icon"><i class="fas fa-trash"></i></span>
-      <span>Supprimer</span>
-    </button>
-
-    <button
-      class="button is-light"
-      type="button"
-      (click)="store.clearSelection()"
-    >
-      <span class="icon"><i class="fas fa-xmark"></i></span>
-      <span>Annuler</span>
-    </button>
-  </div>
-</div>
+      <span class="tag is-warning is-light">{{ vm.selectedIds?.length || 0 }} sélectionnée(s)</span>
+      <div class="buttons mb-0">
+        <button class="button is-danger is-light" type="button" [disabled]="!(vm.selectedIds?.length)" (click)="deleteSelection()"><span class="icon"><i class="fas fa-trash"></i></span><span>Supprimer</span></button>
+        <button class="button is-light" type="button" (click)="store.clearSelection()"><span class="icon"><i class="fas fa-xmark"></i></span><span>Annuler</span></button>
+      </div>
+    </div>
   </header>
 
   <div class="seance-card-body">
     <div *ngIf="vm.showFilterPanel" class="seance-filter-panel">
       <div class="seance-filter-panel-inner">
         <div class="columns is-multiline is-variable is-2">
-          <div class="column is-12-mobile is-6-tablet is-4-desktop">
-            <label class="label" i18n>Nom</label>
-            <input class="input" [(ngModel)]="vm.filter.filter_nom" />
-          </div>
-
-          <div class="column is-12-mobile is-6-tablet is-4-desktop">
-            <label class="label" i18n>Lieu</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="vm.filter.filter_lieu">
-                <option [ngValue]="null" i18n>Tous</option>
-                <option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu">
-                  {{ lieu }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="column is-12-mobile is-6-tablet is-4-desktop">
-            <label class="label" i18n>Statut</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="vm.filter.filter_statut">
-                <option [ngValue]="null" i18n>Tous</option>
-                <option *ngFor="let s of vm.refs.listeStatuts" [ngValue]="s">
-                  {{ s }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="column is-12-mobile is-6-tablet is-3-desktop">
-            <label class="label" i18n>Du</label>
-            <input class="input" type="date" [(ngModel)]="vm.filter.filter_date_apres" />
-          </div>
-
-          <div class="column is-12-mobile is-6-tablet is-3-desktop">
-            <label class="label" i18n>Au</label>
-            <input class="input" type="date" [(ngModel)]="vm.filter.filter_date_avant" />
-          </div>
-
-          <div class="column is-12-mobile is-6-tablet is-3-desktop">
-            <label class="label" i18n>Professeur</label>
-            <input class="input" [(ngModel)]="vm.filter.filter_prof" />
-          </div>
-
-          <div class="column is-12-mobile is-6-tablet is-3-desktop">
-            <label class="label" i18n>Groupe</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="vm.filter.filter_groupe">
-                <option [ngValue]="null" i18n>Tous</option>
-                <option *ngFor="let g of vm.refs.liste_groupe_filter" [ngValue]="g.nom">
-                  {{ g.nom }}
-                </option>
-              </select>
-            </div>
-          </div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Nom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Lieu</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_lieu"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu">{{ lieu }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Statut</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_statut"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let s of vm.refs.listeStatuts" [ngValue]="s">{{ s }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Du</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_apres" /></div>
+          <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Au</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_avant" /></div>
+          <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Professeur</label><input class="input" [(ngModel)]="vm.filter.filter_prof" /></div>
+          <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Groupe</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_groupe"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let g of vm.refs.liste_groupe_filter" [ngValue]="g.nom">{{ g.nom }}</option></select></div></div>
         </div>
-
-        <div class="buttons mt-2 mb-0">
-          <button class="button is-light" type="button" (click)="clearFilters()">
-            <span class="icon"><i class="fas fa-eraser"></i></span>
-            <span i18n>Réinitialiser</span>
-          </button>
-
-          <button class="button is-light" type="button" (click)="vm.showFilterPanel = false">
-            <span class="icon"><i class="fas fa-xmark"></i></span>
-            <span i18n>Fermer</span>
-          </button>
-        </div>
+        <div class="buttons mt-2 mb-0"><button class="button is-light" type="button" (click)="clearFilters()"><span class="icon"><i class="fas fa-eraser"></i></span><span i18n>Réinitialiser</span></button><button class="button is-light" type="button" (click)="vm.showFilterPanel = false"><span class="icon"><i class="fas fa-xmark"></i></span><span i18n>Fermer</span></button></div>
       </div>
     </div>
 
     <div class="seance-scroll-zone" *ngIf="getFilteredSeances().length > 0">
-      <!-- Desktop -->
       <div class="seance-table-wrapper is-hidden-touch">
         <table class="table is-fullwidth is-hoverable seance-table">
-          <thead>
-            <tr>
-              <th *ngIf="isAdmin && vm.multiSelectMode"></th>
-              <th (click)="sort('nom')" class="is-clickable">Nom</th>
-              <th (click)="sort('cours')" class="is-clickable">Cours / Type</th>
-              <th (click)="sort('date')" class="is-clickable">Date</th>
-              <th>Heure / Durée</th>
-              <th>Professeurs</th>
-              <th (click)="sort('lieu')" class="is-clickable">Lieu</th>
-              <th>Groupes</th>
-              <th>Statut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let seance of getFilteredSeances()">
-              <td *ngIf="isAdmin && vm.multiSelectMode">
-  <label class="checkbox">
-    <input
-      type="checkbox"
-      [checked]="isSelected(seance.id)"
-      (change)="toggleSelection(seance.id)"
-    />
-  </label>
-</td>
-              <td>{{ seance.nom }}</td>
-              <td>{{ getTypeLabel(seance) }}</td>
-              <td>{{ seance.date_seance | date:'dd/MM/yyyy' }}</td>
-              <td>
-                {{ seance.heure_debut }} -
-                {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}
-              </td>
-              <td>
-                <div class="tags is-small">
-                  <span class="tag is-success" *ngFor="let prof of seance.seanceProfesseurs">
-                    {{ prof.prenom }}
-                    {{ prof.nom }}
-                  </span>
-                </div>
-              </td>
-              <td>{{ seance.lieu_nom }}</td>
-              <td>
-                <div class="tags is-small">
-                  <span class="tag is-info is-light" *ngFor="let gr of seance.groupes">
-                    {{ gr.nom }}
-                  </span>
-                </div>
-              </td>
-              <td>
-                <span class="tag" [ngClass]="getStatutClass(seance)">
-                  {{ seance.statut }}
-                </span>
-              </td>
-              <td>
-                <button class="button is-small is-light" type="button" (click)="open(seance)">
-                  <span class="icon"><i class="fas fa-pen"></i></span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
+          <thead><tr><th *ngIf="isAdmin && vm.multiSelectMode"></th><th (click)="sort('nom')" class="is-clickable">Nom</th><th (click)="sort('cours')" class="is-clickable">Cours / Type</th><th (click)="sort('date')" class="is-clickable">Date</th><th>Heure / Durée</th><th>Professeurs</th><th (click)="sort('lieu')" class="is-clickable">Lieu</th><th>Groupes</th><th>Statut</th><th>Action</th></tr></thead>
+          <tbody><tr *ngFor="let seance of getFilteredSeances()">
+            <td *ngIf="isAdmin && vm.multiSelectMode"><label class="checkbox"><input type="checkbox" [checked]="isSelected(seance.id)" (change)="toggleSelection(seance.id)" /></label></td>
+            <td><button class="seance-name-button" type="button" (click)="open(seance)">{{ seance.nom }}</button></td><td>{{ getTypeLabel(seance) }}</td><td>{{ seance.date_seance | date:'dd/MM/yyyy' }}</td><td>{{ seance.heure_debut }} - {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}</td>
+            <td><div class="tags is-small"><span class="tag is-success" *ngFor="let prof of seance.seanceProfesseurs">{{ prof.prenom }} {{ prof.nom }}</span></div></td><td>{{ seance.lieu_nom }}</td><td><div class="tags is-small"><span class="tag is-info is-light" *ngFor="let gr of seance.groupes">{{ gr.nom }}</span></div></td><td><span class="tag" [ngClass]="getStatutClass(seance)">{{ seance.statut }}</span></td><td><button class="button is-small is-light" type="button" (click)="open(seance)"><span class="icon"><i class="fas fa-pen"></i></span></button></td>
+          </tr></tbody>
         </table>
       </div>
 
-      <!-- Mobile -->
       <div class="seance-mobile-list is-hidden-desktop">
         <article class="seance-tile" *ngFor="let seance of getFilteredSeances()">
           <div class="seance-tile-top">
             <div class="seance-tile-main">
-              <div class="seance-tile-badges">
-                <span class="tag is-primary is-light">
-                  {{ getTypeLabel(seance) }}
-                </span>
-                <span class="tag" [ngClass]="getStatutClass(seance)">
-                  {{ seance.statut }}
-                </span>
-              </div>
-
-              <h3 class="seance-tile-title">
-                {{ seance.nom || 'Séance sans nom' }}
-              </h3>
-
-              <p class="seance-tile-line">
-                <span class="icon-text">
-                  <span class="icon"><i class="fas fa-calendar-days"></i></span>
-                  <span>{{ seance.date_seance | date:'dd/MM/yyyy' }}</span>
-                </span>
-              </p>
-
-              <p class="seance-tile-line">
-                <span class="icon-text">
-                  <span class="icon"><i class="fas fa-clock"></i></span>
-                  <span>
-                    {{ seance.heure_debut }} -
-                    {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}
-                  </span>
-                </span>
-              </p>
-
-              <p class="seance-tile-line" *ngIf="seance.lieu_nom">
-                <span class="icon-text">
-                  <span class="icon"><i class="fas fa-location-dot"></i></span>
-                  <span>{{ seance.lieu_nom }}</span>
-                </span>
-              </p>
-
-              <p class="seance-tile-meta" *ngIf="getProfesseursLabel(seance)">
-                <strong>Encadrants :</strong> {{ getProfesseursLabel(seance) }}
-              </p>
-
-              <p class="seance-tile-meta" *ngIf="getGroupesLabel(seance)">
-                <strong>Groupes :</strong> {{ getGroupesLabel(seance) }}
-              </p>
+              <div class="seance-tile-badges"><span class="tag is-primary is-light">{{ getTypeLabel(seance) }}</span><span class="tag" [ngClass]="getStatutClass(seance)">{{ seance.statut }}</span></div>
+              <button type="button" class="seance-name-button seance-tile-title" (click)="open(seance)">{{ seance.nom || 'Séance sans nom' }}</button>
+              <p class="seance-tile-line"><span class="icon-text"><span class="icon"><i class="fas fa-calendar-days"></i></span><span>{{ seance.date_seance | date:'dd/MM/yyyy' }}</span></span></p>
+              <p class="seance-tile-line"><span class="icon-text"><span class="icon"><i class="fas fa-clock"></i></span><span>{{ seance.heure_debut }} - {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}</span></span></p>
+              <p class="seance-tile-line" *ngIf="seance.lieu_nom"><span class="icon-text"><span class="icon"><i class="fas fa-location-dot"></i></span><span>{{ seance.lieu_nom }}</span></span></p>
+              <p class="seance-tile-meta" *ngIf="getProfesseursLabel(seance)"><strong>Encadrants :</strong> {{ getProfesseursLabel(seance) }}</p>
+              <p class="seance-tile-meta" *ngIf="getGroupesLabel(seance)"><strong>Groupes :</strong> {{ getGroupesLabel(seance) }}</p>
             </div>
-<div class="seance-tile-action" *ngIf="isAdmin && vm.multiSelectMode">
-  <label class="checkbox">
-    <input
-      type="checkbox"
-      [checked]="isSelected(seance.id)"
-      (change)="toggleSelection(seance.id)"
-    />
-  </label>
-</div>
-
-<div class="seance-tile-action" *ngIf="!(isAdmin && vm.multiSelectMode)">
-  <button class="button is-small is-light" type="button" (click)="open(seance)">
-    <span class="icon"><i class="fas fa-pen"></i></span>
-  </button>
-</div>
-            <div class="seance-tile-action">
-              <button class="button is-small is-light" type="button" (click)="open(seance)">
-                <span class="icon"><i class="fas fa-pen"></i></span>
-              </button>
-            </div>
+            <div class="seance-tile-action" *ngIf="isAdmin && vm.multiSelectMode"><label class="checkbox"><input type="checkbox" [checked]="isSelected(seance.id)" (change)="toggleSelection(seance.id)" /></label></div>
+            <div class="seance-tile-action" *ngIf="!(isAdmin && vm.multiSelectMode)"><button class="button is-small is-light" type="button" (click)="open(seance)"><span class="icon"><i class="fas fa-pen"></i></span></button></div>
           </div>
         </article>
       </div>
     </div>
-
-    <div *ngIf="getFilteredSeances().length === 0" class="seance-empty" i18n>
-      Pas de séances disponibles.
-    </div>
+    <div *ngIf="getFilteredSeances().length === 0" class="seance-empty" i18n>Pas de séances disponibles.</div>
   </div>
 </div>
