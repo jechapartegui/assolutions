@@ -10,6 +10,8 @@ type AdminTile = {
   menu: MenuType;
   route?: string;
   queryParams?: Record<string, any>;
+  disabled?: boolean;
+  hint?: string;
 };
 
 type AdminSection = {
@@ -145,7 +147,7 @@ export class MenuAdminComponent implements OnInit {
   }
 
   open(tile: AdminTile): void {
-    if (!tile.route) return;
+    if (!tile.route || tile.disabled) return;
     this.store.updateSelectedMenu(tile.menu);
     this.router.navigate([tile.route], {
       queryParams: {
