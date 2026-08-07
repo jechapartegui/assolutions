@@ -19,13 +19,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+
       - name: Annotate current templates
         run: node tools/i18n/annotate-assolutions-templates.mjs
+
       - name: Extract current Angular messages
         run: |
           rm -rf /tmp/assolutions-i18n
           mkdir -p /tmp/assolutions-i18n
           npx nx run assolutions-front:extract-i18n --outputPath=/tmp/assolutions-i18n --outFile=messages.xlf --skip-nx-cache
+
       - name: Build translation inventory
         run: |
           node - <<'NODE'
@@ -33,159 +36,27 @@ jobs:
           const xml = fs.readFileSync('/tmp/assolutions-i18n/messages.xlf', 'utf8');
           const units = [...xml.matchAll(/<trans-unit\s+([^>]*\bid="([^"]+)"[^>]*)>([\s\S]*?)<\/trans-unit>/g)];
           const rows = [];
-          console.log(`I18N_UNITS=${units.length}`);
           for (const [, , id, body] of units) {
             const source = body.match(/<source>([\s\S]*?)<\/source>/)?.[1];
-            if (source === undefined) continue;
-            rows.push({ id, source: source.replace(/\s+/g, ' ').trim() });
+            if (source !== undefined) rows.push({ id, source: source.replace(/\s+/g, ' ').trim() });
           }
           fs.writeFileSync('/tmp/assolutions-i18n/inventory.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + '\n');
           console.log(`I18N_INVENTORY=${rows.length}`);
           NODE
-      - name: Generate English translation draft
-        run: |
-          python - <<'PY'
-          import concurrent.futures
-          import html
-          import json
-          import re
-          import time
-          import urllib.parse
-          import urllib.request
 
-          INVENTORY = '/tmp/assolutions-i18n/inventory.jsonl'
-          OUTPUT = '/tmp/assolutions-i18n/messages.en.generated.json'
-          REPORT = '/tmp/assolutions-i18n/translation-report.json'
+      - name: Generate English translations
+        run: python tools/i18n/generate-english-translations.py
 
-          rows = [json.loads(line) for line in open(INVENTORY, encoding='utf-8') if line.strip()]
-          placeholder_re = re.compile(r'<x\s+id="([^"]+)"[^>]*/>')
-
-          # Terms that should not be sent to the translator on their own.
-          exact = {
-              'ID': 'ID',
-              'Email': 'Email',
-              'AS': 'AS',
-              'WhatsApp': 'WhatsApp',
-              'HTML': 'HTML',
-              'IBAN': 'IBAN',
-              'BIC': 'BIC',
-              'HelloAsso': 'HelloAsso',
-              'Assolutions': 'Assolutions',
-              'URL': 'URL',
-              'CSV': 'CSV',
-          }
-
-          def protect(source):
-              source = html.unescape(source)
-              ids = []
-              def repl(match):
-                  ids.append(match.group(1))
-                  return f' ZXQPH{len(ids)-1:03d}QXZ '
-              return placeholder_re.sub(repl, source), ids
-
-          def restore(text, ids):
-              for index, placeholder_id in enumerate(ids):
-                  token = f'ZXQPH{index:03d}QXZ'
-                  # Google occasionally inserts spaces around protected tokens.
-                  text = re.sub(r'\s*' + re.escape(token) + r'\s*', '{$' + placeholder_id + '}', text)
-              return re.sub(r'\s+', ' ', text).strip()
-
-          def translate_text(source):
-              plain, ids = protect(source)
-              compact = plain.strip()
-              if compact in exact:
-                  return exact[compact], None
-              if not re.search(r'[A-Za-zÀ-ÖØ-öø-ÿ]', compact):
-                  return restore(compact, ids), None
-
-              params = urllib.parse.urlencode({
-                  'client': 'gtx',
-                  'sl': 'fr',
-                  'tl': 'en',
-                  'dt': 't',
-                  'q': compact,
-              })
-              url = 'https://translate.googleapis.com/translate_a/single?' + params
-              last_error = None
-              for attempt in range(4):
-                  try:
-                      request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                      with urllib.request.urlopen(request, timeout=20) as response:
-                          payload = json.loads(response.read().decode('utf-8'))
-                      translated = ''.join(part[0] for part in payload[0] if part and part[0])
-                      return restore(translated, ids), None
-                  except Exception as exc:
-                      last_error = str(exc)
-                      time.sleep(0.4 * (attempt + 1))
-              return restore(compact, ids), last_error
-
-          unique_sources = {}
-          for row in rows:
-              unique_sources.setdefault(row['source'], None)
-
-          failures = {}
-          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-              futures = {executor.submit(translate_text, source): source for source in unique_sources}
-              for future in concurrent.futures.as_completed(futures):
-                  source = futures[future]
-                  target, error = future.result()
-                  unique_sources[source] = target
-                  if error:
-                      failures[source] = error
-
-          translations = {}
-          source_by_id = {}
-          duplicate_conflicts = []
-          for row in rows:
-              message_id = row['id']
-              source = row['source']
-              if message_id in source_by_id and source_by_id[message_id] != source:
-                  duplicate_conflicts.append({
-                      'id': message_id,
-                      'first': source_by_id[message_id],
-                      'second': source,
-                  })
-                  continue
-              source_by_id[message_id] = source
-              translations[message_id] = unique_sources[source]
-
-          with open(OUTPUT, 'w', encoding='utf-8') as handle:
-              json.dump({'locale': 'en', 'translations': translations}, handle, ensure_ascii=False, indent=2)
-              handle.write('\n')
-
-          report = {
-              'units': len(rows),
-              'uniqueSources': len(unique_sources),
-              'translations': len(translations),
-              'failures': failures,
-              'duplicateConflicts': duplicate_conflicts,
-          }
-          with open(REPORT, 'w', encoding='utf-8') as handle:
-              json.dump(report, handle, ensure_ascii=False, indent=2)
-              handle.write('\n')
-
-          print(f"TRANSLATED_UNITS={len(translations)}")
-          print(f"TRANSLATION_FAILURES={len(failures)}")
-          print(f"DUPLICATE_ID_CONFLICTS={len(duplicate_conflicts)}")
-          if failures:
-              for source, error in list(failures.items())[:20]:
-                  print('TRANSLATION_FAILURE', source, error)
-          if duplicate_conflicts:
-              for conflict in duplicate_conflicts:
-                  print('DUPLICATE_ID', json.dumps(conflict, ensure_ascii=False))
-          PY
-      - name: Find residual visible strings missing i18n markers
+      - name: Check residual template strings
         run: |
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           import path from 'node:path';
           import { HtmlParser } from '@angular/compiler';
-
           const root = path.resolve('apps/assolutions-front/src/app');
           const parser = new HtmlParser();
-          const attrNames = new Set(['title', 'placeholder', 'aria-label', 'alt']);
+          const attributeNames = new Set(['title', 'placeholder', 'aria-label', 'alt']);
           const rows = [];
-
           function files(dir) {
             return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
               const full = path.join(dir, entry.name);
@@ -193,59 +64,36 @@ jobs:
               return entry.isFile() && entry.name.endsWith('.html') ? [full] : [];
             });
           }
-
           function literal(value = '') {
-            return value
-              .replace(/{{[\s\S]*?}}/g, ' ')
-              .replace(/&(?:[a-zA-Z]+|#\d+|#x[0-9a-fA-F]+);/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim();
+            return value.replace(/{{[\s\S]*?}}/g, ' ').replace(/&(?:[a-zA-Z]+|#\d+|#x[0-9a-fA-F]+);/g, ' ').replace(/\s+/g, ' ').trim();
           }
-
-          function meaningful(value) {
-            return /\p{L}/u.test(literal(value));
-          }
-
+          function meaningful(value) { return /\p{L}/u.test(literal(value)); }
           for (const file of files(root)) {
             const source = fs.readFileSync(file, 'utf8');
             const parsed = parser.parse(source, file, { tokenizeExpansionForms: true });
             if (parsed.errors?.length) continue;
-            const lineFor = (offset) => source.slice(0, offset).split('\n').length;
-
             function visit(node, insideI18n = false) {
-              if (!node || typeof node !== 'object') return;
-              if (!(typeof node.name === 'string' && Array.isArray(node.children))) return;
+              if (!node || typeof node !== 'object' || !(typeof node.name === 'string' && Array.isArray(node.children))) return;
               const attrs = Array.isArray(node.attrs) ? node.attrs : [];
               const names = new Set(attrs.map((attr) => attr.name));
               const ownI18n = names.has('i18n');
-              const directText = node.children
-                .filter((child) => child?.constructor?.name === 'Text' && meaningful(child.value))
-                .map((child) => literal(child.value))
-                .filter(Boolean);
-
-              if (!insideI18n && !ownI18n && directText.length) {
-                rows.push({ file: path.relative(process.cwd(), file), line: lineFor(node.sourceSpan?.start?.offset ?? 0), type: 'text', text: directText.join(' | ') });
-              }
-
+              const directText = node.children.some((child) => child?.constructor?.name === 'Text' && meaningful(child.value));
+              if (!insideI18n && !ownI18n && directText) rows.push({ file, type: 'text' });
               for (const attr of attrs) {
-                if (attrNames.has(attr.name) && meaningful(attr.value) && !names.has(`i18n-${attr.name}`)) {
-                  rows.push({ file: path.relative(process.cwd(), file), line: lineFor(attr.sourceSpan?.start?.offset ?? 0), type: attr.name, text: literal(attr.value) });
-                }
+                if (attributeNames.has(attr.name) && meaningful(attr.value) && !names.has(`i18n-${attr.name}`)) rows.push({ file, type: attr.name });
               }
-
-              const nextInside = insideI18n || ownI18n;
-              for (const child of node.children) visit(child, nextInside);
+              for (const child of node.children) visit(child, insideI18n || ownI18n);
             }
-
             for (const node of parsed.rootNodes) visit(node, false);
           }
-
           fs.writeFileSync('/tmp/assolutions-i18n/unmarked.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + (rows.length ? '\n' : ''));
           console.log(`UNMARKED_I18N=${rows.length}`);
-          for (const row of rows.slice(0, 100)) console.log(JSON.stringify(row));
+          if (rows.length) process.exitCode = 1;
           NODE
+
       - name: Package annotated templates
         run: cp -a apps/assolutions-front/src/app /tmp/assolutions-i18n/app
+
       - name: Upload i18n inventory artifact
         uses: actions/upload-artifact@v4
         with:
