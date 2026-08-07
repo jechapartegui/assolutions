@@ -7,8 +7,8 @@
   <section class="groupe-main-card">
     <header class="groupe-card-header">
       <div>
-        <p class="title is-6 mb-1">Groupes</p>
-        <p class="subtitle is-7 mb-0">{{ vm.groupes.length }} groupe(s)</p>
+        <p class="title is-6 mb-1" i18n>Groupes</p>
+        <p class="subtitle is-7 mb-0" i18n>{{ vm.groupes.length }} groupe(s)</p>
       </div>
 
       <button
@@ -18,7 +18,7 @@
         [disabled]="vm.loading"
       >
         <span class="icon"><i class="fas fa-plus"></i></span>
-        <span>Créer</span>
+        <span i18n>Créer</span>
       </button>
     </header>
 
@@ -41,7 +41,7 @@
           </span>
         </button>
 
-        <div class="groupe-empty" *ngIf="vm.groupes.length === 0">
+        <div class="groupe-empty" *ngIf="vm.groupes.length === 0" i18n>
           Aucun groupe pour cette saison.
         </div>
       </aside>
@@ -53,7 +53,7 @@
               <p class="title is-6 mb-1">
                 {{ edit.id ? 'Modifier le groupe' : 'Créer un groupe' }}
               </p>
-              <p class="subtitle is-7 mb-0">
+              <p class="subtitle is-7 mb-0" i18n>
                 Tous les critères d’éligibilité sont facultatifs.
               </p>
             </div>
@@ -76,7 +76,7 @@
                 [disabled]="vm.loading"
               >
                 <span class="icon"><i class="fas fa-xmark"></i></span>
-                <span>Annuler</span>
+                <span i18n>Annuler</span>
               </button>
             </div>
           </header>
@@ -84,7 +84,7 @@
           <div class="groupe-edit-content">
             <div class="columns is-multiline is-variable is-2 mb-0">
               <div class="column is-12-tablet is-5-desktop">
-                <label class="label">Nom</label>
+                <label class="label" i18n>Nom</label>
                 <input
                   class="input"
                   [ngModel]="edit.nom"
@@ -93,7 +93,7 @@
               </div>
 
               <div class="column is-12-tablet is-5-desktop">
-                <label class="label">Lien WhatsApp</label>
+                <label class="label" i18n>Lien WhatsApp</label>
                 <input
                   class="input"
                   [ngModel]="edit.whatsapp"
@@ -102,7 +102,7 @@
               </div>
 
               <div class="column is-12-tablet is-2-desktop groupe-checkbox-column">
-                <label class="checkbox">
+                <label class="checkbox" i18n>
                   <input
                     type="checkbox"
                     [ngModel]="edit.visible"
@@ -116,17 +116,17 @@
             <section class="groupe-criteria-box">
               <div class="groupe-criteria-heading">
                 <div>
-                  <p class="title is-7 mb-1">Critères d’éligibilité</p>
-                  <p class="is-size-7 has-text-grey mb-0">
+                  <p class="title is-7 mb-1" i18n>Critères d’éligibilité</p>
+                  <p class="is-size-7 has-text-grey mb-0" i18n>
                     Laisse un champ vide pour ne pas appliquer cette contrainte.
                   </p>
                 </div>
-                <span class="tag is-info is-light">Tunnel de souscription</span>
+                <span class="tag is-info is-light" i18n>Tunnel de souscription</span>
               </div>
 
               <div class="columns is-multiline is-variable is-2 mb-0">
                 <div class="column is-6-mobile is-3-desktop">
-                  <label class="label">Âge minimum</label>
+                  <label class="label" i18n>Âge minimum</label>
                   <input
                     class="input"
                     type="number"
@@ -135,11 +135,11 @@
                     placeholder="Aucun"
                     [ngModel]="edit.age_min"
                     (ngModelChange)="groupeStore.patchEdit({ age_min: $event })"
-                  />
+                   i18n-placeholder/>
                 </div>
 
                 <div class="column is-6-mobile is-3-desktop">
-                  <label class="label">Âge maximum</label>
+                  <label class="label" i18n>Âge maximum</label>
                   <input
                     class="input"
                     type="number"
@@ -148,11 +148,11 @@
                     placeholder="Aucun"
                     [ngModel]="edit.age_max"
                     (ngModelChange)="groupeStore.patchEdit({ age_max: $event })"
-                  />
+                   i18n-placeholder/>
                 </div>
 
                 <div class="column is-6-mobile is-3-desktop">
-                  <label class="label">Né(e) au plus tôt en.</label>
+                  <label class="label" i18n>Né(e) au plus tôt en.</label>
                   <input
                     class="input"
                     type="number"
@@ -161,11 +161,11 @@
                     placeholder="Aucune"
                     [ngModel]="edit.naissance_avant"
                     (ngModelChange)="groupeStore.patchEdit({ naissance_avant: $event })"
-                  />
+                   i18n-placeholder/>
                 </div>
 
                 <div class="column is-6-mobile is-3-desktop">
-                  <label class="label">Né(e) au plus tard en.</label>
+                  <label class="label" i18n>Né(e) au plus tard en.</label>
                   <input
                     class="input"
                     type="number"
@@ -174,11 +174,11 @@
                     placeholder="Aucune"
                     [ngModel]="edit.naissance_apres"
                     (ngModelChange)="groupeStore.patchEdit({ naissance_apres: $event })"
-                  />
+                   i18n-placeholder/>
                 </div>
 
                 <div class="column is-12-mobile is-4-tablet is-3-desktop">
-                  <label class="label">Nombre maximal de places</label>
+                  <label class="label" i18n>Nombre maximal de places</label>
                   <input
                     class="input"
                     type="number"
@@ -187,7 +187,7 @@
                     placeholder="Illimité"
                     [ngModel]="edit.limit_nb"
                     (ngModelChange)="groupeStore.patchEdit({ limit_nb: $event })"
-                  />
+                   i18n-placeholder/>
                 </div>
               </div>
             </section>
@@ -212,11 +212,11 @@
                 <span
                   class="tag"
                   [ngClass]="isCapacityReached(groupe) ? 'is-danger is-light' : 'is-info is-light'"
-                >
+                 i18n>
                   {{ countMembersLabel(groupe) }} adhérent(s)
                 </span>
-                <span class="tag is-light" *ngIf="groupe.whatsapp">WhatsApp</span>
-                <span class="tag is-danger is-light" *ngIf="isCapacityReached(groupe)">
+                <span class="tag is-light" *ngIf="groupe.whatsapp" i18n>WhatsApp</span>
+                <span class="tag is-danger is-light" *ngIf="isCapacityReached(groupe)" i18n>
                   Complet
                 </span>
               </div>
@@ -229,7 +229,7 @@
                 (click)="groupeStore.startEdit(groupe)"
               >
                 <span class="icon"><i class="fas fa-pen"></i></span>
-                <span>Modifier</span>
+                <span i18n>Modifier</span>
               </button>
               <button
                 class="button is-danger is-light"
@@ -237,7 +237,7 @@
                 (click)="deleteGroupe(groupe)"
               >
                 <span class="icon"><i class="fas fa-trash"></i></span>
-                <span>Supprimer</span>
+                <span i18n>Supprimer</span>
               </button>
             </div>
           </header>
@@ -245,7 +245,7 @@
           <section class="groupe-criteria-summary">
             <div class="groupe-criteria-summary-title">
               <span class="icon"><i class="fas fa-filter"></i></span>
-              <span>Éligibilité dans le tunnel</span>
+              <span i18n>Éligibilité dans le tunnel</span>
             </div>
 
             <div class="tags mb-0" *ngIf="hasEligibilityCriteria(groupe); else noCriteria">
@@ -258,13 +258,13 @@
               >
                 {{ yearLabel }}
               </span>
-              <span class="tag is-info is-light" *ngIf="groupe.limit_nb != null">
+              <span class="tag is-info is-light" *ngIf="groupe.limit_nb != null" i18n>
                 {{ groupe.limit_nb }} place(s) maximum
               </span>
             </div>
 
             <ng-template #noCriteria>
-              <p class="is-size-7 has-text-grey mb-0">
+              <p class="is-size-7 has-text-grey mb-0" i18n>
                 Aucun critère : ce groupe n’est pas filtré par âge, année de naissance ou capacité.
               </p>
             </ng-template>
@@ -272,17 +272,17 @@
 
           <div class="groupe-add-panel">
             <div class="field mb-0 groupe-filter-field">
-              <label class="label">Ajouter une personne</label>
+              <label class="label" i18n>Ajouter une personne</label>
               <input
                 class="input"
                 placeholder="Filtrer nom / prénom / surnom"
                 [ngModel]="vm.filterAdherent"
                 (ngModelChange)="groupeStore.setFilterAdherent($event)"
-              />
+               i18n-placeholder/>
             </div>
 
             <div class="field mb-0 groupe-select-field">
-              <label class="label">Adhérent</label>
+              <label class="label" i18n>Adhérent</label>
               <div class="select is-fullwidth">
                 <select
                   [ngModel]="vm.adherentToAddId"
@@ -306,7 +306,7 @@
               (click)="addAdherent()"
             >
               <span class="icon"><i class="fas fa-plus"></i></span>
-              <span>Ajouter</span>
+              <span i18n>Ajouter</span>
             </button>
           </div>
 
@@ -319,9 +319,9 @@
             >
               <thead>
                 <tr>
-                  <th>Adhérent</th>
-                  <th>Contact</th>
-                  <th class="has-text-right">Action</th>
+                  <th i18n>Adhérent</th>
+                  <th i18n>Contact</th>
+                  <th class="has-text-right" i18n>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -356,7 +356,7 @@
                       (click)="removeAdherent(adherent)"
                     >
                       <span class="icon"><i class="fas fa-user-minus"></i></span>
-                      <span>Retirer</span>
+                      <span i18n>Retirer</span>
                     </button>
                   </td>
                 </tr>
@@ -406,12 +406,12 @@
           <div
             class="groupe-empty"
             *ngIf="membersOfSelectedGroupe().length === 0"
-          >
+           i18n>
             Aucun adhérent dans ce groupe.
           </div>
         </article>
 
-        <div class="groupe-empty" *ngIf="!selectedGroupe() && !vm.editGroupe">
+        <div class="groupe-empty" *ngIf="!selectedGroupe() && !vm.editGroupe" i18n>
           Sélectionne un groupe ou crée-en un nouveau.
         </div>
       </main>

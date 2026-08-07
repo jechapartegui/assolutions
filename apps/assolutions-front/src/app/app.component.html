@@ -1,7 +1,7 @@
 <div class="app-shell">
   <ng-container *ngIf="!isPublic">
     <span class="fullscreen">
-      <nav class="navbar app-navbar" role="navigation" aria-label="main navigation">
+      <nav class="navbar app-navbar" role="navigation" aria-label="main navigation" i18n-aria-label>
         <div class="navbar-brand">
           <a
             class="navbar-item app-logo"
@@ -10,7 +10,7 @@
             aria-label="Accueil"
             i18n-aria-label
           >
-            <span class="logo-mark">AS</span>
+            <span class="logo-mark" i18n>AS</span>
           </a>
 
           <a
@@ -20,7 +20,7 @@
             aria-label="menu"
             [attr.aria-expanded]="isactive"
             data-target="navMaSeance"
-          >
+           i18n-aria-label>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -171,7 +171,7 @@
                 (click)="selectMenu(store.mode() === 'ADMIN' ? 'MENU-ADMIN' : 'MENU')"
                 [routerLink]="store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']"
               >
-                <span class="icon is-large"><span class="mobile-logo">AS</span></span>
+                <span class="icon is-large"><span class="mobile-logo" i18n>AS</span></span>
                 <span class="tablet" i18n>Menu</span>
               </a>
             </li>

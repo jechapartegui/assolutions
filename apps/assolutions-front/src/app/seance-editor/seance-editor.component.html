@@ -8,7 +8,7 @@
       <p class="seance-editor-summary">
         {{ getType(seance.type_seance) || 'Séance' }}
         <span *ngIf="!vm.editModeSerie && seance.date_seance">· {{ seance.date_seance | date:'dd/MM/yyyy' }}</span>
-        <span *ngIf="vm.editModeSerie && serieDateDebut && serieDateFin">· du {{ serieDateDebut | date:'dd/MM/yyyy' }} au {{ serieDateFin | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="vm.editModeSerie && serieDateDebut && serieDateFin" i18n>· du {{ serieDateDebut | date:'dd/MM/yyyy' }} au {{ serieDateFin | date:'dd/MM/yyyy' }}</span>
         <span *ngIf="seance.heure_debut">· {{ seance.heure_debut }}</span>
         <span *ngIf="seance.lieu_nom">· {{ seance.lieu_nom }}</span>
       </p>
@@ -23,16 +23,16 @@
         <span>{{ vm.editModeSerie ? 'Créer la série' : 'Sauvegarder' }}</span>
       </button>
       <button *ngIf="!vm.editModeSerie" class="button is-warning is-light" type="button" (click)="duplicateSeance()">
-        <span class="icon"><i class="fas fa-copy"></i></span><span>Dupliquer</span>
+        <span class="icon"><i class="fas fa-copy"></i></span><span i18n>Dupliquer</span>
       </button>
       <button *ngIf="seance.id > 0" class="button is-info is-light" type="button" (click)="openMaSeance()">
-        <span class="icon"><i class="fas fa-binoculars"></i></span><span>Ma séance</span>
+        <span class="icon"><i class="fas fa-binoculars"></i></span><span i18n>Ma séance</span>
       </button>
       <button *ngIf="seance.id > 0" class="button is-success is-light" type="button" (click)="copyWhatsappSurvey()">
-        <span class="icon"><i class="fab fa-whatsapp"></i></span><span>Sondage</span>
+        <span class="icon"><i class="fab fa-whatsapp"></i></span><span i18n>Sondage</span>
       </button>
       <button *ngIf="isAdmin && seance.id > 0" class="button is-danger is-light" type="button" (click)="deleteSeance()">
-        <span class="icon"><i class="fas fa-trash"></i></span><span>Supprimer</span>
+        <span class="icon"><i class="fas fa-trash"></i></span><span i18n>Supprimer</span>
       </button>
     </div>
   </header>
@@ -44,7 +44,7 @@
         <div class="editor-fields editor-fields--two">
           <div class="field">
             <label class="label" i18n>Libellé</label>
-            <input class="input" [(ngModel)]="seance.nom" (ngModelChange)="checkall()" placeholder="Nom de la séance" />
+            <input class="input" [(ngModel)]="seance.nom" (ngModelChange)="checkall()" placeholder="Nom de la séance"  i18n-placeholder/>
             <p *ngIf="!rNom.key" class="help is-danger">{{ rNom.value }}</p>
           </div>
 
@@ -52,10 +52,10 @@
             <label class="label" i18n>Type</label>
             <div class="select is-fullwidth">
               <select [(ngModel)]="seance.type_seance" (ngModelChange)="onTypeChange()">
-                <option value="ENTRAINEMENT">Entraînement / cours</option>
-                <option value="SORTIE">Sortie</option>
-                <option value="EVENEMENT">Événement</option>
-                <option value="MATCH">Match</option>
+                <option value="ENTRAINEMENT" i18n>Entraînement / cours</option>
+                <option value="SORTIE" i18n>Sortie</option>
+                <option value="EVENEMENT" i18n>Événement</option>
+                <option value="MATCH" i18n>Match</option>
               </select>
             </div>
           </div>
@@ -75,9 +75,9 @@
             <label class="label" i18n>Statut</label>
             <div class="select is-fullwidth">
               <select [(ngModel)]="seance.statut">
-                <option [ngValue]="'prévue'">Prévue</option>
-                <option [ngValue]="'réalisée'">Réalisée</option>
-                <option [ngValue]="'annulée'">Annulée</option>
+                <option [ngValue]="'prévue'" i18n>Prévue</option>
+                <option [ngValue]="'réalisée'" i18n>Réalisée</option>
+                <option [ngValue]="'annulée'" i18n>Annulée</option>
               </select>
             </div>
           </div>
@@ -128,7 +128,7 @@
         </div>
         <div class="field">
           <label class="label" i18n>Informations complémentaires</label>
-          <textarea class="textarea" rows="4" [(ngModel)]="seance.info_seance" placeholder="Informations visibles sur la séance"></textarea>
+          <textarea class="textarea" rows="4" [(ngModel)]="seance.info_seance" placeholder="Informations visibles sur la séance" i18n-placeholder></textarea>
         </div>
       </section>
 
@@ -145,7 +145,7 @@
           <div class="control is-expanded">
             <div class="select is-fullwidth">
               <select [(ngModel)]="currentProfId">
-                <option [ngValue]="null">Choisir un encadrant</option>
+                <option [ngValue]="null" i18n>Choisir un encadrant</option>
                 <option *ngFor="let p of profDispo" [ngValue]="p.key">{{ p.value }}</option>
               </select>
             </div>

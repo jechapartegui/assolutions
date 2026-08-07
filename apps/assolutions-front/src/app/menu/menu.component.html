@@ -2,7 +2,7 @@
   <ng-container *ngIf="loading">
     <div class="menu-loading">
       <progress class="progress is-large is-info" max="100">60%</progress>
-      <p>Chargement en cours</p>
+      <p i18n>Chargement en cours</p>
     </div>
   </ng-container>
 
@@ -10,8 +10,8 @@
     <section class="menu-hero">
       <div class="menu-hero-header">
         <div class="menu-hero-title">
-          <h1 class="title is-5 mb-0">Mon menu</h1>
-          <p class="subtitle is-6">
+          <h1 class="title is-5 mb-0" i18n>Mon menu</h1>
+          <p class="subtitle is-6" i18n>
             Vue rapide de vos séances, inscriptions et actions principales
           </p>
         </div>
@@ -93,7 +93,7 @@
       </div>
     </section>
 
-    <div *ngIf="!showContactClub && (!Riders || Riders.length === 0)" class="menu-empty">
+    <div *ngIf="!showContactClub && (!Riders || Riders.length === 0)" class="menu-empty" i18n>
       Aucune séance disponible pour le moment.
     </div>
 
@@ -142,8 +142,8 @@
               >
                 {{ getLibelleProfil(personne.profil) }}
               </p>
-              <span *ngIf="hasEssaiPossible(personne)" class="rider-trial-hint" title="Séances d'essai accessibles">
-                <i class="fas fa-flask"></i><span>Essai disponible</span>
+              <span *ngIf="hasEssaiPossible(personne)" class="rider-trial-hint" title="Séances d'essai accessibles" i18n-title>
+                <i class="fas fa-flask"></i><span i18n>Essai disponible</span>
               </span>
 
               <div *ngIf="personne.profil === 'ADH'" class="rider-stats">
@@ -189,8 +189,8 @@
         <div class="anniv-banner-head">
           <div class="emoji" aria-hidden="true">🎂</div>
           <div>
-            <h3 class="title is-6 mb-1">Anniversaire(s) aujourd’hui</h3>
-            <p class="subtitle is-7 mb-0">
+            <h3 class="title is-6 mb-1" i18n>Anniversaire(s) aujourd’hui</h3>
+            <p class="subtitle is-7 mb-0" i18n>
               On leur souhaite un très joyeux anniversaire ! 🎉
             </p>
           </div>
@@ -237,7 +237,7 @@
 
                       <div class="menu-card-identity">
                         <div class="menu-card-name">{{ rider.libelle }}</div>
-                        <div class="menu-card-subtitle">
+                        <div class="menu-card-subtitle" i18n>
                           {{ getLibelleProfil(rider.profil) }} ·
                           {{ (rider.MesSeances | multifiltersMenu : rider.filters).length }}
                           séance(s) affichée(s)
@@ -383,21 +383,21 @@
                             <tr *ngFor="let ms of rider.MesSeances | multifiltersMenu : rider.filters">
                               <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
                                 <ng-container [ngSwitch]="ms.seance.type_seance">
-                                  <span *ngSwitchCase="'ENTRAINEMENT'" i18n-title title="Cours">
+                                  <span *ngSwitchCase="'ENTRAINEMENT'" i18n-title title="Cours" i18n>
                                     <i class="fas fa-dumbbell icon-type-seance"></i> Cours
                                   </span>
-                                  <span *ngSwitchCase="'MATCH'" i18n-title title="Match">
+                                  <span *ngSwitchCase="'MATCH'" i18n-title title="Match" i18n>
                                     <i class="fas fa-futbol icon-type-seance"></i> Match
                                   </span>
-                                  <span *ngSwitchCase="'EVENEMENT'" i18n-title title="Événement">
+                                  <span *ngSwitchCase="'EVENEMENT'" i18n-title title="Événement" i18n>
                                     <i class="fas fa-star icon-type-seance"></i> Événement
                                   </span>
-                                  <span *ngSwitchCase="'SORTIE'" i18n-title title="Sortie">
+                                  <span *ngSwitchCase="'SORTIE'" i18n-title title="Sortie" i18n>
                                     <i class="fas fa-hiking icon-type-seance"></i> Sortie
                                   </span>
                                 </ng-container>
                                 : {{ ms.seance.cours_nom }}
-                                <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>
+                                <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag" i18n><i class="fas fa-flask mr-1"></i> Essai demandé</span>
                               </td>
 
                               <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
@@ -460,7 +460,7 @@
                                   class="presence-view-btn"
                                   title="Afficher les présents"
                                   (click)="VoirMaSeance(ms.seance)"
-                                ><i class="fas fa-binoculars"></i></button>
+                                 i18n-title><i class="fas fa-binoculars"></i></button>
                                 <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherentDesktop">
                                   <btn
                                     [type_button]="'VoirLight'"
@@ -488,14 +488,14 @@
                                         *ngIf="isEssaiPossible(ms, rider)"
                                         class="icon is-large action-icon trial-action-icon"
                                         title="Demander un essai"
-                                      ><i class="fas fa-flask has-text-warning"></i></span>
+                                       i18n-title><i class="fas fa-flask has-text-warning"></i></span>
 
                                       <span
                                         (click)="MAJInscription(ms, rider, null)"
                                         *ngIf="isEssai(ms)"
                                         class="icon is-large action-icon trial-action-icon"
                                         title="Essai demandé"
-                                      ><i class="fas fa-flask has-text-warning"></i></span>
+                                       i18n-title><i class="fas fa-flask has-text-warning"></i></span>
 
                                       <span
                                         (click)="MAJInscription(ms, rider, true)"
@@ -559,23 +559,23 @@
                                   >
                                     <span class="mobile-item-title">
                                       <ng-container [ngSwitch]="ms.seance.type_seance">
-                                        <span *ngSwitchCase="'ENTRAINEMENT'" title="Cours">
+                                        <span *ngSwitchCase="'ENTRAINEMENT'" title="Cours" i18n i18n-title>
                                           <i class="fas fa-dumbbell icon-type-seance"></i> Cours
                                         </span>
-                                        <span *ngSwitchCase="'MATCH'" title="Match">
+                                        <span *ngSwitchCase="'MATCH'" title="Match" i18n i18n-title>
                                           <i class="fas fa-futbol icon-type-seance"></i> Match
                                         </span>
-                                        <span *ngSwitchCase="'EVENEMENT'" title="Événement">
+                                        <span *ngSwitchCase="'EVENEMENT'" title="Événement" i18n i18n-title>
                                           <i class="fas fa-star icon-type-seance"></i> Événement
                                         </span>
-                                        <span *ngSwitchCase="'SORTIE'" title="Sortie">
+                                        <span *ngSwitchCase="'SORTIE'" title="Sortie" i18n i18n-title>
                                           <i class="fas fa-hiking icon-type-seance"></i> Sortie
                                         </span>
                                       </ng-container>
                                       : {{ ms.seance.nom }}
                                     </span>
-                                    <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai possible</span>
-                                    <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag"><i class="fas fa-flask mr-1"></i> Essai demandé</span>
+                                    <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag" i18n><i class="fas fa-flask mr-1"></i> Essai possible</span>
+                                    <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag" i18n><i class="fas fa-flask mr-1"></i> Essai demandé</span>
                                   </button>
 
                                   <p class="mobile-item-meta">
@@ -617,7 +617,7 @@
                                     class="mobile-action-btn presence-view-btn"
                                     title="Afficher les présents"
                                     (click)="VoirMaSeance(ms.seance)"
-                                  ><i class="fas fa-binoculars"></i></button>
+                                   i18n-title><i class="fas fa-binoculars"></i></button>
                                   <ng-container *ngIf="rider.profil === 'PROF'; else ProfilAdherentMobile">
                                     <btn
                                       [type_button]="'VoirLight'"
@@ -627,10 +627,10 @@
 
                                   <ng-template #ProfilAdherentMobile>
                                     <ng-container *ngIf="ms.seance.statut === 'prévue'">
-                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms, rider)" title="Demander un essai">
+                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms, rider)" title="Demander un essai" i18n-title>
                                         <i class="fas fa-flask has-text-warning"></i>
                                       </button>
-                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, null)" *ngIf="isEssai(ms)" title="Essai demandé">
+                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, null)" *ngIf="isEssai(ms)" title="Essai demandé" i18n-title>
                                         <i class="fas fa-flask has-text-warning"></i>
                                       </button>
 
@@ -688,7 +688,7 @@
                             </article>
                           </ng-container>
 
-                          <p *ngIf="!rider.MesSeances || rider.MesSeances.length == 0" class="menu-empty">
+                          <p *ngIf="!rider.MesSeances || rider.MesSeances.length == 0" class="menu-empty" i18n>
                             Pas de séances disponible
                           </p>
                         </div>
@@ -701,7 +701,7 @@
                       (click)="scrollToTop()"
                       title="Revenir en haut"
                       type="button"
-                    >
+                     i18n-title>
                       ↑
                     </button>
                   </div>
@@ -717,7 +717,7 @@
                               type="button"
                             >
                               <span class="icon"><i class="fas fa-sliders"></i></span>
-                              <span>Masquer les filtres et options</span>
+                              <span i18n>Masquer les filtres et options</span>
                             </button>
                           </div>
                         </div>
@@ -827,7 +827,7 @@
                               {{ rider.filters.filter_date_avant | date : 'dd/MM/yyyy' }}
                             </span>
                             <span class="mx-1" *ngIf="rider.filters.filter_date_avant">&lt;=</span>
-                            <span class="mx-1">Date</span>
+                            <span class="mx-1" i18n>Date</span>
                             <span class="mx-1" *ngIf="rider.filters.filter_date_apres">&gt;=</span>
                             <span class="mx-1" *ngIf="rider.filters.filter_date_apres">
                               {{ rider.filters.filter_date_apres | date : 'dd/MM/yyyy' }}
@@ -890,7 +890,7 @@
                           type="button"
                         >
                           <span class="icon"><i class="fas fa-sliders"></i></span>
-                          <span>Afficher les filtres et options</span>
+                          <span i18n>Afficher les filtres et options</span>
                         </button>
                       </ng-template>
                     </div>

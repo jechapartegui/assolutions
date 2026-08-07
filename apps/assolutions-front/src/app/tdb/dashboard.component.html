@@ -2,7 +2,7 @@
   <ng-container *ngIf="loading">
     <div class="menu-loading">
       <progress class="progress is-large is-info" max="100">60%</progress>
-      <p>Chargement en cours</p>
+      <p i18n>Chargement en cours</p>
     </div>
   </ng-container>
 
@@ -10,8 +10,8 @@
     <section class="menu-hero">
       <div class="menu-hero-header">
         <div class="menu-hero-title">
-          <h1 class="title is-5 mb-0">Tableau de bord</h1>
-          <p class="subtitle is-6">
+          <h1 class="title is-5 mb-0" i18n>Tableau de bord</h1>
+          <p class="subtitle is-6" i18n>
             Synthèse complète de vos séances, déclarations et présences
           </p>
         </div>
@@ -26,7 +26,7 @@
             <span class="icon">
               <i class="fas fa-rotate"></i>
             </span>
-            <span>Actualiser</span>
+            <span i18n>Actualiser</span>
           </button>
         </div>
       </div>
@@ -126,7 +126,7 @@
 
                         <div class="menu-card-identity">
                           <div class="menu-card-name">{{ rider.libelle }}</div>
-                          <div class="menu-card-subtitle">
+                          <div class="menu-card-subtitle" i18n>
                             {{ getLibelleProfil(rider.profil) }} ·
                             {{ dash.stats.total }} séance(s) ·
                             {{ dash.groups.length }} cours / événement(s)
@@ -140,7 +140,7 @@
                           class="button is-small is-light is-rounded menu-icon-btn"
                           type="button"
                           (click)="Voir(rider.id)"
-                        >
+                         i18n-title>
                           <i class="fa-solid fa-user-pen"></i>
                         </button>
                       </div>
@@ -151,22 +151,22 @@
                         <div class="desktop-view">
                           <div class="mobile-list">
                             <article class="mobile-item">
-                              <div class="mobile-item-title mb-2">📌 Vue générale</div>
+                              <div class="mobile-item-title mb-2" i18n>📌 Vue générale</div>
 
                               <div class="tags are-medium">
-                                <span class="tag is-link is-light">
+                                <span class="tag is-link is-light" i18n>
                                   Total : {{ dash.stats.total }}
                                 </span>
-                                <span class="tag is-info is-light">
+                                <span class="tag is-info is-light" i18n>
                                   À venir : {{ dash.stats.futures }}
                                 </span>
-                                <span class="tag is-success is-light">
+                                <span class="tag is-success is-light" i18n>
                                   Réalisées : {{ dash.stats.realisees }}
                                 </span>
-                                <span class="tag is-warning is-light">
+                                <span class="tag is-warning is-light" i18n>
                                   À déclarer : {{ dash.stats.todoDeclaration }}
                                 </span>
-                                <span class="tag is-danger is-light">
+                                <span class="tag is-danger is-light" i18n>
                                   Annulées : {{ dash.stats.annulees }}
                                 </span>
                               </div>
@@ -174,9 +174,9 @@
                               <div class="columns is-multiline mt-2">
                                 <div class="column is-3">
                                   <div class="box">
-                                    <p class="heading">Taux de déclaration</p>
+                                    <p class="heading" i18n>Taux de déclaration</p>
                                     <p class="title is-4">{{ percent(dash.stats.tauxDeclaration) }}</p>
-                                    <p class="is-size-7 has-text-grey">
+                                    <p class="is-size-7 has-text-grey" i18n>
                                       Présent / absent / essai / convoqué
                                     </p>
                                   </div>
@@ -184,9 +184,9 @@
 
                                 <div class="column is-3">
                                   <div class="box">
-                                    <p class="heading">Présences déclarées</p>
+                                    <p class="heading" i18n>Présences déclarées</p>
                                     <p class="title is-4">{{ dash.stats.declarePresent + dash.stats.declareEssai }}</p>
-                                    <p class="is-size-7 has-text-grey">
+                                    <p class="is-size-7 has-text-grey" i18n>
                                       dont essais : {{ dash.stats.declareEssai }}
                                     </p>
                                   </div>
@@ -194,9 +194,9 @@
 
                                 <div class="column is-3">
                                   <div class="box">
-                                    <p class="heading">Absences déclarées</p>
+                                    <p class="heading" i18n>Absences déclarées</p>
                                     <p class="title is-4">{{ dash.stats.declareAbsent }}</p>
-                                    <p class="is-size-7 has-text-grey">
+                                    <p class="is-size-7 has-text-grey" i18n>
                                       Non déclarées : {{ dash.stats.declareNone }}
                                     </p>
                                   </div>
@@ -204,9 +204,9 @@
 
                                 <div class="column is-3">
                                   <div class="box">
-                                    <p class="heading">Présence réelle</p>
+                                    <p class="heading" i18n>Présence réelle</p>
                                     <p class="title is-4">{{ percent(dash.stats.tauxPresenceReelle) }}</p>
-                                    <p class="is-size-7 has-text-grey">
+                                    <p class="is-size-7 has-text-grey" i18n>
                                       {{ dash.stats.realPresent }} présent(s) / {{ dash.stats.realAbsent }} absent(s)
                                     </p>
                                   </div>
@@ -215,15 +215,15 @@
                             </article>
 
                             <article class="mobile-item" *ngIf="dash.todoItems.length">
-                              <div class="mobile-item-title mb-2">⚠️ Séances à déclarer</div>
+                              <div class="mobile-item-title mb-2" i18n>⚠️ Séances à déclarer</div>
 
                               <table class="table is-fullwidth is-hoverable menu-table">
                                 <thead>
                                   <tr>
-                                    <th>Cours</th>
-                                    <th>Date</th>
-                                    <th>Lieu</th>
-                                    <th>Statut</th>
+                                    <th i18n>Cours</th>
+                                    <th i18n>Date</th>
+                                    <th i18n>Lieu</th>
+                                    <th i18n>Statut</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -248,20 +248,20 @@
                             </article>
 
                             <article class="mobile-item">
-                              <div class="mobile-item-title mb-2">🎯 Synthèse par cours / événement</div>
+                              <div class="mobile-item-title mb-2" i18n>🎯 Synthèse par cours / événement</div>
 
                               <table class="table is-fullwidth is-hoverable menu-table">
                                 <thead>
                                   <tr>
-                                    <th>Cours</th>
-                                    <th class="has-text-centered">Total</th>
-                                    <th class="has-text-centered">À venir</th>
-                                    <th class="has-text-centered">Réalisées</th>
-                                    <th class="has-text-centered">Prés. décl.</th>
-                                    <th class="has-text-centered">Abs. décl.</th>
-                                    <th class="has-text-centered">Non décl.</th>
-                                    <th class="has-text-centered">Prés. réel</th>
-                                    <th class="has-text-centered">Abs. réel</th>
+                                    <th i18n>Cours</th>
+                                    <th class="has-text-centered" i18n>Total</th>
+                                    <th class="has-text-centered" i18n>À venir</th>
+                                    <th class="has-text-centered" i18n>Réalisées</th>
+                                    <th class="has-text-centered" i18n>Prés. décl.</th>
+                                    <th class="has-text-centered" i18n>Abs. décl.</th>
+                                    <th class="has-text-centered" i18n>Non décl.</th>
+                                    <th class="has-text-centered" i18n>Prés. réel</th>
+                                    <th class="has-text-centered" i18n>Abs. réel</th>
                                   </tr>
                                 </thead>
 
@@ -283,7 +283,7 @@
                                   </tr>
 
                                   <tr *ngIf="dash.groups.length === 0">
-                                    <td colspan="9" class="has-text-centered">
+                                    <td colspan="9" class="has-text-centered" i18n>
                                       Aucune séance disponible.
                                     </td>
                                   </tr>
@@ -294,7 +294,7 @@
                             <div class="columns is-multiline">
                               <div class="column is-6">
                                 <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2">🏷️ Par type</div>
+                                  <div class="mobile-item-title mb-2" i18n>🏷️ Par type</div>
                                   <div class="tags">
                                     <span
                                       *ngFor="let x of dash.byType"
@@ -308,7 +308,7 @@
 
                               <div class="column is-6">
                                 <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2">📅 Par statut</div>
+                                  <div class="mobile-item-title mb-2" i18n>📅 Par statut</div>
                                   <div class="tags">
                                     <span
                                       *ngFor="let x of dash.byStatus"
@@ -322,7 +322,7 @@
 
                               <div class="column is-6">
                                 <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2">👍 Déclarations</div>
+                                  <div class="mobile-item-title mb-2" i18n>👍 Déclarations</div>
                                   <div class="tags">
                                     <span
                                       *ngFor="let x of dash.byDeclaration"
@@ -336,7 +336,7 @@
 
                               <div class="column is-6">
                                 <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2">📍 Par lieu</div>
+                                  <div class="mobile-item-title mb-2" i18n>📍 Par lieu</div>
                                   <div class="tags">
                                     <span
                                       *ngFor="let x of dash.byLieu"
@@ -352,14 +352,14 @@
                             <div class="columns is-multiline">
                               <div class="column is-6">
                                 <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2">⏭️ Prochaines séances</div>
+                                  <div class="mobile-item-title mb-2" i18n>⏭️ Prochaines séances</div>
 
                                   <table class="table is-fullwidth is-hoverable menu-table">
                                     <thead>
                                       <tr>
-                                        <th>Cours</th>
-                                        <th>Date</th>
-                                        <th>Déclaration</th>
+                                        <th i18n>Cours</th>
+                                        <th i18n>Date</th>
+                                        <th i18n>Déclaration</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -378,7 +378,7 @@
                                       </tr>
 
                                       <tr *ngIf="dash.upcomingItems.length === 0">
-                                        <td colspan="3" class="has-text-centered">
+                                        <td colspan="3" class="has-text-centered" i18n>
                                           Aucune séance à venir.
                                         </td>
                                       </tr>
@@ -389,14 +389,14 @@
 
                               <div class="column is-6">
                                 <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2">⏮️ Dernières séances</div>
+                                  <div class="mobile-item-title mb-2" i18n>⏮️ Dernières séances</div>
 
                                   <table class="table is-fullwidth is-hoverable menu-table">
                                     <thead>
                                       <tr>
-                                        <th>Cours</th>
-                                        <th>Date</th>
-                                        <th>Réel</th>
+                                        <th i18n>Cours</th>
+                                        <th i18n>Date</th>
+                                        <th i18n>Réel</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -415,7 +415,7 @@
                                       </tr>
 
                                       <tr *ngIf="dash.recentItems.length === 0">
-                                        <td colspan="3" class="has-text-centered">
+                                        <td colspan="3" class="has-text-centered" i18n>
                                           Aucune séance passée.
                                         </td>
                                       </tr>
@@ -430,14 +430,14 @@
                                 <div class="mobile-item-title mb-2">📚 {{ g.label }}</div>
 
                                 <div class="tags is-small mb-3">
-                                  <span class="tag is-link is-light">Total : {{ g.total }}</span>
-                                  <span class="tag is-info is-light">À venir : {{ g.futures }}</span>
-                                  <span class="tag is-success is-light">Réalisées : {{ g.realisees }}</span>
-                                  <span class="tag is-warning is-light">À déclarer : {{ g.todoDeclaration }}</span>
-                                  <span class="tag is-success">
+                                  <span class="tag is-link is-light" i18n>Total : {{ g.total }}</span>
+                                  <span class="tag is-info is-light" i18n>À venir : {{ g.futures }}</span>
+                                  <span class="tag is-success is-light" i18n>Réalisées : {{ g.realisees }}</span>
+                                  <span class="tag is-warning is-light" i18n>À déclarer : {{ g.todoDeclaration }}</span>
+                                  <span class="tag is-success" i18n>
                                     Déclarés présents : {{ g.declarePresent + g.declareEssai }}
                                   </span>
-                                  <span class="tag is-danger">
+                                  <span class="tag is-danger" i18n>
                                     Déclarés absents : {{ g.declareAbsent }}
                                   </span>
                                 </div>
@@ -445,12 +445,12 @@
                                 <table class="table is-fullwidth is-hoverable menu-table">
                                   <thead>
                                     <tr>
-                                      <th>Nom</th>
-                                      <th>Date Heure</th>
-                                      <th>Lieu</th>
-                                      <th>Statut</th>
-                                      <th>Déclaré</th>
-                                      <th>Réel</th>
+                                      <th i18n>Nom</th>
+                                      <th i18n>Date Heure</th>
+                                      <th i18n>Lieu</th>
+                                      <th i18n>Statut</th>
+                                      <th i18n>Déclaré</th>
+                                      <th i18n>Réel</th>
                                       <th></th>
                                     </tr>
                                   </thead>
@@ -509,20 +509,20 @@
                         <div class="mobile-view">
                           <div class="mobile-list">
                             <article class="mobile-item">
-                              <div class="mobile-item-title mb-2">📌 Vue générale</div>
+                              <div class="mobile-item-title mb-2" i18n>📌 Vue générale</div>
 
                               <div class="tags is-small">
-                                <span class="tag is-link is-light">Total : {{ dash.stats.total }}</span>
-                                <span class="tag is-info is-light">À venir : {{ dash.stats.futures }}</span>
-                                <span class="tag is-success is-light">Réalisées : {{ dash.stats.realisees }}</span>
-                                <span class="tag is-warning is-light">À déclarer : {{ dash.stats.todoDeclaration }}</span>
-                                <span class="tag is-danger is-light">Annulées : {{ dash.stats.annulees }}</span>
-                                <span class="tag is-success">Déclaration : {{ percent(dash.stats.tauxDeclaration) }}</span>
+                                <span class="tag is-link is-light" i18n>Total : {{ dash.stats.total }}</span>
+                                <span class="tag is-info is-light" i18n>À venir : {{ dash.stats.futures }}</span>
+                                <span class="tag is-success is-light" i18n>Réalisées : {{ dash.stats.realisees }}</span>
+                                <span class="tag is-warning is-light" i18n>À déclarer : {{ dash.stats.todoDeclaration }}</span>
+                                <span class="tag is-danger is-light" i18n>Annulées : {{ dash.stats.annulees }}</span>
+                                <span class="tag is-success" i18n>Déclaration : {{ percent(dash.stats.tauxDeclaration) }}</span>
                               </div>
                             </article>
 
                             <article class="mobile-item" *ngIf="dash.todoItems.length">
-                              <div class="mobile-item-title mb-2">⚠️ À déclarer</div>
+                              <div class="mobile-item-title mb-2" i18n>⚠️ À déclarer</div>
 
                               <ng-container *ngFor="let ms of dash.todoItems">
                                 <div class="mobile-item-top mb-3">
@@ -556,10 +556,10 @@
                                 <div class="mobile-item-title mb-2">📚 {{ g.label }}</div>
 
                                 <div class="tags is-small mb-3">
-                                  <span class="tag is-link is-light">Total : {{ g.total }}</span>
-                                  <span class="tag is-info is-light">À venir : {{ g.futures }}</span>
-                                  <span class="tag is-success is-light">Réalisées : {{ g.realisees }}</span>
-                                  <span class="tag is-warning is-light">À déclarer : {{ g.todoDeclaration }}</span>
+                                  <span class="tag is-link is-light" i18n>Total : {{ g.total }}</span>
+                                  <span class="tag is-info is-light" i18n>À venir : {{ g.futures }}</span>
+                                  <span class="tag is-success is-light" i18n>Réalisées : {{ g.realisees }}</span>
+                                  <span class="tag is-warning is-light" i18n>À déclarer : {{ g.todoDeclaration }}</span>
                                 </div>
 
                                 <ng-container *ngFor="let ms of g.items">
@@ -611,7 +611,7 @@
                               </article>
                             </ng-container>
 
-                            <p *ngIf="dash.groups.length === 0" class="menu-empty">
+                            <p *ngIf="dash.groups.length === 0" class="menu-empty" i18n>
                               Aucune séance disponible.
                             </p>
                           </div>
@@ -624,7 +624,7 @@
                         (click)="scrollToTop()"
                         title="Revenir en haut"
                         type="button"
-                      >
+                       i18n-title>
                         ↑
                       </button>
                     </div>
@@ -638,7 +638,7 @@
     </ng-container>
 
     <ng-template #noRider>
-      <div class="menu-empty">
+      <div class="menu-empty" i18n>
         Aucun profil disponible pour ce tableau de bord.
       </div>
     </ng-template>

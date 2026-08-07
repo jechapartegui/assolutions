@@ -1,20 +1,20 @@
 <div class="cours-main-card">
   <header class="cours-card-header">
     <div class="cours-card-title">
-      <p class="title is-6 mb-1">Liste des cours ({{ getFilteredCours().length }})</p>
-      <p class="subtitle is-7 mb-0">Saison {{ vm.activeSaison?.nom || 'non définie' }}</p>
+      <p class="title is-6 mb-1" i18n>Liste des cours ({{ getFilteredCours().length }})</p>
+      <p class="subtitle is-7 mb-0" i18n>Saison {{ vm.activeSaison?.nom || 'non définie' }}</p>
     </div>
 
     <div class="buttons is-flex-wrap-wrap cours-card-actions">
-      <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel"><span class="icon"><i class="fas fa-sliders"></i></span><span>Filtres</span></button>
-      <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()"><span class="icon"><i class="fas fa-file-excel"></i></span><span>Excel</span></button>
-      <button class="button is-primary is-light" type="button" (click)="createCours.emit()"><span class="icon"><i class="fas fa-plus"></i></span><span>Créer</span></button>
-      <button *ngIf="isAdmin" class="button is-warning is-light cours-multi-action" type="button" (click)="toggleMultiSelectMode()"><span class="icon"><i class="fas fa-check-double"></i></span><span *ngIf="!vm.multiSelectMode">Sélection multiple</span><span *ngIf="vm.multiSelectMode">Quitter la sélection</span></button>
+      <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel"><span class="icon"><i class="fas fa-sliders"></i></span><span i18n>Filtres</span></button>
+      <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()"><span class="icon"><i class="fas fa-file-excel"></i></span><span i18n>Excel</span></button>
+      <button class="button is-primary is-light" type="button" (click)="createCours.emit()"><span class="icon"><i class="fas fa-plus"></i></span><span i18n>Créer</span></button>
+      <button *ngIf="isAdmin" class="button is-warning is-light cours-multi-action" type="button" (click)="toggleMultiSelectMode()"><span class="icon"><i class="fas fa-check-double"></i></span><span *ngIf="!vm.multiSelectMode" i18n>Sélection multiple</span><span *ngIf="vm.multiSelectMode" i18n>Quitter la sélection</span></button>
     </div>
 
     <div class="cours-bulk-toolbar" *ngIf="isAdmin && vm.multiSelectMode">
-      <span class="tag is-warning is-light">{{ vm.selectedIds?.length || 0 }} sélectionnée(s)</span>
-      <div class="buttons mb-0"><button class="button is-danger is-light" type="button" [disabled]="!(vm.selectedIds?.length)" (click)="deleteSelection()"><span class="icon"><i class="fas fa-trash"></i></span><span>Supprimer</span></button><button class="button is-light" type="button" (click)="store.clearSelection()"><span class="icon"><i class="fas fa-xmark"></i></span><span>Annuler</span></button></div>
+      <span class="tag is-warning is-light" i18n>{{ vm.selectedIds?.length || 0 }} sélectionnée(s)</span>
+      <div class="buttons mb-0"><button class="button is-danger is-light" type="button" [disabled]="!(vm.selectedIds?.length)" (click)="deleteSelection()"><span class="icon"><i class="fas fa-trash"></i></span><span i18n>Supprimer</span></button><button class="button is-light" type="button" (click)="store.clearSelection()"><span class="icon"><i class="fas fa-xmark"></i></span><span i18n>Annuler</span></button></div>
     </div>
   </header>
 
@@ -22,23 +22,23 @@
     <div *ngIf="vm.showFilterPanel" class="cours-filter-panel">
       <div class="cours-filter-panel-inner">
         <div class="columns is-multiline is-variable is-2">
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Nom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Jour</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_jour"><option [ngValue]="null">Tous</option><option *ngFor="let jour of vm.refs.liste_jour_filter" [ngValue]="jour">{{ getJourLabel(jour) }}</option></select></div></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Professeur</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_prof"><option [ngValue]="null">Tous</option><option *ngFor="let prof of vm.refs.liste_prof_filter" [ngValue]="prof.key">{{ prof.value }}</option></select></div></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Lieu</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_lieu"><option [ngValue]="null">Tous</option><option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu.key">{{ lieu.value }}</option></select></div></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Groupe</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_groupe"><option [ngValue]="null">Tous</option><option *ngFor="let g of vm.refs.liste_groupe_filter" [ngValue]="g.nom">{{ g.nom }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Nom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Jour</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_jour"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let jour of vm.refs.liste_jour_filter" [ngValue]="jour">{{ getJourLabel(jour) }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Professeur</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_prof"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let prof of vm.refs.liste_prof_filter" [ngValue]="prof.key">{{ prof.value }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Lieu</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_lieu"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu.key">{{ lieu.value }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Groupe</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_groupe"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let g of vm.refs.liste_groupe_filter" [ngValue]="g.nom">{{ g.nom }}</option></select></div></div>
         </div>
-        <div class="buttons mt-2 mb-0"><button class="button is-light" type="button" (click)="clearFilters()"><span class="icon"><i class="fas fa-eraser"></i></span><span>Réinitialiser</span></button><button class="button is-light" type="button" (click)="vm.showFilterPanel = false"><span class="icon"><i class="fas fa-xmark"></i></span><span>Fermer</span></button></div>
+        <div class="buttons mt-2 mb-0"><button class="button is-light" type="button" (click)="clearFilters()"><span class="icon"><i class="fas fa-eraser"></i></span><span i18n>Réinitialiser</span></button><button class="button is-light" type="button" (click)="vm.showFilterPanel = false"><span class="icon"><i class="fas fa-xmark"></i></span><span i18n>Fermer</span></button></div>
       </div>
     </div>
 
     <div class="cours-scroll-zone" *ngIf="getFilteredCours().length > 0">
       <div class="cours-table-wrapper is-hidden-touch">
         <table class="table is-fullwidth is-hoverable cours-table">
-          <thead><tr><th *ngIf="isAdmin && vm.multiSelectMode"></th><th (click)="sort('nom')" class="is-clickable">Nom</th><th (click)="sort('jour')" class="is-clickable">Jour</th><th>Heure</th><th>Durée</th><th>Responsable</th><th (click)="sort('lieu')" class="is-clickable">Lieu</th><th>Groupes</th><th>Action</th></tr></thead>
+          <thead><tr><th *ngIf="isAdmin && vm.multiSelectMode"></th><th (click)="sort('nom')" class="is-clickable" i18n>Nom</th><th (click)="sort('jour')" class="is-clickable" i18n>Jour</th><th i18n>Heure</th><th i18n>Durée</th><th i18n>Responsable</th><th (click)="sort('lieu')" class="is-clickable" i18n>Lieu</th><th i18n>Groupes</th><th i18n>Action</th></tr></thead>
           <tbody><tr *ngFor="let cours of getFilteredCours()">
             <td *ngIf="isAdmin && vm.multiSelectMode"><input type="checkbox" [checked]="isSelected(cours.id)" (change)="toggleSelection(cours.id)" /></td>
-            <td><button class="cours-name-button" type="button" (click)="open(cours)">{{ cours.nom }}</button></td><td>{{ getJourLabel(cours.jour_semaine) }}</td><td>{{ cours.heure }}</td><td>{{ cours.duree }} min</td><td>{{ getProfesseurLabel(cours) }}</td><td>{{ getLieuLabel(cours) }}</td><td><div class="tags is-small"><span class="tag is-info is-light" *ngFor="let gr of cours.groupes">{{ gr.nom }}</span></div></td><td><button class="button is-small is-light" type="button" (click)="open(cours)"><span class="icon"><i class="fas fa-pen"></i></span></button></td>
+            <td><button class="cours-name-button" type="button" (click)="open(cours)">{{ cours.nom }}</button></td><td>{{ getJourLabel(cours.jour_semaine) }}</td><td>{{ cours.heure }}</td><td i18n>{{ cours.duree }} min</td><td>{{ getProfesseurLabel(cours) }}</td><td>{{ getLieuLabel(cours) }}</td><td><div class="tags is-small"><span class="tag is-info is-light" *ngFor="let gr of cours.groupes">{{ gr.nom }}</span></div></td><td><button class="button is-small is-light" type="button" (click)="open(cours)"><span class="icon"><i class="fas fa-pen"></i></span></button></td>
           </tr></tbody>
         </table>
       </div>
@@ -49,10 +49,10 @@
             <div class="cours-tile-main">
               <div class="cours-tile-badges"><span class="tag is-primary is-light">{{ getJourLabel(cours.jour_semaine) }}</span></div>
               <button type="button" class="cours-name-button cours-tile-title" (click)="open(cours)">{{ cours.nom || 'Cours sans nom' }}</button>
-              <p class="cours-tile-line"><span class="icon-text"><span class="icon"><i class="fas fa-clock"></i></span><span>{{ cours.heure }} · {{ cours.duree }} min</span></span></p>
+              <p class="cours-tile-line"><span class="icon-text"><span class="icon"><i class="fas fa-clock"></i></span><span i18n>{{ cours.heure }} · {{ cours.duree }} min</span></span></p>
               <p class="cours-tile-line" *ngIf="getLieuLabel(cours)"><span class="icon-text"><span class="icon"><i class="fas fa-location-dot"></i></span><span>{{ getLieuLabel(cours) }}</span></span></p>
-              <p class="cours-tile-meta" *ngIf="getProfesseurLabel(cours)"><strong>Responsable :</strong> {{ getProfesseurLabel(cours) }}</p>
-              <p class="cours-tile-meta" *ngIf="getGroupesLabel(cours)"><strong>Groupes :</strong> {{ getGroupesLabel(cours) }}</p>
+              <p class="cours-tile-meta" *ngIf="getProfesseurLabel(cours)"><strong i18n>Responsable :</strong> {{ getProfesseurLabel(cours) }}</p>
+              <p class="cours-tile-meta" *ngIf="getGroupesLabel(cours)"><strong i18n>Groupes :</strong> {{ getGroupesLabel(cours) }}</p>
             </div>
             <div class="cours-tile-action" *ngIf="isAdmin && vm.multiSelectMode"><label class="checkbox"><input type="checkbox" [checked]="isSelected(cours.id)" (change)="toggleSelection(cours.id)" /></label></div>
             <div class="cours-tile-action" *ngIf="!(isAdmin && vm.multiSelectMode)"><button class="button is-small is-light" type="button" (click)="open(cours)"><span class="icon"><i class="fas fa-pen"></i></span></button></div>
@@ -60,6 +60,6 @@
         </article>
       </div>
     </div>
-    <div *ngIf="getFilteredCours().length === 0" class="cours-empty">Pas de cours disponibles.</div>
+    <div *ngIf="getFilteredCours().length === 0" class="cours-empty" i18n>Pas de cours disponibles.</div>
   </div>
 </div>

@@ -1,28 +1,28 @@
 <div class="finance-page">
   <header class="finance-header">
     <div>
-      <p class="finance-kicker">Finances</p>
-      <h1 class="title is-4 mb-1">Suivi financier</h1>
-      <p class="has-text-grey is-size-7">Budget, flux financiers, paiements, documents et stocks.</p>
+      <p class="finance-kicker" i18n>Finances</p>
+      <h1 class="title is-4 mb-1" i18n>Suivi financier</h1>
+      <p class="has-text-grey is-size-7" i18n>Budget, flux financiers, paiements, documents et stocks.</p>
     </div>
   </header>
 
   <nav class="tabs is-boxed finance-tabs">
     <ul>
       <li [class.is-active]="vue === 'DASHBOARD'">
-        <a (click)="setVue('DASHBOARD')">Tableau de bord</a>
+        <a (click)="setVue('DASHBOARD')" i18n>Tableau de bord</a>
       </li>
       <li [class.is-active]="vue === 'BUDGET'">
-        <a (click)="setVue('BUDGET')">Budget</a>
+        <a (click)="setVue('BUDGET')" i18n>Budget</a>
       </li>
       <li [class.is-active]="vue === 'FLUX'">
-        <a (click)="setVue('FLUX')">Flux financiers</a>
+        <a (click)="setVue('FLUX')" i18n>Flux financiers</a>
       </li>
     </ul>
   </nav>
 
   <article class="message is-info" *ngIf="loading">
-    <div class="message-body">Chargement des données financières...</div>
+    <div class="message-body" i18n>Chargement des données financières...</div>
   </article>
 
   <main class="finance-main" *ngIf="!loading">
@@ -30,10 +30,10 @@
     <section *ngIf="vue === 'DASHBOARD'" class="finance-section dashboard-section">
       <div class="dashboard-controls">
         <div class="field dashboard-scenario-field">
-          <label class="label is-small">Scénario budget</label>
+          <label class="label is-small" i18n>Scénario budget</label>
           <div class="select is-small">
             <select [(ngModel)]="selectedScenarioId" (ngModelChange)="onScenarioChange()">
-              <option [ngValue]="null">Aucun scénario</option>
+              <option [ngValue]="null" i18n>Aucun scénario</option>
               <option *ngFor="let scenario of scenarios" [ngValue]="scenario.id">
                 {{ scenario.nom }}
               </option>
@@ -41,7 +41,7 @@
           </div>
         </div>
 
-        <label class="checkbox mt-5">
+        <label class="checkbox mt-5" i18n>
           <input type="checkbox" [(ngModel)]="dashboardDetail" />
           Afficher le détail des classes
         </label>
@@ -49,33 +49,33 @@
 
       <div class="finance-kpi-grid">
         <div class="finance-kpi">
-          <span>Budget prévu</span>
+          <span i18n>Budget prévu</span>
           <strong>{{ formatMontant(totalBudget) }}</strong>
         </div>
         <div class="finance-kpi">
-          <span>Recettes engagées</span>
+          <span i18n>Recettes engagées</span>
           <strong class="has-text-success">{{ formatMontant(totalEngageRecettes) }}</strong>
         </div>
         <div class="finance-kpi">
-          <span>Dépenses engagées</span>
+          <span i18n>Dépenses engagées</span>
           <strong class="has-text-danger">{{ formatMontant(totalEngageDepenses) }}</strong>
         </div>
         <div class="finance-kpi">
-          <span>Solde engagé</span>
+          <span i18n>Solde engagé</span>
           <strong [class.has-text-success]="soldeEngage >= 0" [class.has-text-danger]="soldeEngage < 0">
             {{ formatMontant(soldeEngage) }}
           </strong>
         </div>
         <div class="finance-kpi">
-          <span>Recettes payées</span>
+          <span i18n>Recettes payées</span>
           <strong class="has-text-success">{{ formatMontant(totalPayeRecettes) }}</strong>
         </div>
         <div class="finance-kpi">
-          <span>Dépenses payées</span>
+          <span i18n>Dépenses payées</span>
           <strong class="has-text-danger">{{ formatMontant(totalPayeDepenses) }}</strong>
         </div>
         <div class="finance-kpi">
-          <span>Solde payé</span>
+          <span i18n>Solde payé</span>
           <strong [class.has-text-success]="soldePaye >= 0" [class.has-text-danger]="soldePaye < 0">
             {{ formatMontant(soldePaye) }}
           </strong>
@@ -86,11 +86,11 @@
         <table class="table is-fullwidth is-striped is-hoverable is-narrow">
           <thead>
             <tr>
-              <th>Classe</th>
-              <th class="has-text-right">Budget</th>
-              <th class="has-text-right">Engagé</th>
-              <th class="has-text-right">Payé</th>
-              <th class="has-text-right">Écart budget / engagé</th>
+              <th i18n>Classe</th>
+              <th class="has-text-right" i18n>Budget</th>
+              <th class="has-text-right" i18n>Engagé</th>
+              <th class="has-text-right" i18n>Payé</th>
+              <th class="has-text-right" i18n>Écart budget / engagé</th>
             </tr>
           </thead>
           <tbody>
@@ -115,16 +115,16 @@
       <aside class="budget-scenarios">
         <div class="card full-height">
           <header class="card-header">
-            <p class="card-header-title">Scénarios</p>
+            <p class="card-header-title" i18n>Scénarios</p>
           </header>
 
           <div class="card-content scenario-content">
             <div class="field has-addons mb-3">
               <div class="control is-expanded">
-                <input class="input is-small" [(ngModel)]="newScenarioName" placeholder="Nouveau scénario" />
+                <input class="input is-small" [(ngModel)]="newScenarioName" placeholder="Nouveau scénario"  i18n-placeholder/>
               </div>
               <div class="control">
-                <button class="button is-small is-primary" (click)="createScenario()" [disabled]="saving">Ajouter</button>
+                <button class="button is-small is-primary" (click)="createScenario()" [disabled]="saving" i18n>Ajouter</button>
               </div>
             </div>
 
@@ -145,32 +145,32 @@
       <div class="budget-lines">
         <div class="card full-height">
           <header class="card-header">
-            <p class="card-header-title">Lignes de budget</p>
+            <p class="card-header-title" i18n>Lignes de budget</p>
           </header>
 
           <div class="card-content budget-lines-content">
             <div class="budget-add-row">
               <div class="select is-small">
                 <select [(ngModel)]="newLigneClasseId">
-                  <option [ngValue]="null">Classe comptable</option>
+                  <option [ngValue]="null" i18n>Classe comptable</option>
                   <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
                     {{ c.code }} - {{ c.libelle }}
                   </option>
                 </select>
               </div>
-              <input class="input is-small budget-amount" type="number" [(ngModel)]="newLigneMontant" placeholder="Montant" />
-              <input class="input is-small" [(ngModel)]="newLigneInfo" placeholder="Commentaire" />
-              <button class="button is-small is-primary" (click)="addBudgetLigne()">Ajouter</button>
+              <input class="input is-small budget-amount" type="number" [(ngModel)]="newLigneMontant" placeholder="Montant"  i18n-placeholder/>
+              <input class="input is-small" [(ngModel)]="newLigneInfo" placeholder="Commentaire"  i18n-placeholder/>
+              <button class="button is-small is-primary" (click)="addBudgetLigne()" i18n>Ajouter</button>
             </div>
 
             <div class="budget-table-wrapper">
               <table class="table is-fullwidth is-striped is-hoverable is-narrow">
                 <thead>
                   <tr>
-                    <th>Classe</th>
-                    <th class="has-text-right">Montant</th>
-                    <th>Info</th>
-                    <th class="has-text-right">Actions</th>
+                    <th i18n>Classe</th>
+                    <th class="has-text-right" i18n>Montant</th>
+                    <th i18n>Info</th>
+                    <th class="has-text-right" i18n>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -199,7 +199,7 @@
                 </tbody>
                 <tfoot>
                   <tr>
-                    <th>Total</th>
+                    <th i18n>Total</th>
                     <th class="has-text-right">{{ formatMontant(totalBudget) }}</th>
                     <th colspan="2"></th>
                   </tr>
@@ -214,11 +214,11 @@
     <!-- FLUX -->
     <section *ngIf="vue === 'FLUX'" class="finance-section flux-section">
       <div class="flux-toolbar">
-        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer libellé / destinataire" />
+        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer libellé / destinataire"  i18n-placeholder/>
 
         <div class="select is-small">
           <select [(ngModel)]="filterClasseId">
-            <option [ngValue]="null">Toutes classes</option>
+            <option [ngValue]="null" i18n>Toutes classes</option>
             <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
               {{ c.code }} - {{ c.libelle }}
             </option>
@@ -227,37 +227,37 @@
 
         <div class="select is-small">
           <select [(ngModel)]="filterSens">
-            <option value="ALL">Recettes + dépenses</option>
-            <option value="RECETTE">Recettes</option>
-            <option value="DEPENSE">Dépenses</option>
+            <option value="ALL" i18n>Recettes + dépenses</option>
+            <option value="RECETTE" i18n>Recettes</option>
+            <option value="DEPENSE" i18n>Dépenses</option>
           </select>
         </div>
 
-        <label class="checkbox is-size-7">
+        <label class="checkbox is-size-7" i18n>
           <input type="checkbox" [(ngModel)]="showSystemFlux" /> Afficher flux système
         </label>
 
-        <button class="button is-small is-primary" (click)="createFlux()">Nouveau flux</button>
+        <button class="button is-small is-primary" (click)="createFlux()" i18n>Nouveau flux</button>
       </div>
 
       <div class="flux-layout">
         <div class="flux-list" *ngIf="!selectedFlux">
           <div class="card full-height">
             <header class="card-header">
-              <p class="card-header-title">Flux financiers</p>
+              <p class="card-header-title" i18n>Flux financiers</p>
             </header>
 
             <div  class="card-content p-0 flux-table-wrapper">
               <table class="table is-fullwidth is-striped is-hoverable is-narrow">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Libellé</th>
-                    <th>Classe</th>
-                    <th>Destinataire</th>
-                    <th class="has-text-right">Montant</th>
-                    <th>Type</th>
-                    <th class="has-text-right">Actions</th>
+                    <th i18n>Date</th>
+                    <th i18n>Libellé</th>
+                    <th i18n>Classe</th>
+                    <th i18n>Destinataire</th>
+                    <th class="has-text-right" i18n>Montant</th>
+                    <th i18n>Type</th>
+                    <th class="has-text-right" i18n>Actions</th>
                   </tr>
                 </thead>
 
@@ -266,7 +266,7 @@
                     <td>{{ f.date | date:'dd/MM/yyyy' }}</td>
                     <td>
                       <a (click)="editFlux(f)">{{ f.libelle }}</a>
-                      <span class="tag is-warning is-light ml-1" *ngIf="f.flux_systeme">système</span>
+                      <span class="tag is-warning is-light ml-1" *ngIf="f.flux_systeme" i18n>système</span>
                     </td>
                     <td>{{ getClasseLabel(getFluxClasseId(f)) }}</td>
                     <td>{{ f.destinataire }}</td>
@@ -300,16 +300,16 @@
 
             <div class="card-content flux-editor-content">
               <article class="message is-warning" *ngIf="selectedFlux.flux_systeme">
-                <div class="message-body">Flux système utilisé pour classer les opérations importées.</div>
+                <div class="message-body" i18n>Flux système utilisé pour classer les opérations importées.</div>
               </article>
 
               <!-- Bloc 1 : Informations -->
 <section class="flux-block flux-block-compact">
-  <h3 class="title is-6">1. Informations</h3>
+  <h3 class="title is-6" i18n>1. Informations</h3>
 
   <div class="flux-info-grid">
     <div class="field flux-field-wide">
-      <label class="label is-small">Libellé</label>
+      <label class="label is-small" i18n>Libellé</label>
       <input class="input is-small is-fullwidth" [(ngModel)]="selectedFlux.libelle" list="flux-libelles" />
       <datalist id="flux-libelles">
         <option *ngFor="let label of libelleSuggestions" [value]="label"></option>
@@ -317,30 +317,30 @@
     </div>
 
     <div class="field">
-      <label class="label is-small">Date</label>
+      <label class="label is-small" i18n>Date</label>
       <input class="input is-small" type="date" [(ngModel)]="selectedFlux.date" />
     </div>
 
     <div class="field">
-      <label class="label is-small">Montant</label>
+      <label class="label is-small" i18n>Montant</label>
       <input class="input is-small" type="number" [(ngModel)]="selectedFlux.montant" />
     </div>
 
     <div class="field">
-      <label class="label is-small">Type</label>
+      <label class="label is-small" i18n>Type</label>
       <div class="select is-small is-fullwidth">
         <select [(ngModel)]="selectedFlux.recette">
-          <option [ngValue]="true">Recette</option>
-          <option [ngValue]="false">Dépense</option>
+          <option [ngValue]="true" i18n>Recette</option>
+          <option [ngValue]="false" i18n>Dépense</option>
         </select>
       </div>
     </div>
 
     <div class="field ">
-      <label class="label is-small">Classe</label>
+      <label class="label is-small" i18n>Classe</label>
       <div class="select is-small is-fullwidth">
         <select [(ngModel)]="selectedFlux.classe_comptable_id">
-          <option [ngValue]="null">Non classé</option>
+          <option [ngValue]="null" i18n>Non classé</option>
           <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
             {{ c.code }} - {{ c.libelle }}
           </option>
@@ -353,7 +353,7 @@
     class="button is-small is-light is-fullwidth"
     type="button"
     (click)="syncFluxMontantFromOperations()"
-  >
+   i18n>
     Montant = paiements
   </button>
 </div>
@@ -362,20 +362,20 @@
 
               <!-- Bloc 2 : Destinataire -->
               <section class="flux-block">
-                <h3 class="title is-6">2. Destinataire</h3>
+                <h3 class="title is-6" i18n>2. Destinataire</h3>
 
                 <div class="field">
-                  <label class="label is-small">Mode</label>
+                  <label class="label is-small" i18n>Mode</label>
                   <div class="select is-small is-fullwidth">
                     <select [(ngModel)]="destinataireMode">
-                      <option value="LIBRE">Texte libre</option>
-                      <option value="PERSONNE">Personne</option>
+                      <option value="LIBRE" i18n>Texte libre</option>
+                      <option value="PERSONNE" i18n>Personne</option>
                     </select>
                   </div>
                 </div>
 
                 <div class="field" *ngIf="destinataireMode === 'LIBRE'">
-                  <label class="label is-small">Destinataire</label>
+                  <label class="label is-small" i18n>Destinataire</label>
                   <input class="input is-small" [(ngModel)]="selectedFlux.destinataire" list="flux-destinataires" />
                   <datalist id="flux-destinataires">
                     <option *ngFor="let label of destinataireSuggestions" [value]="label"></option>
@@ -383,17 +383,17 @@
                 </div>
 
                 <div class="field" *ngIf="destinataireMode === 'PERSONNE'">
-                  <label class="label is-small">Personne liée</label>
+                  <label class="label is-small" i18n>Personne liée</label>
                   <app-personne-selector
                     [(personneId)]="selectedFlux.personne_id"
                     (selectedChange)="onFluxPersonneSelected($event)"
                     placeholder="Rechercher adhérent / prof"
-                  ></app-personne-selector>
-                  <p class="help" *ngIf="selectedFlux.destinataire">Libellé retenu : {{ selectedFlux.destinataire }}</p>
+                   i18n-placeholder></app-personne-selector>
+                  <p class="help" *ngIf="selectedFlux.destinataire" i18n>Libellé retenu : {{ selectedFlux.destinataire }}</p>
                 </div>
 
                 <div class="field">
-                  <label class="label is-small">Info</label>
+                  <label class="label is-small" i18n>Info</label>
                   <textarea class="textarea is-small" rows="2" [(ngModel)]="selectedFlux.info"></textarea>
                 </div>
               </section>
@@ -401,19 +401,19 @@
               <!-- Bloc 3 : Paiements -->
               <section class="flux-block">
                 <div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
-                  <h3 class="title is-6 mb-0">3. Paiements</h3>
-                  <button class="button is-small" (click)="addOperation()">Ajouter</button>
+                  <h3 class="title is-6 mb-0" i18n>3. Paiements</h3>
+                  <button class="button is-small" (click)="addOperation()" i18n>Ajouter</button>
                 </div>
 
                 <div class="operations-mini-table">
                   <table class="table is-fullwidth is-narrow">
                     <thead>
                       <tr>
-                        <th>Prévu</th>
-                        <th>Réel</th>
-                        <th>Compte</th>
-                        <th>Montant</th>
-                        <th>OK</th>
+                        <th i18n>Prévu</th>
+                        <th i18n>Réel</th>
+                        <th i18n>Compte</th>
+                        <th i18n>Montant</th>
+                        <th i18n>OK</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -440,14 +440,14 @@
                   </table>
                 </div>
 
-                <p class="help" [class.has-text-danger]="deltaSelectedFlux !== 0">
+                <p class="help" [class.has-text-danger]="deltaSelectedFlux !== 0" i18n>
                   Total paiements : {{ formatMontant(totalOperationsSelectedFlux) }} — Écart : {{ formatMontant(deltaSelectedFlux) }}
                 </p>
               </section>
 
               <!-- Bloc 4 : Documents -->
               <section class="flux-block">
-                <h3 class="title is-6">4. Documents</h3>
+                <h3 class="title is-6" i18n>4. Documents</h3>
 
 <div class="document-add-grid">
   <div class="select is-small">
@@ -463,11 +463,11 @@
     {{ newDocumentFile?.name || 'Fichier' }}
   </label>
 
-  <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre" />
+  <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre"  i18n-placeholder/>
 
-  <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire" />
+  <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire"  i18n-placeholder/>
 
-  <button class="button is-small is-primary" (click)="addDocumentToFlux()">
+  <button class="button is-small is-primary" (click)="addDocumentToFlux()" i18n>
     Ajouter
   </button>
 </div>
@@ -493,32 +493,32 @@
                 </div>
 
                 <ng-template #noDocuments>
-                  <p class="help">Aucun document lié.</p>
+                  <p class="help" i18n>Aucun document lié.</p>
                 </ng-template>
               </section>
 
               <!-- Bloc 5 : Stocks -->
               <section class="flux-block">
-                <h3 class="title is-6">5. Stocks</h3>
+                <h3 class="title is-6" i18n>5. Stocks</h3>
 
 <div class="stock-add-grid stock-add-grid-compact">
-  <input class="input is-small stock-qte" type="number" [(ngModel)]="newStock.qte" placeholder="Qté" />
+  <input class="input is-small stock-qte" type="number" [(ngModel)]="newStock.qte" placeholder="Qté"  i18n-placeholder/>
 
   <div class="select is-small is-fullwidth stock-type">
     <select [ngModel]="newStock.type_stock_id" (ngModelChange)="onStockTypeChange($event)">
-      <option [ngValue]="null">Type stock</option>
+      <option [ngValue]="null" i18n>Type stock</option>
       <option *ngFor="let type of stockTypeLov" [ngValue]="type.id">
         {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
       </option>
     </select>
   </div>
 
-  <input class="input is-small stock-libelle" [(ngModel)]="newStock.libelle" placeholder="Libellé" />
+  <input class="input is-small stock-libelle" [(ngModel)]="newStock.libelle" placeholder="Libellé"  i18n-placeholder/>
 
   <div class="select is-small is-fullwidth stock-lieu-mode">
     <select [(ngModel)]="lieuMode">
-      <option value="LIBRE">Libre</option>
-      <option value="EXISTE">Lieu</option>
+      <option value="LIBRE" i18n>Libre</option>
+      <option value="EXISTE" i18n>Lieu</option>
     </select>
   </div>
 
@@ -528,20 +528,20 @@
     [(lieuId)]="newStock.lieu_id"
     (selectedChange)="onStockLieuSelected($event)"
     placeholder="Lieu"
-  ></app-lieu-selector>
+   i18n-placeholder></app-lieu-selector>
 
   <input
     *ngIf="lieuMode === 'LIBRE'"
     class="input is-small stock-lieu"
     [(ngModel)]="newStock.lieu_stockage"
     placeholder="Lieu de stockage"
-  />
+   i18n-placeholder/>
 
-  <input class="input is-small stock-valeur" type="number" [(ngModel)]="newStock.valeur_achat" placeholder="Valeur" />
+  <input class="input is-small stock-valeur" type="number" [(ngModel)]="newStock.valeur_achat" placeholder="Valeur"  i18n-placeholder/>
 
   <input class="input is-small stock-date" type="date" [(ngModel)]="newStock.date_achat" />
 
-  <button class="button is-small is-primary stock-add-button" (click)="addStockToFlux()">
+  <button class="button is-small is-primary stock-add-button" (click)="addStockToFlux()" i18n>
     Ajouter
   </button>
 </div>
@@ -562,13 +562,13 @@
                 </div>
 
                 <ng-template #noStocks>
-                  <p class="help">Aucun stock lié.</p>
+                  <p class="help" i18n>Aucun stock lié.</p>
                 </ng-template>
               </section>
 
               <div class="buttons is-right mt-4">
-                <button class="button is-light" (click)="closeFlux()">Annuler</button>
-                <button class="button is-primary" (click)="saveFlux()" [disabled]="saving">
+                <button class="button is-light" (click)="closeFlux()" i18n>Annuler</button>
+                <button class="button is-primary" (click)="saveFlux()" [disabled]="saving" i18n>
                   Sauvegarder
                 </button>
               </div>
