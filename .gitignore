@@ -45,6 +45,7 @@ Thumbs.db
 .tsc.out
 
 # Generated i18n files
+apps/assolutions-front/src/locale/messages.xlf
 apps/assolutions-front/src/locale/messages.en.json
 
 # Environment files: never commit secrets
