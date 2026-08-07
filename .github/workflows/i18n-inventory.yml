@@ -20,10 +20,8 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Prepare current i18n sources
-        run: |
-          node tools/i18n/annotate-assolutions-templates.mjs
-          node tools/i18n/build-en-translations.mjs
+      - name: Assemble English catalog
+        run: node tools/i18n/build-en-translations.mjs
 
       - name: Extract current Angular messages
         run: |
