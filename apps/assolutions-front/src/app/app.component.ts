@@ -22,6 +22,7 @@ export class AppComponent implements OnInit, OnDestroy {
   search_text = '';
   envt = environment;
   isPublic = false;
+  defaultProjectLabel = $localize`Projet`;
 
   @ViewChild(NotifJechaComponent, { static: true })
   child!: NotifJechaComponent;
@@ -74,10 +75,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.isactive = false;
   }
 
-selectMenu(menu: MenuType): void {
-  this.store.updateSelectedMenu(menu);
-  this.closeMenu();
-}
+  selectMenu(menu: MenuType): void {
+    this.store.updateSelectedMenu(menu);
+    this.closeMenu();
+  }
 
   LogOut(): void {
     const errorService = ErrorService.instance;
