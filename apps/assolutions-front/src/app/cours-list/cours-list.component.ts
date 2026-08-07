@@ -75,7 +75,7 @@ exportExcel(): void {
     },
 
     {
-      header: $localize`:@@season.name:Saison`,
+      header: $localize`:@@course.season:Saison`,
       value: c =>
         this.vm.refs?.listeSaison?.find(s => s.id === c.saison_id)?.nom ?? ''
     },
