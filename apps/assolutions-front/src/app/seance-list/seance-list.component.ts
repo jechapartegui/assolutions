@@ -39,7 +39,7 @@ export class SeanceListComponent {
       { header: $localize`:@@common.id:ID`, value: s => s.id },
       { header: $localize`:@@session.name:Séance`, value: s => s.nom },
       { header: $localize`:@@course.name:Cours`, value: s => s.cours_nom ?? '' },
-      { header: $localize`:@@session.type:Type`, value: s => s.type_seance },
+      { header: $localize`:@@session.type:Type`, value: s => this.getTypeLabel(s) },
       { header: $localize`:@@session.date:Date`, value: s => this.dateOnly(s.date_seance) },
       { header: $localize`:@@session.start:Heure début`, value: s => s.heure_debut },
       { header: $localize`:@@session.end:Heure fin`, value: s => s.heure_fin },
@@ -52,7 +52,7 @@ export class SeanceListComponent {
           .map(p => `${p.prenom ?? ''} ${p.nom ?? ''}`.trim())
           .join(', '),
       },
-      { header: $localize`:@@session.status:Statut`, value: s => s.statut },
+      { header: $localize`:@@session.status:Statut`, value: s => this.getStatusLabel(s.statut) },
       { header: $localize`:@@member.minAge:Âge minimum`, value: s => s.age_minimum },
       { header: $localize`:@@member.maxAge:Âge maximum`, value: s => s.age_maximum },
       { header: $localize`:@@place.maximum:Places maximum`, value: s => s.place_maximum },
@@ -82,8 +82,8 @@ export class SeanceListComponent {
     if (!count) return;
     const confirmDelete = window.confirm(
       count === 1
-        ? 'Voulez-vous supprimer la séance sélectionnée ?'
-        : `Voulez-vous supprimer les ${count} séances sélectionnées ?`,
+        ? $localize`:@@session.deleteOne:Voulez-vous supprimer la séance sélectionnée ?`
+        : $localize`:@@session.deleteMany:Voulez-vous supprimer les ${count}:COUNT: séances sélectionnées ?`,
     );
     if (!confirmDelete) return;
     await this.store.deleteSelectedSeances();
@@ -132,11 +132,20 @@ export class SeanceListComponent {
   getTypeLabel(seance: Seance_VM): string {
     if (seance.cours_nom) return seance.cours_nom;
     switch (seance.type_seance) {
-      case 'ENTRAINEMENT': return 'Cours';
-      case 'SORTIE': return 'Sortie';
-      case 'MATCH': return 'Match';
-      case 'EVENEMENT': return 'Événement';
+      case 'ENTRAINEMENT': return $localize`:@@session.type.training:Cours`;
+      case 'SORTIE': return $localize`:@@session.type.outing:Sortie`;
+      case 'MATCH': return $localize`:@@session.type.match:Match`;
+      case 'EVENEMENT': return $localize`:@@session.type.event:Événement`;
       default: return seance.type_seance ?? '';
+    }
+  }
+
+  getStatusLabel(status: string | null | undefined): string {
+    switch (status) {
+      case 'prévue': return $localize`:@@session.status.planned:Prévue`;
+      case 'réalisée': return $localize`:@@session.status.completed:Réalisée`;
+      case 'annulée': return $localize`:@@session.status.cancelled:Annulée`;
+      default: return status ?? '';
     }
   }
 
