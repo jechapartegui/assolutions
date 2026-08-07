@@ -232,6 +232,17 @@
                 <span class="tablet">Cours</span>
               </a>
             </li>
+
+            <li *ngIf="store.isLoggedIn() && store.isProf()">
+              <a
+                [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'"
+                (click)="selectMenu('GROUPE')"
+                [routerLink]="['/groupe']"
+              >
+                <span class="icon is-large"><i class="fas fa-2x fa-layer-group"></i></span>
+                <span class="tablet">Groupes</span>
+              </a>
+            </li>
           </ul>
         </div>
       </footer>

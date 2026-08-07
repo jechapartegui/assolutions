@@ -2,9 +2,7 @@
   <section class="account-header">
     <div>
       <h1 class="title is-3 mb-1" i18n>Mon compte</h1>
-      <p class="subtitle is-6 has-text-grey" i18n>
-        Gérez vos projets, vos personnes et vos accès.
-      </p>
+      <p class="subtitle is-6 has-text-grey" i18n>Gérez vos inscriptions, vos personnes et votre accès.</p>
     </div>
   </section>
 
@@ -13,159 +11,109 @@
     <p class="has-text-grey" i18n>Chargement…</p>
   </div>
 
-  <div *ngIf="!loading" class="account-grid">
-    <section class="box account-card">
-      <h2 class="title is-5" i18n>Mon compte</h2>
-      <div class="account-line">
-        <span class="label-inline" i18n>Email</span>
-        <strong>{{ store.compte?.()?.login || '—' }}</strong>
-      </div>
-      <div class="account-actions">
-        <button class="button is-light" (click)="reinitPassword()" i18n>
-          Recevoir un lien pour définir / réinitialiser mon mot de passe
-        </button>
-      </div>
-    </section>
-
+  <div *ngIf="!loading" class="account-content">
     <section class="box account-card account-subscription-card" *ngIf="selectedProject()">
-      <div>
-        <h2 class="title is-5 mb-1">Inscription au club</h2>
-        <p class="has-text-grey is-size-7">
-          Inscrire ou renouveler une ou plusieurs personnes pour {{ selectedProject()?.nom }}.
-        </p>
+      <div class="account-card-heading">
+        <div class="account-card-icon"><i class="fas fa-id-card"></i></div>
+        <div>
+          <h2 class="title is-5 mb-1">Inscription au club</h2>
+          <p class="has-text-grey is-size-7 mb-0">Inscrire ou renouveler une personne pour {{ selectedProject()?.nom }}.</p>
+        </div>
       </div>
-      <a
-        class="button is-primary"
-        [routerLink]="['/souscription']"
-      >
-        <span class="icon"><i class="fas fa-id-card"></i></span>
+      <a class="button is-primary account-primary-action" [routerLink]="['/souscription']">
+        <span class="icon"><i class="fas fa-arrow-right"></i></span>
         <span>Commencer une inscription</span>
       </a>
     </section>
 
-    <section class="box account-card">
-      <h2 class="title is-5" i18n>Mes projets</h2>
-      <p *ngIf="!hasProjects()" class="has-text-grey" i18n>
-        Vous n’êtes rattaché à aucun projet pour le moment.
-      </p>
-
-      <div *ngFor="let project of projets()" class="project-row">
+    <section class="box account-card account-people-card">
+      <div class="account-section-heading">
         <div>
-          <strong>{{ project.nom }}</strong>
-          <p *ngIf="selectedProject()?.id === project.id" class="tag is-success is-light mt-1" i18n>
-            Projet courant
-          </p>
+          <h2 class="title is-5 mb-1" i18n>Mes personnes</h2>
+          <p class="has-text-grey is-size-7 mb-0">Les personnes rattachées à votre compte.</p>
         </div>
-        <div class="buttons mb-0">
-          <button class="button is-success is-light" (click)="enterProject(project)" i18n>
-            Entrer
-          </button>
-          <a
-            class="button is-primary is-light"
-            (click)="store.selectProject(project.id)"
-            [routerLink]="['/souscription']"
-          >
-            S'inscrire
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section class="box account-card">
-      <h2 class="title is-5" i18n>Rejoindre un projet</h2>
-      <div class="field">
-        <label class="label is-small" i18n>Code ou token d’invitation</label>
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <input
-              class="input"
-              type="text"
-              [(ngModel)]="joinToken"
-              placeholder="Code d’invitation"
-              i18n-placeholder
-            />
-          </div>
-          <div class="control">
-            <button
-              class="button is-link"
-              [disabled]="!joinToken.trim()"
-              (click)="joinWithToken()"
-              i18n
-            >
-              Rejoindre
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="publicProjectsToJoin.length">
-        <hr />
-        <h3 class="title is-6" i18n>Projets publics</h3>
-        <div *ngFor="let project of publicProjects" class="project-row">
-          <div>
-            <strong>{{ project.nom }}</strong>
-            <p class="has-text-grey is-size-7" *ngIf="project.activite">
-              {{ project.activite }}
-            </p>
-          </div>
-          <button class="button is-link is-light" (click)="joinPublicProject(project)" i18n>
-            Rejoindre
-          </button>
-        </div>
-      </div>
-      <p *ngIf="!publicProjectsToJoin.length" class="has-text-grey is-size-7 mt-3" i18n>
-        Tous les projets publics disponibles sont déjà rattachés à votre compte.
-      </p>
-    </section>
-
-    <section class="box account-card account-card-wide">
-      <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-        <h2 class="title is-5 mb-0" i18n>Mes personnes</h2>
-        <button class="button is-primary is-light" (click)="addPersonne()" i18n>
-          Ajouter une personne
+        <button class="button is-primary is-light account-add-person" (click)="addPersonne()" i18n>
+          <span class="icon"><i class="fas fa-plus"></i></span><span>Ajouter</span>
         </button>
       </div>
 
-      <p *ngIf="!personnes.length" class="has-text-grey" i18n>
-        Aucune personne n’est encore rattachée à ce compte.
-      </p>
+      <p *ngIf="!personnes.length" class="has-text-grey" i18n>Aucune personne n’est encore rattachée à ce compte.</p>
 
       <div *ngFor="let personne of personnes" class="person-row">
-        <div>
-          <strong>
-            {{ personne.first_name || personne.prenom }}
-            {{ personne.last_name || personne.nom }}
-          </strong>
-          <p class="has-text-grey is-size-7">{{ personne.date_naissance || '' }}</p>
-          <div class="person-projects mt-2">
+        <button class="person-main" type="button" (click)="editPersonne(personne)">
+          <span class="person-name">{{ personne.first_name || personne.prenom }} {{ personne.last_name || personne.nom }}</span>
+          <span class="person-birthdate">{{ personne.date_naissance || '' }}</span>
+          <span class="person-projects">
             <ng-container *ngIf="getInscriptionsForPersonne(personne.id).length; else noProjectForPersonne">
-              <span
-                class="tag mr-1 mb-1"
-                [class.is-success]="ins.active"
-                [class.is-light]="true"
-                *ngFor="let ins of getInscriptionsForPersonne(personne.id)"
-              >
-                {{ ins.project_nom }} · {{ ins.saison_nom }}
-                <span *ngIf="ins.active">&nbsp;· active</span>
+              <span class="tag mr-1 mb-1" [class.is-success]="ins.active" [class.is-light]="true" *ngFor="let ins of getInscriptionsForPersonne(personne.id)">
+                {{ ins.project_nom }} · {{ ins.saison_nom }}<span *ngIf="ins.active">&nbsp;· active</span>
               </span>
             </ng-container>
-            <ng-template #noProjectForPersonne>
-              <span class="tag is-warning is-light" i18n>Aucune inscription projet</span>
-            </ng-template>
-          </div>
-        </div>
-        <div class="buttons mb-0">
-          <button class="button is-light" (click)="editPersonne(personne)" i18n>Modifier</button>
-          <button
-            *ngIf="canDeletePersonne(personne)"
-            class="button is-danger is-light"
-            (click)="deletePersonne(personne)"
-            i18n
-          >
-            Supprimer
-          </button>
+            <ng-template #noProjectForPersonne><span class="tag is-warning is-light" i18n>Aucune inscription projet</span></ng-template>
+          </span>
+        </button>
+        <div class="person-actions">
+          <button class="button is-light is-small" (click)="editPersonne(personne)" aria-label="Modifier"><span class="icon"><i class="fas fa-pen"></i></span></button>
+          <button *ngIf="canDeletePersonne(personne)" class="button is-danger is-light is-small" (click)="deletePersonne(personne)" aria-label="Supprimer"><span class="icon"><i class="fas fa-trash"></i></span></button>
         </div>
       </div>
     </section>
+
+    <section class="box account-card account-security-card">
+      <div class="account-section-heading account-section-heading--compact">
+        <div>
+          <h2 class="title is-6 mb-1" i18n>Accès au compte</h2>
+          <p class="account-email mb-0">{{ store.compte?.()?.login || '—' }}</p>
+        </div>
+        <button class="button is-light account-password-action" (click)="reinitPassword()">
+          <span class="icon"><i class="fas fa-key"></i></span>
+          <span>Réinitialiser le mot de passe</span>
+        </button>
+      </div>
+    </section>
+
+    <details class="account-advanced">
+      <summary>
+        <span><i class="fas fa-sliders mr-2"></i>Projets et options avancées</span>
+        <span class="icon"><i class="fas fa-chevron-down"></i></span>
+      </summary>
+
+      <div class="account-advanced-grid">
+        <section class="box account-card">
+          <h2 class="title is-5" i18n>Mes projets</h2>
+          <p *ngIf="!hasProjects()" class="has-text-grey" i18n>Vous n’êtes rattaché à aucun projet pour le moment.</p>
+          <div *ngFor="let project of projets()" class="project-row">
+            <div class="project-main">
+              <strong>{{ project.nom }}</strong>
+              <span *ngIf="selectedProject()?.id === project.id" class="tag is-success is-light">Projet courant</span>
+            </div>
+            <div class="buttons mb-0 project-actions">
+              <button class="button is-success is-light" (click)="enterProject(project)" i18n>Entrer</button>
+              <a class="button is-primary is-light" (click)="store.selectProject(project.id)" [routerLink]="['/souscription']">S'inscrire</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="box account-card">
+          <h2 class="title is-5" i18n>Rejoindre un projet</h2>
+          <div class="field">
+            <label class="label is-small" i18n>Code ou token d’invitation</label>
+            <div class="field has-addons">
+              <div class="control is-expanded"><input class="input" type="text" [(ngModel)]="joinToken" placeholder="Code d’invitation" i18n-placeholder /></div>
+              <div class="control"><button class="button is-link" [disabled]="!joinToken.trim()" (click)="joinWithToken()" i18n>Rejoindre</button></div>
+            </div>
+          </div>
+
+          <div *ngIf="publicProjectsToJoin.length">
+            <hr /><h3 class="title is-6" i18n>Projets publics</h3>
+            <div *ngFor="let project of publicProjects" class="project-row">
+              <div><strong>{{ project.nom }}</strong><p class="has-text-grey is-size-7" *ngIf="project.activite">{{ project.activite }}</p></div>
+              <button class="button is-link is-light" (click)="joinPublicProject(project)" i18n>Rejoindre</button>
+            </div>
+          </div>
+          <p *ngIf="!publicProjectsToJoin.length" class="has-text-grey is-size-7 mt-3" i18n>Tous les projets publics disponibles sont déjà rattachés à votre compte.</p>
+        </section>
+      </div>
+    </details>
   </div>
 </div>
