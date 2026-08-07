@@ -21,7 +21,7 @@ import { ErrorService } from '../../services/error.service';
         [disabled]="loading"
         (change)="upload($event)"
       />
-      <p class="help" i18n>PDF ou image, 10 Mo maximum.</p>
+      <p class="help" i18n="@@document.uploadHelp">PDF ou image, 10 Mo maximum.</p>
       <p class="help is-success" *ngIf="message">{{ message }}</p>
     </div>
   `,
