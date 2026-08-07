@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const sourceDir = path.resolve('apps/assolutions-front/src/locale/en');
 const outputFile = path.resolve('apps/assolutions-front/src/locale/messages.en.json');
+const overridesFile = path.join(sourceDir, 'translations-overrides.json');
 
 const files = fs
   .readdirSync(sourceDir)
@@ -25,6 +26,11 @@ for (const file of files) {
     }
     translations[id] = value;
   }
+}
+
+if (fs.existsSync(overridesFile)) {
+  const overrides = JSON.parse(fs.readFileSync(overridesFile, 'utf8'));
+  Object.assign(translations, overrides);
 }
 
 const payload = {
