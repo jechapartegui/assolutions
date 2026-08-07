@@ -137,7 +137,9 @@ export class ContratProfComponent implements OnInit {
   }
 
   async remove(contrat: ContratProf): Promise<void> {
-    if (!confirm('Supprimer ce contrat professeur ?')) return;
+    if (!confirm($localize`:@@instructorContract.deleteConfirm:Supprimer ce contrat professeur ?`)) {
+      return;
+    }
     await this.contratApi.remove(contrat.id);
     await this.load();
   }
@@ -150,7 +152,9 @@ export class ContratProfComponent implements OnInit {
   formatDateFr(value: Date | string | null | undefined): string {
     if (!value) return '—';
     const date = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('fr-FR').format(date);
+    return Number.isNaN(date.getTime())
+      ? '—'
+      : new Intl.DateTimeFormat($localize.locale || 'fr-FR').format(date);
   }
 
   toDateInputValue(value: Date | string | null | undefined): string {
