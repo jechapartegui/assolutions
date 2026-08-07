@@ -89,7 +89,6 @@
                   <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'BUDGET' }">Budget</a>
                   <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'FLUX' }">Flux financiers</a>
                   <a class="navbar-item" (click)="selectMenu('TRANSACTION')" [routerLink]="['/operations']" [queryParams]="{ context: 'LISTE' }">Opérations</a>
-                  <a class="navbar-item" (click)="selectMenu('STOCK')" [routerLink]="['/stock']">Stocks</a>
                 </div>
               </div>
 
@@ -109,15 +108,6 @@
                   <a class="navbar-item" (click)="selectMenu('LIEU')" [routerLink]="['/lieu']">Lieux</a>
                   <a class="navbar-item" (click)="selectMenu('PROF')" [routerLink]="['/professeur']">Professeurs</a>
                   <a class="navbar-item" (click)="selectMenu('CB')" [routerLink]="['/compte-bancaire']">Comptes bancaires</a>
-                  <a class="navbar-item" (click)="selectMenu('LISTE_VALEUR')" [routerLink]="['/gestion-liste']">Listes de valeur</a>
-                </div>
-              </div>
-
-              <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">Projet</a>
-                <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('PROJETINFO')" [routerLink]="['/projet-info']">Infos projet</a>
-                  <a class="navbar-item" (click)="selectMenu('COMPTE')" [routerLink]="['/compte']">Comptes utilisateurs</a>
                 </div>
               </div>
             </ng-container>

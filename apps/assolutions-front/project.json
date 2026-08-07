@@ -99,13 +99,7 @@
           "extractLicenses": false,
           "sourceMap": true,
           "namedChunks": true,
-          "localize": ["en"],
-          "fileReplacements": [
-            {
-              "replace": "apps/assolutions-front/src/environments/environment.ts",
-              "with": "apps/assolutions-front/src/environments/environment.en.ts"
-            }
-          ]
+          "localize": ["en"]
         }
       },
       "defaultConfiguration": "production"
