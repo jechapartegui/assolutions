@@ -1,93 +1,24 @@
-:host {
-  display: block;
-  height: 100%;
-  min-height: 0;
-  width: 100%;
-}
-
-.seance-shell {
-  height: calc(100vh - 60px);
-  min-height: 0;
-  width: 100%;
-  padding: 0.45rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  overflow: hidden;
-  box-sizing: border-box;
-  background:
-    radial-gradient(circle at top left, rgba(0, 209, 178, 0.08), transparent 22%),
-    radial-gradient(circle at top right, rgba(32, 156, 238, 0.08), transparent 18%),
-    linear-gradient(180deg, #f7fbfc 0%, #f4f7fb 100%);
-}
-
-@media screen and (min-width: 1024px) {
-  .seance-shell {
-    height: calc(100vh - 52px);
-  }
-}
-
-@media screen and (max-width: 1023px) {
-  .seance-shell {
-    height: calc(100vh - 60px);
-    padding-bottom: calc(0.45rem + env(safe-area-inset-bottom));
-  }
-}
-
-.seance-loading {
-  margin: auto 0;
-  text-align: center;
-}
-
-.seance-hero {
-  flex: 0 0 auto;
-  border-radius: 18px;
-  padding: 0.75rem 0.95rem;
-  background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(246,250,252,.94));
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-}
-
-.seance-hero-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.seance-hero-title {
-  min-width: 0;
-}
-
-.seance-hero-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  flex: 0 0 auto;
-}
-
-.seance-refresh-info {
-  margin-top: 0.35rem;
-  font-size: 0.82rem;
-  color: rgba(15, 23, 42, 0.7);
-}
-
-.seance-content {
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-@media screen and (max-width: 767px) {
-  .seance-hero-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .seance-hero-actions {
-    justify-content: stretch;
-  }
-
-  .seance-hero-actions .button {
-    flex: 1 1 auto;
-  }
+:host { display:block; height:100%; min-height:0; width:100%; }
+.seance-shell { height:calc(100vh - 60px); min-height:0; width:100%; padding:.45rem; display:flex; flex-direction:column; gap:.45rem; overflow:hidden; box-sizing:border-box; background:radial-gradient(circle at top left, rgba(0,209,178,.08), transparent 22%),radial-gradient(circle at top right, rgba(32,156,238,.08), transparent 18%),linear-gradient(180deg,#f7fbfc 0%,#f4f7fb 100%); }
+@media screen and (min-width:1024px){ .seance-shell{height:calc(100vh - 52px);} }
+@media screen and (max-width:1023px){ .seance-shell{height:calc(100vh - 60px);padding-bottom:calc(.45rem + env(safe-area-inset-bottom));} }
+.seance-loading{margin:auto 0;text-align:center;}
+.seance-hero{flex:0 0 auto;border-radius:18px;padding:.75rem .95rem;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(246,250,252,.94));border:1px solid rgba(15,23,42,.06);box-shadow:0 10px 30px rgba(15,23,42,.08);}
+.seance-hero-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.seance-hero-title{min-width:0;}
+.seance-hero-actions{flex-wrap:wrap;justify-content:flex-end;flex:0 0 auto;}
+.seance-refresh-info{margin-top:.35rem;font-size:.82rem;color:rgba(15,23,42,.7);}
+.seance-content{flex:1 1 0;min-height:0;overflow:hidden;}
+@media screen and (max-width:767px){
+  .seance-shell{padding:.25rem;gap:.25rem;}
+  .seance-hero{position:relative;z-index:5;border-radius:12px;padding:.42rem .55rem;box-shadow:0 4px 14px rgba(15,23,42,.06);}
+  .seance-hero-header{flex-direction:row;align-items:center;gap:.5rem;}
+  .seance-hero-title{flex:1 1 auto;overflow:hidden;}
+  .seance-hero-title .title{font-size:.95rem!important;line-height:1.1;white-space:nowrap;}
+  .seance-hero-title .subtitle{display:none;}
+  .seance-refresh-info{margin-top:.12rem;font-size:.68rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .seance-hero-actions{display:flex;flex-wrap:nowrap;gap:.3rem;justify-content:flex-end;margin:0!important;}
+  .seance-hero-actions .button{flex:0 0 auto;min-width:38px;min-height:36px;margin:0!important;padding:.35rem .55rem;border-radius:10px;}
+  .seance-hero-actions .button .icon{margin:0!important;}
+  .seance-hero-actions .button .icon + span,.seance-hero-actions .button > span:not(.icon){display:none;}
 }
