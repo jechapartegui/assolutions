@@ -73,6 +73,7 @@
   "subscription.payer.required": "Choose the person making the payment.",
   "subscription.payer.emailRequired": "A valid email address is required for the payer.",
   "subscription.payer.choose": "Choose the payer",
+  "document.uploadHelp": "PDF or image, 10 MB maximum.",
   "document.maxSize": "The file exceeds 10 MB",
   "document.saved": "Document saved",
   "document.saveFailed": "Unable to save",
