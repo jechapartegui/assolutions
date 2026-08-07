@@ -38,3 +38,90 @@ jobs:
           }
           console.log('I18N_INVENTORY_END');
           NODE
+      - name: Find visible strings missing i18n markers
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { HtmlParser } from '@angular/compiler';
+
+          const root = path.resolve('apps/assolutions-front/src/app');
+          const parser = new HtmlParser();
+          const attrNames = new Set(['title', 'placeholder', 'aria-label', 'alt']);
+          const rows = [];
+
+          function files(dir) {
+            return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) return files(full);
+              return entry.isFile() && entry.name.endsWith('.html') ? [full] : [];
+            });
+          }
+
+          function literal(value = '') {
+            return value
+              .replace(/{{[\s\S]*?}}/g, ' ')
+              .replace(/&(?:[a-zA-Z]+|#\d+|#x[0-9a-fA-F]+);/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+          }
+
+          function meaningful(value) {
+            return /[\p{L}\p{N}]/u.test(literal(value));
+          }
+
+          for (const file of files(root)) {
+            const source = fs.readFileSync(file, 'utf8');
+            const parsed = parser.parse(source, file, { tokenizeExpansionForms: true });
+            if (parsed.errors?.length) continue;
+
+            const lineFor = (offset) => source.slice(0, offset).split('\n').length;
+
+            function visit(node, insideI18n = false) {
+              if (!node || typeof node !== 'object') return;
+              if (!(typeof node.name === 'string' && Array.isArray(node.children))) return;
+
+              const attrs = Array.isArray(node.attrs) ? node.attrs : [];
+              const names = new Set(attrs.map((attr) => attr.name));
+              const ownI18n = names.has('i18n');
+              const directText = node.children
+                .filter((child) => child?.constructor?.name === 'Text' && meaningful(child.value))
+                .map((child) => literal(child.value))
+                .filter(Boolean);
+
+              if (!insideI18n && !ownI18n && directText.length) {
+                rows.push({
+                  file: path.relative(process.cwd(), file),
+                  line: lineFor(node.sourceSpan?.start?.offset ?? 0),
+                  type: 'text',
+                  text: directText.join(' | '),
+                });
+              }
+
+              for (const attr of attrs) {
+                if (
+                  attrNames.has(attr.name) &&
+                  meaningful(attr.value) &&
+                  !names.has(`i18n-${attr.name}`)
+                ) {
+                  rows.push({
+                    file: path.relative(process.cwd(), file),
+                    line: lineFor(attr.sourceSpan?.start?.offset ?? 0),
+                    type: attr.name,
+                    text: literal(attr.value),
+                  });
+                }
+              }
+
+              const nextInside = insideI18n || ownI18n;
+              for (const child of node.children) visit(child, nextInside);
+            }
+
+            for (const node of parsed.rootNodes) visit(node, false);
+          }
+
+          console.log(`UNMARKED_I18N=${rows.length}`);
+          console.log('UNMARKED_I18N_BEGIN');
+          for (const row of rows) console.log(JSON.stringify(row));
+          console.log('UNMARKED_I18N_END');
+          NODE
