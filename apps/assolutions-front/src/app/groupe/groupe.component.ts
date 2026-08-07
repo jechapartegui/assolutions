@@ -98,9 +98,13 @@ export class GroupeComponent implements OnInit {
     const max = groupe.age_max;
 
     if (min == null && max == null) return null;
-    if (min != null && max != null) return `Âge : de ${min} à ${max} ans`;
-    if (min != null) return `Âge : ${min} ans minimum`;
-    return `Âge : ${max} ans maximum`;
+    if (min != null && max != null) {
+      return $localize`:@@group.age.range:Âge : de ${min}:MIN: à ${max}:MAX: ans`;
+    }
+    if (min != null) {
+      return $localize`:@@group.age.minimum:Âge : ${min}:MIN: ans minimum`;
+    }
+    return $localize`:@@group.age.maximum:Âge : ${max}:MAX: ans maximum`;
   }
 
   getBirthYearCriteriaLabel(groupe: Groupe): string | null {
@@ -109,10 +113,12 @@ export class GroupeComponent implements OnInit {
 
     if (min == null && max == null) return null;
     if (min != null && max != null) {
-      return `Année de naissance : de ${min} à ${max}`;
+      return $localize`:@@group.birthYear.range:Année de naissance : de ${min}:MIN: à ${max}:MAX:`;
     }
-    if (min != null) return `Année de naissance : ${min} minimum`;
-    return `Année de naissance : ${max} maximum`;
+    if (min != null) {
+      return $localize`:@@group.birthYear.minimum:Année de naissance : ${min}:MIN: minimum`;
+    }
+    return $localize`:@@group.birthYear.maximum:Année de naissance : ${max}:MAX: maximum`;
   }
 
   getInitiales(adherent: AdherentListItem_VM): string {
