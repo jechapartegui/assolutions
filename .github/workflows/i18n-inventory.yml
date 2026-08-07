@@ -19,6 +19,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Annotate current templates
+        run: node tools/i18n/annotate-assolutions-templates.mjs
       - name: Extract current Angular messages
         run: |
           rm -rf /tmp/assolutions-i18n
@@ -32,18 +34,15 @@ jobs:
           const units = [...xml.matchAll(/<trans-unit\s+([^>]*\bid="([^"]+)"[^>]*)>([\s\S]*?)<\/trans-unit>/g)];
           const rows = [];
           console.log(`I18N_UNITS=${units.length}`);
-          console.log('I18N_INVENTORY_BEGIN');
           for (const [, , id, body] of units) {
             const source = body.match(/<source>([\s\S]*?)<\/source>/)?.[1];
             if (source === undefined) continue;
-            const row = { id, source: source.replace(/\s+/g, ' ').trim() };
-            rows.push(row);
-            console.log(JSON.stringify(row));
+            rows.push({ id, source: source.replace(/\s+/g, ' ').trim() });
           }
           fs.writeFileSync('/tmp/assolutions-i18n/inventory.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + '\n');
-          console.log('I18N_INVENTORY_END');
+          console.log(`I18N_INVENTORY=${rows.length}`);
           NODE
-      - name: Find visible strings missing i18n markers
+      - name: Find residual visible strings missing i18n markers
         run: |
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
@@ -72,20 +71,18 @@ jobs:
           }
 
           function meaningful(value) {
-            return /[\p{L}\p{N}]/u.test(literal(value));
+            return /\p{L}/u.test(literal(value));
           }
 
           for (const file of files(root)) {
             const source = fs.readFileSync(file, 'utf8');
             const parsed = parser.parse(source, file, { tokenizeExpansionForms: true });
             if (parsed.errors?.length) continue;
-
             const lineFor = (offset) => source.slice(0, offset).split('\n').length;
 
             function visit(node, insideI18n = false) {
               if (!node || typeof node !== 'object') return;
               if (!(typeof node.name === 'string' && Array.isArray(node.children))) return;
-
               const attrs = Array.isArray(node.attrs) ? node.attrs : [];
               const names = new Set(attrs.map((attr) => attr.name));
               const ownI18n = names.has('i18n');
@@ -95,26 +92,12 @@ jobs:
                 .filter(Boolean);
 
               if (!insideI18n && !ownI18n && directText.length) {
-                rows.push({
-                  file: path.relative(process.cwd(), file),
-                  line: lineFor(node.sourceSpan?.start?.offset ?? 0),
-                  type: 'text',
-                  text: directText.join(' | '),
-                });
+                rows.push({ file: path.relative(process.cwd(), file), line: lineFor(node.sourceSpan?.start?.offset ?? 0), type: 'text', text: directText.join(' | ') });
               }
 
               for (const attr of attrs) {
-                if (
-                  attrNames.has(attr.name) &&
-                  meaningful(attr.value) &&
-                  !names.has(`i18n-${attr.name}`)
-                ) {
-                  rows.push({
-                    file: path.relative(process.cwd(), file),
-                    line: lineFor(attr.sourceSpan?.start?.offset ?? 0),
-                    type: attr.name,
-                    text: literal(attr.value),
-                  });
+                if (attrNames.has(attr.name) && meaningful(attr.value) && !names.has(`i18n-${attr.name}`)) {
+                  rows.push({ file: path.relative(process.cwd(), file), line: lineFor(attr.sourceSpan?.start?.offset ?? 0), type: attr.name, text: literal(attr.value) });
                 }
               }
 
@@ -127,16 +110,13 @@ jobs:
 
           fs.writeFileSync('/tmp/assolutions-i18n/unmarked.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + (rows.length ? '\n' : ''));
           console.log(`UNMARKED_I18N=${rows.length}`);
-          console.log('UNMARKED_I18N_BEGIN');
-          for (const row of rows) console.log(JSON.stringify(row));
-          console.log('UNMARKED_I18N_END');
+          for (const row of rows.slice(0, 100)) console.log(JSON.stringify(row));
           NODE
+      - name: Package annotated templates
+        run: cp -a apps/assolutions-front/src/app /tmp/assolutions-i18n/app
       - name: Upload i18n inventory artifact
         uses: actions/upload-artifact@v4
         with:
           name: assolutions-i18n-inventory
-          path: |
-            /tmp/assolutions-i18n/messages.xlf
-            /tmp/assolutions-i18n/inventory.jsonl
-            /tmp/assolutions-i18n/unmarked.jsonl
+          path: /tmp/assolutions-i18n
           if-no-files-found: error
