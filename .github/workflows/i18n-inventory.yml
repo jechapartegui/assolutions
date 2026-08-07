@@ -30,12 +30,17 @@ jobs:
           const fs = require('fs');
           const xml = fs.readFileSync('/tmp/assolutions-i18n/messages.xlf', 'utf8');
           const units = [...xml.matchAll(/<trans-unit\s+([^>]*\bid="([^"]+)"[^>]*)>([\s\S]*?)<\/trans-unit>/g)];
+          const rows = [];
           console.log(`I18N_UNITS=${units.length}`);
           console.log('I18N_INVENTORY_BEGIN');
           for (const [, , id, body] of units) {
             const source = body.match(/<source>([\s\S]*?)<\/source>/)?.[1];
-            if (source !== undefined) console.log(JSON.stringify({ id, source: source.replace(/\s+/g, ' ').trim() }));
+            if (source === undefined) continue;
+            const row = { id, source: source.replace(/\s+/g, ' ').trim() };
+            rows.push(row);
+            console.log(JSON.stringify(row));
           }
+          fs.writeFileSync('/tmp/assolutions-i18n/inventory.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + '\n');
           console.log('I18N_INVENTORY_END');
           NODE
       - name: Find visible strings missing i18n markers
@@ -120,8 +125,18 @@ jobs:
             for (const node of parsed.rootNodes) visit(node, false);
           }
 
+          fs.writeFileSync('/tmp/assolutions-i18n/unmarked.jsonl', rows.map((row) => JSON.stringify(row)).join('\n') + (rows.length ? '\n' : ''));
           console.log(`UNMARKED_I18N=${rows.length}`);
           console.log('UNMARKED_I18N_BEGIN');
           for (const row of rows) console.log(JSON.stringify(row));
           console.log('UNMARKED_I18N_END');
           NODE
+      - name: Upload i18n inventory artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: assolutions-i18n-inventory
+          path: |
+            /tmp/assolutions-i18n/messages.xlf
+            /tmp/assolutions-i18n/inventory.jsonl
+            /tmp/assolutions-i18n/unmarked.jsonl
+          if-no-files-found: error
