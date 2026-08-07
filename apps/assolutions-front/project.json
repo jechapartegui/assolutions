@@ -8,12 +8,19 @@
   "i18n": {
     "sourceLocale": "fr",
     "locales": {
-      "en": "apps/assolutions-front/src/locale/messages.en.xlf"
+      "en": "apps/assolutions-front/src/locale/messages.en.json"
     }
   },
   "targets": {
+    "prepare-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/i18n/annotate-assolutions-templates.mjs && node tools/i18n/build-en-translations.mjs"
+      }
+    },
     "build": {
       "executor": "@nx/angular:webpack-browser",
+      "dependsOn": ["prepare-i18n"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/assolutions-front",
