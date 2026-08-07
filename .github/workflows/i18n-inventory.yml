@@ -1,0 +1,40 @@
+name: Assolutions i18n inventory
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Extract current Angular messages
+        run: |
+          rm -rf /tmp/assolutions-i18n
+          mkdir -p /tmp/assolutions-i18n
+          npx nx run assolutions-front:extract-i18n --outputPath=/tmp/assolutions-i18n --outFile=messages.xlf --skip-nx-cache
+      - name: Print translation inventory
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const xml = fs.readFileSync('/tmp/assolutions-i18n/messages.xlf', 'utf8');
+          const units = [...xml.matchAll(/<trans-unit\s+([^>]*\bid="([^"]+)"[^>]*)>([\s\S]*?)<\/trans-unit>/g)];
+          console.log(`I18N_UNITS=${units.length}`);
+          console.log('I18N_INVENTORY_BEGIN');
+          for (const [, , id, body] of units) {
+            const source = body.match(/<source>([\s\S]*?)<\/source>/)?.[1];
+            if (source !== undefined) console.log(JSON.stringify({ id, source: source.replace(/\s+/g, ' ').trim() }));
+          }
+          console.log('I18N_INVENTORY_END');
+          NODE
