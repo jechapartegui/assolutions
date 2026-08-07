@@ -15,7 +15,7 @@
     "prepare-i18n": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node tools/i18n/annotate-assolutions-templates.mjs && node tools/i18n/build-en-translations.mjs"
+        "command": "node tools/i18n/build-en-translations.mjs"
       }
     },
     "build": {
