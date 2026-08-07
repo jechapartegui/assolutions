@@ -10,8 +10,6 @@ type AdminTile = {
   menu: MenuType;
   route?: string;
   queryParams?: Record<string, any>;
-  disabled?: boolean;
-  hint?: string;
 };
 
 type AdminSection = {
@@ -33,67 +31,45 @@ export class MenuAdminComponent implements OnInit {
 
   sections: AdminSection[] = [
     {
-      title: 'Gestion sportive',
-      subtitle: 'Le quotidien de la saison consultée',
+      title: $localize`:@@admin.sport.title:Gestion sportive`,
+      subtitle: $localize`:@@admin.sport.subtitle:Le quotidien de la saison consultée`,
       tiles: [
-        { label: 'Adhérents', icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
-        { label: "Tarifs d'inscription", icon: 'fa-tags', menu: 'INSCRIPTION', route: '/inscription' },
-        { label: 'Codes promotionnels', icon: 'fa-ticket', menu: 'INSCRIPTION', route: '/codes-promo' },
-        { label: 'Exigences des dossiers', icon: 'fa-list-check', menu: 'INSCRIPTION', route: '/exigences-dossier' },
-        { label: 'Cours', icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
-        { label: 'Séances', icon: 'fa-calendar-days', menu: 'SEANCE', route: '/seance' },
-        { label: 'Groupes', icon: 'fa-layer-group', menu: 'GROUPE', route: '/groupe' },
-        { label: 'Contrats professeurs', icon: 'fa-file-signature', menu: 'CONTRAT_PROF', route: '/contrat-prof' },
+        { label: $localize`:@@admin.members:Adhérents`, icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
+        { label: $localize`:@@admin.registrationFees:Tarifs d'inscription`, icon: 'fa-tags', menu: 'INSCRIPTION', route: '/inscription' },
+        { label: $localize`:@@admin.promoCodes:Codes promotionnels`, icon: 'fa-ticket', menu: 'INSCRIPTION', route: '/codes-promo' },
+        { label: $localize`:@@admin.requirements:Exigences des dossiers`, icon: 'fa-list-check', menu: 'INSCRIPTION', route: '/exigences-dossier' },
+        { label: $localize`:@@admin.classes:Cours`, icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
+        { label: $localize`:@@admin.sessions:Séances`, icon: 'fa-calendar-days', menu: 'SEANCE', route: '/seance' },
+        { label: $localize`:@@admin.groups:Groupes`, icon: 'fa-layer-group', menu: 'GROUPE', route: '/groupe' },
+        { label: $localize`:@@admin.instructorContracts:Contrats professeurs`, icon: 'fa-file-signature', menu: 'CONTRAT_PROF', route: '/contrat-prof' },
       ],
     },
     {
-      title: 'Finances',
-      subtitle: 'Budget, flux financiers, paiements et trésorerie',
+      title: $localize`:@@admin.finance.title:Finances`,
+      subtitle: $localize`:@@admin.finance.subtitle:Budget, flux financiers, paiements et trésorerie`,
       tiles: [
-        { label: 'Tableau finance', icon: 'fa-chart-pie', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'DASHBOARD' } },
-        { label: 'Budget', icon: 'fa-calculator', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'BUDGET' } },
-        { label: 'Flux financiers', icon: 'fa-scale-balanced', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'FLUX' } },
-        { label: 'Opérations', icon: 'fa-right-left', menu: 'TRANSACTION', route: '/operations', queryParams: { context: 'LISTE' } },
-        { label: 'Stocks', icon: 'fa-boxes-stacked', menu: 'STOCK', route: '/stock' },
+        { label: $localize`:@@admin.financeDashboard:Tableau finance`, icon: 'fa-chart-pie', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'DASHBOARD' } },
+        { label: $localize`:@@admin.budget:Budget`, icon: 'fa-calculator', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'BUDGET' } },
+        { label: $localize`:@@admin.financialFlows:Flux financiers`, icon: 'fa-scale-balanced', menu: 'COMPTA', route: '/comptabilite', queryParams: { vue: 'FLUX' } },
+        { label: $localize`:@@admin.transactions:Opérations`, icon: 'fa-right-left', menu: 'TRANSACTION', route: '/operations', queryParams: { context: 'LISTE' } },
       ],
     },
     {
-      title: 'Communication',
-      subtitle: 'Mails, modèles et suivi',
+      title: $localize`:@@admin.communication.title:Communication`,
+      subtitle: $localize`:@@admin.communication.subtitle:Mails et modèles`,
       tiles: [
-        { label: 'Envoyer des mails', icon: 'fa-paper-plane', menu: 'ENVOIMAIL', route: '/envoi-mail' },
-        { label: 'Configuration mails', icon: 'fa-envelope-circle-check', menu: 'PROJETMAIL', route: '/projet-mail' },
-        { label: 'Suivi des mails', icon: 'fa-chart-line', menu: 'SUIVIMAIL', route: '/suivi-mail' },
+        { label: $localize`:@@admin.sendEmails:Envoyer des mails`, icon: 'fa-paper-plane', menu: 'ENVOIMAIL', route: '/envoi-mail' },
+        { label: $localize`:@@admin.emailSettings:Configuration mails`, icon: 'fa-envelope-circle-check', menu: 'PROJETMAIL', route: '/projet-mail' },
       ],
     },
     {
-      title: 'Paramétrage',
-      subtitle: 'Référentiels et configuration stable',
+      title: $localize`:@@admin.settings.title:Paramétrage`,
+      subtitle: $localize`:@@admin.settings.subtitle:Référentiels et configuration stable`,
       tiles: [
-        { label: 'Saisons', icon: 'fa-calendar', menu: 'SAISON', route: '/saison' },
-        { label: 'Lieux', icon: 'fa-location-dot', menu: 'LIEU', route: '/lieu' },
-        { label: 'Professeurs', icon: 'fa-person-chalkboard', menu: 'PROF', route: '/professeur' },
-        { label: 'Comptes bancaires', icon: 'fa-building-columns', menu: 'CB', route: '/compte-bancaire' },
-        { label: 'Listes de valeur', icon: 'fa-list-check', menu: 'LISTE_VALEUR', route: '/gestion-liste' },
-      ],
-    },
-    {
-      title: 'Projet',
-      subtitle: 'Configuration propre au projet',
-      tiles: [
-        { label: 'Infos projet', icon: 'fa-circle-info', menu: 'PROJETINFO', route: '/projet-info' },
-        { label: 'Comptes utilisateurs', icon: 'fa-user-gear', menu: 'COMPTE', route: '/compte' },
-        { label: 'Champs personnalisés', icon: 'fa-sliders', menu: 'ADDINFO', route: '/addinfo', disabled: true, hint: 'À brancher' },
-      ],
-    },
-    {
-      title: 'Outils',
-      subtitle: 'Maintenance, imports et traces',
-      tiles: [
-        { label: 'Imports / exports', icon: 'fa-file-import', menu: 'IMPORT_EXPORT', route: '/imports-exports', disabled: true, hint: 'À brancher' },
-        { label: 'Documents', icon: 'fa-folder-open', menu: 'DOCUMENT', route: '/documents', disabled: true, hint: 'À brancher' },
-        { label: 'Photos', icon: 'fa-images', menu: 'PHOTOS', route: '/photos', disabled: true, hint: 'À brancher' },
-        { label: 'Journal / erreurs', icon: 'fa-triangle-exclamation', menu: 'JOURNAL_ERREURS', route: '/journal-erreurs', disabled: true, hint: 'À brancher' },
+        { label: $localize`:@@admin.seasons:Saisons`, icon: 'fa-calendar', menu: 'SAISON', route: '/saison' },
+        { label: $localize`:@@admin.locations:Lieux`, icon: 'fa-location-dot', menu: 'LIEU', route: '/lieu' },
+        { label: $localize`:@@admin.instructors:Professeurs`, icon: 'fa-person-chalkboard', menu: 'PROF', route: '/professeur' },
+        { label: $localize`:@@admin.bankAccounts:Comptes bancaires`, icon: 'fa-building-columns', menu: 'CB', route: '/compte-bancaire' },
       ],
     },
   ];
@@ -148,10 +124,10 @@ export class MenuAdminComponent implements OnInit {
   }
 
   getSaisonLabel(saison: any): string {
-    const label =
-      saison?.nom ?? saison?.libelle ?? saison?.name ?? `Saison #${saison?.id}`;
+    const fallback = $localize`:@@admin.seasonFallback:Saison #${saison?.id}:SEASON_ID:`;
+    const label = saison?.nom ?? saison?.libelle ?? saison?.name ?? fallback;
     return Number(saison?.id) === this.activeSaisonId
-      ? `${label} — active`
+      ? $localize`:@@admin.activeSeasonLabel:${label}:SEASON: — active`
       : label;
   }
 
@@ -169,7 +145,7 @@ export class MenuAdminComponent implements OnInit {
   }
 
   open(tile: AdminTile): void {
-    if (tile.disabled || !tile.route) return;
+    if (!tile.route) return;
     this.store.updateSelectedMenu(tile.menu);
     this.router.navigate([tile.route], {
       queryParams: {
