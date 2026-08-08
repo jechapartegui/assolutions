@@ -32,13 +32,15 @@ foreach ($relativePath in $files) {
   }
 
   Write-Host "==> Application de $relativePath" -ForegroundColor Yellow
-  & $PsqlPath \
-    -h $HostName \
-    -p $Port \
-    -U $User \
-    -d $Database \
-    -v ON_ERROR_STOP=1 \
-    -f $file
+  $psqlArgs = @(
+    '-h', $HostName,
+    '-p', [string]$Port,
+    '-U', $User,
+    '-d', $Database,
+    '-v', 'ON_ERROR_STOP=1',
+    '-f', $file
+  )
+  & $PsqlPath @psqlArgs
 
   if ($LASTEXITCODE -ne 0) {
     throw "Échec de la migration : $relativePath"
@@ -71,12 +73,14 @@ UNION ALL SELECT 'medical_blocking', EXISTS (
 );
 "@
 
-$verification | & $PsqlPath \
-  -h $HostName \
-  -p $Port \
-  -U $User \
-  -d $Database \
-  -v ON_ERROR_STOP=1
+$verifyArgs = @(
+  '-h', $HostName,
+  '-p', [string]$Port,
+  '-U', $User,
+  '-d', $Database,
+  '-v', 'ON_ERROR_STOP=1'
+)
+$verification | & $PsqlPath @verifyArgs
 
 if ($LASTEXITCODE -ne 0) {
   throw "Échec de la vérification finale"
