@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+SCRIPT_VERSION="2026-08-09-02"
+
 # Remplace intégralement la base de préproduction par une copie logique de la
 # production, puis applique le modèle final de souscription.
 #
@@ -39,6 +41,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
+echo "==> Assolutions refresh script $SCRIPT_VERSION"
 echo "==> Outils PostgreSQL"
 pg_dump --version
 pg_restore --version
@@ -83,8 +86,7 @@ echo "==> Nettoyage des tables applicatives de la préproduction"
 # production (souscription, exigences, preuves médicales...). pg_restore --clean
 # ne connaît pas ces objets absents du dump source. Leurs clés étrangères peuvent
 # donc empêcher la suppression d'une PK de production. On supprime d'abord toutes
-# les tables applicatives du schéma public avec CASCADE. Les extensions et objets
-# non-table restent en place et pg_restore les nettoiera si nécessaire.
+# les tables applicatives du schéma public avec CASCADE.
 psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 <<'SQL'
 DO $$
 DECLARE
