@@ -44,8 +44,27 @@ pg_dump --version
 pg_restore --version
 
 echo "==> Vérification de la base cible préproduction"
-psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 --tuples-only --no-align \
-  --command="SELECT current_database();"
+PREPROD_DB_NAME="$(
+  psql "$PREPROD_DATABASE_URL" \
+    --set=ON_ERROR_STOP=1 \
+    --tuples-only \
+    --no-align \
+    --command="SELECT current_database();"
+)"
+echo "$PREPROD_DB_NAME"
+
+PROD_DB_NAME="$(
+  psql "$PROD_DATABASE_URL" \
+    --set=ON_ERROR_STOP=1 \
+    --tuples-only \
+    --no-align \
+    --command="SELECT current_database();"
+)"
+
+if [[ "$PREPROD_DB_NAME" == "$PROD_DB_NAME" ]]; then
+  echo "Refus de continuer : la base source et la base cible portent le même nom ($PROD_DB_NAME)" >&2
+  exit 1
+fi
 
 echo "==> Export logique de la production vers $DUMP_FILE"
 pg_dump "$PROD_DATABASE_URL" \
@@ -59,10 +78,35 @@ if [[ ! -s "$DUMP_FILE" ]]; then
   exit 1
 fi
 
+echo "==> Nettoyage des tables applicatives de la préproduction"
+# La préproduction contient volontairement des tables ajoutées après la copie de
+# production (souscription, exigences, preuves médicales...). pg_restore --clean
+# ne connaît pas ces objets absents du dump source. Leurs clés étrangères peuvent
+# donc empêcher la suppression d'une PK de production. On supprime d'abord toutes
+# les tables applicatives du schéma public avec CASCADE. Les extensions et objets
+# non-table restent en place et pg_restore les nettoiera si nécessaire.
+psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 <<'SQL'
+DO $$
+DECLARE
+  item record;
+BEGIN
+  FOR item IN
+    SELECT schemaname, tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+    ORDER BY tablename
+  LOOP
+    EXECUTE format(
+      'DROP TABLE IF EXISTS %I.%I CASCADE',
+      item.schemaname,
+      item.tablename
+    );
+  END LOOP;
+END
+$$;
+SQL
+
 echo "==> Restauration directe production vers préproduction"
-# Render conserve des connexions système que l'utilisateur PostgreSQL géré ne
-# peut pas terminer. Ce n'est pas nécessaire : pg_restore nettoie directement
-# les objets applicatifs de la base cible puis les recrée depuis le dump.
 pg_restore \
   --clean \
   --if-exists \
