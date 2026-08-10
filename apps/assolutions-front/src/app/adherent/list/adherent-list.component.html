@@ -12,6 +12,19 @@
       <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()">
         <span class="icon"><i class="fas fa-file-excel"></i></span><span i18n>Excel</span>
       </button>
+      <button
+        *ngIf="isAdmin"
+        class="button is-success mobile-optional-action"
+        type="button"
+        [class.is-loading]="exportFfrsLoading"
+        [disabled]="exportFfrsLoading"
+        (click)="exportFfrs()"
+        title="Exporter au format d'import FFRS"
+        i18n-title="@@member.exportFfrsTitle"
+      >
+        <span class="icon"><i class="fas fa-file-arrow-down"></i></span>
+        <span i18n="@@member.exportFfrs">FFRS</span>
+      </button>
       <button class="button is-primary is-light" type="button" (click)="createAdherent.emit()">
         <span class="icon"><i class="fas fa-plus"></i></span><span i18n>Créer</span>
       </button>
