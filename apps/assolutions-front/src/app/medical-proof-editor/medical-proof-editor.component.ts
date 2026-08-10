@@ -85,7 +85,7 @@ export class MedicalProofEditorComponent implements OnChanges {
       this.evaluation = evaluation;
       this.evaluationChange.emit(evaluation);
     } catch (error) {
-      this.emitError('Charger la situation médicale', error);
+      this.emitError($localize`:@@medical.load:Charger la situation médicale`, error);
     } finally {
       this.loading = false;
     }
@@ -101,16 +101,16 @@ export class MedicalProofEditorComponent implements OnChanges {
     if (!allowed) {
       input.value = '';
       this.emitError(
-        'Ajouter le justificatif',
-        new Error('Le fichier doit être un PDF ou une image.'),
+        $localize`:@@medical.addProof:Ajouter le justificatif`,
+        new Error($localize`:@@medical.invalidFileType:Le fichier doit être un PDF ou une image.`),
       );
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
       input.value = '';
       this.emitError(
-        'Ajouter le justificatif',
-        new Error('Le fichier ne doit pas dépasser 10 Mo.'),
+        $localize`:@@medical.addProof:Ajouter le justificatif`,
+        new Error($localize`:@@medical.maxFileSize:Le fichier ne doit pas dépasser 10 Mo.`),
       );
       return;
     }
@@ -137,8 +137,8 @@ export class MedicalProofEditorComponent implements OnChanges {
           this.type === 'CERTIFICAT' ? 'CERTIFICAT_MEDICAL' : 'QS_SPORT',
         titre:
           this.type === 'CERTIFICAT'
-            ? `Certificat médical du ${this.date}`
-            : `Questionnaire de santé ${this.seasonId}`,
+            ? $localize`:@@medical.certificateTitle:Certificat médical du ${this.date}:DATE:`
+            : $localize`:@@medical.questionnaireTitle:Questionnaire de santé ${this.seasonId}:SEASON_ID:`,
         mimetype: this.selectedMimeType,
         data_base64: this.selectedDataUrl,
         date_document: this.date,
@@ -162,7 +162,7 @@ export class MedicalProofEditorComponent implements OnChanges {
       this.resetForm();
       await this.reload();
     } catch (error) {
-      this.emitError('Enregistrer la situation médicale', error);
+      this.emitError($localize`:@@medical.save:Enregistrer la situation médicale`, error);
     } finally {
       this.loading = false;
     }
@@ -171,12 +171,12 @@ export class MedicalProofEditorComponent implements OnChanges {
   proofLabel(proof: PreuveMedicale): string {
     if (proof.type_preuve === 'QS_SPORT') {
       return proof.qs_reponses_negatives
-        ? 'Questionnaire de santé négatif'
-        : 'Questionnaire avec réponse positive';
+        ? $localize`:@@medical.negativeQuestionnaire:Questionnaire de santé négatif`
+        : $localize`:@@medical.positiveQuestionnaire:Questionnaire avec réponse positive`;
     }
     return proof.valable_competition
-      ? 'Certificat médical compétition'
-      : 'Certificat médical';
+      ? $localize`:@@medical.competitionCertificate:Certificat médical compétition`
+      : $localize`:@@medical.certificate:Certificat médical`;
   }
 
   private resetForm(): void {
@@ -194,7 +194,8 @@ export class MedicalProofEditorComponent implements OnChanges {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result ?? ''));
-      reader.onerror = () => reject(new Error('Lecture du fichier impossible'));
+      reader.onerror = () =>
+        reject(new Error($localize`:@@document.readFailed:Lecture du fichier impossible`));
       reader.readAsDataURL(file);
     });
   }
@@ -204,7 +205,7 @@ export class MedicalProofEditorComponent implements OnChanges {
       error?.error?.message ??
       error?.error?.error?.message ??
       error?.message ??
-      'Une erreur est survenue';
+      $localize`:@@common.errorOccurred:Une erreur est survenue`;
     ErrorService.instance.emitChange(
       ErrorService.instance.CreateError(
         label,

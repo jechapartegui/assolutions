@@ -16,13 +16,13 @@
       <div class="account-card-heading">
         <div class="account-card-icon"><i class="fas fa-id-card"></i></div>
         <div>
-          <h2 class="title is-5 mb-1">Inscription au club</h2>
-          <p class="has-text-grey is-size-7 mb-0">Inscrire ou renouveler une personne pour {{ selectedProject()?.nom }}.</p>
+          <h2 class="title is-5 mb-1" i18n>Inscription au club</h2>
+          <p class="has-text-grey is-size-7 mb-0" i18n>Inscrire ou renouveler une personne pour {{ selectedProject()?.nom }}.</p>
         </div>
       </div>
       <a class="button is-primary account-primary-action" [routerLink]="['/souscription']">
         <span class="icon"><i class="fas fa-arrow-right"></i></span>
-        <span>Commencer une inscription</span>
+        <span i18n>Commencer une inscription</span>
       </a>
     </section>
 
@@ -30,7 +30,7 @@
       <div class="account-section-heading">
         <div>
           <h2 class="title is-5 mb-1" i18n>Mes personnes</h2>
-          <p class="has-text-grey is-size-7 mb-0">Les personnes rattachées à votre compte.</p>
+          <p class="has-text-grey is-size-7 mb-0" i18n>Les personnes rattachées à votre compte.</p>
         </div>
         <button class="button is-primary is-light account-add-person" (click)="addPersonne()" i18n>
           <span class="icon"><i class="fas fa-plus"></i></span><span>Ajouter</span>
@@ -46,15 +46,15 @@
           <span class="person-projects">
             <ng-container *ngIf="getInscriptionsForPersonne(personne.id).length; else noProjectForPersonne">
               <span class="tag mr-1 mb-1" [class.is-success]="ins.active" [class.is-light]="true" *ngFor="let ins of getInscriptionsForPersonne(personne.id)">
-                {{ ins.project_nom }} · {{ ins.saison_nom }}<span *ngIf="ins.active">&nbsp;· active</span>
+                {{ ins.project_nom }} · {{ ins.saison_nom }}<span *ngIf="ins.active" i18n>&nbsp;· active</span>
               </span>
             </ng-container>
             <ng-template #noProjectForPersonne><span class="tag is-warning is-light" i18n>Aucune inscription projet</span></ng-template>
           </span>
         </button>
         <div class="person-actions">
-          <button class="button is-light is-small" (click)="editPersonne(personne)" aria-label="Modifier"><span class="icon"><i class="fas fa-pen"></i></span></button>
-          <button *ngIf="canDeletePersonne(personne)" class="button is-danger is-light is-small" (click)="deletePersonne(personne)" aria-label="Supprimer"><span class="icon"><i class="fas fa-trash"></i></span></button>
+          <button class="button is-light is-small" (click)="editPersonne(personne)" aria-label="Modifier" i18n-aria-label><span class="icon"><i class="fas fa-pen"></i></span></button>
+          <button *ngIf="canDeletePersonne(personne)" class="button is-danger is-light is-small" (click)="deletePersonne(personne)" aria-label="Supprimer" i18n-aria-label><span class="icon"><i class="fas fa-trash"></i></span></button>
         </div>
       </div>
     </section>
@@ -67,14 +67,14 @@
         </div>
         <button class="button is-light account-password-action" (click)="reinitPassword()">
           <span class="icon"><i class="fas fa-key"></i></span>
-          <span>Réinitialiser le mot de passe</span>
+          <span i18n>Réinitialiser le mot de passe</span>
         </button>
       </div>
     </section>
 
     <details class="account-advanced">
       <summary>
-        <span><i class="fas fa-sliders mr-2"></i>Projets et options avancées</span>
+        <span i18n><i class="fas fa-sliders mr-2"></i>Projets et options avancées</span>
         <span class="icon"><i class="fas fa-chevron-down"></i></span>
       </summary>
 
@@ -85,11 +85,11 @@
           <div *ngFor="let project of projets()" class="project-row">
             <div class="project-main">
               <strong>{{ project.nom }}</strong>
-              <span *ngIf="selectedProject()?.id === project.id" class="tag is-success is-light">Projet courant</span>
+              <span *ngIf="selectedProject()?.id === project.id" class="tag is-success is-light" i18n>Projet courant</span>
             </div>
             <div class="buttons mb-0 project-actions">
               <button class="button is-success is-light" (click)="enterProject(project)" i18n>Entrer</button>
-              <a class="button is-primary is-light" (click)="store.selectProject(project.id)" [routerLink]="['/souscription']">S'inscrire</a>
+              <a class="button is-primary is-light" (click)="store.selectProject(project.id)" [routerLink]="['/souscription']" i18n>S'inscrire</a>
             </div>
           </div>
         </section>

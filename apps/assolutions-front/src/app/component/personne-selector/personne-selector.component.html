@@ -23,7 +23,7 @@
         [disabled]="disabled"
         (click)="clear()"
         title="Vider"
-      >
+       i18n-title>
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -47,11 +47,11 @@
     </button>
   </div>
 
-  <p class="help" *ngIf="opened && !loading && searchText.trim().length >= minLength && results.length === 0">
+  <p class="help" *ngIf="opened && !loading && searchText.trim().length >= minLength && results.length === 0" i18n>
     Aucun résultat.
   </p>
 
-  <p class="help" *ngIf="personneId">
+  <p class="help" *ngIf="personneId" i18n>
     Personne sélectionnée : #{{ personneId }}
   </p>
 </div>

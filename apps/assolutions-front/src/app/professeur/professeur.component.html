@@ -3,15 +3,15 @@
     <header class="card-header page-card-header">
       <div class="card-header-title">
         <div>
-          <h1 class="title is-5 mb-1">Professeurs</h1>
-          <p class="has-text-grey is-size-7">
+          <h1 class="title is-5 mb-1" i18n>Professeurs</h1>
+          <p class="has-text-grey is-size-7" i18n>
             Personnes identifiées comme professeurs du projet.
           </p>
         </div>
       </div>
 
       <div class="header-actions">
-        <span *ngIf="loading" class="tag is-info is-light">Chargement…</span>
+        <span *ngIf="loading" class="tag is-info is-light" i18n>Chargement…</span>
         <btn [type_button]="'ReloadLight'" (click)="load()"></btn>
       </div>
     </header>
@@ -20,7 +20,7 @@
       <app-personne-selector
         [(personneId)]="selectedPersonneId"
         placeholder="Rechercher une personne à ajouter comme professeur"
-      ></app-personne-selector>
+       i18n-placeholder></app-personne-selector>
 
       <btn
         [type_button]="'CreerSmall'"
@@ -33,12 +33,12 @@
       <table class="table is-fullwidth is-hoverable is-striped" *ngIf="profs.length">
         <thead>
           <tr>
-            <th>Professeur</th>
-            <th>Statut</th>
-            <th>Taux</th>
-            <th>IBAN</th>
-            <th>Contrats</th>
-            <th class="action-col">Actions</th>
+            <th i18n>Professeur</th>
+            <th i18n>Statut</th>
+            <th i18n>Taux</th>
+            <th i18n>IBAN</th>
+            <th i18n>Contrats</th>
+            <th class="action-col" i18n>Actions</th>
           </tr>
         </thead>
 
@@ -54,10 +54,10 @@
             <td class="mono">{{ prof.iban || '—' }}</td>
 
             <td>
-              <span *ngIf="contratsExistByProfId[prof.id]" class="tag is-warning is-light">
+              <span *ngIf="contratsExistByProfId[prof.id]" class="tag is-warning is-light" i18n>
                 Contrats existants
               </span>
-              <span *ngIf="!contratsExistByProfId[prof.id]" class="tag is-light">
+              <span *ngIf="!contratsExistByProfId[prof.id]" class="tag is-light" i18n>
                 Aucun contrat
               </span>
             </td>
@@ -76,7 +76,7 @@
         </tbody>
       </table>
 
-      <div class="empty-zone" *ngIf="!loading && !profs.length">
+      <div class="empty-zone" *ngIf="!loading && !profs.length" i18n>
         Aucun professeur.
       </div>
     </div>
@@ -88,39 +88,39 @@
 
   <div class="modal-card">
     <header class="modal-card-head">
-      <p class="modal-card-title">Modifier un professeur</p>
+      <p class="modal-card-title" i18n>Modifier un professeur</p>
       <p class="modal-card-subtitle">{{ getLibelle(editing) }}</p>
       <button class="delete" (click)="cancel()"></button>
     </header>
 
     <section class="modal-card-body">
       <div class="field">
-        <label class="label">Statut</label>
+        <label class="label" i18n>Statut</label>
         <input class="input" [ngModel]="editing.status" (ngModelChange)="patch('status', $event)" />
       </div>
 
       <div class="field">
-        <label class="label">Taux</label>
+        <label class="label" i18n>Taux</label>
         <input class="input" type="number" [ngModel]="editing.hourly_rate" (ngModelChange)="patch('hourly_rate', $event)" />
       </div>
 
       <div class="field">
-        <label class="label">N° TVA</label>
+        <label class="label" i18n>N° TVA</label>
         <input class="input" [ngModel]="editing.num_tva" (ngModelChange)="patch('num_tva', $event)" />
       </div>
 
       <div class="field">
-        <label class="label">N° SIREN</label>
+        <label class="label" i18n>N° SIREN</label>
         <input class="input" type="number" [ngModel]="editing.num_siren" (ngModelChange)="patch('num_siren', $event)" />
       </div>
 
       <div class="field">
-        <label class="label">IBAN</label>
+        <label class="label" i18n>IBAN</label>
         <input class="input mono" [ngModel]="editing.iban" (ngModelChange)="patch('iban', $event)" />
       </div>
 
       <div class="field">
-        <label class="label">Info</label>
+        <label class="label" i18n>Info</label>
         <textarea class="textarea" [ngModel]="editing.info" (ngModelChange)="patch('info', $event)"></textarea>
       </div>
     </section>

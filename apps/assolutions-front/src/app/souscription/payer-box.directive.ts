@@ -67,12 +67,14 @@ export class PayerBoxDirective implements AfterViewInit, OnDestroy {
 
       this.setHelp(
         selectHelp,
-        hasPayer ? '' : 'Choisis la personne qui effectue le paiement.',
+        hasPayer
+          ? ''
+          : $localize`:@@subscription.payer.required:Choisis la personne qui effectue le paiement.`,
       );
       this.setHelp(
         emailHelp,
         emailInvalid
-          ? 'Une adresse email valide est obligatoire pour le payeur.'
+          ? $localize`:@@subscription.payer.emailRequired:Une adresse email valide est obligatoire pour le payeur.`
           : '',
       );
 
@@ -106,7 +108,11 @@ export class PayerBoxDirective implements AfterViewInit, OnDestroy {
     this.renderer.setAttribute(option, 'data-payer-placeholder', 'true');
     this.renderer.setAttribute(option, 'disabled', '');
     this.renderer.setAttribute(option, 'value', '');
-    this.renderer.setProperty(option, 'textContent', 'Choisir le payeur');
+    this.renderer.setProperty(
+      option,
+      'textContent',
+      $localize`:@@subscription.payer.choose:Choisir le payeur`,
+    );
     this.renderer.insertBefore(select, option, select.firstChild);
 
     if (this.tunnel.payerMode == null) {

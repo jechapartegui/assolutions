@@ -19,59 +19,59 @@
   <div class="medical-proof-form">
     <div class="medical-proof-grid">
       <div class="field">
-        <label class="label">Justificatif</label>
+        <label class="label" i18n>Justificatif</label>
         <div class="select is-fullwidth">
           <select [(ngModel)]="type">
-            <option value="QS_SPORT">Questionnaire de santé</option>
-            <option value="CERTIFICAT">Certificat médical</option>
+            <option value="QS_SPORT" i18n>Questionnaire de santé</option>
+            <option value="CERTIFICAT" i18n>Certificat médical</option>
           </select>
         </div>
       </div>
 
       <div class="field">
-        <label class="label">Date</label>
+        <label class="label" i18n>Date</label>
         <input class="input" type="date" [(ngModel)]="date" />
       </div>
 
       <div class="field" *ngIf="type === 'QS_SPORT'">
-        <label class="label">Résultat</label>
-        <label class="checkbox checkbox-card">
+        <label class="label" i18n>Résultat</label>
+        <label class="checkbox checkbox-card" i18n>
           <input type="checkbox" [(ngModel)]="qsNegative" />
           Toutes les réponses sont négatives
         </label>
       </div>
 
       <div class="field" *ngIf="type === 'CERTIFICAT'">
-        <label class="label">Nom du médecin</label>
+        <label class="label" i18n>Nom du médecin</label>
         <input class="input" [(ngModel)]="doctorName" />
       </div>
 
       <div class="field" *ngIf="type === 'CERTIFICAT'">
-        <label class="label">RPPS</label>
+        <label class="label" i18n>RPPS</label>
         <input class="input" [(ngModel)]="rpps" />
       </div>
 
       <div class="field" *ngIf="type === 'CERTIFICAT'">
-        <label class="checkbox checkbox-card">
+        <label class="checkbox checkbox-card" i18n>
           <input type="checkbox" [(ngModel)]="competition" />
           Le certificat mentionne la pratique en compétition
         </label>
       </div>
 
       <div class="field medical-file-field">
-        <label class="label">Fichier justificatif *</label>
+        <label class="label" i18n>Fichier justificatif *</label>
         <input #fileInput class="input" type="file" accept="application/pdf,image/*" (change)="onFileSelected($event)" />
         <p class="help" *ngIf="selectedFileName">{{ selectedFileName }}</p>
-        <button *ngIf="selectedFileName" class="button is-small is-light mt-2" type="button" (click)="clearFile(fileInput)">Retirer le fichier</button>
+        <button *ngIf="selectedFileName" class="button is-small is-light mt-2" type="button" (click)="clearFile(fileInput)" i18n>Retirer le fichier</button>
       </div>
 
       <div class="field medical-comment-field">
-        <label class="label">Commentaire</label>
+        <label class="label" i18n>Commentaire</label>
         <textarea class="textarea" rows="2" [(ngModel)]="comment"></textarea>
       </div>
     </div>
 
-    <button class="button is-primary" type="button" [class.is-loading]="loading" [disabled]="loading || !canSave" (click)="save()">
+    <button class="button is-primary" type="button" [class.is-loading]="loading" [disabled]="loading || !canSave" (click)="save()" i18n>
       Enregistrer la situation médicale
     </button>
   </div>

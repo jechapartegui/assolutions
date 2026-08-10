@@ -1,35 +1,35 @@
 <div class="adherent-main-card">
   <header class="adherent-card-header">
     <div class="adherent-card-title">
-      <p class="title is-6 mb-1">Liste des adhérents ({{ getFilteredAdherent().length }})</p>
-      <p class="subtitle is-7 mb-0">Saison {{ vm.activeSaison?.nom || 'non définie' }}</p>
+      <p class="title is-6 mb-1" i18n>Liste des adhérents ({{ getFilteredAdherent().length }})</p>
+      <p class="subtitle is-7 mb-0" i18n>Saison {{ vm.activeSaison?.nom || 'non définie' }}</p>
     </div>
 
     <div class="buttons is-flex-wrap-wrap adherent-card-actions">
       <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel">
-        <span class="icon"><i class="fas fa-sliders"></i></span><span>Filtres</span>
+        <span class="icon"><i class="fas fa-sliders"></i></span><span i18n>Filtres</span>
       </button>
       <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()">
-        <span class="icon"><i class="fas fa-file-excel"></i></span><span>Excel</span>
+        <span class="icon"><i class="fas fa-file-excel"></i></span><span i18n>Excel</span>
       </button>
       <button class="button is-primary is-light" type="button" (click)="createAdherent.emit()">
-        <span class="icon"><i class="fas fa-plus"></i></span><span>Créer</span>
+        <span class="icon"><i class="fas fa-plus"></i></span><span i18n>Créer</span>
       </button>
       <button *ngIf="isAdmin" class="button is-warning is-light adherent-multi-action" type="button" (click)="toggleMultiSelectMode()">
         <span class="icon"><i class="fas fa-check-double"></i></span>
-        <span *ngIf="!vm.multiSelectMode">Sélection multiple</span>
-        <span *ngIf="vm.multiSelectMode">Quitter la sélection</span>
+        <span *ngIf="!vm.multiSelectMode" i18n>Sélection multiple</span>
+        <span *ngIf="vm.multiSelectMode" i18n>Quitter la sélection</span>
       </button>
     </div>
 
     <div class="adherent-bulk-toolbar" *ngIf="isAdmin && vm.multiSelectMode">
-      <span class="tag is-warning is-light">{{ vm.selectedIds?.length || 0 }} sélectionnée(s)</span>
+      <span class="tag is-warning is-light" i18n>{{ vm.selectedIds?.length || 0 }} sélectionnée(s)</span>
       <div class="buttons mb-0">
         <button class="button is-danger is-light" type="button" [disabled]="!(vm.selectedIds?.length)" (click)="deleteSelection()">
-          <span class="icon"><i class="fas fa-trash"></i></span><span>Supprimer</span>
+          <span class="icon"><i class="fas fa-trash"></i></span><span i18n>Supprimer</span>
         </button>
         <button class="button is-light" type="button" (click)="store.clearSelection()">
-          <span class="icon"><i class="fas fa-xmark"></i></span><span>Annuler</span>
+          <span class="icon"><i class="fas fa-xmark"></i></span><span i18n>Annuler</span>
         </button>
       </div>
     </div>
@@ -39,16 +39,16 @@
     <div *ngIf="vm.showFilterPanel" class="adherent-filter-panel">
       <div class="adherent-filter-panel-inner">
         <div class="columns is-multiline is-variable is-2">
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Nom / prénom / surnom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Groupe</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_groupe"><option [ngValue]="null">Tous</option><option *ngFor="let g of vm.refs.liste_groupe_filter" [ngValue]="g.nom">{{ g.nom }}</option></select></div></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Inscrit</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_inscrit"><option [ngValue]="null">Tous</option><option [ngValue]="true">Oui</option><option [ngValue]="false">Non</option></select></div></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Archivé</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_archive"><option [ngValue]="null">Tous</option><option [ngValue]="false">Non archivés</option><option [ngValue]="true">Archivés</option></select></div></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Date de naissance après</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_naissance_apres" /></div>
-          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label">Date de naissance avant</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_naissance_avant" /></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Nom / prénom / surnom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Groupe</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_groupe"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let g of vm.refs.liste_groupe_filter" [ngValue]="g.nom">{{ g.nom }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Inscrit</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_inscrit"><option [ngValue]="null" i18n>Tous</option><option [ngValue]="true" i18n>Oui</option><option [ngValue]="false" i18n>Non</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Archivé</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_archive"><option [ngValue]="null" i18n>Tous</option><option [ngValue]="false" i18n>Non archivés</option><option [ngValue]="true" i18n>Archivés</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Date de naissance après</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_naissance_apres" /></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Date de naissance avant</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_naissance_avant" /></div>
         </div>
         <div class="buttons mt-2 mb-0">
-          <button class="button is-light" type="button" (click)="clearFilters()"><span class="icon"><i class="fas fa-eraser"></i></span><span>Réinitialiser</span></button>
-          <button class="button is-light" type="button" (click)="vm.showFilterPanel = false"><span class="icon"><i class="fas fa-xmark"></i></span><span>Fermer</span></button>
+          <button class="button is-light" type="button" (click)="clearFilters()"><span class="icon"><i class="fas fa-eraser"></i></span><span i18n>Réinitialiser</span></button>
+          <button class="button is-light" type="button" (click)="vm.showFilterPanel = false"><span class="icon"><i class="fas fa-xmark"></i></span><span i18n>Fermer</span></button>
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@
     <div class="adherent-scroll-zone" *ngIf="getFilteredAdherent().length > 0">
       <div class="adherent-table-wrapper is-hidden-touch">
         <table class="table is-fullwidth is-hoverable adherent-table">
-          <thead><tr><th *ngIf="isAdmin && vm.multiSelectMode"></th><th (click)="sort('nom')" class="is-clickable">Nom</th><th (click)="sort('date_naissance')" class="is-clickable">Date de naissance</th><th (click)="sort('sexe')" class="is-clickable">Sexe</th><th>Groupes</th><th>Contact</th><th>Inscrit</th><th>Action</th></tr></thead>
+          <thead><tr><th *ngIf="isAdmin && vm.multiSelectMode"></th><th (click)="sort('nom')" class="is-clickable" i18n>Nom</th><th (click)="sort('date_naissance')" class="is-clickable" i18n>Date de naissance</th><th (click)="sort('sexe')" class="is-clickable" i18n>Sexe</th><th i18n>Groupes</th><th i18n>Contact</th><th i18n>Inscrit</th><th i18n>Action</th></tr></thead>
           <tbody>
             <tr *ngFor="let adherent of getFilteredAdherent()">
               <td *ngIf="isAdmin && vm.multiSelectMode"><input type="checkbox" [checked]="isSelected(adherent.id)" (change)="toggleSelection(adherent.id)" /></td>
@@ -76,7 +76,7 @@
         <article class="adherent-tile" *ngFor="let adherent of getFilteredAdherent()">
           <div class="adherent-tile-top">
             <div class="adherent-tile-main">
-              <div class="adherent-tile-badges"><span class="tag" [ngClass]="adherent.inscrit ? 'is-success is-light' : 'is-light'">{{ adherent.inscrit ? 'Inscrit' : 'Non inscrit' }}</span><span class="tag is-info is-light" *ngIf="adherent.archive">Archivé</span></div>
+              <div class="adherent-tile-badges"><span class="tag" [ngClass]="adherent.inscrit ? 'is-success is-light' : 'is-light'">{{ adherent.inscrit ? 'Inscrit' : 'Non inscrit' }}</span><span class="tag is-info is-light" *ngIf="adherent.archive" i18n>Archivé</span></div>
               <div class="adherent-tile-header">
                 <button class="adherent-avatar adherent-avatar--mobile avatar-button" type="button" [disabled]="!adherent.photo" (click)="openPhoto($event, adherent)"><img *ngIf="adherent.photo" [src]="adherent.photo" [alt]="adherent.libelle || 'Photo adhérent'" /><div *ngIf="!adherent.photo" class="adherent-avatar-fallback">{{ getInitiales(adherent) }}</div></button>
                 <div class="adherent-tile-header-text"><button type="button" class="adherent-name-button adherent-tile-title" (click)="open(adherent)">{{ adherent.libelle || 'Adhérent sans nom' }}</button></div>
@@ -84,7 +84,7 @@
               <p class="adherent-tile-line" *ngIf="adherent.date_naissance"><span class="icon-text"><span class="icon"><i class="fas fa-cake-candles"></i></span><span>{{ date_age(adherent.date_naissance) }}</span></span></p>
               <p class="adherent-tile-line" *ngIf="adherent.sexe !== null && adherent.sexe !== undefined"><span class="icon-text"><span class="icon"><i class="fas fa-user"></i></span><span>{{ getSexeLabel(adherent.sexe) }}</span></span></p>
               <p class="adherent-tile-line" *ngIf="get_contact(adherent)"><span class="icon-text"><span class="icon"><i class="fas fa-envelope"></i></span><span>{{ get_contact(adherent) }}</span></span></p>
-              <p class="adherent-tile-meta" *ngIf="adherent.groupesActifs.length>0"><strong>Groupes :</strong> <span class="tag is-info is-light" *ngFor="let gr of adherent.groupesActifs">{{ gr.nom }}</span></p>
+              <p class="adherent-tile-meta" *ngIf="adherent.groupesActifs.length>0"><strong i18n>Groupes :</strong> <span class="tag is-info is-light" *ngFor="let gr of adherent.groupesActifs">{{ gr.nom }}</span></p>
             </div>
             <div class="adherent-tile-action" *ngIf="isAdmin && vm.multiSelectMode"><label class="checkbox"><input type="checkbox" [checked]="isSelected(adherent.id)" (change)="toggleSelection(adherent.id)" /></label></div>
             <div class="adherent-tile-action" *ngIf="!(isAdmin && vm.multiSelectMode)"><button class="button is-small is-light" type="button" (click)="open(adherent)"><span class="icon"><i class="fas fa-pen"></i></span></button></div>
@@ -93,12 +93,12 @@
       </div>
     </div>
 
-    <div *ngIf="getFilteredAdherent().length === 0" class="adherent-empty">Pas d’adhérent disponible.</div>
+    <div *ngIf="getFilteredAdherent().length === 0" class="adherent-empty" i18n>Pas d’adhérent disponible.</div>
   </div>
 </div>
 
 <div class="adherent-photo-modal" *ngIf="selectedPhoto" (click)="closePhoto()">
-  <button type="button" class="adherent-photo-close" aria-label="Fermer" (click)="closePhoto()"><i class="fas fa-xmark"></i></button>
+  <button type="button" class="adherent-photo-close" aria-label="Fermer" (click)="closePhoto()" i18n-aria-label><i class="fas fa-xmark"></i></button>
   <figure class="adherent-photo-dialog" (click)="$event.stopPropagation()">
     <img [src]="selectedPhoto.src" [alt]="selectedPhoto.label" />
     <figcaption>{{ selectedPhoto.label }}</figcaption>

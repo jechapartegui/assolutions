@@ -23,15 +23,15 @@
               </p>
 
               <div class="ms-summary-tags">
-                <span class="tag is-light">
+                <span class="tag is-light" i18n>
                   <i class="fas fa-users mr-1"></i>
                   Potentiels : {{ getPresencePotentielle() }}/{{ All.length }}
                 </span>
-                <span class="tag is-success is-light">
+                <span class="tag is-success is-light" i18n>
                   <i class="fas fa-check mr-1"></i>
                   Présents : {{ getPresent() }}
                 </span>
-                <span class="tag is-danger is-light">
+                <span class="tag is-danger is-light" i18n>
                   <i class="fas fa-times mr-1"></i>
                   Absents : {{ getAbsent() }}
                 </span>
@@ -52,7 +52,7 @@
                 (click)="RetourListe()"
               >
                 <span class="icon"><i class="fas fa-arrow-left"></i></span>
-                <span>Retour</span>
+                <span i18n>Retour</span>
               </button>
 
               <button
@@ -84,22 +84,22 @@
                     (click)="optionsOpen = !optionsOpen"
                   >
                     <span class="icon"><i class="fas fa-ellipsis-h"></i></span>
-                    <span>Options</span>
+                    <span i18n>Options</span>
                   </button>
                 </div>
 
                 <div class="dropdown-menu" id="dropdown-menu" role="menu">
                   <div class="dropdown-content">
-                    <a class="dropdown-item" (click)="openPanel('convocation')">
+                    <a class="dropdown-item" (click)="openPanel('convocation')" i18n>
                       <i class="fas fa-paper-plane"></i>&nbsp;Envoyer convocation
                     </a>
-                    <a class="dropdown-item" (click)="openPanel('annulation')">
+                    <a class="dropdown-item" (click)="openPanel('annulation')" i18n>
                       <i class="fas fa-ban"></i>&nbsp;Envoyer annulation
                     </a>
-                    <a class="dropdown-item" (click)="openPanel('ajout')">
+                    <a class="dropdown-item" (click)="openPanel('ajout')" i18n>
                       <i class="fas fa-user-plus"></i>&nbsp;Ajouter une personne
                     </a>
-                    <a class="dropdown-item" (click)="openPanel('note')">
+                    <a class="dropdown-item" (click)="openPanel('note')" i18n>
                       <i class="fas fa-sticky-note"></i>&nbsp;Note séance
                     </a>
                   </div>
@@ -119,19 +119,19 @@
                   (click)="closePanel()"
                 >
                   <span class="icon"><i class="fas fa-arrow-left"></i></span>
-                  <span>Retour</span>
+                  <span i18n>Retour</span>
                 </button>
 
-                <span class="ms-panel-title" *ngIf="uiMode === 'convocation'">
+                <span class="ms-panel-title" *ngIf="uiMode === 'convocation'" i18n>
                   <i class="fas fa-paper-plane"></i>&nbsp;Convocation
                 </span>
-                <span class="ms-panel-title" *ngIf="uiMode === 'annulation'">
+                <span class="ms-panel-title" *ngIf="uiMode === 'annulation'" i18n>
                   <i class="fas fa-ban"></i>&nbsp;Annulation
                 </span>
-                <span class="ms-panel-title" *ngIf="uiMode === 'ajout'">
+                <span class="ms-panel-title" *ngIf="uiMode === 'ajout'" i18n>
                   <i class="fas fa-user-plus"></i>&nbsp;Ajouter une personne
                 </span>
-                <span class="ms-panel-title" *ngIf="uiMode === 'note'">
+                <span class="ms-panel-title" *ngIf="uiMode === 'note'" i18n>
                   <i class="fas fa-sticky-note"></i>&nbsp;Note séance
                 </span>
               </div>
@@ -139,7 +139,7 @@
               <div *ngIf="uiMode === 'convocation'" class="ms-panel">
                 <div class="ms-form grid-2">
                   <div class="ms-form-card">
-                    <label class="label">Destinataires</label>
+                    <label class="label" i18n>Destinataires</label>
                     <div class="ms-recipients">
                       <label class="checkbox ms-recipient-row" *ngFor="let p of All">
                         <input
@@ -158,35 +158,35 @@
                         class="button is-small is-light is-rounded"
                         type="button"
                         (click)="checkAll('convocation', true)"
-                      >
+                       i18n>
                         Tout sélectionner
                       </button>
                       <button
                         class="button is-small is-light is-rounded"
                         type="button"
                         (click)="checkAll('convocation', false)"
-                      >
+                       i18n>
                         Tout désélectionner
                       </button>
                     </div>
                   </div>
 
                   <div class="ms-form-card">
-                    <label class="label">Sujet</label>
+                    <label class="label" i18n>Sujet</label>
                     <mail-template-preview
                       [html]="mailSubject"
                       [variables]="variables"
                       [notes]="Notes"
                     ></mail-template-preview>
 
-                    <label class="label mt-3">Customisation du message</label>
+                    <label class="label mt-3" i18n>Customisation du message</label>
                     <textarea
                       class="textarea"
                       rows="4"
                       [(ngModel)]="Notes"
                     ></textarea>
 
-                    <label class="label mt-3">Visualisation du message</label>
+                    <label class="label mt-3" i18n>Visualisation du message</label>
                     <mail-template-preview
                       [html]="mailBody"
                       [variables]="variables"
@@ -199,7 +199,7 @@
                         type="button"
                         [disabled]="!selectedRecipients.length"
                         (click)="sendMail('convocation')"
-                      >
+                       i18n>
                         <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
                       </button>
                     </div>
@@ -210,7 +210,7 @@
               <div *ngIf="uiMode === 'annulation'" class="ms-panel">
                 <div class="ms-form grid-2">
                   <div class="ms-form-card">
-                    <label class="label">Destinataires</label>
+                    <label class="label" i18n>Destinataires</label>
                     <div class="ms-recipients">
                       <label class="checkbox ms-recipient-row" *ngFor="let p of All">
                         <input
@@ -229,28 +229,28 @@
                         class="button is-small is-light is-rounded"
                         type="button"
                         (click)="checkAll('annulation', true)"
-                      >
+                       i18n>
                         Tout sélectionner
                       </button>
                       <button
                         class="button is-small is-light is-rounded"
                         type="button"
                         (click)="checkAll('annulation', false)"
-                      >
+                       i18n>
                         Tout désélectionner
                       </button>
                     </div>
                   </div>
 
                   <div class="ms-form-card">
-                    <label class="label">Sujet</label>
+                    <label class="label" i18n>Sujet</label>
                     <mail-template-preview
                       [html]="mailSubject"
                       [variables]="variables"
                       [notes]="Notes"
                     ></mail-template-preview>
 
-                    <label class="label mt-3">Message</label>
+                    <label class="label mt-3" i18n>Message</label>
                     <textarea
                       class="textarea"
                       rows="4"
@@ -269,7 +269,7 @@
                         type="button"
                         [disabled]="!selectedRecipients.length"
                         (click)="sendMail('annulation')"
-                      >
+                       i18n>
                         <i class="fas fa-paper-plane"></i>&nbsp;Envoyer
                       </button>
                     </div>
@@ -280,7 +280,7 @@
               <div *ngIf="uiMode === 'ajout'" class="ms-panel">
                 <div class="ms-form grid-1">
                   <div class="ms-form-card">
-                    <label class="label">Sélection adhérent</label>
+                    <label class="label" i18n>Sélection adhérent</label>
 
                     <div class="field has-addons ms-inline-add">
                       <div class="control is-expanded">
@@ -299,7 +299,7 @@
                           type="button"
                           [disabled]="!adherent_to"
                           (click)="AjouterAdherentsHorsGroupe(); closePanel()"
-                        >
+                         i18n>
                           <i class="fas fa-user-plus"></i>&nbsp;Ajouter
                         </button>
                       </div>
@@ -311,7 +311,7 @@
               <div *ngIf="uiMode === 'note'" class="ms-panel">
                 <div class="ms-form grid-1">
                   <div class="ms-form-card">
-                    <label class="label">Info séance</label>
+                    <label class="label" i18n>Info séance</label>
                     <textarea
                       class="textarea"
                       rows="8"
@@ -322,7 +322,7 @@
                         class="button is-link is-light is-rounded"
                         type="button"
                         (click)="saveInfoSeance()"
-                      >
+                       i18n>
                         Enregistrer
                       </button>
                     </div>
@@ -340,10 +340,10 @@
                   (click)="display_personne = !display_personne"
                 >
                   <div>
-                    <h2 class="title is-6 mb-0">
+                    <h2 class="title is-6 mb-0" i18n>
                       Présences potentielles
                     </h2>
-                    <p class="ms-section-subtitle">
+                    <p class="ms-section-subtitle" i18n>
                       {{ getPresencePotentielle() }} / {{ All.length }} personnes
                     </p>
                   </div>
@@ -424,8 +424,8 @@
                   (click)="display_present = !display_present"
                 >
                   <div>
-                    <h2 class="title is-6 mb-0">Présents</h2>
-                    <p class="ms-section-subtitle">{{ getPresent() }} personnes</p>
+                    <h2 class="title is-6 mb-0" i18n>Présents</h2>
+                    <p class="ms-section-subtitle" i18n>{{ getPresent() }} personnes</p>
                   </div>
 
                   <button class="button is-white ms-toggle-btn" type="button">
@@ -456,8 +456,8 @@
                   (click)="display_absent = !display_absent"
                 >
                   <div>
-                    <h2 class="title is-6 mb-0">Absents</h2>
-                    <p class="ms-section-subtitle">{{ getAbsent() }} personnes</p>
+                    <h2 class="title is-6 mb-0" i18n>Absents</h2>
+                    <p class="ms-section-subtitle" i18n>{{ getAbsent() }} personnes</p>
                   </div>
 
                   <button class="button is-white ms-toggle-btn" type="button">
@@ -489,7 +489,7 @@
               (click)="scrollToTop()"
               title="Revenir en haut"
               type="button"
-            >
+             i18n-title>
               ↑
             </button>
           </ng-template>
@@ -521,19 +521,19 @@
                 [ngClass]="{ 'is-visible': potentiel.isVisible, not: !potentiel.isVisible }"
                 (click)="$event.stopPropagation()"
               >
-                <li (click)="setStatusAndClose('présent', potentiel, $event)">
+                <li (click)="setStatusAndClose('présent', potentiel, $event)" i18n>
                   <i class="fas fa-thumbs-up"></i> Présent
                 </li>
-                <li (click)="setStatusAndClose('absent', potentiel, $event)">
+                <li (click)="setStatusAndClose('absent', potentiel, $event)" i18n>
                   <i class="fas fa-thumbs-down"></i> Absent
                 </li>
-                <li (click)="setStatusAndClose('essai', potentiel, $event)">
+                <li (click)="setStatusAndClose('essai', potentiel, $event)" i18n>
                   <i class="fas fa-question"></i> Essai
                 </li>
-                <li (click)="setStatusAndClose('convoqué', potentiel, $event)">
+                <li (click)="setStatusAndClose('convoqué', potentiel, $event)" i18n>
                   <i class="fas fa-hand-point-up"></i> Convoqué
                 </li>
-                <li (click)="setStatusAndClose(null, potentiel, $event)">
+                <li (click)="setStatusAndClose(null, potentiel, $event)" i18n>
                   <i class="fas fa-ellipsis-h"></i> Non défini
                 </li>
               </ul>
@@ -618,7 +618,7 @@
                 class="delete"
                 aria-label="close"
                 (click)="closePreview()"
-              ></button>
+               i18n-aria-label></button>
             </header>
 
             <section class="modal-card-body">
@@ -634,7 +634,7 @@
               </div>
 
               <div class="mt-4">
-                <p class="has-text-weight-semibold mb-1">Contact</p>
+                <p class="has-text-weight-semibold mb-1" i18n>Contact</p>
                 <p class="mb-1">{{ contact_urgence(p) }}</p>
                 <p class="is-size-7 has-text-grey" *ngIf="contact_urgence_nom(p)">
                   {{ contact_urgence_nom(p) }}
@@ -647,7 +647,7 @@
                 class="button is-primary is-light is-rounded"
                 type="button"
                 (click)="closePreview()"
-              >
+               i18n>
                 Fermer
               </button>
             </footer>
@@ -661,7 +661,7 @@
         <section class="ms-link-card">
           <div class="ms-link-header">
             <div>
-              <h3 class="title is-5 mb-1">Mes adhérents</h3>
+              <h3 class="title is-5 mb-1" i18n>Mes adhérents</h3>
               <p class="subtitle is-6 mb-0">
                 {{ thisSeance.nom }}{{ seanceText }}
               </p>

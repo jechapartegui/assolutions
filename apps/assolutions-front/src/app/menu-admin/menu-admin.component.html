@@ -1,15 +1,15 @@
 <div class="admin-page" *ngIf="store.isLoggedIn() && store.hasProjet() && store.isProf()">
   <section class="admin-hero">
     <div>
-      <p class="admin-kicker">Administration</p>
-      <h1 class="title is-4 mb-1">Centre de pilotage</h1>
-      <p class="has-text-grey is-size-7">
+      <p class="admin-kicker" i18n>Administration</p>
+      <h1 class="title is-4 mb-1" i18n>Centre de pilotage</h1>
+      <p class="has-text-grey is-size-7" i18n>
         Choisis la saison à consulter. La saison active reste la destination des nouvelles inscriptions et réinscriptions.
       </p>
     </div>
 
     <div class="season-panel">
-      <label class="label is-size-7 mb-1">Saison consultée</label>
+      <label class="label is-size-7 mb-1" i18n>Saison consultée</label>
 
       <div class="select is-small is-fullwidth" [class.is-loading]="loadingSaisons">
         <select
@@ -23,14 +23,14 @@
         </select>
       </div>
 
-      <p class="help mb-1">
+      <p class="help mb-1" i18n>
         Saison active :
         <strong>{{ activeSaisonId ? ('#' + activeSaisonId) : 'non définie' }}</strong>
       </p>
-      <p class="help mb-0" *ngIf="!isConsultingActiveSeason">
+      <p class="help mb-0" *ngIf="!isConsultingActiveSeason" i18n>
         Tu consultes une saison historique ; les actions de renouvellement ciblent toujours la saison active.
       </p>
-      <p class="help mb-0" *ngIf="isConsultingActiveSeason">
+      <p class="help mb-0" *ngIf="isConsultingActiveSeason" i18n>
         Tu consultes actuellement la saison active.
       </p>
     </div>
@@ -77,9 +77,9 @@
 <div class="container mt-4" *ngIf="!(store.isLoggedIn() && store.hasProjet() && store.isProf())">
   <article class="message is-warning">
     <div class="message-header">
-      <p>Accès restreint</p>
+      <p i18n>Accès restreint</p>
     </div>
-    <div class="message-body">
+    <div class="message-body" i18n>
       Connecte-toi avec un profil professeur et sélectionne un projet pour accéder à l’administration.
     </div>
   </article>

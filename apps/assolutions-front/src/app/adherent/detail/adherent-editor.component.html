@@ -10,14 +10,14 @@
       </p>
 
       <div class="adherent-editor-summary">
-        <span>Date de naissance : {{ dateNaissanceLabel }}</span>
+        <span i18n>Date de naissance : {{ dateNaissanceLabel }}</span>
         <span> · {{ statutInscriptionLabel }}</span>
-        <span *ngIf="adherent.archive"> · Archivé</span>
+        <span *ngIf="adherent.archive" i18n> · Archivé</span>
       </div>
     </div>
 
     <div class="buttons is-flex-wrap-wrap adherent-editor-actions">
-      <button class="button is-light" type="button" (click)="back.emit()">
+      <button class="button is-light" type="button" (click)="back.emit()" i18n>
         Retour
       </button>
 
@@ -38,7 +38,7 @@
         [class.is-loading]="loading"
         [disabled]="loading"
         (click)="save()"
-      >
+       i18n>
         Sauvegarder
       </button>
 
@@ -47,7 +47,7 @@
         class="button is-danger is-light"
         type="button"
         (click)="deleteAdherent()"
-      >
+       i18n>
         Supprimer
       </button>
     </div>
@@ -59,14 +59,14 @@
         <section class="box editor-box">
           <div class="editor-box-title-row">
             <div>
-              <h3 class="subtitle is-6 has-text-primary mb-0">Identité</h3>
-              <p class="help mb-0">Les champs marqués d’un astérisque sont obligatoires.</p>
+              <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Identité</h3>
+              <p class="help mb-0" i18n>Les champs marqués d’un astérisque sont obligatoires.</p>
             </div>
           </div>
 
           <div class="editor-fields editor-fields--two">
             <div class="field">
-              <label class="label">Nom *</label>
+              <label class="label" i18n>Nom *</label>
               <div class="control">
                 <input
                   class="input"
@@ -74,13 +74,13 @@
                   [(ngModel)]="adherent.nom"
                   (ngModelChange)="checkall()"
                   placeholder="Nom"
-                />
+                 i18n-placeholder/>
               </div>
               <p *ngIf="!rNom.key" class="help is-danger">{{ rNom.value }}</p>
             </div>
 
             <div class="field">
-              <label class="label">Prénom *</label>
+              <label class="label" i18n>Prénom *</label>
               <div class="control">
                 <input
                   class="input"
@@ -88,24 +88,24 @@
                   [(ngModel)]="adherent.prenom"
                   (ngModelChange)="checkall()"
                   placeholder="Prénom"
-                />
+                 i18n-placeholder/>
               </div>
               <p *ngIf="!rPrenom.key" class="help is-danger">{{ rPrenom.value }}</p>
             </div>
 
             <div class="field">
-              <label class="label">Surnom</label>
+              <label class="label" i18n>Surnom</label>
               <div class="control">
                 <input
                   class="input"
                   [(ngModel)]="adherent.surnom"
                   placeholder="Surnom"
-                />
+                 i18n-placeholder/>
               </div>
             </div>
 
             <div class="field">
-              <label class="label">Date de naissance *</label>
+              <label class="label" i18n>Date de naissance *</label>
               <input
                 class="input"
                 [class.is-danger]="!rDateNaissance.key"
@@ -114,25 +114,25 @@
                 placeholder="JJ/MM/AAAA"
                 [ngModel]="dateNaissanceValue"
                 (ngModelChange)="setDateNaissanceValue($event)"
-              />
+               i18n-placeholder/>
               <p *ngIf="!rDateNaissance.key" class="help is-danger">
                 {{ rDateNaissance.value }}
               </p>
             </div>
 
             <div class="field">
-              <label class="label">Sexe</label>
+              <label class="label" i18n>Sexe</label>
               <div class="select is-fullwidth">
                 <select [(ngModel)]="adherent.sexe">
-                  <option [ngValue]="null">Non renseigné</option>
-                  <option [ngValue]="false">Femme</option>
-                  <option [ngValue]="true">Homme</option>
+                  <option [ngValue]="null" i18n>Non renseigné</option>
+                  <option [ngValue]="false" i18n>Femme</option>
+                  <option [ngValue]="true" i18n>Homme</option>
                 </select>
               </div>
             </div>
 
             <div class="field">
-              <label class="label">Statut</label>
+              <label class="label" i18n>Statut</label>
               <div class="status-stack">
                 <span class="status-pill" [class.status-pill--success]="hasSaisonActive">
                   {{ statutInscriptionLabel }}
@@ -149,14 +149,14 @@
         <section class="box editor-box">
           <div class="editor-box-title-row">
             <div>
-              <h3 class="subtitle is-6 has-text-primary mb-0">Compte associé</h3>
-              <p class="help mb-0">Une personne doit toujours être rattachée à un compte.</p>
+              <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Compte associé</h3>
+              <p class="help mb-0" i18n>Une personne doit toujours être rattachée à un compte.</p>
             </div>
           </div>
 
           <div class="editor-stack">
             <div class="field" *ngIf="mustChooseCompte()">
-              <label class="label">Compte existant *</label>
+              <label class="label" i18n>Compte existant *</label>
 
               <div class="select is-fullwidth">
                 <select
@@ -165,22 +165,22 @@
                   [disabled]="loadingComptes || !!newCompteEmail"
                   [class.is-danger]="!rCompte.key"
                 >
-                  <option [ngValue]="null">Sélectionner un compte</option>
+                  <option [ngValue]="null" i18n>Sélectionner un compte</option>
                   <option *ngFor="let compte of comptesDisponibles" [ngValue]="compte.id">
                     {{ getCompteLabel(compte) }}
                   </option>
                 </select>
               </div>
 
-              <p class="help" *ngIf="loadingComptes">Chargement des comptes…</p>
+              <p class="help" *ngIf="loadingComptes" i18n>Chargement des comptes…</p>
             </div>
 
             <div class="account-or" *ngIf="canCreateCompteInline() && !adherent.compte">
-              <span>ou</span>
+              <span i18n>ou</span>
             </div>
 
             <div class="field" *ngIf="canCreateCompteInline() && !adherent.compte">
-              <label class="label">Créer un nouveau compte</label>
+              <label class="label" i18n>Créer un nouveau compte</label>
               <input
                 class="input"
                 type="email"
@@ -188,8 +188,8 @@
                 [ngModel]="newCompteEmail"
                 (ngModelChange)="onNewCompteEmailChange($event)"
                 placeholder="email@exemple.fr"
-              />
-              <p class="help">
+               i18n-placeholder/>
+              <p class="help" i18n>
                 Le compte sera créé uniquement quand vous cliquerez sur Sauvegarder.
               </p>
 
@@ -199,7 +199,7 @@
                   [(ngModel)]="newCompteAvecPassword"
                   (ngModelChange)="checkall()"
                 />
-                <span>Définir un mot de passe maintenant</span>
+                <span i18n>Définir un mot de passe maintenant</span>
               </label>
 
               <div class="field mt-2" *ngIf="newCompteAvecPassword">
@@ -209,14 +209,14 @@
                   [(ngModel)]="newComptePassword"
                   (ngModelChange)="checkall()"
                   placeholder="Mot de passe"
-                />
-                <p class="help">Minimum 8 caractères avec au moins un chiffre.</p>
+                 i18n-placeholder/>
+                <p class="help" i18n>Minimum 8 caractères avec au moins un chiffre.</p>
               </div>
             </div>
 
             <div class="field" *ngIf="usesConnectedCompteAutomatically()">
-              <label class="label">Compte associé</label>
-              <p class="notification is-info is-light mb-0">
+              <label class="label" i18n>Compte associé</label>
+              <p class="notification is-info is-light mb-0" i18n>
                 Cette personne sera automatiquement rattachée à votre compte connecté.
               </p>
             </div>
@@ -228,28 +228,28 @@
         <section class="box editor-box coordinate-copy-box" *ngIf="canDisplayCoordinateCopy()">
           <div class="editor-box-title-row">
             <div>
-              <h3 class="subtitle is-6 has-text-primary mb-0">Reprendre des coordonnées</h3>
-              <p class="help mb-0">
+              <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Reprendre des coordonnées</h3>
+              <p class="help mb-0" i18n>
                 Récupérez l’adresse ou les contacts d’une autre personne rattachée au même compte.
               </p>
             </div>
-            <span class="editor-box-badge">Même compte</span>
+            <span class="editor-box-badge" i18n>Même compte</span>
           </div>
 
-          <p class="notification is-light mb-0" *ngIf="loadingPersonnesCompte">
+          <p class="notification is-light mb-0" *ngIf="loadingPersonnesCompte" i18n>
             Recherche des autres personnes du compte…
           </p>
 
           <ng-container *ngIf="!loadingPersonnesCompte">
             <div class="coordinate-copy-panel" *ngIf="personnesDuCompte.length; else noCoordinateSource">
               <div class="field mb-0">
-                <label class="label">Personne source</label>
+                <label class="label" i18n>Personne source</label>
                 <div class="select is-fullwidth">
                   <select
                     [(ngModel)]="sourcePersonneId"
                     (ngModelChange)="onSourcePersonSelected()"
                   >
-                    <option [ngValue]="null">Sélectionner une personne</option>
+                    <option [ngValue]="null" i18n>Sélectionner une personne</option>
                     <option *ngFor="let personne of personnesDuCompte" [ngValue]="personne.id">
                       {{ getSourcePersonLabel(personne) }}
                     </option>
@@ -259,9 +259,9 @@
 
               <ng-container *ngIf="selectedSourcePerson as source">
                 <div class="coordinate-source-summary">
-                  <p><strong>Adresse :</strong> {{ getSourceAdresseLabel(source) }}</p>
-                  <p><strong>Contacts principaux :</strong> {{ sourceContactCount(source) }}</p>
-                  <p><strong>Contacts à prévenir :</strong> {{ sourceContactPrevenirCount(source) }}</p>
+                  <p><strong i18n>Adresse :</strong> {{ getSourceAdresseLabel(source) }}</p>
+                  <p><strong i18n>Contacts principaux :</strong> {{ sourceContactCount(source) }}</p>
+                  <p><strong i18n>Contacts à prévenir :</strong> {{ sourceContactPrevenirCount(source) }}</p>
                 </div>
 
                 <div class="coordinate-copy-options">
@@ -272,8 +272,8 @@
                       [disabled]="!sourceHasAdresse(source)"
                     />
                     <span>
-                      <strong>Adresse</strong>
-                      <small>Remplace l’adresse actuelle</small>
+                      <strong i18n>Adresse</strong>
+                      <small i18n>Remplace l’adresse actuelle</small>
                     </span>
                   </label>
 
@@ -284,8 +284,8 @@
                       [disabled]="sourceContactCount(source) === 0"
                     />
                     <span>
-                      <strong>Contacts principaux</strong>
-                      <small>Ajoute les valeurs absentes</small>
+                      <strong i18n>Contacts principaux</strong>
+                      <small i18n>Ajoute les valeurs absentes</small>
                     </span>
                   </label>
 
@@ -296,8 +296,8 @@
                       [disabled]="sourceContactPrevenirCount(source) === 0"
                     />
                     <span>
-                      <strong>Contacts à prévenir</strong>
-                      <small>Ajoute les valeurs absentes</small>
+                      <strong i18n>Contacts à prévenir</strong>
+                      <small i18n>Ajoute les valeurs absentes</small>
                     </span>
                   </label>
                 </div>
@@ -307,7 +307,7 @@
                   type="button"
                   [disabled]="!canCopySelectedInformations()"
                   (click)="copySelectedInformations()"
-                >
+                 i18n>
                   Récupérer les informations sélectionnées
                 </button>
 
@@ -319,7 +319,7 @@
           </ng-container>
 
           <ng-template #noCoordinateSource>
-            <p class="empty-state">
+            <p class="empty-state" i18n>
               Aucune autre personne de ce compte ne possède encore de coordonnées réutilisables.
             </p>
           </ng-template>
@@ -328,8 +328,8 @@
         <section class="box editor-box">
           <div class="editor-box-title-row">
             <div>
-              <h3 class="subtitle is-6 has-text-primary mb-0">Contacts principaux</h3>
-              <p class="help mb-0">Un email et un téléphone sont obligatoires.</p>
+              <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Contacts principaux</h3>
+              <p class="help mb-0" i18n>Un email et un téléphone sont obligatoires.</p>
             </div>
           </div>
 
@@ -344,8 +344,8 @@
                   [ngModel]="c.Type"
                   (ngModelChange)="onContactTypeChange(c, $event)"
                 >
-                  <option [ngValue]="'EMAIL'">Email</option>
-                  <option [ngValue]="'PHONE'">Téléphone</option>
+                  <option [ngValue]="'EMAIL'" i18n>Email</option>
+                  <option [ngValue]="'PHONE'" i18n>Téléphone</option>
                 </select>
               </div>
 
@@ -365,7 +365,7 @@
                   [checked]="c.Pref"
                   (change)="setPreferredContact(i)"
                 />
-                <span>Préféré</span>
+                <span i18n>Préféré</span>
               </label>
 
               <label *ngIf="c.Type === 'EMAIL'" class="checkbox contact-diffusion">
@@ -374,7 +374,7 @@
                   name="diffusion-{{ i }}"
                   [(ngModel)]="c.Diffusion"
                 />
-                <span>Recevoir les emails</span>
+                <span i18n>Recevoir les emails</span>
               </label>
 
               <button
@@ -384,7 +384,7 @@
                 aria-label="Supprimer ce contact"
                 [disabled]="!canRemoveContact(i)"
                 (click)="removeContact(i)"
-              >
+               i18n-title i18n-aria-label>
                 <span aria-hidden="true">✕</span>
               </button>
             </div>
@@ -394,10 +394,10 @@
           <p *ngIf="!rPhone.key" class="help is-danger mt-1">{{ rPhone.value }}</p>
 
           <div class="buttons mt-3 mb-0">
-            <button class="button is-primary is-light" type="button" (click)="addContact('EMAIL')">
+            <button class="button is-primary is-light" type="button" (click)="addContact('EMAIL')" i18n>
               Ajouter un email
             </button>
-            <button class="button is-primary is-light" type="button" (click)="addContact('PHONE')">
+            <button class="button is-primary is-light" type="button" (click)="addContact('PHONE')" i18n>
               Ajouter un téléphone
             </button>
           </div>
@@ -406,56 +406,56 @@
         <section class="box editor-box">
           <div class="editor-box-title-row">
             <div>
-              <h3 class="subtitle is-6 has-text-primary mb-0">Adresse *</h3>
-              <p class="help mb-0">Adresse, code postal, ville et pays sont obligatoires.</p>
+              <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Adresse *</h3>
+              <p class="help mb-0" i18n>Adresse, code postal, ville et pays sont obligatoires.</p>
             </div>
           </div>
 
           <div class="editor-fields">
             <div class="field">
-              <label class="label">Adresse *</label>
+              <label class="label" i18n>Adresse *</label>
               <input
                 class="input"
                 [class.is-danger]="!rAdresse.key && !adherent.adresse.Street"
                 [(ngModel)]="adherent.adresse.Street"
                 (ngModelChange)="checkall()"
                 placeholder="Adresse"
-              />
+               i18n-placeholder/>
             </div>
 
             <div class="editor-fields editor-fields--two">
               <div class="field">
-                <label class="label">Code postal *</label>
+                <label class="label" i18n>Code postal *</label>
                 <input
                   class="input"
                   [class.is-danger]="!rAdresse.key && !adherent.adresse.PostCode"
                   [(ngModel)]="adherent.adresse.PostCode"
                   (ngModelChange)="checkall()"
                   placeholder="Code postal"
-                />
+                 i18n-placeholder/>
               </div>
 
               <div class="field">
-                <label class="label">Ville *</label>
+                <label class="label" i18n>Ville *</label>
                 <input
                   class="input"
                   [class.is-danger]="!rAdresse.key && !adherent.adresse.City"
                   [(ngModel)]="adherent.adresse.City"
                   (ngModelChange)="checkall()"
                   placeholder="Ville"
-                />
+                 i18n-placeholder/>
               </div>
             </div>
 
             <div class="field">
-              <label class="label">Pays *</label>
+              <label class="label" i18n>Pays *</label>
               <input
                 class="input"
                 [class.is-danger]="!rAdresse.key && !adherent.adresse.Country"
                 [(ngModel)]="adherent.adresse.Country"
                 (ngModelChange)="checkall()"
                 placeholder="Pays"
-              />
+               i18n-placeholder/>
             </div>
           </div>
 
@@ -463,7 +463,7 @@
         </section>
 
         <section class="box editor-box">
-          <h3 class="subtitle is-6 has-text-primary mb-4">Contact à prévenir</h3>
+          <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Contact à prévenir</h3>
 
           <div class="editor-stack">
             <div
@@ -475,8 +475,8 @@
                   [ngModel]="c.Type"
                   (ngModelChange)="onContactPrevenirTypeChange(c, $event)"
                 >
-                  <option [ngValue]="'PHONE'">Téléphone</option>
-                  <option [ngValue]="'EMAIL'">Email</option>
+                  <option [ngValue]="'PHONE'" i18n>Téléphone</option>
+                  <option [ngValue]="'EMAIL'" i18n>Email</option>
                 </select>
               </div>
 
@@ -486,7 +486,7 @@
                 [ngModel]="c.Value"
                 (ngModelChange)="setContactValue(c, $event)"
                 placeholder="Valeur"
-              />
+               i18n-placeholder/>
 
               <button
                 class="button is-light contact-delete-button"
@@ -494,14 +494,14 @@
                 title="Supprimer"
                 aria-label="Supprimer ce contact à prévenir"
                 (click)="removeContactPrevenir(i)"
-              >
+               i18n-title i18n-aria-label>
                 <span aria-hidden="true">✕</span>
               </button>
             </div>
           </div>
 
           <div class="buttons mt-3 mb-0">
-            <button class="button is-primary is-light" type="button" (click)="addContactPrevenir('PHONE')">
+            <button class="button is-primary is-light" type="button" (click)="addContactPrevenir('PHONE')" i18n>
               Ajouter un contact à prévenir
             </button>
           </div>
@@ -509,8 +509,8 @@
 
         <section class="box editor-box">
           <div class="editor-box-title-row">
-            <h3 class="subtitle is-6 has-text-primary mb-0">Historique des inscriptions par saison</h3>
-            <span class="editor-box-badge editor-box-badge--neutral">Lecture seule</span>
+            <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Historique des inscriptions par saison</h3>
+            <span class="editor-box-badge editor-box-badge--neutral" i18n>Lecture seule</span>
           </div>
 
           <div class="history-list" *ngIf="getSortedInscriptionsSaison().length; else noSaisonHistory">
@@ -532,31 +532,31 @@
           </div>
 
           <ng-template #noSaisonHistory>
-            <p class="empty-state">Aucune inscription de saison enregistrée.</p>
+            <p class="empty-state" i18n>Aucune inscription de saison enregistrée.</p>
           </ng-template>
         </section>
       </div>
 
       <div class="adherent-editor-col adherent-editor-col--side">
         <section class="box editor-box">
-          <h3 class="subtitle is-6 has-text-primary mb-4">Photo</h3>
+          <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Photo</h3>
 
           <div class="photo-editor">
             <div class="photo-preview" *ngIf="photoPreview; else noPhoto">
-              <img [src]="photoPreview" alt="Photo de la personne" />
+              <img [src]="photoPreview" alt="Photo de la personne"  i18n-alt/>
             </div>
 
             <ng-template #noPhoto>
-              <div class="photo-empty"><span>Aucune photo</span></div>
+              <div class="photo-empty"><span i18n>Aucune photo</span></div>
             </ng-template>
 
             <div class="buttons mt-3 mb-0">
               <label class="button is-primary is-light">
-                <span>Choisir une photo</span>
+                <span i18n>Choisir une photo</span>
                 <input type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
               </label>
 
-              <button *ngIf="photoPreview" class="button is-light" type="button" (click)="removePhoto()">
+              <button *ngIf="photoPreview" class="button is-light" type="button" (click)="removePhoto()" i18n>
                 Retirer
               </button>
             </div>
@@ -564,13 +564,13 @@
         </section>
 
         <section class="box editor-box">
-          <h3 class="subtitle is-6 has-text-primary mb-4">
+          <h3 class="subtitle is-6 has-text-primary mb-4" i18n>
             Groupes – saison {{ currentVm?.activeSaison?.nom || 'active' }}
           </h3>
 
-          <p class="help mb-3" *ngIf="!activeSaisonId">Aucune saison active définie.</p>
+          <p class="help mb-3" *ngIf="!activeSaisonId" i18n>Aucune saison active définie.</p>
 
-          <p class="help mb-3" *ngIf="activeSaisonId && !hasInscriptionSaison(activeSaisonId)">
+          <p class="help mb-3" *ngIf="activeSaisonId && !hasInscriptionSaison(activeSaisonId)" i18n>
             La personne n’est pas inscrite sur la saison active.
           </p>
 
@@ -593,22 +593,22 @@
         ></app-add-info-editor>
 
         <section class="box editor-box">
-          <h3 class="subtitle is-6 has-text-primary mb-4">Résumé</h3>
+          <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Résumé</h3>
 
           <div class="content is-small">
-            <p><strong>Libellé :</strong> {{ adherent.libelle || '-' }}</p>
-            <p><strong>Date de naissance :</strong> {{ dateNaissanceLabel }}</p>
-            <p><strong>Sexe :</strong> {{ getSexeLabel(adherent.sexe) || '-' }}</p>
-            <p><strong>Statut :</strong> {{ statutInscriptionLabel }}</p>
-            <p><strong>État :</strong> {{ adherent.archive ? 'Archivé' : 'Actif' }}</p>
-            <p><strong>Email :</strong> {{ getEmailPrincipal || '-' }}</p>
-            <p><strong>Téléphone :</strong> {{ getPhonePrincipal || '-' }}</p>
-            <p><strong>Contacts principaux :</strong> {{ adherent.contact.length }}</p>
-            <p><strong>Contacts à prévenir :</strong> {{ adherent.contact_prevenir.length }}</p>
-            <p><strong>Inscriptions saison :</strong> {{ adherent.inscriptionsSaison.length }}</p>
+            <p><strong i18n>Libellé :</strong> {{ adherent.libelle || '-' }}</p>
+            <p><strong i18n>Date de naissance :</strong> {{ dateNaissanceLabel }}</p>
+            <p><strong i18n>Sexe :</strong> {{ getSexeLabel(adherent.sexe) || '-' }}</p>
+            <p><strong i18n>Statut :</strong> {{ statutInscriptionLabel }}</p>
+            <p><strong i18n>État :</strong> {{ adherent.archive ? 'Archivé' : 'Actif' }}</p>
+            <p><strong i18n>Email :</strong> {{ getEmailPrincipal || '-' }}</p>
+            <p><strong i18n>Téléphone :</strong> {{ getPhonePrincipal || '-' }}</p>
+            <p><strong i18n>Contacts principaux :</strong> {{ adherent.contact.length }}</p>
+            <p><strong i18n>Contacts à prévenir :</strong> {{ adherent.contact_prevenir.length }}</p>
+            <p><strong i18n>Inscriptions saison :</strong> {{ adherent.inscriptionsSaison.length }}</p>
 
             <div *ngIf="activeSaisonId">
-              <p class="mb-1"><strong>Groupes saison active :</strong></p>
+              <p class="mb-1"><strong i18n>Groupes saison active :</strong></p>
               <p>{{ getGroupesLabelForSaison() || 'Aucun groupe' }}</p>
             </div>
           </div>
