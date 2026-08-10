@@ -90,5 +90,9 @@
   "medical.positiveQuestionnaire": "Health questionnaire with a positive answer",
   "medical.competitionCertificate": "Competition medical certificate",
   "medical.certificate": "Medical certificate",
+  "member.exportFfrs": "FFRS",
+  "member.exportFfrsTitle": "Export in FFRS import format",
+  "member.exportFfrsEmpty": "No member to export to FFRS.",
+  "member.exportFfrsError": "Unable to generate the FFRS export.",
   "common.errorOccurred": "An error occurred"
 }
