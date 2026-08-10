@@ -113,6 +113,7 @@
     },
     "serve": {
       "executor": "@nx/angular:dev-server",
+      "dependsOn": ["prepare-i18n"],
       "options": {
         "buildTarget": "assolutions-front:build"
       },
