@@ -39,25 +39,40 @@ async function bootstrap() {
 
   const port = Number(config.get<string>('PORT') || 3000);
   const frontUrl = config.get<string>('FRONT_URL');
+  const corsOrigins = config.get<string>('CORS_ORIGINS');
   const appEnvLabel = config.get<string>('APP_ENV_LABEL') || 'UNKNOWN';
   const nodeEnv = config.get<string>('NODE_ENV') || 'development';
   const smtpHost = config.get<string>('SMTP_HOST') || 'not set';
   const mailSandbox = config.get<string>('MAIL_SANDBOX') || 'false';
   const databaseUrlDefined = !!config.get<string>('DATABASE_URL');
 
+  const allowedOrigins = new Set(
+    [
+      ...(corsOrigins ?? '').split(','),
+      frontUrl ?? '',
+    ]
+      .map((value) => value.trim().replace(/\/$/, ''))
+      .filter(Boolean),
+  );
+
   app.useGlobalFilters(new HttpExceptionFilter());
 
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin) {
         return callback(null, true);
       }
 
-      if (frontUrl && origin === frontUrl.replace(/\/$/, '')) {
+      const normalizedOrigin = origin.replace(/\/$/, '');
+
+      if (allowedOrigins.has(normalizedOrigin)) {
         return callback(null, true);
       }
 
-      if (!frontUrl && origin.startsWith('http')) {
+      if (allowedOrigins.size === 0 && origin.startsWith('http')) {
         return callback(null, true);
       }
 
@@ -97,6 +112,9 @@ async function bootstrap() {
   logger.log(`NODE_ENV = ${nodeEnv}`);
   logger.log(`PORT = ${port}`);
   logger.log(`FRONT_URL = ${frontUrl || 'not set'}`);
+  logger.log(
+    `CORS_ORIGINS = ${allowedOrigins.size ? [...allowedOrigins].join(', ') : 'not set'}`,
+  );
   logger.log(`SMTP_HOST = ${smtpHost}`);
   logger.log(`MAIL_SANDBOX = ${mailSandbox}`);
   logger.log(`DATABASE_URL defined = ${databaseUrlDefined ? 'yes' : 'no'}`);
