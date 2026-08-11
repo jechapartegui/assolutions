@@ -168,3 +168,96 @@
     box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .app-shell {
+    background: #0b1219;
+    color: #e7edf3;
+  }
+
+  .navbar,
+  .navbar-menu,
+  .navbar-dropdown {
+    background: rgba(15, 24, 33, 0.96) !important;
+    color: #e7edf3 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  .navbar-item,
+  .navbar-link {
+    color: #c7d1db;
+  }
+
+  .navbar-item:hover,
+  .navbar-link:hover,
+  .navbar-item.has-dropdown:hover .navbar-link {
+    background: rgba(255, 255, 255, 0.055) !important;
+    color: #f5f8fa !important;
+  }
+
+  .navbar-item.is-selected {
+    color: #35ddc2 !important;
+    background: rgba(0, 209, 178, 0.08) !important;
+  }
+
+  .navbar-burger {
+    color: #d8e1e9;
+  }
+
+  .logo-mark,
+  .mobile-logo {
+    color: #39dcc4;
+    background: rgba(0, 209, 178, 0.14);
+  }
+
+  .account-pill {
+    background: rgba(0, 209, 178, 0.11);
+    color: #75ead9;
+    border: 1px solid rgba(0, 209, 178, 0.14);
+  }
+
+  .account-actions .button.is-light {
+    background: #182531 !important;
+    color: #dbe4ec !important;
+    border-color: rgba(255, 255, 255, 0.09) !important;
+    box-shadow: none;
+  }
+
+  .account-actions .button.is-light:hover {
+    background: #22313e !important;
+  }
+
+  .account-actions .button.is-danger.is-light {
+    background: rgba(241, 70, 104, 0.12) !important;
+    color: #ff8ca3 !important;
+    border-color: rgba(241, 70, 104, 0.2) !important;
+  }
+
+  .mobile .footer {
+    background: rgba(14, 22, 30, 0.97) !important;
+    border-top-color: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.26);
+  }
+
+  .mobile .footer .tabs ul {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile .footer .tabs li,
+  .mobile .footer .tabs a {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: transparent !important;
+    color: #93a2b2 !important;
+  }
+
+  .mobile .footer .tabs a:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #e7edf3 !important;
+  }
+
+  .mobile .footer .navbar-item.is-selected {
+    background: rgba(0, 209, 178, 0.1) !important;
+    color: #4fe2cc !important;
+  }
+}
