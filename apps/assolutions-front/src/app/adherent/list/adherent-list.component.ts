@@ -1,6 +1,7 @@
 /* eslint-disable @nx/enforce-module-boundaries */
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/services/excel-export.service';
+import { ExcelColumn, ExcelExportService } from 'apps/assolutions-front/src/services/excel-export.service';
+import { PersonneApiService } from 'apps/assolutions-front/src/services/personne-api.service';
 import { AdherentStore } from 'apps/assolutions-front/src/store/adherent.store';
 import { AdherentListItem_VM, AdherentPageVm } from 'apps/assolutions-front/src/vm/adherent-page.vm';
 
@@ -17,8 +18,13 @@ export class AdherentListComponent {
   @Output() createAdherent = new EventEmitter<void>();
 
   selectedPhoto: { src: string; label: string } | null = null;
+  exportFfrsLoading = false;
 
-  constructor(public readonly store: AdherentStore, private readonly excel: ExcelExportService) {}
+  constructor(
+    public readonly store: AdherentStore,
+    private readonly excel: ExcelExportService,
+    private readonly personneApi: PersonneApiService,
+  ) {}
 
   isSelected(id: number): boolean {
     return (this.vm.selectedIds ?? []).includes(id);
@@ -82,6 +88,48 @@ export class AdherentListComponent {
     ];
 
     this.excel.export('adherents', rows, columns);
+  }
+
+  async exportFfrs(): Promise<void> {
+    if (!this.isAdmin || this.exportFfrsLoading) return;
+
+    const filtered = this.getFilteredAdherent();
+    const selected = new Set((this.vm.selectedIds ?? []).map(Number));
+    const source = this.vm.multiSelectMode && selected.size
+      ? filtered.filter((item) => selected.has(Number(item.id)))
+      : filtered;
+    const ids = source.map((item) => Number(item.id)).filter((id) => Number.isFinite(id) && id > 0);
+
+    if (!ids.length) {
+      window.alert($localize`:@@member.exportFfrsEmpty:Aucun adhérent à exporter vers la FFRS.`);
+      return;
+    }
+
+    this.exportFfrsLoading = true;
+    try {
+      const result = await this.personneApi.exportFfrs(ids, this.vm.activeSaison?.id ?? null);
+      const saison = (this.vm.activeSaison?.nom ?? 'saison')
+        .toString()
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]+/g, '-');
+
+      this.excel.exportMatrix(
+        `ffrs-preinscriptions-${saison}`,
+        'Exemple',
+        result.headers,
+        result.rows,
+      );
+
+      if (result.warnings?.length) {
+        console.warn('Export FFRS - données à compléter', result.warnings);
+      }
+      console.info('Export FFRS - dates de certificats médicaux détectées', result.medicalCertificateDates);
+    } catch (error) {
+      console.error('Export FFRS impossible', error);
+      window.alert($localize`:@@member.exportFfrsError:Impossible de générer l’export FFRS.`);
+    } finally {
+      this.exportFfrsLoading = false;
+    }
   }
 
   private dateOnly(value: Date | string | null | undefined): string {

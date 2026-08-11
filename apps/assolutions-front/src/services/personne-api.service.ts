@@ -1,6 +1,18 @@
 import { Injectable } from '@angular/core';
+import {
+  CreatePersonneDto,
+  Personne,
+  PersonneLight_VM,
+  UpdatePersonneDto,
+} from '@shared/lib/personne.interface';
 import { ApiClientService } from './api-client.service';
-import { Personne, CreatePersonneDto, UpdatePersonneDto, PersonneLight_VM } from '@shared/lib/personne.interface';
+
+export interface FfrsExportResponse {
+  headers: string[];
+  rows: Array<Array<string | number>>;
+  warnings: string[];
+  medicalCertificateDates: Record<number, string | null>;
+}
 
 @Injectable({ providedIn: 'root' })
 export class PersonneApiService {
@@ -12,10 +24,16 @@ export class PersonneApiService {
     return this.api.GET<Personne[]>(this.base);
   }
 
-
   list_personnelight(ids: number[], includePhotos = false): Promise<PersonneLight_VM[]> {
     const url = `${this.base}/light?includePhotos=${includePhotos ? 'true' : 'false'}`;
     return this.api.POST<PersonneLight_VM[]>(url, ids);
+  }
+
+  exportFfrs(ids: number[], saisonId: number | null): Promise<FfrsExportResponse> {
+    return this.api.POST<FfrsExportResponse>(`${this.base}/export-ffrs`, {
+      ids,
+      saison_id: saisonId,
+    });
   }
 
   get(id: number): Promise<Personne> {
@@ -35,10 +53,10 @@ export class PersonneApiService {
   }
 
   list_by_id(ids: number[]): Promise<Personne[]> {
-    return this.api.POST<Personne[]>(`${this.base}/by-ids`, ids); 
+    return this.api.POST<Personne[]>(`${this.base}/by-ids`, ids);
   }
 
-  list_by_compte(compte:number): Promise<Personne[]> {
+  list_by_compte(compte: number): Promise<Personne[]> {
     return this.api.GET<Personne[]>(`${this.base}/by-compte/${compte}`);
   }
 }
