@@ -1,22 +1,46 @@
 :root {
-  color-scheme: light only !important;
+  color-scheme: light;
+  --app-bg: #f4f7fb;
+  --app-surface: #ffffff;
+  --app-surface-soft: #f8fafc;
+  --app-surface-raised: #ffffff;
+  --app-text: #1f2937;
+  --app-text-strong: #101828;
+  --app-text-muted: #667085;
+  --app-border: rgba(15, 23, 42, 0.08);
+  --app-shadow: rgba(15, 23, 42, 0.08);
 }
 
 html,
 body,
 app-root {
-  background: #ffffff !important;
-  color: #1f2937 !important;
+  background: var(--app-bg) !important;
+  color: var(--app-text) !important;
 }
 
 @media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --app-bg: #0b1219;
+    --app-surface: #111b25;
+    --app-surface-soft: #16222d;
+    --app-surface-raised: #1a2834;
+    --app-text: #e7edf3;
+    --app-text-strong: #f6f9fb;
+    --app-text-muted: #96a5b5;
+    --app-border: rgba(255, 255, 255, 0.09);
+    --app-shadow: rgba(0, 0, 0, 0.3);
+  }
+
   html,
   body,
   app-root,
+  .app-shell {
+    background: var(--app-bg) !important;
+    color: var(--app-text) !important;
+  }
+
   .container-box,
-  .navbar,
-  .navbar.is-fixed-top,
-  .mobile .footer,
   .card,
   .card-header,
   .card-content,
@@ -27,42 +51,176 @@ app-root {
   .modal-card-body,
   .modal-card-foot,
   .dropdown-content,
-  .menu-shell,
-  .menu-main-card,
-  .mobile-item,
+  .navbar-dropdown,
   .ms-shell,
   .ms-section-card,
   .ms-panel,
   .ms-form-card {
-    background-color: #ffffff !important;
-    color: #1f2937 !important;
+    background-color: var(--app-surface) !important;
+    color: var(--app-text) !important;
+    border-color: var(--app-border) !important;
+  }
+
+  /* Menu : on assombrit toute la page, pas seulement les cartes. */
+  app-menu .menu-shell,
+  .menu-shell {
+    background:
+      radial-gradient(circle at top left, rgba(0, 209, 178, 0.11), transparent 28%),
+      radial-gradient(circle at top right, rgba(32, 156, 238, 0.1), transparent 24%),
+      linear-gradient(180deg, #0d151d 0%, #0b1219 100%) !important;
+    color: var(--app-text) !important;
+  }
+
+  app-menu .menu-hero,
+  app-menu .contact-panel,
+  app-menu .menu-main-card,
+  app-menu .menu-scroll-zone,
+  app-menu .mobile-item,
+  app-menu .anniv-banner,
+  .menu-hero,
+  .contact-panel,
+  .menu-main-card,
+  .menu-scroll-zone,
+  .mobile-item,
+  .anniv-banner {
+    background: linear-gradient(180deg, #17232e 0%, #121c26 100%) !important;
+    color: var(--app-text) !important;
+    border-color: var(--app-border) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  app-menu .rider-card-button,
+  .rider-card-button {
+    background: linear-gradient(180deg, #1a2935 0%, #14202a 100%) !important;
+    color: var(--app-text) !important;
+    border-color: rgba(255, 255, 255, 0.09) !important;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  app-menu .rider-card-button:hover,
+  .rider-card-button:hover {
+    border-color: rgba(0, 209, 178, 0.36) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  app-menu .rider-card-button.is-active-rider,
+  .rider-card-button.is-active-rider {
+    border-color: rgba(0, 209, 178, 0.55) !important;
+    box-shadow:
+      0 0 0 2px rgba(0, 209, 178, 0.12),
+      0 12px 28px rgba(0, 0, 0, 0.26) !important;
+  }
+
+  app-menu .menu-card-header,
+  app-menu .menu-card-body,
+  app-menu .card-footer,
+  .menu-card-header,
+  .menu-card-body {
+    background: var(--app-surface) !important;
+    color: var(--app-text) !important;
+    border-color: var(--app-border) !important;
+  }
+
+  app-menu .rider-stat,
+  app-menu .contact-preview,
+  app-menu .mobile-action-btn,
+  app-menu .menu-empty,
+  .rider-stat,
+  .contact-preview,
+  .mobile-action-btn,
+  .menu-empty {
+    background: #0f1821 !important;
+    color: var(--app-text) !important;
+    border-color: var(--app-border) !important;
   }
 
   .title,
-  .subtitle,
   .label,
+  .content,
   .table,
   .table th,
-  .table td,
-  .content,
-  p,
-  span {
-    color: inherit;
+  .table td {
+    color: var(--app-text) !important;
+  }
+
+  .subtitle,
+  app-menu .menu-hero-title .subtitle,
+  app-menu .contact-panel-head .subtitle,
+  app-menu .menu-card-subtitle,
+  app-menu .mobile-item-meta,
+  app-menu .menu-bulk-actions-title,
+  app-menu .menu-footer-panel .label,
+  app-menu .rider-role,
+  app-menu .menu-empty {
+    color: var(--app-text-muted) !important;
+  }
+
+  app-menu .rider-name,
+  app-menu .menu-card-name,
+  app-menu .mobile-item-title,
+  .rider-name,
+  .menu-card-name,
+  .mobile-item-title {
+    color: var(--app-text-strong) !important;
   }
 
   .input,
   .textarea,
-  .select select {
-    background-color: #ffffff !important;
-    color: #1f2937 !important;
-    border-color: #dbdbdb !important;
+  .select select,
+  app-menu .contact-panel .textarea,
+  app-menu .menu-footer-panel .input,
+  app-menu .menu-footer-panel .select select {
+    background-color: #0f1821 !important;
+    color: var(--app-text) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: none !important;
+  }
+
+  .input::placeholder,
+  .textarea::placeholder {
+    color: #738294 !important;
+  }
+
+  .table {
+    background: transparent !important;
   }
 
   .table:not(.is-striped) tbody tr:nth-child(odd):not(.is-selected):not([class*="has-background-"]) {
-    background-color: rgba(0, 0, 0, 0.025) !important;
+    background-color: rgba(255, 255, 255, 0.025) !important;
   }
 
   .table.is-hoverable tbody tr:hover:not(.is-selected):not([class*="has-background-"]) {
-    background-color: rgba(0, 0, 0, 0.06) !important;
+    background-color: rgba(255, 255, 255, 0.055) !important;
+  }
+
+  app-menu .menu-table thead th {
+    background: #17232e !important;
+    color: #c9d4df !important;
+    border-color: var(--app-border) !important;
+  }
+
+  .button.is-light:not(.is-primary):not(.is-info):not(.is-success):not(.is-warning):not(.is-danger) {
+    background: #1a2631 !important;
+    color: #dce5ed !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .button.is-light:not(.is-primary):not(.is-info):not(.is-success):not(.is-warning):not(.is-danger):hover {
+    background: #22313e !important;
+  }
+
+  app-menu .menu-contact-toggle {
+    background: #dfe8ff !important;
+    color: #1739b6 !important;
+    border-color: rgba(120, 145, 255, 0.32) !important;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  app-menu .trial-action-icon,
+  app-menu .trial-action-btn,
+  app-menu .rider-trial-hint {
+    background: #322a14 !important;
+    color: #ffd875 !important;
+    border-color: #6d5922 !important;
   }
 }
