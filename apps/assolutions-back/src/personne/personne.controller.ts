@@ -56,7 +56,7 @@ export class PersonneController {
     );
   }
 
-  @Get('ffrs-photo/:id')
+  @Get(['ffrs-photo/:id', 'ffrs-photo/:id/:filename'])
   async getFfrsPhoto(
     @Param('id', ParseIntPipe) id: number,
     @Query('token') token: string,
