@@ -79,6 +79,7 @@ type RequirementResponseRow = {
 
 type PhotoRow = {
   objet_id: number;
+  mimetype: string | null;
 };
 
 type MedicalRow = {
@@ -174,14 +175,18 @@ export class FfrsExportService {
         ) as Promise<AddInfoRow[]>,
         this.dataSource.query(
           `
-            SELECT DISTINCT ON (objet_id) objet_id
+            SELECT DISTINCT ON (objet_id) objet_id, mimetype
             FROM document
-            WHERE objet_type = 'member'
-              AND LOWER(typedoc) = 'photo'
+            WHERE LOWER(BTRIM(objet_type)) IN ('member', 'rider')
+              AND LOWER(BTRIM(typedoc)) = 'photo'
               AND objet_id = ANY($1::int[])
               AND (project_id = $2 OR project_id IS NULL)
               AND file_data IS NOT NULL
-            ORDER BY objet_id, date_import DESC, id DESC
+            ORDER BY
+              objet_id,
+              CASE WHEN LOWER(BTRIM(objet_type)) = 'member' THEN 0 ELSE 1 END,
+              date_import DESC,
+              id DESC
           `,
           [allowedIds, projectId],
         ) as Promise<PhotoRow[]>,
@@ -239,7 +244,7 @@ export class FfrsExportService {
     const fieldsById = new Map(addInfoFields.map((x) => [String(x.id), x]));
     const valuesByPerson = this.groupBy(addInfoValues, (x) => Number(x.object_id));
     const responsesByPerson = this.groupBy(requirementResponses, (x) => Number(x.personne_id));
-    const photoIds = new Set(photos.map((x) => Number(x.objet_id)));
+    const photoByPerson = new Map(photos.map((x) => [Number(x.objet_id), x]));
     const medicalByPerson = new Map(medicalDocs.map((x) => [Number(x.objet_id), x.date_document ?? null]));
 
     const warnings: string[] = [];
@@ -255,8 +260,9 @@ export class FfrsExportService {
         familyByAccount.get(Number(personne.compte)) ?? [],
         contactsByPerson,
       );
-      const photoUrl = photoIds.has(personne.id)
-        ? this.buildSignedPhotoUrl(personne.id, projectId, publicBaseUrl)
+      const photo = photoByPerson.get(personne.id);
+      const photoUrl = photo
+        ? this.buildSignedPhotoUrl(personne.id, projectId, publicBaseUrl, photo.mimetype)
         : '';
 
       const licence = this.pickExtra(extras, [
@@ -359,12 +365,15 @@ export class FfrsExportService {
       `
         SELECT file_data, mimetype
         FROM document
-        WHERE objet_type = 'member'
-          AND LOWER(typedoc) = 'photo'
+        WHERE LOWER(BTRIM(objet_type)) IN ('member', 'rider')
+          AND LOWER(BTRIM(typedoc)) = 'photo'
           AND objet_id = $1
           AND (project_id = $2 OR project_id IS NULL)
           AND file_data IS NOT NULL
-        ORDER BY date_import DESC, id DESC
+        ORDER BY
+          CASE WHEN LOWER(BTRIM(objet_type)) = 'member' THEN 0 ELSE 1 END,
+          date_import DESC,
+          id DESC
         LIMIT 1
       `,
       [personId, verified.projectId],
@@ -525,14 +534,63 @@ export class FfrsExportService {
     return codes[type] ?? '';
   }
 
-  private buildSignedPhotoUrl(personId: number, projectId: number, publicBaseUrl: string): string {
+  private buildSignedPhotoUrl(
+    personId: number,
+    projectId: number,
+    requestBaseUrl: string,
+    mimetype: string | null,
+  ): string {
     const secret = this.photoSecret();
+    const publicBaseUrl = this.resolvePublicBaseUrl(requestBaseUrl);
     if (!secret || !publicBaseUrl) return '';
+
     const expires = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
     const payload = `${personId}.${projectId}.${expires}`;
     const signature = createHmac('sha256', secret).update(payload).digest('base64url');
     const token = `${projectId}.${expires}.${signature}`;
-    return `${publicBaseUrl.replace(/\/$/, '')}/api/personnes/ffrs-photo/${personId}?token=${encodeURIComponent(token)}`;
+    const extension = this.photoExtension(mimetype);
+
+    return `${publicBaseUrl}/api/personnes/ffrs-photo/${personId}/photo.${extension}?token=${encodeURIComponent(token)}`;
+  }
+
+  private resolvePublicBaseUrl(requestBaseUrl: string): string {
+    const configured = (this.config.get<string>('FFRS_PUBLIC_API_URL') || '').trim();
+    const candidate = configured || String(requestBaseUrl ?? '').trim();
+    if (!candidate) return '';
+
+    const normalized = candidate.replace(/\/api\/?$/i, '').replace(/\/$/, '');
+
+    try {
+      const url = new URL(normalized);
+      const localFrontendPorts = new Set(['2211', '2510']);
+      if (
+        (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+        localFrontendPorts.has(url.port)
+      ) {
+        const backendPort = Number(this.config.get<string>('PORT') || 3000);
+        url.port = String(backendPort);
+        return url.toString().replace(/\/$/, '');
+      }
+    } catch {
+      return normalized;
+    }
+
+    return normalized;
+  }
+
+  private photoExtension(mimetype: string | null): string {
+    switch ((mimetype ?? '').toLowerCase()) {
+      case 'image/png':
+        return 'png';
+      case 'image/webp':
+        return 'webp';
+      case 'image/gif':
+        return 'gif';
+      case 'image/jpeg':
+      case 'image/jpg':
+      default:
+        return 'jpg';
+    }
   }
 
   private verifyPhotoToken(personId: number, token: string): { projectId: number } | null {
@@ -558,10 +616,6 @@ export class FfrsExportService {
       this.config.get<string>('JWT_SECRET') ||
       ''
     );
-  }
-
-  private publicBaseUrlFromText(value: string): string {
-    return value.trim().replace(/\/$/, '');
   }
 
   private formatDate(value: string | Date | null | undefined): string {
