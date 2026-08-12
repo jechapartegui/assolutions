@@ -251,6 +251,15 @@ export class SouscriptionTunnelComponent implements OnInit {
     return requirement.satisfait;
   }
 
+  requiredConsentsAnswered(personId: number): boolean {
+    return (this.dossiers[personId]?.exigences ?? [])
+      .filter(
+        (requirement) =>
+          requirement.type_exigence === 'CONSENTEMENT' && requirement.obligatoire,
+      )
+      .every((requirement) => typeof requirement.valeur_boolean === 'boolean');
+  }
+
   dossierRequirements(personId: number): ExigenceEvaluation[] {
     return (this.dossiers[personId]?.exigences ?? [])
       .filter((item) => item.type_exigence !== 'PREUVE_MEDICALE')
@@ -333,7 +342,9 @@ export class SouscriptionTunnelComponent implements OnInit {
     }
     if (this.step === 4) {
       return this.selectedPeople.every(
-        (person) => this.dossiers[person.id]?.inscription_complete === true,
+        (person) =>
+          this.dossiers[person.id]?.inscription_complete === true &&
+          this.requiredConsentsAnswered(person.id),
       );
     }
     return this.isPayerValid();
@@ -357,6 +368,13 @@ export class SouscriptionTunnelComponent implements OnInit {
     person: SouscriptionPersonneContexte,
     requirement: ExigenceEvaluation,
   ): Promise<void> {
+    if (
+      requirement.type_reponse === 'BOOLEEN' &&
+      typeof requirement.valeur_boolean !== 'boolean'
+    ) {
+      return;
+    }
+
     await this.run('Enregistrement de la réponse', async () => {
       this.dossiers[person.id] = await this.dossierApi.saveResponse(
         {
