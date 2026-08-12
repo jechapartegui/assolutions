@@ -23,6 +23,7 @@ import {
 } from './exigence-dossier.dto';
 import { ExigenceDossierEntity } from './exigence-dossier.entity';
 import { ExigenceDossierPorteeEntity } from './exigence-dossier-portee.entity';
+import { PreuveMedicaleService } from './preuve-medicale.service';
 import { ReponseExigenceDossierEntity } from './reponse-exigence-dossier.entity';
 
 type RequirementWithScopes = ExigenceDossierEntity & {
@@ -50,6 +51,7 @@ export class ExigenceDossierService {
     private readonly groupeRepo: Repository<GroupesEntity>,
     @InjectRepository(TarifInscriptionEntity)
     private readonly tarifRepo: Repository<TarifInscriptionEntity>,
+    private readonly preuveMedicaleService: PreuveMedicaleService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -184,8 +186,11 @@ export class ExigenceDossierService {
         this.matchesAge(item, civilAge) &&
         this.matchesScope(item.portees, dto),
     );
+    const hasMedicalRequirement = requirements.some(
+      (item) => item.type_exigence === 'PREUVE_MEDICALE',
+    );
 
-    const [contacts, documents, responses] = await Promise.all([
+    const [contacts, documents, responses, medical] = await Promise.all([
       this.contactRepo.find({
         where: { object_type: 'rider', object_id: personne.id },
       }),
@@ -202,6 +207,18 @@ export class ExigenceDossierService {
             },
           })
         : Promise.resolve([]),
+      hasMedicalRequirement
+        ? this.preuveMedicaleService.evaluate(
+            {
+              personne_id: personne.id,
+              saison_id: saison.id,
+              type_licence:
+                dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR',
+            },
+            projectId,
+            compteId,
+          )
+        : Promise.resolve(null),
     ]);
     const responseByRequirement = new Map(
       responses.map((item) => [item.exigence_id, item]),
@@ -209,13 +226,27 @@ export class ExigenceDossierService {
 
     const evaluations = requirements.map((requirement) => {
       const response = responseByRequirement.get(requirement.id) ?? null;
-      const evaluation = this.evaluateRequirement(
-        requirement,
-        personne,
-        contacts,
-        documents,
-        response,
-      );
+      const evaluation =
+        requirement.type_exigence === 'PREUVE_MEDICALE'
+          ? {
+              satisfied: medical?.eligible === true,
+              answered: !!(medical?.certificat || medical?.qs_sport),
+              reason:
+                medical?.eligible === true
+                  ? null
+                  : medical?.message ?? 'Situation médicale à renseigner',
+              documentId:
+                medical?.certificat?.document_id ??
+                medical?.qs_sport?.document_id ??
+                null,
+            }
+          : this.evaluateRequirement(
+              requirement,
+              personne,
+              contacts,
+              documents,
+              response,
+            );
       return {
         id: requirement.id,
         code: requirement.code,
@@ -273,6 +304,7 @@ export class ExigenceDossierService {
       exigences_manquantes_bloquantes: blockingMissing.map((item) => item.code),
       exigences_licence_manquantes: licenseMissing.map((item) => item.code),
       exigences: evaluations,
+      preuve_medicale: medical,
     };
   }
 
