@@ -245,19 +245,29 @@ export class SouscriptionTunnelComponent implements OnInit {
   }
 
   requirementAnswered(requirement: ExigenceEvaluation): boolean {
-    if (requirement.type_reponse === 'BOOLEEN') {
-      return typeof requirement.valeur_boolean === 'boolean';
-    }
-    return requirement.satisfait;
+    return requirement.repondu === true;
   }
 
-  requiredConsentsAnswered(personId: number): boolean {
-    return (this.dossiers[personId]?.exigences ?? [])
-      .filter(
-        (requirement) =>
-          requirement.type_exigence === 'CONSENTEMENT' && requirement.obligatoire,
+  requirementDisplayOk(requirement: ExigenceEvaluation): boolean {
+    if (requirement.usage === 'LICENCE' && requirement.obligatoire) {
+      return requirement.satisfait;
+    }
+    return requirement.satisfait || requirement.repondu;
+  }
+
+  registrationIssueMessage(personId: number): string {
+    const dossier = this.dossiers[personId];
+    if (!dossier || dossier.inscription_complete) return '';
+
+    const missingCodes = new Set(dossier.exigences_manquantes_bloquantes ?? []);
+    return dossier.exigences
+      .filter((requirement) => missingCodes.has(requirement.code))
+      .map((requirement) =>
+        requirement.raison
+          ? `${requirement.libelle} — ${requirement.raison}`
+          : requirement.libelle,
       )
-      .every((requirement) => typeof requirement.valeur_boolean === 'boolean');
+      .join(' · ');
   }
 
   dossierRequirements(personId: number): ExigenceEvaluation[] {
@@ -342,9 +352,7 @@ export class SouscriptionTunnelComponent implements OnInit {
     }
     if (this.step === 4) {
       return this.selectedPeople.every(
-        (person) =>
-          this.dossiers[person.id]?.inscription_complete === true &&
-          this.requiredConsentsAnswered(person.id),
+        (person) => this.dossiers[person.id]?.inscription_complete === true,
       );
     }
     return this.isPayerValid();
@@ -362,6 +370,16 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.step = Math.max(1, this.step - 1);
     this.storeState();
     this.scrollTop();
+  }
+
+  async selectBooleanRequirement(
+    person: SouscriptionPersonneContexte,
+    requirement: ExigenceEvaluation,
+    value: boolean,
+  ): Promise<void> {
+    if (this.loading) return;
+    requirement.valeur_boolean = value;
+    await this.saveRequirement(person, requirement);
   }
 
   async saveRequirement(
