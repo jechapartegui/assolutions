@@ -72,7 +72,7 @@ export class PreuveMedicaleService {
       return proofRepo.save(
         proofRepo.create({
           project_id: projectId,
-          personne_id: dto.persononne_id ?? dto.personne_id,
+          personne_id: dto.personne_id,
           saison_id: dto.saison_id,
           type_preuve: dto.type_preuve,
           date_document: dto.date_document.slice(0, 10),
