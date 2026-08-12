@@ -230,6 +230,7 @@ export class ExigenceDossierService {
         texte_consentement: requirement.texte_consentement,
         version_texte: requirement.version_texte,
         satisfait: evaluation.satisfied,
+        repondu: evaluation.answered,
         raison: evaluation.reason,
         valeur_boolean: response?.valeur_boolean ?? null,
         valeur_texte: response?.valeur_texte ?? null,
@@ -238,12 +239,26 @@ export class ExigenceDossierService {
       };
     });
 
-    const blockingMissing = evaluations.filter(
+    const registrationBlockingMissing = evaluations.filter(
       (item) =>
         item.usage === 'INSCRIPTION' &&
         item.obligatoire &&
         item.bloquante &&
-        !item.satisfait,
+        !(item.type_exigence === 'CONSENTEMENT' ? item.repondu : item.satisfait),
+    );
+    const unansweredRequiredConsents = evaluations.filter(
+      (item) =>
+        item.type_exigence === 'CONSENTEMENT' &&
+        item.obligatoire &&
+        !item.repondu,
+    );
+    const blockingMissing = Array.from(
+      new Map(
+        [...registrationBlockingMissing, ...unansweredRequiredConsents].map((item) => [
+          item.id,
+          item,
+        ]),
+      ).values(),
     );
     const licenseMissing = evaluations.filter(
       (item) =>
@@ -334,14 +349,9 @@ export class ExigenceDossierService {
   ) {
     const result = await this.evaluate(dto, projectId, compteId);
     if (!result.inscription_complete) {
+      const missingCodes = new Set(result.exigences_manquantes_bloquantes);
       const labels = result.exigences
-        .filter(
-          (item) =>
-            item.usage === 'INSCRIPTION' &&
-            item.obligatoire &&
-            item.bloquante &&
-            !item.satisfait,
-        )
+        .filter((item) => missingCodes.has(item.code))
         .map((item) => item.libelle);
       throw new BadRequestException(
         `Dossier incomplet pour cette personne : ${labels.join(', ')}`,
@@ -564,12 +574,19 @@ export class ExigenceDossierService {
     contacts: Contact[],
     documents: DocumentEntity[],
     response: ReponseExigenceDossierEntity | null,
-  ): { satisfied: boolean; reason: string | null; documentId: number | null } {
+  ): {
+    satisfied: boolean;
+    answered: boolean;
+    reason: string | null;
+    documentId: number | null;
+  } {
     if (requirement.type_exigence === 'CHAMP_PERSONNE') {
       const value = this.personField(person, requirement.source_code);
+      const satisfied = this.hasValue(value);
       return {
-        satisfied: this.hasValue(value),
-        reason: this.hasValue(value) ? null : 'Information manquante',
+        satisfied,
+        answered: satisfied,
+        reason: satisfied ? null : 'Information manquante',
         documentId: null,
       };
     }
@@ -582,6 +599,7 @@ export class ExigenceDossierService {
       );
       return {
         satisfied: found,
+        answered: found,
         reason: found ? null : 'Contact manquant',
         documentId: null,
       };
@@ -597,6 +615,7 @@ export class ExigenceDossierService {
       );
       return {
         satisfied: !!valid,
+        answered: !!valid,
         reason: valid
           ? null
           : candidates.length
@@ -607,12 +626,18 @@ export class ExigenceDossierService {
     }
     if (requirement.type_exigence === 'CONSENTEMENT') {
       const currentVersion = requirement.version_texte ?? null;
-      const satisfied =
-        response?.valeur_boolean === true &&
+      const answered =
+        typeof response?.valeur_boolean === 'boolean' &&
         response.version_acceptee === currentVersion;
+      const satisfied = answered && response?.valeur_boolean === true;
       return {
         satisfied,
-        reason: satisfied ? null : 'Consentement à renseigner',
+        answered,
+        reason: !answered
+          ? 'Consentement à renseigner'
+          : satisfied
+            ? null
+            : 'Consentement refusé',
         documentId: null,
       };
     }
@@ -620,6 +645,7 @@ export class ExigenceDossierService {
     const satisfied = this.responseHasValue(requirement, response);
     return {
       satisfied,
+      answered: satisfied,
       reason: satisfied ? null : 'Réponse à renseigner',
       documentId: response?.document_id ?? null,
     };
