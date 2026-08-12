@@ -51,32 +51,51 @@ export class PreuveMedicaleService {
     await this.getAuthorizedPerson(dto.personne_id, compteId, projectId);
     this.validate(dto);
 
-    return this.repo.save(
-      this.repo.create({
-        project_id: projectId,
-        personne_id: dto.personne_id,
-        saison_id: dto.saison_id,
-        type_preuve: dto.type_preuve,
-        date_document: dto.date_document.slice(0, 10),
-        qs_reponses_negatives:
-          dto.type_preuve === 'QS_SPORT'
-            ? dto.qs_reponses_negatives ?? null
-            : null,
-        valable_competition: !!dto.valable_competition,
-        medecin_nom:
-          dto.type_preuve === 'CERTIFICAT'
-            ? this.text(dto.medecin_nom)
-            : null,
-        medecin_rpps:
-          dto.type_preuve === 'CERTIFICAT'
-            ? this.text(dto.medecin_rpps)
-            : null,
-        document_id: dto.document_id ?? null,
-        valide: true,
-        commentaire: this.text(dto.commentaire),
-        updated_at: new Date(),
-      }),
-    );
+    return this.dataSource.transaction(async (manager) => {
+      const proofRepo = manager.getRepository(PreuveMedicaleEntity);
+      const now = new Date();
+
+      // Une personne ne doit avoir qu'un justificatif actif de chaque type.
+      // Le précédent reste en historique mais ne participe plus à l'évaluation.
+      await proofRepo
+        .createQueryBuilder()
+        .update(PreuveMedicaleEntity)
+        .set({ valide: false, updated_at: now })
+        .where('project_id = :projectId', { projectId })
+        .andWhere('personne_id = :personneId', {
+          personneId: dto.personne_id,
+        })
+        .andWhere('type_preuve = :typePreuve', { typePreuve: dto.type_preuve })
+        .andWhere('valide = true')
+        .execute();
+
+      return proofRepo.save(
+        proofRepo.create({
+          project_id: projectId,
+          personne_id: dto.persononne_id ?? dto.personne_id,
+          saison_id: dto.saison_id,
+          type_preuve: dto.type_preuve,
+          date_document: dto.date_document.slice(0, 10),
+          qs_reponses_negatives:
+            dto.type_preuve === 'QS_SPORT'
+              ? dto.qs_reponses_negatives ?? null
+              : null,
+          valable_competition: !!dto.valable_competition,
+          medecin_nom:
+            dto.type_preuve === 'CERTIFICAT'
+              ? this.text(dto.medecin_nom)
+              : null,
+          medecin_rpps:
+            dto.type_preuve === 'CERTIFICAT'
+              ? this.text(dto.medecin_rpps)
+              : null,
+          document_id: dto.document_id ?? null,
+          valide: true,
+          commentaire: this.text(dto.commentaire),
+          updated_at: now,
+        }),
+      );
+    });
   }
 
   async evaluate(
