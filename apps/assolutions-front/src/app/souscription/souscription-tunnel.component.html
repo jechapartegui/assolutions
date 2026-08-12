@@ -210,19 +210,69 @@
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'CONSENTEMENT'">
                         <p class="consent-text">{{ requirement.texte_consentement }}</p>
-                        <label class="checkbox checkbox-card" i18n>
-                          <input type="checkbox" [(ngModel)]="requirement.valeur_boolean" />
-                          Oui, j’accepte
-                        </label>
-                        <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)" i18n>Enregistrer ma réponse</button>
-                        <p class="help" i18n>Une case non cochée enregistre un refus. Aucun consentement n’est précoché par défaut.</p>
+                        <div class="boolean-choice mb-2">
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
+                            type="button"
+                            (click)="requirement.valeur_boolean = true"
+                            i18n
+                          >
+                            Oui
+                          </button>
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
+                            type="button"
+                            (click)="requirement.valeur_boolean = false"
+                            i18n
+                          >
+                            Non
+                          </button>
+                        </div>
+                        <button
+                          class="button is-small is-primary"
+                          type="button"
+                          [disabled]="requirement.valeur_boolean === null"
+                          (click)="saveRequirement(person, requirement)"
+                          i18n
+                        >
+                          Enregistrer ma réponse
+                        </button>
                       </div>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'DECLARATION'">
                         <input *ngIf="requirement.type_reponse === 'TEXTE'" class="input" [(ngModel)]="requirement.valeur_texte" />
                         <input *ngIf="requirement.type_reponse === 'DATE'" class="input" type="date" [(ngModel)]="requirement.valeur_date" />
-                        <label *ngIf="requirement.type_reponse === 'BOOLEEN'" class="checkbox checkbox-card" i18n><input type="checkbox" [(ngModel)]="requirement.valeur_boolean" /> Oui</label>
-                        <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)" i18n>Enregistrer</button>
+                        <div *ngIf="requirement.type_reponse === 'BOOLEEN'" class="boolean-choice mb-2">
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
+                            type="button"
+                            (click)="requirement.valeur_boolean = true"
+                            i18n
+                          >
+                            Oui
+                          </button>
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
+                            type="button"
+                            (click)="requirement.valeur_boolean = false"
+                            i18n
+                          >
+                            Non
+                          </button>
+                        </div>
+                        <button
+                          class="button is-small is-primary mt-2"
+                          type="button"
+                          [disabled]="requirement.type_reponse === 'BOOLEEN' && requirement.valeur_boolean === null"
+                          (click)="saveRequirement(person, requirement)"
+                          i18n
+                        >
+                          Enregistrer
+                        </button>
                       </div>
 
                       <app-dossier-document-upload *ngIf="requirement.type_exigence === 'DOCUMENT' && !requirement.satisfait" [personId]="person.id" [seasonId]="seasonId" [groupIds]="choice(person.id).groupIds" [tariffId]="choice(person.id).tariffId" [licenceType]="choice(person.id).licenceType" [requirement]="requirement" (evaluationChange)="dossiers[person.id] = $event"></app-dossier-document-upload>
