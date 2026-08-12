@@ -36,9 +36,21 @@ export class PreuveMedicaleService {
   ) {
     await this.assertSeason(saisonId, projectId);
     await this.getAuthorizedPerson(personneId, compteId, projectId);
-    return this.repo.find({
+    const proofs = await this.repo.find({
       where: { project_id: projectId, personne_id: personneId },
       order: { date_document: 'DESC', id: 'DESC' },
+    });
+
+    // Compatibilité avec les données créées avant l'unicité logique :
+    // dans l'affichage, un seul certificat et un seul QS Sport sont actifs.
+    const activeTypes = new Set<string>();
+    return proofs.map((proof) => {
+      if (!proof.valide) return proof;
+      if (activeTypes.has(proof.type_preuve)) {
+        return { ...proof, valide: false };
+      }
+      activeTypes.add(proof.type_preuve);
+      return proof;
     });
   }
 
@@ -118,16 +130,21 @@ export class PreuveMedicaleService {
       order: { date_document: 'DESC', id: 'DESC' },
     });
 
-    const age = this.civilAge(personne.date_naissance, saison.date_debut);
-    const currentSeasonQs = proofs.find(
-      (item) =>
-        item.type_preuve === 'QS_SPORT' &&
-        item.saison_id === saison.id &&
-        item.qs_reponses_negatives === true,
-    );
-    const certificates = proofs.filter(
+    // Même si d'anciens tests ont laissé plusieurs lignes valide=true,
+    // seule la plus récente de chaque type est considérée active.
+    const activeQs = proofs.find((item) => item.type_preuve === 'QS_SPORT');
+    const activeCertificate = proofs.find(
       (item) => item.type_preuve === 'CERTIFICAT',
     );
+
+    const age = this.civilAge(personne.date_naissance, saison.date_debut);
+    const currentSeasonQs =
+      activeQs &&
+      activeQs.saison_id === saison.id &&
+      activeQs.qs_reponses_negatives === true
+        ? activeQs
+        : undefined;
+    const certificates = activeCertificate ? [activeCertificate] : [];
     const recentCertificate = certificates.find((item) =>
       this.isWithinMonths(item.date_document, saison.date_debut, 12),
     );
