@@ -82,6 +82,7 @@ export interface ExigenceEvaluation {
   texte_consentement: string | null;
   version_texte: string | null;
   satisfait: boolean;
+  repondu: boolean;
   raison: string | null;
   valeur_boolean: boolean | null;
   valeur_texte: string | null;
