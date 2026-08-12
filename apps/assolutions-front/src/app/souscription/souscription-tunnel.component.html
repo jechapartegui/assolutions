@@ -161,6 +161,12 @@
                   <span class="tag" [ngClass]="dossiers[person.id]?.inscription_complete ? 'is-success is-light' : 'is-danger is-light'">{{ dossiers[person.id]?.inscription_complete ? 'Inscription complète' : 'Inscription incomplète' }}</span>
                   <span class="tag" [ngClass]="medical[person.id]?.eligible ? 'is-success is-light' : 'is-warning is-light'">{{ medical[person.id]?.eligible ? 'Situation médicale complète' : 'Situation médicale à compléter' }}</span>
                 </div>
+                <p
+                  class="help is-danger mt-2"
+                  *ngIf="!dossiers[person.id]?.inscription_complete && registrationIssueMessage(person.id)"
+                >
+                  {{ registrationIssueMessage(person.id) }}
+                </p>
               </div>
               <button class="button is-small is-light" type="button" (click)="editPerson(person)" i18n>Modifier la fiche</button>
             </header>
@@ -197,8 +203,8 @@
 
                 <div class="requirement-list">
                   <article class="requirement-row" *ngFor="let requirement of dossierRequirements(person.id)">
-                    <span class="requirement-state" [class.ok]="requirement.satisfait || requirementAnswered(requirement)">
-                      <i class="fas" [ngClass]="requirement.satisfait || requirementAnswered(requirement) ? 'fa-check' : 'fa-exclamation'"></i>
+                    <span class="requirement-state" [class.ok]="requirementDisplayOk(requirement)">
+                      <i class="fas" [ngClass]="requirementDisplayOk(requirement) ? 'fa-check' : 'fa-exclamation'"></i>
                     </span>
                     <div class="requirement-body">
                       <div class="requirement-title-line">
@@ -206,68 +212,68 @@
                         <span class="tag is-light">{{ requirement.obligatoire ? 'Réponse attendue' : 'Information utile' }}</span>
                       </div>
                       <p class="has-text-grey mb-2" *ngIf="requirement.description">{{ requirement.description }}</p>
-                      <p class="help is-warning" *ngIf="requirement.raison && !requirementAnswered(requirement)">{{ requirement.raison }}</p>
+                      <p
+                        class="help is-warning"
+                        *ngIf="requirement.raison && (!requirementAnswered(requirement) || (requirement.usage === 'LICENCE' && requirement.obligatoire && !requirement.satisfait))"
+                      >
+                        {{ requirement.raison }}
+                      </p>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'CONSENTEMENT'">
                         <p class="consent-text">{{ requirement.texte_consentement }}</p>
-                        <div class="boolean-choice mb-2">
+                        <div class="boolean-choice">
                           <button
                             class="button is-small"
-                            [ngClass]="requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
                             type="button"
-                            (click)="requirement.valeur_boolean = true"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, true)"
                             i18n
                           >
                             Oui
                           </button>
                           <button
                             class="button is-small"
-                            [ngClass]="requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
                             type="button"
-                            (click)="requirement.valeur_boolean = false"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, false)"
                             i18n
                           >
                             Non
                           </button>
                         </div>
-                        <button
-                          class="button is-small is-primary"
-                          type="button"
-                          [disabled]="requirement.valeur_boolean === null"
-                          (click)="saveRequirement(person, requirement)"
-                          i18n
-                        >
-                          Enregistrer ma réponse
-                        </button>
                       </div>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'DECLARATION'">
                         <input *ngIf="requirement.type_reponse === 'TEXTE'" class="input" [(ngModel)]="requirement.valeur_texte" />
                         <input *ngIf="requirement.type_reponse === 'DATE'" class="input" type="date" [(ngModel)]="requirement.valeur_date" />
-                        <div *ngIf="requirement.type_reponse === 'BOOLEEN'" class="boolean-choice mb-2">
+                        <div *ngIf="requirement.type_reponse === 'BOOLEEN'" class="boolean-choice">
                           <button
                             class="button is-small"
-                            [ngClass]="requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
                             type="button"
-                            (click)="requirement.valeur_boolean = true"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, true)"
                             i18n
                           >
                             Oui
                           </button>
                           <button
                             class="button is-small"
-                            [ngClass]="requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
                             type="button"
-                            (click)="requirement.valeur_boolean = false"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, false)"
                             i18n
                           >
                             Non
                           </button>
                         </div>
                         <button
+                          *ngIf="requirement.type_reponse !== 'BOOLEEN'"
                           class="button is-small is-primary mt-2"
                           type="button"
-                          [disabled]="requirement.type_reponse === 'BOOLEEN' && requirement.valeur_boolean === null"
                           (click)="saveRequirement(person, requirement)"
                           i18n
                         >
