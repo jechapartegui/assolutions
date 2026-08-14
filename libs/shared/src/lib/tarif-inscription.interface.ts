@@ -10,6 +10,9 @@ export interface TarifInscription {
    */
   prix_centimes: number;
 
+  /** Compte bancaire recevant la recette générée à la confirmation. */
+  compte_bancaire_id?: number | null;
+
   /**
    * Dates au format YYYY-MM-DD.
    * Les bornes sont inclusives.
