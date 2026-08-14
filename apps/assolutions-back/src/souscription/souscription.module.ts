@@ -18,6 +18,7 @@ import { CodePromoController } from './code-promo.controller';
 import { CodePromoEntity } from './code-promo.entity';
 import { CodePromoService } from './code-promo.service';
 import { CodePromoTarifEntity } from './code-promo-tarif.entity';
+import { SouscriptionCapacityService } from './souscription-capacity.service';
 import { SouscriptionConfirmationService } from './souscription-confirmation.service';
 import { SouscriptionController } from './souscription.controller';
 import { SouscriptionEntity } from './souscription.entity';
@@ -54,6 +55,7 @@ import { SouscriptionService } from './souscription.service';
   controllers: [SouscriptionController, CodePromoController],
   providers: [
     SouscriptionService,
+    SouscriptionCapacityService,
     SouscriptionConfirmationService,
     SouscriptionFinanceService,
     CodePromoService,
