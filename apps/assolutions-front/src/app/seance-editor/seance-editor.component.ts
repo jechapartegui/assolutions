@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ValidationItem } from '@shared/lib/autres.interface';
 import { SeanceProfesseur_VM, Seance_VM } from '@shared/index';
 
+import { ContratProfDataStore } from '../../data-store/contrat-prof-data.store';
 import { environment } from '../../environments/environment';
 import { SeanceMapper } from '../../mapper/seance.mapper';
 import { SeanceRepository } from '../../repository/seance.repository';
@@ -36,6 +37,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     private readonly mapper: SeanceMapper,
     private readonly store: SeanceStore,
     private readonly router: Router,
+    private readonly contratProfDataStore: ContratProfDataStore,
   ) {}
 
   get seance(): Seance_VM {
@@ -162,7 +164,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
 
   async ajouterProf(): Promise<void> {
     if (!this.currentProfId) return;
-    const prof = this.vm.refs.listeProf.find((item) => item.key === this.currentProfId);
+    const prof = this.vm.refs.listeProf.find((item) => Number(item.key) === Number(this.currentProfId));
     if (!prof) return;
 
     this.seance.seanceProfesseurs.push(this.profFromReference(Number(prof.key), prof.value) as any);
@@ -290,15 +292,22 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
   }
 
   private profFromReference(contratId: number, label: string): SeanceProfesseur_VM {
-    const [prenom = '', ...nomParts] = label.split(' ');
+    const prof = this.contratProfDataStore
+      .profLights()
+      .find((item) => Number(item.contrat_id) === Number(contratId));
+    const [fallbackPrenom = '', ...fallbackNomParts] = label.split(' ');
+    const prenom = prof?.prenom ?? fallbackPrenom;
+    const nom = prof?.nom ?? fallbackNomParts.join(' ');
+    const personneId = Number(prof?.id ?? 0);
+
     const result = new SeanceProfesseur_VM();
     result.seance_id = this.seance.id;
     result.statut = this.seance.statut;
     result.minutes = this.seance.duree_seance;
-    result.personne = { id: contratId, prenom, nom: nomParts.join(' ') } as any;
+    result.personne = { id: personneId, prenom, nom } as any;
     (result as any).prenom = prenom;
-    (result as any).nom = nomParts.join(' ');
-    (result as any).contrat_id = contratId;
+    (result as any).nom = nom;
+    (result as any).contrat_id = Number(contratId);
     return result;
   }
 
