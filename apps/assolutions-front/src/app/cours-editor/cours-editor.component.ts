@@ -16,6 +16,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   @Input() isAdmin = false;
   @Output() back = new EventEmitter<void>();
 
+  public saving = false;
   public currentProfId: number | null = null;
   public profDispo: any[] = [];
   public rNom: ValidationItem = { key: true, value: '' };
@@ -71,11 +72,12 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     const errorService = ErrorService.instance;
     this.checkall();
 
-    if (!this.vm.isValid || !this.cours) {
+    if (!this.vm.isValid || !this.cours || this.saving) {
       return;
     }
 
     const wasExisting = (this.cours.id ?? 0) > 0;
+    this.saving = true;
 
     try {
       await this.store.saveEditedCours();
@@ -96,10 +98,13 @@ export class CoursEditorComponent implements OnInit, OnChanges {
           err?.message ?? $localize`Erreur inconnue`
         )
       );
+    } finally {
+      this.saving = false;
     }
   }
 
   async duplicateCours(): Promise<void> {
+    if (this.saving) return;
     const confirmDuplication = window.confirm(
       `Voulez-vous dupliquer le cours ? Cela implique de sauvegarder le cours et d'en créer un nouveau exactement identique.`
     );
@@ -110,7 +115,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   }
 
   async deleteCours(): Promise<void> {
-    if (!this.cours?.id) return;
+    if (!this.cours?.id || this.saving) return;
 
     const confirmDelete = window.confirm($localize`Voulez-vous supprimer ce cours ?`);
     if (!confirmDelete) return;
@@ -120,7 +125,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   }
 
   async modifierSerie(): Promise<void> {
-    if (!this.cours?.id) return;
+    if (!this.cours?.id || this.saving) return;
 
     const errorService = ErrorService.instance;
 
@@ -160,7 +165,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     this.cours.professeursCours.push(person);
 
     if (!this.cours.prof_principal_id || this.cours.prof_principal_id <= 0) {
-      this.cours.prof_principal_id = Number((person as any).contrat_id ?? person.id);
+      this.cours.prof_principal_id = this.getProfKey(person);
     }
 
     if (this.cours.id > 0) {
@@ -173,15 +178,15 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   }
 
   async removeProf(item: PersonneLight_VM): Promise<void> {
-    const itemId = this.profKey(item);
+    const itemId = this.getProfKey(item);
 
     this.cours.professeursCours = (this.cours.professeursCours ?? []).filter(
-      (x: PersonneLight_VM) => this.profKey(x) !== itemId
+      (x: PersonneLight_VM) => this.getProfKey(x) !== itemId
     );
 
     if (Number(this.cours.prof_principal_id) === itemId) {
       const next = this.cours.professeursCours?.[0] as any;
-      this.cours.prof_principal_id = Number(next?.contrat_id ?? next?.id ?? 0);
+      this.cours.prof_principal_id = this.getProfKey(next);
     }
 
     if (this.cours.id > 0) {
@@ -194,7 +199,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
 
   majListeProf(): void {
     const idsPris = new Set(
-      (this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => this.profKey(x))
+      (this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => this.getProfKey(x))
     );
 
     this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((x) => !idsPris.has(Number(x.key)));
@@ -247,6 +252,10 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     return `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim();
   }
 
+  getProfKey(p: PersonneLight_VM | any): number {
+    return Number(p?.contrat_id ?? p?.contratId ?? p?.id ?? 0);
+  }
+
   getJourLabel(jour: string): string {
     switch ((jour ?? '').toLowerCase()) {
       case 'lundi':
@@ -266,9 +275,5 @@ export class CoursEditorComponent implements OnInit, OnChanges {
       default:
         return jour ?? '';
     }
-  }
-
-  private profKey(p: PersonneLight_VM | any): number {
-    return Number(p?.contrat_id ?? p?.contratId ?? p?.id ?? 0);
   }
 }
