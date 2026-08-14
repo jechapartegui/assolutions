@@ -251,7 +251,8 @@ export class FfrsExportService {
     const medicalCertificateDates: Record<number, string | null> = {};
     const rows = personnes.map((personne) => {
       const extras = this.buildExtraMap(valuesByPerson.get(personne.id) ?? [], fieldsById);
-      const responses = this.buildResponseMap(responsesByPerson.get(personne.id) ?? []);
+      const requirementRows = responsesByPerson.get(personne.id) ?? [];
+      const responses = this.buildResponseMap(requirementRows);
       const contactsForPerson = contactsByPerson.get(personne.id) ?? [];
       const address = this.parseAddress(personne.address, personne.pays ?? 'France');
       const phones = this.pickPhones(contactsForPerson);
@@ -285,12 +286,11 @@ export class FfrsExportService {
       if (!licence) warnings.push(`${personne.first_name} ${personne.last_name}: numéro de licence non renseigné.`);
       if (!photoUrl) warnings.push(`${personne.first_name} ${personne.last_name}: photo FFRS non disponible.`);
 
-      const imageConsent = this.pickBoolean(extras, responses, [
-        'droit image',
-        'droit a image',
-        'autorisation image',
-        'photo identite',
-      ]);
+      const imageConsent = this.pickFfrsImageConsent(
+        extras,
+        requirementRows,
+        responses,
+      );
       const dataCollectionConsent = this.pickBoolean(extras, responses, [
         'collecte traitement donnees',
         'traitement donnees',
@@ -404,6 +404,57 @@ export class FfrsExportService {
       }
     }
     return result;
+  }
+
+  /**
+   * Le droit à l'image FFRS a changé de modèle au fil des saisons.
+   * On respecte donc une priorité explicite, sans laisser la recherche floue
+   * choisir arbitrairement LOISIR ou COMPETITION :
+   * 1. FFRS_DROIT_IMAGE (champ générique historique),
+   * 2. FFRS_DROIT_IMAGE_COMPETITION,
+   * 3. FFRS_DROIT_IMAGE_LOISIR.
+   */
+  private pickFfrsImageConsent(
+    extras: Map<string, string>,
+    requirementRows: RequirementResponseRow[],
+    responses: Map<string, Scalar>,
+  ): number {
+    const preferredCodes = [
+      'FFRS_DROIT_IMAGE',
+      'FFRS_DROIT_IMAGE_COMPETITION',
+      'FFRS_DROIT_IMAGE_LOISIR',
+    ];
+
+    for (const rawCode of preferredCodes) {
+      const code = this.normalize(rawCode);
+      const row = requirementRows.find((item) =>
+        [item.code, item.source_code].some(
+          (value) => this.normalize(value ?? '') === code,
+        ),
+      );
+
+      if (row) {
+        const value: Scalar =
+          row.valeur_boolean ?? row.valeur_texte ?? row.valeur_date;
+        if (value !== null && value !== undefined && value !== '') {
+          return this.toBoolean01(value);
+        }
+      }
+
+      const extra = extras.get(code);
+      if (extra !== undefined && extra !== null && extra !== '') {
+        return this.toBoolean01(extra);
+      }
+    }
+
+    // Compatibilité avec les anciennes bases où le champ n'avait pas de code
+    // FFRS mais uniquement un libellé humain.
+    return this.pickBoolean(extras, responses, [
+      'droit image',
+      'droit a image',
+      'autorisation image',
+      'photo identite',
+    ]);
   }
 
   private pickExtra(values: Map<string, string>, aliases: string[]): string {
