@@ -78,7 +78,7 @@ export function mapCoursToVM(
   vm.heure = cours.heure ?? "11:00";
   vm.duree = cours.duree ?? 0;
 
-  // ⚠️ ici on suppose que prof_principal_id = contrat_id (vu ton explication)
+  // prof_principal_id référence un contrat professeur.
   vm.prof_principal_id = cours.prof_principal_id ?? 0;
 
   vm.lieu_id = cours.lieu_id ?? 0;
@@ -101,12 +101,12 @@ export function mapCoursToVM(
   // Lieu
   vm.lieu = listeLieux.find(l => l.id === vm.lieu_id) ?? ({} as Lieu_VM);
 
-  const listid = options?.contratsByCoursId?.[vm.id] ?? [];
-  // ✅ Prof principal résolu par contrat_id
-  const listep = listeProfesseurs.filter(p =>  listid.includes(p.id ?? 0) ) ?? [] ;
-  // ✅ Profs liés résolus par contrat_id
- 
-  vm.professeursCours = listep
+  // contratsByCoursId contient des ids de contrat, tandis que ProfLight_VM.id
+  // reste l'id de la personne. Il faut donc comparer avec contrat_id.
+  const contratIds = options?.contratsByCoursId?.[vm.id] ?? [];
+  vm.professeursCours = listeProfesseurs.filter((p) =>
+    contratIds.includes(Number(p.contrat_id ?? p.id ?? 0))
+  );
 
   // Groupes
   const groupeIds = options?.groupesByCoursId?.[vm.id] ?? [];
@@ -136,4 +136,3 @@ export class ContratProfesseur_VM {
   type_contrat:string;
   type_remuneration:string;
 }
-
