@@ -188,16 +188,18 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.showContactClub = !this.showContactClub;
   }
 
-  /**
-   * Inscription normale à une séance.
-   * Une séance d'essai ne passe jamais par ce chemin : cela évite notamment
-   * que "Tout accepter" transforme silencieusement des essais en demandes.
-   */
   async MAJInscription(
     ms: MesSeances_VM,
     rider: AdherentMenu,
     present: boolean | null,
   ): Promise<void> {
+    // Le bouton individuel "essai" utilise historiquement cette méthode.
+    // On conserve ce contrat d'UI, mais le bulk filtre les essais avant appel.
+    if (present === true && this.isEssaiPossible(ms, rider)) {
+      await this.demanderEssai(ms, rider);
+      return;
+    }
+
     if (present === true && ms?.accesInscription !== true) {
       return;
     }
@@ -222,7 +224,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Demande explicite d'essai : action séparée du pouce vert. */
   async demanderEssai(ms: MesSeances_VM, rider: AdherentMenu): Promise<void> {
     if (!this.isEssaiPossible(ms, rider)) return;
 
@@ -477,14 +478,15 @@ export class MenuComponent implements OnInit, OnDestroy {
       return this.multifiltersPipe.transform([ms], rider.filters).length > 0;
     });
 
-    // "Tout accepter" ne porte que sur les séances des groupes actuels de
-    // l'adhérent. Une séance d'essai ne doit jamais être acceptée en masse.
+    // L'acceptation de masse reste strictement limitée aux séances des groupes
+    // actuels de l'adhérent. Les séances d'essai et autres groupes sont exclues.
     if (present === true && rider.profil === 'ADH') {
       visibles = visibles.filter(
         (ms) =>
           rider.inscrit === true &&
           ms.dansGroupeAdherent === true &&
           !this.isEssai(ms) &&
+          !this.isEssaiPossible(ms, rider) &&
           ms.accesInscription === true,
       );
     }
