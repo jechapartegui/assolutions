@@ -106,11 +106,19 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.adminPersonId = Number(
       this.route.snapshot.queryParamMap.get('adminPersonId') ?? 0,
     );
-    this.isReturnMode = this.router.url.startsWith('/souscription/retour');
-    if (this.isReturnMode && sid > 0) {
-      await this.confirmReturn(sid);
+
+    const isReturnRoute = this.router.url.startsWith('/souscription/retour');
+    if (isReturnRoute && sid > 0) {
+      // Ne jamais afficher l'état KO par défaut pendant que l'API confirme le
+      // paiement. Tant que le résultat n'est pas connu, on reste sur l'écran
+      // neutre avec uniquement le loader global.
+      this.isReturnMode = false;
+      const resolved = await this.confirmReturn(sid);
+      this.isReturnMode = resolved;
       return;
     }
+
+    this.isReturnMode = isReturnRoute;
 
     await this.loadContext();
     this.restoreStoredState();
@@ -711,14 +719,19 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.promoDiscount = 0;
   }
 
-  private async confirmReturn(id: number): Promise<void> {
+  private async confirmReturn(id: number): Promise<boolean> {
+    let resolved = false;
+
     await this.run('Confirmation du paiement', async () => {
       const result = await this.api.confirm(id);
       this.returnSubscription = result.souscription;
       this.returnConfirmed = result.paiement_confirme;
       this.returnMessage = result.message;
+      resolved = true;
       if (result.paiement_confirme) this.clearStoredState();
     });
+
+    return resolved;
   }
 
   private scrollTop(): void {
