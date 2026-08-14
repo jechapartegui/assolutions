@@ -25,6 +25,7 @@ import {
   SimulerPaiementDto,
   ValidateCodePromoDto,
 } from './souscription.dto';
+import { SouscriptionCapacityService } from './souscription-capacity.service';
 import { SouscriptionConfirmationService } from './souscription-confirmation.service';
 import { SouscriptionFinanceService } from './souscription-finance.service';
 import { SouscriptionService } from './souscription.service';
@@ -36,6 +37,7 @@ type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
 export class SouscriptionController {
   constructor(
     private readonly service: SouscriptionService,
+    private readonly capacity: SouscriptionCapacityService,
     private readonly confirmation: SouscriptionConfirmationService,
     private readonly finance: SouscriptionFinanceService,
     private readonly admin: SouscriptionAdminService,
@@ -117,6 +119,7 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     await this.contexts.assertNotAlreadyRegistered(dto);
+    await this.capacity.assertDraftCapacity(dto);
     const accountId = this.accountId(req);
     const saved = await this.service.saveDraft(dto, projectId, accountId);
     await this.dossiers.syncDraft(saved.id, dto, projectId, accountId);
@@ -133,6 +136,7 @@ export class SouscriptionController {
   ) {
     const { compte_id, ...payload } = dto;
     await this.contexts.assertNotAlreadyRegistered(payload);
+    await this.capacity.assertDraftCapacity(payload);
     const accountId = Number(compte_id);
     const saved = await this.service.saveDraft(payload, projectId, accountId);
     await this.dossiers.syncDraft(saved.id, payload, projectId, accountId);
@@ -173,6 +177,7 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
+    await this.capacity.assertSubscriptionCapacity(id);
     await this.medicalGuard.assertComplete(id, projectId, accountId);
     await this.dossiers.validateAndSnapshot(id, projectId, accountId, true);
     const result = await this.service.createCheckout(id, projectId, accountId);
@@ -189,6 +194,7 @@ export class SouscriptionController {
   ) {
     const accountId = this.accountId(req);
     if (dto.resultat === 'OK') {
+      await this.capacity.assertSubscriptionCapacity(id);
       await this.medicalGuard.assertComplete(id, projectId, accountId);
     }
     const result = await this.dossiers.simulatePayment(
@@ -209,6 +215,7 @@ export class SouscriptionController {
     @Param('compteId', ParseIntPipe) compteId: number,
     @ProjectId() projectId: number,
   ) {
+    await this.capacity.assertSubscriptionCapacity(id);
     await this.medicalGuard.assertComplete(id, projectId, compteId);
     const result = await this.admin.validateManualPayment(
       id,
@@ -227,6 +234,7 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
+    await this.capacity.assertSubscriptionCapacity(id);
     const result = await this.confirmation.confirmWithRetry(
       id,
       projectId,
@@ -248,6 +256,7 @@ export class SouscriptionController {
 
   @Post('helloasso/webhook')
   async webhook(@Body() payload: unknown) {
+    await this.capacity.assertWebhookCapacity(payload);
     const result = await this.service.handleHelloAssoWebhook(payload);
     await this.finance.ensureFromWebhook(payload);
     await this.notifications.sendFromWebhook(payload);
