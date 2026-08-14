@@ -49,6 +49,11 @@ export class SouscriptionCapacityService {
         throw new NotFoundException('Souscription introuvable');
       }
 
+      // Une finalisation peut être rappelée par le retour navigateur ou un
+      // webhook. Elle est déjà comptabilisée dans les inscriptions actives :
+      // ne pas recompter ses propres lignes comme de nouvelles places.
+      if (subscription.statut === 'FINALISEE') return;
+
       const lines = await manager.getRepository(SouscriptionPersonneEntity).find({
         where: { souscription_id: subscription.id },
       });
