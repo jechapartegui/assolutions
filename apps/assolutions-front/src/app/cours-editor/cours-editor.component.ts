@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ValidationItem } from '@shared/lib/autres.interface';
 import { Cours_VM, PersonneLight_VM } from '@shared/index';
+import { ContratProfDataStore } from '../../data-store/contrat-prof-data.store';
 import { ErrorService } from '../../services/error.service';
 import { CoursPageVm } from '../../vm/cours-page.vm';
 import { CoursStore } from '../../store/cours.store';
@@ -25,7 +26,10 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     value: $localize`Un professeur responsable est nécessaire pour le cours`,
   };
 
-  constructor(private readonly store: CoursStore) {}
+  constructor(
+    private readonly store: CoursStore,
+    private readonly contratProfDataStore: ContratProfDataStore,
+  ) {}
 
   get cours(): Cours_VM {
     return this.vm.editCours as Cours_VM;
@@ -148,24 +152,29 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   async ajouterProf(): Promise<void> {
     if (!this.currentProfId) return;
 
-    const prof = (this.vm.refs.listeProf ?? []).find((x) => Number(x.key) === Number(this.currentProfId));
+    const contratId = Number(this.currentProfId);
+    const prof = this.contratProfDataStore
+      .profLights()
+      .find((item) => Number(item.contrat_id) === contratId);
     if (!prof) return;
 
-    const labelParts = String(prof.value ?? '').trim().split(' ').filter(Boolean);
-    const person: PersonneLight_VM = {
-      id: Number(prof.key),
-      contrat_id: Number(prof.key),
-      prenom: labelParts[0] ?? '',
-      nom: labelParts.slice(1).join(' ') ?? '',
-      surnom: '',
-      date_naissance: null as any,
-      sexe: null as any,
-    } as PersonneLight_VM;
+    const alreadySelected = (this.cours.professeursCours ?? []).some(
+      (item: PersonneLight_VM) => this.getProfKey(item) === contratId,
+    );
+    if (alreadySelected) return;
 
-    this.cours.professeursCours.push(person);
+    // Ne surtout pas recopier l'id du contrat dans personne.id :
+    // id = personne, contrat_id = contrat_prof.
+    const selectedProf = {
+      ...prof,
+      id: Number(prof.id),
+      contrat_id: contratId,
+    } as any;
+
+    this.cours.professeursCours.push(selectedProf);
 
     if (!this.cours.prof_principal_id || this.cours.prof_principal_id <= 0) {
-      this.cours.prof_principal_id = this.getProfKey(person);
+      this.cours.prof_principal_id = contratId;
     }
 
     if (this.cours.id > 0) {
