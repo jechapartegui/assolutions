@@ -7,7 +7,7 @@ export type MenuType =
   | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL'
   | 'PROJETINFO' | 'PROJETMAIL' | 'COMPTA' | 'CB'
   | 'FACTURE' | 'ENVOIMAIL' | 'ADMINISTRATEUR'
-  | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE' | 'PAIEMENT'
+  | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE' | 'PAIEMENT' | 'EXIGENCE_DOSSIER'
 
   // nouveaux menus admin
   | 'INSCRIPTION'

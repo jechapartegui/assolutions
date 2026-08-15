@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ValidationItem } from '@shared/lib/autres.interface';
 import { SeanceProfesseur_VM, Seance_VM } from '@shared/index';
 
+import { ContratProfDataStore } from '../../data-store/contrat-prof-data.store';
 import { environment } from '../../environments/environment';
 import { SeanceMapper } from '../../mapper/seance.mapper';
 import { SeanceRepository } from '../../repository/seance.repository';
@@ -23,6 +24,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
   @Output() back = new EventEmitter<void>();
   @ViewChild('addInfoEditor') addInfoEditor?: AddInfoEditorComponent;
 
+  saving = false;
   currentProfId: number | null = null;
   profDispo: any[] = [];
   serieDateDebut = '';
@@ -35,6 +37,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     private readonly mapper: SeanceMapper,
     private readonly store: SeanceStore,
     private readonly router: Router,
+    private readonly contratProfDataStore: ContratProfDataStore,
   ) {}
 
   get seance(): Seance_VM {
@@ -80,31 +83,42 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
   async save(): Promise<void> {
     const errors = ErrorService.instance;
     this.checkall();
-    if (!this.vm.isValid || !this.seance) return;
+    if (!this.vm.isValid || !this.seance || this.saving) return;
 
+    this.saving = true;
     try {
       if (this.vm.editModeSerie && this.seance.id === 0) {
-        await this.saveSerie();
+        const saisonId = await this.saveSerie();
+
+        // Le refresh global masque/détruit l'éditeur. On ferme donc l'éditeur
+        // AVANT de rafraîchir, sinon la série est créée mais l'écran se rouvre.
+        this.store.closeEditor();
         errors.emitChange(errors.OKMessage($localize`Créer une série de séances`));
         this.back.emit();
+
+        if (saisonId) await this.store.refreshNow(saisonId);
         return;
       }
 
+      const wasExisting = this.seance.id > 0;
       const saved = await this.store.saveEditedSeance();
       if (this.addInfoEditor && saved?.id > 0) {
         this.addInfoEditor.objectId = saved.id;
         await this.addInfoEditor.save();
       }
       errors.emitChange(
-        errors.OKMessage(this.seance.id > 0 ? $localize`Mettre à jour une séance` : $localize`Ajouter une séance`),
+        errors.OKMessage(wasExisting ? $localize`Mettre à jour une séance` : $localize`Ajouter une séance`),
       );
+      this.store.closeEditor();
       this.back.emit();
     } catch (error: unknown) {
       errors.emitChange(errors.CreateError($localize`Sauvegarder la séance`, error));
+    } finally {
+      this.saving = false;
     }
   }
 
-  private async saveSerie(): Promise<void> {
+  private async saveSerie(): Promise<number> {
     if (!this.serieDateDebut || !this.serieDateFin) {
       throw new Error('Les dates de début et de fin de la série sont obligatoires.');
     }
@@ -121,7 +135,10 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
       jour,
     );
 
-    const groupeIds = (this.seance.groupes ?? []).map((g: any) => Number(g.id ?? g.groupe_id)).filter((id) => id > 0);
+    const groupeIds = (this.seance.groupes ?? [])
+      .map((g: any) => Number(g.id ?? g.groupe_id))
+      .filter((id) => id > 0);
+
     for (const id of ids) {
       await Promise.all([
         this.repository.updateSeanceProfs(id, this.seance.seanceProfesseurs ?? []),
@@ -129,24 +146,25 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
       ]);
     }
 
-    const saisonId = Number(this.seance.saison_id || this.vm.activeSaison?.id || 0);
-    if (saisonId) await this.store.refreshNow(saisonId);
+    return Number(this.seance.saison_id || this.vm.activeSaison?.id || 0);
   }
 
   async duplicateSeance(): Promise<void> {
+    if (this.saving) return;
     if (!window.confirm('Voulez-vous dupliquer la séance ? La séance courante sera sauvegardée.')) return;
     await this.store.duplicateCurrentSeance();
   }
 
   async deleteSeance(): Promise<void> {
-    if (!this.seance?.id || !window.confirm($localize`Voulez-vous supprimer cette séance ?`)) return;
+    if (this.saving || !this.seance?.id || !window.confirm($localize`Voulez-vous supprimer cette séance ?`)) return;
     await this.repository.deleteSeance(this.seance.id);
+    this.store.closeEditor();
     this.back.emit();
   }
 
   async ajouterProf(): Promise<void> {
     if (!this.currentProfId) return;
-    const prof = this.vm.refs.listeProf.find((item) => item.key === this.currentProfId);
+    const prof = this.vm.refs.listeProf.find((item) => Number(item.key) === Number(this.currentProfId));
     if (!prof) return;
 
     this.seance.seanceProfesseurs.push(this.profFromReference(Number(prof.key), prof.value) as any);
@@ -158,9 +176,9 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
   }
 
   async removeProf(item: any): Promise<void> {
-    const selectedId = item.personne?.id ?? item.id ?? item.contrat_id;
+    const selectedId = this.profKey(item);
     this.seance.seanceProfesseurs = this.seance.seanceProfesseurs.filter(
-      (candidate: any) => (candidate.personne?.id ?? candidate.id ?? candidate.contrat_id) !== selectedId,
+      (candidate: any) => this.profKey(candidate) !== selectedId,
     ) as any;
     if (this.seance.id > 0) {
       await this.repository.updateSeanceProfs(this.seance.id, this.seance.seanceProfesseurs as any);
@@ -170,9 +188,9 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
 
   majListeProf(): void {
     const idsPris = new Set(
-      (this.seance?.seanceProfesseurs ?? []).map((item: any) => item.contrat_id ?? item.personne?.id ?? item.id),
+      (this.seance?.seanceProfesseurs ?? []).map((item: any) => this.profKey(item)),
     );
-    this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((item) => !idsPris.has(item.key));
+    this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((item) => !idsPris.has(Number(item.key)));
     this.checkall();
   }
 
@@ -221,7 +239,10 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     this.seance.est_place_maximum = cours.place_maximum != null;
     this.seance.groupes = [...(cours.groupes ?? [])];
     this.seance.seanceProfesseurs = (cours.professeursCours ?? []).map((prof: any) =>
-      this.profFromReference(Number(prof.contrat_id ?? prof.id), `${prof.prenom ?? ''} ${prof.nom ?? ''}`.trim()),
+      this.profFromReference(
+        Number(prof.contrat_id ?? prof.contratId ?? prof.id),
+        `${prof.prenom ?? ''} ${prof.nom ?? ''}`.trim(),
+      ),
     ) as any;
     this.onDureeChange();
     this.majListeProf();
@@ -261,21 +282,32 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     return `${prof?.prenom ?? prof?.personne?.prenom ?? ''} ${prof?.nom ?? prof?.personne?.nom ?? ''}`.trim();
   }
 
+  private profKey(prof: any): number {
+    return Number(prof?.contrat_id ?? prof?.contratId ?? prof?.personne?.id ?? prof?.id ?? 0);
+  }
+
   private syncCoursNom(): void {
     const cours = this.coursDisponibles.find((item) => item.id === this.seance.cours);
     this.seance.cours_nom = cours?.nom ?? '';
   }
 
   private profFromReference(contratId: number, label: string): SeanceProfesseur_VM {
-    const [prenom = '', ...nomParts] = label.split(' ');
+    const prof = this.contratProfDataStore
+      .profLights()
+      .find((item) => Number(item.contrat_id) === Number(contratId));
+    const [fallbackPrenom = '', ...fallbackNomParts] = label.split(' ');
+    const prenom = prof?.prenom ?? fallbackPrenom;
+    const nom = prof?.nom ?? fallbackNomParts.join(' ');
+    const personneId = Number(prof?.id ?? 0);
+
     const result = new SeanceProfesseur_VM();
     result.seance_id = this.seance.id;
     result.statut = this.seance.statut;
     result.minutes = this.seance.duree_seance;
-    result.personne = { id: contratId, prenom, nom: nomParts.join(' ') } as any;
+    result.personne = { id: personneId, prenom, nom } as any;
     (result as any).prenom = prenom;
-    (result as any).nom = nomParts.join(' ');
-    (result as any).contrat_id = contratId;
+    (result as any).nom = nom;
+    (result as any).contrat_id = Number(contratId);
     return result;
   }
 

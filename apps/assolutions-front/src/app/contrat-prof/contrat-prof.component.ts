@@ -77,7 +77,7 @@ export class ContratProfComponent implements OnInit {
       professeur_id: null,
       saison_id: this.saisonId,
       type_contrat: '',
-      type_remuneration: '0',
+      type_remuneration: '',
       date_debut: this.toDateInputValue(saison?.date_debut),
       date_fin: this.toDateInputValue(saison?.date_fin),
       details: '',
@@ -101,12 +101,33 @@ export class ContratProfComponent implements OnInit {
     this.editing = { ...this.editing, [field]: value };
   }
 
+  onProfesseurChange(professeurId: number | null): void {
+    if (!this.editing) return;
+
+    const professeur = this.profs.find(
+      (item) => Number(item.id) === Number(professeurId),
+    );
+
+    this.editing = {
+      ...this.editing,
+      professeur_id: professeurId == null ? null : Number(professeurId),
+      // Lors de la création, le contrat reprend les valeurs définies sur la
+      // fiche professeur. Elles restent modifiables pour ce contrat précis.
+      type_contrat:
+        this.editing.id === 0 ? professeur?.status?.trim() ?? '' : this.editing.type_contrat,
+      type_remuneration:
+        this.editing.id === 0 && professeur?.hourly_rate != null
+          ? String(professeur.hourly_rate)
+          : this.editing.type_remuneration,
+    };
+  }
+
   canSave(): boolean {
     return !!(
       this.editing?.professeur_id &&
       this.editing.saison_id &&
-      this.editing.type_contrat &&
-      this.editing.type_remuneration &&
+      this.editing.type_contrat?.trim() &&
+      this.editing.type_remuneration?.trim() &&
       this.editing.date_debut &&
       this.editing.date_fin
     );
@@ -119,8 +140,8 @@ export class ContratProfComponent implements OnInit {
       const dto = {
         professeur_id: Number(this.editing.professeur_id),
         saison_id: Number(this.editing.saison_id),
-        type_contrat: this.editing.type_contrat,
-        type_remuneration: this.editing.type_remuneration,
+        type_contrat: this.editing.type_contrat.trim(),
+        type_remuneration: this.editing.type_remuneration.trim(),
         date_debut: this.editing.date_debut,
         date_fin: this.editing.date_fin,
         details: this.editing.details || null,

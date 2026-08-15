@@ -57,175 +57,187 @@ export class MenuMapper {
     };
   }
 
-  
-toMesSeancesVm(
-  hydrated: MesSeanceHydrated[],
-  refs: MenuReferencesVm,
-): MesSeances_VM[] {
-  const lieuxById = new Map(
-    (refs.listelieu ?? []).map((l) => [l.id, l])
-  );
+  toMesSeancesVm(
+    hydrated: MesSeanceHydrated[],
+    refs: MenuReferencesVm,
+  ): MesSeances_VM[] {
+    const lieuxById = new Map(
+      (refs.listelieu ?? []).map((l) => [l.id, l]),
+    );
 
-  const coursById = new Map(
-    (refs.listeCours ?? []).map((c) => [c.id, c])
-  );
+    const coursById = new Map(
+      (refs.listeCours ?? []).map((c) => [c.id, c]),
+    );
 
-  const profsByContratId = new Map(
-    (refs.listeprof ?? [])
-      .filter((p) => typeof p.contrat_id === 'number')
-      .map((p) => [p.contrat_id as number, p])
-  );
+    const profsByContratId = new Map(
+      (refs.listeprof ?? [])
+        .filter((p) => typeof p.contrat_id === 'number')
+        .map((p) => [p.contrat_id as number, p]),
+    );
 
-  const contratsBySeanceId = new Map<number, number[]>();
+    const contratsBySeanceId = new Map<number, number[]>();
 
-  for (const ms of hydrated ?? []) {
-    const seanceId = (ms.seance as any)?.seance_id ?? (ms.seance as any)?.id;
-    if (!seanceId) continue;
+    for (const ms of hydrated ?? []) {
+      const seanceId = (ms.seance as any)?.seance_id ?? (ms.seance as any)?.id;
+      if (!seanceId) continue;
 
-    const contratIds = (ms.seanceProfesseurs ?? [])
-      .map((sp) => sp.professeurcontract_id)
-      .filter((id): id is number => typeof id === 'number');
+      const contratIds = (ms.seanceProfesseurs ?? [])
+        .map((sp) => sp.professeurcontract_id)
+        .filter((id): id is number => typeof id === 'number');
 
-    contratsBySeanceId.set(seanceId, contratIds);
-  }
+      contratsBySeanceId.set(seanceId, contratIds);
+    }
 
-  return (hydrated ?? []).map((ms) => {
-    const seanceId = (ms.seance as any)?.seance_id ?? (ms.seance as any)?.id;
+    return (hydrated ?? []).map((ms) => {
+      const seanceId = (ms.seance as any)?.seance_id ?? (ms.seance as any)?.id;
 
-    let seanceVm = mapSeanceToVM(ms.seance, {
-      lieuxById,
-      coursById,
-      profsByContratId,
-      contratsBySeanceId,
+      let seanceVm = mapSeanceToVM(ms.seance, {
+        lieuxById,
+        coursById,
+        profsByContratId,
+        contratsBySeanceId,
+      });
+
+      const mappedProfs = (ms.seanceProfesseurs ?? [])
+        .map((sp) => {
+          const contratId = sp.professeurcontract_id;
+          if (typeof contratId === 'number' && profsByContratId.has(contratId)) {
+            return profsByContratId.get(contratId);
+          }
+
+          return null;
+        })
+        .filter((p): p is NonNullable<typeof p> => p !== null);
+
+      seanceVm = {
+        ...seanceVm,
+        id: seanceVm.id ?? seanceId ?? 0,
+        seanceProfesseurs: mappedProfs,
+        cours_nom:
+          seanceVm.cours_nom ??
+          coursById.get(seanceVm.cours)?.nom ??
+          '',
+        lieu_nom:
+          seanceVm.lieu_nom ??
+          lieuxById.get(seanceVm.lieu_id)?.nom ??
+          '',
+        heure_fin:
+          seanceVm.heure_fin ??
+          (seanceVm.heure_debut && seanceVm.duree_seance
+            ? this.calculerHeureFin(seanceVm.heure_debut, seanceVm.duree_seance)
+            : ''),
+      };
+
+      return {
+        seance: seanceVm,
+        accesInscription: ms.accesInscription === true,
+        dansGroupeAdherent: ms.dansGroupeAdherent === true,
+        essaiDisponible: ms.essaiDisponible === true,
+        groupeIds: [...(ms.groupeIds ?? [])],
+        groupeNoms: [...(ms.groupeNoms ?? [])],
+        statutInscription: ms.statutInscription ?? undefined,
+        statutPrésence: ms.statutPrésence ?? undefined,
+      };
     });
-
-    const mappedProfs = (ms.seanceProfesseurs ?? [])
-      .map((sp) => {
-        const contratId = sp.professeurcontract_id;
-        if (typeof contratId === 'number' && profsByContratId.has(contratId)) {
-          return profsByContratId.get(contratId);
-        }
-
-        return null;
-      })
-      .filter((p): p is NonNullable<typeof p> => p !== null);
-
-    seanceVm = {
-      ...seanceVm,
-      id: seanceVm.id ?? seanceId ?? 0,
-      seanceProfesseurs: mappedProfs,
-      cours_nom:
-        seanceVm.cours_nom ??
-        coursById.get(seanceVm.cours)?.nom ??
-        '',
-      lieu_nom:
-        seanceVm.lieu_nom ??
-        lieuxById.get(seanceVm.lieu_id)?.nom ??
-        '',
-      heure_fin:
-        seanceVm.heure_fin ??
-        (seanceVm.heure_debut && seanceVm.duree_seance
-          ? this.calculerHeureFin(seanceVm.heure_debut, seanceVm.duree_seance)
-          : ''),
-    };
-
-    return {
-      seance: seanceVm,
-      accesInscription: ms.accesInscription === true,
-      statutInscription: ms.statutInscription ?? null,
-      statutPrésence: ms.statutPrésence ?? null,
-    };
-  });
-}
-
-toAdherentMenu(
-  hydrated: AdhMenHydrated,
-  refs: MenuReferencesVm,
-  profil: 'ADH' | 'PROF',
-): AdherentMenu {
-  const rider = new AdherentMenu();
-  const dateMin = new Date();
-  if(profil === 'PROF') {
-    dateMin.setDate(dateMin.getDate() - 2);
   }
-  const dateMax = new Date();
-  dateMax.setMonth(dateMax.getMonth() + 1);
 
-  rider.id = hydrated.personne.id;
-  rider.nom = hydrated.personne.nom ?? '';
-  rider.prenom = hydrated.personne.prenom ?? '';
-  rider.surnom = hydrated.personne.surnom ?? '';
-  rider.photo = hydrated.personne.photo ?? null;
-  // Valeur calculée côté back depuis inscription_saison.active et les groupes de la saison.
-  rider.inscrit = (hydrated.personne as any).inscrit === true;
-  rider.libelle = `${rider.prenom} ${rider.nom}`.trim();
-  rider.profil = profil;
-  rider.afficher = false;
+  toAdherentMenu(
+    hydrated: AdhMenHydrated,
+    refs: MenuReferencesVm,
+    profil: 'ADH' | 'PROF',
+  ): AdherentMenu {
+    const rider = new AdherentMenu();
+    const dateMin = new Date();
+    if (profil === 'PROF') {
+      dateMin.setDate(dateMin.getDate() - 2);
+    }
+    const dateMax = new Date();
+    dateMax.setMonth(dateMax.getMonth() + 1);
 
-  rider.filters.filter_date_apres = dateMax;
-  rider.filters.filter_date_avant = dateMin;
-  rider.MesSeances = this.toMesSeancesVm(hydrated.mes_seances, refs);
-  return rider;
-}
+    rider.id = hydrated.personne.id;
+    rider.nom = hydrated.personne.nom ?? '';
+    rider.prenom = hydrated.personne.prenom ?? '';
+    rider.surnom = hydrated.personne.surnom ?? '';
+    rider.photo = hydrated.personne.photo ?? null;
+    rider.inscrit = (hydrated.personne as any).inscrit === true;
+    rider.libelle = `${rider.prenom} ${rider.nom}`.trim();
+    rider.profil = profil;
+    rider.afficher = false;
 
-enrichMesSeances(
-  mesSeances: MesSeances_VM[],
-  refs: MenuReferencesVm
-): MesSeances_VM[] {
-  const lieuxById = new Map(
-    (refs.listelieu ?? []).map((l) => [l.id, l])
-  );
+    rider.filters.filter_date_apres = dateMax;
+    rider.filters.filter_date_avant = dateMin;
 
-  const coursById = new Map(
-    (refs.listeCours ?? []).map((c) => [c.id, c])
-  );
+    // Un adhérent inscrit arrive sur les séances de ses groupes. Les séances
+    // des autres groupes restent chargées et accessibles via le filtre Groupe.
+    if (profil === 'ADH' && rider.inscrit) {
+      rider.filters.filter_groupe = '__MES_GROUPES__';
+    }
 
-  const profsByContratId = new Map(
-    (refs.listeprof ?? [])
-      .filter((p) => typeof p.contrat_id === 'number')
-      .map((p) => [p.contrat_id as number, p])
-  );
+    rider.MesSeances = this.toMesSeancesVm(hydrated.mes_seances, refs);
+    return rider;
+  }
 
-  return (mesSeances ?? []).map((ms) => {
-    const seance = ms.seance as any;
-    if (!seance) return ms;
+  enrichMesSeances(
+    mesSeances: MesSeances_VM[],
+    refs: MenuReferencesVm,
+  ): MesSeances_VM[] {
+    const lieuxById = new Map(
+      (refs.listelieu ?? []).map((l) => [l.id, l]),
+    );
 
-    const cours = coursById.get(seance.cours);
-    const lieu = lieuxById.get(seance.lieu_id);
+    const coursById = new Map(
+      (refs.listeCours ?? []).map((c) => [c.id, c]),
+    );
 
-    const currentProfs = Array.isArray(seance.seanceProfesseurs)
-      ? seance.seanceProfesseurs
-      : [];
+    const profsByContratId = new Map(
+      (refs.listeprof ?? [])
+        .filter((p) => typeof p.contrat_id === 'number')
+        .map((p) => [p.contrat_id as number, p]),
+    );
 
-    const mappedProfs = currentProfs.map((sp: any) => {
-      if (sp?.contrat_id && profsByContratId.has(sp.contrat_id)) {
-        return profsByContratId.get(sp.contrat_id);
-      }
+    return (mesSeances ?? []).map((ms) => {
+      const seance = ms.seance as any;
+      if (!seance) return ms;
 
-      if (sp?.professeurcontract_id && profsByContratId.has(sp.professeurcontract_id)) {
-        return profsByContratId.get(sp.professeurcontract_id);
-      }
+      const cours = coursById.get(seance.cours);
+      const lieu = lieuxById.get(seance.lieu_id);
 
-      return sp;
-    }).filter(Boolean);
+      const currentProfs = Array.isArray(seance.seanceProfesseurs)
+        ? seance.seanceProfesseurs
+        : [];
 
-    const enrichedSeance: Seance_VM = {
-      ...seance,
-      cours_nom: cours?.nom ?? seance.cours_nom ?? seance.label ?? '',
-      lieu_nom: lieu?.nom ?? seance.lieu_nom ?? '',
-      seanceProfesseurs: mappedProfs,
-      heure_fin:
-        seance.heure_debut && seance.duree_seance
-          ? this.calculerHeureFin(seance.heure_debut, seance.duree_seance)
-          : seance.heure_fin ?? '',
-    };
+      const mappedProfs = currentProfs
+        .map((sp: any) => {
+          if (sp?.contrat_id && profsByContratId.has(sp.contrat_id)) {
+            return profsByContratId.get(sp.contrat_id);
+          }
 
-    return {
-      ...ms,
-      seance: enrichedSeance,
-    };
-  });
-}
+          if (sp?.professeurcontract_id && profsByContratId.has(sp.professeurcontract_id)) {
+            return profsByContratId.get(sp.professeurcontract_id);
+          }
+
+          return sp;
+        })
+        .filter(Boolean);
+
+      const enrichedSeance: Seance_VM = {
+        ...seance,
+        cours_nom: cours?.nom ?? seance.cours_nom ?? seance.label ?? '',
+        lieu_nom: lieu?.nom ?? seance.lieu_nom ?? '',
+        seanceProfesseurs: mappedProfs,
+        heure_fin:
+          seance.heure_debut && seance.duree_seance
+            ? this.calculerHeureFin(seance.heure_debut, seance.duree_seance)
+            : seance.heure_fin ?? '',
+      };
+
+      return {
+        ...ms,
+        seance: enrichedSeance,
+      };
+    });
+  }
+
   sortRiderSeances(riders: AdherentMenu[]): AdherentMenu[] {
     for (const rider of riders ?? []) {
       rider.MesSeances = [...(rider.MesSeances ?? [])].sort((a, b) => {
@@ -243,7 +255,7 @@ enrichMesSeances(
   }
 
   private toTimestamp(ms: MesSeances_VM): number {
-    const date = ms.seance.date_seance ??  '';
+    const date = ms.seance.date_seance ?? '';
     const heure = ms.seance.heure_debut ?? '00:00';
 
     const d = new Date(date);

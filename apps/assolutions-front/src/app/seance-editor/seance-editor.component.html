@@ -15,27 +15,38 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap seance-editor-actions">
-      <button class="button is-light" type="button" (click)="back.emit()">
+      <button class="button is-light" type="button" [disabled]="saving" (click)="back.emit()">
         <span class="icon"><i class="fas fa-arrow-left"></i></span><span i18n>Retour</span>
       </button>
-      <button class="button is-success" type="button" [disabled]="!vm.isValid" (click)="save()">
+      <button
+        class="button is-success"
+        [class.is-loading]="saving"
+        type="button"
+        [disabled]="!vm.isValid || saving"
+        (click)="save()"
+      >
         <span class="icon"><i class="fas fa-floppy-disk"></i></span>
         <span>{{ vm.editModeSerie ? 'Créer la série' : 'Sauvegarder' }}</span>
       </button>
-      <button *ngIf="!vm.editModeSerie" class="button is-warning is-light" type="button" (click)="duplicateSeance()">
+      <button *ngIf="!vm.editModeSerie" class="button is-warning is-light" type="button" [disabled]="saving" (click)="duplicateSeance()">
         <span class="icon"><i class="fas fa-copy"></i></span><span i18n>Dupliquer</span>
       </button>
-      <button *ngIf="seance.id > 0" class="button is-info is-light" type="button" (click)="openMaSeance()">
+      <button *ngIf="seance.id > 0" class="button is-info is-light" type="button" [disabled]="saving" (click)="openMaSeance()">
         <span class="icon"><i class="fas fa-binoculars"></i></span><span i18n>Ma séance</span>
       </button>
-      <button *ngIf="seance.id > 0" class="button is-success is-light" type="button" (click)="copyWhatsappSurvey()">
+      <button *ngIf="seance.id > 0" class="button is-success is-light" type="button" [disabled]="saving" (click)="copyWhatsappSurvey()">
         <span class="icon"><i class="fab fa-whatsapp"></i></span><span i18n>Sondage</span>
       </button>
-      <button *ngIf="isAdmin && seance.id > 0" class="button is-danger is-light" type="button" (click)="deleteSeance()">
+      <button *ngIf="isAdmin && seance.id > 0" class="button is-danger is-light" type="button" [disabled]="saving" (click)="deleteSeance()">
         <span class="icon"><i class="fas fa-trash"></i></span><span i18n>Supprimer</span>
       </button>
     </div>
   </header>
+
+  <div *ngIf="saving" class="notification is-info is-light mx-4 mt-4 mb-0">
+    <strong i18n>{{ vm.editModeSerie ? 'Création de la série en cours…' : 'Sauvegarde de la séance en cours…' }}</strong>
+    <span *ngIf="vm.editModeSerie" i18n> Les séances et leurs encadrants sont en cours de création, merci de patienter.</span>
+  </div>
 
   <div class="seance-editor-body">
     <div class="seance-editor-grid">
@@ -44,7 +55,7 @@
         <div class="editor-fields editor-fields--two">
           <div class="field">
             <label class="label" i18n>Libellé</label>
-            <input class="input" [(ngModel)]="seance.nom" (ngModelChange)="checkall()" placeholder="Nom de la séance"  i18n-placeholder/>
+            <input class="input" [(ngModel)]="seance.nom" (ngModelChange)="checkall()" placeholder="Nom de la séance" i18n-placeholder />
             <p *ngIf="!rNom.key" class="help is-danger">{{ rNom.value }}</p>
           </div>
 

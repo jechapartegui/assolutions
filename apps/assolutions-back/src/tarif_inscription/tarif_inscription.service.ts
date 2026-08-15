@@ -13,6 +13,7 @@ import {
   Repository,
 } from 'typeorm';
 
+import { CompteBancaireEntity } from '../compte_bancaire/compte_bancaire.entity';
 import { GroupesEntity } from '../groupes/groupes.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import {
@@ -27,6 +28,7 @@ export interface TarifInscriptionResponse {
   saison_id: number;
   nom: string;
   prix_centimes: number;
+  compte_bancaire_id: number | null;
   date_debut_validite: string | null;
   date_fin_validite: string | null;
   reinscription: boolean;
@@ -109,6 +111,10 @@ export class TarifInscriptionService {
       normalized.nom,
       normalized.saison_id,
     );
+    await this.assertCompteBancaireInProject(
+      normalized.compte_bancaire_id ?? null,
+      projectId,
+    );
 
     const groupIds = this.normalizeGroupIds(dto.groupe_ids);
     await this.assertGroupsInSaison(groupIds, saisonId);
@@ -156,6 +162,10 @@ export class TarifInscriptionService {
       saisonId,
       current.id,
     );
+    await this.assertCompteBancaireInProject(
+      normalized.compte_bancaire_id ?? null,
+      projectId,
+    );
 
     const currentGroupIds = (current.groupe_liens ?? [])
       .map((liaison) => Number(liaison.groupe_id))
@@ -172,7 +182,7 @@ export class TarifInscriptionService {
       const repo = manager.getRepository(TarifInscriptionEntity);
 
       Object.assign(current, normalized, {
-        date_maj: new Date(),
+        updated_at: new Date(),
       });
 
       await repo.save(current);
@@ -226,6 +236,27 @@ export class TarifInscriptionService {
     }
 
     if (Number(saison.project_id) !== Number(projectId)) {
+      throw new ForbiddenException('WRONG_PROJECT');
+    }
+  }
+
+  private async assertCompteBancaireInProject(
+    compteBancaireId: number | null | undefined,
+    projectId: number,
+  ): Promise<void> {
+    if (!compteBancaireId) return;
+
+    const compte = await this.dataSource
+      .getRepository(CompteBancaireEntity)
+      .findOne({ where: { id: Number(compteBancaireId) } });
+
+    if (!compte) {
+      throw new NotFoundException(
+        `compte bancaire ${compteBancaireId} introuvable`,
+      );
+    }
+
+    if (Number(compte.project_id) !== Number(projectId)) {
       throw new ForbiddenException('WRONG_PROJECT');
     }
   }
@@ -305,6 +336,9 @@ export class TarifInscriptionService {
       saison_id: Number(dto.saison_id),
       nom: (dto.nom ?? '').trim(),
       prix_centimes: Number(dto.prix_centimes),
+      compte_bancaire_id: this.normalizeOptionalInteger(
+        dto.compte_bancaire_id,
+      ),
       date_debut_validite:
         this.normalizeOptionalDate(dto.date_debut_validite),
       date_fin_validite:
@@ -351,6 +385,10 @@ export class TarifInscriptionService {
         dto.prix_centimes !== undefined
           ? Number(dto.prix_centimes)
           : current.prix_centimes,
+      compte_bancaire_id:
+        dto.compte_bancaire_id !== undefined
+          ? this.normalizeOptionalInteger(dto.compte_bancaire_id)
+          : current.compte_bancaire_id,
       date_debut_validite:
         dto.date_debut_validite !== undefined
           ? this.normalizeOptionalDate(dto.date_debut_validite)
@@ -420,6 +458,19 @@ export class TarifInscriptionService {
     ) {
       throw new BadRequestException(
         "Le prix doit être un montant positif exprimé en centimes",
+      );
+    }
+
+    if (
+      tarif.compte_bancaire_id !== null
+      && tarif.compte_bancaire_id !== undefined
+      && (
+        !Number.isInteger(tarif.compte_bancaire_id)
+        || tarif.compte_bancaire_id < 1
+      )
+    ) {
+      throw new BadRequestException(
+        "Le compte bancaire du tarif est invalide",
       );
     }
 
@@ -596,6 +647,7 @@ export class TarifInscriptionService {
       saison_id: Number(item.saison_id),
       nom: item.nom,
       prix_centimes: Number(item.prix_centimes),
+      compte_bancaire_id: item.compte_bancaire_id ?? null,
       date_debut_validite:
         item.date_debut_validite ?? null,
       date_fin_validite:

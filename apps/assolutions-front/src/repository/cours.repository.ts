@@ -127,9 +127,33 @@ export class CoursRepository {
 
   async createCours(coursVm: Cours_VM): Promise<Cours_VM> {
     const projectId = this.appStore.selectedProjectId();
+
+    // On fige les relations AVANT l'appel de création. A ce moment-là le cours
+    // n'a pas encore d'id, donc cours_professeur/lien_groupe ne peuvent pas être
+    // écrits. Dès que le POST /cours nous renvoie l'id, on persiste explicitement
+    // les relations avec ce nouvel id avant tout rechargement du cours.
+    const professeurs = [...(coursVm.professeursCours ?? [])];
+    const groupeIds = [...new Set(
+      (coursVm.groupes ?? [])
+        .map((g: any) => Number(g?.groupe_id ?? g?.id ?? 0))
+        .filter((id: number) => Number.isFinite(id) && id > 0),
+    )];
+
     const dto = this.mapper.toCreateDto(coursVm, projectId);
-    const created = await this.coursApiService.create(dto);
-    return this.mapper.toCoursVm(created);
+    const created = this.mapper.toCoursVm(await this.coursApiService.create(dto));
+
+    if (!created.id || created.id <= 0) {
+      throw new Error('Le cours a été créé sans identifiant');
+    }
+
+    await this.updateCoursProfs(
+      created.id,
+      professeurs as Array<ProfLight_VM | any>,
+      Number(coursVm.saison_id),
+    );
+    await this.updateCoursGroupes(created.id, groupeIds);
+
+    return created;
   }
 
   async updateCours(coursVm: Cours_VM): Promise<Cours_VM> {

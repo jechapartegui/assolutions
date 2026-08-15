@@ -1,25 +1,30 @@
-﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { CoursEntity } from '../cours/cours.entity';
+import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 import { CreateCoursProfesseurDto, UpdateCoursProfesseurDto } from './cours_professeur.dto';
 import { CoursProfesseurEntity } from './cours_professeur.entity';
-import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 
 @Injectable()
 export class CoursProfesseurService {
   constructor(
-    @InjectRepository(CoursProfesseurEntity) private readonly repo: Repository<CoursProfesseurEntity>,
-    @InjectRepository(CoursEntity) private readonly coursRepo: Repository<CoursEntity>,
-    @InjectRepository(ContratProfEntity) private readonly contratRepo: Repository<ContratProfEntity>,
-    
+    @InjectRepository(CoursProfesseurEntity)
+    private readonly repo: Repository<CoursProfesseurEntity>,
+    @InjectRepository(CoursEntity)
+    private readonly coursRepo: Repository<CoursEntity>,
+    @InjectRepository(ContratProfEntity)
+    private readonly contratRepo: Repository<ContratProfEntity>,
   ) {}
 
   private async assertCoursInProject(coursId: number, projectId: number) {
     const cours = await this.coursRepo.findOne({ where: { id: coursId } });
     if (!cours) throw new NotFoundException(`cours ${coursId} introuvable`);
-    if (cours.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
+    if (cours.project_id !== projectId) {
+      throw new ForbiddenException('WRONG_PROJECT');
+    }
+    return cours;
   }
 
   listForProject(projectId: number) {
@@ -31,53 +36,52 @@ export class CoursProfesseurService {
       .getMany();
   }
 
-async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> {
-  if (!Array.isArray(coursIds) || coursIds.length === 0) return {};
+  /**
+   * La relation cours_professeur stocke un contrat_prof_id.
+   * Le front manipule donc des ids de contrat, pas des professeur_id.
+   */
+  async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> {
+    if (!Array.isArray(coursIds) || coursIds.length === 0) return {};
 
-  const rows = await this.repo
-    .createQueryBuilder('cp')
-    .innerJoin(
-      ContratProfEntity,
-      'contrat',
-      'contrat.id = cp.contrat_id',
-    )
-    .select('cp.cours_id', 'cours_id')
-    .addSelect('contrat.professeur_id', 'professeur_id')
-    .where('cp.cours_id IN (:...coursIds)', { coursIds })
-    .orderBy('cp.cours_id', 'ASC')
-    .addOrderBy('contrat.professeur_id', 'ASC')
-    .getRawMany<{ cours_id: number; professeur_id: number }>();
+    const rows = await this.repo
+      .createQueryBuilder('cp')
+      .select('cp.cours_id', 'cours_id')
+      .addSelect('cp.contrat_id', 'contrat_id')
+      .where('cp.cours_id IN (:...coursIds)', { coursIds })
+      .orderBy('cp.cours_id', 'ASC')
+      .addOrderBy('cp.contrat_id', 'ASC')
+      .getRawMany<{ cours_id: number; contrat_id: number }>();
 
-  const result: Record<number, number[]> = {};
+    const result: Record<number, number[]> = {};
 
-  for (const r of rows) {
-    const coursId = Number(r.cours_id);
-    const professeurId = Number(r.professeur_id);
+    for (const row of rows) {
+      const coursId = Number(row.cours_id);
+      const contratId = Number(row.contrat_id);
+      if (!coursId || !contratId) continue;
+      (result[coursId] ??= []).push(contratId);
+    }
 
-    if (!coursId || !professeurId) continue;
+    for (const key of Object.keys(result)) {
+      result[Number(key)] = Array.from(new Set(result[Number(key)])).sort(
+        (a, b) => a - b,
+      );
+    }
 
-    (result[coursId] ??= []).push(professeurId);
+    return result;
   }
-
-  for (const k of Object.keys(result)) {
-    result[+k] = Array.from(new Set(result[+k])).sort((a, b) => a - b);
-  }
-
-  return result;
-}
 
   async getForProject(id: number, projectId: number) {
     const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException(`cours_professeur ${id} introuvable`);
+    if (!item) {
+      throw new NotFoundException(`cours_professeur ${id} introuvable`);
+    }
     await this.assertCoursInProject(item.cours_id, projectId);
     return item;
   }
 
   async create(dto: CreateCoursProfesseurDto, projectId: number) {
     await this.assertCoursInProject(dto.cours_id, projectId);
-
-    const saved = await this.repo.save(this.repo.create(dto as CreateCoursProfesseurDto));
-    return saved;
+    return this.repo.save(this.repo.create(dto));
   }
 
   async update(id: number, dto: UpdateCoursProfesseurDto, projectId: number) {
@@ -88,31 +92,72 @@ async listProfsByCoursId(coursIds: number[]): Promise<Record<number, number[]>> 
     }
 
     Object.assign(item, dto, { date_maj: new Date() });
-    const saved = await this.repo.save(item);
-
-    return saved;
+    return this.repo.save(item);
   }
 
   async remove(id: number, projectId: number) {
     const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
-
     return { ok: true };
   }
 
-  async updateList(coursId: number, profsors: number[], saisonid: number, projectId: number) {
-    console.log('profsors', profsors);  
-     const listprof = await this.contratRepo.find({ where: { professeur_id: In(profsors), saison_id: saisonid } });
-     const foundIds = listprof.map(p => p.id);
-     console.log('foundIds', foundIds);
-      const existing = await this.repo.find({ where: { cours_id: coursId } });
-      console.log('existing', existing);
-      const toDelete = existing.filter((e) => !foundIds.includes(e.contrat_id));
-      const toAdd = foundIds.filter((p) => !existing.some((e) => e.contrat_id === p));
-      toDelete.forEach((e) => this.remove(e.id, projectId));
-      toAdd.forEach(async (p) => {
-        let i :CreateCoursProfesseurDto = { cours_id: coursId, contrat_id: p};        
-         this.create(i, projectId)
-    });
+  async updateList(
+    coursId: number,
+    contratIds: number[],
+    saisonId: number,
+    projectId: number,
+  ) {
+    await this.assertCoursInProject(coursId, projectId);
+
+    const requestedIds = Array.from(
+      new Set(
+        (contratIds ?? [])
+          .map((id) => Number(id))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    );
+
+    // Les ids reçus sont déjà des contrat_prof.id. On vérifie seulement
+    // qu'ils appartiennent à la saison du cours avant de créer les liaisons.
+    const validContracts = requestedIds.length
+      ? await this.contratRepo
+          .createQueryBuilder('contrat')
+          .where('contrat.id IN (:...requestedIds)', { requestedIds })
+          .andWhere('contrat.saison_id = :saisonId', { saisonId })
+          .getMany()
+      : [];
+
+    const validIds = validContracts.map((contract) => Number(contract.id));
+    if (validIds.length !== requestedIds.length) {
+      throw new NotFoundException(
+        'Un ou plusieurs contrats professeur sont introuvables pour cette saison',
+      );
     }
+
+    const existing = await this.repo.find({ where: { cours_id: coursId } });
+    const toDelete = existing.filter(
+      (item) => !validIds.includes(Number(item.contrat_id)),
+    );
+    const existingContractIds = new Set(
+      existing.map((item) => Number(item.contrat_id)),
+    );
+    const toAdd = validIds.filter((id) => !existingContractIds.has(id));
+
+    if (toDelete.length) {
+      await this.repo.remove(toDelete);
+    }
+
+    if (toAdd.length) {
+      await this.repo.save(
+        toAdd.map((contratId) =>
+          this.repo.create({ cours_id: coursId, contrat_id: contratId }),
+        ),
+      );
+    }
+
+    return this.repo.find({
+      where: { cours_id: coursId },
+      order: { id: 'ASC' },
+    });
+  }
 }

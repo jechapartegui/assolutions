@@ -24,7 +24,7 @@
         <thead>
           <tr>
             <th i18n>Professeur</th>
-            <th i18n>Contrat</th>
+            <th i18n>Statut</th>
             <th i18n>Rémunération</th>
             <th i18n>Période</th>
             <th class="action-col" i18n>Actions</th>
@@ -41,9 +41,9 @@
             <td>{{ contrat.type_remuneration || '—' }}</td>
 
             <td>
-          {{ formatDateFr(contrat.date_debut) }}
-<span class="has-text-grey"> → </span>
-{{ formatDateFr(contrat.date_fin) }}
+              {{ formatDateFr(contrat.date_debut) }}
+              <span class="has-text-grey"> → </span>
+              {{ formatDateFr(contrat.date_fin) }}
             </td>
 
             <td class="action-col">
@@ -79,45 +79,49 @@
       <div class="field">
         <label class="label" i18n>Professeur</label>
         <div class="select is-fullwidth">
-         <select
-  [disabled]="editing.id > 0"
-  [ngModel]="editing.professeur_id"
-  (ngModelChange)="patch('professeur_id', $event)"
->
-  <option [ngValue]="null" i18n>Sélectionner un professeur</option>
-  <option *ngFor="let prof of profs" [ngValue]="prof.id">
-    {{ getProfLabel(prof.id) }}
-  </option>
-</select>
+          <select
+            [disabled]="editing.id > 0"
+            [ngModel]="editing.professeur_id"
+            (ngModelChange)="onProfesseurChange($event)"
+          >
+            <option [ngValue]="null" i18n>Sélectionner un professeur</option>
+            <option *ngFor="let prof of profs" [ngValue]="prof.id">
+              {{ getProfLabel(prof.id) }}
+            </option>
+          </select>
         </div>
+        <p class="help" *ngIf="editing.id === 0" i18n>
+          Le statut et la rémunération sont repris de la fiche professeur et restent modifiables pour ce contrat.
+        </p>
       </div>
 
       <div class="columns">
         <div class="column">
           <div class="field">
-            <label class="label" i18n>Type de contrat</label>
+            <label class="label" i18n>Statut</label>
             <input
               class="input"
               [ngModel]="editing.type_contrat"
               (ngModelChange)="patch('type_contrat', $event)"
-              placeholder="CDD, CDI, prestation..."
-             i18n-placeholder/>
+              placeholder="Salarié, prestataire, bénévole..."
+              i18n-placeholder
+            />
           </div>
         </div>
 
         <div class="column">
           <div class="field">
-            <label class="label" i18n>Type de rémunération</label>
+            <label class="label" i18n>Rémunération</label>
             <input
               class="input"
               [ngModel]="editing.type_remuneration"
               (ngModelChange)="patch('type_remuneration', $event)"
-              placeholder="Horaire, forfait..."
-             i18n-placeholder/>
+              placeholder="Taux ou rémunération prévue"
+              i18n-placeholder
+            />
           </div>
         </div>
       </div>
-
 
       <div class="columns">
         <div class="column">

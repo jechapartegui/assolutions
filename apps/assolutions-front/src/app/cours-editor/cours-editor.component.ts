@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ValidationItem } from '@shared/lib/autres.interface';
 import { Cours_VM, PersonneLight_VM } from '@shared/index';
+import { ContratProfDataStore } from '../../data-store/contrat-prof-data.store';
 import { ErrorService } from '../../services/error.service';
 import { CoursPageVm } from '../../vm/cours-page.vm';
 import { CoursStore } from '../../store/cours.store';
@@ -16,6 +17,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   @Input() isAdmin = false;
   @Output() back = new EventEmitter<void>();
 
+  public saving = false;
   public currentProfId: number | null = null;
   public profDispo: any[] = [];
   public rNom: ValidationItem = { key: true, value: '' };
@@ -24,7 +26,10 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     value: $localize`Un professeur responsable est nécessaire pour le cours`,
   };
 
-  constructor(private readonly store: CoursStore) {}
+  constructor(
+    private readonly store: CoursStore,
+    private readonly contratProfDataStore: ContratProfDataStore,
+  ) {}
 
   get cours(): Cours_VM {
     return this.vm.editCours as Cours_VM;
@@ -71,11 +76,12 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     const errorService = ErrorService.instance;
     this.checkall();
 
-    if (!this.vm.isValid || !this.cours) {
+    if (!this.vm.isValid || !this.cours || this.saving) {
       return;
     }
 
     const wasExisting = (this.cours.id ?? 0) > 0;
+    this.saving = true;
 
     try {
       await this.store.saveEditedCours();
@@ -96,10 +102,13 @@ export class CoursEditorComponent implements OnInit, OnChanges {
           err?.message ?? $localize`Erreur inconnue`
         )
       );
+    } finally {
+      this.saving = false;
     }
   }
 
   async duplicateCours(): Promise<void> {
+    if (this.saving) return;
     const confirmDuplication = window.confirm(
       `Voulez-vous dupliquer le cours ? Cela implique de sauvegarder le cours et d'en créer un nouveau exactement identique.`
     );
@@ -110,7 +119,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   }
 
   async deleteCours(): Promise<void> {
-    if (!this.cours?.id) return;
+    if (!this.cours?.id || this.saving) return;
 
     const confirmDelete = window.confirm($localize`Voulez-vous supprimer ce cours ?`);
     if (!confirmDelete) return;
@@ -120,7 +129,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   }
 
   async modifierSerie(): Promise<void> {
-    if (!this.cours?.id) return;
+    if (!this.cours?.id || this.saving) return;
 
     const errorService = ErrorService.instance;
 
@@ -143,24 +152,29 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   async ajouterProf(): Promise<void> {
     if (!this.currentProfId) return;
 
-    const prof = (this.vm.refs.listeProf ?? []).find((x) => Number(x.key) === Number(this.currentProfId));
+    const contratId = Number(this.currentProfId);
+    const prof = this.contratProfDataStore
+      .profLights()
+      .find((item) => Number(item.contrat_id) === contratId);
     if (!prof) return;
 
-    const labelParts = String(prof.value ?? '').trim().split(' ').filter(Boolean);
-    const person: PersonneLight_VM = {
-      id: Number(prof.key),
-      contrat_id: Number(prof.key),
-      prenom: labelParts[0] ?? '',
-      nom: labelParts.slice(1).join(' ') ?? '',
-      surnom: '',
-      date_naissance: null as any,
-      sexe: null as any,
-    } as PersonneLight_VM;
+    const alreadySelected = (this.cours.professeursCours ?? []).some(
+      (item: PersonneLight_VM) => this.getProfKey(item) === contratId,
+    );
+    if (alreadySelected) return;
 
-    this.cours.professeursCours.push(person);
+    // Ne surtout pas recopier l'id du contrat dans personne.id :
+    // id = personne, contrat_id = contrat_prof.
+    const selectedProf = {
+      ...prof,
+      id: Number(prof.id),
+      contrat_id: contratId,
+    } as any;
+
+    this.cours.professeursCours.push(selectedProf);
 
     if (!this.cours.prof_principal_id || this.cours.prof_principal_id <= 0) {
-      this.cours.prof_principal_id = Number((person as any).contrat_id ?? person.id);
+      this.cours.prof_principal_id = contratId;
     }
 
     if (this.cours.id > 0) {
@@ -173,15 +187,15 @@ export class CoursEditorComponent implements OnInit, OnChanges {
   }
 
   async removeProf(item: PersonneLight_VM): Promise<void> {
-    const itemId = this.profKey(item);
+    const itemId = this.getProfKey(item);
 
     this.cours.professeursCours = (this.cours.professeursCours ?? []).filter(
-      (x: PersonneLight_VM) => this.profKey(x) !== itemId
+      (x: PersonneLight_VM) => this.getProfKey(x) !== itemId
     );
 
     if (Number(this.cours.prof_principal_id) === itemId) {
       const next = this.cours.professeursCours?.[0] as any;
-      this.cours.prof_principal_id = Number(next?.contrat_id ?? next?.id ?? 0);
+      this.cours.prof_principal_id = this.getProfKey(next);
     }
 
     if (this.cours.id > 0) {
@@ -194,7 +208,7 @@ export class CoursEditorComponent implements OnInit, OnChanges {
 
   majListeProf(): void {
     const idsPris = new Set(
-      (this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => this.profKey(x))
+      (this.cours?.professeursCours ?? []).map((x: PersonneLight_VM) => this.getProfKey(x))
     );
 
     this.profDispo = (this.vm?.refs?.listeProf ?? []).filter((x) => !idsPris.has(Number(x.key)));
@@ -247,6 +261,10 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     return `${p?.prenom ?? ''} ${p?.nom ?? ''}`.trim();
   }
 
+  getProfKey(p: PersonneLight_VM | any): number {
+    return Number(p?.contrat_id ?? p?.contratId ?? p?.id ?? 0);
+  }
+
   getJourLabel(jour: string): string {
     switch ((jour ?? '').toLowerCase()) {
       case 'lundi':
@@ -266,9 +284,5 @@ export class CoursEditorComponent implements OnInit, OnChanges {
       default:
         return jour ?? '';
     }
-  }
-
-  private profKey(p: PersonneLight_VM | any): number {
-    return Number(p?.contrat_id ?? p?.contratId ?? p?.id ?? 0);
   }
 }

@@ -30,16 +30,16 @@
             </span>
           </button>
           <button
-  *ngIf="refreshAvailable"
-  class="button is-warning is-light"
-  type="button"
-  (click)="applyRefresh()"
->
-  <span class="icon">
-    <i class="fas fa-rotate"></i>
-  </span>
-  <span i18n>Actualiser</span>
-</button>
+            *ngIf="refreshAvailable"
+            class="button is-warning is-light"
+            type="button"
+            (click)="applyRefresh()"
+          >
+            <span class="icon">
+              <i class="fas fa-rotate"></i>
+            </span>
+            <span i18n>Actualiser</span>
+          </button>
         </div>
       </div>
 
@@ -116,18 +116,18 @@
         >
           <ng-container *ngIf="!hasOpenedRider(); else compactRider">
             <div class="rider-card-full">
-<div class="photo-wrapper">
-  <div class="rider-avatar">
-    <img
-      *ngIf="personne.photo"
-      [src]="personne.photo"
-      [alt]="'Photo de ' + (personne.prenom || '') + ' ' + (personne.nom || '')"
-    />
-    <div *ngIf="!personne.photo" class="rider-avatar-fallback">
-      {{ getInitiales(personne) }}
-    </div>
-  </div>
-</div>
+              <div class="photo-wrapper">
+                <div class="rider-avatar">
+                  <img
+                    *ngIf="personne.photo"
+                    [src]="personne.photo"
+                    [alt]="'Photo de ' + (personne.prenom || '') + ' ' + (personne.nom || '')"
+                  />
+                  <div *ngIf="!personne.photo" class="rider-avatar-fallback">
+                    {{ getInitiales(personne) }}
+                  </div>
+                </div>
+              </div>
 
               <p class="rider-name">
                 {{ personne.prenom }} {{ personne.nom }}
@@ -217,23 +217,23 @@
                 >
                   <header class="menu-card-header">
                     <div class="menu-card-header-left">
-<div
-  class="menu-card-avatar"
-  [ngClass]="{
-    'is-adh': rider.profil === 'ADH',
-    'is-prof': rider.profil === 'PROF',
-    'has-photo': !!rider.photo
-  }"
->
-  <img
-    *ngIf="rider.photo"
-    [src]="rider.photo"
-    [alt]="'Photo de ' + rider.libelle"
-  />
-  <span *ngIf="!rider.photo" class="menu-card-avatar-fallback">
-    {{ getInitiales(rider) }}
-  </span>
-</div>
+                      <div
+                        class="menu-card-avatar"
+                        [ngClass]="{
+                          'is-adh': rider.profil === 'ADH',
+                          'is-prof': rider.profil === 'PROF',
+                          'has-photo': !!rider.photo
+                        }"
+                      >
+                        <img
+                          *ngIf="rider.photo"
+                          [src]="rider.photo"
+                          [alt]="'Photo de ' + rider.libelle"
+                        />
+                        <span *ngIf="!rider.photo" class="menu-card-avatar-fallback">
+                          {{ getInitiales(rider) }}
+                        </span>
+                      </div>
 
                       <div class="menu-card-identity">
                         <div class="menu-card-name">{{ rider.libelle }}</div>
@@ -397,13 +397,26 @@
                                   </span>
                                 </ng-container>
                                 : {{ ms.seance.cours_nom }}
-                                <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag" i18n><i class="fas fa-flask mr-1"></i> Essai demandé</span>
+                                <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag" i18n>
+                                  <i class="fas fa-flask mr-1"></i> Essai possible
+                                </span>
+                                <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag" i18n>
+                                  <i class="fas fa-flask mr-1"></i> Essai demandé
+                                </span>
+                                <span
+                                  *ngIf="rider.inscrit && !ms.dansGroupeAdherent && ms.groupeNoms?.length"
+                                  class="tag is-info is-light ml-1"
+                                  i18n-title
+                                  title="Séance d'un autre groupe"
+                                >
+                                  {{ ms.groupeNoms?.join(' · ') }}
+                                </span>
                               </td>
 
                               <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
                                 {{ ms.seance.date_seance | date : "dd/MM/yyyy" }}
                                 {{ ms.seance.heure_debut }} -
-                           {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
+                                {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
                                 ({{ ms.seance.duree_seance | dureeHHMM }})
                               </td>
 
@@ -454,90 +467,91 @@
 
                               <td>
                                 <div class="presence-actions">
-                                <button
-                                  *ngIf="ms.seance.afficher_present && (rider.profil === 'PROF' || ms.accesInscription === true)"
-                                  type="button"
-                                  class="presence-view-btn"
-                                  title="Afficher les présents"
-                                  (click)="VoirMaSeance(ms.seance)"
-                                 i18n-title><i class="fas fa-binoculars"></i></button>
-                                <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherentDesktop">
-                                  <btn
-                                    [type_button]="'VoirLight'"
+                                  <button
+                                    *ngIf="ms.seance.afficher_present && (rider.profil === 'PROF' || ms.accesInscription === true)"
+                                    type="button"
+                                    class="presence-view-btn"
+                                    title="Afficher les présents"
                                     (click)="VoirMaSeance(ms.seance)"
-                                  ></btn>
-                                </ng-container>
-
-                                <ng-template #ProfilAdherentDesktop>
-                                  <ng-container *ngIf="ms.seance.statut == 'prévue'">
-                                    <span class="d-flex align-items-center is-flex-wrap-nowrap">
-                                      <span
-                                        (click)="MAJInscription(ms, rider, null)"
-                                        *ngIf="
-                                          ms.statutInscription == 'présent'
-                                        "
-                                        class="icon is-large action-icon"
-                                      >
-                                        <span class="fa-stack fa-lg">
-                                          <i class="fas fa-lg fa-thumbs-up has-text-success"></i>
-                                        </span>
-                                      </span>
-
-                                      <span
-                                        (click)="MAJInscription(ms, rider, true)"
-                                        *ngIf="isEssaiPossible(ms, rider)"
-                                        class="icon is-large action-icon trial-action-icon"
-                                        title="Demander un essai"
-                                       i18n-title><i class="fas fa-flask has-text-warning"></i></span>
-
-                                      <span
-                                        (click)="MAJInscription(ms, rider, null)"
-                                        *ngIf="isEssai(ms)"
-                                        class="icon is-large action-icon trial-action-icon"
-                                        title="Essai demandé"
-                                       i18n-title><i class="fas fa-flask has-text-warning"></i></span>
-
-                                      <span
-                                        (click)="MAJInscription(ms, rider, true)"
-                                        *ngIf="
-                                          ms.statutInscription == 'absent' ||
-                                          ms.statutInscription == 'convoqué' ||
-                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider))
-                                        "
-                                        class="icon is-large action-icon"
-                                      >
-                                        <span class="fa-stack fa-lg">
-                                          <i class="far fa-lg fa-thumbs-up has-text-success"></i>
-                                        </span>
-                                      </span>
-
-                                      <span
-                                        (click)="MAJInscription(ms, rider, false)"
-                                        *ngIf="ms.statutInscription == 'absent'"
-                                        class="icon is-large action-icon"
-                                      >
-                                        <span class="fa-stack fa-lg">
-                                          <i class="fas fa-lg fa-thumbs-down has-text-danger"></i>
-                                        </span>
-                                      </span>
-
-                                      <span
-                                        (click)="MAJInscription(ms, rider, false)"
-                                        *ngIf="
-                                          ms.statutInscription == 'présent' ||
-                                          ms.statutInscription == 'convoqué' ||
-                                          (ms.statutInscription == null && !isEssaiPossible(ms, rider)) ||
-                                          ms.statutInscription == 'essai'
-                                        "
-                                        class="icon is-large action-icon"
-                                      >
-                                        <span class="fa-stack fa-lg">
-                                          <i class="far fa-lg fa-thumbs-down has-text-danger"></i>
-                                        </span>
-                                      </span>
-                                    </span>
+                                    i18n-title
+                                  ><i class="fas fa-binoculars"></i></button>
+                                  <ng-container *ngIf="rider.profil == 'PROF'; else ProfilAdherentDesktop">
+                                    <btn
+                                      [type_button]="'VoirLight'"
+                                      (click)="VoirMaSeance(ms.seance)"
+                                    ></btn>
                                   </ng-container>
-                                </ng-template>
+
+                                  <ng-template #ProfilAdherentDesktop>
+                                    <ng-container *ngIf="ms.seance.statut == 'prévue'">
+                                      <span class="d-flex align-items-center is-flex-wrap-nowrap">
+                                        <span
+                                          (click)="MAJInscription(ms, rider, null)"
+                                          *ngIf="ms.statutInscription == 'présent'"
+                                          class="icon is-large action-icon"
+                                        >
+                                          <span class="fa-stack fa-lg">
+                                            <i class="fas fa-lg fa-thumbs-up has-text-success"></i>
+                                          </span>
+                                        </span>
+
+                                        <span
+                                          (click)="demanderEssai(ms, rider)"
+                                          *ngIf="isEssaiPossible(ms, rider)"
+                                          class="icon is-large action-icon trial-action-icon"
+                                          title="Demander un essai"
+                                          i18n-title
+                                        ><i class="fas fa-flask has-text-warning"></i></span>
+
+                                        <span
+                                          (click)="MAJInscription(ms, rider, null)"
+                                          *ngIf="isEssai(ms)"
+                                          class="icon is-large action-icon trial-action-icon"
+                                          title="Essai demandé"
+                                          i18n-title
+                                        ><i class="fas fa-flask has-text-warning"></i></span>
+
+                                        <span
+                                          (click)="MAJInscription(ms, rider, true)"
+                                          *ngIf="
+                                            ms.statutInscription == 'absent' ||
+                                            ms.statutInscription == 'convoqué' ||
+                                            (ms.statutInscription == null && !isEssaiPossible(ms, rider))
+                                          "
+                                          class="icon is-large action-icon"
+                                        >
+                                          <span class="fa-stack fa-lg">
+                                            <i class="far fa-lg fa-thumbs-up has-text-success"></i>
+                                          </span>
+                                        </span>
+
+                                        <span
+                                          (click)="MAJInscription(ms, rider, false)"
+                                          *ngIf="ms.statutInscription == 'absent'"
+                                          class="icon is-large action-icon"
+                                        >
+                                          <span class="fa-stack fa-lg">
+                                            <i class="fas fa-lg fa-thumbs-down has-text-danger"></i>
+                                          </span>
+                                        </span>
+
+                                        <span
+                                          (click)="MAJInscription(ms, rider, false)"
+                                          *ngIf="
+                                            ms.statutInscription == 'présent' ||
+                                            ms.statutInscription == 'convoqué' ||
+                                            (ms.statutInscription == null && !isEssaiPossible(ms, rider)) ||
+                                            ms.statutInscription == 'essai'
+                                          "
+                                          class="icon is-large action-icon"
+                                        >
+                                          <span class="fa-stack fa-lg">
+                                            <i class="far fa-lg fa-thumbs-down has-text-danger"></i>
+                                          </span>
+                                        </span>
+                                      </span>
+                                    </ng-container>
+                                  </ng-template>
                                 </div>
                               </td>
                             </tr>
@@ -574,8 +588,18 @@
                                       </ng-container>
                                       : {{ ms.seance.nom }}
                                     </span>
-                                    <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag" i18n><i class="fas fa-flask mr-1"></i> Essai possible</span>
-                                    <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag" i18n><i class="fas fa-flask mr-1"></i> Essai demandé</span>
+                                    <span *ngIf="isEssaiPossible(ms, rider)" class="tag is-warning is-light trial-status-tag" i18n>
+                                      <i class="fas fa-flask mr-1"></i> Essai possible
+                                    </span>
+                                    <span *ngIf="isEssai(ms)" class="tag is-warning trial-status-tag" i18n>
+                                      <i class="fas fa-flask mr-1"></i> Essai demandé
+                                    </span>
+                                    <span
+                                      *ngIf="rider.inscrit && !ms.dansGroupeAdherent && ms.groupeNoms?.length"
+                                      class="tag is-info is-light trial-status-tag"
+                                    >
+                                      {{ ms.groupeNoms?.join(' · ') }}
+                                    </span>
                                   </button>
 
                                   <p class="mobile-item-meta">
@@ -617,7 +641,8 @@
                                     class="mobile-action-btn presence-view-btn"
                                     title="Afficher les présents"
                                     (click)="VoirMaSeance(ms.seance)"
-                                   i18n-title><i class="fas fa-binoculars"></i></button>
+                                    i18n-title
+                                  ><i class="fas fa-binoculars"></i></button>
                                   <ng-container *ngIf="rider.profil === 'PROF'; else ProfilAdherentMobile">
                                     <btn
                                       [type_button]="'VoirLight'"
@@ -627,10 +652,24 @@
 
                                   <ng-template #ProfilAdherentMobile>
                                     <ng-container *ngIf="ms.seance.statut === 'prévue'">
-                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, true)" *ngIf="isEssaiPossible(ms, rider)" title="Demander un essai" i18n-title>
+                                      <button
+                                        type="button"
+                                        class="mobile-action-btn trial-action-btn"
+                                        (click)="demanderEssai(ms, rider)"
+                                        *ngIf="isEssaiPossible(ms, rider)"
+                                        title="Demander un essai"
+                                        i18n-title
+                                      >
                                         <i class="fas fa-flask has-text-warning"></i>
                                       </button>
-                                      <button type="button" class="mobile-action-btn trial-action-btn" (click)="MAJInscription(ms, rider, null)" *ngIf="isEssai(ms)" title="Essai demandé" i18n-title>
+                                      <button
+                                        type="button"
+                                        class="mobile-action-btn trial-action-btn"
+                                        (click)="MAJInscription(ms, rider, null)"
+                                        *ngIf="isEssai(ms)"
+                                        title="Essai demandé"
+                                        i18n-title
+                                      >
                                         <i class="fas fa-flask has-text-warning"></i>
                                       </button>
 
@@ -701,7 +740,8 @@
                       (click)="scrollToTop()"
                       title="Revenir en haut"
                       type="button"
-                     i18n-title>
+                      i18n-title
+                    >
                       ↑
                     </button>
                   </div>
@@ -728,6 +768,13 @@
                             <div class="select is-fullwidth">
                               <select [(ngModel)]="rider.selected_filter">
                                 <option value="nom" i18n>Nom</option>
+                                <option
+                                  *ngIf="rider.profil === 'ADH' && rider.inscrit"
+                                  value="groupe"
+                                  i18n
+                                >
+                                  Groupe
+                                </option>
                                 <option value="date" i18n>Date</option>
                                 <option value="statut" i18n>Statut</option>
                                 <option value="prof" i18n>Professeur</option>
@@ -745,6 +792,25 @@
                               type="text"
                               [(ngModel)]="rider.filters.filter_nom"
                             />
+                          </div>
+
+                          <div
+                            class="menu-filter-col-4"
+                            *ngIf="rider.selected_filter == 'groupe' && rider.profil === 'ADH' && rider.inscrit"
+                          >
+                            <label class="label" i18n>Valeur</label>
+                            <div class="select is-fullwidth">
+                              <select [(ngModel)]="rider.filters.filter_groupe">
+                                <option [ngValue]="'__MES_GROUPES__'" i18n>Mes groupes</option>
+                                <option [ngValue]="null" i18n>Tous les groupes</option>
+                                <ng-container *ngFor="let groupe of listegroupe">
+                                  <option [ngValue]="groupe.nom">{{ groupe.nom }}</option>
+                                </ng-container>
+                              </select>
+                            </div>
+                            <p class="help" i18n>
+                              Les séances des autres groupes restent soumises aux limites d'âge et de places.
+                            </p>
                           </div>
 
                           <div class="menu-filter-col-4" *ngIf="rider.selected_filter == 'statut'">
@@ -809,6 +875,18 @@
                             <span i18n>Nom :&nbsp;</span>
                             <span>{{ rider.filters.filter_nom }}</span>
                             <button class="delete" (click)="rider.filters.filter_nom = null"></button>
+                          </span>
+
+                          <span *ngIf="rider.filters.filter_groupe" class="tag is-info">
+                            <span i18n>Groupe :&nbsp;</span>
+                            <span>
+                              {{
+                                rider.filters.filter_groupe === '__MES_GROUPES__'
+                                  ? 'Mes groupes'
+                                  : rider.filters.filter_groupe
+                              }}
+                            </span>
+                            <button class="delete" (click)="rider.filters.filter_groupe = null"></button>
                           </span>
 
                           <span *ngIf="rider.filters.filter_statut != null" class="tag is-success">

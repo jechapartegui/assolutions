@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { PersonneEntity } from '../personne/personne.entity';
+import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { ProjectEntity } from '../project/project.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import {
@@ -294,7 +295,8 @@ export class PreuveMedicaleService {
     const personne = await this.personneRepo.findOne({ where: { id } });
     if (!personne) throw new NotFoundException('Personne introuvable');
 
-    if (personne.compte === compteId) return personne;
+    // Une personne peut toujours gérer sa propre preuve médicale.
+    if (Number(personne.compte) === Number(compteId)) return personne;
 
     const project = await this.dataSource
       .getRepository(ProjectEntity)
@@ -307,7 +309,21 @@ export class PreuveMedicaleService {
         0,
     );
 
-    if (ownerId !== compteId) {
+    // L'administrateur/propriétaire du projet peut gérer tous les adhérents.
+    if (ownerId === Number(compteId)) return personne;
+
+    // Un professeur du projet doit également pouvoir gérer les preuves
+    // médicales des adhérents. professeur.id = personne.id : on retrouve donc
+    // un professeur connecté via le compte porté par sa fiche personne.
+    const professorCount = await this.dataSource
+      .getRepository(ProfesseurEntity)
+      .createQueryBuilder('professeur')
+      .innerJoin(PersonneEntity, 'personne_prof', 'personne_prof.id = professeur.id')
+      .where('professeur.project_id = :projectId', { projectId })
+      .andWhere('personne_prof.compte = :compteId', { compteId })
+      .getCount();
+
+    if (professorCount <= 0) {
       throw new ForbiddenException('PERSONNE_HORS_COMPTE');
     }
 

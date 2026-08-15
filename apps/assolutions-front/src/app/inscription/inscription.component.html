@@ -26,7 +26,7 @@
         class="button is-primary is-light"
         type="button"
         [disabled]="vm.loading"
-        (click)="tarifStore.startCreate()"
+        (click)="startCreateTarif()"
       >
         <span class="icon">
           <i class="fas fa-plus"></i>
@@ -120,7 +120,7 @@
                 class="button is-primary"
                 type="button"
                 [disabled]="
-                  !edit.nom?.trim() || vm.loading
+                  !edit.nom?.trim() || !edit.compte_bancaire_id || vm.loading
                 "
                 (click)="saveTarif()"
               >
@@ -261,13 +261,37 @@
                     Validité et paiement
                   </p>
                   <p class="is-size-7 has-text-grey mb-0" i18n>
-                    Les dates sont facultatives et inclusives.
+                    Le compte de recette détermine où sera affectée l'opération créée après le paiement.
                   </p>
                 </div>
               </div>
 
               <div class="columns is-multiline is-variable is-2 mb-0">
-                <div class="column is-12-mobile is-4-tablet">
+                <div class="column is-12-mobile is-6-tablet is-3-desktop">
+                  <label class="label" i18n>
+                    Compte de recette
+                  </label>
+                  <div class="select is-fullwidth">
+                    <select
+                      [ngModel]="edit.compte_bancaire_id"
+                      (ngModelChange)="
+                        tarifStore.patchEdit({
+                          compte_bancaire_id: $event || null
+                        })
+                      "
+                    >
+                      <option [ngValue]="null" i18n>Choisir un compte</option>
+                      <option *ngFor="let compte of comptes; trackBy: trackById" [ngValue]="compte.id">
+                        {{ compte.nom }}
+                      </option>
+                    </select>
+                  </div>
+                  <p class="help is-danger" *ngIf="!edit.compte_bancaire_id" i18n>
+                    Obligatoire pour comptabiliser l'inscription.
+                  </p>
+                </div>
+
+                <div class="column is-12-mobile is-6-tablet is-3-desktop">
                   <label class="label" i18n>
                     Disponible à partir du
                   </label>
@@ -283,7 +307,7 @@
                   />
                 </div>
 
-                <div class="column is-12-mobile is-4-tablet">
+                <div class="column is-12-mobile is-6-tablet is-3-desktop">
                   <label class="label" i18n>
                     Disponible jusqu'au
                   </label>
@@ -299,7 +323,7 @@
                   />
                 </div>
 
-                <div class="column is-12-mobile is-4-tablet">
+                <div class="column is-12-mobile is-6-tablet is-3-desktop">
                   <label class="label" i18n>
                     Paiement maximal
                   </label>
@@ -594,6 +618,15 @@
               </p>
               <p class="inscription-summary-value">
                 {{ getPaymentLabel(tarif) }}
+              </p>
+            </section>
+
+            <section class="inscription-summary-block">
+              <p class="inscription-summary-label" i18n>
+                Compte de recette
+              </p>
+              <p class="inscription-summary-value">
+                {{ getCompteLabel(tarif) }}
               </p>
             </section>
 

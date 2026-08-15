@@ -21,6 +21,9 @@ export class TarifInscriptionEntity {
   @Column({ type: 'int', default: 0 })
   prix_centimes: number;
 
+  @Column({ type: 'int', nullable: true })
+  compte_bancaire_id: number | null;
+
   @Column({ type: 'date', nullable: true })
   date_debut_validite: string | null;
 

@@ -82,11 +82,6 @@ export class MenuRepository {
     }
   }
 
-  /**
-   * Anciennement RefDataRepository.
-   * Maintenant le menu consomme les data stores déjà posés.
-   * Aucun nouvel appel back n'est ajouté ici : on remplace seulement la source front des refs.
-   */
   async loadReferenceData(_projectId: number, saisonId: number): Promise<MenuReferencesVm> {
     const [listeprof, listelieu, listegroupe, listeCours] = await Promise.all([
       this.contratProfDataStore.loadProfLightsBySaison(saisonId),
@@ -109,13 +104,13 @@ export class MenuRepository {
   ): Promise<AdherentMenu[]> {
     const sources: RiderSource[] = [];
 
-      const adhDtos = await this.loadAdherentDtos();
-      sources.push(
-        ...adhDtos.map((dto) => ({
-          profil: 'ADH' as const,
-          dto,
-        })),
-      );
+    const adhDtos = await this.loadAdherentDtos();
+    sources.push(
+      ...adhDtos.map((dto) => ({
+        profil: 'ADH' as const,
+        dto,
+      })),
+    );
 
     if (rights?.prof) {
       const profDtos = await this.loadProfDtos();
@@ -171,13 +166,11 @@ export class MenuRepository {
     return riders;
   }
 
-  /** DTO bruts adhérents : on garde l'appel existant. */
   private async loadAdherentDtos(): Promise<AdhMenDto[]> {
     const raw = await this.maSeanceApi.get();
     return raw ?? [];
   }
 
-  /** DTO bruts profs normalisés dans le même format que AdhMenDto : on garde l'appel existant. */
   private async loadProfDtos(): Promise<AdhMenDto[]> {
     const raw: AdhMenDto[] = await this.maSeanceApi.prof();
     return raw ?? [];
@@ -210,15 +203,12 @@ export class MenuRepository {
       personneIds.length
         ? this.personneApi.list_personnelight(personneIds, false)
         : Promise.resolve([] as PersonneLight_VM[]),
-
       seanceIds.length
         ? this.seanceApi.get_seance_by_ids(seanceIds)
         : Promise.resolve([] as Seance[]),
-
       seanceIds.length
         ? this.seanceProfApi.get_list_by_idseance(seanceIds)
         : Promise.resolve([] as SeanceProfesseur_Light[]),
-
       personneIds.length
         ? this.documentapi.photo_by_id(personneIds)
         : Promise.resolve({} as { [id: number]: string | null }),
@@ -242,10 +232,16 @@ export class MenuRepository {
 
     return dtos
       .map<AdhMenHydrated | null>((dto) => {
-        const personne = personnesById.get(dto.personne.id);
-        if (!personne) return null;
+        const sourcePerson = personnesById.get(dto.personne.id);
+        if (!sourcePerson) return null;
 
-        personne.photo = photosByPersonne[dto.personne.id] ?? null;
+        const personne = {
+          ...sourcePerson,
+          photo: photosByPersonne[dto.personne.id] ?? null,
+          // Le marqueur calculé par /mes-seances ne doit pas être perdu lors
+          // de l'hydratation de la personne.
+          inscrit: dto.personne.inscrit === true,
+        } as PersonneLight_VM & { inscrit: boolean };
 
         const mes_seances: MesSeanceHydrated[] = (dto.mes_seances ?? [])
           .map<MesSeanceHydrated | null>((ms: MesSeanceDto) => {
@@ -256,6 +252,10 @@ export class MenuRepository {
               seance,
               seanceProfesseurs: profsBySeanceId.get(seance.seance_id) ?? [],
               accesInscription: ms.accesInscription === true,
+              dansGroupeAdherent: ms.dansGroupeAdherent === true,
+              essaiDisponible: ms.essaiDisponible === true,
+              groupeIds: [...(ms.groupeIds ?? [])],
+              groupeNoms: [...(ms.groupeNoms ?? [])],
               statutInscription: ms.statutInscription ?? null,
               statutPrésence: ms.statutPrésence ?? null,
             };
@@ -270,10 +270,6 @@ export class MenuRepository {
       .filter((x): x is AdhMenHydrated => x !== null);
   }
 
-  /**
-   * Règle demandée : si le rider n'a aucune séance exploitable, on ne l'affiche pas.
-   * Pour les essais, il suffira plus tard que le back renvoie ces séances dans le flux existant.
-   */
   private hasPossibleSeances(rider: AdherentMenu): boolean {
     return (rider?.MesSeances ?? []).some((ms) => {
       const seance = ms?.seance as any;
@@ -282,7 +278,6 @@ export class MenuRepository {
     });
   }
 
-  /** Convertit le statut VM éventuel du flux prof vers le DTO string attendu. */
   private mapInscriptionStatusVmToDto(
     statut: InscriptionStatus_VM | null | undefined,
   ): InscriptionStatusDto {
@@ -324,6 +319,8 @@ export class MenuRepository {
               s.lieu_id ?? '',
               s.professeur_id ?? '',
               ms.statutInscription ?? '',
+              ms.dansGroupeAdherent ? 'G' : '',
+              (ms.groupeIds ?? []).join(','),
             ].join(':');
           })
           .sort()
