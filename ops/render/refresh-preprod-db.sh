@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SCRIPT_VERSION="2026-08-09-02"
+SCRIPT_VERSION="2026-08-16-01"
 
 # Remplace intégralement la base de préproduction par une copie logique de la
-# production, puis applique le modèle final de souscription.
+# production, puis applique le schéma courant via database/upgrade_schema.sql.
 #
 # Variables requises :
 #   PROD_DATABASE_URL
@@ -28,9 +28,10 @@ if [[ "$PROD_DATABASE_URL" == "$PREPROD_DATABASE_URL" ]]; then
 fi
 
 ROOT_DIR="${APP_ROOT:-/app}"
+SCHEMA_UPGRADE="$ROOT_DIR/database/upgrade_schema.sql"
 
-if [[ ! -x "$ROOT_DIR/database/scripts/apply_complete_subscription_upgrade.sh" ]]; then
-  echo "Script de migration introuvable : $ROOT_DIR/database/scripts/apply_complete_subscription_upgrade.sh" >&2
+if [[ ! -f "$SCHEMA_UPGRADE" ]]; then
+  echo "Script de migration introuvable : $SCHEMA_UPGRADE" >&2
   exit 1
 fi
 
@@ -82,11 +83,6 @@ if [[ ! -s "$DUMP_FILE" ]]; then
 fi
 
 echo "==> Nettoyage des tables applicatives de la préproduction"
-# La préproduction contient volontairement des tables ajoutées après la copie de
-# production (souscription, exigences, preuves médicales...). pg_restore --clean
-# ne connaît pas ces objets absents du dump source. Leurs clés étrangères peuvent
-# donc empêcher la suppression d'une PK de production. On supprime d'abord toutes
-# les tables applicatives du schéma public avec CASCADE.
 psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 <<'SQL'
 DO $$
 DECLARE
@@ -118,16 +114,24 @@ pg_restore \
   --dbname="$PREPROD_DATABASE_URL" \
   "$DUMP_FILE"
 
-echo "==> Application du modèle final de souscription"
-DATABASE_URL="$PREPROD_DATABASE_URL" \
-  "$ROOT_DIR/database/scripts/apply_complete_subscription_upgrade.sh"
+echo "==> Application du schéma Assolutions courant"
+psql "$PREPROD_DATABASE_URL" \
+  --set=ON_ERROR_STOP=1 \
+  --file="$SCHEMA_UPGRADE"
 
 echo "==> Contrôle final de la préproduction"
 psql "$PREPROD_DATABASE_URL" --set=ON_ERROR_STOP=1 <<'SQL'
 SELECT current_database() AS database,
        (SELECT count(*) FROM public.personne) AS personnes,
        to_regclass('public.souscription') IS NOT NULL AS souscription_presente,
-       to_regclass('public.preuve_medicale') IS NOT NULL AS preuve_medicale_presente;
+       to_regclass('public.preuve_medicale') IS NOT NULL AS preuve_medicale_presente,
+       EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'tarif_inscription'
+           AND column_name = 'compte_bancaire_id'
+       ) AS compte_bancaire_tarif_present;
 SQL
 
 echo "==> Rafraîchissement terminé avec succès"
