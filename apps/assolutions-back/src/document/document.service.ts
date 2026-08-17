@@ -1,12 +1,14 @@
 ﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { CreateDocumentDto, SetPhotoDto, UpdateDocumentDto } from './document.dto';
 import { DocumentEntity } from './document.entity';
 
 @Injectable()
 export class DocumentService {
+  private static readonly MAX_PHOTOS_PER_REQUEST = 10;
+
   constructor(
     @InjectRepository(DocumentEntity)
     private readonly repo: Repository<DocumentEntity>,
@@ -93,16 +95,43 @@ export class DocumentService {
   }
 
   async photoById(ids: number[]): Promise<{ [id: number]: string | null }> {
-    const items = await this.repo.findBy({
-      objet_type: 'member',
-      objet_id: In(ids),
-      typedoc: 'photo',
-    });
+    const cleanIds = [...new Set((ids ?? [])
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id) && id > 0))];
 
     const result: { [id: number]: string | null } = {};
-    for (const id of ids) {
+    for (const id of cleanIds) {
       result[id] = null;
     }
+
+    if (!cleanIds.length) return result;
+
+    /*
+     * Les photos sont stockées en bytea. Charger des dizaines/centaines de
+     * fichiers puis les convertir tous en base64 dans la même requête peut
+     * multiplier fortement la mémoire utilisée par Node (Buffer + chaîne
+     * base64 + sérialisation JSON). Sur les petites instances Render cela
+     * suffit à provoquer un redémarrage OOM.
+     *
+     * Une liste reste fonctionnelle sans photos grâce aux initiales affichées
+     * par le front. Les lectures unitaires (fiche adhérent) continuent, elles,
+     * à retourner la photo normalement.
+     */
+    if (cleanIds.length > DocumentService.MAX_PHOTOS_PER_REQUEST) {
+      return result;
+    }
+
+    const items = await this.repo
+      .createQueryBuilder('document')
+      .select([
+        'document.objet_id',
+        'document.mimetype',
+        'document.file_data',
+      ])
+      .where('document.objet_type = :objetType', { objetType: 'member' })
+      .andWhere('document.typedoc = :typedoc', { typedoc: 'photo' })
+      .andWhere('document.objet_id IN (:...ids)', { ids: cleanIds })
+      .getMany();
 
     for (const item of items) {
       result[item.objet_id] = item.file_data
