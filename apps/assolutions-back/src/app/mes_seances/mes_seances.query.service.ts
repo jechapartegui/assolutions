@@ -171,8 +171,9 @@ export class MesSeancesQueryService {
 
       /*
        * Hors club : uniquement les séances d'essai réellement accessibles.
-       * L'âge, le nombre de places global et le quota d'essais sont contrôlés
-       * avant même d'envoyer la séance au front.
+       * Une borne d'âge renseignée est toujours effective. NULL signifie
+       * explicitement « aucune limite » : les anciens flags est_limite_age_*
+       * ne peuvent donc plus annuler silencieusement une valeur saisie.
        */
       seances_essai AS (
         SELECT DISTINCT
@@ -188,13 +189,11 @@ export class MesSeancesQueryService {
           AND s.statut = 'prévue'
           AND s.date_seance >= current_date
           AND (
-            COALESCE(s.est_limite_age_minimum, false) = false
-            OR s.age_minimum IS NULL
+            s.age_minimum IS NULL
             OR s.age_minimum <= pc.age
           )
           AND (
-            COALESCE(s.est_limite_age_maximum, false) = false
-            OR s.age_maximum IS NULL
+            s.age_maximum IS NULL
             OR s.age_maximum >= pc.age
           )
           AND (
@@ -281,13 +280,11 @@ export class MesSeancesQueryService {
        AND ins.seance_id = s.seance_id
       WHERE
         (
-          COALESCE(s.est_limite_age_minimum, false) = false
-          OR s.age_minimum IS NULL
+          s.age_minimum IS NULL
           OR s.age_minimum <= pc.age
         )
         AND (
-          COALESCE(s.est_limite_age_maximum, false) = false
-          OR s.age_maximum IS NULL
+          s.age_maximum IS NULL
           OR s.age_maximum >= pc.age
         )
       ORDER BY pc.personne_id, s.date_seance, s.heure_debut, s.seance_id
