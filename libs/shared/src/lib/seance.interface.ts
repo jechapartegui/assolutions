@@ -171,11 +171,10 @@ export function mapSeanceToVM(
 
   vm.rdv = (s.appointment ?? '') as string;
 
-  vm.est_limite_age_minimum =
-    s.est_limite_age_minimum !== undefined ? !!s.est_limite_age_minimum : vm.age_minimum !== null;
-
-  vm.est_limite_age_maximum =
-    s.est_limite_age_maximum !== undefined ? !!s.est_limite_age_maximum : vm.age_maximum !== null;
+  // Une borne d'âge non nulle est toujours une limite réelle. Les anciens
+  // booléens sont conservés en base pour compatibilité mais ne pilotent plus le VM.
+  vm.est_limite_age_minimum = vm.age_minimum !== null;
+  vm.est_limite_age_maximum = vm.age_maximum !== null;
 
   vm.est_place_maximum =
     s.est_place_maximum !== undefined ? !!s.est_place_maximum : vm.place_maximum !== null;
