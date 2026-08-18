@@ -68,6 +68,9 @@ export class SeanceMapper {
   }
 
   toSeance(vm: Seance_VM): CreateSeanceDto {
+    const ageMinimum = vm.age_minimum ?? null;
+    const ageMaximum = vm.age_maximum ?? null;
+
     return {
       seance_id: vm.id ?? 0,
       saison_id: vm.saison_id,
@@ -80,8 +83,8 @@ export class SeanceMapper {
       heure_fin: vm.heure_fin || calculerHeureFinUtil(vm.heure_debut, vm.duree_seance),
       lieu_id: vm.lieu_id,
       statut: vm.statut,
-      age_minimum: vm.age_minimum ?? null,
-      age_maximum: vm.age_maximum ?? null,
+      age_minimum: ageMinimum,
+      age_maximum: ageMaximum,
       place_maximum: vm.place_maximum ?? null,
       essai_possible: !!vm.essai_possible,
       nb_essai_possible: vm.nb_essai_possible ?? null,
@@ -89,8 +92,10 @@ export class SeanceMapper {
       convocation_nominative: !!vm.convocation_nominative,
       afficher_present: !!vm.afficher_present,
       appointment: vm.rdv ?? null,
-      est_limite_age_minimum: !!vm.est_limite_age_minimum,
-      est_limite_age_maximum: !!vm.est_limite_age_maximum,
+      // Une borne renseignée est une limite effective. Les booléens sont
+      // conservés pour compatibilité DB mais ne peuvent plus contredire la valeur.
+      est_limite_age_minimum: ageMinimum !== null,
+      est_limite_age_maximum: ageMaximum !== null,
       est_place_maximum: !!vm.est_place_maximum,
     };
   }
@@ -121,8 +126,8 @@ export class SeanceMapper {
     vm.convocation_nominative = !!raw.convocation_nominative;
     vm.afficher_present = !!raw.afficher_present;
     vm.rdv = raw.appointment ?? '';
-    vm.est_limite_age_minimum = !!raw.est_limite_age_minimum;
-    vm.est_limite_age_maximum = !!raw.est_limite_age_maximum;
+    vm.est_limite_age_minimum = vm.age_minimum !== null;
+    vm.est_limite_age_maximum = vm.age_maximum !== null;
     vm.est_place_maximum = !!raw.est_place_maximum;
     vm.seanceProfesseurs = [];
     vm.groupes = [];
