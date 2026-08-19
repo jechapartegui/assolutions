@@ -1,66 +1,70 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AccessControlService } from '../common/access-control.service';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectEntity } from './project.entity';
-
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(ProjectEntity)
     private readonly repo: Repository<ProjectEntity>,
-    
+    private readonly access: AccessControlService,
   ) {}
-  
+
   async list() {
-    return this.repo.find();
+    const items = await this.repo.find();
+    return items.map((item) => this.hideSensitiveData(item));
   }
 
   async listPublicProjects() {
-    return this.repo.find({ where: { public: true } });
+    const items = await this.repo.find({ where: { public: true, actif: true } });
+    return items.map((item) => this.hideSensitiveData(item));
   }
 
-  async get(id: number) {
-    const item = await this.repo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException(`project ${id} introuvable`);
-    return item;
+  async getAuthorized(id: number, requesterId: number) {
+    const item = await this.access.assertProjectAccess(requesterId, id);
+    return this.hideSensitiveData(item);
   }
 
-  async create(dto: CreateProjectDto) {
-    const entity = this.repo.create(dto as CreateProjectDto);
-    const saved = await this.repo.save(entity);
-
-    return saved;
+  async create(dto: CreateProjectDto, requesterId: number) {
+    const saved = await this.repo.save(
+      this.repo.create({
+        ...dto,
+        compte: requesterId,
+      }),
+    );
+    return this.hideSensitiveData(saved);
   }
 
-  async update(id: number, dto: UpdateProjectDto) {
-    const item = await this.get(id);
+  async update(id: number, dto: UpdateProjectDto, requesterId: number) {
+    const item = await this.access.assertProjectAdmin(requesterId, id);
     Object.assign(item, dto, { date_maj: new Date() });
-    const saved = await this.repo.save(item);
-
-    return saved;
+    return this.hideSensitiveData(await this.repo.save(item));
   }
 
-  async remove(id: number) {
-    const item = await this.get(id);
+  async remove(id: number, requesterId: number) {
+    const item = await this.access.assertProjectAdmin(requesterId, id);
     await this.repo.remove(item);
-
     return { ok: true };
   }
+
   async isAdminOnProject(userId: number, projectId: number): Promise<boolean> {
-    const project = await this.repo.findOne({
-      where: { id: projectId },
-      select: { id: true, compte_id: true } as any, // selon ton entity
-    });
+    try {
+      await this.access.assertProjectAdmin(userId, projectId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-    if (!project) return false;
-
-    // adapte le nom du champ selon ton entity :
-    // - compte_id
-    // - compteId
-    // - owner_compte_id
-    return (project as any).compte_id === userId || (project as any).compteId === userId;
+  private hideSensitiveData(project: ProjectEntity): ProjectEntity {
+    return {
+      ...project,
+      password: '',
+      activation_token: null,
+    };
   }
 }
