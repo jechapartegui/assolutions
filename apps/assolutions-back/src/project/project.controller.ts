@@ -17,10 +17,15 @@ import { ProjectService } from './project.service';
 export class ProjectController {
   constructor(private readonly service: ProjectService) {}
 
-  @UseGuards(JwtAuthGuard)
+  // Données strictement publiques nécessaires à la création de compte avant authentification.
   @Get('public')
   listPublicProjects() {
     return this.service.listPublicProjects();
+  }
+
+  @Get('public/:id')
+  getPublicProject(@Param('id', ParseIntPipe) id: number) {
+    return this.service.getPublicProject(id);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
