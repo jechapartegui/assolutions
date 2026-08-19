@@ -11,6 +11,7 @@ import {
 import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SaveDossierDocumentDto } from './dossier-document.dto';
 import { DossierDocumentService } from './dossier-document.service';
@@ -24,6 +25,7 @@ import { PreuveMedicaleService } from './preuve-medicale.service';
 type AuthenticatedRequest = Request & { user?: { id?: number } };
 
 @Controller('dossiers-personnes')
+@UseGuards(JwtAuthGuard)
 export class DossierPersonneController {
   constructor(
     private readonly service: ExigenceDossierService,
@@ -96,8 +98,7 @@ export class DossierPersonneController {
     projectId: number,
     accountId: number,
   ) {
-    const typeLicence =
-      dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR';
+    const typeLicence = dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR';
     const [dossier, medical] = await Promise.all([
       this.service.evaluate(dto, projectId, accountId),
       this.medical.evaluate(
@@ -111,9 +112,7 @@ export class DossierPersonneController {
       ),
     ]);
 
-    if (medical.eligible) {
-      return { ...dossier, preuve_medicale: medical };
-    }
+    if (medical.eligible) return { ...dossier, preuve_medicale: medical };
 
     return {
       ...dossier,
