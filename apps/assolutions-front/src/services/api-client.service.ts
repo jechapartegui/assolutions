@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { firstValueFrom, timeout, catchError, throwError } from 'rxjs';
-import { environment } from '../environments/environment';
+import { catchError, firstValueFrom, throwError, timeout } from 'rxjs';
 import { AppStore } from '../app/app.store';
+import { environment } from '../environments/environment';
+import { getAuthToken } from './auth-token.storage';
 
 export interface ApiErrorPayload {
   status: number;
@@ -18,7 +19,7 @@ export class ApiError extends Error implements ApiErrorPayload {
     public readonly code: string,
     message: string,
     public readonly details?: unknown,
-    public readonly url?: string | null
+    public readonly url?: string | null,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -32,7 +33,7 @@ export class ApiClientService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly store: AppStore
+    private readonly store: AppStore,
   ) {}
 
   GET<T>(path: string): Promise<T> {
@@ -58,7 +59,7 @@ export class ApiClientService {
   private async request<T>(
     method: 'GET' | 'POST' | 'PUT' | 'PATCH',
     path: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = this.makeUrl(path);
     const headers = this.buildHeaders();
@@ -74,8 +75,8 @@ export class ApiClientService {
     return firstValueFrom(
       request$.pipe(
         timeout(this.timeoutMilliseconds),
-        catchError((error: unknown) => throwError(() => this.normalizeError(error, url)))
-      )
+        catchError((error: unknown) => throwError(() => this.normalizeError(error, url))),
+      ),
     );
   }
 
@@ -86,7 +87,7 @@ export class ApiClientService {
         'TIMEOUT_ERROR',
         'Le serveur met trop de temps à répondre. Réessayez dans quelques instants.',
         undefined,
-        url
+        url,
       );
     }
 
@@ -106,7 +107,7 @@ export class ApiClientService {
         code,
         message,
         payload?.details ?? payload,
-        error.url
+        error.url,
       );
     }
 
@@ -125,6 +126,7 @@ export class ApiClientService {
     if (status === 403) return 'FORBIDDEN';
     if (status === 404) return 'NOT_FOUND';
     if (status === 409) return 'CONFLICT';
+    if (status === 429) return 'TOO_MANY_REQUESTS';
     if (status >= 500) return 'SERVER_ERROR';
     return 'HTTP_ERROR';
   }
@@ -135,6 +137,7 @@ export class ApiClientService {
     if (status === 403) return "Vous n'êtes pas autorisé à effectuer cette action.";
     if (status === 404) return 'La ressource demandée est introuvable.';
     if (status === 409) return 'Cette opération entre en conflit avec une donnée existante.';
+    if (status === 429) return 'Trop de tentatives. Réessayez dans quelques minutes.';
     if (status >= 500) return 'Le serveur a rencontré une erreur.';
     return 'La requête a échoué.';
   }
@@ -152,7 +155,7 @@ export class ApiClientService {
     const projectId = this.store.selectedProjectId?.() ?? null;
     if (projectId) headers = headers.set('projectid', projectId.toString());
 
-    const token = localStorage.getItem('auth_token');
+    const token = getAuthToken();
     if (token) headers = headers.set('Authorization', `Bearer ${token}`);
 
     return headers;
