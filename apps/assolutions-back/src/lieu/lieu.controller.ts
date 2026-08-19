@@ -1,6 +1,15 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ProjectAccessGuard } from '../common/guards/project-access.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { CreateLieuDto, UpdateLieuDto } from './lieu.dto';
 import { LieuService } from './lieu.service';
@@ -9,15 +18,18 @@ import { LieuService } from './lieu.service';
 export class LieuController {
   constructor(private readonly service: LieuService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAccessGuard)
   @Get()
   list(@ProjectId() projectId: number) {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAccessGuard)
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  get(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.getForProject(id, projectId);
   }
 
@@ -27,24 +39,31 @@ export class LieuController {
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateLieuDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateLieuDto,
+  ) {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.remove(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAccessGuard)
   @Get('search/:query')
-  search(@Param('query') query: string, @ProjectId() projectId: number) {
+  search(
+    @Param('query') query: string,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.search(query, projectId);
   }
 }
-
