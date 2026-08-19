@@ -1,4 +1,14 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { readOptionalProjectId } from '../common/access-control.service';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -23,11 +33,14 @@ export class InscriptionSaisonController {
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post()
-  create(@ProjectId() projectId: number, @Body() dto: CreateInscriptionSaisonDto) {
-    return this.service.create(dto, projectId);
+  create(
+    @Req() req: any,
+    @ProjectId() projectId: number,
+    @Body() dto: CreateInscriptionSaisonDto,
+  ) {
+    return this.service.create(dto, projectId, req.user.id);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
   update(
@@ -38,29 +51,44 @@ export class InscriptionSaisonController {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.remove(id, projectId);
   }
-  @Post('by-personnes')
-listByPersonnes(@Body() body: { personneIds: number[] }) {
-  return this.service.listByPersonnes(body.personneIds);
-}
 
   @UseGuards(JwtAuthGuard)
+  @Post('by-personnes')
+  listByPersonnes(
+    @Req() req: any,
+    @Body() body: { personneIds: number[] },
+  ) {
+    return this.service.listByPersonnes(
+      body.personneIds,
+      req.user.id,
+      readOptionalProjectId(req),
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get('saison/:saisonId')
-  listBySaison(@Param('saisonId', ParseIntPipe) saisonId: number, @ProjectId() projectId: number) {
+  listBySaison(
+    @Param('saisonId', ParseIntPipe) saisonId: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.listForSaison(saisonId, projectId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('personne/:personneId')
   listByPersonne(
+    @Req() req: any,
     @Param('personneId', ParseIntPipe) personneId: number,
     @ProjectId() projectId: number,
   ) {
-    return this.service.listForPersonne(personneId, projectId);
+    return this.service.listForPersonne(personneId, projectId, req.user.id);
   }
 }
