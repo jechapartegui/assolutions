@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { SaisonEntity } from '../saison/saison.entity';
 import { CreateSeanceDto, CreateSeanceRangeDto, UpdateSeanceDto } from './seance.dto';
@@ -18,16 +18,33 @@ export class SeanceService {
   private async assertSaisonInProject(saisonId: number, projectId: number) {
     const saison = await this.saisonRepo.findOne({ where: { id: saisonId } });
     if (!saison) throw new NotFoundException(`saison ${saisonId} introuvable`);
-    if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
+    if (Number(saison.project_id) !== Number(projectId)) {
+      throw new ForbiddenException('WRONG_PROJECT');
+    }
     return saison;
   }
 
-  async listbyId(ids: number[]) {
-    return this.repo.find({ where: { seance_id: In(ids) } });
+  async listByIds(ids: number[], projectId: number) {
+    const cleanIds = [...new Set((ids ?? [])
+      .map((id) => Number(id))
+      .filter((id) => Number.isInteger(id) && id > 0))];
+    if (!cleanIds.length) return [];
+
+    return this.repo
+      .createQueryBuilder('seance')
+      .innerJoin('saison', 's', 's.id = seance.saison_id')
+      .where('seance.seance_id IN (:...ids)', { ids: cleanIds })
+      .andWhere('s.project_id = :projectId', { projectId })
+      .orderBy('seance.seance_id', 'ASC')
+      .getMany();
   }
 
-  async listForSaison(saison_id: number) {
-    return this.repo.find({ where: { saison_id }, order: { seance_id: 'ASC' } });
+  async listForSaison(saisonId: number, projectId: number) {
+    await this.assertSaisonInProject(saisonId, projectId);
+    return this.repo.find({
+      where: { saison_id: saisonId },
+      order: { seance_id: 'ASC' },
+    });
   }
 
   async listForProject(projectId: number) {
