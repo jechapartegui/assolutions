@@ -4,8 +4,9 @@ export class CreatePersonneDto {
   @IsDateString()
   date_naissance: string;
 
+  @IsOptional()
   @IsInt()
-  compte: number;
+  compte?: number;
 
   @IsString()
   @MaxLength(100)
