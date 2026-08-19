@@ -26,20 +26,24 @@ export class AccessControlService {
   constructor(private readonly ds: DataSource) {}
 
   async assertProjectAdmin(userId: number, projectId: number): Promise<ProjectEntity> {
-    if (!Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-      throw new UnauthorizedException('UNAUTHORIZED');
-    }
-    if (!Number.isInteger(Number(projectId)) || Number(projectId) <= 0) {
-      throw new ForbiddenException('PROJECT_ID_REQUIRED');
-    }
-
-    const project = await this.ds.getRepository(ProjectEntity).findOne({
-      where: { id: Number(projectId) },
-    });
-    if (!project) throw new ForbiddenException('PROJECT_NOT_FOUND');
+    const project = await this.loadProjectForAccess(userId, projectId);
     if (Number(project.compte) !== Number(userId)) {
       throw new ForbiddenException('NOT_PROJECT_ADMIN');
     }
+    return project;
+  }
+
+  async assertProjectAccess(userId: number, projectId: number): Promise<ProjectEntity> {
+    const project = await this.loadProjectForAccess(userId, projectId);
+    if (Number(project.compte) === Number(userId)) return project;
+
+    const linked = await this.ds.getRepository(LoginProjectEntity).exist({
+      where: {
+        login_id: Number(userId),
+        project_id: Number(projectId),
+      },
+    });
+    if (!linked) throw new ForbiddenException('PROJECT_ACCESS_DENIED');
     return project;
   }
 
@@ -116,5 +120,23 @@ export class AccessControlService {
       throw new ForbiddenException('OBJECT_NOT_IN_PROJECT');
     }
     return persons;
+  }
+
+  private async loadProjectForAccess(
+    userId: number,
+    projectId: number,
+  ): Promise<ProjectEntity> {
+    if (!Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+      throw new UnauthorizedException('UNAUTHORIZED');
+    }
+    if (!Number.isInteger(Number(projectId)) || Number(projectId) <= 0) {
+      throw new ForbiddenException('PROJECT_ID_REQUIRED');
+    }
+
+    const project = await this.ds.getRepository(ProjectEntity).findOne({
+      where: { id: Number(projectId) },
+    });
+    if (!project) throw new ForbiddenException('PROJECT_NOT_FOUND');
+    return project;
   }
 }
