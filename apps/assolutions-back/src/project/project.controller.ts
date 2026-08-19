@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectService } from './project.service';
-import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 
 @Controller('projects')
 export class ProjectController {
@@ -14,7 +23,7 @@ export class ProjectController {
     return this.service.listPublicProjects();
   }
 
-    @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get()
   list() {
     return this.service.list();
@@ -22,27 +31,29 @@ export class ProjectController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number) {
-    return this.service.get(id);
+  get(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    return this.service.getAuthorized(id, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreateProjectDto) {
-    return this.service.create({ ...dto, compte: req.user.id });
+    return this.service.create(dto, req.user.id);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProjectDto) {
-    return this.service.update(id, dto);
+  update(
+    @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateProjectDto,
+  ) {
+    return this.service.update(id, dto, req.user.id);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.service.remove(id);
+  remove(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    return this.service.remove(id, req.user.id);
   }
 }
