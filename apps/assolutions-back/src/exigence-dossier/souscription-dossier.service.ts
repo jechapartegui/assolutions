@@ -257,9 +257,7 @@ export class SouscriptionDossierService {
     await this.dataSource.transaction(async (manager) => {
       const subscriptionRepo = manager.getRepository(SouscriptionEntity);
       const lineRepo = manager.getRepository(SouscriptionPersonneEntity);
-      const lineGroupRepo = manager.getRepository(
-        SouscriptionPersonneGroupeEntity,
-      );
+      const lineGroupRepo = manager.getRepository(SouscriptionPersonneGroupeEntity);
       const registrationRepo = manager.getRepository(InscriptionSaisonEntity);
       const groupLinkRepo = manager.getRepository(LienGroupeEntity);
       const subscription = await subscriptionRepo.findOne({
@@ -267,9 +265,7 @@ export class SouscriptionDossierService {
         lock: { mode: 'pessimistic_write' },
       });
       if (!subscription || subscription.statut === 'FINALISEE') return;
-      const lines = await lineRepo.find({
-        where: { souscription_id: subscription.id },
-      });
+      const lines = await lineRepo.find({ where: { souscription_id: subscription.id } });
       const links = lines.length
         ? await lineGroupRepo.find({
             where: { souscription_personne_id: In(lines.map((line) => line.id)) },
@@ -386,18 +382,17 @@ export class SouscriptionDossierService {
   }
 
   private assertLocalSimulation() {
-    const explicit = (process.env.APP_ENV ?? '').trim().toLowerCase();
+    const appEnv = (process.env.APP_ENV ?? '').trim().toLowerCase();
+    const nodeEnv = (process.env.NODE_ENV ?? '').trim().toLowerCase();
     const front = (
       process.env.HELLOASSO_FRONT_URL ??
       process.env.FRONT_URL ??
       ''
     ).toLowerCase();
-    if (
-      explicit &&
-      explicit !== 'local' &&
-      !front.includes('localhost') &&
-      !front.includes('127.0.0.1')
-    ) {
+
+    const explicitLocal = appEnv === 'local' || nodeEnv === 'development';
+    const localFront = front.includes('localhost') || front.includes('127.0.0.1');
+    if (!explicitLocal || !localFront) {
       throw new ForbiddenException('Simulation disponible uniquement en local');
     }
   }
