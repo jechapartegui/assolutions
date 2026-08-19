@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 process.env.TS_NODE_PROJECT = path.join(__dirname, 'tsconfig.dev.json');
 require('reflect-metadata');
 require('ts-node/register/transpile-only');
+require('./register-tsconfig-paths.cjs');
 
 const { ForbiddenException, BadRequestException } = require('@nestjs/common');
 const { AccessControlService } = require('./src/common/access-control.service.ts');
@@ -86,22 +87,18 @@ async function assertRejectsWith(promise, ErrorType, label) {
 async function testTenantAuthorization() {
   const access = makeAccessControl();
 
-  // Le propriétaire de son compte peut accéder à sa propre personne.
   const own = await access.getAuthorizedPerson(30, 101, null);
   assert.equal(own.id, 101);
 
-  // L'admin du projet 1 peut accéder à un compte réellement rattaché au projet 1.
   const projectOne = await access.getAuthorizedPerson(10, 101, 1);
   assert.equal(projectOne.id, 101);
 
-  // P0/P1 BOLA : un header projet 1 valide ne doit JAMAIS ouvrir un objet projet 2.
   await assertRejectsWith(
     access.getAuthorizedPerson(10, 202, 1),
     ForbiddenException,
     'cross-project person access',
   );
 
-  // L'admin légitime du projet 2 garde son accès.
   const projectTwo = await access.getAuthorizedPerson(20, 202, 2);
   assert.equal(projectTwo.id, 202);
 }
