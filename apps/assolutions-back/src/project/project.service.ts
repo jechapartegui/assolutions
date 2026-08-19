@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -21,7 +21,15 @@ export class ProjectService {
 
   async listPublicProjects() {
     const items = await this.repo.find({ where: { public: true, actif: true } });
-    return items.map((item) => this.hideSensitiveData(item));
+    return items.map((item) => this.toPublicView(item));
+  }
+
+  async getPublicProject(id: number) {
+    const item = await this.repo.findOne({
+      where: { id, public: true, actif: true },
+    });
+    if (!item) throw new NotFoundException('PROJECT_NOT_FOUND');
+    return this.toPublicView(item);
   }
 
   async getAuthorized(id: number, requesterId: number) {
@@ -66,5 +74,16 @@ export class ProjectService {
       password: '',
       activation_token: null,
     };
+  }
+
+  private toPublicView(project: ProjectEntity) {
+    const {
+      compte: _compte,
+      login: _login,
+      password: _password,
+      activation_token: _activationToken,
+      ...safe
+    } = project;
+    return safe;
   }
 }
