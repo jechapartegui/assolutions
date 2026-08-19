@@ -1,4 +1,4 @@
-﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -9,28 +9,39 @@ import { ContratProfEntity } from './contrat_prof.entity';
 @Injectable()
 export class ContratProfService {
   constructor(
-    @InjectRepository(ContratProfEntity) private readonly repo: Repository<ContratProfEntity>,
-    @InjectRepository(SaisonEntity) private readonly saisonRepo: Repository<SaisonEntity>,
-    
+    @InjectRepository(ContratProfEntity)
+    private readonly repo: Repository<ContratProfEntity>,
+    @InjectRepository(SaisonEntity)
+    private readonly saisonRepo: Repository<SaisonEntity>,
   ) {}
 
   private async assertSaisonInProject(saisonId: number, projectId: number) {
     const saison = await this.saisonRepo.findOne({ where: { id: saisonId } });
     if (!saison) throw new NotFoundException(`saison ${saisonId} introuvable`);
-    if (saison.project_id !== projectId) throw new ForbiddenException('WRONG_PROJECT');
+    if (Number(saison.project_id) !== Number(projectId)) {
+      throw new ForbiddenException('WRONG_PROJECT');
+    }
+    return saison;
   }
 
-  listForSeason(saisonId: number) {
+  async listForSeason(saisonId: number, projectId: number) {
+    await this.assertSaisonInProject(saisonId, projectId);
     return this.repo
       .createQueryBuilder('c')
       .innerJoin('saison', 's', 's.id = c.saison_id')
       .where('s.id = :saisonId', { saisonId })
+      .andWhere('s.project_id = :projectId', { projectId })
       .orderBy('c.id', 'ASC')
       .getMany();
   }
 
-  async exist(profId: number) {
-    const count = await this.repo.count({ where: { professeur_id: profId } });
+  async exist(profId: number, projectId: number) {
+    const count = await this.repo
+      .createQueryBuilder('c')
+      .innerJoin('saison', 's', 's.id = c.saison_id')
+      .where('c.professeur_id = :profId', { profId })
+      .andWhere('s.project_id = :projectId', { projectId })
+      .getCount();
     return count > 0;
   }
 
@@ -43,22 +54,17 @@ export class ContratProfService {
 
   async create(dto: CreateContratProfDto, projectId: number) {
     await this.assertSaisonInProject(dto.saison_id, projectId);
-
-    const saved = await this.repo.save(this.repo.create(dto as CreateContratProfDto));
-    return saved;
+    return this.repo.save(this.repo.create(dto));
   }
 
   async update(id: number, dto: UpdateContratProfDto, projectId: number) {
     const item = await this.getForProject(id, projectId);
-
     if (dto.saison_id && dto.saison_id !== item.saison_id) {
       await this.assertSaisonInProject(dto.saison_id, projectId);
     }
 
     Object.assign(item, dto, { date_maj: new Date() });
-    const saved = await this.repo.save(item);
-
-    return saved;
+    return this.repo.save(item);
   }
 
   async remove(id: number, projectId: number) {
