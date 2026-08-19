@@ -9,12 +9,13 @@ import {
 } from '@nestjs/common';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SaveCodePromoDto, UpdateCodePromoDto } from './code-promo.dto';
 import { CodePromoService } from './code-promo.service';
 
 @Controller('codes-promo')
-@UseGuards(ProjectAdminGuard)
+@UseGuards(JwtAuthGuard, ProjectAdminGuard)
 export class CodePromoController {
   constructor(private readonly service: CodePromoService) {}
 
