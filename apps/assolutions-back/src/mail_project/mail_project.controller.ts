@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -12,7 +12,7 @@ import {
 import { MailProjectService } from './mail_project.service';
 
 @Controller('mail-project')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ProjectAdminGuard)
 export class MailProjectController {
   constructor(private readonly service: MailProjectService) {}
 
