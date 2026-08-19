@@ -1,6 +1,7 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ProjectAccessGuard } from '../common/guards/project-access.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { CreateCoursProfesseurDto, UpdateCoursProfesseurDto } from './cours_professeur.dto';
 import { CoursProfesseurService } from './cours_professeur.service';
@@ -9,48 +10,55 @@ import { CoursProfesseurService } from './cours_professeur.service';
 export class CoursProfesseurController {
   constructor(private readonly service: CoursProfesseurService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAccessGuard)
   @Get()
   list(@ProjectId() projectId: number) {
     return this.service.listForProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAccessGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post()
   create(@ProjectId() projectId: number, @Body() dto: CreateCoursProfesseurDto) {
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateCoursProfesseurDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateCoursProfesseurDto,
+  ) {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.remove(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAccessGuard)
   @Post('by-cours')
-  listProfsByCoursId(@Body() body: { coursId: number[] }) {
-    return this.service.listProfsByCoursId(body.coursId);
+  listProfsByCoursId(
+    @ProjectId() projectId: number,
+    @Body() body: { coursId: number[] },
+  ) {
+    return this.service.listProfsByCoursId(body.coursId, projectId);
   }
-  
-  @UseGuards(JwtAuthGuard)
+
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post('updatelist')
-  updateList(@ProjectId() projectId: number, @Body() body: { coursId: number, profs: number[], saisonId: number }) {
-    const { coursId, profs, saisonId } = body;
-    return this.service.updateList(coursId, profs, saisonId, projectId);
+  updateList(
+    @ProjectId() projectId: number,
+    @Body() body: { coursId: number; profs: number[]; saisonId: number },
+  ) {
+    return this.service.updateList(body.coursId, body.profs, body.saisonId, projectId);
   }
 }
