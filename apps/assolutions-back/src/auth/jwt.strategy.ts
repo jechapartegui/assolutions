@@ -6,10 +6,15 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
+    const secret = config.get<string>('JWT_SECRET')?.trim();
+    if (!secret || secret.length < 32) {
+      throw new Error('JWT_SECRET is required and must contain at least 32 characters');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_SECRET') || 'CHANGE_ME',
+      secretOrKey: secret,
     });
   }
 
