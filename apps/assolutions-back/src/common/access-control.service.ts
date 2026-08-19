@@ -69,6 +69,16 @@ export class AccessControlService {
     return project;
   }
 
+  async hasProjectStaffAccess(userId: number, projectId: number): Promise<boolean> {
+    try {
+      await this.assertProjectStaff(userId, projectId);
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException) return false;
+      throw error;
+    }
+  }
+
   async assertAccountAccess(
     userId: number,
     targetCompteId: number,
@@ -87,7 +97,9 @@ export class AccessControlService {
     projectId: number,
   ): Promise<{ isStaff: boolean }> {
     await this.assertProjectAccess(userId, projectId);
-    if (Number(targetCompteId) === Number(userId)) return { isStaff: false };
+    if (Number(targetCompteId) === Number(userId)) {
+      return { isStaff: await this.hasProjectStaffAccess(userId, projectId) };
+    }
 
     await this.assertProjectStaff(userId, projectId);
     await this.assertAccountLinkedToProject(targetCompteId, projectId);
@@ -113,7 +125,10 @@ export class AccessControlService {
     await this.assertProjectAccess(userId, projectId);
 
     if (Number(person.compte) === Number(userId)) {
-      return { person, isStaff: false };
+      return {
+        person,
+        isStaff: await this.hasProjectStaffAccess(userId, projectId),
+      };
     }
 
     await this.assertProjectStaff(userId, projectId);
