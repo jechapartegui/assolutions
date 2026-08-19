@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { ProjetView, Session } from '@shared/index';
+import { clearAuthToken, setAuthToken } from '../services/auth-token.storage';
 
 export type MenuType =
   | 'ADHERENT' | 'COURS' | 'SEANCE' | 'GROUPE' | 'MA-SEANCE'
@@ -8,8 +9,6 @@ export type MenuType =
   | 'PROJETINFO' | 'PROJETMAIL' | 'COMPTA' | 'CB'
   | 'FACTURE' | 'ENVOIMAIL' | 'ADMINISTRATEUR'
   | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE' | 'PAIEMENT' | 'EXIGENCE_DOSSIER'
-
-  // nouveaux menus admin
   | 'INSCRIPTION'
   | 'CONTRAT_PROF'
   | 'TRACES_PAIEMENT'
@@ -21,12 +20,10 @@ export type MenuType =
 
 @Injectable({ providedIn: 'root' })
 export class SessionStore {
-  private readonly consultationSaisonStorageKey =
-    'assolutions.consultationSaisonId';
+  private readonly consultationSaisonStorageKey = 'assolutions.consultationSaisonId';
 
   readonly session = signal<Session | null>(null);
   readonly selectedMenu = signal<MenuType>('MENU');
-
   readonly publicSaisonActiveId = signal<number | null>(null);
   readonly publicProjetId = signal<number | null>(null);
 
@@ -49,23 +46,16 @@ export class SessionStore {
   readonly selectedProject = computed(() => {
     const s = this.session();
     const selectedProjectId = this.selectedProjectId();
-
     if (!s || selectedProjectId == null) return null;
-
     return s.projects.find((p) => Number(p.id) === Number(selectedProjectId)) ?? null;
   });
 
   readonly projectId = computed(() => this.selectedProjectId());
-
   readonly saisonActiveId = computed(() => {
     const projet = this.selectedProject();
     return projet?.saison_active?.id ?? this.publicSaisonActiveId();
   });
-
-  readonly saisonActive = computed(() => {
-    return this.selectedProject()?.saison_active ?? null;
-  });
-
+  readonly saisonActive = computed(() => this.selectedProject()?.saison_active ?? null);
   readonly saisonConsultationId = computed(
     () => this._saisonConsultationId() ?? this.saisonActiveId(),
   );
@@ -73,7 +63,6 @@ export class SessionStore {
   readonly rights = computed(() => {
     const p = this.selectedProject();
     if (!p) return null;
-
     return {
       adherent: !!p.rights?.adherent,
       prof: !!p.rights?.prof,
@@ -92,17 +81,10 @@ export class SessionStore {
       session.projects,
     );
 
-    const cleanSession: Session = {
-      ...session,
-      selectedProjectId,
-    };
-
+    const cleanSession: Session = { ...session, selectedProjectId };
     this.session.set(cleanSession);
 
-    if (cleanSession.token) {
-      localStorage.setItem('auth_token', cleanSession.token);
-    }
-
+    if (cleanSession.token) setAuthToken(cleanSession.token);
     localStorage.setItem('auth_mode', cleanSession.mode);
 
     if (selectedProjectId != null) {
@@ -115,7 +97,7 @@ export class SessionStore {
   clearSession(): void {
     this.session.set(null);
     this._saisonConsultationId.set(null);
-    localStorage.removeItem('auth_token');
+    clearAuthToken();
     localStorage.removeItem('auth_mode');
     localStorage.removeItem('selected_projet');
     localStorage.removeItem(this.consultationSaisonStorageKey);
@@ -129,12 +111,7 @@ export class SessionStore {
       s.selectedProjectId ?? null,
       projects,
     );
-
-    this.session.set({
-      ...s,
-      projects,
-      selectedProjectId,
-    });
+    this.session.set({ ...s, projects, selectedProjectId });
 
     if (selectedProjectId != null) {
       localStorage.setItem('selected_projet', String(selectedProjectId));
@@ -152,11 +129,7 @@ export class SessionStore {
     );
     if (!projectExists) return;
 
-    this.session.set({
-      ...s,
-      selectedProjectId: projectId,
-    });
-
+    this.session.set({ ...s, selectedProjectId: projectId });
     localStorage.setItem('selected_projet', String(projectId));
     this.setConsultationSaison(null);
   }
@@ -168,25 +141,17 @@ export class SessionStore {
     const projects = s.projects.map((p) => {
       if (Number(p.id) !== Number(s.selectedProjectId)) return p;
       if (!p.saison_active) return p;
-
       return {
         ...p,
-        saison_active: {
-          ...p.saison_active,
-          id: saisonId,
-        },
+        saison_active: { ...p.saison_active, id: saisonId },
       };
     });
-
     this.session.set({ ...s, projects });
   }
 
   setConsultationSaison(saisonId: number | null): void {
     const normalized = Number(saisonId);
-    const value = Number.isInteger(normalized) && normalized > 0
-      ? normalized
-      : null;
-
+    const value = Number.isInteger(normalized) && normalized > 0 ? normalized : null;
     this._saisonConsultationId.set(value);
 
     if (value) {
@@ -220,16 +185,10 @@ export class SessionStore {
     projects: ProjetView[],
   ): number | null {
     if (selectedProjectId != null) {
-      const exists = projects.some(
-        (p) => Number(p.id) === Number(selectedProjectId),
-      );
+      const exists = projects.some((p) => Number(p.id) === Number(selectedProjectId));
       if (exists) return selectedProjectId;
     }
-
-    if (projects.length === 1) {
-      return projects[0].id;
-    }
-
+    if (projects.length === 1) return projects[0].id;
     return null;
   }
 }
