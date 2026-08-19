@@ -17,5 +17,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Security regression checks
+        run: node apps/assolutions-back/security-regression.cjs
       - run: npx nx build assolutions-back --configuration=production --skip-nx-cache
       - run: npx nx build assolutions-front --configuration=preprod --skip-nx-cache
