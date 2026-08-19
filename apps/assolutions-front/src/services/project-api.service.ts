@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ApiClientService } from './api-client.service';
 import { Project, CreateProjectDto, UpdateProjectDto } from '@shared/lib/project.interface';
+import { ApiClientService } from './api-client.service';
+import { getAuthToken } from './auth-token.storage';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectApiService {
@@ -21,7 +22,11 @@ export class ProjectApiService {
   }
 
   get(id: number): Promise<Project> {
-    return this.api.GET<Project>(`${this.base}/${id}`);
+    // Le mode CREATE charge le projet avant connexion ; une session authentifiée
+    // conserve, elle, l'accès complet contrôlé par le back.
+    return getAuthToken()
+      ? this.api.GET<Project>(`${this.base}/${id}`)
+      : this.getPublic(id);
   }
 
   create(dto: CreateProjectDto): Promise<Project> {
