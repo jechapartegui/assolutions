@@ -7,6 +7,7 @@ import {
 import { DataSource, In } from 'typeorm';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
 import { PersonneEntity } from '../personne/personne.entity';
+import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { ProjectEntity } from '../project/project.entity';
 
 export function readOptionalProjectId(req: any): number | null {
@@ -47,6 +48,27 @@ export class AccessControlService {
     return project;
   }
 
+  async assertProjectStaff(userId: number, projectId: number): Promise<ProjectEntity> {
+    const project = await this.assertProjectAccess(userId, projectId);
+    if (Number(project.compte) === Number(userId)) return project;
+
+    const persons = await this.ds.getRepository(PersonneEntity).find({
+      where: { compte: Number(userId) },
+      select: { id: true },
+    });
+    const personIds = persons.map((person) => Number(person.id));
+    if (!personIds.length) throw new ForbiddenException('NOT_PROJECT_STAFF');
+
+    const isProfessor = await this.ds.getRepository(ProfesseurEntity).exist({
+      where: {
+        id: In(personIds),
+        project_id: Number(projectId),
+      },
+    });
+    if (!isProfessor) throw new ForbiddenException('NOT_PROJECT_STAFF');
+    return project;
+  }
+
   async assertAccountAccess(
     userId: number,
     targetCompteId: number,
@@ -56,13 +78,20 @@ export class AccessControlService {
     if (!projectId) throw new ForbiddenException('OBJECT_ACCESS_DENIED');
 
     await this.assertProjectAdmin(userId, projectId);
-    const linked = await this.ds.getRepository(LoginProjectEntity).exist({
-      where: {
-        login_id: Number(targetCompteId),
-        project_id: Number(projectId),
-      },
-    });
-    if (!linked) throw new ForbiddenException('OBJECT_NOT_IN_PROJECT');
+    await this.assertAccountLinkedToProject(targetCompteId, projectId);
+  }
+
+  async assertAccountSelfOrStaff(
+    userId: number,
+    targetCompteId: number,
+    projectId: number,
+  ): Promise<{ isStaff: boolean }> {
+    await this.assertProjectAccess(userId, projectId);
+    if (Number(targetCompteId) === Number(userId)) return { isStaff: false };
+
+    await this.assertProjectStaff(userId, projectId);
+    await this.assertAccountLinkedToProject(targetCompteId, projectId);
+    return { isStaff: true };
   }
 
   async getAuthorizedPerson(
@@ -70,12 +99,26 @@ export class AccessControlService {
     personId: number,
     projectId?: number | null,
   ): Promise<PersonneEntity> {
-    const item = await this.ds.getRepository(PersonneEntity).findOne({
-      where: { id: Number(personId) },
-    });
-    if (!item) throw new NotFoundException(`personne ${personId} introuvable`);
+    const item = await this.loadPerson(personId);
     await this.assertAccountAccess(userId, item.compte, projectId);
     return item;
+  }
+
+  async getPersonSelfOrStaff(
+    userId: number,
+    personId: number,
+    projectId: number,
+  ): Promise<{ person: PersonneEntity; isStaff: boolean }> {
+    const person = await this.loadPerson(personId);
+    await this.assertProjectAccess(userId, projectId);
+
+    if (Number(person.compte) === Number(userId)) {
+      return { person, isStaff: false };
+    }
+
+    await this.assertProjectStaff(userId, projectId);
+    await this.assertAccountLinkedToProject(person.compte, projectId);
+    return { person, isStaff: true };
   }
 
   async assertPersonIdsAccess(
@@ -120,6 +163,27 @@ export class AccessControlService {
       throw new ForbiddenException('OBJECT_NOT_IN_PROJECT');
     }
     return persons;
+  }
+
+  private async assertAccountLinkedToProject(
+    targetCompteId: number,
+    projectId: number,
+  ): Promise<void> {
+    const linked = await this.ds.getRepository(LoginProjectEntity).exist({
+      where: {
+        login_id: Number(targetCompteId),
+        project_id: Number(projectId),
+      },
+    });
+    if (!linked) throw new ForbiddenException('OBJECT_NOT_IN_PROJECT');
+  }
+
+  private async loadPerson(personId: number): Promise<PersonneEntity> {
+    const item = await this.ds.getRepository(PersonneEntity).findOne({
+      where: { id: Number(personId) },
+    });
+    if (!item) throw new NotFoundException(`personne ${personId} introuvable`);
+    return item;
   }
 
   private async loadProjectForAccess(
