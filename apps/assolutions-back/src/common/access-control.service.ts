@@ -121,19 +121,42 @@ export class AccessControlService {
     personId: number,
     projectId: number,
   ): Promise<{ person: PersonneEntity; isStaff: boolean }> {
-    const person = await this.loadPerson(personId);
-    await this.assertProjectAccess(userId, projectId);
+    const persons = await this.getPersonsSelfOrStaff(userId, [personId], projectId);
+    return {
+      person: persons[0],
+      isStaff: await this.hasProjectStaffAccess(userId, projectId),
+    };
+  }
 
-    if (Number(person.compte) === Number(userId)) {
-      return {
-        person,
-        isStaff: await this.hasProjectStaffAccess(userId, projectId),
-      };
-    }
+  async getPersonsSelfOrStaff(
+    userId: number,
+    ids: number[],
+    projectId: number,
+  ): Promise<PersonneEntity[]> {
+    await this.assertProjectAccess(userId, projectId);
+    const persons = await this.loadPersonBatch(ids);
+    if (!persons.length) return [];
+
+    const foreignAccountIds = [...new Set(
+      persons
+        .map((person) => Number(person.compte))
+        .filter((compteId) => compteId !== Number(userId)),
+    )];
+    if (!foreignAccountIds.length) return persons;
 
     await this.assertProjectStaff(userId, projectId);
-    await this.assertAccountLinkedToProject(person.compte, projectId);
-    return { person, isStaff: true };
+    const links = await this.ds.getRepository(LoginProjectEntity).find({
+      where: {
+        login_id: In(foreignAccountIds),
+        project_id: Number(projectId),
+      },
+      select: { login_id: true },
+    });
+    const allowedAccounts = new Set(links.map((link) => Number(link.login_id)));
+    if (foreignAccountIds.some((id) => !allowedAccounts.has(id))) {
+      throw new ForbiddenException('OBJECT_NOT_IN_PROJECT');
+    }
+    return persons;
   }
 
   async assertPersonIdsAccess(
@@ -141,21 +164,8 @@ export class AccessControlService {
     ids: number[],
     projectId?: number | null,
   ): Promise<PersonneEntity[]> {
-    const cleanIds = [...new Set((ids ?? [])
-      .map((id) => Number(id))
-      .filter((id) => Number.isInteger(id) && id > 0))];
-
-    if (!cleanIds.length) return [];
-    if (cleanIds.length > AccessControlService.MAX_BATCH_PERSONS) {
-      throw new ForbiddenException('TOO_MANY_OBJECTS');
-    }
-
-    const persons = await this.ds.getRepository(PersonneEntity).find({
-      where: { id: In(cleanIds) },
-    });
-    if (persons.length !== cleanIds.length) {
-      throw new NotFoundException('PERSON_NOT_FOUND');
-    }
+    const persons = await this.loadPersonBatch(ids);
+    if (!persons.length) return [];
 
     const foreignAccountIds = [...new Set(
       persons
@@ -180,6 +190,25 @@ export class AccessControlService {
     return persons;
   }
 
+  private async loadPersonBatch(ids: number[]): Promise<PersonneEntity[]> {
+    const cleanIds = [...new Set((ids ?? [])
+      .map((id) => Number(id))
+      .filter((id) => Number.isInteger(id) && id > 0))];
+
+    if (!cleanIds.length) return [];
+    if (cleanIds.length > AccessControlService.MAX_BATCH_PERSONS) {
+      throw new ForbiddenException('TOO_MANY_OBJECTS');
+    }
+
+    const persons = await this.ds.getRepository(PersonneEntity).find({
+      where: { id: In(cleanIds) },
+    });
+    if (persons.length !== cleanIds.length) {
+      throw new NotFoundException('PERSON_NOT_FOUND');
+    }
+    return persons;
+  }
+
   private async assertAccountLinkedToProject(
     targetCompteId: number,
     projectId: number,
@@ -194,11 +223,8 @@ export class AccessControlService {
   }
 
   private async loadPerson(personId: number): Promise<PersonneEntity> {
-    const item = await this.ds.getRepository(PersonneEntity).findOne({
-      where: { id: Number(personId) },
-    });
-    if (!item) throw new NotFoundException(`personne ${personId} introuvable`);
-    return item;
+    const persons = await this.loadPersonBatch([personId]);
+    return persons[0];
   }
 
   private async loadProjectForAccess(
