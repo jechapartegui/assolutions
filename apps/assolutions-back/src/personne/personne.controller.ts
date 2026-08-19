@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { readOptionalProjectId } from '../common/access-control.service';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -72,46 +73,62 @@ export class PersonneController {
   @UseGuards(JwtAuthGuard)
   @Post('light')
   listLight(
+    @Req() req: any,
     @Body() ids: number[],
     @Query('includePhotos') includePhotos?: string,
   ) {
-    const withPhotos = includePhotos === 'true';
-    return this.service.listLight(ids, withPhotos);
+    return this.service.listLight(
+      ids,
+      includePhotos === 'true',
+      req.user.id,
+      readOptionalProjectId(req),
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('by-ids')
-  list_by_id(@Body() ids: number[]) {
-    return this.service.listByIds(ids);
+  listById(@Req() req: any, @Body() ids: number[]) {
+    return this.service.listByIds(ids, req.user.id, readOptionalProjectId(req));
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('by-compte/:compte')
-  list_by_compte(@Param('compte', ParseIntPipe) compte: number) {
-    return this.service.listForCompte(compte);
+  listByCompte(
+    @Req() req: any,
+    @Param('compte', ParseIntPipe) compte: number,
+  ) {
+    return this.service.listForCompteAuthorized(
+      req.user.id,
+      compte,
+      readOptionalProjectId(req),
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number) {
-    return this.service.get(id);
+  get(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    return this.service.getAuthorized(id, req.user.id, readOptionalProjectId(req));
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreatePersonneDto) {
-    return this.service.create(dto, req.user.id);
+    return this.service.create(dto, req.user.id, readOptionalProjectId(req));
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePersonneDto) {
-    return this.service.update(id, dto);
+  update(
+    @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePersonneDto,
+  ) {
+    return this.service.update(id, dto, req.user.id, readOptionalProjectId(req));
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.service.remove(id);
+  remove(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    return this.service.remove(id, req.user.id, readOptionalProjectId(req));
   }
 }
