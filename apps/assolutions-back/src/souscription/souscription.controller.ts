@@ -12,6 +12,7 @@ import {
 import { Request } from 'express';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SouscriptionAdminService } from '../exigence-dossier/souscription-admin.service';
 import { SouscriptionContextEnricherService } from '../exigence-dossier/souscription-context-enricher.service';
@@ -34,6 +35,7 @@ type AuthenticatedRequest = Request & { user?: { id?: number } };
 type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
 
 @Controller('souscriptions')
+@UseGuards(JwtAuthGuard)
 export class SouscriptionController {
   constructor(
     private readonly service: SouscriptionService,
@@ -84,12 +86,7 @@ export class SouscriptionController {
     @ProjectId() projectId: number,
   ) {
     const compteId = await this.contexts.accountIdForPerson(personneId);
-    return this.buildAdminContext(
-      saisonId,
-      compteId,
-      projectId,
-      personneId,
-    );
+    return this.buildAdminContext(saisonId, compteId, projectId, personneId);
   }
 
   @Post('personnes/:id/completer')
@@ -217,11 +214,7 @@ export class SouscriptionController {
   ) {
     await this.capacity.assertSubscriptionCapacity(id);
     await this.medicalGuard.assertComplete(id, projectId, compteId);
-    const result = await this.admin.validateManualPayment(
-      id,
-      projectId,
-      compteId,
-    );
+    const result = await this.admin.validateManualPayment(id, projectId, compteId);
     await this.finance.ensureForFinalized(id, projectId);
     await this.notifications.sendCurrentState(id, projectId, compteId);
     return result;
@@ -235,11 +228,7 @@ export class SouscriptionController {
   ) {
     const accountId = this.accountId(req);
     await this.capacity.assertSubscriptionCapacity(id);
-    const result = await this.confirmation.confirmWithRetry(
-      id,
-      projectId,
-      accountId,
-    );
+    const result = await this.confirmation.confirmWithRetry(id, projectId, accountId);
     await this.finance.ensureForFinalized(id, projectId);
     await this.notifications.sendCurrentState(id, projectId, accountId);
     return result;
@@ -254,6 +243,7 @@ export class SouscriptionController {
     return this.service.cancel(id, projectId, this.accountId(req));
   }
 
+  // JwtAuthGuard laisse explicitement passer ce webhook exact, les autres routes restent authentifiées.
   @Post('helloasso/webhook')
   async webhook(@Body() payload: unknown) {
     await this.capacity.assertWebhookCapacity(payload);
@@ -269,11 +259,7 @@ export class SouscriptionController {
     projectId: number,
     selectedPersonId?: number,
   ) {
-    const context: any = await this.service.getContext(
-      saisonId,
-      projectId,
-      compteId,
-    );
+    const context: any = await this.service.getContext(saisonId, projectId, compteId);
     await this.contexts.enrich(context, saisonId);
     context.admin_compte_id = compteId;
     context.admin_personne_id = selectedPersonId ?? null;
@@ -285,9 +271,7 @@ export class SouscriptionController {
 
   private accountId(req: AuthenticatedRequest): number {
     const id = Number(req.user?.id);
-    if (!id) {
-      throw new UnauthorizedException('Compte authentifié introuvable');
-    }
+    if (!id) throw new UnauthorizedException('Compte authentifié introuvable');
     return id;
   }
 }
