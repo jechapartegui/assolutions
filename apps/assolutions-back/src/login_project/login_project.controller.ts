@@ -1,25 +1,55 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { readOptionalProjectId } from '../common/access-control.service';
+import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { LoginProjectService } from './login_project.service';
+import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { CreateLoginProjectDto, DeleteLoginProjectDto } from './login_project.dto';
+import { LoginProjectService } from './login_project.service';
 
 @Controller('login-project')
-@UseGuards(JwtAuthGuard)
 export class LoginProjectController {
   constructor(private readonly service: LoginProjectService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('login/:loginId')
-  listByLogin(@Param('loginId') loginId: string) {
-    return this.service.listByLogin(Number(loginId));
+  listByLogin(
+    @Req() req: any,
+    @Param('loginId', ParseIntPipe) loginId: number,
+  ) {
+    return this.service.listByLoginAuthorized(
+      req.user.id,
+      loginId,
+      readOptionalProjectId(req),
+    );
   }
 
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post()
-  create(@Body() dto: CreateLoginProjectDto) {
-    return this.service.create(dto);
+  create(
+    @Req() req: any,
+    @ProjectId() projectId: number,
+    @Body() dto: CreateLoginProjectDto,
+  ) {
+    return this.service.create(dto, req.user.id, projectId);
   }
 
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Delete()
-  delete(@Body() dto: DeleteLoginProjectDto) {
-    return this.service.delete(dto);
+  delete(
+    @Req() req: any,
+    @ProjectId() projectId: number,
+    @Body() dto: DeleteLoginProjectDto,
+  ) {
+    return this.service.delete(dto, req.user.id, projectId);
   }
 }
