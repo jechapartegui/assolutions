@@ -16,6 +16,16 @@ const {
   verifyPasswordSecure,
 } = require('./src/common/security/password-security.ts');
 
+function valuesFromWhere(value) {
+  if (value && typeof value === 'object') {
+    const raw = value._value ?? value.value;
+    const list = Array.isArray(raw) ? raw : [raw];
+    return list.map(Number).filter(Number.isFinite);
+  }
+  const number = Number(value);
+  return Number.isFinite(number) ? [number] : [];
+}
+
 function makeAccessControl() {
   const projects = [
     { id: 1, compte: 10, actif: true },
@@ -24,10 +34,15 @@ function makeAccessControl() {
   const persons = [
     { id: 101, compte: 30, first_name: 'A', last_name: 'One' },
     { id: 202, compte: 40, first_name: 'B', last_name: 'Two' },
+    { id: 303, compte: 50, first_name: 'Coach', last_name: 'Three' },
   ];
   const links = [
     { login_id: 30, project_id: 1 },
     { login_id: 40, project_id: 2 },
+    { login_id: 50, project_id: 1 },
+  ];
+  const professors = [
+    { id: 303, project_id: 1 },
   ];
 
   const ds = {
@@ -44,11 +59,17 @@ function makeAccessControl() {
 
       if (name === 'PersonneEntity') {
         return {
-          async findOne({ where }) {
-            return persons.find((item) => Number(item.id) === Number(where.id)) ?? null;
-          },
-          async find() {
-            throw new Error('Batch path not required by this regression check');
+          async find({ where }) {
+            if (where?.id !== undefined) {
+              const ids = valuesFromWhere(where.id);
+              return persons.filter((item) => ids.includes(Number(item.id)));
+            }
+            if (where?.compte !== undefined) {
+              return persons.filter(
+                (item) => Number(item.compte) === Number(where.compte),
+              );
+            }
+            return [...persons];
           },
         };
       }
@@ -61,8 +82,24 @@ function makeAccessControl() {
               Number(item.project_id) === Number(where.project_id),
             );
           },
-          async find() {
-            throw new Error('Batch path not required by this regression check');
+          async find({ where }) {
+            const loginIds = valuesFromWhere(where.login_id);
+            return links.filter((item) =>
+              loginIds.includes(Number(item.login_id)) &&
+              Number(item.project_id) === Number(where.project_id),
+            );
+          },
+        };
+      }
+
+      if (name === 'ProfesseurEntity') {
+        return {
+          async exist({ where }) {
+            const personIds = valuesFromWhere(where.id);
+            return professors.some((item) =>
+              personIds.includes(Number(item.id)) &&
+              Number(item.project_id) === Number(where.project_id),
+            );
           },
         };
       }
@@ -101,6 +138,31 @@ async function testTenantAuthorization() {
 
   const projectTwo = await access.getAuthorizedPerson(20, 202, 2);
   assert.equal(projectTwo.id, 202);
+
+  const memberProject = await access.assertProjectAccess(30, 1);
+  assert.equal(memberProject.id, 1, 'a linked member must keep project access');
+
+  await assertRejectsWith(
+    access.assertProjectStaff(30, 1),
+    ForbiddenException,
+    'ordinary member must not become project staff',
+  );
+
+  const professorProject = await access.assertProjectStaff(50, 1);
+  assert.equal(professorProject.id, 1, 'a professor must keep staff access');
+
+  const adminProject = await access.assertProjectStaff(10, 1);
+  assert.equal(adminProject.id, 1, 'project owner must keep staff/admin access');
+
+  const staffPerson = await access.getPersonSelfOrStaff(50, 101, 1);
+  assert.equal(staffPerson.person.id, 101);
+  assert.equal(staffPerson.isStaff, true);
+
+  await assertRejectsWith(
+    access.getPersonSelfOrStaff(30, 303, 1),
+    ForbiddenException,
+    'ordinary member must not read another member through staff path',
+  );
 }
 
 async function testResetTokenGate() {
