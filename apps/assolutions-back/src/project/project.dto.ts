@@ -1,7 +1,6 @@
 import {
   IsBoolean,
   IsDateString,
-  IsInt,
   IsObject,
   IsOptional,
   IsString,
@@ -17,12 +16,13 @@ export class CreateProjectDto {
   @IsBoolean()
   @IsOptional()
   actif?: boolean;
+
   @IsBoolean()
   @IsOptional()
   public?: boolean;
 
   @IsDateString()
-  date_debut: string; // YYYY-MM-DD
+  date_debut: string;
 
   @IsDateString()
   date_fin: string;
@@ -51,7 +51,7 @@ export class CreateProjectDto {
 
   @IsOptional()
   @IsString()
-  @Length(7, 7) // "#RRGGBB"
+  @Length(7, 7)
   couleur?: string;
 
   @IsString()
@@ -60,9 +60,6 @@ export class CreateProjectDto {
 
   @IsString()
   password: string;
-
-  @IsInt()
-  compte: number;
 }
 
 export class UpdateProjectDto {
@@ -74,6 +71,7 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsBoolean()
   actif?: boolean;
+
   @IsBoolean()
   @IsOptional()
   public?: boolean;
@@ -121,12 +119,4 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   password?: string;
-
-  @IsOptional()
-  @IsString()
-  activation_token?: string | null;
-
-  @IsOptional()
-  @IsInt()
-  compte?: number;
 }
