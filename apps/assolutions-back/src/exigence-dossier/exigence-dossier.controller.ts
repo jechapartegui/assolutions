@@ -10,12 +10,13 @@ import {
 } from '@nestjs/common';
 
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SaveExigenceDossierDto, UpdateExigenceDossierDto } from './exigence-dossier.dto';
 import { ExigenceDossierService } from './exigence-dossier.service';
 
 @Controller('exigences-dossier')
-@UseGuards(ProjectAdminGuard)
+@UseGuards(JwtAuthGuard, ProjectAdminGuard)
 export class ExigenceDossierController {
   constructor(private readonly service: ExigenceDossierService) {}
 
