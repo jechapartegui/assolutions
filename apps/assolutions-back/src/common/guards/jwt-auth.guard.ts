@@ -16,6 +16,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
 
     if (isPublic) return true;
+
+    // Deux endpoints techniques utilisent leur propre preuve cryptographique :
+    // le webhook HelloAsso et les photos temporaires de l'export FFRS.
+    const req = context.switchToHttp().getRequest();
+    const path = String(req.originalUrl ?? req.url ?? '').split('?')[0];
+    if (path === '/api/souscriptions/helloasso/webhook') return true;
+    if (/^\/api\/personnes\/ffrs-photo\/\d+(?:\/[^/]+)?$/.test(path)) return true;
+
     return super.canActivate(context);
   }
 }
