@@ -17,5 +17,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: node --check scripts/anonymize-preprod.cjs
       - run: npx nx build assolutions-back --configuration=production --skip-nx-cache
       - run: npx nx build assolutions-front --configuration=preprod --skip-nx-cache
