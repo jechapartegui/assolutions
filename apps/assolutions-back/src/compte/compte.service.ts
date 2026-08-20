@@ -7,8 +7,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import * as crypto from 'crypto';
 
+import {
+  assertPasswordPolicy,
+  createTimedToken,
+  hashOpaqueToken,
+  hashPassword,
+  verifyTimedToken,
+} from '../auth/security.utils';
 import { MessageService } from '../message/message.service';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
 import { CompteEntity } from './compte.entity';
@@ -19,9 +25,12 @@ import {
   UpdateCompteDto,
 } from './compte.dto';
 
+const ACTIVATION_TOKEN_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
 @Injectable()
 export class CompteService {
-  private readonly pepper: string;
+  private readonly tokenPepper: string;
+  private readonly legacyPepper: string;
 
   constructor(
     @InjectRepository(CompteEntity)
@@ -30,7 +39,11 @@ export class CompteService {
     private readonly config: ConfigService,
     private readonly messageService: MessageService,
   ) {
-    this.pepper = this.config.get<string>('PEPPER') ?? '';
+    this.tokenPepper = this.requireSecret('TOKEN_PEPPER');
+    this.legacyPepper =
+      this.config.get<string>('PASSWORD_LEGACY_PEPPER') ??
+      this.config.get<string>('PEPPER') ??
+      '';
   }
 
   list(projectId: number): Promise<CompteEntity[]> {
@@ -65,11 +78,13 @@ export class CompteService {
     const saved = await this.repo.save(
       this.repo.create({
         login,
-        password: this.hashPassword(dto.password),
+        password: this.hashOptionalPassword(dto.password),
         actif: dto.actif ?? false,
         mail_actif: dto.mail_actif ?? false,
         echec_connexion: dto.echec_connexion ?? false,
-        activation_token: dto.activation_token ?? null,
+        activation_token: dto.activation_token
+          ? hashOpaqueToken(dto.activation_token, this.tokenPepper)
+          : null,
       }),
     );
     return this.hideSensitiveData(saved);
@@ -84,9 +99,12 @@ export class CompteService {
   }
 
   async registerWithProject(dto: RegisterCompteWithProjectDto): Promise<CompteEntity> {
+    const projectId = Number(dto.project_id);
+    await this.assertPublicProject(projectId);
+
     return this.createAccountAndQueueActivation(
       this.normalizeLogin(dto.email),
-      Number(dto.project_id),
+      projectId,
       dto.password,
     );
   }
@@ -95,12 +113,13 @@ export class CompteService {
     const login = this.normalizeLogin(email);
     const account = await this.repo.findOne({ where: { login } });
 
+    // Ne jamais révéler si l'adresse existe.
     if (!account || account.actif || account.mail_actif) {
       return { ok: true };
     }
 
-    const rawToken = this.createRawToken();
-    account.activation_token = this.hashToken(rawToken);
+    const rawToken = createTimedToken();
+    account.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
     await this.repo.save(account);
     this.queueActivationMail(login, rawToken);
     return { ok: true };
@@ -111,13 +130,20 @@ export class CompteService {
     const item = await this.repo.findOne({ where: { login: normalizedLogin } });
     if (!item) {
       throw new NotFoundException({
-        code: 'ACCOUNT_NOT_FOUND',
-        message: `Compte ${normalizedLogin} introuvable`,
+        code: 'TOKEN_INVALID',
+        message: 'Le lien d’activation est incorrect ou expiré.',
       });
     }
 
-    const received = this.hashToken(token);
-    if (!item.activation_token || item.activation_token !== received) {
+    const validNewToken = verifyTimedToken(
+      token,
+      item.activation_token,
+      this.tokenPepper,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
+    const validLegacyToken = this.verifyLegacyToken(token, item.activation_token);
+
+    if (!validNewToken && !validLegacyToken) {
       throw new NotFoundException({
         code: 'TOKEN_INVALID',
         message: 'Le lien d’activation est incorrect ou expiré.',
@@ -139,12 +165,18 @@ export class CompteService {
       await this.ensureLoginAvailable(login, id);
       item.login = login;
     }
-    if (dto.password !== undefined) item.password = this.hashPassword(dto.password);
+
+    if (dto.password !== undefined) {
+      const clean = dto.password?.trim() ?? '';
+      if (!clean) throw new BadRequestException('PASSWORD_REQUIRED');
+      item.password = this.hashRequiredPassword(clean);
+    }
+
     if (dto.actif !== undefined) item.actif = dto.actif;
     if (dto.mail_actif !== undefined) item.mail_actif = dto.mail_actif;
     if (dto.activation_token !== undefined) {
       item.activation_token = dto.activation_token
-        ? this.hashToken(dto.activation_token)
+        ? hashOpaqueToken(dto.activation_token, this.tokenPepper)
         : null;
     }
     return this.hideSensitiveData(await this.repo.save(item));
@@ -170,12 +202,12 @@ export class CompteService {
     }
 
     await this.ensureLoginAvailable(login);
-    const rawToken = this.createRawToken();
-    const hashedToken = this.hashToken(rawToken);
+    const rawToken = createTimedToken();
+    const hashedToken = hashOpaqueToken(rawToken, this.tokenPepper);
     const compte = await this.dataSource.transaction(async (manager) => {
       const created = await manager.save(CompteEntity, {
         login,
-        password: this.hashPassword(password),
+        password: this.hashOptionalPassword(password),
         actif: false,
         mail_actif: false,
         echec_connexion: false,
@@ -198,7 +230,7 @@ export class CompteService {
       .sendActivationMail(login, activationUrl)
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`Échec envoi activation vers ${login}: ${message}`);
+        console.error(`Échec envoi activation: ${message}`);
       });
   }
 
@@ -225,18 +257,47 @@ export class CompteService {
     }
   }
 
-  private hashPassword(password: string | null | undefined): string | null {
+  private hashOptionalPassword(password: string | null | undefined): string | null {
     const clean = password?.trim() ?? '';
-    if (!clean) return null;
-    return crypto.createHmac('sha256', this.pepper).update(clean).digest('hex');
+    return clean ? this.hashRequiredPassword(clean) : null;
   }
 
-  private createRawToken(): string {
-    return crypto.randomBytes(32).toString('hex');
+  private hashRequiredPassword(password: string): string {
+    try {
+      assertPasswordPolicy(password);
+      return hashPassword(password);
+    } catch {
+      throw new BadRequestException('PASSWORD_TOO_WEAK');
+    }
   }
 
-  private hashToken(token: string): string {
-    return crypto.createHmac('sha256', this.pepper).update(token).digest('hex');
+  private async assertPublicProject(projectId: number): Promise<void> {
+    if (!projectId) throw new BadRequestException('PROJECT_REQUIRED');
+
+    const rows = await this.dataSource.query(
+      `SELECT 1 FROM project WHERE id = $1 AND actif = true AND public = true LIMIT 1`,
+      [projectId],
+    );
+
+    if (!rows.length) {
+      throw new NotFoundException('PROJECT_NOT_FOUND');
+    }
+  }
+
+  private verifyLegacyToken(
+    token: string,
+    expectedHash: string | null | undefined,
+  ): boolean {
+    if (!this.legacyPepper || !token || !expectedHash || token.includes('.')) {
+      return false;
+    }
+
+    const legacyHash = require('node:crypto')
+      .createHmac('sha256', this.legacyPepper)
+      .update(token)
+      .digest('hex');
+
+    return legacyHash === expectedHash;
   }
 
   private buildActivationUrl(login: string, rawToken: string): string {
@@ -253,6 +314,14 @@ export class CompteService {
       process.env.FRONT_URL ??
       'http://localhost:2211';
     return value.replace(/\/+$/, '');
+  }
+
+  private requireSecret(name: string): string {
+    const value = this.config.get<string>(name)?.trim();
+    if (!value || value.startsWith('CHANGE_ME')) {
+      throw new Error(`${name} must be configured`);
+    }
+    return value;
   }
 
   private hideSensitiveData(compte: CompteEntity): CompteEntity {
