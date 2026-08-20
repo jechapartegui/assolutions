@@ -94,6 +94,7 @@ async function bootstrap() {
   const port = Number(config.get<string>('PORT') || 3000);
   const frontUrl = config.get<string>('FRONT_URL');
   const corsOrigins = config.get<string>('CORS_ORIGINS');
+  const appEnv = (config.get<string>('APP_ENV') || '').trim().toLowerCase();
   const appEnvLabel = config.get<string>('APP_ENV_LABEL') || 'UNKNOWN';
   const nodeEnv = config.get<string>('NODE_ENV') || 'development';
   const smtpHost = config.get<string>('SMTP_HOST') || 'not set';
@@ -176,6 +177,25 @@ async function bootstrap() {
         'Strict-Transport-Security',
         'max-age=31536000; includeSubDomains',
       );
+    }
+
+    next();
+  });
+
+  // La simulation de paiement est un outil de développement. Elle est fermée
+  // par défaut et n'existe fonctionnellement que si APP_ENV vaut exactement local.
+  app.use((req: Request, res: Response, next: () => void) => {
+    const path = String(req.path ?? '').replace(/\/$/, '');
+    const isPaymentSimulation =
+      req.method === 'POST' &&
+      /^\/api\/souscriptions\/\d+\/simuler-paiement$/.test(path);
+
+    if (isPaymentSimulation && appEnv !== 'local') {
+      res.status(403).json({
+        statusCode: 403,
+        message: 'Simulation disponible uniquement en local',
+      });
+      return;
     }
 
     next();
