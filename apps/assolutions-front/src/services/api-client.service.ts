@@ -152,7 +152,7 @@ export class ApiClientService {
     const projectId = this.store.selectedProjectId?.() ?? null;
     if (projectId) headers = headers.set('projectid', projectId.toString());
 
-    const token = localStorage.getItem('auth_token');
+    const token = sessionStorage.getItem('auth_token');
     if (token) headers = headers.set('Authorization', `Bearer ${token}`);
 
     return headers;
