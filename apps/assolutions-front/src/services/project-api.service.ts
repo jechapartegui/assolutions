@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { Project, CreateProjectDto, UpdateProjectDto } from '@shared/lib/project.interface';
-import { ProjetView } from '@shared/index';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectApiService {
@@ -12,6 +11,11 @@ export class ProjectApiService {
   async listPublicProjects(): Promise<Project[]> {
     return this.api.GET<Project[]>(`${this.base}/public`);
   }
+
+  getPublic(id: number): Promise<Project> {
+    return this.api.GET<Project>(`${this.base}/public/${id}`);
+  }
+
   async getAll(): Promise<Project[]> {
     return this.api.GET<Project[]>(this.base);
   }
