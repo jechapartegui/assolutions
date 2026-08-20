@@ -12,11 +12,8 @@ const SCRYPT_KEY_LENGTH = 64;
 const SCRYPT_MAXMEM = 64 * 1024 * 1024;
 
 export function hashPassword(password: string): string {
-  const clean = password?.trim() ?? '';
-  assertPasswordPolicy(clean);
-
   const salt = randomBytes(16);
-  const hash = scryptSync(clean, salt, SCRYPT_KEY_LENGTH, {
+  const hash = scryptSync(password, salt, SCRYPT_KEY_LENGTH, {
     N: SCRYPT_N,
     r: SCRYPT_R,
     p: SCRYPT_P,
