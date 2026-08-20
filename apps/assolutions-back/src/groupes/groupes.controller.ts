@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
 
+import { AccessControlService } from '../common/access-control.service';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -8,27 +9,34 @@ import { GroupesService } from './groupes.service';
 
 @Controller('groupes')
 export class GroupesController {
-  constructor(private readonly service: GroupesService) {}
+  constructor(
+    private readonly service: GroupesService,
+    private readonly access: AccessControlService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('saison/:saisonId')
-  list(
+  async list(
+    @Req() req: any,
     @Param('saisonId', ParseIntPipe) saisonId: number,
     @ProjectId() projectId: number,
   ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
     return this.service.listForProject(saisonId, projectId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  get(
+  async get(
+    @Req() req: any,
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
   ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post()
   create(
     @ProjectId() projectId: number,
@@ -37,7 +45,7 @@ export class GroupesController {
     return this.service.create(dto, projectId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
   update(
     @Param('id', ParseIntPipe) id: number,
