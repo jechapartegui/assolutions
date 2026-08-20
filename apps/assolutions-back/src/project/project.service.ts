@@ -18,8 +18,16 @@ export class ProjectService {
   }
 
   async listPublicProjects() {
-    const items = await this.repo.find({ where: { public: true } });
+    const items = await this.repo.find({ where: { public: true, actif: true } });
     return items.map((item) => this.sanitize(item));
+  }
+
+  async getPublic(id: number) {
+    const item = await this.repo.findOne({
+      where: { id, public: true, actif: true },
+    });
+    if (!item) throw new NotFoundException('PROJECT_NOT_FOUND');
+    return this.sanitize(item);
   }
 
   async get(id: number) {
