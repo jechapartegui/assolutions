@@ -7,7 +7,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as crypto from 'crypto';
 import { Repository } from 'typeorm';
 
 import { CompteEntity } from '../compte/compte.entity';
@@ -17,12 +16,22 @@ import { LoginProjectEntity } from '../login_project/login_project.entity';
 import { ProjetView } from '@shared/lib/compte.interface';
 import { SaisonEntity } from '../saison/saison.entity';
 import { MessageService } from '../message/message.service';
+import {
+  assertPasswordPolicy,
+  createTimedToken,
+  hashOpaqueToken,
+  hashPassword,
+  verifyPassword,
+  verifyTimedToken,
+} from './security.utils';
 
 type AppMode = 'ADMIN' | 'APPLI';
+const RESET_TOKEN_MAX_AGE_MS = 60 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
-  private readonly pepper: string;
+  private readonly tokenPepper: string;
+  private readonly legacyPepper: string;
 
   constructor(
     private readonly jwt: JwtService,
@@ -44,18 +53,19 @@ export class AuthService {
     @InjectRepository(LoginProjectEntity)
     private readonly loginProjectRepo: Repository<LoginProjectEntity>,
   ) {
-    this.pepper = this.config.get<string>('PEPPER') ?? '';
+    this.tokenPepper = this.requireSecret('TOKEN_PEPPER');
+    this.legacyPepper =
+      this.config.get<string>('PASSWORD_LEGACY_PEPPER') ??
+      this.config.get<string>('PEPPER') ??
+      '';
   }
 
   private signToken(compte: CompteEntity): string {
-    return this.jwt.sign(
-      {
-        sub: compte.id,
-        login: compte.login,
-        superAdmin: false,
-      },
-      { expiresIn: '30d' },
-    );
+    return this.jwt.sign({
+      sub: compte.id,
+      login: compte.login,
+      superAdmin: false,
+    });
   }
 
   private async computeMode(compteId: number): Promise<AppMode> {
@@ -63,77 +73,71 @@ export class AuthService {
       where: { compte: compteId } as any,
     });
 
-    if (hasAdminProject) return 'ADMIN';
-
-   return 'APPLI';
+    return hasAdminProject ? 'ADMIN' : 'APPLI';
   }
 
   private async getProjectsForCompte(compteId: number): Promise<ProjectEntity[]> {
-  const loginProjects = await this.loginProjectRepo.find({
-    where: { login_id: compteId },
-    relations: ['project'],
-  });
+    const loginProjects = await this.loginProjectRepo.find({
+      where: { login_id: compteId },
+      relations: ['project'],
+    });
 
-  return loginProjects
-    .map((lp: LoginProjectEntity) => {
-      const project = lp.project;
-
-      if (!project) {
-        return null;
-      }
-
-      project.password = '';
-
-      return project;
-    })
-    .filter((project): project is ProjectEntity => project !== null);
-}
+    return loginProjects
+      .map((lp: LoginProjectEntity) => {
+        const project = lp.project;
+        if (!project) return null;
+        project.password = '';
+        project.activation_token = null;
+        return project;
+      })
+      .filter((project): project is ProjectEntity => project !== null);
+  }
 
   private async buildSession(compte: CompteEntity, token = ''): Promise<any> {
     const mode = await this.computeMode(compte.id);
-    if(mode === 'APPLI') {
-    const projects = await this.getProjectsForCompte(compte.id);
-    return {
-      token,
-      compte,
-      mode,
-      projects,
-    };  }
-    else {      
-      const pr = await this.projectRepo.findOne({where : {compte: compte.id}});
-      if(!pr) {
-        throw new NotFoundException('PROJECT_NOT_FOUND');
-      }
-      const ss = await this.saisonRepo.findOne({where : {project_id: pr.id, active: true}});
-       const ttpr : ProjetView = {
-        id: pr.id,
-        nom: pr.nom ,
-        rights: {
-          adherent: true,
-          prof: true,
-          visible: true},
-          saison_active : ss}
+    const safeCompte = this.sanitizeCompte(compte);
 
-
+    if (mode === 'APPLI') {
+      const projects = await this.getProjectsForCompte(compte.id);
       return {
         token,
-        compte,
+        compte: safeCompte,
         mode,
-        projects: [ttpr],
+        projects,
+      };
     }
-    }
+
+    const pr = await this.projectRepo.findOne({ where: { compte: compte.id } });
+    if (!pr) throw new NotFoundException('PROJECT_NOT_FOUND');
+
+    const ss = await this.saisonRepo.findOne({
+      where: { project_id: pr.id, active: true },
+    });
+
+    const projectView: ProjetView = {
+      id: pr.id,
+      nom: pr.nom,
+      rights: {
+        adherent: true,
+        prof: true,
+        visible: true,
+      },
+      saison_active: ss,
+    };
+
+    return {
+      token,
+      compte: safeCompte,
+      mode,
+      projects: [projectView],
+    };
   }
 
   async prelogin(login: string): Promise<{ password_required: boolean; mode: AppMode }> {
     const compte = await this.getByLogin(login);
-    console.warn('prelogin for', login, '=>', compte);
-    if (!(compte as CompteEntity).actif) {
-      throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
-    }
+    if (!compte.actif) throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
 
-    const storedPassword = (compte as CompteEntity).password;
-    const hasPassword = !!(storedPassword && String(storedPassword).length > 0);
-
+    const hasPassword = !!(compte.password && String(compte.password).length > 0);
     const mode = await this.computeMode(compte.id);
 
     return {
@@ -144,179 +148,160 @@ export class AuthService {
 
   async login(login: string, password?: string): Promise<any> {
     const compte = await this.getByLogin(login);
+    if (!compte.actif) throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
 
-    if (!(compte as CompteEntity).actif) {
-      throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
+    const storedPassword = compte.password;
+    if (!storedPassword) {
+      throw new BadRequestException('PASSWORD_SETUP_REQUIRED');
     }
 
-    const storedPassword = (compte as CompteEntity).password;
-    const hasPassword = !!(storedPassword && String(storedPassword).length > 0);
+    if (!password) throw new BadRequestException('PASSWORD_REQUIRED');
 
-    if (hasPassword) {
-      if (!password) {
-        throw new BadRequestException('PASSWORD_REQUIRED');
-      }
-
-      const hashed = hashPasswordWithPepper(password, this.pepper);
-
-      if (hashed !== storedPassword) {
-        throw new BadRequestException('INCORRECT_PASSWORD');
-      }
+    const verification = verifyPassword(password, storedPassword, this.legacyPepper);
+    if (!verification.valid) {
+      throw new BadRequestException('INCORRECT_PASSWORD');
     }
 
-    // On évite de renvoyer le hash au front
-    (compte as CompteEntity).password = null;
+    if (verification.needsRehash) {
+      compte.password = hashPassword(password);
+      await this.compteRepo.save(compte);
+    }
 
     const token = this.signToken(compte);
-
     return this.buildSession(compte, token);
   }
 
   async me(userId: number): Promise<any> {
-    const compte = await this.compteRepo.findOne({
-      where: { id: userId },
-    });
-
-    if (!compte) {
-      throw new NotFoundException('ACCOUNT_NOT_FOUND');
-    }
-
-    if (!(compte as CompteEntity).actif) {
-      throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
-    }
-
-    // On évite de renvoyer le hash au front
-    (compte as CompteEntity).password = null;
-
+    const compte = await this.compteRepo.findOne({ where: { id: userId } });
+    if (!compte) throw new NotFoundException('ACCOUNT_NOT_FOUND');
+    if (!compte.actif) throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
     return this.buildSession(compte);
   }
 
   async changeMyPassword(userId: number, newPassword: string | null): Promise<boolean> {
-    const compte = await this.compteRepo.findOne({
-      where: { id: userId },
-    });
+    const compte = await this.compteRepo.findOne({ where: { id: userId } });
+    if (!compte) throw new NotFoundException('ACCOUNT_NOT_FOUND');
 
-    if (!compte) {
-      throw new NotFoundException('ACCOUNT_NOT_FOUND');
-    }
+    const cleanPassword = newPassword?.trim() ?? '';
+    if (!cleanPassword) throw new BadRequestException('PASSWORD_REQUIRED');
+    this.assertPassword(cleanPassword);
 
-    (compte as CompteEntity).password = newPassword
-      ? hashPasswordWithPepper(newPassword, this.pepper)
-      : null;
-
-    if ('activation_token' in compte) {
-      (compte as CompteEntity).activation_token = null;
-    }
-
-    if ('actif' in compte) {
-      (compte as CompteEntity).actif = true;
-    }
-
+    compte.password = hashPassword(cleanPassword);
+    compte.activation_token = null;
+    compte.actif = true;
     await this.compteRepo.save(compte);
-
     return true;
   }
 
   async getByLogin(login: string): Promise<CompteEntity> {
-    if (!login) {
-      throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
-    }
-
+    const normalizedLogin = this.normalizeLogin(login);
     const compte = await this.compteRepo.findOne({
-      where: { login: login.toLowerCase() }
+      where: { login: normalizedLogin },
     });
 
-    if (!compte) {
-      throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
-    }
-
+    if (!compte) throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
     return compte;
   }
 
- private createResetToken(): string {
-  return crypto.randomBytes(32).toString('hex');
-}
+  async reinit_mdp(login: string): Promise<boolean> {
+    const normalizedLogin = this.normalizeLogin(login);
+    const compte = await this.compteRepo.findOne({
+      where: { login: normalizedLogin },
+    });
 
-private hashToken(token: string): string {
-  return crypto
-    .createHmac('sha256', this.pepper)
-    .update(token)
-    .digest('hex');
-}
+    // Réponse identique pour éviter l'énumération des comptes.
+    if (!compte) return true;
 
-async reinit_mdp(login: string): Promise<boolean> {
-  const compte = await this.getByLogin(login);
+    const rawToken = createTimedToken();
+    compte.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
+    await this.compteRepo.save(compte);
 
-  const rawToken = this.createResetToken();
-  const hashedToken = this.hashToken(rawToken);
+    const frontUrl = this.config.get<string>('FRONT_URL') ?? 'https://assolutions.club';
+    const resetUrl =
+      `${frontUrl.replace(/\/+$/, '')}/login?context=REINIT` +
+      `&user=${encodeURIComponent(compte.login)}` +
+      `&token=${encodeURIComponent(rawToken)}`;
 
-  (compte as any).activation_token = hashedToken;
-  await this.compteRepo.save(compte);
-
-  const frontUrl = this.config.get<string>('FRONT_URL') ?? 'https://assolutions.club';
-
-  const resetUrl =
-    `${frontUrl}/login?context=REINIT` +
-    `&user=${encodeURIComponent(compte.login)}` +
-    `&token=${encodeURIComponent(rawToken)}`;
-
-  await this.mailService.sendPasswordReset(compte.login, resetUrl);
-
-  console.log('RESET PASSWORD URL:', resetUrl);
-
-  return true;
-}
-
-async checkResetToken(login: string, token: string): Promise<boolean> {
-  const compte = await this.getByLogin(login);
-
-  const expected = (compte as any).activation_token;
-  if (!expected) {
-    throw new BadRequestException('TOKEN_NOT_FOUND');
+    await this.mailService.sendPasswordReset(compte.login, resetUrl);
+    return true;
   }
 
-  const received = this.hashToken(token);
+  async checkResetToken(login: string, token: string): Promise<boolean> {
+    const compte = await this.findAccountForReset(login);
+    const valid = verifyTimedToken(
+      token,
+      compte.activation_token,
+      this.tokenPepper,
+      RESET_TOKEN_MAX_AGE_MS,
+    );
 
-  if (received !== expected) {
-    throw new BadRequestException('INVALID_TOKEN');
+    if (!valid) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    return true;
   }
 
-  return true;
-}
+  async setPasswordWithToken(
+    login: string,
+    token: string,
+    newPassword: string,
+  ): Promise<boolean> {
+    // IMPORTANT : la validation est refaite ici côté serveur. Le fait que le
+    // front ait appelé check-reset-token auparavant n'accorde aucun droit.
+    const compte = await this.findAccountForReset(login);
+    const valid = verifyTimedToken(
+      token,
+      compte.activation_token,
+      this.tokenPepper,
+      RESET_TOKEN_MAX_AGE_MS,
+    );
 
-async setPasswordWithToken(
-  login: string,
-  token: string,
-  newPassword: string,
-): Promise<boolean> {
+    if (!valid) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
 
-  const compte = await this.getByLogin(login);
+    const cleanPassword = newPassword?.trim() ?? '';
+    if (!cleanPassword) throw new BadRequestException('PASSWORD_REQUIRED');
+    this.assertPassword(cleanPassword);
 
-  const cleanPassword = newPassword?.trim() ?? '';
-
-if (cleanPassword.length > 0) {
-  if (cleanPassword.length < 8 || !/\d/.test(cleanPassword)) {
-    throw new BadRequestException('PASSWORD_TOO_WEAK');
+    compte.password = hashPassword(cleanPassword);
+    compte.activation_token = null;
+    compte.actif = true;
+    await this.compteRepo.save(compte);
+    return true;
   }
 
-  compte.password = hashPasswordWithPepper(cleanPassword, this.pepper);
-} else {
-  compte.password = null;
-}
+  private async findAccountForReset(login: string): Promise<CompteEntity> {
+    const normalizedLogin = this.normalizeLogin(login);
+    const compte = await this.compteRepo.findOne({
+      where: { login: normalizedLogin },
+    });
 
-(compte as any).activation_token = null;
-compte.actif = true;
+    if (!compte) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    return compte;
+  }
 
-await this.compteRepo.save(compte);
+  private normalizeLogin(login: string): string {
+    const normalized = String(login ?? '').trim().toLowerCase();
+    if (!normalized) throw new UnauthorizedException('ACCOUNT_NOT_FOUND');
+    return normalized;
+  }
 
-return true;
-}
-}
+  private assertPassword(password: string): void {
+    try {
+      assertPasswordPolicy(password);
+    } catch {
+      throw new BadRequestException('PASSWORD_TOO_WEAK');
+    }
+  }
 
+  private sanitizeCompte(compte: CompteEntity): CompteEntity {
+    compte.password = null;
+    compte.activation_token = null;
+    return compte;
+  }
 
-export function hashPasswordWithPepper(password: string, pepper: string): string {
-  return crypto
-    .createHmac('sha256', pepper)
-    .update(password)
-    .digest('hex');
+  private requireSecret(name: string): string {
+    const value = this.config.get<string>(name)?.trim();
+    if (!value || value.startsWith('CHANGE_ME')) {
+      throw new Error(`${name} must be configured`);
+    }
+    return value;
+  }
 }
