@@ -59,8 +59,16 @@ export class DocumentService {
     return qb.getMany();
   }
 
-  async get(id: number) {
-    const item = await this.repo.findOne({ where: { id } });
+  async get(id: number, includeFileData = false) {
+    const qb = this.repo
+      .createQueryBuilder('document')
+      .where('document.id = :id', { id });
+
+    if (includeFileData) {
+      qb.addSelect('document.file_data');
+    }
+
+    const item = await qb.getOne();
     if (!item) throw new NotFoundException(`document ${id} introuvable`);
     return item;
   }
@@ -123,10 +131,11 @@ export class DocumentService {
     const qb = this.repo
       .createQueryBuilder('document')
       .select([
+        'document.id',
         'document.objet_id',
         'document.mimetype',
-        'document.file_data',
       ])
+      .addSelect('document.file_data')
       .where("LOWER(document.objet_type) IN ('member', 'rider', 'personne', 'person')")
       .andWhere('LOWER(document.typedoc) = :typedoc', { typedoc: 'photo' })
       .andWhere('document.objet_id IN (:...ids)', { ids: cleanIds });
