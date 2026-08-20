@@ -27,6 +27,7 @@ import {
 
 type AppMode = 'ADMIN' | 'APPLI';
 const RESET_TOKEN_MAX_AGE_MS = 60 * 60 * 1000;
+const MIN_SECRET_LENGTH = 32;
 
 @Injectable()
 export class AuthService {
@@ -299,8 +300,14 @@ export class AuthService {
 
   private requireSecret(name: string): string {
     const value = this.config.get<string>(name)?.trim();
-    if (!value || value.startsWith('CHANGE_ME')) {
-      throw new Error(`${name} must be configured`);
+    if (
+      !value ||
+      value.startsWith('CHANGE_ME') ||
+      value.length < MIN_SECRET_LENGTH
+    ) {
+      throw new Error(
+        `${name} must be configured with at least ${MIN_SECRET_LENGTH} characters`,
+      );
     }
     return value;
   }
