@@ -11,7 +11,8 @@
     "start": "npm run start --workspace @assolutions/back",
     "start:front": "npm run start --workspace @assolutions/front",
     "start:dev": "npm run start:dev --workspace @assolutions/back",
-    "anonymize:preprod": "node scripts/anonymize-preprod.cjs"
+    "anonymize:preprod": "node scripts/anonymize-preprod.cjs",
+    "security:check": "node scripts/security-check.cjs"
   },
   "dependencies": {
     "@angular/animations": "20.3.15",
