@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SuperAdminGuard } from '../common/guards/super-admin.guard';
@@ -20,10 +21,16 @@ import { ProjectService } from './project.service';
 export class ProjectController {
   constructor(private readonly service: ProjectService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Public()
   @Get('public')
   listPublicProjects() {
     return this.service.listPublicProjects();
+  }
+
+  @Public()
+  @Get('public/:id')
+  getPublic(@Param('id', ParseIntPipe) id: number) {
+    return this.service.getPublic(id);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
@@ -45,7 +52,6 @@ export class ProjectController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreateProjectDto) {
-    // Le propriétaire vient toujours du JWT, jamais du payload client.
     return this.service.create({ ...dto, compte: req.user.id });
   }
 
