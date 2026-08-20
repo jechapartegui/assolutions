@@ -16,6 +16,8 @@ import { SaisonEntity } from '../saison/saison.entity';
 import { MessageService } from '../message/message.service';
 import { MailRecordEntity } from '../mail_record/mail_record.entity';
 
+const MIN_SECRET_LENGTH = 32;
+
 @Module({
   imports: [
     ConfigModule,
@@ -25,8 +27,14 @@ import { MailRecordEntity } from '../mail_record/mail_record.entity';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const secret = config.get<string>('JWT_SECRET')?.trim();
-        if (!secret || secret.startsWith('CHANGE_ME')) {
-          throw new Error('JWT_SECRET must be configured');
+        if (
+          !secret ||
+          secret.startsWith('CHANGE_ME') ||
+          secret.length < MIN_SECRET_LENGTH
+        ) {
+          throw new Error(
+            `JWT_SECRET must be configured with at least ${MIN_SECRET_LENGTH} characters`,
+          );
         }
 
         return {
