@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
+import { AccessControlService } from '../common/access-control.service';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -7,38 +8,56 @@ import { CoursService } from './cours.service';
 
 @Controller('cours')
 export class CoursController {
-  constructor(private readonly service: CoursService) {}
+  constructor(
+    private readonly service: CoursService,
+    private readonly access: AccessControlService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('saison/:saison_id')
-  list(@Param('saison_id', ParseIntPipe) id: number) {
-    return this.service.listForProject(id);
+  async list(
+    @Req() req: any,
+    @Param('saison_id', ParseIntPipe) saisonId: number,
+    @ProjectId() projectId: number,
+  ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    return this.service.listForProject(saisonId, projectId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  async get(
+    @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard,)
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@ProjectId() projectId: number, @Body() dto: CreateCoursDto) {
+  async create(
+    @Req() req: any,
+    @ProjectId() projectId: number,
+    @Body() dto: CreateCoursDto,
+  ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST (serveur friendly)
   @UseGuards(JwtAuthGuard)
   @Post(':id/update')
-  update(
+  async update(
+    @Req() req: any,
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Body() dto: UpdateCoursDto,
   ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST (tu l'as déjà)
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
