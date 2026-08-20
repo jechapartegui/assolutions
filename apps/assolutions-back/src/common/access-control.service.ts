@@ -64,6 +64,33 @@ export class AccessControlService {
     }
   }
 
+  async assertAccountHasProjectContext(
+    accountId: number,
+    projectId: number,
+  ): Promise<void> {
+    const rows = await this.dataSource.query(
+      `
+        SELECT 1
+        WHERE EXISTS (
+          SELECT 1
+          FROM project
+          WHERE id = $2 AND compte = $1
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM login_project
+          WHERE login_id = $1 AND project_id = $2
+        )
+        LIMIT 1
+      `,
+      [accountId, projectId],
+    );
+
+    if (!rows.length) {
+      throw new ForbiddenException('RESOURCE_OUTSIDE_PROJECT');
+    }
+  }
+
   async assertPersonAccess(
     userId: number,
     personId: number,
@@ -180,7 +207,7 @@ export class AccessControlService {
       const person = await this.getPerson(objectId);
 
       if (Number(person.compte) === Number(userId)) {
-        await this.assertAccountBelongsToProject(userId, pid);
+        await this.assertAccountHasProjectContext(userId, pid);
         return;
       }
 
