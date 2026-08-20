@@ -145,6 +145,9 @@ async function bootstrap() {
       'x-project-id',
       'dateref',
       'lang',
+      // Compatibilité temporaire avec GlobalService. Ce header n'est jamais
+      // utilisé comme preuve d'identité : l'identité vient exclusivement du JWT.
+      'userid',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     preflightContinue: false,
