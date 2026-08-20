@@ -139,10 +139,12 @@ async function printResidualSensitiveColumns() {
     'project.login', 'project.password', 'project.activation_token', 'project.contact', 'project.adresse',
     'professeur.num_tva', 'professeur.num_siren', 'professeur.iban', 'professeur.info',
     'compte_bancaire.iban', 'compte_bancaire.carte_json', 'compte_bancaire.info',
+    'mail_account.username', 'mail_account.password_enc', 'mail_account.from_email', 'mail_account.from_name',
     'document.file_data', 'document.file_path', 'document.commentaire', 'document.auteur',
     'souscription.payeur_prenom', 'souscription.payeur_nom', 'souscription.payeur_email',
     'souscription.helloasso_redirect_url', 'souscription.error_message',
     'dossier_personne_saison.donnees_personne_snapshot',
+    'preuve_medicale.medecin_nom', 'preuve_medicale.medecin_rpps', 'preuve_medicale.commentaire',
     'operation.info', 'operation.libelle_bancaire',
     'flux_financier.info',
     'contrat_prof.details',
@@ -224,11 +226,14 @@ async function main() {
               'City', 'Ville Test',
               'Country', 'France'
             )::text,
-            date_naissance = make_date(
-              EXTRACT(YEAR FROM date_naissance)::int,
-              ((id * 7) % 12) + 1,
-              ((id * 11) % 28) + 1
-            )
+            date_naissance = CASE
+              WHEN date_naissance IS NULL THEN NULL
+              ELSE make_date(
+                EXTRACT(YEAR FROM date_naissance)::int,
+                ((id * 7) % 12) + 1,
+                ((id * 11) % 28) + 1
+              )
+            END
       `,
     );
 
@@ -269,10 +274,21 @@ async function main() {
     await nullOptionalColumns('compte_bancaire', ['iban', 'carte_json', 'info']);
 
     await execute(
-      'comptes SMTP en base (suppression)',
+      'comptes SMTP en base (neutralisation)',
       'mail_account',
-      ['id'],
-      'DELETE FROM mail_account',
+      ['id', 'host', 'port', 'username', 'password_enc', 'from_email'],
+      `
+        UPDATE mail_account
+        SET label = 'PREPROD - SMTP DESACTIVE',
+            host = '127.0.0.1',
+            port = 1,
+            secure = false,
+            username = 'preprod-' || id || '@example.invalid',
+            password_enc = 'DISABLED_PREPROD',
+            from_email = 'preprod-' || id || '@example.invalid',
+            from_name = 'Assolutions PREPROD',
+            max_per_minute = 1
+      `,
     );
     await execute(
       'historique des mails (suppression)',
@@ -308,17 +324,20 @@ async function main() {
       ['id', 'donnees_personne_snapshot'],
       'UPDATE dossier_personne_saison SET donnees_personne_snapshot = NULL',
     );
-    await execute(
-      'preuves médicales',
-      'preuve_medicale',
-      ['id'],
-      'DELETE FROM preuve_medicale',
-    );
+
+    // Supprimer d'abord les réponses susceptibles de référencer une preuve,
+    // puis les preuves elles-mêmes. Si une contrainte FK existe, cet ordre est sûr.
     await execute(
       'réponses aux exigences dossier',
       'reponse_exigence_dossier',
       ['id'],
       'DELETE FROM reponse_exigence_dossier',
+    );
+    await execute(
+      'preuves médicales',
+      'preuve_medicale',
+      ['id'],
+      'DELETE FROM preuve_medicale',
     );
 
     await execute(
