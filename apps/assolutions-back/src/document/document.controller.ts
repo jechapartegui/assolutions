@@ -49,7 +49,9 @@ export class DocumentController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     await this.access.assertDocumentAccess(req.user.id, id, projectId);
-    return this.service.get(id);
+    // Cette route est la lecture explicite d'un document : elle peut charger le
+    // blob après le contrôle d'accès. Les listes et recherches restent metadata-only.
+    return this.service.get(id, true);
   }
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
