@@ -1,6 +1,13 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import {
+  ChangePasswordDto,
+  LoginDto,
+  LoginIdentifierDto,
+  ResetTokenDto,
+  SetPasswordWithTokenDto,
+} from './auth.dto';
 import { AuthService } from './auth.services';
 
 @Controller('auth')
@@ -9,13 +16,13 @@ export class AuthController {
 
   @Public()
   @Post('prelogin')
-  prelogin(@Body() body: { login: string }) {
+  prelogin(@Body() body: LoginIdentifierDto) {
     return this.auth.prelogin(body.login);
   }
 
   @Public()
   @Post('login')
-  login(@Body() body: { login: string; password?: string }) {
+  login(@Body() body: LoginDto) {
     return this.auth.login(body.login, body.password);
   }
 
@@ -27,30 +34,25 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('change-my-password')
-  changeMyPassword(
-    @Req() req: any,
-    @Body() body: { newPassword: string | null },
-  ) {
-    return this.auth.changeMyPassword(req.user.id, body.newPassword ?? null);
+  changeMyPassword(@Req() req: any, @Body() body: ChangePasswordDto) {
+    return this.auth.changeMyPassword(req.user.id, body.newPassword);
   }
 
   @Public()
   @Post('reinit_mdp')
-  reinitMdp(@Body() body: { login: string }) {
+  reinitMdp(@Body() body: LoginIdentifierDto) {
     return this.auth.reinit_mdp(body.login);
   }
 
   @Public()
   @Post('check-reset-token')
-  checkResetToken(@Body() body: { login: string; token: string }) {
+  checkResetToken(@Body() body: ResetTokenDto) {
     return this.auth.checkResetToken(body.login, body.token);
   }
 
   @Public()
   @Post('set-password-with-token')
-  setPasswordWithToken(
-    @Body() body: { login: string; token: string; newPassword: string },
-  ) {
+  setPasswordWithToken(@Body() body: SetPasswordWithTokenDto) {
     return this.auth.setPasswordWithToken(body.login, body.token, body.newPassword);
   }
 }
