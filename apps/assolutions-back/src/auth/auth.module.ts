@@ -23,12 +23,28 @@ import { MailRecordEntity } from '../mail_record/mail_record.entity';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'CHANGE_ME',
-        signOptions: { expiresIn: '30d' },
-      }),
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('JWT_SECRET')?.trim();
+        if (!secret || secret.startsWith('CHANGE_ME')) {
+          throw new Error('JWT_SECRET must be configured');
+        }
+
+        return {
+          secret,
+          signOptions: {
+            expiresIn: (config.get<string>('JWT_EXPIRES_IN') ?? '12h') as any,
+          },
+        };
+      },
     }),
-    TypeOrmModule.forFeature([CompteEntity, ProjectEntity, PersonneEntity, LoginProjectEntity, SaisonEntity, MailRecordEntity]),
+    TypeOrmModule.forFeature([
+      CompteEntity,
+      ProjectEntity,
+      PersonneEntity,
+      LoginProjectEntity,
+      SaisonEntity,
+      MailRecordEntity,
+    ]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, MessageService],
