@@ -1,26 +1,21 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+  constructor(private readonly reflector: Reflector) {
+    super();
+  }
+
   canActivate(context: ExecutionContext) {
-    const req = context.switchToHttp().getRequest();
-    const url: string = req.url;
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    if (
-      url.startsWith('/api/auth/login') ||
-      url.startsWith('/api/auth/prelogin') ||
-      url.startsWith('/api/auth/get_project') ||
-      url.startsWith('/api/comptes/register-with-project') ||
-      url.startsWith('/api/auth/check-reset-token') ||
-      url.startsWith('/api/comptes/check-token') ||
-      url.startsWith('/api/auth/set-password-with-token') ||
-      url.startsWith('/api/auth/reinit_mdp') ||
-      url.startsWith('/api/souscriptions/helloasso/webhook')
-    ) {
-      return true;
-    }
-
+    if (isPublic) return true;
     return super.canActivate(context);
   }
 }
