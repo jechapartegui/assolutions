@@ -1,12 +1,11 @@
 export const environment = {
   production: false,
-  apiUrl: "https://assolutions-preprod.onrender.com/api",
-  password:'jecha266',
-  defaultlogin:'',
-  defaultpassword:'',
+  apiUrl: 'https://assolutions-preprod.onrender.com/api',
+  password: '',
+  defaultlogin: '',
+  defaultpassword: '',
   environment: 'preprod',
-  defaultloginProjet:'',
-  defaultloginpassword:'',
-  frontUrl:'https://preprod.assolutions.club'
-  
+  defaultloginProjet: '',
+  defaultloginpassword: '',
+  frontUrl: 'https://preprod.assolutions.club',
 };
