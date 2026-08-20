@@ -174,12 +174,21 @@ export class AccessControlService {
     objectId: number,
     projectId?: number | null,
   ): Promise<void> {
+    const pid = this.requireProjectId(projectId);
+
     if (this.isPersonObjectType(this.normalizeObjectType(objectType))) {
-      await this.assertPersonAccess(userId, objectId, projectId);
+      const person = await this.getPerson(objectId);
+
+      if (Number(person.compte) === Number(userId)) {
+        await this.assertAccountBelongsToProject(userId, pid);
+        return;
+      }
+
+      await this.assertProjectAdmin(userId, pid);
+      await this.assertAccountBelongsToProject(person.compte, pid);
       return;
     }
 
-    const pid = this.requireProjectId(projectId);
     await this.assertProjectAdmin(userId, pid);
   }
 
