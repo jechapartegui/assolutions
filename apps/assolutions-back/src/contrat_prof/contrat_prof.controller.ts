@@ -1,4 +1,4 @@
-﻿import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -9,13 +9,16 @@ import { ContratProfService } from './contrat_prof.service';
 export class ContratProfController {
   constructor(private readonly service: ContratProfService) {}
 
-@UseGuards(JwtAuthGuard)
-@Get('saison/:saisonId')
-listForSeason(@Param('saisonId', ParseIntPipe) saisonId: number) {
-  return this.service.listForSeason(saisonId);
-}
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @Get('saison/:saisonId')
+  listForSeason(
+    @Param('saisonId', ParseIntPipe) saisonId: number,
+    @ProjectId() projectId: number,
+  ) {
+    return this.service.listForSeason(saisonId, projectId);
+  }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get(':id')
   get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
     return this.service.getForProject(id, projectId);
@@ -27,14 +30,16 @@ listForSeason(@Param('saisonId', ParseIntPipe) saisonId: number) {
     return this.service.create(dto, projectId);
   }
 
-  // ✅ UPDATE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: UpdateContratProfDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateContratProfDto,
+  ) {
     return this.service.update(id, dto, projectId);
   }
 
-  // ✅ DELETE via POST
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
   remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
@@ -43,7 +48,10 @@ listForSeason(@Param('saisonId', ParseIntPipe) saisonId: number) {
 
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get('exist/:profId')
-  exist(@Param('profId', ParseIntPipe) profId: number) {
-    return this.service.exist(profId);
+  exist(
+    @Param('profId', ParseIntPipe) profId: number,
+    @ProjectId() projectId: number,
+  ) {
+    return this.service.exist(profId, projectId);
   }
 }
