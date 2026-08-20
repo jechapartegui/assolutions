@@ -20,7 +20,8 @@ export class MailAccountEntity {
   @Column({ type: 'varchar', length: 200 })
   username: string;
 
-  @Column({ type: 'text' })
+  // Secret d'administration : jamais chargé par défaut dans les lectures API.
+  @Column({ type: 'text', select: false })
   password_enc: string;
 
   @Column({ type: 'varchar', length: 200 })
