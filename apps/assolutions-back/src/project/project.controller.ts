@@ -1,8 +1,20 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
+import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectService } from './project.service';
-import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 
 @Controller('projects')
 export class ProjectController {
@@ -14,35 +26,54 @@ export class ProjectController {
     return this.service.listPublicProjects();
   }
 
-    @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get()
   list() {
     return this.service.list();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number) {
+  get(
+    @ProjectId() projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    this.assertSameProject(projectId, id);
     return this.service.get(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreateProjectDto) {
+    // Le propriétaire vient toujours du JWT, jamais du payload client.
     return this.service.create({ ...dto, compte: req.user.id });
   }
 
-  // ✅ UPDATE via POST
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProjectDto) {
-    return this.service.update(id, dto);
+  update(
+    @ProjectId() projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateProjectDto,
+  ) {
+    this.assertSameProject(projectId, id);
+    const { compte: _ignoredOwner, activation_token: _ignoredToken, ...safeDto } = dto;
+    return this.service.update(id, safeDto);
   }
 
-  // ✅ DELETE via POST
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(
+    @ProjectId() projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    this.assertSameProject(projectId, id);
     return this.service.remove(id);
+  }
+
+  private assertSameProject(headerProjectId: number, resourceProjectId: number): void {
+    if (Number(headerProjectId) !== Number(resourceProjectId)) {
+      throw new ForbiddenException('PROJECT_ID_MISMATCH');
+    }
   }
 }
