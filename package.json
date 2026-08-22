@@ -57,7 +57,7 @@
     "@angular/cli": "^20.0.3",
     "@angular/compiler-cli": "20.3.15",
     "@angular/language-service": "20.3.15",
-    "@angular/localize": "^20.3.15",
+    "@angular/localize": "20.3.15",
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.0.2",
@@ -94,5 +94,22 @@
     "typescript": "5.8.3",
     "typescript-eslint": "^8.0.0",
     "webpack-cli": "^5.1.4"
+  },
+  "overrides": {
+    "cosmiconfig": {
+      "js-yaml": "4.3.1"
+    },
+    "@eslint/eslintrc": {
+      "js-yaml": "4.3.1"
+    },
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "3.15.1"
+    },
+    "@yarnpkg/parsers": {
+      "js-yaml": "3.15.1"
+    },
+    "front-matter": {
+      "js-yaml": "3.15.1"
+    }
   }
 }
