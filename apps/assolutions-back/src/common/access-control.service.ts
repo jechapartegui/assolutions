@@ -43,7 +43,18 @@ export class AccessControlService {
     throw new ForbiddenException('NOT_PROJECT_STAFF');
   }
 
-  async assertAccountAccess(
+  // Compatibilité avec les contrôleurs métier existants : "ProfOrAdmin" est
+  // le même périmètre fonctionnel que "Staff" (administrateur du projet ou
+  // professeur du projet). On conserve les deux noms pour ne pas casser les
+  // appels historiques.
+  async assertProjectProfOrAdmin(
+    userId: number,
+    projectId: number,
+  ): Promise<void> {
+    return this.assertProjectStaff(userId, projectId);
+  }
+
+  async assertAccountAccessForProjectStaff(
     userId: number,
     accountId: number,
     projectId?: number | null,
@@ -54,6 +65,22 @@ export class AccessControlService {
 
     const pid = this.requireProjectId(projectId);
     await this.assertProjectStaff(userId, pid);
+    await this.assertAccountBelongsToProject(accountId, pid);
+  }
+
+  async assertAccountAccess(
+    userId: number,
+    accountId: number,
+    projectId?: number | null,
+  ): Promise<void> {
+    this.assertPositiveId(accountId, 'ACCOUNT_ID_REQUIRED');
+
+    if (Number(userId) === Number(accountId)) return;
+
+    const pid = this.requireProjectId(projectId);
+    // Cette méthode reste volontairement admin-only : certains contrôleurs
+    // l'utilisent pour des opérations destructives (suppression de compte).
+    await this.assertProjectAdmin(userId, pid);
     await this.assertAccountBelongsToProject(accountId, pid);
   }
 
