@@ -437,19 +437,12 @@ export class LoginComponent implements OnInit {
           this.selectedLogin = this.VM.mdp_requis;
 
           if (!this.VM.mdp_requis) {
-            this.action = $localize`Connexion par email`;
+            this.action = $localize`Connexion`;
             this.loading = true;
 
             this.login_serv_nest
-              .requestLoginLink(this.VM.compte.login)
-              .then(() => {
-                const o = errorService.OKMessage(
-                  $localize`Un lien de connexion temporaire vient de vous être envoyé par email. Aucun mot de passe n’est nécessaire.`
-                );
-                errorService.emitChange(o);
-                this.VM.check_login = { key: false, value: '' };
-                this.selectedLogin = false;
-              })
+              .login(this.VM.compte.login, '')
+              .then((mr: MeResponse) => this.openSession(mr))
               .catch((error: Error) => this.handleLoginError(error))
               .finally(() => {
                 this.loading = false;

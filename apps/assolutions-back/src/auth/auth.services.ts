@@ -160,7 +160,9 @@ export class AuthService {
 
     const storedPassword = compte.password;
     if (!storedPassword) {
-      throw new BadRequestException('PASSWORDLESS_LOGIN_REQUIRED');
+      // Règle métier historique Assolutions : un compte sans mot de passe
+      // s'authentifie directement avec son adresse email.
+      return this.issueSession(compte);
     }
 
     if (!password) throw new BadRequestException('PASSWORD_REQUIRED');
