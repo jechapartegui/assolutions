@@ -31,6 +31,59 @@ export class AccessControlService {
     }
   }
 
+  /**
+   * Droits métier Assolutions : les professeurs d'un projet peuvent gérer
+   * les comptes des adhérents du projet, au même titre que l'administrateur
+   * pour ces opérations précises. Cette méthode ne remplace volontairement
+   * pas assertProjectAdmin afin de ne pas élargir les droits admin ailleurs.
+   */
+  async assertProjectProfOrAdmin(
+    userId: number,
+    projectId: number,
+  ): Promise<void> {
+    this.assertPositiveId(userId, 'USER_ID_REQUIRED');
+    this.assertPositiveId(projectId, 'PROJECT_ID_REQUIRED');
+
+    const rows = await this.dataSource.query(
+      `
+        SELECT 1
+        WHERE EXISTS (
+          SELECT 1
+          FROM project
+          WHERE id = $2
+            AND compte = $1
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM professeur prof
+          INNER JOIN personne p ON p.id = prof.id
+          WHERE prof.project_id = $2
+            AND p.compte = $1
+        )
+        LIMIT 1
+      `,
+      [userId, projectId],
+    );
+
+    if (!rows.length) {
+      throw new ForbiddenException('NOT_PROJECT_PROF_OR_ADMIN');
+    }
+  }
+
+  async assertAccountAccessForProjectStaff(
+    userId: number,
+    accountId: number,
+    projectId?: number | null,
+  ): Promise<void> {
+    this.assertPositiveId(accountId, 'ACCOUNT_ID_REQUIRED');
+
+    if (Number(userId) === Number(accountId)) return;
+
+    const pid = this.requireProjectId(projectId);
+    await this.assertProjectProfOrAdmin(userId, pid);
+    await this.assertAccountBelongsToProject(accountId, pid);
+  }
+
   async assertAccountAccess(
     userId: number,
     accountId: number,

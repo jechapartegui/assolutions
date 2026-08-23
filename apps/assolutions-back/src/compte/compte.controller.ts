@@ -30,21 +30,24 @@ export class CompteController {
     private readonly access: AccessControlService,
   ) {}
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
-  list(@ProjectId() projectId: number) {
+  async list(@Req() req: any, @ProjectId() projectId: number) {
+    await this.access.assertProjectProfOrAdmin(req.user.id, projectId);
     return this.service.listByProject(projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('by-project/:projectId')
-  listByProject(
+  async listByProject(
+    @Req() req: any,
     @ProjectId() headerProjectId: number,
     @Param('projectId', ParseIntPipe) projectId: number,
   ) {
     if (Number(headerProjectId) !== Number(projectId)) {
       throw new ForbiddenException('PROJECT_ID_MISMATCH');
     }
+    await this.access.assertProjectProfOrAdmin(req.user.id, projectId);
     return this.service.listByProject(projectId);
   }
 
@@ -60,15 +63,17 @@ export class CompteController {
     return this.service.resendActivation(body.email);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('with-project')
-  createWithProject(
+  async createWithProject(
+    @Req() req: any,
     @ProjectId() projectId: number,
     @Body() dto: CreateCompteWithProjectDto,
   ) {
     if (Number(dto.project_id) !== Number(projectId)) {
       throw new ForbiddenException('PROJECT_ID_MISMATCH');
     }
+    await this.access.assertProjectProfOrAdmin(req.user.id, projectId);
     return this.service.createWithProject(dto);
   }
 
@@ -85,7 +90,11 @@ export class CompteController {
     @OptionalProjectId() projectId: number | null,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    await this.access.assertAccountAccess(req.user.id, id, projectId);
+    await this.access.assertAccountAccessForProjectStaff(
+      req.user.id,
+      id,
+      projectId,
+    );
     return this.service.get(id);
   }
 
@@ -95,7 +104,7 @@ export class CompteController {
     return this.service.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
   async update(
     @Req() req: any,
@@ -103,7 +112,11 @@ export class CompteController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCompteDto,
   ) {
-    await this.access.assertAccountAccess(req.user.id, id, projectId);
+    await this.access.assertAccountAccessForProjectStaff(
+      req.user.id,
+      id,
+      projectId,
+    );
     return this.service.update(id, dto);
   }
 
