@@ -20,10 +20,10 @@ export class LoginDto extends LoginIdentifierDto {
 }
 
 export class ChangePasswordDto {
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   @MaxLength(256)
-  newPassword: string;
+  newPassword?: string | null;
 }
 
 export class ResetTokenDto extends LoginIdentifierDto {
@@ -35,7 +35,6 @@ export class ResetTokenDto extends LoginIdentifierDto {
 
 export class SetPasswordWithTokenDto extends ResetTokenDto {
   @IsString()
-  @MinLength(1)
   @MaxLength(256)
   newPassword: string;
 }

@@ -6,7 +6,6 @@ import { GlobalService } from '../../services/global.services';
 import { MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
 import { AuthApiService } from '../../services/auth-api.service';
-import { CompteApiService } from '../../services/compte-api.service';
 import { ProjectApiService } from '../../services/project-api.service';
 import { Login_VM } from '../../vm/login.vm';
 import { AdhesionApiService } from '../../services/adhesion-api.service';
@@ -39,7 +38,7 @@ export class LoginComponent implements OnInit {
   requestedProjectId: number | null = null;
   requestedProject: any = null;
 
-  @Input() context: 'REINIT' | 'ACTIVATION' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
+  @Input() context: 'REINIT' | 'ACTIVATION' | 'MAGIC' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
   @Input() login_seance: string = null;
 
   loading = false;
@@ -49,7 +48,6 @@ export class LoginComponent implements OnInit {
     private login_serv_nest: AuthApiService,
     private adhesion_serv: AdhesionApiService,
     private project_serv: ProjectApiService,
-    private compte_serv: CompteApiService,
     private router: Router,
     private route: ActivatedRoute,
     public GlobalService: GlobalService,
@@ -96,6 +94,10 @@ export class LoginComponent implements OnInit {
     switch (this.context) {
       case 'ACTIVATION':
         await this.handleActivationLink(params);
+        return;
+
+      case 'MAGIC':
+        await this.handleMagicLoginLink(params);
         return;
 
       case 'REINIT':
@@ -153,7 +155,6 @@ export class LoginComponent implements OnInit {
       await this.router.navigate(['/login'], {
         replaceUrl: true,
       });
-
       return;
     }
 
@@ -171,31 +172,17 @@ export class LoginComponent implements OnInit {
     this.loading = true;
 
     try {
-      await this.compte_serv.check_token(login, token);
-
+      const mr = await this.login_serv_nest.activate(login, token);
       this.activationDoneKey = activationKey;
-
-      this.resetMode = false;
-      this.resetToken = null;
-      this.newPassword = '';
-      this.newPasswordConfirm = '';
-      this.selectedLogin = false;
-      this.VM.mdp_requis = false;
       this.VM.compte.login = login;
-      this.validateLogin();
+      this.VM.mode = mr.mode;
 
       const o = errorService.OKMessage(
-        $localize`Compte activé. Vous pouvez maintenant vous connecter.`
+        $localize`Compte activé. Connexion réussie.`
       );
       errorService.emitChange(o);
 
-      await this.router.navigate(['/login'], {
-        queryParams: {
-          user: login,
-          activated: 1,
-        },
-        replaceUrl: true,
-      });
+      await this.openSession(mr);
     } catch (error: any) {
       const o = errorService.CreateError(
         this.action,
@@ -208,6 +195,46 @@ export class LoginComponent implements OnInit {
       });
     } finally {
       this.activationProcessingKey = null;
+      this.loading = false;
+    }
+  }
+
+  private async handleMagicLoginLink(params: any): Promise<void> {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Connexion par email`;
+
+    const token = params['token'];
+    const user = params['user'];
+
+    if (!token || !user) {
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Lien de connexion incomplet`
+      );
+      errorService.emitChange(o);
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    this.loading = true;
+
+    try {
+      const login = String(user).trim().toLowerCase();
+      const mr = await this.login_serv_nest.loginWithToken(login, token);
+      this.VM.compte.login = login;
+      this.VM.mode = mr.mode;
+
+      const o = errorService.OKMessage($localize`Connexion réussie`);
+      errorService.emitChange(o);
+      await this.openSession(mr);
+    } catch (error: any) {
+      const o = errorService.CreateError(
+        this.action,
+        error?.message ?? $localize`Lien de connexion invalide ou expiré`
+      );
+      errorService.emitChange(o);
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    } finally {
       this.loading = false;
     }
   }
@@ -239,7 +266,7 @@ export class LoginComponent implements OnInit {
       this.resetMode = true;
       this.VM.mdp_requis = false;
       this.selectedLogin = true;
-      this.libelle_titre = $localize`Choisissez votre nouveau mot de passe`;
+      this.libelle_titre = $localize`Mot de passe facultatif`;
     } catch (error: any) {
       const o = errorService.CreateError(
         this.action,
@@ -268,15 +295,17 @@ export class LoginComponent implements OnInit {
     }
 
     const cleanPassword = this.newPassword?.trim() ?? '';
-    this.validatePassword(cleanPassword);
 
-    if (!cleanPassword || !this.VM.isPasswordValid) {
-      const o = errorService.CreateError(
-        this.action,
-        $localize`Le mot de passe doit contenir au moins 8 caractères et un nombre`
-      );
-      errorService.emitChange(o);
-      return;
+    if (cleanPassword) {
+      this.validatePassword(cleanPassword);
+      if (!this.VM.isPasswordValid) {
+        const o = errorService.CreateError(
+          this.action,
+          $localize`Le mot de passe doit contenir au moins 8 caractères et un nombre`
+        );
+        errorService.emitChange(o);
+        return;
+      }
     }
 
     try {
@@ -287,7 +316,9 @@ export class LoginComponent implements OnInit {
       );
 
       const o = errorService.OKMessage(
-        $localize`Mot de passe enregistré. Vous pouvez maintenant vous connecter.`
+        cleanPassword
+          ? $localize`Mot de passe enregistré. Vous pouvez maintenant vous connecter.`
+          : $localize`Aucun mot de passe enregistré. Vous pourrez vous connecter par email.`
       );
       errorService.emitChange(o);
 
@@ -406,14 +437,14 @@ export class LoginComponent implements OnInit {
           this.selectedLogin = this.VM.mdp_requis;
 
           if (!this.VM.mdp_requis) {
-            this.action = $localize`Sécuriser le compte`;
+            this.action = $localize`Connexion par email`;
             this.loading = true;
 
             this.login_serv_nest
-              .reinit_mdp(this.VM.compte.login)
+              .requestLoginLink(this.VM.compte.login)
               .then(() => {
                 const o = errorService.OKMessage(
-                  $localize`Pour sécuriser votre compte, un lien permettant de définir votre mot de passe vient de vous être envoyé par email.`
+                  $localize`Un lien de connexion temporaire vient de vous être envoyé par email. Aucun mot de passe n’est nécessaire.`
                 );
                 errorService.emitChange(o);
                 this.VM.check_login = { key: false, value: '' };
@@ -458,6 +489,8 @@ export class LoginComponent implements OnInit {
   }
 
   private async openSession(mr: MeResponse): Promise<void> {
+    this.VM.mode = mr.mode;
+
     if (mr.mode === 'ADMIN') {
       if (!mr.projects || mr.projects.length === 0 || mr.projects.length > 1) {
         const errorService = ErrorService.instance;
@@ -471,7 +504,7 @@ export class LoginComponent implements OnInit {
 
       const s: Session = {
         token: mr.token,
-        mode: this.VM.mode,
+        mode: mr.mode,
         compte: mr.compte,
         projects: mr.projects,
         selectedProjectId: mr.projects[0].id,
@@ -498,7 +531,7 @@ export class LoginComponent implements OnInit {
 
       const s: Session = {
         token: mr.token,
-        mode: this.VM.mode,
+        mode: mr.mode,
         compte: mr.compte,
         projects: projets,
         selectedProjectId: autoProject?.id ?? null,
@@ -603,10 +636,10 @@ export class LoginComponent implements OnInit {
   ReinitMDP() {
     if (!this.VM.isLoginValid) return;
 
-    const c = window.confirm($localize`Voulez-vous réinitialiser votre mot de passe ?`);
+    const c = window.confirm($localize`Voulez-vous définir ou modifier votre mot de passe ?`);
     if (!c) return;
 
-    this.action = $localize`Réinitialiser le mot de passe`;
+    this.action = $localize`Définir ou modifier le mot de passe`;
     const errorService = ErrorService.instance;
 
     this.login_serv_nest

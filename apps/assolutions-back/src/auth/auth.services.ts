@@ -27,6 +27,9 @@ import {
 
 type AppMode = 'ADMIN' | 'APPLI';
 const RESET_TOKEN_MAX_AGE_MS = 60 * 60 * 1000;
+const MAGIC_LOGIN_TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
+const ACTIVATION_TOKEN_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+const MAGIC_LOGIN_PREFIX = 'login-';
 const MIN_SECRET_LENGTH = 32;
 
 @Injectable()
@@ -67,6 +70,10 @@ export class AuthService {
       login: compte.login,
       superAdmin: false,
     });
+  }
+
+  private async issueSession(compte: CompteEntity): Promise<any> {
+    return this.buildSession(compte, this.signToken(compte));
   }
 
   private async computeMode(compteId: number): Promise<AppMode> {
@@ -153,7 +160,7 @@ export class AuthService {
 
     const storedPassword = compte.password;
     if (!storedPassword) {
-      throw new BadRequestException('PASSWORD_SETUP_REQUIRED');
+      throw new BadRequestException('PASSWORDLESS_LOGIN_REQUIRED');
     }
 
     if (!password) throw new BadRequestException('PASSWORD_REQUIRED');
@@ -168,8 +175,96 @@ export class AuthService {
       await this.compteRepo.save(compte);
     }
 
-    const token = this.signToken(compte);
-    return this.buildSession(compte, token);
+    return this.issueSession(compte);
+  }
+
+  async activateAndLogin(login: string, token: string): Promise<any> {
+    const compte = await this.findAccountForToken(login);
+    const validNewToken = verifyTimedToken(
+      token,
+      compte.activation_token,
+      this.tokenPepper,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
+    const validLegacyToken = this.verifyLegacyToken(token, compte.activation_token);
+
+    if (!validNewToken && !validLegacyToken) {
+      throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    }
+
+    compte.mail_actif = true;
+    compte.actif = true;
+    compte.activation_token = null;
+    await this.compteRepo.save(compte);
+
+    return this.issueSession(compte);
+  }
+
+  async requestLoginLink(login: string): Promise<boolean> {
+    const normalizedLogin = this.normalizeLogin(login);
+    const compte = await this.compteRepo.findOne({
+      where: { login: normalizedLogin },
+    });
+
+    // Réponse identique pour ne pas confirmer l'existence d'un compte.
+    if (!compte || !compte.actif) return true;
+
+    const rawToken = this.createMagicLoginToken();
+    compte.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
+    await this.compteRepo.save(compte);
+
+    const loginUrl =
+      `${this.getFrontUrl()}/login?context=MAGIC` +
+      `&user=${encodeURIComponent(compte.login)}` +
+      `&token=${encodeURIComponent(rawToken)}`;
+
+    await this.mailService.sendAutomaticMail({
+      to: compte.login,
+      subject: 'Assolutions - Se connecter',
+      record: 'MAGIC_LOGIN',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;color:#222;line-height:1.5">
+          <div style="padding:20px 24px;background:#1e3a5f;color:white;border-radius:8px 8px 0 0">
+            <strong style="font-size:20px">Assolutions</strong>
+          </div>
+          <div style="padding:24px;border:1px solid #ddd;border-top:0">
+            <h1 style="font-size:22px;margin:0 0 20px">Connexion à Assolutions</h1>
+            <p>Bonjour,</p>
+            <p>Cliquez sur le bouton ci-dessous pour vous connecter à Assolutions.</p>
+            <p>Ce lien est temporaire et à usage unique. Aucun mot de passe n’est nécessaire.</p>
+            <p style="margin:24px 0"><a href="${loginUrl}" target="_blank" style="display:inline-block;padding:12px 18px;background:#1e3a5f;color:white;text-decoration:none;border-radius:5px">Me connecter</a></p>
+            <p>Si le bouton ne fonctionne pas, copiez-collez ce lien :</p>
+            <p style="word-break:break-all">${loginUrl}</p>
+            <p>Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer ce message.</p>
+            <p style="margin-top:28px;color:#666;font-size:13px">Message automatique envoyé par Assolutions.</p>
+          </div>
+        </div>
+      `,
+    });
+    return true;
+  }
+
+  async loginWithToken(login: string, token: string): Promise<any> {
+    const compte = await this.findAccountForToken(login);
+    if (!compte.actif) throw new BadRequestException('ACCOUNT_NOT_ACTIVE');
+    if (!this.isMagicLoginToken(token)) {
+      throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    }
+
+    const valid = verifyTimedToken(
+      token,
+      compte.activation_token,
+      this.tokenPepper,
+      MAGIC_LOGIN_TOKEN_MAX_AGE_MS,
+    );
+
+    if (!valid) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+
+    // Usage unique : le lien n'est plus réutilisable après une connexion réussie.
+    compte.activation_token = null;
+    await this.compteRepo.save(compte);
+
+    return this.issueSession(compte);
   }
 
   async me(userId: number): Promise<any> {
@@ -184,10 +279,9 @@ export class AuthService {
     if (!compte) throw new NotFoundException('ACCOUNT_NOT_FOUND');
 
     const cleanPassword = newPassword?.trim() ?? '';
-    if (!cleanPassword) throw new BadRequestException('PASSWORD_REQUIRED');
-    this.assertPassword(cleanPassword);
+    if (cleanPassword) this.assertPassword(cleanPassword);
 
-    compte.password = hashPassword(cleanPassword);
+    compte.password = cleanPassword ? hashPassword(cleanPassword) : null;
     compte.activation_token = null;
     compte.actif = true;
     await this.compteRepo.save(compte);
@@ -217,9 +311,8 @@ export class AuthService {
     compte.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
     await this.compteRepo.save(compte);
 
-    const frontUrl = this.config.get<string>('FRONT_URL') ?? 'https://assolutions.club';
     const resetUrl =
-      `${frontUrl.replace(/\/+$/, '')}/login?context=REINIT` +
+      `${this.getFrontUrl()}/login?context=REINIT` +
       `&user=${encodeURIComponent(compte.login)}` +
       `&token=${encodeURIComponent(rawToken)}`;
 
@@ -228,6 +321,10 @@ export class AuthService {
   }
 
   async checkResetToken(login: string, token: string): Promise<boolean> {
+    if (this.isMagicLoginToken(token)) {
+      throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    }
+
     const compte = await this.findAccountForReset(login);
     const valid = verifyTimedToken(
       token,
@@ -247,6 +344,10 @@ export class AuthService {
   ): Promise<boolean> {
     // IMPORTANT : la validation est refaite ici côté serveur. Le fait que le
     // front ait appelé check-reset-token auparavant n'accorde aucun droit.
+    if (this.isMagicLoginToken(token)) {
+      throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    }
+
     const compte = await this.findAccountForReset(login);
     const valid = verifyTimedToken(
       token,
@@ -258,10 +359,9 @@ export class AuthService {
     if (!valid) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
 
     const cleanPassword = newPassword?.trim() ?? '';
-    if (!cleanPassword) throw new BadRequestException('PASSWORD_REQUIRED');
-    this.assertPassword(cleanPassword);
+    if (cleanPassword) this.assertPassword(cleanPassword);
 
-    compte.password = hashPassword(cleanPassword);
+    compte.password = cleanPassword ? hashPassword(cleanPassword) : null;
     compte.activation_token = null;
     compte.actif = true;
     await this.compteRepo.save(compte);
@@ -269,6 +369,10 @@ export class AuthService {
   }
 
   private async findAccountForReset(login: string): Promise<CompteEntity> {
+    return this.findAccountForToken(login);
+  }
+
+  private async findAccountForToken(login: string): Promise<CompteEntity> {
     const normalizedLogin = this.normalizeLogin(login);
     const compte = await this.compteRepo.findOne({
       where: { login: normalizedLogin },
@@ -276,6 +380,45 @@ export class AuthService {
 
     if (!compte) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
     return compte;
+  }
+
+  private createMagicLoginToken(): string {
+    const [timestamp, randomPart] = createTimedToken().split('.');
+    return `${timestamp}.${MAGIC_LOGIN_PREFIX}${randomPart}`;
+  }
+
+  private isMagicLoginToken(token: string): boolean {
+    const [timestamp, randomPart, ...extra] = String(token ?? '').split('.');
+    return (
+      !!timestamp &&
+      !!randomPart &&
+      extra.length === 0 &&
+      randomPart.startsWith(MAGIC_LOGIN_PREFIX)
+    );
+  }
+
+  private verifyLegacyToken(
+    token: string,
+    expectedHash: string | null | undefined,
+  ): boolean {
+    if (!this.legacyPepper || !token || !expectedHash || token.includes('.')) {
+      return false;
+    }
+
+    const legacyHash = require('node:crypto')
+      .createHmac('sha256', this.legacyPepper)
+      .update(token)
+      .digest('hex');
+
+    return legacyHash === expectedHash;
+  }
+
+  private getFrontUrl(): string {
+    const value =
+      this.config.get<string>('FRONT_URL') ??
+      process.env.FRONT_URL ??
+      'http://localhost:2211';
+    return value.replace(/\/+$/, '');
   }
 
   private normalizeLogin(login: string): string {

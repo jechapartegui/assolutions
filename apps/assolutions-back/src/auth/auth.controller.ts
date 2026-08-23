@@ -26,6 +26,24 @@ export class AuthController {
     return this.auth.login(body.login, body.password);
   }
 
+  @Public()
+  @Post('activate')
+  activate(@Body() body: ResetTokenDto) {
+    return this.auth.activateAndLogin(body.login, body.token);
+  }
+
+  @Public()
+  @Post('request-login-link')
+  requestLoginLink(@Body() body: LoginIdentifierDto) {
+    return this.auth.requestLoginLink(body.login);
+  }
+
+  @Public()
+  @Post('login-with-token')
+  loginWithToken(@Body() body: ResetTokenDto) {
+    return this.auth.loginWithToken(body.login, body.token);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@Req() req: any) {
@@ -35,7 +53,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('change-my-password')
   changeMyPassword(@Req() req: any, @Body() body: ChangePasswordDto) {
-    return this.auth.changeMyPassword(req.user.id, body.newPassword);
+    return this.auth.changeMyPassword(req.user.id, body.newPassword ?? '');
   }
 
   @Public()

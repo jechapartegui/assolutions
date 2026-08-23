@@ -20,18 +20,36 @@ export class AuthApiService {
     return `${this.baseUrl}${path}`;
   }
 
+  private persistToken(res: MeResponse): void {
+    if (res?.token) {
+      sessionStorage.setItem('auth_token', res.token);
+      localStorage.removeItem('auth_token');
+    }
+  }
+
   async prelogin(login: string): Promise<PreloginResponse> {
     return await this.global.POST(this.url('/auth/prelogin'), { login });
   }
 
   async login(login: string, password?: string): Promise<MeResponse> {
     const res = await this.global.POST(this.url('/auth/login'), { login, password });
+    this.persistToken(res);
+    return res;
+  }
 
-    if (res?.token) {
-      sessionStorage.setItem('auth_token', res.token);
-      localStorage.removeItem('auth_token');
-    }
+  async activate(login: string, token: string): Promise<MeResponse> {
+    const res = await this.global.POST(this.url('/auth/activate'), { login, token });
+    this.persistToken(res);
+    return res;
+  }
 
+  async requestLoginLink(login: string): Promise<boolean> {
+    return await this.global.POST(this.url('/auth/request-login-link'), { login });
+  }
+
+  async loginWithToken(login: string, token: string): Promise<MeResponse> {
+    const res = await this.global.POST(this.url('/auth/login-with-token'), { login, token });
+    this.persistToken(res);
     return res;
   }
 
