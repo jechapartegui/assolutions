@@ -13,6 +13,10 @@ type DocumentAccessRow = {
   objet_id: number;
 };
 
+type SeanceRosterAccessRow = {
+  afficher_present: boolean;
+};
+
 @Injectable()
 export class AccessControlService {
   constructor(private readonly dataSource: DataSource) {}
@@ -31,57 +35,12 @@ export class AccessControlService {
     }
   }
 
-  /**
-   * Droits métier Assolutions : les professeurs d'un projet peuvent gérer
-   * les comptes des adhérents du projet, au même titre que l'administrateur
-   * pour ces opérations précises. Cette méthode ne remplace volontairement
-   * pas assertProjectAdmin afin de ne pas élargir les droits admin ailleurs.
-   */
-  async assertProjectProfOrAdmin(
-    userId: number,
-    projectId: number,
-  ): Promise<void> {
+  async assertProjectStaff(userId: number, projectId: number): Promise<void> {
     this.assertPositiveId(userId, 'USER_ID_REQUIRED');
     this.assertPositiveId(projectId, 'PROJECT_ID_REQUIRED');
 
-    const rows = await this.dataSource.query(
-      `
-        SELECT 1
-        WHERE EXISTS (
-          SELECT 1
-          FROM project
-          WHERE id = $2
-            AND compte = $1
-        )
-        OR EXISTS (
-          SELECT 1
-          FROM professeur prof
-          INNER JOIN personne p ON p.id = prof.id
-          WHERE prof.project_id = $2
-            AND p.compte = $1
-        )
-        LIMIT 1
-      `,
-      [userId, projectId],
-    );
-
-    if (!rows.length) {
-      throw new ForbiddenException('NOT_PROJECT_PROF_OR_ADMIN');
-    }
-  }
-
-  async assertAccountAccessForProjectStaff(
-    userId: number,
-    accountId: number,
-    projectId?: number | null,
-  ): Promise<void> {
-    this.assertPositiveId(accountId, 'ACCOUNT_ID_REQUIRED');
-
-    if (Number(userId) === Number(accountId)) return;
-
-    const pid = this.requireProjectId(projectId);
-    await this.assertProjectProfOrAdmin(userId, pid);
-    await this.assertAccountBelongsToProject(accountId, pid);
+    if (await this.isProjectStaff(userId, projectId)) return;
+    throw new ForbiddenException('NOT_PROJECT_STAFF');
   }
 
   async assertAccountAccess(
@@ -94,7 +53,7 @@ export class AccessControlService {
     if (Number(userId) === Number(accountId)) return;
 
     const pid = this.requireProjectId(projectId);
-    await this.assertProjectAdmin(userId, pid);
+    await this.assertProjectStaff(userId, pid);
     await this.assertAccountBelongsToProject(accountId, pid);
   }
 
@@ -154,7 +113,7 @@ export class AccessControlService {
     if (Number(person.compte) === Number(userId)) return person;
 
     const pid = this.requireProjectId(projectId);
-    await this.assertProjectAdmin(userId, pid);
+    await this.assertProjectStaff(userId, pid);
     await this.assertAccountBelongsToProject(person.compte, pid);
     return person;
   }
@@ -187,21 +146,63 @@ export class AccessControlService {
     if (!foreignAccounts.length) return;
 
     const pid = this.requireProjectId(projectId);
-    await this.assertProjectAdmin(userId, pid);
+
+    // Les professeurs sont des gestionnaires métier du projet : ils peuvent lire
+    // les personnes nécessaires à la gestion des adhérents/séances.
+    if (await this.isProjectStaff(userId, pid)) {
+      const rows = (await this.dataSource.query(
+        `
+          SELECT login_id
+          FROM login_project
+          WHERE project_id = $1
+            AND login_id = ANY($2::int[])
+        `,
+        [pid, foreignAccounts],
+      )) as Array<{ login_id: number }>;
+
+      const allowed = new Set(rows.map((row) => Number(row.login_id)));
+      if (foreignAccounts.some((accountId) => !allowed.has(accountId))) {
+        throw new ForbiddenException('RESOURCE_OUTSIDE_PROJECT');
+      }
+      return;
+    }
+
+    // Un adhérent non-prof ne peut lire des personnes tierces que si celles-ci
+    // apparaissent réellement dans une séance du projet dont les présents sont
+    // explicitement visibles.
+    await this.assertAccountHasProjectContext(userId, pid);
+    await this.assertVisibleRosterPersonIds(ids, pid);
+  }
+
+  async assertSeanceRosterAccess(
+    userId: number,
+    seanceId: number,
+    projectId: number,
+  ): Promise<void> {
+    this.assertPositiveId(userId, 'USER_ID_REQUIRED');
+    this.assertPositiveId(seanceId, 'SEANCE_ID_REQUIRED');
+    this.assertPositiveId(projectId, 'PROJECT_ID_REQUIRED');
 
     const rows = (await this.dataSource.query(
       `
-        SELECT login_id
-        FROM login_project
-        WHERE project_id = $1
-          AND login_id = ANY($2::int[])
+        SELECT se.afficher_present
+        FROM seance se
+        INNER JOIN saison sa ON sa.id = se.saison_id
+        WHERE se.seance_id = $1
+          AND sa.project_id = $2
+        LIMIT 1
       `,
-      [pid, foreignAccounts],
-    )) as Array<{ login_id: number }>;
+      [seanceId, projectId],
+    )) as SeanceRosterAccessRow[];
 
-    const allowed = new Set(rows.map((row) => Number(row.login_id)));
-    if (foreignAccounts.some((accountId) => !allowed.has(accountId))) {
-      throw new ForbiddenException('RESOURCE_OUTSIDE_PROJECT');
+    const seance = rows[0];
+    if (!seance) throw new ForbiddenException('RESOURCE_OUTSIDE_PROJECT');
+
+    if (await this.isProjectStaff(userId, projectId)) return;
+
+    await this.assertAccountHasProjectContext(userId, projectId);
+    if (!seance.afficher_present) {
+      throw new ForbiddenException('SEANCE_ROSTER_NOT_VISIBLE');
     }
   }
 
@@ -264,12 +265,87 @@ export class AccessControlService {
         return;
       }
 
-      await this.assertProjectAdmin(userId, pid);
+      await this.assertProjectStaff(userId, pid);
       await this.assertAccountBelongsToProject(person.compte, pid);
       return;
     }
 
     await this.assertProjectAdmin(userId, pid);
+  }
+
+  private async isProjectStaff(userId: number, projectId: number): Promise<boolean> {
+    const rows = await this.dataSource.query(
+      `
+        SELECT 1
+        WHERE EXISTS (
+          SELECT 1
+          FROM project pr
+          WHERE pr.id = $2
+            AND pr.compte = $1
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM professeur prof
+          INNER JOIN personne pe ON pe.id = prof.id
+          WHERE prof.project_id = $2
+            AND pe.compte = $1
+        )
+        LIMIT 1
+      `,
+      [userId, projectId],
+    );
+
+    return rows.length > 0;
+  }
+
+  private async assertVisibleRosterPersonIds(
+    ids: number[],
+    projectId: number,
+  ): Promise<void> {
+    const rows = (await this.dataSource.query(
+      `
+        SELECT DISTINCT pe.id
+        FROM personne pe
+        WHERE pe.id = ANY($1::int[])
+          AND EXISTS (
+            SELECT 1
+            FROM seance se
+            INNER JOIN saison sa ON sa.id = se.saison_id
+            WHERE sa.project_id = $2
+              AND se.afficher_present = true
+              AND (
+                EXISTS (
+                  SELECT 1
+                  FROM inscription_seance ins
+                  WHERE ins.seance_id = se.seance_id
+                    AND ins.personne_id = pe.id
+                )
+                OR (
+                  se.convocation_nominative = false
+                  AND pe.archive = false
+                  AND (se.age_minimum IS NULL OR EXTRACT(YEAR FROM age(CURRENT_DATE, pe.date_naissance)) >= se.age_minimum)
+                  AND (se.age_maximum IS NULL OR EXTRACT(YEAR FROM age(CURRENT_DATE, pe.date_naissance)) <= se.age_maximum)
+                  AND EXISTS (
+                    SELECT 1
+                    FROM lien_groupe lg_seance
+                    INNER JOIN lien_groupe lg_rider
+                      ON lg_rider.groupe_id = lg_seance.groupe_id
+                    WHERE lg_seance.object_id = se.seance_id
+                      AND LOWER(lg_seance.object_type) IN ('séance', 'seance')
+                      AND LOWER(lg_rider.object_type) = 'rider'
+                      AND lg_rider.object_id = pe.id
+                  )
+                )
+              )
+          )
+      `,
+      [ids, projectId],
+    )) as Array<{ id: number }>;
+
+    const allowed = new Set(rows.map((row) => Number(row.id)));
+    if (ids.some((id) => !allowed.has(Number(id)))) {
+      throw new ForbiddenException('RESOURCE_OUTSIDE_VISIBLE_SEANCE');
+    }
   }
 
   private async getPerson(personId: number): Promise<PersonAccessRow> {
