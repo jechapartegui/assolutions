@@ -33,10 +33,10 @@ jobs:
         run: npm audit --omit=dev --audit-level=critical
 
       - name: Build backend
-        run: npx nx build assolutions-back --configuration=production --skip-nx-cache
+        run: npm run build:back
 
       - name: Build frontend preprod
-        run: npx nx build assolutions-front --configuration=preprod --skip-nx-cache
+        run: npm run build:front:preprod
 
       - name: Build frontend production
-        run: npx nx build assolutions-front --configuration=production --skip-nx-cache
+        run: npm run build:front:prod
