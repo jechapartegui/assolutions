@@ -142,21 +142,21 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   }
 
   async afterLoginFromSeance(): Promise<void> {
-  const compte = this.store.compte();
+    const compte = this.store.compte();
 
-  if (!compte?.login) return;
+    if (!compte?.login) return;
 
-  this._loadLoginDone = false;
+    this._loadLoginDone = false;
 
-  await this.Load();
+    await this.Load();
 
-  if (this.isLien) {
-    this._loadLoginDone = true;
-    await this.LoadLogin(compte);
+    if (this.isLien) {
+      this._loadLoginDone = true;
+      await this.LoadLogin(compte);
+    }
+
+    this.cdr.detectChanges();
   }
-
-  this.cdr.detectChanges();
-}
 
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
@@ -269,6 +269,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
       queryParams: { id: this.thisSeance.id },
     });
   }
+
   private getPersonneId(person?: Partial<Personne_VM> | null): number {
     return Number((person as any)?.id ?? (person as any)?.personne_id ?? 0);
   }
@@ -413,19 +414,27 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         ),
       ];
 
-    const [personnes, contacts] = await Promise.all([
-  this.personneapi.list_by_id(personneIds),
-  this.contactapi.list_by_id(personneIds),
-]) as [Personne[], ContactDto[]];
+      const [personnes, contacts] = await Promise.all([
+        this.personneapi.list_by_id(personneIds),
+        this.contactapi.list_by_id(personneIds),
+      ]) as [Personne[], ContactDto[]];
 
-this.All = this.MapToFullInscriptionSeance_VM(
-  inscriptions ?? [],
-  personnes,
-  contacts,
-);
+      this.All = this.MapToFullInscriptionSeance_VM(
+        inscriptions ?? [],
+        personnes,
+        contacts,
+      );
       await this.preloadPhotos(this.All);
 
-      const riders = await this.riderservice.GetAdherentAdhesion(this.thisSeance.saison_id, this.store.compte().login);
+      // Un professeur gère les séances du projet : la liste d'ajout doit donc
+      // contenir les adhérents actifs de la saison, pas seulement les personnes
+      // rattachées à son propre compte.
+      const riders = this.isProf
+        ? await this.riderservice.GetAdherentSaisonStaff(this.thisSeance.saison_id)
+        : await this.riderservice.GetAdherentAdhesion(
+            this.thisSeance.saison_id,
+            this.store.compte().login,
+          );
 
       const alreadyInSeance = new Set(
         this.All.map((x) => Number(x.personne_id)).filter((id) => id > 0),
@@ -508,135 +517,135 @@ this.All = this.MapToFullInscriptionSeance_VM(
     }
   }
 
-async LoadLogin(compte: Compte): Promise<void> {
-  const errorService = ErrorService.instance;
+  async LoadLogin(compte: Compte): Promise<void> {
+    const errorService = ErrorService.instance;
 
-  this.action = $localize`Charger les adhérents de mon compte`;
-  this.libellechargeradherent = $localize`Chargement des adhérents liés à mon compte...`;
-  this.login = compte.login;
+    this.action = $localize`Charger les adhérents de mon compte`;
+    this.libellechargeradherent = $localize`Chargement des adhérents liés à mon compte...`;
+    this.login = compte.login;
 
-  const hasReponse = this.reponse !== null && this.reponse !== undefined;
+    const hasReponse = this.reponse !== null && this.reponse !== undefined;
 
-  const statInsAuto: InscriptionStatus_VM | null = !hasReponse
-    ? null
-    : this.reponse
-      ? InscriptionStatus_VM.PRESENT
-      : InscriptionStatus_VM.ABSENT;
+    const statInsAuto: InscriptionStatus_VM | null = !hasReponse
+      ? null
+      : this.reponse
+        ? InscriptionStatus_VM.PRESENT
+        : InscriptionStatus_VM.ABSENT;
 
-  try {
-    const inscriptions = await this.inscriptionserv.GetAdherentCompte(
-      this.login!,
-      this.thisSeance.id,
-    ) as InscriptionSeance[];
+    try {
+      const inscriptions = await this.inscriptionserv.GetAdherentCompte(
+        this.login!,
+        this.thisSeance.id,
+      ) as InscriptionSeance[];
 
-    const personneIds = [
-      ...new Set((inscriptions ?? []).map(i => Number(i.personne_id))),
-    ];
+      const personneIds = [
+        ...new Set((inscriptions ?? []).map(i => Number(i.personne_id))),
+      ];
 
-    const personnes = personneIds.length
-      ? await this.personneapi.list_by_id(personneIds)
-      : [];
+      const personnes = personneIds.length
+        ? await this.personneapi.list_by_id(personneIds)
+        : [];
 
-    const personnesById = new Map(
-      personnes.map(p => [Number(p.id), p]),
-    );
-
-    let fullInscriptions: FullInscriptionSeance_VM[] = (inscriptions ?? [])
-      .map(inscription => {
-        const person = personnesById.get(Number(inscription.personne_id));
-
-        if (!person) {
-          return null;
-        }
-
-        Personne_VM.bakeLibelle(person);
-
-        return {
-          ...inscription,
-          person: this.adherentmapper.toPersonneVm(person) as Personne_VM,
-          isVisible: false,
-        } as FullInscriptionSeance_VM;
-      })
-      .filter((x): x is FullInscriptionSeance_VM => x !== null);
-
-    if (this.adherent) {
-      fullInscriptions = fullInscriptions.filter(
-        x => Number(x.personne_id) === Number(this.adherent),
+      const personnesById = new Map(
+        personnes.map(p => [Number(p.id), p]),
       );
-    }
 
-    this.MesAdherents = fullInscriptions;
+      let fullInscriptions: FullInscriptionSeance_VM[] = (inscriptions ?? [])
+        .map(inscription => {
+          const person = personnesById.get(Number(inscription.personne_id));
 
-    if (!this.MesAdherents.length) {
-      this.libellechargeradherent =
-        $localize`Aucun adhérent lié à ce compte n'est inscrit à cette séance.`;
-      this.cdr.detectChanges();
-      return;
-    }
-
-    if (hasReponse && statInsAuto !== null) {
-      this.action = $localize`Mise à jour des présences`;
-
-      let errorGlobal = false;
-
-      const promises = this.MesAdherents.map(async ins => {
-        const oldStatut = ins.statut_inscription;
-
-        ins.statut_inscription = statInsAuto;
-
-        const dto: UpdateInscriptionSeanceDto = {
-          date_inscription: ins.date_inscription ?? new Date(),
-          statut_inscription: ins.statut_inscription,
-          statut_seance: ins.statut_seance ?? null,
-        };
-
-        try {
-          const ok = await this.inscriptionserv.update(
-            ins.personne_id,
-            this.thisSeance.id,
-            dto,
-          );
-
-          if (!ok) {
-            ins.statut_inscription = oldStatut;
-            errorGlobal = true;
+          if (!person) {
+            return null;
           }
-        } catch (err) {
-          ins.statut_inscription = oldStatut;
-          errorGlobal = true;
 
-          const n = errorService.CreateError(this.action, err);
-          errorService.emitChange(n);
-        }
-      });
+          Personne_VM.bakeLibelle(person);
 
-      await Promise.all(promises);
+          return {
+            ...inscription,
+            person: this.adherentmapper.toPersonneVm(person) as Personne_VM,
+            isVisible: false,
+          } as FullInscriptionSeance_VM;
+        })
+        .filter((x): x is FullInscriptionSeance_VM => x !== null);
 
-      if (!errorGlobal) {
-        const n = errorService.OKMessage(this.action);
-        errorService.emitChange(n);
+      if (this.adherent) {
+        fullInscriptions = fullInscriptions.filter(
+          x => Number(x.personne_id) === Number(this.adherent),
+        );
       }
 
-      this.MesAdherents = [...this.MesAdherents];
+      this.MesAdherents = fullInscriptions;
 
-      this.All = this.All.map(x => {
-        const updated = this.MesAdherents.find(
-          m => Number(m.personne_id) === Number(x.personne_id),
-        );
+      if (!this.MesAdherents.length) {
+        this.libellechargeradherent =
+          $localize`Aucun adhérent lié à ce compte n'est inscrit à cette séance.`;
+        this.cdr.detectChanges();
+        return;
+      }
 
-        return updated
-          ? { ...x, statut_inscription: updated.statut_inscription }
-          : x;
-      });
+      if (hasReponse && statInsAuto !== null) {
+        this.action = $localize`Mise à jour des présences`;
+
+        let errorGlobal = false;
+
+        const promises = this.MesAdherents.map(async ins => {
+          const oldStatut = ins.statut_inscription;
+
+          ins.statut_inscription = statInsAuto;
+
+          const dto: UpdateInscriptionSeanceDto = {
+            date_inscription: ins.date_inscription ?? new Date(),
+            statut_inscription: ins.statut_inscription,
+            statut_seance: ins.statut_seance ?? null,
+          };
+
+          try {
+            const ok = await this.inscriptionserv.update(
+              ins.personne_id,
+              this.thisSeance.id,
+              dto,
+            );
+
+            if (!ok) {
+              ins.statut_inscription = oldStatut;
+              errorGlobal = true;
+            }
+          } catch (err) {
+            ins.statut_inscription = oldStatut;
+            errorGlobal = true;
+
+            const n = errorService.CreateError(this.action, err);
+            errorService.emitChange(n);
+          }
+        });
+
+        await Promise.all(promises);
+
+        if (!errorGlobal) {
+          const n = errorService.OKMessage(this.action);
+          errorService.emitChange(n);
+        }
+
+        this.MesAdherents = [...this.MesAdherents];
+
+        this.All = this.All.map(x => {
+          const updated = this.MesAdherents.find(
+            m => Number(m.personne_id) === Number(x.personne_id),
+          );
+
+          return updated
+            ? { ...x, statut_inscription: updated.statut_inscription }
+            : x;
+        });
+      }
+
+      this.cdr.detectChanges();
+    } catch (error) {
+      const n = errorService.CreateError(this.action, error);
+      errorService.emitChange(n);
+      this.cdr.detectChanges();
     }
-
-    this.cdr.detectChanges();
-  } catch (error) {
-    const n = errorService.CreateError(this.action, error);
-    errorService.emitChange(n);
-    this.cdr.detectChanges();
   }
-}
 
   GetNbPersonne(): boolean {
     if (this.thisSeance.est_place_maximum) {
@@ -1116,6 +1125,56 @@ La séance ${this.seanceText} est annulée.`;
     }
   }
 
+  private buildMailVariables(
+    recipient: FullInscriptionSeance_VM,
+  ): Record<string, unknown> {
+    return {
+      SEANCE: this.thisSeance?.nom ?? "",
+      id: this.thisSeance?.id ?? 0,
+      ID: this.thisSeance?.id ?? 0,
+      PERSONNE_ID: recipient?.personne_id ?? 0,
+      NOM: recipient?.person?.libelle ?? "",
+      DATE: formatDDMMYYYY(this.thisSeance?.date_seance),
+      LIEU: this.thisSeance?.lieu_nom ?? "lieu non définie",
+      HEURE: this.thisSeance?.heure_debut ?? "heure non définie",
+      RDV: this.thisSeance?.rdv ?? "",
+      DUREE:
+        this.thisSeance?.duree_seance != null
+          ? `${this.thisSeance.duree_seance} min`
+          : "durée non définie",
+      NOTES: this.Notes ?? "",
+    };
+  }
+
+  private renderTemplate(
+    template: string | null | undefined,
+    variables: Record<string, unknown>,
+  ): string {
+    return String(template ?? "").replace(
+      /\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g,
+      (_match, key: string) => String(variables[key] ?? ""),
+    );
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  private renderMailHtml(
+    template: string | null | undefined,
+    variables: Record<string, unknown>,
+  ): string {
+    const rendered = this.escapeHtml(this.renderTemplate(template, variables));
+    return rendered
+      .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\r?\n/g, "<br>");
+  }
+
   sendMail(kind: "convocation" | "annulation") {
     const errorService = ErrorService.instance;
 
@@ -1138,17 +1197,26 @@ La séance ${this.seanceText} est annulée.`;
           errorService.emitChange(o);
         });
     }
-    const listmail: OutgoingMessageVm[] = this.selectedRecipients.map((x) => ({
-      to_person_id: x.personne_id,
-      subject: this.mailSubject,
-      body: this.mailBody,
-      html: "",
-      to: {
-        email: "",
-        name: x.person.libelle,
-      },
-      project_id: this.store.selectedProjectId(),
-    }));
+
+    const listmail: OutgoingMessageVm[] = this.selectedRecipients.map((x) => {
+      const variables = this.buildMailVariables(x);
+      const subject = this.renderTemplate(this.mailSubject, variables)
+        .replace(/\*\*/g, "");
+      const body = this.renderTemplate(this.mailBody, variables);
+      const html = this.renderMailHtml(this.mailBody, variables);
+
+      return {
+        to_person_id: x.personne_id,
+        subject,
+        body,
+        html,
+        to: {
+          email: "",
+          name: x.person.libelle,
+        },
+        project_id: this.store.selectedProjectId(),
+      };
+    });
 
     this.action = $localize`Envoi du mail`;
     this.mailserv

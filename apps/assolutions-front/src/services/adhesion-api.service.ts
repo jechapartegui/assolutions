@@ -13,12 +13,17 @@ export class AdhesionApiService {
   get(): Promise<ProjetView[]> {
     return this.api.GET<ProjetView[]>(this.base);
   }
-    Anniversaire(saison_id: number): Promise<string[]> {
+
+  Anniversaire(saison_id: number): Promise<string[]> {
     return this.api.GET<string[]>(this.base + `/anniversaire/${saison_id}`);
   }
 
   GetAdherentAdhesion(saison_id: number, login: string): Promise<Adherent_VM[]> {
-    return this.api.POST<Adherent_VM[]>(this.base + `/adherent/${saison_id}` , { login });
+    return this.api.POST<Adherent_VM[]>(this.base + `/adherent/${saison_id}`, { login });
+  }
+
+  GetAdherentSaisonStaff(saison_id: number): Promise<Adherent_VM[]> {
+    return this.api.POST<Adherent_VM[]>(this.base + `/staff-adherents/${saison_id}`, {});
   }
 
   admin_search(search: string): Promise<PersonneSearchItem[]> {
@@ -26,13 +31,12 @@ export class AdhesionApiService {
   }
 
   private mapPersonne(raw: any): PersonneSearchItem {
-  return {
-    id: Number(raw.id),
-    nom: raw.nom,
-    prenom: raw.prenom,
-    surnom: raw.surnom,
-    libelle: raw.libelle || [raw.prenom, raw.nom, raw.surnom].filter(Boolean).join(' '),
-  };
-}
-
+    return {
+      id: Number(raw.id),
+      nom: raw.nom,
+      prenom: raw.prenom,
+      surnom: raw.surnom,
+      libelle: raw.libelle || [raw.prenom, raw.nom, raw.surnom].filter(Boolean).join(' '),
+    };
+  }
 }

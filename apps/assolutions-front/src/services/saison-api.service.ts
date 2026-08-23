@@ -17,16 +17,32 @@ export class SaisonApiService {
   }
 
   create(dto: CreateSaisonDto): Promise<Saison> {
-    return this.api.POST<Saison>(this.base, dto);
+    return this.api.POST<Saison>(this.base, this.toPayload(dto));
   }
 
   update(id: number, dto: UpdateSaisonDto): Promise<Saison> {
-    return this.api.POST<Saison>(`${this.base}/${id}/update`, dto);
+    return this.api.POST<Saison>(`${this.base}/${id}/update`, this.toPayload(dto));
   }
 
   remove(id: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
 
- 
+  private toPayload(dto: any): Record<string, unknown> {
+    return {
+      nom: dto?.nom,
+      active: dto?.active,
+      date_debut: this.normalizeDate(dto?.date_debut),
+      date_fin: this.normalizeDate(dto?.date_fin),
+      saison_precedente: dto?.saison_precedente,
+    };
+  }
+
+  private normalizeDate(value: unknown): unknown {
+    if (!(value instanceof Date)) return value;
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 }

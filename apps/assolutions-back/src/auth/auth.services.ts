@@ -35,7 +35,7 @@ const MIN_SECRET_LENGTH = 32;
 @Injectable()
 export class AuthService {
   private readonly tokenPepper: string;
-  private readonly legacyPepper: string;
+  private readonly legacyPeppers: string[];
 
   constructor(
     private readonly jwt: JwtService,
@@ -58,10 +58,18 @@ export class AuthService {
     private readonly loginProjectRepo: Repository<LoginProjectEntity>,
   ) {
     this.tokenPepper = this.requireSecret('TOKEN_PEPPER');
-    this.legacyPepper =
-      this.config.get<string>('PASSWORD_LEGACY_PEPPER') ??
-      this.config.get<string>('PEPPER') ??
-      '';
+
+    // Les comptes historiques ont été hachés avec PEPPER. La branche de
+    // sécurisation introduit PASSWORD_LEGACY_PEPPER pour permettre la rotation,
+    // mais il ne faut pas qu'une nouvelle valeur masque l'ancienne pendant la
+    // migration. On essaie donc les deux valeurs configurées, sans jamais les
+    // exposer ni les stocker dans le nouveau hash.
+    this.legacyPeppers = [
+      this.config.get<string>('PASSWORD_LEGACY_PEPPER'),
+      this.config.get<string>('PEPPER'),
+    ]
+      .map((value) => String(value ?? '').trim())
+      .filter((value, index, values) => !!value && values.indexOf(value) === index);
   }
 
   private signToken(compte: CompteEntity): string {
@@ -167,11 +175,14 @@ export class AuthService {
 
     if (!password) throw new BadRequestException('PASSWORD_REQUIRED');
 
-    const verification = verifyPassword(password, storedPassword, this.legacyPepper);
+    const verification = verifyPassword(password, storedPassword, this.legacyPeppers);
     if (!verification.valid) {
       throw new BadRequestException('INCORRECT_PASSWORD');
     }
 
+    // Dès la première connexion réussie d'un compte historique, on remplace
+    // son HMAC-SHA256 par le format scrypt salé courant. La compatibilité est
+    // donc temporaire et disparaît naturellement au fil des connexions.
     if (verification.needsRehash) {
       compte.password = hashPassword(password);
       await this.compteRepo.save(compte);
@@ -403,16 +414,17 @@ export class AuthService {
     token: string,
     expectedHash: string | null | undefined,
   ): boolean {
-    if (!this.legacyPepper || !token || !expectedHash || token.includes('.')) {
+    if (!token || !expectedHash || token.includes('.') || !this.legacyPeppers.length) {
       return false;
     }
 
-    const legacyHash = require('node:crypto')
-      .createHmac('sha256', this.legacyPepper)
-      .update(token)
-      .digest('hex');
-
-    return legacyHash === expectedHash;
+    return this.legacyPeppers.some((pepper) => {
+      const legacyHash = require('node:crypto')
+        .createHmac('sha256', pepper)
+        .update(token)
+        .digest('hex');
+      return legacyHash === expectedHash;
+    });
   }
 
   private getFrontUrl(): string {

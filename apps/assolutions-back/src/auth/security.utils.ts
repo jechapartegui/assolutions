@@ -33,7 +33,7 @@ export function hashPassword(password: string): string {
 export function verifyPassword(
   password: string,
   stored: string,
-  legacyPepper: string,
+  legacyPepper: string | string[],
 ): { valid: boolean; needsRehash: boolean } {
   if (!stored) return { valid: false, needsRehash: false };
 
@@ -52,38 +52,56 @@ export function verifyPassword(
 
     try {
       const expected = Buffer.from(expectedHex, 'hex');
-      const received = scryptSync(password, Buffer.from(saltHex, 'hex'), expected.length, {
-        N: n,
-        r,
-        p,
-        maxmem: SCRYPT_MAXMEM,
-      });
+      const received = scryptSync(
+        password,
+        Buffer.from(saltHex, 'hex'),
+        expected.length,
+        {
+          N: n,
+          r,
+          p,
+          maxmem: SCRYPT_MAXMEM,
+        },
+      );
+
+      const valid =
+        expected.length === received.length &&
+        timingSafeEqual(expected, received);
 
       return {
-        valid:
-          expected.length === received.length &&
-          timingSafeEqual(expected, received),
-        needsRehash: n !== SCRYPT_N || r !== SCRYPT_R || p !== SCRYPT_P,
+        valid,
+        needsRehash:
+          valid && (n !== SCRYPT_N || r !== SCRYPT_R || p !== SCRYPT_P),
       };
     } catch {
       return { valid: false, needsRehash: false };
     }
   }
 
-  // Migration transparente des anciens HMAC-SHA256.
-  if (/^[a-f0-9]{64}$/i.test(stored) && legacyPepper) {
-    const legacy = createHmac('sha256', legacyPepper)
-      .update(password)
-      .digest('hex');
+  // Migration transparente des anciens HMAC-SHA256. Pendant la transition on
+  // accepte explicitement les deux noms de variable historiques possibles :
+  // PASSWORD_LEGACY_PEPPER et PEPPER. Dès qu'un ancien hash est validé, le
+  // service d'authentification le remplace immédiatement par un hash scrypt.
+  if (/^[a-f0-9]{64}$/i.test(stored)) {
+    const peppers = (Array.isArray(legacyPepper) ? legacyPepper : [legacyPepper])
+      .map((value) => String(value ?? '').trim())
+      .filter((value, index, values) => !!value && values.indexOf(value) === index);
 
     const expected = Buffer.from(stored, 'hex');
-    const received = Buffer.from(legacy, 'hex');
-    return {
-      valid:
+
+    for (const pepper of peppers) {
+      const legacy = createHmac('sha256', pepper)
+        .update(password)
+        .digest('hex');
+      const received = Buffer.from(legacy, 'hex');
+
+      if (
         expected.length === received.length &&
-        timingSafeEqual(expected, received),
-      needsRehash: true,
-    };
+        timingSafeEqual(expected, received)
+      ) {
+        return { valid: true, needsRehash: true };
+      }
+    }
   }
 
   return { valid: false, needsRehash: false };
