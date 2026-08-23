@@ -36,6 +36,53 @@ export class ContratProfService {
       .getMany();
   }
 
+  /**
+   * Projection volontairement minimale utilisée par les écrans adhérents.
+   * Elle conserve la forme attendue par ContratProfDataStore (id/saison/prof
+   * + personne embarquée), sans exposer les champs du contrat professionnel.
+   */
+  async listLightsForSeason(saisonId: number, projectId: number) {
+    await this.assertSaisonInProject(saisonId, projectId);
+
+    const rows = await this.repo
+      .createQueryBuilder('c')
+      .innerJoin('saison', 's', 's.id = c.saison_id')
+      .innerJoin('professeur', 'prof', 'prof.id = c.professeur_id')
+      .innerJoin('personne', 'p', 'p.id = prof.id')
+      .select('c.id', 'id')
+      .addSelect('c.saison_id', 'saison_id')
+      .addSelect('c.professeur_id', 'professeur_id')
+      .addSelect('p.id', 'personne_id')
+      .addSelect('p.last_name', 'nom')
+      .addSelect('p.first_name', 'prenom')
+      .addSelect('p.nickname', 'surnom')
+      .where('s.id = :saisonId', { saisonId })
+      .andWhere('s.project_id = :projectId', { projectId })
+      .andWhere('prof.project_id = :projectId', { projectId })
+      .orderBy('c.id', 'ASC')
+      .getRawMany<{
+        id: number | string;
+        saison_id: number | string;
+        professeur_id: number | string;
+        personne_id: number | string;
+        nom: string | null;
+        prenom: string | null;
+        surnom: string | null;
+      }>();
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      saison_id: Number(row.saison_id),
+      professeur_id: Number(row.professeur_id),
+      personne: {
+        id: Number(row.personne_id),
+        nom: row.nom ?? '',
+        prenom: row.prenom ?? '',
+        surnom: row.surnom ?? '',
+      },
+    }));
+  }
+
   async exist(profId: number, projectId: number) {
     const professeur = await this.professeurRepo.findOne({ where: { id: profId } });
     if (!professeur) throw new NotFoundException(`professeur ${profId} introuvable`);
