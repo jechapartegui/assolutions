@@ -22,6 +22,7 @@
     "build:all": "npm run build:preprod && npm run build:prod",
     "build": "npm run build:prod",
     "check": "npm run security:check && npm audit --omit=dev --audit-level=critical && npm run build:prod",
+    "db:preprod-to-local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/copy-preprod-to-local.ps1",
     "anonymize:preprod": "node scripts/anonymize-preprod.cjs",
     "security:check": "node scripts/security-check.cjs"
   },
