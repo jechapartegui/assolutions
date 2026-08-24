@@ -1,4 +1,4 @@
-param(
+﻿param(
   [switch]$Yes
 )
 
@@ -89,6 +89,28 @@ function Get-DatabaseInfo {
 function Find-PgTool {
   param([Parameter(Mandatory = $true)][string]$Name)
 
+  # Priorité aux installations PostgreSQL versionnées. Le PATH peut encore
+  # pointer vers une ancienne version (ex. PG17) alors que PG18 est installé.
+  $postgresFolders = @(
+    Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction SilentlyContinue |
+      ForEach-Object {
+        $major = 0
+        [void][int]::TryParse($_.Name, [ref]$major)
+        [PSCustomObject]@{
+          Folder = $_
+          Major = $major
+        }
+      } |
+      Sort-Object Major -Descending
+  )
+
+  foreach ($entry in $postgresFolders) {
+    $candidate = Join-Path $entry.Folder.FullName "bin\$Name.exe"
+    if (Test-Path -LiteralPath $candidate) {
+      return $candidate
+    }
+  }
+
   $command = Get-Command $Name -ErrorAction SilentlyContinue
   if ($command) {
     return $command.Source
@@ -100,16 +122,6 @@ function Find-PgTool {
   )
 
   foreach ($candidate in $candidates) {
-    if (Test-Path -LiteralPath $candidate) {
-      return $candidate
-    }
-  }
-
-  $postgresFolders = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction SilentlyContinue |
-    Sort-Object Name -Descending
-
-  foreach ($folder in $postgresFolders) {
-    $candidate = Join-Path $folder.FullName "bin\$Name.exe"
     if (Test-Path -LiteralPath $candidate) {
       return $candidate
     }
@@ -185,11 +197,13 @@ if ($sourceUrl -eq $targetUrl) {
 $pgDump = Find-PgTool -Name 'pg_dump'
 $pgRestore = Find-PgTool -Name 'pg_restore'
 $psql = Find-PgTool -Name 'psql'
+$pgDumpVersion = (& $pgDump '--version' 2>&1 | Select-Object -First 1)
 
 Write-Host ''
 Write-Host '=== Copie BDD PREPROD -> LOCAL ===' -ForegroundColor Cyan
 Write-Host "Source : $($source.Host)/$($source.Database)"
 Write-Host "Cible  : $($target.Host)/$($target.Database)"
+Write-Host "Outils : $pgDumpVersion"
 Write-Warning 'Le contenu du schéma public de la base LOCALE va être entièrement remplacé.'
 Write-Host 'Les identifiants complets ne sont volontairement jamais affichés.'
 Write-Host ''
