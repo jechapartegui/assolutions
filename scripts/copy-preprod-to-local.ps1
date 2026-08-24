@@ -143,24 +143,53 @@ function Invoke-Pg {
   }
 }
 
+function Invoke-PsqlScalar {
+  param(
+    [Parameter(Mandatory = $true)][string]$Psql,
+    [Parameter(Mandatory = $true)][string]$Url,
+    [Parameter(Mandatory = $true)][string]$Query,
+    [Parameter(Mandatory = $true)][string]$Label
+  )
+
+  $output = & $Psql $Url '-At' '-v' 'ON_ERROR_STOP=1' '-c' $Query
+  if ($LASTEXITCODE -ne 0) {
+    throw "$Label (code $LASTEXITCODE)."
+  }
+
+  $value = @($output | Where-Object { $_ -and $_.Trim() } | Select-Object -Last 1)
+  if ($value.Count -eq 0) {
+    throw "$Label : résultat vide."
+  }
+
+  return [string]$value[0].Trim()
+}
+
 function Get-PublicTableCount {
   param(
     [Parameter(Mandatory = $true)][string]$Psql,
     [Parameter(Mandatory = $true)][string]$Url
   )
 
-  $query = "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';"
-  $output = & $Psql $Url '-At' '-v' 'ON_ERROR_STOP=1' '-c' $query
-  if ($LASTEXITCODE -ne 0) {
-    throw "Impossible de compter les tables PostgreSQL (code $LASTEXITCODE)."
+  $value = Invoke-PsqlScalar -Psql $Psql -Url $Url -Query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';" -Label 'Impossible de compter les tables PostgreSQL'
+  if ($value -notmatch '^\d+$') {
+    throw "Nombre de tables PostgreSQL invalide : $value"
   }
 
-  $lastLine = @($output | Where-Object { $_ -match '^\s*\d+\s*$' } | Select-Object -Last 1)
-  if ($lastLine.Count -eq 0) {
-    throw 'Impossible de lire le nombre de tables PostgreSQL.'
+  return [int]$value
+}
+
+function Get-ServerMajorVersion {
+  param(
+    [Parameter(Mandatory = $true)][string]$Psql,
+    [Parameter(Mandatory = $true)][string]$Url
+  )
+
+  $value = Invoke-PsqlScalar -Psql $Psql -Url $Url -Query 'SHOW server_version_num;' -Label 'Impossible de lire la version PostgreSQL'
+  if ($value -notmatch '^\d+$') {
+    throw "Version PostgreSQL invalide : $value"
   }
 
-  return [int]$lastLine[0].Trim()
+  return [int][Math]::Floor(([int64]$value) / 10000)
 }
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -199,11 +228,20 @@ $pgRestore = Find-PgTool -Name 'pg_restore'
 $psql = Find-PgTool -Name 'psql'
 $pgDumpVersion = (& $pgDump '--version' 2>&1 | Select-Object -First 1)
 
+# Vérification avant toute opération destructive : restaurer un dump d'un serveur
+# plus récent vers un serveur PostgreSQL plus ancien n'est pas supporté.
+$sourceMajor = Get-ServerMajorVersion -Psql $psql -Url $sourceUrl
+$targetMajor = Get-ServerMajorVersion -Psql $psql -Url $targetUrl
+if ($targetMajor -lt $sourceMajor) {
+  throw "Version PostgreSQL locale trop ancienne : préprod=PG$sourceMajor, local=PG$targetMajor. Mets le serveur local à niveau avant la copie."
+}
+
 Write-Host ''
 Write-Host '=== Copie BDD PREPROD -> LOCAL ===' -ForegroundColor Cyan
-Write-Host "Source : $($source.Host)/$($source.Database)"
-Write-Host "Cible  : $($target.Host)/$($target.Database)"
+Write-Host "Source : $($source.Host)/$($source.Database) (PG$sourceMajor)"
+Write-Host "Cible  : $($target.Host)/$($target.Database) (PG$targetMajor)"
 Write-Host "Outils : $pgDumpVersion"
+Write-Host 'Ignoré : extension technique pg_stat_statements (monitoring Render)'
 Write-Warning 'Le contenu du schéma public de la base LOCALE va être entièrement remplacé.'
 Write-Host 'Les identifiants complets ne sont volontairement jamais affichés.'
 Write-Host ''
@@ -228,6 +266,7 @@ try {
     '--format=custom',
     '--no-owner',
     '--no-privileges',
+    '--exclude-extension=pg_stat_statements',
     "--file=$tempDump",
     $sourceUrl
   )
@@ -253,6 +292,7 @@ CREATE SCHEMA public;
     '--no-owner',
     '--no-privileges',
     '--exit-on-error',
+    '--single-transaction',
     "--dbname=$targetUrl",
     $tempDump
   )
