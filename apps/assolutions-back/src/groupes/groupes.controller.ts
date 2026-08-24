@@ -36,22 +36,26 @@ export class GroupesController {
     return this.service.getForProject(id, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(
+  async create(
+    @Req() req: any,
     @ProjectId() projectId: number,
     @Body() dto: CreateGroupesDto,
   ) {
+    await this.access.assertProjectStaff(req.user.id, projectId);
     return this.service.create(dto, projectId);
   }
 
-  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @UseGuards(JwtAuthGuard)
   @Post(':id/update')
-  update(
+  async update(
+    @Req() req: any,
     @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number,
     @Body() dto: UpdateGroupesDto,
   ) {
+    await this.access.assertProjectStaff(req.user.id, projectId);
     return this.service.update(id, dto, projectId);
   }
 

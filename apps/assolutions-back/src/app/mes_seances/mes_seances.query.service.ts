@@ -279,13 +279,16 @@ export class MesSeancesQueryService {
         ON ins.personne_id = pc.personne_id
        AND ins.seance_id = s.seance_id
       WHERE
-        (
-          s.age_minimum IS NULL
-          OR s.age_minimum <= pc.age
-        )
-        AND (
-          s.age_maximum IS NULL
-          OR s.age_maximum >= pc.age
+        ins.personne_id IS NOT NULL
+        OR (
+          (
+            s.age_minimum IS NULL
+            OR s.age_minimum <= pc.age
+          )
+          AND (
+            s.age_maximum IS NULL
+            OR s.age_maximum >= pc.age
+          )
         )
       ORDER BY pc.personne_id, s.date_seance, s.heure_debut, s.seance_id
       `,

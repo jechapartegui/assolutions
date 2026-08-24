@@ -62,6 +62,7 @@ export class MessageApiService {
       const personId = Number(message.to_person_id ?? 0);
       const personne = personnesById.get(personId);
       const email = String(message.to?.email || personne?.login || '').trim();
+      const legacyBody = String(message.body ?? '');
 
       if (!email) {
         throw new Error(
@@ -75,7 +76,13 @@ export class MessageApiService {
           name: message.to?.name ?? null,
         },
         subject: message.subject,
-        html: message.html || message.body || '',
+        // Ma séance fournit encore deux représentations : `body` contient le
+        // template HTML original alors que `html` peut contenir ce même document
+        // échappé (&lt;html&gt;), ce qui affiche le code source dans le mail.
+        // Pour un vrai document HTML, on conserve donc le template original.
+        html: this.isHtmlDocument(legacyBody)
+          ? legacyBody
+          : message.html || legacyBody,
         cc: message.cc,
         bcc: message.bcc,
         record:
@@ -83,5 +90,10 @@ export class MessageApiService {
           (personId > 0 ? `personne:${personId}` : null),
       };
     });
+  }
+
+  private isHtmlDocument(value: string): boolean {
+    const source = String(value ?? '').trim();
+    return /^<!doctype\s+html\b/i.test(source) || /^<html\b/i.test(source);
   }
 }
