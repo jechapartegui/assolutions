@@ -20,8 +20,14 @@
           <div *ngIf="projectId" class="notification is-info is-light">
             <span class="icon mr-1"><i class="fas fa-diagram-project"></i></span>
             <strong i18n>Projet associé :</strong>
-            <span i18n> projet #{{ projectId }}</span>
+            <span *ngIf="projectLoading" i18n> chargement…</span>
+            <span *ngIf="!projectLoading && projectName"> {{ projectName }}</span>
+            <span *ngIf="!projectLoading && !projectName" i18n> projet associé</span>
             <p class="help mt-1 mb-0" i18n>Le compte sera créé et rattaché à ce projet.</p>
+            <p *ngIf="projectLoadFailed" class="help is-warning mt-1 mb-0">
+              <span i18n>Nom du projet indisponible.</span>
+              <span> Référence technique : #{{ projectId }}</span>
+            </p>
           </div>
 
           <div *ngIf="!rProject.key" class="notification is-warning is-light">
