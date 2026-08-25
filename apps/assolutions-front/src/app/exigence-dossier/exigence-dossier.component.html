@@ -49,11 +49,11 @@
                 <option *ngFor="let level of medicalLevels" [value]="level.code">{{ level.label }}</option>
               </select>
             </div>
-            <p class="help" i18n>Standard accepte les parcours médicaux du dossier. Compétition exige qu'un certificat compatible compétition participe au parcours.</p>
+            <p class="help" i18n>Standard accepte les trois parcours médicaux du dossier. Compétition exige qu'un certificat fasse partie du parcours valide.</p>
           </div>
           <div class="column is-6" *ngIf="item.type_exigence === 'PREUVE_MEDICALE'">
             <div class="notification is-link is-light mb-0 is-size-7" i18n>
-              <strong>Parcours médical :</strong> certificat médical récent, ou certificat de moins de 3 ans + QS Sport de la saison, ou QS Sport seul. Une exigence « compétition » nécessite en plus un certificat marqué compatible compétition.
+              <strong>Parcours médical :</strong> certificat médical récent, ou certificat de moins de 3 ans + QS Sport de la saison, ou QS Sport seul. Une exigence « compétition » accepte les deux parcours comportant un certificat.
             </div>
           </div>
 
