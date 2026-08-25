@@ -37,7 +37,8 @@
           type="button"
           [disabled]="loading"
           (click)="ngOnInit()"
-         i18n>
+          i18n
+        >
           Vérifier à nouveau
         </button>
         <a class="button is-primary" routerLink="/menu" i18n>Retour au menu</a>
@@ -68,8 +69,25 @@
 
       <main class="subscription-content">
         <section *ngIf="step === 1">
-          <h2 class="title is-5 mb-1" i18n>Qui souhaites-tu inscrire ?</h2>
-          <p class="has-text-grey mb-4" i18n>Une personne déjà inscrite sur cette saison ne peut pas être sélectionnée une seconde fois.</p>
+          <div class="is-flex is-justify-content-space-between is-align-items-flex-start is-flex-wrap-wrap mb-4" style="gap: .75rem">
+            <div>
+              <h2 class="title is-5 mb-1" i18n>Qui souhaites-tu inscrire ?</h2>
+              <p class="has-text-grey mb-0" i18n>Une personne déjà inscrite sur cette saison ne peut pas être sélectionnée une seconde fois.</p>
+            </div>
+            <a
+              *ngIf="!isAdminMode"
+              class="button is-primary is-light"
+              [routerLink]="['/adherent']"
+              [queryParams]="{ context: 'MON_COMPTE', action: 'CREATE', returnUrl: '/souscription' }"
+            >
+              <span class="icon"><i class="fas fa-user-plus"></i></span>
+              <span i18n>Ajouter une personne</span>
+            </a>
+          </div>
+
+          <div *ngIf="ctx.personnes.length === 0" class="notification is-info is-light" i18n>
+            Aucune personne n'est encore rattachée à ce compte. Utilise « Ajouter une personne » pour commencer l'inscription.
+          </div>
 
           <div class="person-grid">
             <article class="person-card" *ngFor="let person of ctx.personnes" [class.is-selected]="isSelected(person.id)" [class.is-disabled]="person.inscription_active">

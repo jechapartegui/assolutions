@@ -1,0 +1,33 @@
+<div class="help-page">
+  <section class="help-card">
+    <header class="help-header">
+      <div>
+        <p class="help-kicker" i18n>Aide en ligne</p>
+        <h1 class="title is-4 mb-1" i18n>Comment pouvons-nous vous aider ?</h1>
+        <p class="has-text-grey mb-0" i18n>
+          Les rubriques affichées s'adaptent à vos droits dans le club.
+        </p>
+      </div>
+      <span class="tag is-info is-light" i18n>Assolutions</span>
+    </header>
+
+    <div class="help-grid">
+      <article class="help-topic" *ngFor="let topic of visibleTopics">
+        <div class="help-topic-head">
+          <span class="help-icon"><i class="fa-solid" [ngClass]="topic.icon"></i></span>
+          <div>
+            <h2 class="title is-6 mb-1">{{ topic.label }}</h2>
+            <p class="has-text-grey is-size-7 mb-0">{{ topic.description }}</p>
+          </div>
+        </div>
+
+        <ul class="help-points">
+          <li *ngFor="let point of topic.points">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>{{ point }}</span>
+          </li>
+        </ul>
+      </article>
+    </div>
+  </section>
+</div>

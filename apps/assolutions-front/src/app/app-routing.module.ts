@@ -28,6 +28,7 @@ import { InscriptionComponent } from './inscription/inscription.component';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
 import { CodePromoComponent } from './code-promo/code-promo.component';
 import { ExigenceDossierComponent } from './exigence-dossier/exigence-dossier.component';
+import { HelpComponent } from './help/help.component';
 
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
 const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
@@ -46,6 +47,7 @@ const routes: Routes = [
   { path: 'ma-seance', component: MaSeanceComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'adherent', component: AdherentComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'groupe', component: GroupeComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
+  { path: 'aide', component: HelpComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 's/:slug', component: ShortLinkRedirectComponent },
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },

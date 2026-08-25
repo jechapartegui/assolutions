@@ -20,7 +20,8 @@
             aria-label="menu"
             [attr.aria-expanded]="isactive"
             data-target="navMaSeance"
-           i18n-aria-label>
+            i18n-aria-label
+          >
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -148,6 +149,15 @@
                 >
                   <i class="fa-solid fa-table-columns"></i>
                 </a>
+                <a
+                  class="button is-light is-rounded"
+                  [routerLink]="['/aide']"
+                  title="Aide en ligne"
+                  i18n-title
+                >
+                  <i class="fa-solid fa-circle-question"></i>
+                  <span class="is-hidden-touch ml-1" i18n>Aide</span>
+                </a>
                 <a class="button is-danger is-light is-rounded" (click)="LogOut()" title="Se déconnecter" i18n-title>
                   <i class="fa-solid fa-right-from-bracket"></i>
                 </a>
@@ -240,6 +250,13 @@
               >
                 <span class="icon is-large"><i class="fas fa-2x fa-layer-group"></i></span>
                 <span class="tablet" i18n>Groupes</span>
+              </a>
+            </li>
+
+            <li *ngIf="store.isLoggedIn()">
+              <a [routerLink]="['/aide']">
+                <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
+                <span class="tablet" i18n>Aide</span>
               </a>
             </li>
           </ul>

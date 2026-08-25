@@ -17,9 +17,17 @@
 
         <!-- FORM -->
         <section class="login-body">
+          <div *ngIf="projectId" class="notification is-info is-light">
+            <span class="icon mr-1"><i class="fas fa-diagram-project"></i></span>
+            <strong i18n>Projet associé :</strong>
+            <span i18n> projet #{{ projectId }}</span>
+            <p class="help mt-1 mb-0" i18n>Le compte sera créé et rattaché à ce projet.</p>
+          </div>
+
           <div *ngIf="!rProject.key" class="notification is-warning is-light">
-  {{ rProject.value }}
-</div>
+            {{ rProject.value }}
+          </div>
+
           <!-- Email -->
           <div class="field">
             <label class="label is-small" for="createEmail" i18n>Email</label>
@@ -87,14 +95,14 @@
         <footer class="login-footer">
           <p class="control stack-3">
             <button
-  class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-  [class.is-loading]="loading"
-  [disabled]="!VM.isValid || loading"
-  (click)="CreerCompte()"
-  i18n
->
-  Créer le compte
-</button>
+              class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+              [class.is-loading]="loading"
+              [disabled]="!VM.isValid || loading"
+              (click)="CreerCompte()"
+              i18n
+            >
+              Créer le compte
+            </button>
 
             <button
               type="button"
