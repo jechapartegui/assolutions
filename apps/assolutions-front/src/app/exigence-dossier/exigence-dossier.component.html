@@ -17,7 +17,7 @@
       <div class="requirements-list">
         <article class="requirement-item" *ngFor="let item of visibleRequirements">
           <div class="requirement-main">
-            <div class="tags mb-2"><span class="tag" [ngClass]="item.usage === 'INSCRIPTION' ? 'is-primary is-light' : 'is-link is-light'">{{ item.usage === 'INSCRIPTION' ? 'Inscription' : 'Licence' }}</span><span class="tag" [ngClass]="item.bloquante ? 'is-danger is-light' : 'is-warning is-light'">{{ item.bloquante ? 'Bloquante' : 'Non bloquante' }}</span><span class="tag is-light" *ngIf="!item.actif" i18n>Inactive</span></div>
+            <div class="tags mb-2"><span class="tag" [ngClass]="item.usage === 'INSCRIPTION' ? 'is-primary is-light' : 'is-link is-light'">{{ item.usage === 'INSCRIPTION' ? 'Inscription' : 'Licence' }}</span><span class="tag" [ngClass]="item.bloquante ? 'is-danger is-light' : 'is-warning is-light'">{{ item.bloquante ? 'Bloquante par défaut' : 'Non bloquante par défaut' }}</span><span class="tag is-light" *ngIf="!item.actif" i18n>Inactive</span></div>
             <strong>{{ item.libelle }}</strong>
             <p class="is-size-7 has-text-grey">{{ item.code }} · {{ item.type_exigence }}</p>
             <p class="requirement-description" *ngIf="item.description">{{ item.description }}</p>
@@ -31,18 +31,31 @@
       <aside class="requirements-editor" *ngIf="edit as item">
         <h2 class="title is-5">{{ item.id ? 'Modifier l’exigence' : 'Créer une exigence' }}</h2>
         <div class="notification is-info is-light is-size-7" i18n>
-          <strong>Lecture rapide :</strong> l’utilisation indique ce que l’exigence complète. Une exigence de licence obligatoire mais non bloquante n’empêche pas l’adhésion : elle rend seulement la licence inéligible tant que la pièce manque. La nature indique où chercher la réponse.
+          <strong>Lecture rapide :</strong> les cases « obligatoire » et « bloquante » définissent le comportement par défaut. Chaque portée peut ensuite hériter de ces valeurs ou les renforcer/assouplir. Si plusieurs portées correspondent au même dossier, la règle explicite la plus stricte gagne.
         </div>
 
         <div class="columns is-multiline is-variable is-2">
-          <div class="column is-4"><label class="label" i18n>Code</label><input class="input" [(ngModel)]="item.code" placeholder="PREUVE_MEDICALE_COMPETITION"  i18n-placeholder/><p class="help" i18n>Identifiant technique stable et unique.</p></div>
+          <div class="column is-4"><label class="label" i18n>Code</label><input class="input" [(ngModel)]="item.code" placeholder="PREUVE_MEDICALE_COMPETITION" i18n-placeholder/><p class="help" i18n>Identifiant technique stable et unique.</p></div>
           <div class="column is-8"><label class="label" i18n>Libellé</label><input class="input" [(ngModel)]="item.libelle" /></div>
           <div class="column is-12"><label class="label" i18n>Description</label><textarea class="textarea" rows="2" [(ngModel)]="item.description"></textarea></div>
 
-          <div class="column is-6"><label class="label" i18n>Utilisation</label><div class="select is-fullwidth"><select [(ngModel)]="item.usage"><option value="INSCRIPTION" i18n>Inscription</option><option value="LICENCE" i18n>Licence</option></select></div><p class="help" i18n>Licence = suivi d’éligibilité, sans bloquer l’adhésion sauf choix explicite.</p></div>
-          <div class="column is-6"><label class="label" i18n>Nature</label><div class="select is-fullwidth"><select [(ngModel)]="item.type_exigence" (ngModelChange)="onTypeChange()"><option value="CHAMP_PERSONNE" i18n>Champ de la personne</option><option value="CONTACT" i18n>Contact</option><option value="DOCUMENT" i18n>Document</option><option value="PREUVE_MEDICALE" i18n>Preuve médicale : QS Sport ou certificat</option><option value="CONSENTEMENT" i18n>Consentement</option><option value="DECLARATION" i18n>Réponse saisie pour le dossier</option></select></div></div>
+          <div class="column is-6"><label class="label" i18n>Utilisation</label><div class="select is-fullwidth"><select [(ngModel)]="item.usage"><option value="INSCRIPTION" i18n>Inscription</option><option value="LICENCE" i18n>Licence</option></select></div><p class="help" i18n>Une exigence de licence peut elle aussi être bloquante si tu le choisis.</p></div>
+          <div class="column is-6"><label class="label" i18n>Nature</label><div class="select is-fullwidth"><select [(ngModel)]="item.type_exigence" (ngModelChange)="onTypeChange()"><option value="CHAMP_PERSONNE" i18n>Champ de la personne</option><option value="CONTACT" i18n>Contact</option><option value="DOCUMENT" i18n>Document</option><option value="PREUVE_MEDICALE" i18n>Preuve médicale</option><option value="CONSENTEMENT" i18n>Consentement</option><option value="DECLARATION" i18n>Réponse saisie pour le dossier</option></select></div></div>
 
-          <div class="column is-12" *ngIf="item.type_exigence === 'PREUVE_MEDICALE'"><div class="notification is-link is-light mb-0" i18n><strong>Règle médicale compétition :</strong> l’écran proposera soit le questionnaire de santé, soit un certificat avec date, médecin et RPPS. Cette exigence est automatiquement ciblée sur la licence COMPETITION et reste non bloquante pour l’adhésion.</div></div>
+          <div class="column is-6" *ngIf="item.type_exigence === 'PREUVE_MEDICALE'">
+            <label class="label" i18n>Niveau médical attendu</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="item.source_code">
+                <option *ngFor="let level of medicalLevels" [value]="level.code">{{ level.label }}</option>
+              </select>
+            </div>
+            <p class="help" i18n>Standard accepte les parcours médicaux du dossier. Compétition exige qu'un certificat compatible compétition participe au parcours.</p>
+          </div>
+          <div class="column is-6" *ngIf="item.type_exigence === 'PREUVE_MEDICALE'">
+            <div class="notification is-link is-light mb-0 is-size-7" i18n>
+              <strong>Parcours médical :</strong> certificat médical récent, ou certificat de moins de 3 ans + QS Sport de la saison, ou QS Sport seul. Une exigence « compétition » nécessite en plus un certificat marqué compatible compétition.
+            </div>
+          </div>
 
           <div class="column is-6" *ngIf="item.type_exigence === 'CHAMP_PERSONNE'"><label class="label" i18n>Champ contrôlé</label><div class="select is-fullwidth"><select [(ngModel)]="item.source_code"><option *ngFor="let field of personFields" [value]="field.code">{{ field.label }}</option></select></div></div>
           <div class="column is-6" *ngIf="item.type_exigence === 'CONTACT'"><label class="label" i18n>Type de contact</label><div class="select is-fullwidth"><select [(ngModel)]="item.source_code"><option *ngFor="let contact of contactTypes" [value]="contact.code">{{ contact.label }}</option></select></div></div>
@@ -57,19 +70,36 @@
           <div class="column is-5" *ngIf="item.type_exigence === 'CONSENTEMENT'"><label class="label" i18n>Version du texte</label><input class="input" [(ngModel)]="item.version_texte" placeholder="2026-01" /><p class="help" i18n>Changer la version impose une nouvelle acceptation.</p></div>
 
           <div class="column is-4"><label class="label" i18n>Ordre d'affichage</label><input class="input" type="number" min="0" [(ngModel)]="item.ordre" /></div>
-          <div class="column is-8 flags-column"><label class="checkbox mr-4" i18n><input type="checkbox" [(ngModel)]="item.obligatoire" /> Obligatoire</label><label class="checkbox mr-4" i18n><input type="checkbox" [(ngModel)]="item.bloquante" /> Bloquante pour l’inscription</label><label class="checkbox" i18n><input type="checkbox" [(ngModel)]="item.actif" /> Active</label></div>
+          <div class="column is-8 flags-column"><label class="checkbox mr-4" i18n><input type="checkbox" [(ngModel)]="item.obligatoire" /> Obligatoire par défaut</label><label class="checkbox mr-4" i18n><input type="checkbox" [(ngModel)]="item.bloquante" /> Bloquante par défaut</label><label class="checkbox" i18n><input type="checkbox" [(ngModel)]="item.actif" /> Active</label></div>
         </div>
 
         <section class="scope-editor">
-          <div class="scope-editor-header"><div><h3 class="title is-6 mb-1" i18n>Portées</h3><p class="is-size-7 has-text-grey" i18n>Cible tous les dossiers, certains groupes, tarifs ou types de licence.</p></div><button class="button is-small is-light" type="button" (click)="addScope('GENERAL')" i18n>Générale</button></div>
+          <div class="scope-editor-header"><div><h3 class="title is-6 mb-1" i18n>Portées</h3><p class="is-size-7 has-text-grey" i18n>Une même exigence peut s'appliquer en général et devenir plus stricte pour un groupe ou une licence.</p></div><button class="button is-small is-light" type="button" [disabled]="hasGeneralScope(item)" (click)="addScope('GENERAL')" i18n>+ Générale</button></div>
           <article class="scope-row" *ngFor="let scope of item.portees; let index = index">
             <div class="select"><select [(ngModel)]="scope.type_portee" (ngModelChange)="changeScope(scope)"><option value="GENERAL" i18n>Tous les dossiers</option><option value="GROUPE" i18n>Un groupe</option><option value="TARIF" i18n>Un tarif</option><option value="TYPE_LICENCE" i18n>Un type de licence</option></select></div>
             <div class="select is-expanded" *ngIf="scope.type_portee === 'GROUPE'"><select [(ngModel)]="scope.cible_id"><option [ngValue]="null" i18n>Choisir un groupe</option><option *ngFor="let groupe of groupes" [ngValue]="groupe.id">{{ groupe.nom }}</option></select></div>
             <div class="select is-expanded" *ngIf="scope.type_portee === 'TARIF'"><select [(ngModel)]="scope.cible_id"><option [ngValue]="null" i18n>Choisir un tarif</option><option *ngFor="let tarif of tarifs" [ngValue]="tarif.id">{{ tarif.nom }}</option></select></div>
-            <input class="input" *ngIf="scope.type_portee === 'TYPE_LICENCE'" [(ngModel)]="scope.cible_code" placeholder="COMPETITION"  i18n-placeholder/>
+            <div class="select is-expanded" *ngIf="scope.type_portee === 'TYPE_LICENCE'"><select [(ngModel)]="scope.cible_code"><option [ngValue]="null" i18n>Choisir une licence</option><option value="LOISIR" i18n>Loisir</option><option value="COMPETITION" i18n>Compétition</option></select></div>
             <span class="scope-general-label" *ngIf="scope.type_portee === 'GENERAL'" i18n>Applicable à tous</span>
+
+            <div class="select">
+              <select [(ngModel)]="scope.obligatoire_override">
+                <option [ngValue]="null" i18n>Obligatoire : hériter</option>
+                <option [ngValue]="true" i18n>Obligatoire : oui</option>
+                <option [ngValue]="false" i18n>Obligatoire : non</option>
+              </select>
+            </div>
+            <div class="select">
+              <select [(ngModel)]="scope.bloquante_override">
+                <option [ngValue]="null" i18n>Blocage : hériter</option>
+                <option [ngValue]="true" i18n>Blocage : oui</option>
+                <option [ngValue]="false" i18n>Blocage : non</option>
+              </select>
+            </div>
+
             <button class="button is-small is-danger is-light" type="button" (click)="removeScope(index)"><span class="icon"><i class="fas fa-trash"></i></span></button>
           </article>
+          <p class="help mt-2" i18n>« Hériter » utilise les cases par défaut de l'exigence. Si plusieurs portées correspondent, une valeur explicite « oui » l'emporte pour éviter de relâcher involontairement une règle plus stricte.</p>
           <div class="buttons are-small mt-3"><button class="button is-light" type="button" (click)="addScope('GROUPE')" i18n>+ Groupe</button><button class="button is-light" type="button" (click)="addScope('TARIF')" i18n>+ Tarif</button><button class="button is-light" type="button" (click)="addScope('TYPE_LICENCE')" i18n>+ Type de licence</button></div>
         </section>
 
