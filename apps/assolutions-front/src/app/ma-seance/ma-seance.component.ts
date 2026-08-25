@@ -137,7 +137,7 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   get pendingPlacesLabel(): string {
     if (!this.thisSeance?.est_place_maximum) return "";
     const max = this.thisSeance.place_maximum ?? 0;
-    const current = this.getPresent();
+    const current = this.getPresencePotentielle();
     return `${current}/${max} places`;
   }
 
@@ -647,13 +647,12 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * La capacité ne doit jamais empêcher le professeur de constater une
+   * présence réelle. Elle est appliquée au statut d'inscription (potentiel),
+   * pas au statut de séance.
+   */
   GetNbPersonne(): boolean {
-    if (this.thisSeance.est_place_maximum) {
-      const ct = this.All.filter(
-        (x) => x.statut_seance === SeanceStatus_VM.PRESENT,
-      ).length;
-      return ct < (this.thisSeance.place_maximum ?? 0);
-    }
     return true;
   }
 
@@ -760,6 +759,22 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
   MAJInscription(inscription: FullInscriptionSeance_VM, statut: string | null) {
     const errorService = ErrorService.instance;
 
+    if (
+      this.isPotentialTarget(statut) &&
+      !this.isPotentialInscription(inscription) &&
+      !this.hasPotentialPlace()
+    ) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Inscription à la séance`,
+          $localize`Nombre maximum de places atteint pour cette séance.`,
+        ),
+      );
+      inscription.isVisible = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
     inscription.isVisible = false;
 
     const oldStatut = inscription.statut_inscription ?? null;
@@ -828,6 +843,26 @@ export class MaSeanceComponent implements OnInit, AfterViewInit {
         inscription.statut_inscription = oldStatut;
         this.cdr.detectChanges();
       });
+  }
+
+  private isPotentialTarget(statut: string | null): boolean {
+    return statut === "présent" || statut === "essai";
+  }
+
+  private isPotentialInscription(
+    inscription: FullInscriptionSeance_VM,
+  ): boolean {
+    return (
+      inscription.statut_inscription === InscriptionStatus_VM.PRESENT ||
+      inscription.statut_inscription === InscriptionStatus_VM.ESSAI
+    );
+  }
+
+  private hasPotentialPlace(): boolean {
+    if (!this.thisSeance?.est_place_maximum) return true;
+    const maximum = Number(this.thisSeance.place_maximum ?? 0);
+    if (!Number.isFinite(maximum) || maximum <= 0) return true;
+    return this.getPresencePotentielle() < maximum;
   }
 
   getPresent(): number {

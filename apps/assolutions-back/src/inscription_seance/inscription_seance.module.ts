@@ -7,6 +7,7 @@ import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceEntity } from '../seance/seance.entity';
+import { CapacityAwareInscriptionSeanceService } from './capacity-aware-inscription-seance.service';
 import { InscriptionSeanceController } from './inscription_seance.controller';
 import { InscriptionSeanceEntity } from './inscription_seance.entity';
 import { InscriptionSeanceService } from './inscription_seance.service';
@@ -24,6 +25,11 @@ import { InscriptionSeanceService } from './inscription_seance.service';
     AccessControlModule,
   ],
   controllers: [InscriptionSeanceController],
-  providers: [InscriptionSeanceService],
+  providers: [
+    {
+      provide: InscriptionSeanceService,
+      useClass: CapacityAwareInscriptionSeanceService,
+    },
+  ],
 })
 export class InscriptionSeanceModule {}
