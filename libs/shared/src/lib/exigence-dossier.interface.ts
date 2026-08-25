@@ -21,8 +21,8 @@ export interface ExigenceDossierPortee {
   type_portee: ExigencePorteeType;
   cible_id: number | null;
   cible_code: string | null;
-  obligatoire_override: boolean | null;
-  bloquante_override: boolean | null;
+  obligatoire_override?: boolean | null;
+  bloquante_override?: boolean | null;
 }
 
 export interface ExigenceDossier {
