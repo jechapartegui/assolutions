@@ -49,6 +49,16 @@ export class ExigenceDossierComponent implements OnInit {
     { code: 'QS_SPORT', label: 'Questionnaire de santé' },
     { code: 'AUTORISATION_PARENTALE', label: 'Autorisation parentale' },
   ];
+  readonly medicalLevels = [
+    {
+      code: 'STANDARD',
+      label: 'Dossier médical : certificat ou QS Sport',
+    },
+    {
+      code: 'COMPETITION',
+      label: 'Preuve compatible compétition',
+    },
+  ];
 
   constructor(
     private readonly api: ExigenceDossierApiService,
@@ -104,7 +114,11 @@ export class ExigenceDossierComponent implements OnInit {
   startEdit(item: ExigenceDossier): void {
     this.edit = {
       ...item,
-      portees: item.portees.map((scope) => ({ ...scope })),
+      portees: item.portees.map((scope) => ({
+        ...scope,
+        obligatoire_override: scope.obligatoire_override ?? null,
+        bloquante_override: scope.bloquante_override ?? null,
+      })),
     };
   }
 
@@ -121,17 +135,16 @@ export class ExigenceDossierComponent implements OnInit {
       item.source_code = this.documentTypes[0].code;
       item.type_reponse = 'DOCUMENT';
     } else if (item.type_exigence === 'PREUVE_MEDICALE') {
-      item.usage = 'LICENCE';
-      item.source_code = null;
+      // La preuve médicale n'impose plus automatiquement une licence ou une
+      // portée. C'est le paramétrage de l'exigence qui décide du contexte.
+      item.source_code = 'STANDARD';
       item.type_reponse = 'AUCUNE';
-      item.obligatoire = true;
-      item.bloquante = false;
       item.validite_mois = null;
-      item.portees = [this.newScope('GENERAL')];
+      if (!item.portees.length) item.portees = [this.newScope('GENERAL')];
     } else if (item.type_exigence === 'CONSENTEMENT') {
       item.source_code = null;
       item.type_reponse = 'BOOLEEN';
-      item.portees ||= [this.newScope('GENERAL')];
+      if (!item.portees.length) item.portees = [this.newScope('GENERAL')];
     } else {
       item.source_code = null;
       item.type_reponse = 'TEXTE';
@@ -140,11 +153,11 @@ export class ExigenceDossierComponent implements OnInit {
 
   addScope(type: ExigencePorteeType = 'GENERAL'): void {
     if (!this.edit) return;
-    if (type === 'GENERAL') this.edit.portees = [];
-    else {
-      this.edit.portees = this.edit.portees.filter(
-        (scope) => scope.type_portee !== 'GENERAL',
-      );
+    if (
+      type === 'GENERAL' &&
+      this.edit.portees.some((scope) => scope.type_portee === 'GENERAL')
+    ) {
+      return;
     }
     this.edit.portees.push(this.newScope(type));
   }
@@ -152,30 +165,39 @@ export class ExigenceDossierComponent implements OnInit {
   changeScope(scope: ExigenceDossierPortee): void {
     scope.cible_id = null;
     scope.cible_code = null;
-    if (scope.type_portee === 'GENERAL' && this.edit) {
-      this.edit.portees = [scope];
-    }
   }
 
   removeScope(index: number): void {
     this.edit?.portees.splice(index, 1);
   }
 
+  hasGeneralScope(item: ExigenceDossier): boolean {
+    return item.portees.some((scope) => scope.type_portee === 'GENERAL');
+  }
+
   scopeLabel(scope: ExigenceDossierPortee): string {
-    if (scope.type_portee === 'GENERAL') return 'Tous les dossiers';
-    if (scope.type_portee === 'GROUPE') {
-      return `Groupe : ${
+    let target: string;
+    if (scope.type_portee === 'GENERAL') target = 'Tous les dossiers';
+    else if (scope.type_portee === 'GROUPE') {
+      target = `Groupe : ${
         this.groupes.find((item) => item.id === scope.cible_id)?.nom ??
         '#' + scope.cible_id
       }`;
-    }
-    if (scope.type_portee === 'TARIF') {
-      return `Tarif : ${
+    } else if (scope.type_portee === 'TARIF') {
+      target = `Tarif : ${
         this.tarifs.find((item) => item.id === scope.cible_id)?.nom ??
         '#' + scope.cible_id
       }`;
+    } else {
+      target = `Licence : ${scope.cible_code || 'à préciser'}`;
     }
-    return `Licence : ${scope.cible_code || 'à préciser'}`;
+
+    const rules: string[] = [];
+    if (scope.obligatoire_override === true) rules.push('obligatoire');
+    if (scope.obligatoire_override === false) rules.push('facultative');
+    if (scope.bloquante_override === true) rules.push('bloquante');
+    if (scope.bloquante_override === false) rules.push('non bloquante');
+    return rules.length ? `${target} · ${rules.join(', ')}` : target;
   }
 
   async save(): Promise<void> {
@@ -211,7 +233,13 @@ export class ExigenceDossierComponent implements OnInit {
   }
 
   private newScope(type: ExigencePorteeType): ExigenceDossierPortee {
-    return { type_portee: type, cible_id: null, cible_code: null };
+    return {
+      type_portee: type,
+      cible_id: null,
+      cible_code: null,
+      obligatoire_override: null,
+      bloquante_override: null,
+    };
   }
 
   private toDto(item: ExigenceDossier): SaveExigenceDossierDto {
@@ -237,6 +265,8 @@ export class ExigenceDossierComponent implements OnInit {
         type_portee: scope.type_portee,
         cible_id: scope.cible_id ?? null,
         cible_code: scope.cible_code?.trim().toUpperCase() || null,
+        obligatoire_override: scope.obligatoire_override ?? null,
+        bloquante_override: scope.bloquante_override ?? null,
       })),
     };
   }

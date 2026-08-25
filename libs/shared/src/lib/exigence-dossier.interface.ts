@@ -21,6 +21,8 @@ export interface ExigenceDossierPortee {
   type_portee: ExigencePorteeType;
   cible_id: number | null;
   cible_code: string | null;
+  obligatoire_override?: boolean | null;
+  bloquante_override?: boolean | null;
 }
 
 export interface ExigenceDossier {
@@ -79,6 +81,7 @@ export interface ExigenceEvaluation {
   type_reponse: ExigenceReponseType;
   obligatoire: boolean;
   bloquante: boolean;
+  concerne_licence: boolean;
   texte_consentement: string | null;
   version_texte: string | null;
   satisfait: boolean;
@@ -98,6 +101,7 @@ export interface DossierPersonneEvaluation {
   exigences_manquantes_bloquantes: string[];
   exigences_licence_manquantes: string[];
   exigences: ExigenceEvaluation[];
+  preuve_medicale?: EvaluationPreuveMedicale | null;
 }
 
 export interface PreuveMedicale {
@@ -130,9 +134,16 @@ export interface SavePreuveMedicaleDto {
 }
 
 export interface EvaluationPreuveMedicale {
+  /** Éligibilité correspondant au contexte demandé (loisir ou compétition). */
   eligible: boolean;
   statut: string;
   message: string;
+  /** Dossier médical général : les trois parcours acceptés sont pris en compte. */
+  dossier_eligible: boolean;
+  /** Un certificat permet bien de satisfaire une exigence compétition. */
+  compatible_competition: boolean;
+  message_dossier: string;
+  message_competition: string;
   certificat: PreuveMedicale | null;
   qs_sport: PreuveMedicale | null;
 }
