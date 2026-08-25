@@ -4,6 +4,10 @@
     <span>{{ evaluation?.message || 'Situation médicale à renseigner' }}</span>
   </div>
 
+  <div class="notification is-light is-size-7 mt-3 mb-3" i18n>
+    <strong>Preuve médicale acceptée :</strong> un certificat médical récent, un certificat de moins de 3 ans accompagné du QS Sport de la saison, ou le QS Sport seul. Pour une exigence compétition, le certificat doit mentionner la pratique en compétition.
+  </div>
+
   <div class="medical-history" *ngIf="showHistory && proofs.length">
     <div class="medical-history-item" *ngFor="let proof of proofs">
       <div>
