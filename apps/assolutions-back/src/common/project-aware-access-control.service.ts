@@ -22,6 +22,37 @@ export class ProjectAwareAccessControlService extends AccessControlService {
     super(projectDataSource);
   }
 
+  override async assertPersonAccess(
+    userId: number,
+    personId: number,
+    projectId?: number | null,
+  ): Promise<PersonAccessRow> {
+    const rows = (await this.projectDataSource.query(
+      `SELECT id, compte FROM personne WHERE id = $1 LIMIT 1`,
+      [Number(personId)],
+    )) as PersonAccessRow[];
+
+    const person = rows[0];
+    if (!person) throw new NotFoundException('PERSON_NOT_FOUND');
+
+    // L'accès à sa propre personne reste inchangé et ne dépend pas du projet.
+    if (Number(person.compte) === Number(userId)) return person;
+
+    const pid = Number(projectId);
+    if (
+      Number.isInteger(pid) &&
+      pid > 0 &&
+      (await this.isProjectStaffForRead(userId, pid))
+    ) {
+      // Même règle projet que pour les chargements en lot. Ainsi un adhérent
+      // historique visible dans la liste reste ouvrable dans sa fiche détail.
+      await this.assertPersonIdsAccess(userId, [Number(personId)], pid);
+      return person;
+    }
+
+    return super.assertPersonAccess(userId, personId, projectId);
+  }
+
   override async assertPersonIdsAccess(
     userId: number,
     rawIds: number[],
