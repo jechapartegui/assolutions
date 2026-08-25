@@ -30,6 +30,10 @@ type RequirementWithScopes = ExigenceDossierEntity & {
   portees: ExigenceDossierPorteeEntity[];
 };
 
+type EffectiveRequirement = RequirementWithScopes & {
+  licence_scope_match: boolean;
+};
+
 @Injectable()
 export class ExigenceDossierService {
   constructor(
@@ -107,6 +111,8 @@ export class ExigenceDossierService {
             type_portee: portee.type_portee,
             cible_id: portee.cible_id ?? null,
             cible_code: this.text(portee.cible_code)?.toUpperCase() ?? null,
+            obligatoire_override: portee.obligatoire_override ?? null,
+            bloquante_override: portee.bloquante_override ?? null,
           }),
         ),
       );
@@ -153,6 +159,8 @@ export class ExigenceDossierService {
             type_portee: portee.type_portee,
             cible_id: portee.cible_id ?? null,
             cible_code: this.text(portee.cible_code)?.toUpperCase() ?? null,
+            obligatoire_override: portee.obligatoire_override ?? null,
+            bloquante_override: portee.bloquante_override ?? null,
           }),
         ),
       );
@@ -180,14 +188,37 @@ export class ExigenceDossierService {
       saison.id,
     )) as RequirementWithScopes[];
     const civilAge = this.civilAge(personne.date_naissance, saison.date_debut);
-    const requirements = allRequirements.filter(
-      (item) =>
-        item.actif &&
-        this.matchesAge(item, civilAge) &&
-        this.matchesScope(item.portees, dto),
-    );
+    const requirements = allRequirements
+      .filter((item) => item.actif && this.matchesAge(item, civilAge))
+      .map((item): EffectiveRequirement | null => {
+        const matchingScopes = this.matchingScopes(item.portees, dto);
+        if (!matchingScopes.length) return null;
+        return {
+          ...item,
+          obligatoire: this.effectiveFlag(
+            matchingScopes,
+            'obligatoire_override',
+            item.obligatoire,
+          ),
+          bloquante: this.effectiveFlag(
+            matchingScopes,
+            'bloquante_override',
+            item.bloquante,
+          ),
+          licence_scope_match: matchingScopes.some(
+            (scope) => scope.type_portee === 'TYPE_LICENCE',
+          ),
+        };
+      })
+      .filter((item): item is EffectiveRequirement => item !== null);
+
     const hasMedicalRequirement = requirements.some(
       (item) => item.type_exigence === 'PREUVE_MEDICALE',
+    );
+    const requiresCompetitionMedical = requirements.some(
+      (item) =>
+        item.type_exigence === 'PREUVE_MEDICALE' &&
+        this.medicalRequirementRequiresCompetition(item, dto),
     );
 
     const [contacts, documents, responses, medical] = await Promise.all([
@@ -212,8 +243,9 @@ export class ExigenceDossierService {
             {
               personne_id: personne.id,
               saison_id: saison.id,
-              type_licence:
-                dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR',
+              type_licence: requiresCompetitionMedical
+                ? 'COMPETITION'
+                : 'LOISIR',
             },
             projectId,
             compteId,
@@ -226,15 +258,24 @@ export class ExigenceDossierService {
 
     const evaluations = requirements.map((requirement) => {
       const response = responseByRequirement.get(requirement.id) ?? null;
+      const competitionMedical =
+        requirement.type_exigence === 'PREUVE_MEDICALE' &&
+        this.medicalRequirementRequiresCompetition(requirement, dto);
+      const medicalSatisfied = competitionMedical
+        ? medical?.compatible_competition === true
+        : medical?.dossier_eligible === true;
       const evaluation =
         requirement.type_exigence === 'PREUVE_MEDICALE'
           ? {
-              satisfied: medical?.eligible === true,
+              satisfied: medicalSatisfied,
               answered: !!(medical?.certificat || medical?.qs_sport),
-              reason:
-                medical?.eligible === true
-                  ? null
-                  : medical?.message ?? 'Situation médicale à renseigner',
+              reason: medicalSatisfied
+                ? null
+                : competitionMedical
+                  ? medical?.message_competition ??
+                    'Certificat compatible compétition à renseigner'
+                  : medical?.message_dossier ??
+                    'Situation médicale à renseigner',
               documentId:
                 medical?.certificat?.document_id ??
                 medical?.qs_sport?.document_id ??
@@ -258,6 +299,8 @@ export class ExigenceDossierService {
         type_reponse: requirement.type_reponse,
         obligatoire: requirement.obligatoire,
         bloquante: requirement.bloquante,
+        concerne_licence:
+          requirement.usage === 'LICENCE' || requirement.licence_scope_match,
         texte_consentement: requirement.texte_consentement,
         version_texte: requirement.version_texte,
         satisfait: evaluation.satisfied,
@@ -270,30 +313,16 @@ export class ExigenceDossierService {
       };
     });
 
-    const registrationBlockingMissing = evaluations.filter(
-      (item) =>
-        item.usage === 'INSCRIPTION' &&
-        item.obligatoire &&
-        item.bloquante &&
-        !(item.type_exigence === 'CONSENTEMENT' ? item.repondu : item.satisfait),
-    );
-    const unansweredRequiredConsents = evaluations.filter(
-      (item) =>
-        item.type_exigence === 'CONSENTEMENT' &&
-        item.obligatoire &&
-        !item.repondu,
-    );
-    const blockingMissing = Array.from(
-      new Map(
-        [...registrationBlockingMissing, ...unansweredRequiredConsents].map((item) => [
-          item.id,
-          item,
-        ]),
-      ).values(),
+    // La notion "bloquante" est maintenant réellement transversale : une
+    // exigence de licence peut donc bloquer si l'administrateur le souhaite,
+    // tandis qu'une exigence Derby/compétition peut rester informative.
+    // Pour un consentement, "satisfait" signifie bien que la réponse est OUI.
+    const blockingMissing = evaluations.filter(
+      (item) => item.obligatoire && item.bloquante && !item.satisfait,
     );
     const licenseMissing = evaluations.filter(
       (item) =>
-        item.usage === 'LICENCE' && item.obligatoire && !item.satisfait,
+        item.concerne_licence && item.obligatoire && !item.satisfait,
     );
 
     return {
@@ -502,6 +531,14 @@ export class ExigenceDossierService {
     ) {
       throw new BadRequestException('La donnée source à contrôler est obligatoire');
     }
+    if (dto.type_exigence === 'PREUVE_MEDICALE') {
+      const medicalMode = this.text(dto.source_code)?.toUpperCase() ?? null;
+      if (medicalMode && !['STANDARD', 'COMPETITION'].includes(medicalMode)) {
+        throw new BadRequestException(
+          'Le niveau de preuve médicale doit être STANDARD ou COMPETITION',
+        );
+      }
+    }
     if (dto.type_exigence === 'CONSENTEMENT') {
       if (dto.type_reponse !== 'BOOLEEN') {
         throw new BadRequestException('Un consentement attend une réponse oui/non');
@@ -579,12 +616,11 @@ export class ExigenceDossierService {
     return true;
   }
 
-  private matchesScope(
+  private matchingScopes(
     scopes: ExigenceDossierPorteeEntity[],
     dto: EvaluerDossierPersonneDto,
   ) {
-    if (!scopes.length) return false;
-    return scopes.some((scope) => {
+    return scopes.filter((scope) => {
       if (scope.type_portee === 'GENERAL') return true;
       if (scope.type_portee === 'GROUPE') {
         return scope.cible_id != null && dto.groupe_ids.includes(scope.cible_id);
@@ -598,6 +634,34 @@ export class ExigenceDossierService {
         scope.cible_code?.toUpperCase() === dto.type_licence.toUpperCase()
       );
     });
+  }
+
+  private effectiveFlag(
+    scopes: ExigenceDossierPorteeEntity[],
+    key: 'obligatoire_override' | 'bloquante_override',
+    fallback: boolean,
+  ) {
+    const explicit = scopes
+      .map((scope) => scope[key])
+      .filter((value): value is boolean => typeof value === 'boolean');
+    if (!explicit.length) return fallback;
+    // Si plusieurs portées correspondent, la règle la plus stricte gagne.
+    return explicit.some((value) => value === true);
+  }
+
+  private medicalRequirementRequiresCompetition(
+    requirement: EffectiveRequirement,
+    dto: EvaluerDossierPersonneDto,
+  ) {
+    const mode = (requirement.source_code ?? '').trim().toUpperCase();
+    if (mode === 'COMPETITION') return true;
+    if (mode === 'STANDARD') return false;
+
+    // Compatibilité avec les exigences médicales historiques sans source_code.
+    return (
+      dto.type_licence === 'COMPETITION' &&
+      (requirement.usage === 'LICENCE' || requirement.licence_scope_match)
+    );
   }
 
   private evaluateRequirement(
