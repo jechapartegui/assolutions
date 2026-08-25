@@ -18,6 +18,10 @@ export class CreateSaisonDto {
   @IsOptional()
   @IsNumber()
   saison_precedente?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  tarif_avant_groupes?: boolean;
 }
 
 export class UpdateSaisonDto {
@@ -41,4 +45,8 @@ export class UpdateSaisonDto {
   @IsOptional()
   @IsNumber()
   saison_precedente?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  tarif_avant_groupes?: boolean;
 }

@@ -52,7 +52,11 @@
         <div>
           <p class="eyebrow" i18n>Saison {{ ctx.saison.nom }}</p>
           <h1 class="title is-4 mb-1">{{ isAdminMode ? 'Souscription administrateur' : 'Mon inscription' }}</h1>
-          <p class="subtitle is-7 mb-0" i18n>Personnes, groupes, tarifs, dossier puis paiement.</p>
+          <p class="subtitle is-7 mb-0">
+            {{ tarifAvantGroupes
+              ? 'Personnes, tarifs, groupes, dossier puis paiement.'
+              : 'Personnes, groupes, tarifs, dossier puis paiement.' }}
+          </p>
         </div>
         <div class="tags">
           <span class="tag is-warning is-light" *ngIf="isAdminMode" i18n>Mode administrateur</span>
@@ -63,7 +67,17 @@
       <nav class="steps" aria-label="Étapes de l'inscription" i18n-aria-label>
         <button type="button" *ngFor="let item of [1,2,3,4,5]" [class.is-active]="step === item" [class.is-done]="step > item" (click)="item < step && (step = item)">
           <span>{{ item }}</span>
-          <small>{{ item === 1 ? 'Personnes' : item === 2 ? 'Groupes' : item === 3 ? 'Tarifs' : item === 4 ? 'Dossier' : 'Paiement' }}</small>
+          <small>
+            {{ item === 1
+              ? 'Personnes'
+              : item === 2
+                ? (tarifAvantGroupes ? 'Tarifs' : 'Groupes')
+                : item === 3
+                  ? (tarifAvantGroupes ? 'Groupes' : 'Tarifs')
+                  : item === 4
+                    ? 'Dossier'
+                    : 'Paiement' }}
+          </small>
         </button>
       </nav>
 
@@ -121,9 +135,13 @@
           </div>
         </section>
 
-        <section *ngIf="step === 2">
+        <section *ngIf="step === (tarifAvantGroupes ? 3 : 2)">
           <h2 class="title is-5 mb-1" i18n>Choix des groupes</h2>
-          <p class="has-text-grey mb-4" i18n>Seuls les groupes visibles, éligibles et disposant encore de places sont proposés.</p>
+          <p class="has-text-grey mb-4">
+            {{ tarifAvantGroupes
+              ? 'Seuls les groupes accessibles avec le tarif choisi, éligibles et disposant encore de places sont proposés.'
+              : 'Seuls les groupes visibles, éligibles et disposant encore de places sont proposés.' }}
+          </p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <div class="block-heading">
@@ -148,9 +166,13 @@
           </article>
         </section>
 
-        <section *ngIf="step === 3">
+        <section *ngIf="step === (tarifAvantGroupes ? 2 : 3)">
           <h2 class="title is-5 mb-1" i18n>Choix du tarif</h2>
-          <p class="has-text-grey mb-4" i18n>Le type de licence sera choisi dans le dossier de chaque personne.</p>
+          <p class="has-text-grey mb-4">
+            {{ tarifAvantGroupes
+              ? 'Le tarif choisi déterminera ensuite les groupes accessibles.'
+              : 'Le type de licence sera choisi dans le dossier de chaque personne.' }}
+          </p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <h3 class="title is-6">{{ person.first_name }} {{ person.last_name }}</h3>

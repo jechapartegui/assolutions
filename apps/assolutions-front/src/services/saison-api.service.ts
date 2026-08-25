@@ -35,6 +35,7 @@ export class SaisonApiService {
       date_debut: this.normalizeDate(dto?.date_debut),
       date_fin: this.normalizeDate(dto?.date_fin),
       saison_precedente: dto?.saison_precedente,
+      tarif_avant_groupes: dto?.tarif_avant_groupes,
     };
   }
 

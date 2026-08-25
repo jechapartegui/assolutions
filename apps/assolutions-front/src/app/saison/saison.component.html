@@ -361,6 +361,36 @@
             La date de début doit être antérieure à la date de fin.
           </p>
         </section>
+
+        <section class="box detail-box">
+          <h2 class="subtitle is-6 has-text-primary mb-3" i18n>
+            Inscription en ligne
+          </h2>
+
+          <div class="field">
+            <label class="label" i18n>Ordre de sélection</label>
+
+            <p *ngIf="!edit" class="readonly-value">
+              {{ Item.tarif_avant_groupes ? 'Tarif puis groupes' : 'Groupes puis tarif' }}
+            </p>
+
+            <label *ngIf="edit" class="checkbox">
+              <input
+                type="checkbox"
+                [ngModel]="!!Item.tarif_avant_groupes"
+                (ngModelChange)="updateTarifAvantGroupes($event)"
+              />
+              <span class="ml-2" i18n>Choisir le tarif avant les groupes</span>
+            </label>
+
+            <p class="help mt-2" *ngIf="!Item.tarif_avant_groupes" i18n>
+              Parcours par défaut : l’adhérent choisit ses groupes, puis Assolutions propose les tarifs compatibles.
+            </p>
+            <p class="help mt-2" *ngIf="Item.tarif_avant_groupes" i18n>
+              Parcours package : l’adhérent choisit d’abord un tarif, puis les groupes associés à ce tarif.
+            </p>
+          </div>
+        </section>
       </div>
 
       <footer class="card-footer compact-footer">

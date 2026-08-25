@@ -126,6 +126,10 @@ export class SaisonComponent implements OnInit {
     });
   }
 
+  updateTarifAvantGroupes(value: boolean): void {
+    this.store.patchEditedSaison({ tarif_avant_groupes: !!value });
+  }
+
   filter(value: string): void {
     this.store.setFilterNom(value);
   }
@@ -181,6 +185,10 @@ export class SaisonComponent implements OnInit {
       { header: $localize`:@@season.start:Date début`, value: s => s.date_debut },
       { header: $localize`:@@season.end:Date fin`, value: s => s.date_fin },
       { header: $localize`:@@season.previous:Saison précédente`, value: s => this.previousLabel(s) },
+      {
+        header: $localize`Tarif avant groupes`,
+        value: s => s.tarif_avant_groupes ? 'Oui' : 'Non',
+      },
     ];
 
     this.excel.export('saisons', rows, columns);
