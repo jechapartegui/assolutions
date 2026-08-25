@@ -93,7 +93,9 @@ export class PreuveMedicaleService {
             dto.type_preuve === 'QS_SPORT'
               ? dto.qs_reponses_negatives ?? null
               : null,
-          valable_competition: !!dto.valable_competition,
+          // Dans le nouveau modèle métier, tout certificat médical peut servir
+          // de preuve compétition dès lors que son parcours de validité est OK.
+          valable_competition: dto.type_preuve === 'CERTIFICAT',
           medecin_nom:
             dto.type_preuve === 'CERTIFICAT'
               ? this.text(dto.medecin_nom)
@@ -158,14 +160,6 @@ export class PreuveMedicaleService {
       this.isWithinMonths(activeCertificate.date_document, today, 36)
         ? activeCertificate
         : undefined;
-    const recentCompetitionCertificate =
-      recentCertificate?.valable_competition === true
-        ? recentCertificate
-        : undefined;
-    const referenceCompetitionCertificate =
-      referenceCertificate?.valable_competition === true
-        ? referenceCertificate
-        : undefined;
 
     // Dossier médical général : trois parcours sont valides.
     // 1. certificat médical récent ;
@@ -202,39 +196,31 @@ export class PreuveMedicaleService {
         'Le certificat a moins de 3 ans : complète le questionnaire de santé de la saison';
     }
 
-    // Compatibilité compétition : le dossier doit réellement comporter un
-    // certificat mentionnant la compétition. Un QS Sport seul reste une preuve
-    // médicale valable pour le dossier, mais ne suffit pas pour ce niveau.
+    // Pour la compétition, un certificat doit faire partie d'un parcours valide.
+    // Un certificat récent suffit ; un certificat plus ancien (moins de 3 ans)
+    // doit être complété par le QS Sport de la saison. Un QS seul ne suffit pas.
     let competitionCompatible = false;
     let competitionStatut = 'CERTIFICAT_COMPETITION_MANQUANT';
     let competitionMessage =
-      'Un certificat médical compatible avec la pratique en compétition est requis';
+      'Un certificat médical est requis pour la pratique en compétition';
 
-    if (recentCompetitionCertificate) {
+    if (recentCertificate) {
       competitionCompatible = true;
       competitionStatut = 'CERTIFICAT_COMPETITION_VALIDE';
-      competitionMessage =
-        'Certificat médical récent compatible avec la compétition';
-    } else if (
-      referenceCompetitionCertificate &&
-      negativeCurrentSeasonQs
-    ) {
+      competitionMessage = 'Certificat médical récent valide pour la compétition';
+    } else if (referenceCertificate && negativeCurrentSeasonQs) {
       competitionCompatible = true;
       competitionStatut = 'CERTIFICAT_COMPETITION_REFERENCE_ET_QS';
       competitionMessage =
-        'Certificat compétition de moins de 3 ans et questionnaire de santé annuel validés';
-    } else if (referenceCompetitionCertificate) {
+        'Certificat de moins de 3 ans et questionnaire de santé annuel validés pour la compétition';
+    } else if (referenceCertificate) {
       competitionStatut = 'QS_COMPETITION_MANQUANT';
       competitionMessage =
-        'Le certificat compétition a moins de 3 ans : complète le questionnaire de santé de la saison';
-    } else if (activeCertificate) {
-      competitionStatut = 'CERTIFICAT_NON_COMPETITION';
-      competitionMessage =
-        'Le certificat enregistré ne mentionne pas la pratique en compétition';
+        'Le certificat a moins de 3 ans : complète le questionnaire de santé de la saison';
     } else if (negativeCurrentSeasonQs) {
       competitionStatut = 'CERTIFICAT_COMPETITION_MANQUANT';
       competitionMessage =
-        'Le questionnaire de santé est valide, mais un certificat compatible compétition manque';
+        'Le questionnaire de santé est valide, mais un certificat médical manque pour la compétition';
     }
 
     const competitionContext = dto.type_licence === 'COMPETITION';
