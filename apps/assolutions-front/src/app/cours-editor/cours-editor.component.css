@@ -127,3 +127,111 @@
     padding: 0.65rem;
   }
 }
+
+@media screen and (max-width: 480px) {
+  .cours-editor-card {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .cours-editor-header {
+    min-height: 0;
+    padding: 0.55rem 0.7rem;
+    gap: 0;
+  }
+
+  .cours-editor-title .title {
+    font-size: 1rem !important;
+    line-height: 1.2;
+    margin-bottom: 0.08rem !important;
+  }
+
+  .cours-editor-title .subtitle {
+    font-size: 0.8rem !important;
+    line-height: 1.2;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cours-editor-summary {
+    display: none;
+  }
+
+  .cours-editor-actions {
+    position: fixed;
+    z-index: 80;
+    left: 0.25rem;
+    right: 0.25rem;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    margin: 0 !important;
+    padding: 0.45rem 0.5rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-bottom: 0;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(10px);
+  }
+
+  .cours-editor-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cours-editor-actions .button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    margin: 0 !important;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .cours-editor-actions .button.is-success {
+    min-width: 112px;
+  }
+
+  .cours-editor-body {
+    padding: 0.5rem 0.5rem calc(7.6rem + env(safe-area-inset-bottom));
+  }
+
+  .cours-editor-grid {
+    gap: 0.55rem;
+  }
+
+  .editor-box {
+    padding: 0.75rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  }
+
+  .editor-box > .subtitle {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.65rem !important;
+  }
+
+  .editor-fields,
+  .editor-check-stack {
+    gap: 0.6rem;
+  }
+
+  .label {
+    font-size: 0.82rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .input,
+  .select select,
+  .button {
+    min-height: 42px;
+  }
+}

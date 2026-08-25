@@ -3,16 +3,16 @@
     <header class="card-header page-card-header">
       <div class="card-header-title">
         <div>
-          <h1 class="title is-5 mb-1">Contrats professeurs</h1>
-          <p class="has-text-grey is-size-7">
+          <h1 class="title is-5 mb-1" i18n>Contrats professeurs</h1>
+          <p class="has-text-grey is-size-7" i18n>
             Contrats des professeurs pour la saison consultée.
           </p>
         </div>
       </div>
 
       <div class="header-actions">
-        <span class="tag is-light">Saison #{{ saisonId }}</span>
-        <span *ngIf="loading" class="tag is-info is-light">Chargement…</span>
+        <span class="tag is-light" i18n>Saison #{{ saisonId }}</span>
+        <span *ngIf="loading" class="tag is-info is-light" i18n>Chargement…</span>
 
         <btn [type_button]="'ReloadLight'" (click)="load()"></btn>
         <btn [type_button]="'CreerSmall'" (click)="create()"></btn>
@@ -23,11 +23,11 @@
       <table class="table is-fullwidth is-hoverable is-striped" *ngIf="contrats.length">
         <thead>
           <tr>
-            <th>Professeur</th>
-            <th>Contrat</th>
-            <th>Rémunération</th>
-            <th>Période</th>
-            <th class="action-col">Actions</th>
+            <th i18n>Professeur</th>
+            <th i18n>Statut</th>
+            <th i18n>Rémunération</th>
+            <th i18n>Période</th>
+            <th class="action-col" i18n>Actions</th>
           </tr>
         </thead>
 
@@ -41,9 +41,9 @@
             <td>{{ contrat.type_remuneration || '—' }}</td>
 
             <td>
-          {{ formatDateFr(contrat.date_debut) }}
-<span class="has-text-grey"> → </span>
-{{ formatDateFr(contrat.date_fin) }}
+              {{ formatDateFr(contrat.date_debut) }}
+              <span class="has-text-grey"> → </span>
+              {{ formatDateFr(contrat.date_fin) }}
             </td>
 
             <td class="action-col">
@@ -56,7 +56,7 @@
         </tbody>
       </table>
 
-      <div class="empty-zone" *ngIf="!loading && !contrats.length">
+      <div class="empty-zone" *ngIf="!loading && !contrats.length" i18n>
         Aucun contrat professeur pour cette saison.
       </div>
     </div>
@@ -69,60 +69,64 @@
   <div class="modal-card">
     <header class="modal-card-head">
       <p class="modal-card-title">
-        <span *ngIf="editing.id === 0">Créer un contrat professeur</span>
-        <span *ngIf="editing.id > 0">Modifier un contrat professeur</span>
+        <span *ngIf="editing.id === 0" i18n>Créer un contrat professeur</span>
+        <span *ngIf="editing.id > 0" i18n>Modifier un contrat professeur</span>
       </p>
       <button class="delete" (click)="cancel()"></button>
     </header>
 
     <section class="modal-card-body">
       <div class="field">
-        <label class="label">Professeur</label>
+        <label class="label" i18n>Professeur</label>
         <div class="select is-fullwidth">
-         <select
-  [disabled]="editing.id > 0"
-  [ngModel]="editing.professeur_id"
-  (ngModelChange)="patch('professeur_id', $event)"
->
-  <option [ngValue]="null">Sélectionner un professeur</option>
-  <option *ngFor="let prof of profs" [ngValue]="prof.id">
-    {{ getProfLabel(prof.id) }}
-  </option>
-</select>
+          <select
+            [disabled]="editing.id > 0"
+            [ngModel]="editing.professeur_id"
+            (ngModelChange)="onProfesseurChange($event)"
+          >
+            <option [ngValue]="null" i18n>Sélectionner un professeur</option>
+            <option *ngFor="let prof of profs" [ngValue]="prof.id">
+              {{ getProfLabel(prof.id) }}
+            </option>
+          </select>
         </div>
+        <p class="help" *ngIf="editing.id === 0" i18n>
+          Le statut et la rémunération sont repris de la fiche professeur et restent modifiables pour ce contrat.
+        </p>
       </div>
 
       <div class="columns">
         <div class="column">
           <div class="field">
-            <label class="label">Type de contrat</label>
+            <label class="label" i18n>Statut</label>
             <input
               class="input"
               [ngModel]="editing.type_contrat"
               (ngModelChange)="patch('type_contrat', $event)"
-              placeholder="CDD, CDI, prestation..."
+              placeholder="Salarié, prestataire, bénévole..."
+              i18n-placeholder
             />
           </div>
         </div>
 
         <div class="column">
           <div class="field">
-            <label class="label">Type de rémunération</label>
+            <label class="label" i18n>Rémunération</label>
             <input
               class="input"
               [ngModel]="editing.type_remuneration"
               (ngModelChange)="patch('type_remuneration', $event)"
-              placeholder="Horaire, forfait..."
+              placeholder="Taux ou rémunération prévue"
+              i18n-placeholder
             />
           </div>
         </div>
       </div>
 
-
       <div class="columns">
         <div class="column">
           <div class="field">
-            <label class="label">Date début</label>
+            <label class="label" i18n>Date début</label>
             <input
               class="input"
               type="date"
@@ -134,7 +138,7 @@
 
         <div class="column">
           <div class="field">
-            <label class="label">Date fin</label>
+            <label class="label" i18n>Date fin</label>
             <input
               class="input"
               type="date"
@@ -146,7 +150,7 @@
       </div>
 
       <div class="field">
-        <label class="label">Info</label>
+        <label class="label" i18n>Info</label>
         <textarea
           class="textarea"
           [ngModel]="editing.details"

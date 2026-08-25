@@ -1,13 +1,13 @@
 <div class="operations-page">
   <header class="operations-header">
     <div>
-      <p class="operations-kicker">Finances</p>
-      <h1 class="title is-4 mb-1">Opérations bancaires</h1>
-      <p class="has-text-grey is-size-7">Import, suivi, documents et rattachement aux flux financiers.</p>
+      <p class="operations-kicker" i18n>Finances</p>
+      <h1 class="title is-4 mb-1" i18n>Opérations bancaires</h1>
+      <p class="has-text-grey is-size-7" i18n>Import, suivi, documents et rattachement aux flux financiers.</p>
     </div>
 
     <div class="header-actions" *ngIf="!selected">
-      <button class="button is-primary is-small" (click)="newOperation()">
+      <button class="button is-primary is-small" (click)="newOperation()" i18n>
         <i class="fa-solid fa-plus mr-1"></i>
         Nouvelle opération
       </button>
@@ -15,7 +15,7 @@
   </header>
 
   <article class="message is-info" *ngIf="loading">
-    <div class="message-body">Chargement des opérations...</div>
+    <div class="message-body" i18n>Chargement des opérations...</div>
   </article>
 
   <ng-container *ngIf="!loading">
@@ -23,19 +23,19 @@
     <ng-container *ngIf="!selected">
       <section class="operations-import">
         <div>
-          <strong>Import bancaire CSV</strong>
-          <p class="has-text-grey is-size-7">Les lignes sont prévisualisées avant import. Les opérations sont rangées dans “À classer”.</p>
+          <strong i18n>Import bancaire CSV</strong>
+          <p class="has-text-grey is-size-7" i18n>Les lignes sont prévisualisées avant import. Les opérations sont rangées dans “À classer”.</p>
         </div>
 
         <div class="import-controls">
           <div class="select is-small">
             <select [(ngModel)]="importCompteId">
-              <option [ngValue]="null">Compte bancaire</option>
+              <option [ngValue]="null" i18n>Compte bancaire</option>
               <option *ngFor="let c of comptes" [ngValue]="c.id">{{ getCompteLabel(c.id) }}</option>
             </select>
           </div>
 
-          <label class="button is-small is-link" [class.is-loading]="importing">
+          <label class="button is-small is-link" [class.is-loading]="importing" i18n>
             <input type="file" accept=".csv,text/csv" hidden (change)="onCsvSelected($event)" />
             Importer CSV
           </label>
@@ -53,15 +53,15 @@
       <section class="import-preview" *ngIf="importPreview.length">
         <div class="import-preview-header">
           <div>
-            <strong>Prévisualisation import</strong>
-            <p class="has-text-grey is-size-7">{{ selectedPreviewCount }} ligne(s) sélectionnée(s) sur {{ importPreview.length }}.</p>
+            <strong i18n>Prévisualisation import</strong>
+            <p class="has-text-grey is-size-7" i18n>{{ selectedPreviewCount }} ligne(s) sélectionnée(s) sur {{ importPreview.length }}.</p>
           </div>
 
           <div class="buttons">
-            <button class="button is-small" (click)="toggleAllPreview(true)">Tout sélectionner</button>
-            <button class="button is-small" (click)="toggleAllPreview(false)">Tout décocher</button>
-            <button class="button is-small is-light" (click)="cancelImportPreview()">Annuler</button>
-            <button class="button is-small is-primary" (click)="confirmImport()" [class.is-loading]="importing">Valider l'import</button>
+            <button class="button is-small" (click)="toggleAllPreview(true)" i18n>Tout sélectionner</button>
+            <button class="button is-small" (click)="toggleAllPreview(false)" i18n>Tout décocher</button>
+            <button class="button is-small is-light" (click)="cancelImportPreview()" i18n>Annuler</button>
+            <button class="button is-small is-primary" (click)="confirmImport()" [class.is-loading]="importing" i18n>Valider l'import</button>
           </div>
         </div>
 
@@ -70,10 +70,10 @@
             <thead>
               <tr>
                 <th></th>
-                <th>Date</th>
-                <th>Libellé</th>
-                <th class="has-text-right">Montant</th>
-                <th>Statut</th>
+                <th i18n>Date</th>
+                <th i18n>Libellé</th>
+                <th class="has-text-right" i18n>Montant</th>
+                <th i18n>Statut</th>
               </tr>
             </thead>
 
@@ -96,63 +96,63 @@
 
       <section class="operations-kpi-grid">
         <div class="operation-kpi">
-          <span>Total filtré</span>
+          <span i18n>Total filtré</span>
           <strong>{{ formatMontant(totalOperations) }}</strong>
         </div>
 
         <div class="operation-kpi">
-          <span>Opérations</span>
+          <span i18n>Opérations</span>
           <strong>{{ filteredOperations.length }}</strong>
         </div>
 
         <div class="operation-kpi">
-          <span>À classer</span>
+          <span i18n>À classer</span>
           <strong class="has-text-warning">{{ nbAClasser }}</strong>
         </div>
       </section>
 
       <section class="operations-toolbar">
-        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer flux, libellé bancaire, destinataire, info" />
+        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer flux, libellé bancaire, destinataire, info"  i18n-placeholder/>
 
         <div class="select is-small">
           <select [(ngModel)]="filterFluxId">
-            <option [ngValue]="null">Tous les flux</option>
+            <option [ngValue]="null" i18n>Tous les flux</option>
             <option *ngFor="let f of sortedFlux" [ngValue]="f.id">{{ f.libelle }}</option>
           </select>
         </div>
 
         <div class="select is-small">
           <select [(ngModel)]="filterStatut">
-            <option value="ALL">Tous statuts</option>
-            <option value="PAYE">Payé</option>
-            <option value="A_PAYER">À payer</option>
+            <option value="ALL" i18n>Tous statuts</option>
+            <option value="PAYE" i18n>Payé</option>
+            <option value="A_PAYER" i18n>À payer</option>
           </select>
         </div>
 
         <div class="select is-small">
           <select [(ngModel)]="filterRattachement">
-            <option value="ALL">Tous rattachements</option>
-            <option value="SYSTEME">À classer</option>
-            <option value="NORMAL">Rattachées</option>
+            <option value="ALL" i18n>Tous rattachements</option>
+            <option value="SYSTEME" i18n>À classer</option>
+            <option value="NORMAL" i18n>Rattachées</option>
           </select>
         </div>
       </section>
 
       <section class="operations-content operations-content-list">
         <div class="card operations-card">
-          <header class="card-header"><p class="card-header-title">Liste des opérations</p></header>
+          <header class="card-header"><p class="card-header-title" i18n>Liste des opérations</p></header>
 
           <div class="card-content p-0 operations-table-wrapper">
             <table class="table is-fullwidth is-striped is-hoverable is-narrow">
               <thead>
                 <tr>
-                  <th>Réel</th>
-                  <th>Libellé bancaire</th>
-                  <th>Flux financier</th>
-                  <th>Compte</th>
-                  <th class="has-text-right">Montant</th>
-                  <th>Statut</th>
-                  <th class="has-text-right">Actions</th>
+                  <th i18n>Réel</th>
+                  <th i18n>Libellé bancaire</th>
+                  <th i18n>Flux financier</th>
+                  <th i18n>Compte</th>
+                  <th class="has-text-right" i18n>Montant</th>
+                  <th i18n>Statut</th>
+                  <th class="has-text-right" i18n>Actions</th>
                 </tr>
               </thead>
 
@@ -167,12 +167,12 @@
                   <td class="flux-cell">
                     <div class="select is-small is-fullwidth">
                       <select [ngModel]="op.flux_financier_id ?? null" (ngModelChange)="rattacherFlux(op, $event)">
-                        <option [ngValue]="null">Non rattachée</option>
+                        <option [ngValue]="null" i18n>Non rattachée</option>
                         <option *ngFor="let f of sortedFlux" [ngValue]="f.id">{{ f.libelle }}</option>
                       </select>
                     </div>
 
-                    <button class="button is-small is-white is-fullwidth mt-1" *ngIf="isSystemFlux(op)" (click)="edit(op)">
+                    <button class="button is-small is-white is-fullwidth mt-1" *ngIf="isSystemFlux(op)" (click)="edit(op)" i18n>
                       Créer un flux depuis cette opération
                     </button>
                   </td>
@@ -183,8 +183,8 @@
                     <span class="tag" [class.is-success]="op.paiement_execute" [class.is-warning]="!op.paiement_execute">
                       {{ op.paiement_execute ? 'Payé' : 'À payer' }}
                     </span>
-                    <span class="tag is-light ml-1" *ngIf="op.source_import">import</span>
-                    <span class="tag is-warning ml-1" *ngIf="isSystemFlux(op)">à classer</span>
+                    <span class="tag is-light ml-1" *ngIf="op.source_import" i18n>import</span>
+                    <span class="tag is-warning ml-1" *ngIf="isSystemFlux(op)" i18n>à classer</span>
                   </td>
                   <td class="has-text-right">
                     <button class="button is-small is-white" (click)="edit(op)"><i class="fa-solid fa-pen"></i></button>
@@ -202,27 +202,27 @@
     <section class="operation-edit-page" *ngIf="selected">
       <div class="operation-edit-header">
         <div>
-          <button class="button is-small is-light mb-2" (click)="cancel()">
+          <button class="button is-small is-light mb-2" (click)="cancel()" i18n>
             <i class="fa-solid fa-arrow-left mr-1"></i>
             Retour à la liste
           </button>
           <h2 class="title is-5 mb-1">{{ selected.id ? 'Modifier opération' : 'Nouvelle opération' }}</h2>
-          <p class="has-text-grey is-size-7" *ngIf="selected.id">Opération #{{ selected.id }}</p>
+          <p class="has-text-grey is-size-7" *ngIf="selected.id" i18n>Opération #{{ selected.id }}</p>
         </div>
 
         <div class="buttons">
-          <button class="button is-light" (click)="cancel()">Annuler</button>
-          <button class="button is-primary" (click)="save()" [disabled]="saving">Sauvegarder</button>
+          <button class="button is-light" (click)="cancel()" i18n>Annuler</button>
+          <button class="button is-primary" (click)="save()" [disabled]="saving" i18n>Sauvegarder</button>
         </div>
       </div>
 
       <div class="operation-edit-scroll">
         <section class="operation-block">
-          <h3 class="title is-6">1. Informations</h3>
+          <h3 class="title is-6" i18n>1. Informations</h3>
 
           <div class="operation-info-grid">
             <div class="field">
-              <label class="label is-small">Date réelle</label>
+              <label class="label is-small" i18n>Date réelle</label>
               <input
                 class="input is-small"
                 type="date"
@@ -232,11 +232,11 @@
             </div>
 
             <div class="field">
-              <label class="label is-small">Date prévue</label>
+              <label class="label is-small" i18n>Date prévue</label>
               <input class="input is-small" type="date" [(ngModel)]="selected.date_previsionnelle" />
             </div>
 
-            <label class="checkbox operation-same-date-check">
+            <label class="checkbox operation-same-date-check" i18n>
               <input
                 type="checkbox"
                 [(ngModel)]="operationSameDate"
@@ -246,7 +246,7 @@
             </label>
 
             <div class="field">
-              <label class="label is-small">Montant</label>
+              <label class="label is-small" i18n>Montant</label>
               <div class="operation-amount-control">
                 <input class="input is-small has-text-right" type="number" [(ngModel)]="selected.solde" />
                 <span
@@ -261,18 +261,18 @@
             </div>
 
             <div class="field">
-              <label class="label is-small">Mode</label>
+              <label class="label is-small" i18n>Mode</label>
               <div class="select is-small is-fullwidth">
                 <select [(ngModel)]="selected.mode">
-                  <option [ngValue]="1">Virement</option>
-                  <option [ngValue]="2">Liquide</option>
-                  <option [ngValue]="3">Chèque</option>
+                  <option [ngValue]="1" i18n>Virement</option>
+                  <option [ngValue]="2" i18n>Liquide</option>
+                  <option [ngValue]="3" i18n>Chèque</option>
                 </select>
               </div>
             </div>
 
             <div class="field">
-              <label class="label is-small">Compte</label>
+              <label class="label is-small" i18n>Compte</label>
               <div class="select is-small is-fullwidth">
                 <select [(ngModel)]="selected.compte_bancaire_id">
                   <option *ngFor="let c of comptes" [ngValue]="c.id">{{ getCompteLabel(c.id) }}</option>
@@ -280,7 +280,7 @@
               </div>
             </div>
 
-            <label class="checkbox operation-paid-check">
+            <label class="checkbox operation-paid-check" i18n>
               <input type="checkbox" [(ngModel)]="selected.paiement_execute" />
               Paiement exécuté
             </label>
@@ -288,26 +288,26 @@
         </section>
 
         <section class="operation-block">
-          <h3 class="title is-6">2. Libellés</h3>
+          <h3 class="title is-6" i18n>2. Libellés</h3>
 
           <div class="operation-label-grid">
             <div class="field">
-              <label class="label is-small">Libellé bancaire</label>
+              <label class="label is-small" i18n>Libellé bancaire</label>
               <input class="input is-small" [(ngModel)]="selected.libelle_bancaire" />
             </div>
 
             <div class="field">
-              <label class="label is-small">Mode destinataire</label>
+              <label class="label is-small" i18n>Mode destinataire</label>
               <div class="select is-small is-fullwidth">
                 <select [(ngModel)]="destinataireMode" (ngModelChange)="onDestinataireModeChange()">
-                  <option value="LIBRE">Texte libre</option>
-                  <option value="PERSONNE">Personne</option>
+                  <option value="LIBRE" i18n>Texte libre</option>
+                  <option value="PERSONNE" i18n>Personne</option>
                 </select>
               </div>
             </div>
 
             <div class="field" *ngIf="destinataireMode === 'LIBRE'">
-              <label class="label is-small">Destinataire</label>
+              <label class="label is-small" i18n>Destinataire</label>
               <input class="input is-small" [(ngModel)]="selected.destinataire" list="operation-destinataires" />
               <datalist id="operation-destinataires">
                 <option *ngFor="let label of destinataireSuggestions" [value]="label"></option>
@@ -315,32 +315,32 @@
             </div>
 
             <div class="field operation-personne-field" *ngIf="destinataireMode === 'PERSONNE'">
-              <label class="label is-small">Personne liée</label>
+              <label class="label is-small" i18n>Personne liée</label>
               <app-personne-selector
                 [(personneId)]="$any(selected).personne_id"
                 (selectedChange)="onOperationPersonneSelected($event)"
                 placeholder="Rechercher adhérent / prof"
-              ></app-personne-selector>
-              <p class="help" *ngIf="selected.destinataire">Libellé retenu : {{ selected.destinataire }}</p>
+               i18n-placeholder></app-personne-selector>
+              <p class="help" *ngIf="selected.destinataire" i18n>Libellé retenu : {{ selected.destinataire }}</p>
             </div>
 
             <div class="field operation-info-field">
-              <label class="label is-small">Info</label>
+              <label class="label is-small" i18n>Info</label>
               <textarea class="textarea is-small" rows="2" [(ngModel)]="selected.info"></textarea>
             </div>
           </div>
         </section>
 
         <section class="operation-block">
-          <h3 class="title is-6">3. Flux financier</h3>
+          <h3 class="title is-6" i18n>3. Flux financier</h3>
 
           <div class="operation-flux-mode">
-            <label class="radio">
+            <label class="radio" i18n>
               <input type="radio" name="fluxLinkMode" value="ATTACH" [(ngModel)]="fluxLinkMode" />
               Rattacher à un flux existant
             </label>
 
-            <label class="radio">
+            <label class="radio" i18n>
               <input type="radio" name="fluxLinkMode" value="CREATE" [(ngModel)]="fluxLinkMode" />
               Créer un nouveau flux
             </label>
@@ -348,13 +348,13 @@
 
           <div class="operation-flux-grid" *ngIf="fluxLinkMode === 'ATTACH'">
             <div class="field operation-flux-wide">
-              <label class="label is-small">Flux lié</label>
+              <label class="label is-small" i18n>Flux lié</label>
               <div class="select is-small is-fullwidth">
                 <select
                   [ngModel]="selected.flux_financier_id ?? null"
                   (ngModelChange)="onOperationFluxSelected($event)"
                 >
-                  <option [ngValue]="null">Non rattachée</option>
+                  <option [ngValue]="null" i18n>Non rattachée</option>
                   <option *ngFor="let f of sortedFlux" [ngValue]="f.id">{{ f.libelle }}</option>
                 </select>
               </div>
@@ -362,7 +362,7 @@
 
             <div class="field operation-create-flux-action">
               <label class="label is-small">&nbsp;</label>
-              <button class="button is-small is-primary is-fullwidth" (click)="applyFluxAttachment()" [disabled]="saving">
+              <button class="button is-small is-primary is-fullwidth" (click)="applyFluxAttachment()" [disabled]="saving" i18n>
                 Rattacher et recalculer
               </button>
             </div>
@@ -370,29 +370,29 @@
 
           <div class="operation-flux-grid operation-flux-create-grid" *ngIf="fluxLinkMode === 'CREATE'">
             <div class="field">
-              <label class="label is-small">Classe du flux à créer</label>
+              <label class="label is-small" i18n>Classe du flux à créer</label>
               <div class="select is-small is-fullwidth">
                 <select [(ngModel)]="createFluxClasseId">
-                  <option [ngValue]="null">Non classé</option>
+                  <option [ngValue]="null" i18n>Non classé</option>
                   <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">{{ c.code }} - {{ c.libelle }}</option>
                 </select>
               </div>
             </div>
 
             <div class="field">
-              <label class="label is-small">Libellé du flux à créer</label>
+              <label class="label is-small" i18n>Libellé du flux à créer</label>
               <input class="input is-small" [(ngModel)]="createFluxLibelle" />
             </div>
 
             <div class="field operation-create-flux-action">
               <label class="label is-small">&nbsp;</label>
-              <button class="button is-small is-primary is-fullwidth" (click)="createFluxFromSelectedOperation()" [disabled]="saving">
+              <button class="button is-small is-primary is-fullwidth" (click)="createFluxFromSelectedOperation()" [disabled]="saving" i18n>
                 Créer et rattacher
               </button>
             </div>
           </div>
 
-          <p class="help" *ngIf="currentFlux">
+          <p class="help" *ngIf="currentFlux" i18n>
             Flux actuel : <strong>{{ currentFlux.libelle }}</strong>
             <span class="tag is-warning ml-1" *ngIf="currentFlux.flux_systeme">à classer</span>
             <span class="tag is-light ml-1" *ngIf="currentFlux.classe_comptable_id">{{ getClasseLabel(currentFlux.classe_comptable_id) }}</span>
@@ -400,7 +400,7 @@
         </section>
 
         <section class="operation-block">
-          <h3 class="title is-6">4. Documents</h3>
+          <h3 class="title is-6" i18n>4. Documents</h3>
 
           <div class="operation-document-grid">
             <div class="select is-small is-fullwidth">
@@ -416,21 +416,21 @@
               {{ newDocumentFile?.name || 'Fichier' }}
             </label>
 
-            <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre" />
-            <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire" />
+            <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre"  i18n-placeholder/>
+            <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire"  i18n-placeholder/>
 
-            <button class="button is-small is-primary" (click)="addDocumentToOperation()">Ajouter</button>
+            <button class="button is-small is-primary" (click)="addDocumentToOperation()" i18n>Ajouter</button>
           </div>
 
           <div class="operation-document-grid mt-2">
             <div class="select is-small is-fullwidth operation-existing-document-select">
               <select [(ngModel)]="selectedExistingDocumentId">
-                <option [ngValue]="null">Associer un document existant récent</option>
+                <option [ngValue]="null" i18n>Associer un document existant récent</option>
                 <option *ngFor="let doc of recentDocuments" [ngValue]="doc.id">{{ doc.titre }} - {{ doc.typedoc }}</option>
               </select>
             </div>
 
-            <button class="button is-small is-light" (click)="attachExistingDocument()" [disabled]="!selectedExistingDocumentId">Associer</button>
+            <button class="button is-small is-light" (click)="attachExistingDocument()" [disabled]="!selectedExistingDocumentId" i18n>Associer</button>
           </div>
 
           <div class="linked-list mt-2" *ngIf="documentsOperation.length; else noOperationDocs">
@@ -448,7 +448,7 @@
           </div>
 
           <ng-template #noOperationDocs>
-            <p class="help mt-2">Aucun document lié.</p>
+            <p class="help mt-2" i18n>Aucun document lié.</p>
           </ng-template>
         </section>
       </div>

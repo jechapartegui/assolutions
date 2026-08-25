@@ -2,7 +2,7 @@
   <ng-container *ngIf="loading && Liste.length === 0">
     <div class="loading-zone">
       <progress class="progress is-small is-info" max="100">60%</progress>
-      <p class="has-text-grey is-size-7">Chargement des comptes bancaires…</p>
+      <p class="has-text-grey is-size-7" i18n>Chargement des comptes bancaires…</p>
     </div>
   </ng-container>
 
@@ -12,19 +12,19 @@
         <header class="card-header page-card-header">
           <div class="card-header-title">
             <div>
-              <h1 class="title is-5 mb-1">Comptes bancaires</h1>
-              <p class="has-text-grey is-size-7">
+              <h1 class="title is-5 mb-1" i18n>Comptes bancaires</h1>
+              <p class="has-text-grey is-size-7" i18n>
                 Gestion des comptes, IBAN et moyens de paiement du projet.
               </p>
             </div>
           </div>
 
           <div class="header-actions">
-            <span *ngIf="refreshing" class="tag is-info is-light">
+            <span *ngIf="refreshing" class="tag is-info is-light" i18n>
               Mise à jour…
             </span>
 
-            <span *ngIf="vm.refreshAvailable" class="tag is-warning is-light">
+            <span *ngIf="vm.refreshAvailable" class="tag is-warning is-light" i18n>
               Recharge conseillée
             </span>
 
@@ -32,7 +32,7 @@
               [type_button]="'ReloadLight'"
               title="Recharger"
               (click)="refresh()"
-            ></btn>
+             i18n-title></btn>
           </div>
         </header>
 
@@ -46,7 +46,7 @@
                   placeholder="Filtrer"
                   [ngModel]="vm.filterNom"
                   (ngModelChange)="filter($event)"
-                />
+                 i18n-placeholder/>
                 <span class="icon is-small is-left">
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
@@ -62,7 +62,7 @@
 
           <div class="toolbar-right">
             <ng-container *ngIf="hasSelection; else normalActions">
-              <span class="tag is-primary is-light">
+              <span class="tag is-primary is-light" i18n>
                 {{ vm.selectedIds.length }} sélectionné(s)
               </span>
 
@@ -70,24 +70,24 @@
                 [type_button]="'SupprimerSmall'"
                 title="Supprimer sélection"
                 (click)="supprimerSelection()"
-              ></btn>
+               i18n-title></btn>
 
               <btn
                 [type_button]="'CopierSmall'"
                 title="Copier sélection"
                 (click)="copierSelection()"
-              ></btn>
+               i18n-title></btn>
 
               <btn
                 [type_button]="'AnnulerSmall'"
                 title="Annuler sélection"
                 (click)="clearSelection()"
-              ></btn>
+               i18n-title></btn>
             </ng-container>
 
             <ng-template #normalActions>
-              <btn [type_button]="'CreerSmall'" title="Créer" (click)="create()"></btn>
-              <btn [type_button]="'ExporterSmall'" title="Exporter" (click)="exportExcel()"></btn>
+              <btn [type_button]="'CreerSmall'" title="Créer" (click)="create()" i18n-title></btn>
+              <btn [type_button]="'ExporterSmall'" title="Exporter" (click)="exportExcel()" i18n-title></btn>
             </ng-template>
           </div>
         </div>
@@ -106,7 +106,7 @@
 
                 <th>
                   <button type="button" class="sort-button" (click)="sortNom()">
-                    <span>Nom</span>
+                    <span i18n>Nom</span>
                     <i
                       class="fa-solid"
                       [ngClass]="vm.selectedSort === 'nom' && vm.selectedSortSens === 'DESC' ? 'fa-sort-down' : 'fa-sort-up'"
@@ -116,7 +116,7 @@
 
                 <th>
                   <button type="button" class="sort-button" (click)="sortType()">
-                    <span>Type</span>
+                    <span i18n>Type</span>
                     <i
                       class="fa-solid"
                       [ngClass]="vm.selectedSort === 'type' && vm.selectedSortSens === 'DESC' ? 'fa-sort-down' : 'fa-sort-up'"
@@ -124,11 +124,11 @@
                   </button>
                 </th>
 
-                <th>IBAN</th>
+                <th i18n>IBAN</th>
 
                 <th class="active-col">
                   <button type="button" class="sort-button" (click)="sortActif()">
-                    <span>Actif</span>
+                    <span i18n>Actif</span>
                     <i
                       class="fa-solid"
                       [ngClass]="vm.selectedSort === 'actif' && vm.selectedSortSens === 'DESC' ? 'fa-sort-down' : 'fa-sort-up'"
@@ -136,7 +136,7 @@
                   </button>
                 </th>
 
-                <th class="action-col">Actions</th>
+                <th class="action-col" i18n>Actions</th>
               </tr>
             </thead>
 
@@ -166,8 +166,8 @@
                 </td>
 
                 <td class="active-col">
-                  <span *ngIf="compte.actif" class="tag is-success is-light">Actif</span>
-                  <span *ngIf="!compte.actif" class="tag is-light">Inactif</span>
+                  <span *ngIf="compte.actif" class="tag is-success is-light" i18n>Actif</span>
+                  <span *ngIf="!compte.actif" class="tag is-light" i18n>Inactif</span>
                 </td>
 
                 <td class="action-col">
@@ -176,13 +176,13 @@
                       [type_button]="'EditerLight'"
                       title="Éditer"
                       (click)="editCompte(compte)"
-                    ></btn>
+                     i18n-title></btn>
 
                     <btn
                       [type_button]="'SupprimerLight'"
                       title="Supprimer"
                       (click)="delete(compte)"
-                    ></btn>
+                     i18n-title></btn>
                   </div>
                 </td>
               </tr>
@@ -193,8 +193,8 @@
             <div class="empty-icon">
               <i class="fa-solid fa-building-columns"></i>
             </div>
-            <p class="has-text-weight-semibold mb-1">Aucun compte bancaire trouvé</p>
-            <p class="has-text-grey is-size-7 mb-3">
+            <p class="has-text-weight-semibold mb-1" i18n>Aucun compte bancaire trouvé</p>
+            <p class="has-text-grey is-size-7 mb-3" i18n>
               Crée ton premier compte bancaire ou modifie le filtre.
             </p>
             <btn [type_button]="'CreerSmall'" (click)="create()"></btn>
@@ -202,7 +202,7 @@
         </div>
 
         <footer class="card-footer compact-footer">
-          <span class="card-footer-item is-size-7 has-text-grey">
+          <span class="card-footer-item is-size-7 has-text-grey" i18n>
             {{ Liste.length }} compte(s) affiché(s)
           </span>
         </footer>
@@ -218,25 +218,25 @@
         <div class="card-header-title">
           <div>
             <h1 class="title is-5 mb-1">
-              <span *ngIf="Item?.id === 0">Créer un compte bancaire</span>
-              <span *ngIf="Item && Item.id > 0">Modifier un compte bancaire</span>
+              <span *ngIf="Item?.id === 0" i18n>Créer un compte bancaire</span>
+              <span *ngIf="Item && Item.id > 0" i18n>Modifier un compte bancaire</span>
             </h1>
-            <p class="has-text-grey is-size-7">
+            <p class="has-text-grey is-size-7" i18n>
               Configure le compte, son statut et ses informations de paiement.
             </p>
           </div>
         </div>
 
         <div class="header-actions" *ngIf="Item">
-          <span *ngIf="Item.actif" class="tag is-success is-light">Actif</span>
-          <span *ngIf="!Item.actif" class="tag is-light">Inactif</span>
+          <span *ngIf="Item.actif" class="tag is-success is-light" i18n>Actif</span>
+          <span *ngIf="!Item.actif" class="tag is-light" i18n>Inactif</span>
 
           <btn
             *ngIf="Item.id > 0 && !edit"
             [type_button]="'EditerLight'"
             title="Modifier"
             (click)="setEditMode()"
-          ></btn>
+           i18n-title></btn>
 
           <btn
             *ngIf="edit"
@@ -244,25 +244,25 @@
             title="Sauvegarder"
             [disabled]="!canSave"
             (click)="save()"
-          ></btn>
+           i18n-title></btn>
 
           <btn
             *ngIf="edit"
             [type_button]="'AnnulerLight'"
             title="Annuler"
             (click)="cancel()"
-          ></btn>
+           i18n-title></btn>
         </div>
       </header>
 
       <div class="detail-content" *ngIf="Item">
         <section class="box detail-box">
-          <h2 class="subtitle is-6 has-text-primary mb-3">
+          <h2 class="subtitle is-6 has-text-primary mb-3" i18n>
             Informations générales
           </h2>
 
           <div class="field">
-            <label class="label">Nom</label>
+            <label class="label" i18n>Nom</label>
 
             <p *ngIf="!edit" class="readonly-value">
               {{ Item.nom || '—' }}
@@ -276,15 +276,15 @@
               placeholder="Nom du compte"
               [ngModel]="Item.nom"
               (ngModelChange)="updateNom($event)"
-            />
+             i18n-placeholder/>
 
-            <p class="help is-danger" *ngIf="edit && (Item.nom || '').trim().length < 2">
+            <p class="help is-danger" *ngIf="edit && (Item.nom || '').trim().length < 2" i18n>
               Le nom est obligatoire.
             </p>
           </div>
 
           <div class="field">
-            <label class="label">Type</label>
+            <label class="label" i18n>Type</label>
 
             <p *ngIf="!edit" class="readonly-value">
               {{ Item.type || '—' }}
@@ -292,17 +292,17 @@
 
             <div class="select is-fullwidth" *ngIf="edit">
               <select [ngModel]="Item.type" (ngModelChange)="updateType($event)">
-                <option [ngValue]="'BANQUE'">Banque</option>
-                <option [ngValue]="'CARTE'">Carte</option>
-                <option [ngValue]="'CAISSE'">Caisse</option>
-                <option [ngValue]="'HELLOASSO'">HelloAsso</option>
-                <option [ngValue]="'AUTRE'">Autre</option>
+                <option [ngValue]="'BANQUE'" i18n>Banque</option>
+                <option [ngValue]="'CARTE'" i18n>Carte</option>
+                <option [ngValue]="'CAISSE'" i18n>Caisse</option>
+                <option [ngValue]="'HELLOASSO'" i18n>HelloAsso</option>
+                <option [ngValue]="'AUTRE'" i18n>Autre</option>
               </select>
             </div>
           </div>
 
           <div class="field">
-            <label class="checkbox">
+            <label class="checkbox" i18n>
               <input
                 type="checkbox"
                 [disabled]="!edit"
@@ -314,7 +314,7 @@
           </div>
 
           <div class="field">
-            <label class="label">Informations</label>
+            <label class="label" i18n>Informations</label>
 
             <p *ngIf="!edit" class="readonly-value multiline">
               {{ Item.info || '—' }}
@@ -327,17 +327,17 @@
               placeholder="Informations complémentaires"
               [ngModel]="Item.info"
               (ngModelChange)="updateInfo($event)"
-            ></textarea>
+             i18n-placeholder></textarea>
           </div>
         </section>
 
         <section class="box detail-box">
-          <h2 class="subtitle is-6 has-text-primary mb-3">
+          <h2 class="subtitle is-6 has-text-primary mb-3" i18n>
             Données bancaires
           </h2>
 
           <div class="field">
-            <label class="label">IBAN</label>
+            <label class="label" i18n>IBAN</label>
 
             <p *ngIf="!edit" class="readonly-value iban-readonly">
               {{ Item.iban || '—' }}
@@ -351,11 +351,11 @@
               placeholder="IBAN"
               [ngModel]="Item.iban"
               (ngModelChange)="updateIban($event)"
-            />
+             i18n-placeholder/>
           </div>
 
 <div class="field">
-  <label class="label">Titulaire carte</label>
+  <label class="label" i18n>Titulaire carte</label>
 
   <p *ngIf="!edit" class="readonly-value">
    {{ getPersonneLabel(Item.carte_titulaire_id) }}
@@ -366,11 +366,11 @@
     [personneId]="Item.carte_titulaire_id"
     (personneIdChange)="updateCarteTitulaire($event)"
     placeholder="Rechercher le titulaire"
-  ></app-personne-selector>
+   i18n-placeholder></app-personne-selector>
 </div>
 
           <div class="field">
-            <label class="label">Données carte JSON</label>
+            <label class="label" i18n>Données carte JSON</label>
 
             <pre *ngIf="!edit" class="json-preview">{{ carteText || '—' }}</pre>
 
@@ -381,9 +381,9 @@
               placeholder='{"last4":"1234"}'
               [ngModel]="carteText"
               (ngModelChange)="updateCarteJson($event)"
-            ></textarea>
+             i18n-placeholder></textarea>
 
-            <p class="help">
+            <p class="help" i18n>
               Si le JSON est invalide, il sera conservé comme texte brut dans <code>raw</code>.
             </p>
           </div>
@@ -392,7 +392,7 @@
 
       <footer class="card-footer compact-footer">
         <div class="card-footer-item footer-actions">
-          <btn [type_button]="'RetourSmall'" title="Retour" (click)="retour()"></btn>
+          <btn [type_button]="'RetourSmall'" title="Retour" (click)="retour()" i18n-title></btn>
 
           <btn
             *ngIf="edit"
@@ -400,7 +400,7 @@
             title="Sauvegarder"
             [disabled]="!canSave"
             (click)="save()"
-          ></btn>
+           i18n-title></btn>
         </div>
       </footer>
     </div>

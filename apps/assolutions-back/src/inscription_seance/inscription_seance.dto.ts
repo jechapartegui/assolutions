@@ -1,4 +1,5 @@
-﻿import { IsInt, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateInscriptionSeanceDto {
   @IsInt()
@@ -6,6 +7,11 @@ export class CreateInscriptionSeanceDto {
 
   @IsInt()
   seance_id: number;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  date_inscription?: Date | null;
 
   @IsOptional()
   @IsString()
@@ -17,6 +23,11 @@ export class CreateInscriptionSeanceDto {
 }
 
 export class UpdateInscriptionSeanceDto {
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  date_inscription?: Date | null;
+
   @IsOptional()
   @IsString()
   statut_inscription?: string | null;

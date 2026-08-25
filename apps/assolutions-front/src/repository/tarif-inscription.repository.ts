@@ -60,6 +60,9 @@ export class TarifInscriptionRepository {
       saison_id: Number(tarif.saison_id),
       nom: (tarif.nom ?? '').trim(),
       prix_centimes: Number(tarif.prix_centimes ?? 0),
+      compte_bancaire_id: this.normalizeOptionalInteger(
+        tarif.compte_bancaire_id,
+      ),
       date_debut_validite:
         this.normalizeOptionalDate(
           tarif.date_debut_validite,
@@ -114,6 +117,9 @@ export class TarifInscriptionRepository {
       saison_id: Number(source.saison_id ?? saisonId),
       nom: source.nom ?? '',
       prix_centimes: Number(source.prix_centimes ?? 0),
+      compte_bancaire_id: this.normalizeOptionalInteger(
+        source.compte_bancaire_id,
+      ),
       date_debut_validite:
         this.normalizeOptionalDate(
           source.date_debut_validite,

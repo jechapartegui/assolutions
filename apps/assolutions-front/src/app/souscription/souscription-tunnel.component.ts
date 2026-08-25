@@ -106,11 +106,19 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.adminPersonId = Number(
       this.route.snapshot.queryParamMap.get('adminPersonId') ?? 0,
     );
-    this.isReturnMode = this.router.url.startsWith('/souscription/retour');
-    if (this.isReturnMode && sid > 0) {
-      await this.confirmReturn(sid);
+
+    const isReturnRoute = this.router.url.startsWith('/souscription/retour');
+    if (isReturnRoute && sid > 0) {
+      // Ne jamais afficher l'état KO par défaut pendant que l'API confirme le
+      // paiement. Tant que le résultat n'est pas connu, on reste sur l'écran
+      // neutre avec uniquement le loader global.
+      this.isReturnMode = false;
+      const resolved = await this.confirmReturn(sid);
+      this.isReturnMode = resolved;
       return;
     }
+
+    this.isReturnMode = isReturnRoute;
 
     await this.loadContext();
     this.restoreStoredState();
@@ -245,10 +253,29 @@ export class SouscriptionTunnelComponent implements OnInit {
   }
 
   requirementAnswered(requirement: ExigenceEvaluation): boolean {
-    if (requirement.type_reponse === 'BOOLEEN') {
-      return typeof requirement.valeur_boolean === 'boolean';
+    return requirement.repondu === true;
+  }
+
+  requirementDisplayOk(requirement: ExigenceEvaluation): boolean {
+    if (requirement.usage === 'LICENCE' && requirement.obligatoire) {
+      return requirement.satisfait;
     }
-    return requirement.satisfait;
+    return requirement.satisfait || requirement.repondu;
+  }
+
+  registrationIssueMessage(personId: number): string {
+    const dossier = this.dossiers[personId];
+    if (!dossier || dossier.inscription_complete) return '';
+
+    const missingCodes = new Set(dossier.exigences_manquantes_bloquantes ?? []);
+    return dossier.exigences
+      .filter((requirement) => missingCodes.has(requirement.code))
+      .map((requirement) =>
+        requirement.raison
+          ? `${requirement.libelle} — ${requirement.raison}`
+          : requirement.libelle,
+      )
+      .join(' · ');
   }
 
   dossierRequirements(personId: number): ExigenceEvaluation[] {
@@ -353,10 +380,27 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.scrollTop();
   }
 
+  async selectBooleanRequirement(
+    person: SouscriptionPersonneContexte,
+    requirement: ExigenceEvaluation,
+    value: boolean,
+  ): Promise<void> {
+    if (this.loading) return;
+    requirement.valeur_boolean = value;
+    await this.saveRequirement(person, requirement);
+  }
+
   async saveRequirement(
     person: SouscriptionPersonneContexte,
     requirement: ExigenceEvaluation,
   ): Promise<void> {
+    if (
+      requirement.type_reponse === 'BOOLEEN' &&
+      typeof requirement.valeur_boolean !== 'boolean'
+    ) {
+      return;
+    }
+
     await this.run('Enregistrement de la réponse', async () => {
       this.dossiers[person.id] = await this.dossierApi.saveResponse(
         {
@@ -675,14 +719,19 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.promoDiscount = 0;
   }
 
-  private async confirmReturn(id: number): Promise<void> {
+  private async confirmReturn(id: number): Promise<boolean> {
+    let resolved = false;
+
     await this.run('Confirmation du paiement', async () => {
       const result = await this.api.confirm(id);
       this.returnSubscription = result.souscription;
       this.returnConfirmed = result.paiement_confirme;
       this.returnMessage = result.message;
+      resolved = true;
       if (result.paiement_confirme) this.clearStoredState();
     });
+
+    return resolved;
   }
 
   private scrollTop(): void {

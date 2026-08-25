@@ -57,63 +57,62 @@
                 <btn [type_button]="'AnnulerSmallLight'" (click)="selectedLogin=false; VM.mdp_requis=false"></btn>
               </p>
             </div>
-            <div *ngIf="resetMode" class="field">
-  <label class="label is-small" i18n>Nouveau mot de passe</label>
-  <input
-    class="input"
-    [type]="showPassword ? 'text' : 'password'"
-    [(ngModel)]="newPassword"
-    placeholder="••••••••"
-  />
 
-  <label class="label is-small mt-3" i18n>Confirmer le mot de passe</label>
-  <input
-    class="input"
-    [type]="showPassword ? 'text' : 'password'"
-    [(ngModel)]="newPasswordConfirm"
-    placeholder="••••••••"
-  />
-<p class="help has-text-grey" i18n>
-  Vous pouvez laisser vide pour utiliser Assolutions sans mot de passe.
-</p>
-</div>
+            <div *ngIf="resetMode" class="field">
+              <label class="label is-small" i18n>Nouveau mot de passe</label>
+              <input
+                class="input"
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="newPassword"
+                placeholder="••••••••"
+              />
+
+              <label class="label is-small mt-3" i18n>Confirmer le mot de passe</label>
+              <input
+                class="input"
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="newPasswordConfirm"
+                placeholder="••••••••"
+              />
+              <p class="help has-text-grey" i18n>
+                Vous pouvez laisser vide pour utiliser Assolutions sans mot de passe.
+              </p>
+            </div>
 
             <!-- Mot de passe -->
-<div *ngIf="VM.mdp_requis" class="field">
-  <label class="label is-small" for="loginPassword" i18n>
-    Mot de passe
-  </label>
+            <div *ngIf="VM.mdp_requis" class="field">
+              <label class="label is-small" for="loginPassword" i18n>
+                Mot de passe
+              </label>
 
-  <p class="control has-icons-left has-icons-right">
-    <input
-      id="loginPassword"
-      [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
-      [type]="showPassword ? 'text' : 'password'"
-      placeholder="••••••••"
-      i18n-placeholder
-      [(ngModel)]="VM.compte.password"
-      (ngModelChange)="validatePassword($event)"
-      (keypress)="onKeyPress($event)"
-    />
+              <p class="control has-icons-left has-icons-right">
+                <input
+                  id="loginPassword"
+                  [class]="VM.isPasswordValid ? 'input' : 'input is-danger'"
+                  [type]="showPassword ? 'text' : 'password'"
+                  placeholder="••••••••"
+                  i18n-placeholder
+                  [(ngModel)]="VM.compte.password"
+                  (ngModelChange)="validatePassword($event)"
+                  (keypress)="onKeyPress($event)"
+                />
 
-    <!-- icône gauche -->
-    <span class="icon is-small is-left">
-      <i class="fas fa-lock"></i>
-    </span>
+                <span class="icon is-small is-left">
+                  <i class="fas fa-lock"></i>
+                </span>
 
-    <!-- icône œil -->
-    <span
-      class="icon is-small is-right is-clickable"
-      (click)="togglePassword()"
-      style="cursor:pointer"
-    >
-      <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-    </span>
-  </p>
-  <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
-    Le mot de passe doit contenir au moins 8 caractères et un nombre.
-  </p>
-</div>
+                <span
+                  class="icon is-small is-right is-clickable"
+                  (click)="togglePassword()"
+                  style="cursor:pointer"
+                >
+                  <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </span>
+              </p>
+              <p class="help is-danger" *ngIf="!VM.isPasswordValid" i18n>
+                Le mot de passe doit contenir au moins 8 caractères et un nombre.
+              </p>
+            </div>
 
             <!-- Sélection projet -->
             <ng-container *ngIf="projets">
@@ -140,19 +139,20 @@
             <div class="columns">
               <div class="column">
                 <button
-  *ngIf="resetMode"
-  type="button"
-  class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-  (click)="ValiderNouveauMotDePasse()"
-  i18n
->
-  Définir mon mot de passe
-</button>
+                  *ngIf="resetMode"
+                  type="button"
+                  class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+                  (click)="ValiderNouveauMotDePasse()"
+                  i18n
+                >
+                  Continuer
+                </button>
+
                 <!-- Cas standard (sans projets) -->
                 <div class="field" *ngIf="!projets">
                   <p class="control stack-3">
                     <button
-                     *ngIf="!resetMode && (!store.isLoggedIn()) && !VM.mdp_requis"
+                      *ngIf="!resetMode && (!store.isLoggedIn()) && !VM.mdp_requis"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
                       (click)="Login()"
@@ -162,7 +162,7 @@
                     </button>
 
                     <button
-                     *ngIf="!resetMode && VM.mdp_requis && !store.isLoggedIn()"
+                      *ngIf="!resetMode && VM.mdp_requis && !store.isLoggedIn()"
                       [disabled]="!VM.isValid"
                       class="button is-success is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
                       (click)="Login()"
@@ -172,26 +172,25 @@
                     </button>
 
                     <button
-                      *ngIf="!resetMode && VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ACTIVATION' && context != 'ESSAI'"
+                      *ngIf="!resetMode && VM.isLoginValid && !VM.mdp_requis && context != 'REINIT' && context != 'ACTIVATION' && context != 'MAGIC' && context != 'ESSAI'"
                       type="button"
                       class="btn-link has-text-centered"
                       (click)="ReinitMDP()"
                       i18n
                     >
-                      Réinitialiser le mot de passe
+                      Définir ou modifier le mot de passe
                     </button>
 
-                    <!-- lien vers création -->
                     <!-- Création uniquement depuis un lien CREATE + projet -->
-<button
-  *ngIf="requestedProjectId"
-  type="button"
-  class="button is-link is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
-  (click)="goCreateAccount()"
-  i18n
->
-  Créer un compte
-</button>
+                    <button
+                      *ngIf="requestedProjectId"
+                      type="button"
+                      class="button is-link is-light btn-mobile btn-elevated btn-lg btn-block-mobile"
+                      (click)="goCreateAccount()"
+                      i18n
+                    >
+                      Créer un compte
+                    </button>
                   </p>
                 </div>
 

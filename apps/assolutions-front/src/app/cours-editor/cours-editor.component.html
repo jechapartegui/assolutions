@@ -1,232 +1,95 @@
 <div class="cours-editor-card">
   <header class="cours-editor-header">
     <div class="cours-editor-title">
-      <p class="title is-5 mb-1" *ngIf="cours.id === 0">
-        Créer un cours
-      </p>
-      <p class="title is-5 mb-1" *ngIf="cours.id > 0">
-        Éditer un cours
-      </p>
-
-      <p class="subtitle is-6 mb-0">
-        {{ cours.nom || 'Nouveau cours' }}
-      </p>
-
+      <p class="title is-5 mb-1" *ngIf="cours.id === 0" i18n>Créer un cours</p>
+      <p class="title is-5 mb-1" *ngIf="cours.id > 0" i18n>Éditer un cours</p>
+      <p class="subtitle is-6 mb-0">{{ cours.nom || 'Nouveau cours' }}</p>
       <p class="cours-editor-summary">
         <span *ngIf="cours.jour_semaine">{{ getJourLabel(cours.jour_semaine) }}</span>
         <span *ngIf="cours.heure">· {{ cours.heure }}</span>
-        <span *ngIf="cours.duree">· {{ cours.duree }} min</span>
+        <span *ngIf="cours.duree" i18n>· {{ cours.duree }} min</span>
         <span *ngIf="cours.lieu?.nom">· {{ cours.lieu.nom }}</span>
       </p>
     </div>
 
     <div class="buttons is-flex-wrap-wrap cours-editor-actions">
-      <button class="button is-light" type="button" (click)="back.emit()">
-        <span class="icon"><i class="fas fa-arrow-left"></i></span>
-        <span>Retour</span>
+      <button class="button is-light" type="button" [disabled]="saving" (click)="back.emit()">
+        <span class="icon"><i class="fas fa-arrow-left"></i></span><span i18n>Retour</span>
       </button>
-
-      <button class="button is-success" type="button" [disabled]="!vm.isValid" (click)="save()">
-        <span class="icon"><i class="fas fa-floppy-disk"></i></span>
-        <span>Sauvegarder</span>
+      <button class="button is-success" [class.is-loading]="saving" type="button" [disabled]="!vm.isValid || saving" (click)="save()">
+        <span class="icon"><i class="fas fa-floppy-disk"></i></span><span i18n>Sauvegarder</span>
       </button>
-
-      <button
-        *ngIf="cours.id > 0"
-        class="button is-link is-light"
-        type="button"
-        (click)="modifierSerie()"
-      >
-        <span class="icon"><i class="fas fa-layer-group"></i></span>
-        <span>Modifier la série</span>
+      <button *ngIf="cours.id > 0" class="button is-link is-light" type="button" [disabled]="saving" (click)="modifierSerie()">
+        <span class="icon"><i class="fas fa-layer-group"></i></span><span i18n>Modifier la série</span>
       </button>
-<button
-  class="button is-warning is-light"
-  type="button"
-  (click)="duplicateCours()"
->
-  <span class="icon"><i class="fas fa-copy"></i></span>
-  <span>Dupliquer</span>
-</button>
-      <button
-        *ngIf="cours.id > 0"
-        class="button is-danger is-light"
-        type="button"
-        (click)="deleteCours()"
-      >
-        <span class="icon"><i class="fas fa-trash"></i></span>
-        <span>Supprimer</span>
+      <button class="button is-warning is-light" type="button" [disabled]="saving" (click)="duplicateCours()">
+        <span class="icon"><i class="fas fa-copy"></i></span><span i18n>Dupliquer</span>
+      </button>
+      <button *ngIf="cours.id > 0" class="button is-danger is-light" type="button" [disabled]="saving" (click)="deleteCours()">
+        <span class="icon"><i class="fas fa-trash"></i></span><span i18n>Supprimer</span>
       </button>
     </div>
   </header>
 
+  <div *ngIf="saving" class="notification is-info is-light mx-4 mt-4 mb-0" i18n>Sauvegarde du cours en cours…</div>
+
   <div class="cours-editor-body">
     <div class="cours-editor-grid">
       <section class="box editor-box editor-box--wide">
-        <h3 class="subtitle is-6 has-text-primary mb-4">Informations principales</h3>
-
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Informations principales</h3>
         <div class="editor-fields editor-fields--two">
           <div class="field">
-            <label class="label">Libellé</label>
-            <div class="control">
-              <input
-                class="input"
-                [(ngModel)]="cours.nom"
-                (ngModelChange)="checkall()"
-                placeholder="Nom du cours"
-              />
-            </div>
+            <label class="label" i18n>Libellé</label>
+            <div class="control"><input class="input" [(ngModel)]="cours.nom" (ngModelChange)="checkall()" placeholder="Nom du cours" i18n-placeholder /></div>
             <p *ngIf="!rNom.key" class="help is-danger">{{ rNom.value }}</p>
           </div>
-
           <div class="field">
-            <label class="label">Jour</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="cours.jour_semaine">
-                <option *ngFor="let jour of joursDisponibles" [ngValue]="jour">
-                  {{ getJourLabel(jour) }}
-                </option>
-              </select>
-            </div>
+            <label class="label" i18n>Jour</label>
+            <div class="select is-fullwidth"><select [(ngModel)]="cours.jour_semaine"><option *ngFor="let jour of joursDisponibles" [ngValue]="jour">{{ getJourLabel(jour) }}</option></select></div>
           </div>
-
+          <div class="field"><label class="label" i18n>Heure</label><input class="input" type="time" [(ngModel)]="cours.heure" /></div>
+          <div class="field"><label class="label" i18n>Durée (minutes)</label><input class="input" type="number" min="0" [(ngModel)]="cours.duree" /></div>
           <div class="field">
-            <label class="label">Heure</label>
-            <input class="input" type="time" [(ngModel)]="cours.heure" />
+            <label class="label" i18n>Lieu</label>
+            <div class="select is-fullwidth"><select [(ngModel)]="cours.lieu_id" (ngModelChange)="onLieuChange()"><option [ngValue]="0">--</option><option *ngFor="let lieu of lieuxDisponibles" [ngValue]="lieu.key">{{ lieu.value }}</option></select></div>
           </div>
-
-          <div class="field">
-            <label class="label">Durée (minutes)</label>
-            <input class="input" type="number" min="0" [(ngModel)]="cours.duree" />
-          </div>
-
-          <div class="field">
-            <label class="label">Lieu</label>
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="cours.lieu_id" (ngModelChange)="onLieuChange()">
-                <option [ngValue]="0">--</option>
-                <option *ngFor="let lieu of lieuxDisponibles" [ngValue]="lieu.key">
-                  {{ lieu.value }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Rendez-vous</label>
-            <input class="input" [(ngModel)]="cours.rdv" />
-          </div>
+          <div class="field"><label class="label" i18n>Rendez-vous</label><input class="input" [(ngModel)]="cours.rdv" /></div>
         </div>
       </section>
 
       <section class="box editor-box">
-        <h3 class="subtitle is-6 has-text-primary mb-4">Encadrants</h3>
-
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Encadrants</h3>
         <div class="field">
-          <label class="label">Responsable principal</label>
-          <div class="select is-fullwidth">
-            <select [(ngModel)]="cours.prof_principal_id" (ngModelChange)="checkall()">
-              <option [ngValue]="0">--</option>
-              <option *ngFor="let p of cours.professeursCours" [ngValue]="p.id">
-                {{ getProfLabel(p) }}
-              </option>
-            </select>
-          </div>
+          <label class="label" i18n>Responsable principal</label>
+          <div class="select is-fullwidth"><select [(ngModel)]="cours.prof_principal_id" (ngModelChange)="checkall()"><option [ngValue]="0">--</option><option *ngFor="let p of cours.professeursCours" [ngValue]="getProfKey(p)">{{ getProfLabel(p) }}</option></select></div>
           <p *ngIf="!rProf.key" class="help is-danger mb-3">{{ rProf.value }}</p>
         </div>
-
-        <div class="tags mb-3">
-          <span class="tag is-success is-medium" *ngFor="let p of cours.professeursCours">
-            {{ getProfLabel(p) }}
-            <button class="delete is-small" type="button" (click)="removeProf(p)"></button>
-          </span>
-        </div>
-
+        <div class="tags mb-3"><span class="tag is-success is-medium" *ngFor="let p of cours.professeursCours">{{ getProfLabel(p) }}<button class="delete is-small" type="button" (click)="removeProf(p)"></button></span></div>
         <div class="field is-grouped">
-          <div class="control is-expanded">
-            <div class="select is-fullwidth">
-              <select [(ngModel)]="currentProfId">
-                <option [ngValue]="null">Choisir un encadrant</option>
-                <option *ngFor="let p of profDispo" [ngValue]="p.key">
-                  {{ p.value }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="control">
-            <button class="button is-primary is-light" type="button" (click)="ajouterProf()">
-              <span class="icon"><i class="fas fa-plus"></i></span>
-            </button>
-          </div>
+          <div class="control is-expanded"><div class="select is-fullwidth"><select [(ngModel)]="currentProfId"><option [ngValue]="null" i18n>Choisir un encadrant</option><option *ngFor="let p of profDispo" [ngValue]="p.key">{{ p.value }}</option></select></div></div>
+          <div class="control"><button class="button is-primary is-light" type="button" (click)="ajouterProf()"><span class="icon"><i class="fas fa-plus"></i></span></button></div>
         </div>
       </section>
 
       <section class="box editor-box">
-        <h3 class="subtitle is-6 has-text-primary mb-4">Groupes</h3>
-
-        <div class="editor-check-grid">
-          <label class="checkbox editor-check-item" *ngFor="let groupe of groupesDisponibles">
-            <input
-              type="checkbox"
-              [checked]="hasGroupe(groupe.id)"
-              (change)="toggleGroupe(groupe.id)"
-            />
-            <span>{{ groupe.nom }}</span>
-          </label>
-        </div>
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Groupes</h3>
+        <div class="editor-check-grid"><label class="checkbox editor-check-item" *ngFor="let groupe of groupesDisponibles"><input type="checkbox" [checked]="hasGroupe(groupe.id)" (change)="toggleGroupe(groupe.id)" /><span>{{ groupe.nom }}</span></label></div>
       </section>
 
       <section class="box editor-box">
-        <h3 class="subtitle is-6 has-text-primary mb-4">Paramètres</h3>
-
+        <h3 class="subtitle is-6 has-text-primary mb-4" i18n>Paramètres</h3>
         <div class="editor-check-stack">
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="cours.afficher_present" />
-            <span>Afficher les présences</span>
-          </label>
-
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="cours.essai_possible" />
-            <span>Essai possible</span>
-          </label>
-
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="cours.convocation_nominative" />
-            <span>Convocation nominative</span>
-          </label>
-
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="cours.est_place_maximum" />
-            <span>Limiter le nombre de places</span>
-          </label>
-
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="cours.est_limite_age_minimum" />
-            <span>Limiter l'âge minimum</span>
-          </label>
-
-          <label class="checkbox">
-            <input type="checkbox" [(ngModel)]="cours.est_limite_age_maximum" />
-            <span>Limiter l'âge maximum</span>
-          </label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="cours.afficher_present" /><span i18n>Afficher les présences</span></label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="cours.essai_possible" /><span i18n>Essai possible</span></label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="cours.convocation_nominative" /><span i18n>Convocation nominative</span></label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="cours.est_place_maximum" (ngModelChange)="onPlaceLimitChange()" /><span i18n>Limiter le nombre de places</span></label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="cours.est_limite_age_minimum" (ngModelChange)="onAgeMinLimitChange()" /><span i18n>Limiter l'âge minimum</span></label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="cours.est_limite_age_maximum" (ngModelChange)="onAgeMaxLimitChange()" /><span i18n>Limiter l'âge maximum</span></label>
         </div>
-
         <div class="editor-fields editor-fields--two mt-4">
-          <div class="field" *ngIf="cours.est_place_maximum">
-            <label class="label">Places maximum</label>
-            <input class="input" type="number" [(ngModel)]="cours.place_maximum" />
-          </div>
-
-          <div class="field" *ngIf="cours.est_limite_age_minimum">
-            <label class="label">Âge minimum</label>
-            <input class="input" type="number" [(ngModel)]="cours.age_minimum" />
-          </div>
-
-          <div class="field" *ngIf="cours.est_limite_age_maximum">
-            <label class="label">Âge maximum</label>
-            <input class="input" type="number" [(ngModel)]="cours.age_maximum" />
-          </div>
+          <div class="field" *ngIf="cours.est_place_maximum"><label class="label" i18n>Places maximum</label><input class="input" type="number" [(ngModel)]="cours.place_maximum" /></div>
+          <div class="field" *ngIf="cours.est_limite_age_minimum"><label class="label" i18n>Âge minimum</label><input class="input" type="number" [(ngModel)]="cours.age_minimum" /></div>
+          <div class="field" *ngIf="cours.est_limite_age_maximum"><label class="label" i18n>Âge maximum</label><input class="input" type="number" [(ngModel)]="cours.age_maximum" /></div>
         </div>
       </section>
     </div>

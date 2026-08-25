@@ -4,12 +4,45 @@
   </div>
 
   <section class="subscription-card" *ngIf="isReturnMode; else tunnel">
-    <div class="return-state" [class.is-success]="returnConfirmed">
-      <span class="return-icon"><i class="fas" [ngClass]="returnConfirmed ? 'fa-circle-check' : 'fa-circle-xmark'"></i></span>
-      <h1 class="title is-4">{{ returnConfirmed ? 'Inscription confirmée' : 'Paiement non confirmé' }}</h1>
+    <div
+      class="return-state"
+      [class.is-success]="returnConfirmed"
+      [class.is-pending]="!returnConfirmed && returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'"
+    >
+      <span class="return-icon">
+        <i
+          class="fas"
+          [ngClass]="returnConfirmed
+            ? 'fa-circle-check'
+            : returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'
+              ? 'fa-clock'
+              : 'fa-circle-xmark'"
+        ></i>
+      </span>
+      <h1 class="title is-4">
+        {{ returnConfirmed
+          ? 'Inscription confirmée'
+          : returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'
+            ? 'Confirmation du paiement en cours'
+            : 'Paiement refusé ou annulé' }}
+      </h1>
       <p>{{ returnMessage }}</p>
-      <p *ngIf="returnSubscription" class="return-total">Dossier #{{ returnSubscription.id }} · {{ formatMoney(returnSubscription.montant_total_centimes) }}</p>
-      <a class="button is-primary mt-4" routerLink="/menu">Retour au menu</a>
+      <p *ngIf="returnSubscription" class="return-total" i18n>
+        Dossier #{{ returnSubscription.id }} · {{ formatMoney(returnSubscription.montant_total_centimes) }}
+      </p>
+      <div class="buttons is-centered mt-4">
+        <button
+          *ngIf="!returnConfirmed && returnSubscription?.statut === 'EN_ATTENTE_PAIEMENT'"
+          class="button is-warning is-light"
+          type="button"
+          [disabled]="loading"
+          (click)="ngOnInit()"
+          i18n
+        >
+          Vérifier à nouveau
+        </button>
+        <a class="button is-primary" routerLink="/menu" i18n>Retour au menu</a>
+      </div>
     </div>
   </section>
 
@@ -17,17 +50,17 @@
     <section class="subscription-card" *ngIf="context as ctx">
       <header class="subscription-header">
         <div>
-          <p class="eyebrow">Saison {{ ctx.saison.nom }}</p>
+          <p class="eyebrow" i18n>Saison {{ ctx.saison.nom }}</p>
           <h1 class="title is-4 mb-1">{{ isAdminMode ? 'Souscription administrateur' : 'Mon inscription' }}</h1>
-          <p class="subtitle is-7 mb-0">Personnes, groupes, tarifs, dossier puis paiement.</p>
+          <p class="subtitle is-7 mb-0" i18n>Personnes, groupes, tarifs, dossier puis paiement.</p>
         </div>
         <div class="tags">
-          <span class="tag is-warning is-light" *ngIf="isAdminMode">Mode administrateur</span>
-          <span class="tag is-info is-light" *ngIf="draft">Brouillon #{{ draft.id }}</span>
+          <span class="tag is-warning is-light" *ngIf="isAdminMode" i18n>Mode administrateur</span>
+          <span class="tag is-info is-light" *ngIf="draft" i18n>Brouillon #{{ draft.id }}</span>
         </div>
       </header>
 
-      <nav class="steps" aria-label="Étapes de l'inscription">
+      <nav class="steps" aria-label="Étapes de l'inscription" i18n-aria-label>
         <button type="button" *ngFor="let item of [1,2,3,4,5]" [class.is-active]="step === item" [class.is-done]="step > item" (click)="item < step && (step = item)">
           <span>{{ item }}</span>
           <small>{{ item === 1 ? 'Personnes' : item === 2 ? 'Groupes' : item === 3 ? 'Tarifs' : item === 4 ? 'Dossier' : 'Paiement' }}</small>
@@ -36,8 +69,25 @@
 
       <main class="subscription-content">
         <section *ngIf="step === 1">
-          <h2 class="title is-5 mb-1">Qui souhaites-tu inscrire ?</h2>
-          <p class="has-text-grey mb-4">Une personne déjà inscrite sur cette saison ne peut pas être sélectionnée une seconde fois.</p>
+          <div class="is-flex is-justify-content-space-between is-align-items-flex-start is-flex-wrap-wrap mb-4" style="gap: .75rem">
+            <div>
+              <h2 class="title is-5 mb-1" i18n>Qui souhaites-tu inscrire ?</h2>
+              <p class="has-text-grey mb-0" i18n>Une personne déjà inscrite sur cette saison ne peut pas être sélectionnée une seconde fois.</p>
+            </div>
+            <a
+              *ngIf="!isAdminMode"
+              class="button is-primary is-light"
+              [routerLink]="['/adherent']"
+              [queryParams]="{ context: 'MON_COMPTE', action: 'CREATE', returnUrl: '/souscription' }"
+            >
+              <span class="icon"><i class="fas fa-user-plus"></i></span>
+              <span i18n>Ajouter une personne</span>
+            </a>
+          </div>
+
+          <div *ngIf="ctx.personnes.length === 0" class="notification is-info is-light" i18n>
+            Aucune personne n'est encore rattachée à ce compte. Utilise « Ajouter une personne » pour commencer l'inscription.
+          </div>
 
           <div class="person-grid">
             <article class="person-card" *ngFor="let person of ctx.personnes" [class.is-selected]="isSelected(person.id)" [class.is-disabled]="person.inscription_active">
@@ -45,11 +95,11 @@
                 <input type="checkbox" [disabled]="person.inscription_active" [checked]="isSelected(person.id)" (change)="togglePerson(person)" />
                 <span>
                   <strong>{{ person.first_name }} {{ person.last_name }}</strong>
-                  <small>{{ person.age_civil }} ans · {{ person.reinscription ? 'Réinscription' : 'Nouvelle inscription' }}</small>
+                  <small i18n>{{ person.age_civil }} ans · {{ person.reinscription ? 'Réinscription' : 'Nouvelle inscription' }}</small>
                 </span>
               </label>
 
-              <span class="tag is-success is-light mt-3" *ngIf="person.inscription_active">Déjà inscrit sur cette saison</span>
+              <span class="tag is-success is-light mt-3" *ngIf="person.inscription_active" i18n>Déjà inscrit sur cette saison</span>
 
               <ng-container *ngIf="isSelected(person.id)">
                 <div class="person-statuses">
@@ -62,9 +112,9 @@
                     {{ photoPresent(person) ? 'Photo présente' : 'Photo absente' }}
                   </span>
                 </div>
-                <p class="help is-danger mt-2" *ngIf="!person.informations_completes">Manquant : {{ person.champs_manquants.join(', ') }}</p>
+                <p class="help is-danger mt-2" *ngIf="!person.informations_completes" i18n>Manquant : {{ person.champs_manquants.join(', ') }}</p>
                 <button class="button is-small is-light mt-3" type="button" (click)="editPerson(person)">
-                  <span class="icon"><i class="fas fa-pen"></i></span><span>Modifier la fiche adhérent</span>
+                  <span class="icon"><i class="fas fa-pen"></i></span><span i18n>Modifier la fiche adhérent</span>
                 </button>
               </ng-container>
             </article>
@@ -72,16 +122,16 @@
         </section>
 
         <section *ngIf="step === 2">
-          <h2 class="title is-5 mb-1">Choix des groupes</h2>
-          <p class="has-text-grey mb-4">Seuls les groupes visibles, éligibles et disposant encore de places sont proposés.</p>
+          <h2 class="title is-5 mb-1" i18n>Choix des groupes</h2>
+          <p class="has-text-grey mb-4" i18n>Seuls les groupes visibles, éligibles et disposant encore de places sont proposés.</p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <div class="block-heading">
               <div>
                 <h3 class="title is-6 mb-1">{{ person.first_name }} {{ person.last_name }}</h3>
-                <p class="previous-groups" *ngIf="person.groupes_precedents.length">Saison précédente : {{ person.groupes_precedents.join(' · ') }}</p>
+                <p class="previous-groups" *ngIf="person.groupes_precedents.length" i18n>Saison précédente : {{ person.groupes_precedents.join(' · ') }}</p>
               </div>
-              <span class="tag is-light" *ngIf="hiddenGroupCount(person) > 0">{{ hiddenGroupCount(person) }} groupe(s) non applicable(s)</span>
+              <span class="tag is-light" *ngIf="hiddenGroupCount(person) > 0" i18n>{{ hiddenGroupCount(person) }} groupe(s) non applicable(s)</span>
             </div>
 
             <div class="option-grid" *ngIf="eligibleGroups(person).length; else noEligibleGroup">
@@ -89,18 +139,18 @@
                 <input type="checkbox" [checked]="isGroupSelected(person.id, group.id)" (change)="toggleGroup(person, group)" />
                 <span class="option-main">
                   <strong>{{ group.nom }}</strong>
-                  <small>{{ group.nb_actifs }}<ng-container *ngIf="group.limit_nb != null"> / {{ group.limit_nb }}</ng-container> inscrit(s)</small>
+                  <small i18n>{{ group.nb_actifs }}<ng-container *ngIf="group.limit_nb != null"> / {{ group.limit_nb }}</ng-container> inscrit(s)</small>
                   <small *ngIf="group.critere_eligibilite">{{ group.critere_eligibilite }}</small>
                 </span>
               </label>
             </div>
-            <ng-template #noEligibleGroup><div class="notification is-warning is-light mb-0">Aucun groupe n’est accessible à cette personne.</div></ng-template>
+            <ng-template #noEligibleGroup><div class="notification is-warning is-light mb-0" i18n>Aucun groupe n’est accessible à cette personne.</div></ng-template>
           </article>
         </section>
 
         <section *ngIf="step === 3">
-          <h2 class="title is-5 mb-1">Choix du tarif</h2>
-          <p class="has-text-grey mb-4">Le type de licence sera choisi dans le dossier de chaque personne.</p>
+          <h2 class="title is-5 mb-1" i18n>Choix du tarif</h2>
+          <p class="has-text-grey mb-4" i18n>Le type de licence sera choisi dans le dossier de chaque personne.</p>
 
           <article class="choice-block" *ngFor="let person of selectedPeople">
             <h3 class="title is-6">{{ person.first_name }} {{ person.last_name }}</h3>
@@ -110,7 +160,7 @@
                 <span class="option-main">
                   <strong>{{ tariff.nom }}</strong><span class="price">{{ formatMoney(tariff.prix_centimes) }}</span>
                   <small>{{ tariff.general ? 'Tarif général' : 'Tarif lié aux groupes' }}</small>
-                  <small>Paiement jusqu'à {{ tariff.paiement_plusieurs_fois }} fois</small>
+                  <small i18n>Paiement jusqu'à {{ tariff.paiement_plusieurs_fois }} fois</small>
                 </span>
               </label>
             </div>
@@ -118,8 +168,8 @@
         </section>
 
         <section *ngIf="step === 4">
-          <h2 class="title is-5 mb-1">Dossiers des personnes</h2>
-          <p class="has-text-grey mb-4">Les informations de licence restent complétables même lorsqu’elles ne bloquent pas l’adhésion.</p>
+          <h2 class="title is-5 mb-1" i18n>Dossiers des personnes</h2>
+          <p class="has-text-grey mb-4" i18n>Les informations de licence restent complétables même lorsqu’elles ne bloquent pas l’adhésion.</p>
 
           <article class="dossier-card" *ngFor="let person of selectedPeople">
             <header class="dossier-header">
@@ -129,22 +179,28 @@
                   <span class="tag" [ngClass]="dossiers[person.id]?.inscription_complete ? 'is-success is-light' : 'is-danger is-light'">{{ dossiers[person.id]?.inscription_complete ? 'Inscription complète' : 'Inscription incomplète' }}</span>
                   <span class="tag" [ngClass]="medical[person.id]?.eligible ? 'is-success is-light' : 'is-warning is-light'">{{ medical[person.id]?.eligible ? 'Situation médicale complète' : 'Situation médicale à compléter' }}</span>
                 </div>
+                <p
+                  class="help is-danger mt-2"
+                  *ngIf="!dossiers[person.id]?.inscription_complete && registrationIssueMessage(person.id)"
+                >
+                  {{ registrationIssueMessage(person.id) }}
+                </p>
               </div>
-              <button class="button is-small is-light" type="button" (click)="editPerson(person)">Modifier la fiche</button>
+              <button class="button is-small is-light" type="button" (click)="editPerson(person)" i18n>Modifier la fiche</button>
             </header>
 
             <section class="dossier-section">
               <div class="section-number">1</div>
               <div class="section-content">
-                <h4 class="title is-6 mb-2">Type de licence</h4>
+                <h4 class="title is-6 mb-2" i18n>Type de licence</h4>
                 <div class="licence-choice">
                   <label class="radio-card" [class.is-selected]="choice(person.id).licenceType === 'LOISIR'">
                     <input type="radio" [name]="'licence-' + person.id" [checked]="choice(person.id).licenceType === 'LOISIR'" (change)="selectLicence(person, 'LOISIR')" />
-                    <span><strong>Loisir</strong><small>Pratique sans licence compétition.</small></span>
+                    <span><strong i18n>Loisir</strong><small i18n>Pratique sans licence compétition.</small></span>
                   </label>
                   <label class="radio-card" [class.is-selected]="choice(person.id).licenceType === 'COMPETITION'">
                     <input type="radio" [name]="'licence-' + person.id" [checked]="choice(person.id).licenceType === 'COMPETITION'" (change)="selectLicence(person, 'COMPETITION')" />
-                    <span><strong>Compétition</strong><small>Soumise aux conditions fédérales.</small></span>
+                    <span><strong i18n>Compétition</strong><small i18n>Soumise aux conditions fédérales.</small></span>
                   </label>
                 </div>
                 <div *ngIf="choice(person.id).licenceType === 'COMPETITION'" class="notification mt-3 mb-0" [ngClass]="competitionEligible(person.id) ? 'is-success is-light' : 'is-warning is-light'">
@@ -157,7 +213,7 @@
             <section class="dossier-section">
               <div class="section-number">2</div>
               <div class="section-content">
-                <h4 class="title is-6 mb-2">Informations, documents et consentements</h4>
+                <h4 class="title is-6 mb-2" i18n>Informations, documents et consentements</h4>
                 <div class="information-summary">
                   <span [class.is-ok]="person.informations_completes"><i class="fas" [ngClass]="person.informations_completes ? 'fa-check' : 'fa-exclamation'"></i>{{ person.informations_completes ? 'Informations obligatoires présentes' : 'Informations obligatoires manquantes' }}</span>
                   <span [class.is-ok]="photoPresent(person)"><i class="fas fa-camera"></i>{{ photoPresent(person) ? 'Photo présente' : 'Photo absente' }}</span>
@@ -165,8 +221,8 @@
 
                 <div class="requirement-list">
                   <article class="requirement-row" *ngFor="let requirement of dossierRequirements(person.id)">
-                    <span class="requirement-state" [class.ok]="requirement.satisfait || requirementAnswered(requirement)">
-                      <i class="fas" [ngClass]="requirement.satisfait || requirementAnswered(requirement) ? 'fa-check' : 'fa-exclamation'"></i>
+                    <span class="requirement-state" [class.ok]="requirementDisplayOk(requirement)">
+                      <i class="fas" [ngClass]="requirementDisplayOk(requirement) ? 'fa-check' : 'fa-exclamation'"></i>
                     </span>
                     <div class="requirement-body">
                       <div class="requirement-title-line">
@@ -174,23 +230,73 @@
                         <span class="tag is-light">{{ requirement.obligatoire ? 'Réponse attendue' : 'Information utile' }}</span>
                       </div>
                       <p class="has-text-grey mb-2" *ngIf="requirement.description">{{ requirement.description }}</p>
-                      <p class="help is-warning" *ngIf="requirement.raison && !requirementAnswered(requirement)">{{ requirement.raison }}</p>
+                      <p
+                        class="help is-warning"
+                        *ngIf="requirement.raison && (!requirementAnswered(requirement) || (requirement.usage === 'LICENCE' && requirement.obligatoire && !requirement.satisfait))"
+                      >
+                        {{ requirement.raison }}
+                      </p>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'CONSENTEMENT'">
                         <p class="consent-text">{{ requirement.texte_consentement }}</p>
-                        <label class="checkbox checkbox-card">
-                          <input type="checkbox" [(ngModel)]="requirement.valeur_boolean" />
-                          Oui, j’accepte
-                        </label>
-                        <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)">Enregistrer ma réponse</button>
-                        <p class="help">Une case non cochée enregistre un refus. Aucun consentement n’est précoché par défaut.</p>
+                        <div class="boolean-choice">
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
+                            type="button"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, true)"
+                            i18n
+                          >
+                            Oui
+                          </button>
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
+                            type="button"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, false)"
+                            i18n
+                          >
+                            Non
+                          </button>
+                        </div>
                       </div>
 
                       <div class="requirement-answer" *ngIf="requirement.type_exigence === 'DECLARATION'">
                         <input *ngIf="requirement.type_reponse === 'TEXTE'" class="input" [(ngModel)]="requirement.valeur_texte" />
                         <input *ngIf="requirement.type_reponse === 'DATE'" class="input" type="date" [(ngModel)]="requirement.valeur_date" />
-                        <label *ngIf="requirement.type_reponse === 'BOOLEEN'" class="checkbox checkbox-card"><input type="checkbox" [(ngModel)]="requirement.valeur_boolean" /> Oui</label>
-                        <button class="button is-small is-primary mt-2" type="button" (click)="saveRequirement(person, requirement)">Enregistrer</button>
+                        <div *ngIf="requirement.type_reponse === 'BOOLEEN'" class="boolean-choice">
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === true ? 'is-success' : 'is-light'"
+                            type="button"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, true)"
+                            i18n
+                          >
+                            Oui
+                          </button>
+                          <button
+                            class="button is-small"
+                            [ngClass]="requirement.repondu && requirement.valeur_boolean === false ? 'is-danger' : 'is-light'"
+                            type="button"
+                            [disabled]="loading"
+                            (click)="selectBooleanRequirement(person, requirement, false)"
+                            i18n
+                          >
+                            Non
+                          </button>
+                        </div>
+                        <button
+                          *ngIf="requirement.type_reponse !== 'BOOLEEN'"
+                          class="button is-small is-primary mt-2"
+                          type="button"
+                          (click)="saveRequirement(person, requirement)"
+                          i18n
+                        >
+                          Enregistrer
+                        </button>
                       </div>
 
                       <app-dossier-document-upload *ngIf="requirement.type_exigence === 'DOCUMENT' && !requirement.satisfait" [personId]="person.id" [seasonId]="seasonId" [groupIds]="choice(person.id).groupIds" [tariffId]="choice(person.id).tariffId" [licenceType]="choice(person.id).licenceType" [requirement]="requirement" (evaluationChange)="dossiers[person.id] = $event"></app-dossier-document-upload>
@@ -203,7 +309,7 @@
             <section class="dossier-section">
               <div class="section-number">3</div>
               <div class="section-content">
-                <h4 class="title is-6 mb-2">Situation médicale</h4>
+                <h4 class="title is-6 mb-2" i18n>Situation médicale</h4>
                 <app-medical-proof-editor
                   [personId]="person.id"
                   [seasonId]="seasonId"
@@ -217,43 +323,43 @@
         </section>
 
         <section *ngIf="step === 5">
-          <h2 class="title is-5 mb-1">Récapitulatif et paiement</h2>
-          <p class="has-text-grey mb-4">Le serveur revérifie les places, les prix et les exigences bloquantes avant validation.</p>
+          <h2 class="title is-5 mb-1" i18n>Récapitulatif et paiement</h2>
+          <p class="has-text-grey mb-4" i18n>Le serveur revérifie les places, les prix et les exigences bloquantes avant validation.</p>
 
           <div class="summary-list">
             <article class="summary-person" *ngFor="let person of selectedPeople">
-              <div><strong>{{ person.first_name }} {{ person.last_name }}</strong><p>{{ groupNames(person).join(' · ') }}</p><small>{{ tariffFor(person)?.nom }} · Licence {{ choice(person.id).licenceType === 'COMPETITION' ? 'compétition' : 'loisir' }}</small></div>
+              <div><strong>{{ person.first_name }} {{ person.last_name }}</strong><p>{{ groupNames(person).join(' · ') }}</p><small i18n>{{ tariffFor(person)?.nom }} · Licence {{ choice(person.id).licenceType === 'COMPETITION' ? 'compétition' : 'loisir' }}</small></div>
               <strong>{{ formatMoney(tariffFor(person)?.prix_centimes || 0) }}</strong>
             </article>
           </div>
 
           <section class="payer-box mt-4">
-            <h3 class="title is-6 mb-3">Payeur</h3>
-            <div class="field"><label class="label">Qui effectue le paiement ?</label><div class="select is-fullwidth"><select [(ngModel)]="payerMode" (ngModelChange)="onPayerModeChange()"><option *ngFor="let person of selectedPeople" [ngValue]="person.id">{{ person.first_name }} {{ person.last_name }}</option><option [ngValue]="'OTHER'">Une autre personne</option></select></div></div>
-            <div class="columns is-multiline is-variable is-2"><div class="column is-4"><label class="label">Prénom</label><input class="input" [(ngModel)]="payerFirstName" /></div><div class="column is-4"><label class="label">Nom</label><input class="input" [(ngModel)]="payerLastName" /></div><div class="column is-4"><label class="label">Email</label><input class="input" type="email" [(ngModel)]="payerEmail" /></div></div>
+            <h3 class="title is-6 mb-3" i18n>Payeur</h3>
+            <div class="field"><label class="label" i18n>Qui effectue le paiement ?</label><div class="select is-fullwidth"><select [(ngModel)]="payerMode" (ngModelChange)="onPayerModeChange()"><option *ngFor="let person of selectedPeople" [ngValue]="person.id">{{ person.first_name }} {{ person.last_name }}</option><option [ngValue]="'OTHER'" i18n>Une autre personne</option></select></div></div>
+            <div class="columns is-multiline is-variable is-2"><div class="column is-4"><label class="label" i18n>Prénom</label><input class="input" [(ngModel)]="payerFirstName" /></div><div class="column is-4"><label class="label" i18n>Nom</label><input class="input" [(ngModel)]="payerLastName" /></div><div class="column is-4"><label class="label" i18n>Email</label><input class="input" type="email" [(ngModel)]="payerEmail" /></div></div>
           </section>
 
           <div class="columns is-multiline mt-2">
-            <div class="column is-5"><label class="label">Paiement</label><div class="select is-fullwidth"><select [(ngModel)]="installments"><option *ngFor="let count of [1,2,3,4,5,6,7,8,9,10,11,12].slice(0, maxInstallments)" [ngValue]="count">{{ count === 1 ? 'En une fois' : 'En ' + count + ' fois' }}</option></select></div></div>
-            <div class="column is-7"><label class="label">Code promotionnel</label><div class="field has-addons"><div class="control is-expanded"><input class="input" [(ngModel)]="promoCode" /></div><div class="control"><button class="button is-light" type="button" (click)="validatePromo()">Appliquer</button></div></div><p class="help is-success" *ngIf="promoMessage">{{ promoMessage }}</p><p class="help is-danger" *ngIf="promoError">{{ promoError }}</p></div>
+            <div class="column is-5"><label class="label" i18n>Paiement</label><div class="select is-fullwidth"><select [(ngModel)]="installments"><option *ngFor="let count of [1,2,3,4,5,6,7,8,9,10,11,12].slice(0, maxInstallments)" [ngValue]="count">{{ count === 1 ? 'En une fois' : 'En ' + count + ' fois' }}</option></select></div></div>
+            <div class="column is-7"><label class="label" i18n>Code promotionnel</label><div class="field has-addons"><div class="control is-expanded"><input class="input" [(ngModel)]="promoCode" /></div><div class="control"><button class="button is-light" type="button" (click)="validatePromo()" i18n>Appliquer</button></div></div><p class="help is-success" *ngIf="promoMessage">{{ promoMessage }}</p><p class="help is-danger" *ngIf="promoError">{{ promoError }}</p></div>
           </div>
 
-          <div class="totals mt-4"><div><span>Total initial</span><strong>{{ formatMoney(initialTotal) }}</strong></div><div *ngIf="promoDiscount"><span>Remise</span><strong>- {{ formatMoney(promoDiscount) }}</strong></div><div class="total-final"><span>À payer</span><strong>{{ formatMoney(finalTotal) }}</strong></div></div>
+          <div class="totals mt-4"><div><span i18n>Total initial</span><strong>{{ formatMoney(initialTotal) }}</strong></div><div *ngIf="promoDiscount"><span i18n>Remise</span><strong>- {{ formatMoney(promoDiscount) }}</strong></div><div class="total-final"><span i18n>À payer</span><strong>{{ formatMoney(finalTotal) }}</strong></div></div>
 
           <div class="notification is-warning is-light mt-4" *ngIf="isAdminMode">
-            <strong>Validation administrative</strong>
-            <p>Le bouton ci-dessous crée l’inscription et les groupes sans passer par HelloAsso. Il enregistre l’état MANUAL_PAID.</p>
-            <button class="button is-warning mt-2" type="button" (click)="validateManualPayment()">Valider le paiement reçu</button>
+            <strong i18n>Validation administrative</strong>
+            <p i18n>Le bouton ci-dessous crée l’inscription et les groupes sans passer par HelloAsso. Il enregistre l’état MANUAL_PAID.</p>
+            <button class="button is-warning mt-2" type="button" (click)="validateManualPayment()" i18n>Valider le paiement reçu</button>
           </div>
 
-          <div class="simulation-box mt-4" *ngIf="isLocal && !isAdminMode"><strong>Mode local</strong><p class="is-size-7 mb-2">Teste la vraie finalisation sans appeler HelloAsso.</p><div class="buttons mb-0"><button class="button is-success is-light" type="button" (click)="simulate('OK')">Simuler paiement OK</button><button class="button is-danger is-light" type="button" (click)="simulate('KO')">Simuler paiement KO</button></div></div>
+          <div class="simulation-box mt-4" *ngIf="isLocal && !isAdminMode"><strong i18n>Mode local</strong><p class="is-size-7 mb-2" i18n>Teste la vraie finalisation sans appeler HelloAsso.</p><div class="buttons mb-0"><button class="button is-success is-light" type="button" (click)="simulate('OK')" i18n>Simuler paiement OK</button><button class="button is-danger is-light" type="button" (click)="simulate('KO')" i18n>Simuler paiement KO</button></div></div>
         </section>
       </main>
 
       <footer class="subscription-footer">
-        <button class="button is-light" type="button" [disabled]="step === 1 || loading" (click)="previous()">Précédent</button>
-        <button *ngIf="step < 5" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="next()">Continuer</button>
-        <button *ngIf="step === 5 && !isAdminMode" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="pay()">Payer {{ formatMoney(finalTotal) }}</button>
+        <button class="button is-light" type="button" [disabled]="step === 1 || loading" (click)="previous()" i18n>Précédent</button>
+        <button *ngIf="step < 5" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="next()" i18n>Continuer</button>
+        <button *ngIf="step === 5 && !isAdminMode" class="button is-primary" type="button" [disabled]="!canContinue() || loading" (click)="pay()" i18n>Payer {{ formatMoney(finalTotal) }}</button>
       </footer>
     </section>
   </ng-template>

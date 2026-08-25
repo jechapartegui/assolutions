@@ -16,6 +16,7 @@ import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { SouscriptionAdminService } from '../exigence-dossier/souscription-admin.service';
 import { SouscriptionContextEnricherService } from '../exigence-dossier/souscription-context-enricher.service';
 import { SouscriptionDossierService } from '../exigence-dossier/souscription-dossier.service';
+import { SouscriptionMedicalGuardService } from '../exigence-dossier/souscription-medical-guard.service';
 import { SouscriptionNotificationService } from '../exigence-dossier/souscription-notification.service';
 import { SouscriptionViewEnricherService } from '../exigence-dossier/souscription-view-enricher.service';
 import {
@@ -24,6 +25,9 @@ import {
   SimulerPaiementDto,
   ValidateCodePromoDto,
 } from './souscription.dto';
+import { SouscriptionCapacityService } from './souscription-capacity.service';
+import { SouscriptionConfirmationService } from './souscription-confirmation.service';
+import { SouscriptionFinanceService } from './souscription-finance.service';
 import { SouscriptionService } from './souscription.service';
 
 type AuthenticatedRequest = Request & { user?: { id?: number } };
@@ -33,9 +37,13 @@ type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
 export class SouscriptionController {
   constructor(
     private readonly service: SouscriptionService,
+    private readonly capacity: SouscriptionCapacityService,
+    private readonly confirmation: SouscriptionConfirmationService,
+    private readonly finance: SouscriptionFinanceService,
     private readonly admin: SouscriptionAdminService,
     private readonly contexts: SouscriptionContextEnricherService,
     private readonly dossiers: SouscriptionDossierService,
+    private readonly medicalGuard: SouscriptionMedicalGuardService,
     private readonly views: SouscriptionViewEnricherService,
     private readonly notifications: SouscriptionNotificationService,
   ) {}
@@ -46,9 +54,15 @@ export class SouscriptionController {
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    const context = await this.service.getContext(saisonId, projectId, this.accountId(req));
+    const context = await this.service.getContext(
+      saisonId,
+      projectId,
+      this.accountId(req),
+    );
     await this.contexts.enrich(context, saisonId);
-    if (context.brouillon) context.brouillon = await this.views.subscription(context.brouillon);
+    if (context.brouillon) {
+      context.brouillon = await this.views.subscription(context.brouillon);
+    }
     return this.views.context(context);
   }
 
@@ -70,7 +84,12 @@ export class SouscriptionController {
     @ProjectId() projectId: number,
   ) {
     const compteId = await this.contexts.accountIdForPerson(personneId);
-    return this.buildAdminContext(saisonId, compteId, projectId, personneId);
+    return this.buildAdminContext(
+      saisonId,
+      compteId,
+      projectId,
+      personneId,
+    );
   }
 
   @Post('personnes/:id/completer')
@@ -86,7 +105,10 @@ export class SouscriptionController {
   }
 
   @Post('codes-promo/valider')
-  validatePromo(@Body() dto: ValidateCodePromoDto, @ProjectId() projectId: number) {
+  validatePromo(
+    @Body() dto: ValidateCodePromoDto,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.validateCodePromo(dto, projectId);
   }
 
@@ -97,21 +119,30 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     await this.contexts.assertNotAlreadyRegistered(dto);
+    await this.capacity.assertDraftCapacity(dto);
     const accountId = this.accountId(req);
     const saved = await this.service.saveDraft(dto, projectId, accountId);
     await this.dossiers.syncDraft(saved.id, dto, projectId, accountId);
-    return this.views.subscription(await this.service.getForAccount(saved.id, projectId, accountId));
+    return this.views.subscription(
+      await this.service.getForAccount(saved.id, projectId, accountId),
+    );
   }
 
   @UseGuards(ProjectAdminGuard)
   @Post('admin/brouillon')
-  async saveAdminDraft(@Body() dto: AdminSaveSouscriptionDto, @ProjectId() projectId: number) {
+  async saveAdminDraft(
+    @Body() dto: AdminSaveSouscriptionDto,
+    @ProjectId() projectId: number,
+  ) {
     const { compte_id, ...payload } = dto;
     await this.contexts.assertNotAlreadyRegistered(payload);
+    await this.capacity.assertDraftCapacity(payload);
     const accountId = Number(compte_id);
     const saved = await this.service.saveDraft(payload, projectId, accountId);
     await this.dossiers.syncDraft(saved.id, payload, projectId, accountId);
-    return this.views.subscription(await this.service.getForAccount(saved.id, projectId, accountId));
+    return this.views.subscription(
+      await this.service.getForAccount(saved.id, projectId, accountId),
+    );
   }
 
   @Get(':id')
@@ -131,7 +162,12 @@ export class SouscriptionController {
     @ProjectId() projectId: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.dossiers.validateAndSnapshot(id, projectId, this.accountId(req), false);
+    return this.dossiers.validateAndSnapshot(
+      id,
+      projectId,
+      this.accountId(req),
+      false,
+    );
   }
 
   @Post(':id/checkout')
@@ -141,6 +177,8 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
+    await this.capacity.assertSubscriptionCapacity(id);
+    await this.medicalGuard.assertComplete(id, projectId, accountId);
     await this.dossiers.validateAndSnapshot(id, projectId, accountId, true);
     const result = await this.service.createCheckout(id, projectId, accountId);
     await this.notifications.sendCurrentState(id, projectId, accountId);
@@ -155,7 +193,17 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
-    const result = await this.dossiers.simulatePayment(id, dto.resultat, projectId, accountId);
+    if (dto.resultat === 'OK') {
+      await this.capacity.assertSubscriptionCapacity(id);
+      await this.medicalGuard.assertComplete(id, projectId, accountId);
+    }
+    const result = await this.dossiers.simulatePayment(
+      id,
+      dto.resultat,
+      projectId,
+      accountId,
+    );
+    await this.finance.ensureForFinalized(id, projectId);
     await this.notifications.sendCurrentState(id, projectId, accountId);
     return result;
   }
@@ -167,7 +215,14 @@ export class SouscriptionController {
     @Param('compteId', ParseIntPipe) compteId: number,
     @ProjectId() projectId: number,
   ) {
-    const result = await this.admin.validateManualPayment(id, projectId, compteId);
+    await this.capacity.assertSubscriptionCapacity(id);
+    await this.medicalGuard.assertComplete(id, projectId, compteId);
+    const result = await this.admin.validateManualPayment(
+      id,
+      projectId,
+      compteId,
+    );
+    await this.finance.ensureForFinalized(id, projectId);
     await this.notifications.sendCurrentState(id, projectId, compteId);
     return result;
   }
@@ -179,7 +234,13 @@ export class SouscriptionController {
     @Req() req: AuthenticatedRequest,
   ) {
     const accountId = this.accountId(req);
-    const result = await this.service.confirmPayment(id, projectId, accountId);
+    await this.capacity.assertSubscriptionCapacity(id);
+    const result = await this.confirmation.confirmWithRetry(
+      id,
+      projectId,
+      accountId,
+    );
+    await this.finance.ensureForFinalized(id, projectId);
     await this.notifications.sendCurrentState(id, projectId, accountId);
     return result;
   }
@@ -195,7 +256,9 @@ export class SouscriptionController {
 
   @Post('helloasso/webhook')
   async webhook(@Body() payload: unknown) {
+    await this.capacity.assertWebhookCapacity(payload);
     const result = await this.service.handleHelloAssoWebhook(payload);
+    await this.finance.ensureFromWebhook(payload);
     await this.notifications.sendFromWebhook(payload);
     return result;
   }
@@ -206,17 +269,25 @@ export class SouscriptionController {
     projectId: number,
     selectedPersonId?: number,
   ) {
-    const context: any = await this.service.getContext(saisonId, projectId, compteId);
+    const context: any = await this.service.getContext(
+      saisonId,
+      projectId,
+      compteId,
+    );
     await this.contexts.enrich(context, saisonId);
     context.admin_compte_id = compteId;
     context.admin_personne_id = selectedPersonId ?? null;
-    if (context.brouillon) context.brouillon = await this.views.subscription(context.brouillon);
+    if (context.brouillon) {
+      context.brouillon = await this.views.subscription(context.brouillon);
+    }
     return this.views.context(context);
   }
 
   private accountId(req: AuthenticatedRequest): number {
     const id = Number(req.user?.id);
-    if (!id) throw new UnauthorizedException('Compte authentifié introuvable');
+    if (!id) {
+      throw new UnauthorizedException('Compte authentifié introuvable');
+    }
     return id;
   }
 }

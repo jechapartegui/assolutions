@@ -55,7 +55,7 @@
 
   <p class="help">
   <ng-container i18n>Utilisez</ng-container>
-  <code>&#123; &#123;NOM&#125;&#125;</code>
+  <code i18n>&#123; &#123;NOM&#125;&#125;</code>
   <ng-container i18n>pour un champ global, et entourez les lignes répétées avec</ng-container>
   <code>[[ ... ]]</code>
   <ng-container i18n>pour les boucles.</ng-container>
@@ -102,7 +102,7 @@
                       <div class="box is-light" *ngFor="let item of formLoopItems; let i = index">
                         <div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
                           <strong i18n>Élément {{ i + 1 }}</strong>
-                          <button class="delete" title="Supprimer" (click)="supprimerLigneLoop(i)"></button>
+                          <button class="delete" title="Supprimer" (click)="supprimerLigneLoop(i)" i18n-title></button>
                         </div>
 
                         <div class="columns is-multiline is-variable is-2">

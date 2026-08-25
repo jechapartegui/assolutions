@@ -1,15 +1,16 @@
 <div class="app-shell">
   <ng-container *ngIf="!isPublic">
     <span class="fullscreen">
-      <nav class="navbar app-navbar" role="navigation" aria-label="main navigation">
+      <nav class="navbar app-navbar" role="navigation" aria-label="main navigation" i18n-aria-label>
         <div class="navbar-brand">
           <a
             class="navbar-item app-logo"
             (click)="selectMenu('MENU')"
             [routerLink]="store.isLoggedIn() ? (store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']) : null"
             aria-label="Accueil"
+            i18n-aria-label
           >
-            <span class="logo-mark">AS</span>
+            <span class="logo-mark" i18n>AS</span>
           </a>
 
           <a
@@ -19,6 +20,7 @@
             aria-label="menu"
             [attr.aria-expanded]="isactive"
             data-target="navMaSeance"
+            i18n-aria-label
           >
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -33,6 +35,7 @@
               [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'"
               (click)="selectMenu('PAIEMENT')"
               [routerLink]="['/souscription']"
+              i18n
             >
               Inscription
             </a>
@@ -42,6 +45,7 @@
                 [class]="store.selectedMenu() === 'ADHERENT' ? 'navbar-item is-selected' : 'navbar-item'"
                 (click)="selectMenu('ADHERENT')"
                 [routerLink]="['/adherent']"
+                i18n
               >
                 Adhérents
               </a>
@@ -49,6 +53,7 @@
                 [class]="store.selectedMenu() === 'COURS' ? 'navbar-item is-selected' : 'navbar-item'"
                 (click)="selectMenu('COURS')"
                 [routerLink]="['/cours']"
+                i18n
               >
                 Cours
               </a>
@@ -56,6 +61,7 @@
                 [class]="store.selectedMenu() === 'SEANCE' ? 'navbar-item is-selected' : 'navbar-item'"
                 (click)="selectMenu('SEANCE')"
                 [routerLink]="['/seance']"
+                i18n
               >
                 Séances
               </a>
@@ -63,6 +69,7 @@
                 [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'"
                 (click)="selectMenu('GROUPE')"
                 [routerLink]="['/groupe']"
+                i18n
               >
                 Groupes
               </a>
@@ -70,54 +77,45 @@
 
             <ng-container *ngIf="store.mode() === 'ADMIN'">
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">Gestion</a>
+                <a class="navbar-link" i18n>Gestion</a>
                 <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']">Adhérents</a>
-                  <a class="navbar-item" (click)="selectMenu('COURS')" [routerLink]="['/cours']">Cours</a>
-                  <a class="navbar-item" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']">Séances</a>
-                  <a class="navbar-item" (click)="selectMenu('GROUPE')" [routerLink]="['/groupe']">Groupes</a>
-                  <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/inscription']">Tarifs d'inscription</a>
-                  <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/codes-promo']">Codes promotionnels</a>
-                  <a class="navbar-item" (click)="selectMenu('CONTRAT_PROF')" [routerLink]="['/contrat-prof']">Contrats professeurs</a>
+                  <a class="navbar-item" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']" i18n>Adhérents</a>
+                  <a class="navbar-item" (click)="selectMenu('COURS')" [routerLink]="['/cours']" i18n>Cours</a>
+                  <a class="navbar-item" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']" i18n>Séances</a>
+                  <a class="navbar-item" (click)="selectMenu('GROUPE')" [routerLink]="['/groupe']" i18n>Groupes</a>
+                  <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/inscription']" i18n>Tarifs d'inscription</a>
+                  <a class="navbar-item" (click)="selectMenu('EXIGENCE_DOSSIER')" [routerLink]="['/exigences-dossier']" i18n>Exigences des dossiers</a>
+                  <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/codes-promo']" i18n>Codes promotionnels</a>
+                  <a class="navbar-item" (click)="selectMenu('CONTRAT_PROF')" [routerLink]="['/contrat-prof']" i18n>Contrats professeurs</a>
                 </div>
               </div>
 
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">Finances</a>
+                <a class="navbar-link" i18n>Finances</a>
                 <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'DASHBOARD' }">Tableau finance</a>
-                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'BUDGET' }">Budget</a>
-                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'FLUX' }">Flux financiers</a>
-                  <a class="navbar-item" (click)="selectMenu('TRANSACTION')" [routerLink]="['/operations']" [queryParams]="{ context: 'LISTE' }">Opérations</a>
-                  <a class="navbar-item" (click)="selectMenu('STOCK')" [routerLink]="['/stock']">Stocks</a>
+                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'DASHBOARD' }" i18n>Tableau finance</a>
+                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'BUDGET' }" i18n>Budget</a>
+                  <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'FLUX' }" i18n>Flux financiers</a>
+                  <a class="navbar-item" (click)="selectMenu('TRANSACTION')" [routerLink]="['/operations']" [queryParams]="{ context: 'LISTE' }" i18n>Opérations</a>
                 </div>
               </div>
 
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">Communication</a>
+                <a class="navbar-link" i18n>Communication</a>
                 <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('ENVOIMAIL')" [routerLink]="['/envoi-mail']">Envoyer des mails</a>
-                  <a class="navbar-item" (click)="selectMenu('PROJETMAIL')" [routerLink]="['/projet-mail']">Configuration mails</a>
-                  <a class="navbar-item" (click)="selectMenu('SUIVIMAIL')" [routerLink]="['/projet-mail']">Suivi des mails</a>
+                  <a class="navbar-item" (click)="selectMenu('ENVOIMAIL')" [routerLink]="['/envoi-mail']" i18n>Envoyer des mails</a>
+                  <a class="navbar-item" (click)="selectMenu('PROJETMAIL')" [routerLink]="['/projet-mail']" i18n>Configuration mails</a>
+                  <a class="navbar-item" (click)="selectMenu('SUIVIMAIL')" [routerLink]="['/projet-mail']" i18n>Suivi des mails</a>
                 </div>
               </div>
 
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">Paramétrage</a>
+                <a class="navbar-link" i18n>Paramétrage</a>
                 <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('SAISON')" [routerLink]="['/saison']">Saisons</a>
-                  <a class="navbar-item" (click)="selectMenu('LIEU')" [routerLink]="['/lieu']">Lieux</a>
-                  <a class="navbar-item" (click)="selectMenu('PROF')" [routerLink]="['/professeur']">Professeurs</a>
-                  <a class="navbar-item" (click)="selectMenu('CB')" [routerLink]="['/compte-bancaire']">Comptes bancaires</a>
-                  <a class="navbar-item" (click)="selectMenu('LISTE_VALEUR')" [routerLink]="['/gestion-liste']">Listes de valeur</a>
-                </div>
-              </div>
-
-              <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link">Projet</a>
-                <div class="navbar-dropdown">
-                  <a class="navbar-item" (click)="selectMenu('PROJETINFO')" [routerLink]="['/projet-info']">Infos projet</a>
-                  <a class="navbar-item" (click)="selectMenu('COMPTE')" [routerLink]="['/compte']">Comptes utilisateurs</a>
+                  <a class="navbar-item" (click)="selectMenu('SAISON')" [routerLink]="['/saison']" i18n>Saisons</a>
+                  <a class="navbar-item" (click)="selectMenu('LIEU')" [routerLink]="['/lieu']" i18n>Lieux</a>
+                  <a class="navbar-item" (click)="selectMenu('PROF')" [routerLink]="['/professeur']" i18n>Professeurs</a>
+                  <a class="navbar-item" (click)="selectMenu('CB')" [routerLink]="['/compte-bancaire']" i18n>Comptes bancaires</a>
                 </div>
               </div>
             </ng-container>
@@ -127,7 +125,7 @@
             <div class="navbar-item account-navbar">
               <div class="account-pill" *ngIf="store.hasProjet()">
                 <span class="icon"><i class="fa-solid fa-diagram-project"></i></span>
-                <span class="account-project-name">{{ store.selectedProject()?.nom || 'Projet' }}</span>
+                <span class="account-project-name">{{ store.selectedProject()?.nom || defaultProjectLabel }}</span>
               </div>
 
               <div class="buttons account-actions">
@@ -137,19 +135,55 @@
                   [routerLink]="['/mon-compte']"
                   (click)="selectMenu('MON_COMPTE')"
                   title="Mon compte"
+                  i18n-title
                 >
                   <i class="fa-solid fa-user-gear"></i>
-                  <span class="is-hidden-touch ml-1">Mon compte</span>
+                  <span class="is-hidden-touch ml-1" i18n>Mon compte</span>
                 </a>
                 <a
                   *ngIf="store.hasProjet() && !store.isAdmin()"
                   class="button is-light is-rounded"
                   (click)="Dashboard()"
                   title="Tableau de bord"
+                  i18n-title
                 >
                   <i class="fa-solid fa-table-columns"></i>
                 </a>
-                <a class="button is-danger is-light is-rounded" (click)="LogOut()" title="Se déconnecter">
+
+                <div
+                  class="dropdown is-right"
+                  [class.is-active]="helpOpen"
+                  (click)="$event.stopPropagation()"
+                >
+                  <div class="dropdown-trigger">
+                    <button
+                      type="button"
+                      class="button is-light is-rounded"
+                      (click)="toggleHelp($event)"
+                      aria-haspopup="true"
+                      [attr.aria-expanded]="helpOpen"
+                      title="Aide en ligne"
+                      i18n-title
+                    >
+                      <i class="fa-solid fa-circle-question"></i>
+                      <span class="is-hidden-touch ml-1" i18n>Aide</span>
+                    </button>
+                  </div>
+                  <div class="dropdown-menu" role="menu">
+                    <div class="dropdown-content">
+                      <a
+                        href="#"
+                        class="dropdown-item"
+                        *ngFor="let topic of visibleHelpTopics"
+                        (click)="openHelpTopic(topic, $event)"
+                      >
+                        {{ topic.label }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <a class="button is-danger is-light is-rounded" (click)="LogOut()" title="Se déconnecter" i18n-title>
                   <i class="fa-solid fa-right-from-bracket"></i>
                 </a>
               </div>
@@ -173,8 +207,8 @@
                 (click)="selectMenu(store.mode() === 'ADMIN' ? 'MENU-ADMIN' : 'MENU')"
                 [routerLink]="store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']"
               >
-                <span class="icon is-large"><span class="mobile-logo">AS</span></span>
-                <span class="tablet">Menu</span>
+                <span class="icon is-large"><span class="mobile-logo" i18n>AS</span></span>
+                <span class="tablet" i18n>Menu</span>
               </a>
             </li>
 
@@ -185,7 +219,7 @@
                 [routerLink]="['/mon-compte']"
               >
                 <span class="icon is-large"><i class="fas fa-2x fa-user-gear"></i></span>
-                <span class="tablet">Compte</span>
+                <span class="tablet" i18n>Compte</span>
               </a>
             </li>
 
@@ -196,7 +230,7 @@
                 [routerLink]="['/souscription']"
               >
                 <span class="icon is-large"><i class="fas fa-2x fa-id-card"></i></span>
-                <span class="tablet">Inscription</span>
+                <span class="tablet" i18n>Inscription</span>
               </a>
             </li>
 
@@ -207,7 +241,7 @@
                 [routerLink]="['/adherent']"
               >
                 <span class="icon is-large"><i class="fas fa-2x fa-users"></i></span>
-                <span class="tablet">Adhérents</span>
+                <span class="tablet" i18n>Adhérents</span>
               </a>
             </li>
 
@@ -218,7 +252,7 @@
                 [routerLink]="['/seance']"
               >
                 <span class="icon is-large"><i class="fas fa-2x fa-clipboard-list"></i></span>
-                <span class="tablet">Séances</span>
+                <span class="tablet" i18n>Séances</span>
               </a>
             </li>
 
@@ -229,8 +263,46 @@
                 [routerLink]="['/cours']"
               >
                 <span class="icon is-large"><i class="fas fa-2x fa-chalkboard-teacher"></i></span>
-                <span class="tablet">Cours</span>
+                <span class="tablet" i18n>Cours</span>
               </a>
+            </li>
+
+            <li *ngIf="store.isLoggedIn() && store.isProf()">
+              <a
+                [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'"
+                (click)="selectMenu('GROUPE')"
+                [routerLink]="['/groupe']"
+              >
+                <span class="icon is-large"><i class="fas fa-2x fa-layer-group"></i></span>
+                <span class="tablet" i18n>Groupes</span>
+              </a>
+            </li>
+
+            <li *ngIf="store.isLoggedIn()">
+              <div
+                class="dropdown is-up is-right"
+                [class.is-active]="helpOpen"
+                (click)="$event.stopPropagation()"
+              >
+                <div class="dropdown-trigger">
+                  <a href="#" (click)="toggleHelp($event)">
+                    <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
+                    <span class="tablet" i18n>Aide</span>
+                  </a>
+                </div>
+                <div class="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a
+                      href="#"
+                      class="dropdown-item"
+                      *ngFor="let topic of visibleHelpTopics"
+                      (click)="openHelpTopic(topic, $event)"
+                    >
+                      {{ topic.label }}
+                    </a>
+                  </div>
+                </div>
+              </div>
             </li>
           </ul>
         </div>

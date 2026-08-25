@@ -82,6 +82,13 @@ const environmentFile = resolveEnvironmentFile();
           .toString()
           .toLowerCase();
         const synchronize = syncEnv === 'true';
+
+        if (isProd && synchronize) {
+          throw new Error(
+            'DB_SYNCHRONIZE=true is forbidden in production; use controlled migrations instead',
+          );
+        }
+
         const ssl = isProd ? { rejectUnauthorized: false } : undefined;
         const entities = [join(__dirname, '..', '**', '*.entity.{ts,js}')];
         const migrations = [join(__dirname, '..', '**', 'migration', '*.{ts,js}')];

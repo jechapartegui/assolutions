@@ -36,11 +36,14 @@ export class PersonneRepository {
   }
 
   create(dto: CreatePersonneDto): Promise<Personne> {
-    return this.personneApi.create(dto);
+    return this.personneApi.create(this.toApiWriteDto(dto) as CreatePersonneDto);
   }
 
   update(id: number, dto: UpdatePersonneDto): Promise<Personne> {
-    return this.personneApi.update(Number(id), dto);
+    return this.personneApi.update(
+      Number(id),
+      this.toApiWriteDto(dto) as UpdatePersonneDto,
+    );
   }
 
   remove(id: number): Promise<void> {
@@ -55,6 +58,39 @@ export class PersonneRepository {
   async setPhoto(personneId: number, photo: string | null): Promise<string | null> {
     const result = await this.documentApi.setPhoto(Number(personneId), photo ?? null, 'member');
     return result?.photo ?? null;
+  }
+
+  /**
+   * Les objets de l'éditeur contiennent des enrichissements UI (photo, login,
+   * groupes...). Le contrat /personnes est volontairement plus petit et le
+   * ValidationPipe du back refuse désormais toute propriété inconnue.
+   *
+   * On sérialise donc explicitement le DTO à la frontière HTTP : une photo ne
+   * peut plus fuiter dans POST/PATCH /personnes et reste gérée par /documents.
+   */
+  private toApiWriteDto(
+    dto: CreatePersonneDto | UpdatePersonneDto,
+  ): UpdatePersonneDto {
+    const source = (dto ?? {}) as Record<string, unknown>;
+    const clean: Record<string, unknown> = {};
+    const allowedFields = [
+      'compte',
+      'date_naissance',
+      'last_name',
+      'first_name',
+      'nickname',
+      'gender',
+      'address',
+      'archive',
+    ];
+
+    for (const field of allowedFields) {
+      if (source[field] !== undefined) {
+        clean[field] = source[field];
+      }
+    }
+
+    return clean as UpdatePersonneDto;
   }
 
   private cleanIds(ids: number[]): number[] {

@@ -82,11 +82,16 @@ export class ProfesseurComponent implements OnInit {
 
   async remove(prof: Professeur): Promise<void> {
     if (!this.canDelete(prof)) {
-      alert('Impossible de supprimer ce professeur : il possède au moins un contrat.');
+      alert(
+        $localize`:@@instructor.deleteBlocked:Impossible de supprimer ce professeur : il possède au moins un contrat.`,
+      );
       return;
     }
 
-    if (!confirm(`Supprimer ${this.getLibelle(prof)} des professeurs ?`)) return;
+    const label = this.getLibelle(prof);
+    if (!confirm($localize`:@@instructor.deleteConfirm:Supprimer ${label}:INSTRUCTOR: des professeurs ?`)) {
+      return;
+    }
 
     await this.store.remove(prof);
   }

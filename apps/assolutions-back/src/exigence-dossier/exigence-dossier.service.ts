@@ -23,6 +23,7 @@ import {
 } from './exigence-dossier.dto';
 import { ExigenceDossierEntity } from './exigence-dossier.entity';
 import { ExigenceDossierPorteeEntity } from './exigence-dossier-portee.entity';
+import { PreuveMedicaleService } from './preuve-medicale.service';
 import { ReponseExigenceDossierEntity } from './reponse-exigence-dossier.entity';
 
 type RequirementWithScopes = ExigenceDossierEntity & {
@@ -50,6 +51,7 @@ export class ExigenceDossierService {
     private readonly groupeRepo: Repository<GroupesEntity>,
     @InjectRepository(TarifInscriptionEntity)
     private readonly tarifRepo: Repository<TarifInscriptionEntity>,
+    private readonly preuveMedicaleService: PreuveMedicaleService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -184,8 +186,11 @@ export class ExigenceDossierService {
         this.matchesAge(item, civilAge) &&
         this.matchesScope(item.portees, dto),
     );
+    const hasMedicalRequirement = requirements.some(
+      (item) => item.type_exigence === 'PREUVE_MEDICALE',
+    );
 
-    const [contacts, documents, responses] = await Promise.all([
+    const [contacts, documents, responses, medical] = await Promise.all([
       this.contactRepo.find({
         where: { object_type: 'rider', object_id: personne.id },
       }),
@@ -202,6 +207,18 @@ export class ExigenceDossierService {
             },
           })
         : Promise.resolve([]),
+      hasMedicalRequirement
+        ? this.preuveMedicaleService.evaluate(
+            {
+              personne_id: personne.id,
+              saison_id: saison.id,
+              type_licence:
+                dto.type_licence === 'COMPETITION' ? 'COMPETITION' : 'LOISIR',
+            },
+            projectId,
+            compteId,
+          )
+        : Promise.resolve(null),
     ]);
     const responseByRequirement = new Map(
       responses.map((item) => [item.exigence_id, item]),
@@ -209,13 +226,27 @@ export class ExigenceDossierService {
 
     const evaluations = requirements.map((requirement) => {
       const response = responseByRequirement.get(requirement.id) ?? null;
-      const evaluation = this.evaluateRequirement(
-        requirement,
-        personne,
-        contacts,
-        documents,
-        response,
-      );
+      const evaluation =
+        requirement.type_exigence === 'PREUVE_MEDICALE'
+          ? {
+              satisfied: medical?.eligible === true,
+              answered: !!(medical?.certificat || medical?.qs_sport),
+              reason:
+                medical?.eligible === true
+                  ? null
+                  : medical?.message ?? 'Situation médicale à renseigner',
+              documentId:
+                medical?.certificat?.document_id ??
+                medical?.qs_sport?.document_id ??
+                null,
+            }
+          : this.evaluateRequirement(
+              requirement,
+              personne,
+              contacts,
+              documents,
+              response,
+            );
       return {
         id: requirement.id,
         code: requirement.code,
@@ -230,6 +261,7 @@ export class ExigenceDossierService {
         texte_consentement: requirement.texte_consentement,
         version_texte: requirement.version_texte,
         satisfait: evaluation.satisfied,
+        repondu: evaluation.answered,
         raison: evaluation.reason,
         valeur_boolean: response?.valeur_boolean ?? null,
         valeur_texte: response?.valeur_texte ?? null,
@@ -238,12 +270,26 @@ export class ExigenceDossierService {
       };
     });
 
-    const blockingMissing = evaluations.filter(
+    const registrationBlockingMissing = evaluations.filter(
       (item) =>
         item.usage === 'INSCRIPTION' &&
         item.obligatoire &&
         item.bloquante &&
-        !item.satisfait,
+        !(item.type_exigence === 'CONSENTEMENT' ? item.repondu : item.satisfait),
+    );
+    const unansweredRequiredConsents = evaluations.filter(
+      (item) =>
+        item.type_exigence === 'CONSENTEMENT' &&
+        item.obligatoire &&
+        !item.repondu,
+    );
+    const blockingMissing = Array.from(
+      new Map(
+        [...registrationBlockingMissing, ...unansweredRequiredConsents].map((item) => [
+          item.id,
+          item,
+        ]),
+      ).values(),
     );
     const licenseMissing = evaluations.filter(
       (item) =>
@@ -258,6 +304,7 @@ export class ExigenceDossierService {
       exigences_manquantes_bloquantes: blockingMissing.map((item) => item.code),
       exigences_licence_manquantes: licenseMissing.map((item) => item.code),
       exigences: evaluations,
+      preuve_medicale: medical,
     };
   }
 
@@ -334,14 +381,9 @@ export class ExigenceDossierService {
   ) {
     const result = await this.evaluate(dto, projectId, compteId);
     if (!result.inscription_complete) {
+      const missingCodes = new Set(result.exigences_manquantes_bloquantes);
       const labels = result.exigences
-        .filter(
-          (item) =>
-            item.usage === 'INSCRIPTION' &&
-            item.obligatoire &&
-            item.bloquante &&
-            !item.satisfait,
-        )
+        .filter((item) => missingCodes.has(item.code))
         .map((item) => item.libelle);
       throw new BadRequestException(
         `Dossier incomplet pour cette personne : ${labels.join(', ')}`,
@@ -564,12 +606,19 @@ export class ExigenceDossierService {
     contacts: Contact[],
     documents: DocumentEntity[],
     response: ReponseExigenceDossierEntity | null,
-  ): { satisfied: boolean; reason: string | null; documentId: number | null } {
+  ): {
+    satisfied: boolean;
+    answered: boolean;
+    reason: string | null;
+    documentId: number | null;
+  } {
     if (requirement.type_exigence === 'CHAMP_PERSONNE') {
       const value = this.personField(person, requirement.source_code);
+      const satisfied = this.hasValue(value);
       return {
-        satisfied: this.hasValue(value),
-        reason: this.hasValue(value) ? null : 'Information manquante',
+        satisfied,
+        answered: satisfied,
+        reason: satisfied ? null : 'Information manquante',
         documentId: null,
       };
     }
@@ -582,6 +631,7 @@ export class ExigenceDossierService {
       );
       return {
         satisfied: found,
+        answered: found,
         reason: found ? null : 'Contact manquant',
         documentId: null,
       };
@@ -597,6 +647,7 @@ export class ExigenceDossierService {
       );
       return {
         satisfied: !!valid,
+        answered: !!valid,
         reason: valid
           ? null
           : candidates.length
@@ -607,12 +658,18 @@ export class ExigenceDossierService {
     }
     if (requirement.type_exigence === 'CONSENTEMENT') {
       const currentVersion = requirement.version_texte ?? null;
-      const satisfied =
-        response?.valeur_boolean === true &&
+      const answered =
+        typeof response?.valeur_boolean === 'boolean' &&
         response.version_acceptee === currentVersion;
+      const satisfied = answered && response?.valeur_boolean === true;
       return {
         satisfied,
-        reason: satisfied ? null : 'Consentement à renseigner',
+        answered,
+        reason: !answered
+          ? 'Consentement à renseigner'
+          : satisfied
+            ? null
+            : 'Consentement refusé',
         documentId: null,
       };
     }
@@ -620,6 +677,7 @@ export class ExigenceDossierService {
     const satisfied = this.responseHasValue(requirement, response);
     return {
       satisfied,
+      answered: satisfied,
       reason: satisfied ? null : 'Réponse à renseigner',
       documentId: response?.document_id ?? null,
     };

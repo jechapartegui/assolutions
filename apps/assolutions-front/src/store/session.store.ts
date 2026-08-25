@@ -7,9 +7,7 @@ export type MenuType =
   | 'COMPTE' | 'PROF' | 'STOCK' | 'SUIVIMAIL'
   | 'PROJETINFO' | 'PROJETMAIL' | 'COMPTA' | 'CB'
   | 'FACTURE' | 'ENVOIMAIL' | 'ADMINISTRATEUR'
-  | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE' | 'PAIEMENT'
-
-  // nouveaux menus admin
+  | 'TDB' | 'TRANSACTION' | 'LISTE_VALEUR' | 'MON_COMPTE' | 'PAIEMENT' | 'EXIGENCE_DOSSIER'
   | 'INSCRIPTION'
   | 'CONTRAT_PROF'
   | 'TRACES_PAIEMENT'
@@ -62,9 +60,7 @@ export class SessionStore {
     return projet?.saison_active?.id ?? this.publicSaisonActiveId();
   });
 
-  readonly saisonActive = computed(() => {
-    return this.selectedProject()?.saison_active ?? null;
-  });
+  readonly saisonActive = computed(() => this.selectedProject()?.saison_active ?? null);
 
   readonly saisonConsultationId = computed(
     () => this._saisonConsultationId() ?? this.saisonActiveId(),
@@ -100,10 +96,12 @@ export class SessionStore {
     this.session.set(cleanSession);
 
     if (cleanSession.token) {
-      localStorage.setItem('auth_token', cleanSession.token);
+      sessionStorage.setItem('auth_token', cleanSession.token);
+      localStorage.removeItem('auth_token');
     }
 
-    localStorage.setItem('auth_mode', cleanSession.mode);
+    sessionStorage.setItem('auth_mode', cleanSession.mode);
+    localStorage.removeItem('auth_mode');
 
     if (selectedProjectId != null) {
       localStorage.setItem('selected_projet', String(selectedProjectId));
@@ -115,6 +113,8 @@ export class SessionStore {
   clearSession(): void {
     this.session.set(null);
     this._saisonConsultationId.set(null);
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_mode');
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_mode');
     localStorage.removeItem('selected_projet');
@@ -226,10 +226,7 @@ export class SessionStore {
       if (exists) return selectedProjectId;
     }
 
-    if (projects.length === 1) {
-      return projects[0].id;
-    }
-
+    if (projects.length === 1) return projects[0].id;
     return null;
   }
 }

@@ -7,6 +7,7 @@ import { GroupesEntity } from '../groupes/groupes.entity';
 import { HelloAssoModule } from '../helloasso/helloasso.module';
 import { InscriptionSaisonEntity } from '../inscription_saison/inscription_saison.entity';
 import { LienGroupeEntity } from '../lien_groupe/lien_groupe.entity';
+import { MessageModule } from '../message/message.module';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SouscriptionEntity } from '../souscription/souscription.entity';
@@ -28,12 +29,14 @@ import { PreuveMedicaleService } from './preuve-medicale.service';
 import { SouscriptionAdminService } from './souscription-admin.service';
 import { SouscriptionContextEnricherService } from './souscription-context-enricher.service';
 import { SouscriptionDossierService } from './souscription-dossier.service';
+import { SouscriptionMedicalGuardService } from './souscription-medical-guard.service';
 import { SouscriptionNotificationService } from './souscription-notification.service';
 import { SouscriptionViewEnricherService } from './souscription-view-enricher.service';
 
 @Module({
   imports: [
     HelloAssoModule,
+    MessageModule,
     TypeOrmModule.forFeature([
       ExigenceDossierEntity,
       ExigenceDossierPorteeEntity,
@@ -54,7 +57,11 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
       LienGroupeEntity,
     ]),
   ],
-  controllers: [ExigenceDossierController, DossierPersonneController, PreuveMedicaleController],
+  controllers: [
+    ExigenceDossierController,
+    DossierPersonneController,
+    PreuveMedicaleController,
+  ],
   providers: [
     DossierDocumentService,
     ExigenceDossierService,
@@ -62,6 +69,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
     SouscriptionAdminService,
     SouscriptionContextEnricherService,
     SouscriptionDossierService,
+    SouscriptionMedicalGuardService,
     SouscriptionViewEnricherService,
     SouscriptionNotificationService,
   ],
@@ -72,6 +80,7 @@ import { SouscriptionViewEnricherService } from './souscription-view-enricher.se
     SouscriptionAdminService,
     SouscriptionContextEnricherService,
     SouscriptionDossierService,
+    SouscriptionMedicalGuardService,
     SouscriptionViewEnricherService,
     SouscriptionNotificationService,
     TypeOrmModule,

@@ -213,48 +213,50 @@ export class AdherentRepository {
   }
 
   async createAdherent(vm: AdherentDetail_VM, saisonId: number): Promise<AdherentDetail_VM> {
-const compteId = Number(vm.compte);
-if (!compteId) {
-  throw new Error('Le compte associé est obligatoire.');
-}
+    const compteId = Number(vm.compte);
+    if (!compteId) {
+      throw new Error('Le compte associé est obligatoire.');
+    }
 
-const dto = {
-  compte: compteId,
-  date_naissance: this.toIsoDate(vm.date_naissance),
-  last_name: vm.nom ?? '',
-  first_name: vm.prenom ?? '',
-  nickname: vm.surnom ?? null,
-  gender: !!vm.sexe,
-  address: JSON.stringify(vm.adresse ?? new Adresse()),
-  archive: !!vm.archive,
-  photo: vm.photo ?? null,
-};
+    const dto = {
+      compte: compteId,
+      date_naissance: this.toIsoDate(vm.date_naissance),
+      last_name: vm.nom ?? '',
+      first_name: vm.prenom ?? '',
+      nickname: vm.surnom ?? null,
+      gender: !!vm.sexe,
+      address: JSON.stringify(vm.adresse ?? new Adresse()),
+      archive: !!vm.archive,
+      photo: vm.photo ?? null,
+    };
 
     const saved = await this.personneDataStore.create(dto, { photo: vm.photo ?? null });
 
     await this.syncContacts(saved.id, vm.contact ?? [], 'liste_contact');
     await this.syncContacts(saved.id, vm.contact_prevenir ?? [], 'liste_contact_prevenir');
+    await this.syncGroupes(saved.id, saisonId, vm.groupesParSaison ?? []);
 
     return this.loadAdherentDetail(saved.id, saisonId);
   }
 
   async updateAdherent(vm: AdherentDetail_VM, saisonId: number): Promise<AdherentDetail_VM> {
     const dto = {
-  compte: Number(vm.compte),
-  date_naissance: this.toIsoDate(vm.date_naissance),
-  last_name: vm.nom ?? '',
-  first_name: vm.prenom ?? '',
-  nickname: vm.surnom ?? null,
-  gender: !!vm.sexe,
-  address: JSON.stringify(vm.adresse ?? new Adresse()),
-  archive: !!vm.archive,
-  photo: vm.photo ?? null,
-};
+      compte: Number(vm.compte),
+      date_naissance: this.toIsoDate(vm.date_naissance),
+      last_name: vm.nom ?? '',
+      first_name: vm.prenom ?? '',
+      nickname: vm.surnom ?? null,
+      gender: !!vm.sexe,
+      address: JSON.stringify(vm.adresse ?? new Adresse()),
+      archive: !!vm.archive,
+      photo: vm.photo ?? null,
+    };
 
     await this.personneDataStore.update(vm.id, dto, { photo: vm.photo ?? null });
 
     await this.syncContacts(vm.id, vm.contact ?? [], 'liste_contact');
     await this.syncContacts(vm.id, vm.contact_prevenir ?? [], 'liste_contact_prevenir');
+    await this.syncGroupes(vm.id, saisonId, vm.groupesParSaison ?? []);
 
     return this.loadAdherentDetail(vm.id, saisonId);
   }
@@ -308,6 +310,51 @@ const dto = {
       } else {
         await this.contactservice.create(payload);
       }
+    }
+  }
+
+  /**
+   * La fiche adhérent manipule les groupes localement. Jusqu'ici la sauvegarde
+   * ne persistait que personne + contacts : les cases revenaient donc à leur
+   * ancienne valeur après rechargement. On synchronise maintenant les liens
+   * rider de la saison exactement comme le fait l'écran Groupe.
+   */
+  private async syncGroupes(
+    personneId: number,
+    saisonId: number,
+    selected: LienGroupe_VM[],
+  ): Promise<void> {
+    if (!personneId || !saisonId) return;
+
+    const existing = await this.liengroupeapi.lienGroupeByPersonne(
+      Number(personneId),
+      Number(saisonId),
+    );
+
+    const targetIds = new Set(
+      (selected ?? [])
+        .map((item: any) => Number(item?.groupe_id ?? item?.id ?? 0))
+        .filter((id) => Number.isFinite(id) && id > 0),
+    );
+
+    const existingByGroup = new Map(
+      (existing ?? []).map((link: any) => [Number(link.groupe_id), link]),
+    );
+
+    for (const link of existing ?? []) {
+      const groupeId = Number((link as any).groupe_id);
+      if (!targetIds.has(groupeId)) {
+        await this.liengroupeapi.remove(Number((link as any).id));
+      }
+    }
+
+    for (const groupeId of targetIds) {
+      if (existingByGroup.has(groupeId)) continue;
+      await this.liengroupeapi.create({
+        groupe_id: groupeId,
+        object_id: Number(personneId),
+        object_type: 'rider',
+      } as any);
     }
   }
 

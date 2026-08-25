@@ -21,7 +21,7 @@ import { ErrorService } from '../../services/error.service';
         [disabled]="loading"
         (change)="upload($event)"
       />
-      <p class="help">PDF ou image, 10 Mo maximum.</p>
+      <p class="help" i18n="@@document.uploadHelp">PDF ou image, 10 Mo maximum.</p>
       <p class="help is-success" *ngIf="message">{{ message }}</p>
     </div>
   `,
@@ -48,7 +48,7 @@ export class DossierDocumentUploadComponent {
     const file = input.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      this.error('Le fichier dépasse 10 Mo');
+      this.error($localize`:@@document.maxSize:Le fichier dépasse 10 Mo`);
       input.value = '';
       return;
     }
@@ -72,12 +72,14 @@ export class DossierDocumentUploadComponent {
         tarif_inscription_id: this.tariffId,
         type_licence: this.licenceType,
       });
-      this.message = 'Document enregistré';
+      this.message = $localize`:@@document.saved:Document enregistré`;
       this.evaluationChange.emit(evaluation);
       input.value = '';
     } catch (error: any) {
       this.error(
-        error?.error?.message ?? error?.message ?? 'Enregistrement impossible',
+        error?.error?.message ??
+          error?.message ??
+          $localize`:@@document.saveFailed:Enregistrement impossible`,
       );
     } finally {
       this.loading = false;
@@ -87,7 +89,8 @@ export class DossierDocumentUploadComponent {
   private readFile(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onerror = () => reject(new Error('Lecture du fichier impossible'));
+      reader.onerror = () =>
+        reject(new Error($localize`:@@document.readFailed:Lecture du fichier impossible`));
       reader.onload = () => resolve(String(reader.result ?? ''));
       reader.readAsDataURL(file);
     });
@@ -95,7 +98,10 @@ export class DossierDocumentUploadComponent {
 
   private error(message: string): void {
     ErrorService.instance.emitChange(
-      ErrorService.instance.CreateError('Ajout du document', message),
+      ErrorService.instance.CreateError(
+        $localize`:@@document.add:Ajout du document`,
+        message,
+      ),
     );
   }
 }

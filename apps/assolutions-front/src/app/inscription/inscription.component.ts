@@ -4,10 +4,12 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  CompteBancaire,
   Groupe,
   TarifInscription,
 } from '@shared/index';
 
+import { CompteBancaireApiService } from '../../services/compte-bancaire-api.service';
 import { ErrorService } from '../../services/error.service';
 import { TarifInscriptionStore } from '../../store/tarif-inscription.store';
 import { AppStore } from '../app.store';
@@ -25,10 +27,13 @@ export class InscriptionComponent implements OnInit {
       currency: 'EUR',
     });
 
+  comptes: CompteBancaire[] = [];
+
   constructor(
     public readonly tarifStore:
       TarifInscriptionStore,
     public readonly appStore: AppStore,
+    private readonly compteBancaireApi: CompteBancaireApiService,
     private readonly router: Router,
   ) {}
 
@@ -69,7 +74,13 @@ export class InscriptionComponent implements OnInit {
     }
 
     try {
-      await this.tarifStore.init(saisonId);
+      const [, comptes] = await Promise.all([
+        this.tarifStore.init(saisonId),
+        this.compteBancaireApi.list(),
+      ]);
+      this.comptes = (comptes ?? [])
+        .filter((compte) => compte.actif !== false)
+        .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
     } catch (error) {
       errorService.emitChange(
         errorService.CreateError(
@@ -77,6 +88,15 @@ export class InscriptionComponent implements OnInit {
           error,
         ),
       );
+    }
+  }
+
+  startCreateTarif(): void {
+    this.tarifStore.startCreate();
+    if (this.comptes.length === 1) {
+      this.tarifStore.patchEdit({
+        compte_bancaire_id: this.comptes[0].id,
+      });
     }
   }
 
@@ -112,6 +132,13 @@ export class InscriptionComponent implements OnInit {
     tarif: TarifInscription,
   ): number {
     return Number(tarif.prix_centimes ?? 0) / 100;
+  }
+
+  getCompteLabel(tarif: TarifInscription): string {
+    const compte = this.comptes.find(
+      (item) => Number(item.id) === Number(tarif.compte_bancaire_id),
+    );
+    return compte?.nom ?? 'Compte de recette non configuré';
   }
 
   getGroups(
@@ -298,6 +325,17 @@ export class InscriptionComponent implements OnInit {
 
   async saveTarif(): Promise<void> {
     const errorService = ErrorService.instance;
+    const edit = this.vm.editTarif;
+
+    if (!edit?.compte_bancaire_id) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Sauvegarde du tarif d'inscription`,
+          $localize`Le compte de recette est obligatoire`,
+        ),
+      );
+      return;
+    }
 
     try {
       await this.tarifStore.saveEdit();

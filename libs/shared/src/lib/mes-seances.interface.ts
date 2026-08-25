@@ -18,12 +18,18 @@ export interface MesSeanceDto {
   seance: {
     id: number;
   };
+  accesInscription?: boolean;
+  dansGroupeAdherent?: boolean;
+  essaiDisponible?: boolean;
+  groupeIds?: number[];
+  groupeNoms?: string[];
   statutInscription?: InscriptionStatusDto;
   statutPrésence?: PresenceStatusDto;
 }
 
-export interface PersonneDto {  
-  id: number; 
+export interface PersonneDto {
+  id: number;
+  inscrit?: boolean;
 }
 
 export interface AdhMenDto {
@@ -34,6 +40,11 @@ export interface AdhMenDto {
 export interface MesSeanceHydrated {
   seance: Seance;
   seanceProfesseurs: SeanceProfesseur_Light[];
+  accesInscription?: boolean;
+  dansGroupeAdherent?: boolean;
+  essaiDisponible?: boolean;
+  groupeIds?: number[];
+  groupeNoms?: string[];
   statutInscription: InscriptionStatusDto;
   statutPrésence: PresenceStatusDto;
 }

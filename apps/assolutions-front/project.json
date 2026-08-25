@@ -8,12 +8,19 @@
   "i18n": {
     "sourceLocale": "fr",
     "locales": {
-      "en": "apps/assolutions-front/src/locale/messages.en.xlf"
+      "en": "apps/assolutions-front/src/locale/messages.en.json"
     }
   },
   "targets": {
+    "prepare-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/i18n/build-en-translations.mjs"
+      }
+    },
     "build": {
       "executor": "@nx/angular:webpack-browser",
+      "dependsOn": ["prepare-i18n"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/assolutions-front",
@@ -25,7 +32,11 @@
           "apps/assolutions-front/src/favicon.ico",
           "apps/assolutions-front/src/assets"
         ],
-        "styles": ["apps/assolutions-front/src/styles.css"],
+        "styles": [
+          "apps/assolutions-front/src/styles.css",
+          "apps/assolutions-front/src/light-theme.css",
+          "apps/assolutions-front/src/ma-seance-overlay.css"
+        ],
         "scripts": [],
         "localize": ["fr", "en"]
       },
@@ -96,19 +107,14 @@
           "extractLicenses": false,
           "sourceMap": true,
           "namedChunks": true,
-          "localize": ["en"],
-          "fileReplacements": [
-            {
-              "replace": "apps/assolutions-front/src/environments/environment.ts",
-              "with": "apps/assolutions-front/src/environments/environment.en.ts"
-            }
-          ]
+          "localize": ["en"]
         }
       },
       "defaultConfiguration": "production"
     },
     "serve": {
       "executor": "@nx/angular:dev-server",
+      "dependsOn": ["prepare-i18n"],
       "options": {
         "buildTarget": "assolutions-front:build"
       },
@@ -129,9 +135,9 @@
     "extract-i18n": {
       "executor": "@nx/angular:extract-i18n",
       "options": {
-        "browserTarget": "assolutions-front:build"
-      },
-      "outputs": ["apps/assolutions-front/src/locale"]
+        "buildTarget": "assolutions-front:build",
+        "outputPath": "apps/assolutions-front/src/locale"
+      }
     },
     "test": {
       "executor": "@nx/angular:karma",
@@ -143,7 +149,11 @@
           "apps/assolutions-front/src/favicon.ico",
           "apps/assolutions-front/src/assets"
         ],
-        "styles": ["apps/assolutions-front/src/styles.css"],
+        "styles": [
+          "apps/assolutions-front/src/styles.css",
+          "apps/assolutions-front/src/light-theme.css",
+          "apps/assolutions-front/src/ma-seance-overlay.css"
+        ],
         "scripts": []
       }
     }

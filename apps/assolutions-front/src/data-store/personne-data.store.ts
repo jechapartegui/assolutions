@@ -210,8 +210,13 @@ export class PersonneDataStore {
       this.upsertPhotos(photos);
       return this.photosByIdSig();
     } catch (e) {
-      this.setError(e);
-      throw e;
+      // Une photo est un enrichissement visuel, jamais une condition de
+      // chargement d'une personne ou de la page adhérents. En cas de timeout,
+      // de redémarrage Render ou d'indisponibilité du stockage, on conserve
+      // simplement le fallback (initiales) et on laisse le reste de l'écran
+      // fonctionner normalement.
+      console.warn('Chargement des photos ignoré :', e);
+      return this.photosByIdSig();
     } finally {
       this.setLoading(false);
     }

@@ -27,6 +27,12 @@ export class CreateTarifInscriptionDto {
   prix_centimes: number;
 
   @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  compte_bancaire_id?: number | null;
+
+  @IsOptional()
   @IsDateString()
   date_debut_validite?: string | null;
 
@@ -108,6 +114,12 @@ export class UpdateTarifInscriptionDto {
   @Min(0)
   @Type(() => Number)
   prix_centimes?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  compte_bancaire_id?: number | null;
 
   @IsOptional()
   @IsDateString()

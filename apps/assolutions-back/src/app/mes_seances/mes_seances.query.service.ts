@@ -12,13 +12,19 @@ type StatutPresence = 'présent' | 'absent' | null;
 
 type Row = {
   personne_id: number;
+  est_adherent: boolean;
+  acces_inscription: boolean;
+  dans_groupe_adherent: boolean;
+  essai_disponible: boolean;
   seance_id: number;
+  groupe_ids: number[] | null;
+  groupe_noms: string[] | null;
   statut_inscription: StatutInscription;
   statut_presence: StatutPresence;
 };
 
 type RowProf = {
-  personne_id: number; // professeur (personne)
+  personne_id: number;
   seance_id: number;
 };
 
@@ -27,7 +33,6 @@ export class MesSeancesQueryService {
   constructor(private readonly dataSource: DataSource) {}
 
   async getAdherents(userId: number, projectId: number) {
-    // 1) saison active
     const saisons: Array<{ id: number }> = await this.dataSource.query(
       `
       SELECT s.id
@@ -45,7 +50,6 @@ export class MesSeancesQueryService {
 
     const saisonId = saisons[0].id;
 
-    // 2) résultat final
     const rows: Row[] = await this.dataSource.query(
       `
       WITH personnes_compte AS (
@@ -65,65 +69,111 @@ export class MesSeancesQueryService {
           AND COALESCE(p.archive, false) = false
       ),
 
-      adherents AS (
-        SELECT
+      groupes_personne AS (
+        SELECT DISTINCT
           pc.personne_id,
-          pc.saison_id,
-          pc.age
+          lg.groupe_id
         FROM personnes_compte pc
+        JOIN lien_groupe lg
+          ON lg.object_type = 'rider'
+         AND lg.object_id = pc.personne_id
+        JOIN groupes g
+          ON g.id = lg.groupe_id
+         AND g.saison_id = pc.saison_id
         WHERE pc.est_adherent = true
       ),
 
-      /*
-       * Logique historique conservée :
-       * un adhérent récupère les séances liées à ses groupes.
-       */
+      groupes_seance AS (
+        SELECT
+          s.seance_id,
+          array_agg(DISTINCT g.id ORDER BY g.id) AS groupe_ids,
+          array_agg(DISTINCT g.nom ORDER BY g.nom) AS groupe_noms
+        FROM seance s
+        JOIN lien_groupe lg
+          ON lg.object_type = 'séance'
+         AND lg.object_id = s.seance_id
+        JOIN groupes g
+          ON g.id = lg.groupe_id
+         AND g.saison_id = s.saison_id
+        WHERE s.saison_id = $2
+        GROUP BY s.seance_id
+      ),
+
       seances_par_groupes AS (
         SELECT DISTINCT
           gp.personne_id,
           s.seance_id
-        FROM (
-          SELECT
-            a.personne_id,
-            g.id AS groupe_id
-          FROM adherents a
-          JOIN lien_groupe lg
-            ON lg.object_type = 'rider'
-           AND lg.object_id = a.personne_id
-          JOIN groupes g
-            ON g.id = lg.groupe_id
-           AND g.saison_id = a.saison_id
-        ) gp
-        JOIN lien_groupe lg2
-          ON lg2.object_type = 'séance'
-         AND lg2.groupe_id = gp.groupe_id
+        FROM groupes_personne gp
+        JOIN lien_groupe lg
+          ON lg.object_type = 'séance'
+         AND lg.groupe_id = gp.groupe_id
         JOIN seance s
-          ON s.seance_id = lg2.object_id
+          ON s.seance_id = lg.object_id
+         AND s.saison_id = $2
       ),
 
       /*
-       * Logique historique conservée :
-       * une séance nominative n'est visible que si l'adhérent y est inscrit.
+       * Un adhérent peut aussi consulter les prochaines séances des autres
+       * groupes. Le front les masque par défaut et permet ensuite de choisir
+       * un autre groupe via son filtre.
        */
+      seances_autres_groupes AS (
+        SELECT DISTINCT
+          pc.personne_id,
+          s.seance_id
+        FROM personnes_compte pc
+        JOIN groupes_seance gs ON true
+        JOIN seance s
+          ON s.seance_id = gs.seance_id
+        WHERE pc.est_adherent = true
+          AND s.saison_id = pc.saison_id
+          AND s.statut = 'prévue'
+          AND s.date_seance >= current_date
+      ),
+
       seances_nominatives_inscrites AS (
         SELECT DISTINCT
-          a.personne_id,
+          pc.personne_id,
           s.seance_id
-        FROM adherents a
+        FROM personnes_compte pc
         JOIN inscription_seance ins
-          ON ins.personne_id = a.personne_id
+          ON ins.personne_id = pc.personne_id
         JOIN seance s
           ON s.seance_id = ins.seance_id
-         AND s.saison_id = a.saison_id
+         AND s.saison_id = pc.saison_id
         WHERE s.convocation_nominative = true
       ),
 
+      seances_inscrites_existantes AS (
+        SELECT DISTINCT
+          pc.personne_id,
+          s.seance_id
+        FROM personnes_compte pc
+        JOIN inscription_seance ins
+          ON ins.personne_id = pc.personne_id
+        JOIN seance s
+          ON s.seance_id = ins.seance_id
+         AND s.saison_id = pc.saison_id
+      ),
+
+      inscription_stats AS (
+        SELECT
+          ins.seance_id,
+          count(*) FILTER (
+            WHERE ins.statut_inscription IN ('présent', 'convoqué', 'essai')
+          )::int AS places_prises,
+          count(*) FILTER (
+            WHERE ins.statut_inscription = 'essai'
+          )::int AS essais_pris
+        FROM inscription_seance ins
+        GROUP BY ins.seance_id
+      ),
+
       /*
-       * Nouveau cas : toute personne du compte, adhérente ou non,
-       * peut voir les prochaines séances d'essai de la saison active.
-       *
-       * Les limites d'âge sont appliquées une seule fois dans le SELECT final,
-       * comme pour les séances historiques.
+       * Hors club : uniquement les séances d'essai réellement accessibles.
+       * Une borne d'âge renseignée est toujours effective. NULL signifie
+       * explicitement « aucune limite » : les anciens flags est_limite_age_*
+       * ne peuvent donc plus annuler silencieusement une valeur saisie.
        */
       seances_essai AS (
         SELECT DISTINCT
@@ -132,29 +182,88 @@ export class MesSeancesQueryService {
         FROM personnes_compte pc
         JOIN seance s
           ON s.saison_id = pc.saison_id
-        WHERE s.essai_possible = true
+        LEFT JOIN inscription_stats stats
+          ON stats.seance_id = s.seance_id
+        WHERE pc.est_adherent = false
+          AND s.essai_possible = true
           AND s.statut = 'prévue'
           AND s.date_seance >= current_date
+          AND (
+            s.age_minimum IS NULL
+            OR s.age_minimum <= pc.age
+          )
+          AND (
+            s.age_maximum IS NULL
+            OR s.age_maximum >= pc.age
+          )
+          AND (
+            COALESCE(s.est_place_maximum, false) = false
+            OR s.place_maximum IS NULL
+            OR COALESCE(stats.places_prises, 0) < s.place_maximum
+          )
+          AND (
+            s.nb_essai_possible IS NULL
+            OR COALESCE(stats.essais_pris, 0) < s.nb_essai_possible
+          )
       ),
 
       seances_candidates AS (
-        SELECT personne_id, seance_id
-        FROM seances_par_groupes
-
+        SELECT personne_id, seance_id FROM seances_par_groupes
         UNION
-
-        SELECT personne_id, seance_id
-        FROM seances_nominatives_inscrites
-
+        SELECT personne_id, seance_id FROM seances_autres_groupes
         UNION
-
-        SELECT personne_id, seance_id
-        FROM seances_essai
+        SELECT personne_id, seance_id FROM seances_nominatives_inscrites
+        UNION
+        SELECT personne_id, seance_id FROM seances_inscrites_existantes
+        UNION
+        SELECT personne_id, seance_id FROM seances_essai
       )
 
       SELECT
         pc.personne_id,
+        pc.est_adherent,
+        EXISTS (
+          SELECT 1
+          FROM seances_par_groupes spg
+          WHERE spg.personne_id = pc.personne_id
+            AND spg.seance_id = s.seance_id
+        ) AS dans_groupe_adherent,
+        EXISTS (
+          SELECT 1
+          FROM seances_essai se
+          WHERE se.personne_id = pc.personne_id
+            AND se.seance_id = s.seance_id
+        ) AS essai_disponible,
+        (
+          EXISTS (
+            SELECT 1
+            FROM seances_par_groupes spg
+            WHERE spg.personne_id = pc.personne_id
+              AND spg.seance_id = s.seance_id
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM seances_nominatives_inscrites sni
+            WHERE sni.personne_id = pc.personne_id
+              AND sni.seance_id = s.seance_id
+          )
+          OR (
+            ins.statut_inscription IS NOT NULL
+            AND ins.statut_inscription <> 'essai'
+          )
+          OR (
+            pc.est_adherent = true
+            AND gs.seance_id IS NOT NULL
+            AND (
+              COALESCE(s.est_place_maximum, false) = false
+              OR s.place_maximum IS NULL
+              OR COALESCE(stats.places_prises, 0) < s.place_maximum
+            )
+          )
+        ) AS acces_inscription,
         s.seance_id,
+        gs.groupe_ids,
+        gs.groupe_noms,
         ins.statut_inscription,
         ins.statut_seance AS statut_presence
       FROM personnes_compte pc
@@ -162,43 +271,50 @@ export class MesSeancesQueryService {
         ON sc.personne_id = pc.personne_id
       JOIN seance s
         ON s.seance_id = sc.seance_id
+      LEFT JOIN groupes_seance gs
+        ON gs.seance_id = s.seance_id
+      LEFT JOIN inscription_stats stats
+        ON stats.seance_id = s.seance_id
       LEFT JOIN inscription_seance ins
         ON ins.personne_id = pc.personne_id
        AND ins.seance_id = s.seance_id
       WHERE
-        (
-          s.est_limite_age_minimum = false
-          OR (
-            s.est_limite_age_minimum = true
-            AND s.age_minimum <= pc.age
+        ins.personne_id IS NOT NULL
+        OR (
+          (
+            s.age_minimum IS NULL
+            OR s.age_minimum <= pc.age
+          )
+          AND (
+            s.age_maximum IS NULL
+            OR s.age_maximum >= pc.age
           )
         )
-        AND
-        (
-          s.est_limite_age_maximum = false
-          OR (
-            s.est_limite_age_maximum = true
-            AND s.age_maximum >= pc.age
-          )
-        )
-      ORDER BY pc.personne_id, s.seance_id
+      ORDER BY pc.personne_id, s.date_seance, s.heure_debut, s.seance_id
       `,
       [userId, saisonId],
     );
 
-    // 3) groupement final : format inchangé pour le front
     const byPerson = new Map<number, any>();
 
     for (const r of rows) {
       if (!byPerson.has(r.personne_id)) {
         byPerson.set(r.personne_id, {
-          personne: { id: r.personne_id },
+          personne: {
+            id: r.personne_id,
+            inscrit: r.est_adherent,
+          },
           mes_seances: [],
         });
       }
 
       byPerson.get(r.personne_id).mes_seances.push({
         seance: { id: r.seance_id },
+        accesInscription: r.acces_inscription,
+        dansGroupeAdherent: r.dans_groupe_adherent,
+        essaiDisponible: r.essai_disponible,
+        groupeIds: r.groupe_ids ?? [],
+        groupeNoms: r.groupe_noms ?? [],
         statutInscription: r.statut_inscription ?? undefined,
         statutPrésence: r.statut_presence ?? undefined,
       });
@@ -245,7 +361,6 @@ export class MesSeancesQueryService {
       [userId, projectId],
     );
 
-    // regroupe -> AdherentSeance_VM[] minimal (IDs only)
     const byPerson = new Map<number, any>();
 
     for (const r of rows) {
@@ -258,7 +373,6 @@ export class MesSeancesQueryService {
 
       byPerson.get(r.personne_id).mes_seances.push({
         seance: { id: r.seance_id },
-        // statutInscription / statutPrésence absents côté prof pour l'instant
       });
     }
 

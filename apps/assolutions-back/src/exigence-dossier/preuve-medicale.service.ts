@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { PersonneEntity } from '../personne/personne.entity';
+import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { ProjectEntity } from '../project/project.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import {
@@ -36,9 +37,21 @@ export class PreuveMedicaleService {
   ) {
     await this.assertSeason(saisonId, projectId);
     await this.getAuthorizedPerson(personneId, compteId, projectId);
-    return this.repo.find({
+    const proofs = await this.repo.find({
       where: { project_id: projectId, personne_id: personneId },
       order: { date_document: 'DESC', id: 'DESC' },
+    });
+
+    // Compatibilité avec les données créées avant l'unicité logique :
+    // dans l'affichage, un seul certificat et un seul QS Sport sont actifs.
+    const activeTypes = new Set<string>();
+    return proofs.map((proof) => {
+      if (!proof.valide) return proof;
+      if (activeTypes.has(proof.type_preuve)) {
+        return { ...proof, valide: false };
+      }
+      activeTypes.add(proof.type_preuve);
+      return proof;
     });
   }
 
@@ -51,32 +64,51 @@ export class PreuveMedicaleService {
     await this.getAuthorizedPerson(dto.personne_id, compteId, projectId);
     this.validate(dto);
 
-    return this.repo.save(
-      this.repo.create({
-        project_id: projectId,
-        personne_id: dto.personne_id,
-        saison_id: dto.saison_id,
-        type_preuve: dto.type_preuve,
-        date_document: dto.date_document.slice(0, 10),
-        qs_reponses_negatives:
-          dto.type_preuve === 'QS_SPORT'
-            ? dto.qs_reponses_negatives ?? null
-            : null,
-        valable_competition: !!dto.valable_competition,
-        medecin_nom:
-          dto.type_preuve === 'CERTIFICAT'
-            ? this.text(dto.medecin_nom)
-            : null,
-        medecin_rpps:
-          dto.type_preuve === 'CERTIFICAT'
-            ? this.text(dto.medecin_rpps)
-            : null,
-        document_id: dto.document_id ?? null,
-        valide: true,
-        commentaire: this.text(dto.commentaire),
-        updated_at: new Date(),
-      }),
-    );
+    return this.dataSource.transaction(async (manager) => {
+      const proofRepo = manager.getRepository(PreuveMedicaleEntity);
+      const now = new Date();
+
+      // Une personne ne doit avoir qu'un justificatif actif de chaque type.
+      // Le précédent reste en historique mais ne participe plus à l'évaluation.
+      await proofRepo
+        .createQueryBuilder()
+        .update(PreuveMedicaleEntity)
+        .set({ valide: false, updated_at: now })
+        .where('project_id = :projectId', { projectId })
+        .andWhere('personne_id = :personneId', {
+          personneId: dto.personne_id,
+        })
+        .andWhere('type_preuve = :typePreuve', { typePreuve: dto.type_preuve })
+        .andWhere('valide = true')
+        .execute();
+
+      return proofRepo.save(
+        proofRepo.create({
+          project_id: projectId,
+          personne_id: dto.personne_id,
+          saison_id: dto.saison_id,
+          type_preuve: dto.type_preuve,
+          date_document: dto.date_document.slice(0, 10),
+          qs_reponses_negatives:
+            dto.type_preuve === 'QS_SPORT'
+              ? dto.qs_reponses_negatives ?? null
+              : null,
+          valable_competition: !!dto.valable_competition,
+          medecin_nom:
+            dto.type_preuve === 'CERTIFICAT'
+              ? this.text(dto.medecin_nom)
+              : null,
+          medecin_rpps:
+            dto.type_preuve === 'CERTIFICAT'
+              ? this.text(dto.medecin_rpps)
+              : null,
+          document_id: dto.document_id ?? null,
+          valide: true,
+          commentaire: this.text(dto.commentaire),
+          updated_at: now,
+        }),
+      );
+    });
   }
 
   async evaluate(
@@ -99,16 +131,21 @@ export class PreuveMedicaleService {
       order: { date_document: 'DESC', id: 'DESC' },
     });
 
-    const age = this.civilAge(personne.date_naissance, saison.date_debut);
-    const currentSeasonQs = proofs.find(
-      (item) =>
-        item.type_preuve === 'QS_SPORT' &&
-        item.saison_id === saison.id &&
-        item.qs_reponses_negatives === true,
-    );
-    const certificates = proofs.filter(
+    // Même si d'anciens tests ont laissé plusieurs lignes valide=true,
+    // seule la plus récente de chaque type est considérée active.
+    const activeQs = proofs.find((item) => item.type_preuve === 'QS_SPORT');
+    const activeCertificate = proofs.find(
       (item) => item.type_preuve === 'CERTIFICAT',
     );
+
+    const age = this.civilAge(personne.date_naissance, saison.date_debut);
+    const currentSeasonQs =
+      activeQs &&
+      activeQs.saison_id === saison.id &&
+      activeQs.qs_reponses_negatives === true
+        ? activeQs
+        : undefined;
+    const certificates = activeCertificate ? [activeCertificate] : [];
     const recentCertificate = certificates.find((item) =>
       this.isWithinMonths(item.date_document, saison.date_debut, 12),
     );
@@ -258,7 +295,8 @@ export class PreuveMedicaleService {
     const personne = await this.personneRepo.findOne({ where: { id } });
     if (!personne) throw new NotFoundException('Personne introuvable');
 
-    if (personne.compte === compteId) return personne;
+    // Une personne peut toujours gérer sa propre preuve médicale.
+    if (Number(personne.compte) === Number(compteId)) return personne;
 
     const project = await this.dataSource
       .getRepository(ProjectEntity)
@@ -271,7 +309,21 @@ export class PreuveMedicaleService {
         0,
     );
 
-    if (ownerId !== compteId) {
+    // L'administrateur/propriétaire du projet peut gérer tous les adhérents.
+    if (ownerId === Number(compteId)) return personne;
+
+    // Un professeur du projet doit également pouvoir gérer les preuves
+    // médicales des adhérents. professeur.id = personne.id : on retrouve donc
+    // un professeur connecté via le compte porté par sa fiche personne.
+    const professorCount = await this.dataSource
+      .getRepository(ProfesseurEntity)
+      .createQueryBuilder('professeur')
+      .innerJoin(PersonneEntity, 'personne_prof', 'personne_prof.id = professeur.id')
+      .where('professeur.project_id = :projectId', { projectId })
+      .andWhere('personne_prof.compte = :compteId', { compteId })
+      .getCount();
+
+    if (professorCount <= 0) {
       throw new ForbiddenException('PERSONNE_HORS_COMPTE');
     }
 

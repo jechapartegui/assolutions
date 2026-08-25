@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -10,78 +10,64 @@ export class SaisonService {
   constructor(
     @InjectRepository(SaisonEntity)
     private readonly repo: Repository<SaisonEntity>,
-    
   ) {}
 
-async listForProject(projectId: number) {
-  const saisons = await this.repo.find({
-    where: { project_id: projectId },
-    order: { id: 'ASC' },
-  });
+  async listForProject(projectId: number) {
+    const saisons = await this.repo.find({
+      where: { project_id: projectId },
+      order: { id: 'ASC' },
+    });
 
-  return this.sortBySaisonPrecedenteOrId(saisons);
-}
-
-private sortBySaisonPrecedenteOrId<T extends { id: number; saison_precedente?: number | null }>(
-  saisons: T[],
-): T[] {
-  if (!saisons?.length) return [];
-
-  const byId = new Map<number, T>();
-  const previousIds = new Set<number>();
-
-  for (const saison of saisons) {
-    byId.set(Number(saison.id), saison);
-
-    const previousId = Number(saison.saison_precedente);
-    if (Number.isFinite(previousId) && previousId > 0) {
-      previousIds.add(previousId);
-    }
+    return this.sortBySaisonPrecedenteOrId(saisons);
   }
 
-  const firstCandidates = saisons.filter((saison) => {
-    const previousId = Number(saison.saison_precedente);
-    return !Number.isFinite(previousId) || previousId <= 0 || !byId.has(previousId);
-  });
+  private sortBySaisonPrecedenteOrId<
+    T extends { id: number; saison_precedente?: number | null },
+  >(saisons: T[]): T[] {
+    if (!saisons?.length) return [];
 
-  if (firstCandidates.length !== 1) {
-    return [...saisons].sort((a, b) => a.id - b.id);
-  }
+    const byId = new Map<number, T>();
+    for (const saison of saisons) byId.set(Number(saison.id), saison);
 
-  const nextByPreviousId = new Map<number, T>();
+    const firstCandidates = saisons.filter((saison) => {
+      const previousId = Number(saison.saison_precedente);
+      return !Number.isFinite(previousId) || previousId <= 0 || !byId.has(previousId);
+    });
 
-  for (const saison of saisons) {
-    const previousId = Number(saison.saison_precedente);
-
-    if (Number.isFinite(previousId) && previousId > 0 && byId.has(previousId)) {
-      if (nextByPreviousId.has(previousId)) {
-        return [...saisons].sort((a, b) => a.id - b.id);
-      }
-
-      nextByPreviousId.set(previousId, saison);
-    }
-  }
-
-  const sorted: T[] = [];
-  const visited = new Set<number>();
-  let current: T | undefined = firstCandidates[0];
-
-  while (current) {
-    if (visited.has(current.id)) {
+    if (firstCandidates.length !== 1) {
       return [...saisons].sort((a, b) => a.id - b.id);
     }
 
-    sorted.push(current);
-    visited.add(current.id);
-    current = nextByPreviousId.get(current.id);
-  }
+    const nextByPreviousId = new Map<number, T>();
+    for (const saison of saisons) {
+      const previousId = Number(saison.saison_precedente);
+      if (Number.isFinite(previousId) && previousId > 0 && byId.has(previousId)) {
+        if (nextByPreviousId.has(previousId)) {
+          return [...saisons].sort((a, b) => a.id - b.id);
+        }
+        nextByPreviousId.set(previousId, saison);
+      }
+    }
 
-  if (sorted.length !== saisons.length) {
-    return [...saisons].sort((a, b) => a.id - b.id);
-  }
+    const sorted: T[] = [];
+    const visited = new Set<number>();
+    let current: T | undefined = firstCandidates[0];
 
-  return sorted;
-}
+    while (current) {
+      if (visited.has(current.id)) {
+        return [...saisons].sort((a, b) => a.id - b.id);
+      }
+      sorted.push(current);
+      visited.add(current.id);
+      current = nextByPreviousId.get(current.id);
+    }
+
+    if (sorted.length !== saisons.length) {
+      return [...saisons].sort((a, b) => a.id - b.id);
+    }
+
+    return sorted;
+  }
 
   async get(id: number) {
     const item = await this.repo.findOne({ where: { id } });
@@ -89,25 +75,43 @@ private sortBySaisonPrecedenteOrId<T extends { id: number; saison_precedente?: n
     return item;
   }
 
+  async getForProject(id: number, projectId: number) {
+    const item = await this.get(id);
+    if (Number(item.project_id) !== Number(projectId)) {
+      throw new ForbiddenException('WRONG_PROJECT');
+    }
+    return item;
+  }
+
   async create(dto: CreateSaisonDto, projectId: number) {
+    if (dto.saison_precedente) {
+      await this.getForProject(dto.saison_precedente, projectId);
+    }
+
     const entity = this.repo.create({ ...dto, project_id: projectId });
-    const saved = await this.repo.save(entity);
-
-    return saved;
+    return this.repo.save(entity);
   }
 
-  async update(id: number, dto: UpdateSaisonDto) {
-    const item = await this.get(id);
-    Object.assign(item, dto, { date_maj: new Date() });
-    const saved = await this.repo.save(item);
+  async update(id: number, dto: UpdateSaisonDto, projectId: number) {
+    const item = await this.getForProject(id, projectId);
 
-    return saved;
+    if (dto.saison_precedente != null) {
+      if (Number(dto.saison_precedente) === Number(id)) {
+        throw new ForbiddenException('INVALID_PREVIOUS_SEASON');
+      }
+      await this.getForProject(dto.saison_precedente, projectId);
+    }
+
+    Object.assign(item, dto, {
+      project_id: projectId,
+      date_maj: new Date(),
+    });
+    return this.repo.save(item);
   }
 
-  async remove(id: number) {
-    const item = await this.get(id);
+  async remove(id: number, projectId: number) {
+    const item = await this.getForProject(id, projectId);
     await this.repo.remove(item);
-
     return { ok: true };
   }
 }

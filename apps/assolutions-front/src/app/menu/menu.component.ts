@@ -1,16 +1,25 @@
 import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { InscriptionStatus_VM, MesSeances_VM, OutgoingMessageVm, MailAddressVm, Seance_VM, StatutSeance, calculerHeureFin as calculerHeureFinUtil, Project } from '@shared/index';
+import {
+  InscriptionStatus_VM,
+  MailAddressVm,
+  MesSeances_VM,
+  OutgoingMessageVm,
+  Project,
+  Seance_VM,
+  StatutSeance,
+  calculerHeureFin as calculerHeureFinUtil,
+} from '@shared/index';
 
 import { AdherentMenu } from '../../class/adherent-menu';
 import { MultifiltersMenuPipe } from '../../filters/multifilters-menu.pipe';
 import { MenuRepository } from '../../repository/menu.repository';
-import { MenuStore } from '../../store/menu.store';
 import { ErrorService } from '../../services/error.service';
-import { AppStore } from '../app.store';
-import { StaticClass } from '../global';
 import { MessageApiService } from '../../services/message-api.service';
 import { ProjectApiService } from '../../services/project-api.service';
+import { MenuStore } from '../../store/menu.store';
+import { AppStore } from '../app.store';
+import { StaticClass } from '../global';
 
 @Component({
   standalone: false,
@@ -29,6 +38,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   public showContactClub = false;
   public contactClubMessage = '';
   public action = '';
+
+  private boundOnContentScroll = this.onContentScroll.bind(this);
 
   constructor(
     public readonly store: AppStore,
@@ -99,8 +110,10 @@ export class MenuComponent implements OnInit, OnDestroy {
     try {
       const selectedProject = this.store.selectedProject();
       if (!selectedProject) {
-        let o = errorService.CreateError(this.action, $localize`Aucun projet sélectionné`);
-          errorService.emitChange(o);
+        errorService.emitChange(
+          errorService.CreateError(this.action, $localize`Aucun projet sélectionné`),
+        );
+        return;
       }
 
       const projectId = selectedProject.id;
@@ -109,8 +122,12 @@ export class MenuComponent implements OnInit, OnDestroy {
 
       await this.menuStore.init(projectId, saisonId, rights);
     } catch (err: any) {
-        let o = errorService.CreateError(this.action, $localize`chargement du menu : ` +  err?.message);
-          errorService.emitChange(o);
+      errorService.emitChange(
+        errorService.CreateError(
+          this.action,
+          $localize`chargement du menu : ` + err?.message,
+        ),
+      );
     } finally {
       this.loading = false;
       this.updateDenseMode();
@@ -118,50 +135,50 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit(): void {
+    this.bindScrollContainer();
+  }
+
   ngOnDestroy(): void {
     window.removeEventListener('resize', this.updateDenseMode);
+    this.scrollableContent?.nativeElement.removeEventListener(
+      'scroll',
+      this.boundOnContentScroll,
+    );
   }
-private boundOnContentScroll = this.onContentScroll.bind(this);
 
-ngAfterViewInit(): void {
-  this.bindScrollContainer();
-}
+  private bindScrollContainer(): void {
+    setTimeout(() => {
+      const el = this.scrollableContent?.nativeElement;
+      if (!el) return;
 
-private bindScrollContainer(): void {
-  setTimeout(() => {
+      el.removeEventListener('scroll', this.boundOnContentScroll);
+      el.addEventListener('scroll', this.boundOnContentScroll);
+      this.onContentScroll();
+    });
+  }
+
+  onContentScroll(): void {
     const el = this.scrollableContent?.nativeElement;
-    if (!el) return;
+    if (!el) {
+      this.showScrollToTop = false;
+      return;
+    }
 
-    el.removeEventListener('scroll', this.boundOnContentScroll);
-    el.addEventListener('scroll', this.boundOnContentScroll);
-
-    this.onContentScroll();
-  });
-}
-
-onContentScroll(): void {
-  const el = this.scrollableContent?.nativeElement;
-  if (!el) {
-    this.showScrollToTop = false;
-    return;
+    this.showScrollToTop = (el.scrollTop || 0) > 200;
   }
 
-  const scrollTop = el.scrollTop || 0;
-  this.showScrollToTop = scrollTop > 200;
-}
-getInitiales(personne: AdherentMenu): string {
-  const prenom = (personne.prenom ?? '').trim();
-  const nom = (personne.nom ?? '').trim();
-  const surnom = (personne.surnom ?? '').trim();
+  getInitiales(personne: AdherentMenu): string {
+    const prenom = (personne.prenom ?? '').trim();
+    const nom = (personne.nom ?? '').trim();
+    const surnom = (personne.surnom ?? '').trim();
 
-  const first = prenom.charAt(0) || surnom.charAt(0) || '';
-  const last = nom.charAt(0) || '';
+    const first = prenom.charAt(0) || surnom.charAt(0) || '';
+    const last = nom.charAt(0) || '';
 
-  const value = `${first}${last}`.trim().toUpperCase();
-  return value || '?';
-}
-
-
+    const value = `${first}${last}`.trim().toUpperCase();
+    return value || '?';
+  }
 
   applyRefresh(): void {
     this.menuStore.applyRefresh();
@@ -176,19 +193,108 @@ getInitiales(personne: AdherentMenu): string {
     rider: AdherentMenu,
     present: boolean | null,
   ): Promise<void> {
-  let statut_inscription: InscriptionStatus_VM | null = null;
+    // Le bouton individuel "essai" utilise historiquement cette méthode.
+    // On conserve ce contrat d'UI, mais le bulk filtre les essais avant appel.
+    if (present === true && this.isEssaiPossible(ms, rider)) {
+      await this.demanderEssai(ms, rider);
+      return;
+    }
 
-  if (present === true) {
-    statut_inscription = InscriptionStatus_VM.PRESENT;
-  } else if (present === false) {
-    statut_inscription = InscriptionStatus_VM.ABSENT;
+    if (present === true && ms?.accesInscription !== true) {
+      return;
+    }
+
+    let statutInscription: InscriptionStatus_VM | null = null;
+
+    if (present === true) {
+      statutInscription = InscriptionStatus_VM.PRESENT;
+    } else if (present === false) {
+      statutInscription = InscriptionStatus_VM.ABSENT;
+    }
+
+    await this.menuRepository.updateInscription(
+      ms.seance.id,
+      rider.id,
+      statutInscription,
+    );
+    this.menuStore.patchLocalInscription(
+      rider.id,
+      (ms.seance as Seance_VM).id,
+      statutInscription,
+    );
   }
 
-    await this.menuRepository.updateInscription(ms.seance.id, rider.id, statut_inscription);
+  async demanderEssai(ms: MesSeances_VM, rider: AdherentMenu): Promise<void> {
+    if (!this.isEssaiPossible(ms, rider)) return;
 
-    
+    const confirme = window.confirm(
+      `Confirmez-vous la demande de séance d'essai pour ${rider.prenom} ${rider.nom} ?\n\n` +
+        `${ms.seance.nom || ms.seance.cours_nom} - ${new Date(ms.seance.date_seance).toLocaleDateString('fr-FR')} à ${ms.seance.heure_debut}`,
+    );
+    if (!confirme) return;
 
-    this.menuStore.patchLocalInscription(rider.id, (ms.seance as Seance_VM).id, statut_inscription);
+    await this.menuRepository.updateInscription(
+      ms.seance.id,
+      rider.id,
+      InscriptionStatus_VM.ESSAI,
+    );
+    this.menuStore.patchLocalInscription(
+      rider.id,
+      (ms.seance as Seance_VM).id,
+      InscriptionStatus_VM.ESSAI,
+    );
+
+    await this.sendEssaiConfirmation(ms, rider);
+    ErrorService.instance.emitChange(
+      ErrorService.instance.OKMessage($localize`Votre demande d'essai est enregistrée.`),
+    );
+  }
+
+  isEssai(ms: MesSeances_VM): boolean {
+    return ms?.statutInscription === InscriptionStatus_VM.ESSAI;
+  }
+
+  isEssaiPossible(ms: MesSeances_VM, rider: AdherentMenu): boolean {
+    return (
+      rider?.profil === 'ADH' &&
+      rider?.inscrit !== true &&
+      ms?.essaiDisponible === true &&
+      !ms?.statutInscription
+    );
+  }
+
+  hasEssaiPossible(rider: AdherentMenu): boolean {
+    return (
+      rider?.profil === 'ADH' &&
+      rider?.inscrit !== true &&
+      (rider.MesSeances ?? []).some((ms) => this.isEssaiPossible(ms, rider))
+    );
+  }
+
+  private async sendEssaiConfirmation(
+    ms: MesSeances_VM,
+    rider: AdherentMenu,
+  ): Promise<void> {
+    const email = this.store.compte()?.login;
+    if (!email) return;
+
+    try {
+      await this.messageservice.send({
+        to: {
+          email,
+          name: `${rider.prenom ?? ''} ${rider.nom ?? ''}`.trim() || email,
+        },
+        subject: `Confirmation de séance d'essai - ${ms.seance.nom || ms.seance.cours_nom}`,
+        html: `<p>Bonjour,</p><p>La demande de séance d'essai pour <strong>${rider.prenom ?? ''} ${rider.nom ?? ''}</strong> est bien enregistrée.</p><p><strong>${ms.seance.nom || ms.seance.cours_nom}</strong><br>${new Date(ms.seance.date_seance).toLocaleDateString('fr-FR')} à ${ms.seance.heure_debut}<br>${ms.seance.lieu_nom ?? ''}</p><p>Le club dispose désormais de cette information dans la feuille de présence.</p>`,
+      });
+    } catch (error) {
+      ErrorService.instance.emitChange(
+        ErrorService.instance.CreateError(
+          $localize`Envoyer la confirmation d'essai`,
+          error,
+        ),
+      );
+    }
   }
 
   hasOpenedRider(): boolean {
@@ -204,20 +310,31 @@ getInitiales(personne: AdherentMenu): string {
   ReinitFiltre(rider: AdherentMenu): void {
     rider.filters.filter_date_apres = null;
     rider.filters.filter_date_avant = null;
-    rider.filters.filter_groupe = null;
+    rider.filters.filter_groupe =
+      rider.profil === 'ADH' && rider.inscrit ? '__MES_GROUPES__' : null;
     rider.filters.filter_statut = null;
     rider.filters.filter_nom = null;
+    rider.filters.filter_cours = null;
     rider.filters.filter_lieu = null;
     rider.filters.filter_prof = null;
   }
 
-  nbSeanceInscrit(list: MesSeances_VM[]): { OK: number; KO: number; aucun: number } {
+  nbSeanceInscrit(
+    list: MesSeances_VM[],
+  ): { OK: number; KO: number; aucun: number } {
     const r = { OK: 0, KO: 0, aucun: 0 };
 
     for (const x of list ?? []) {
-      if (x.statutInscription === 'présent' || x.statutInscription === 'essai') r.OK++;
-      else if (x.statutInscription === 'absent') r.KO++;
-      else r.aucun++;
+      if (
+        x.statutInscription === 'présent' ||
+        x.statutInscription === 'essai'
+      ) {
+        r.OK++;
+      } else if (x.statutInscription === 'absent') {
+        r.KO++;
+      } else {
+        r.aucun++;
+      }
     }
 
     return r;
@@ -235,14 +352,14 @@ getInitiales(personne: AdherentMenu): string {
     this.cdr.markForCheck();
   };
 
-Voir(id: number): void {
-  this.router.navigate(['/adherent'], {
-    queryParams: {
-      id,
-      context: 'MON_COMPTE',
-    },
-  });
-}
+  Voir(id: number): void {
+    this.router.navigate(['/adherent'], {
+      queryParams: {
+        id,
+        context: 'MON_COMPTE',
+      },
+    });
+  }
 
   VoirMaSeance(seance: any): void {
     this.router.navigate(['/ma-seance'], { queryParams: { id: seance.id } });
@@ -259,8 +376,14 @@ Voir(id: number): void {
       rider.sort_nom = order;
       rider.MesSeances.sort((a, b) =>
         order === 'ASC'
-          ? (((a.seance as any)?.cours_nom) ?? '').localeCompare((((b.seance as any)?.cours_nom) ?? ''), 'fr')
-          : (((b.seance as any)?.cours_nom) ?? '').localeCompare((((a.seance as any)?.cours_nom) ?? ''), 'fr')
+          ? ((a.seance as any)?.cours_nom ?? '').localeCompare(
+              (b.seance as any)?.cours_nom ?? '',
+              'fr',
+            )
+          : ((b.seance as any)?.cours_nom ?? '').localeCompare(
+              (a.seance as any)?.cours_nom ?? '',
+              'fr',
+            ),
       );
       return;
     }
@@ -268,168 +391,186 @@ Voir(id: number): void {
     if (type === 'date') {
       rider.sort_date = order;
       rider.MesSeances.sort((a, b) => {
-        const da = `${((a.seance as any)?.date_seance ?? (a.seance as any)?.date ?? '')} ${((a.seance as any)?.heure_debut ?? '')}`;
-        const db = `${((b.seance as any)?.date_seance ?? (b.seance as any)?.date ?? '')} ${((b.seance as any)?.heure_debut ?? '')}`;
-        return order === 'ASC' ? da.localeCompare(db, 'fr') : db.localeCompare(da, 'fr');
+        const da = `${(a.seance as any)?.date_seance ?? (a.seance as any)?.date ?? ''} ${(a.seance as any)?.heure_debut ?? ''}`;
+        const db = `${(b.seance as any)?.date_seance ?? (b.seance as any)?.date ?? ''} ${(b.seance as any)?.heure_debut ?? ''}`;
+        return order === 'ASC'
+          ? da.localeCompare(db, 'fr')
+          : db.localeCompare(da, 'fr');
       });
       return;
     }
-
-    
-
 
     if (type === 'lieu') {
       rider.sort_lieu = order;
       rider.MesSeances.sort((a, b) =>
         order === 'ASC'
-          ? ((((a.seance as any)?.lieu_nom) ?? '')).localeCompare((((b.seance as any)?.lieu_nom) ?? ''), 'fr')
-          : ((((b.seance as any)?.lieu_nom) ?? '')).localeCompare((((a.seance as any)?.lieu_nom) ?? ''), 'fr')
+          ? ((a.seance as any)?.lieu_nom ?? '').localeCompare(
+              (b.seance as any)?.lieu_nom ?? '',
+              'fr',
+            )
+          : ((b.seance as any)?.lieu_nom ?? '').localeCompare(
+              (a.seance as any)?.lieu_nom ?? '',
+              'fr',
+            ),
       );
     }
   }
 
-
-GotoSeance(seanceId: number): void {
-  if(this.store.isAdmin() || this.store.isProf()) {
-  this.router.navigate(['/seance'], { queryParams: { id: seanceId } });
-  }
-}
-
-getadresse(lieuId: number): string {
-  const lieu = this.listelieu.find((x: any) => x.id === lieuId);
-  if (!lieu) return '';
-
-  if (typeof lieu.adresse === 'string') {
-    return lieu.adresse;
-  }
-
-  if (lieu.adresse) {
-    const a: any = lieu.adresse;
-    return [
-      a.adresse1,
-      a.adresse2,
-      a.adresse3,
-      a.code_postal,
-      a.ville,
-    ]
-      .filter((x) => !!x)
-      .join(' ');
-  }
-
-  return '';
-}
-
-calculerHeureFin(heureDebut: string, duree: number): string {
-  return calculerHeureFinUtil(heureDebut, duree);
-}
-
-copierDansPressePapier(texte: string): void {
-  if (!texte) return;
-
-  navigator.clipboard?.writeText(texte).catch(() => {
-    const textarea = document.createElement('textarea');
-    textarea.value = texte;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    try {
-      document.execCommand('copy');
-    } finally {
-      document.body.removeChild(textarea);
+  GotoSeance(seanceId: number): void {
+    if (this.store.isAdmin() || this.store.isProf()) {
+      this.router.navigate(['/seance'], { queryParams: { id: seanceId } });
     }
-  });
-}
-
-async MAJInscriptionAffichee(rider: AdherentMenu, present: boolean | null): Promise<void> {
-  const visibles = (rider.MesSeances ?? []).filter((ms: MesSeances_VM) => {
-    if (!rider.filters) return true;
-
-    const filtered = this.multifiltersPipe.transform(
-      [ms],
-      rider.filters
-    );
-
-    return filtered.length > 0;
-  });
-
-  for (const ms of visibles) {
-    await this.MAJInscription(ms, rider, present);
   }
-}
-annulerContactClub(): void {
+
+  getadresse(lieuId: number): string {
+    const lieu = this.listelieu.find((x: any) => x.id === lieuId);
+    if (!lieu) return '';
+
+    if (typeof lieu.adresse === 'string') {
+      return lieu.adresse;
+    }
+
+    if (lieu.adresse) {
+      const a: any = lieu.adresse;
+      return [
+        a.adresse1,
+        a.adresse2,
+        a.adresse3,
+        a.code_postal,
+        a.ville,
+      ]
+        .filter((x) => !!x)
+        .join(' ');
+    }
+
+    return '';
+  }
+
+  calculerHeureFin(heureDebut: string, duree: number): string {
+    return calculerHeureFinUtil(heureDebut, duree);
+  }
+
+  copierDansPressePapier(texte: string): void {
+    if (!texte) return;
+
+    navigator.clipboard?.writeText(texte).catch(() => {
+      const textarea = document.createElement('textarea');
+      textarea.value = texte;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    });
+  }
+
+  async MAJInscriptionAffichee(
+    rider: AdherentMenu,
+    present: boolean | null,
+  ): Promise<void> {
+    let visibles = (rider.MesSeances ?? []).filter((ms: MesSeances_VM) => {
+      if (!rider.filters) return true;
+      return this.multifiltersPipe.transform([ms], rider.filters).length > 0;
+    });
+
+    // L'acceptation de masse reste strictement limitée aux séances des groupes
+    // actuels de l'adhérent. Les séances d'essai et autres groupes sont exclues.
+    if (present === true && rider.profil === 'ADH') {
+      visibles = visibles.filter(
+        (ms) =>
+          rider.inscrit === true &&
+          ms.dansGroupeAdherent === true &&
+          !this.isEssai(ms) &&
+          !this.isEssaiPossible(ms, rider) &&
+          ms.accesInscription === true,
+      );
+    }
+
+    for (const ms of visibles) {
+      await this.MAJInscription(ms, rider, present);
+    }
+  }
+
+  annulerContactClub(): void {
     this.showContactClub = false;
     this.contactClubMessage = '';
   }
-async envoyerContactClub(): Promise<void> {
-  const msg = (this.contactClubMessage || '').trim();
-  const errorService = ErrorService.instance;
 
-  if (!msg) {
-    errorService.emitChange(
-      errorService.CreateError(
-        $localize`Contacter le club`,
-        $localize`Le message est vide.`
-      )
-    );
-    return;
-  }
+  async envoyerContactClub(): Promise<void> {
+    const msg = (this.contactClubMessage || '').trim();
+    const errorService = ErrorService.instance;
 
-  const selectedProject = this.store.selectedProject();
-
-  if (!selectedProject?.id) {
-    errorService.emitChange(
-      errorService.CreateError(
-        $localize`Contacter le club`,
-        $localize`Aucun club sélectionné.`
-      )
-    );
-    return;
-  }
-const MAVM: Project = await this.projectapi.get(selectedProject.id);
-
-  if (!MAVM?.login) {
-    errorService.emitChange(
-      errorService.CreateError(
-        $localize`Contacter le club`,
-        $localize`Adresse email du club introuvable.`
-      )
-    );
-    return;
-  }
-
-  const to: MailAddressVm = {
-    email: MAVM.login,
-    name: MAVM.nom ?? MAVM.login,
-  };
-
-  const outgoingmsg: OutgoingMessageVm = {
-    to,
-    subject: $localize`Message depuis l'application`,
-    html: msg,
-  };
-
-  await this.messageservice.send(outgoingmsg);
-
-  errorService.emitChange(
-    errorService.OKMessage($localize`Message envoyé au club.`)
-  );
-
-  this.annulerContactClub();
-}
-    AfficherProfil(_t17: AdherentMenu) {
-  for (const r of this.Riders) {
-    if (r.id == _t17.id && r.profil == _t17.profil) {
-      r.afficher = !r.afficher;
-    } else {
-      r.afficher = false;
+    if (!msg) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Contacter le club`,
+          $localize`Le message est vide.`,
+        ),
+      );
+      return;
     }
+
+    const selectedProject = this.store.selectedProject();
+
+    if (!selectedProject?.id) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Contacter le club`,
+          $localize`Aucun club sélectionné.`,
+        ),
+      );
+      return;
+    }
+
+    const MAVM: Project = await this.projectapi.get(selectedProject.id);
+
+    if (!MAVM?.login) {
+      errorService.emitChange(
+        errorService.CreateError(
+          $localize`Contacter le club`,
+          $localize`Adresse email du club introuvable.`,
+        ),
+      );
+      return;
+    }
+
+    const to: MailAddressVm = {
+      email: MAVM.login,
+      name: MAVM.nom ?? MAVM.login,
+    };
+
+    const outgoingmsg: OutgoingMessageVm = {
+      to,
+      subject: $localize`Message depuis l'application`,
+      html: msg,
+    };
+
+    await this.messageservice.send(outgoingmsg);
+
+    errorService.emitChange(
+      errorService.OKMessage($localize`Message envoyé au club.`),
+    );
+
+    this.annulerContactClub();
   }
 
-  this.cdr.detectChanges();
-  this.bindScrollContainer();
-}
+  AfficherProfil(rider: AdherentMenu): void {
+    for (const r of this.Riders) {
+      if (r.id === rider.id && r.profil === rider.profil) {
+        r.afficher = !r.afficher;
+      } else {
+        r.afficher = false;
+      }
+    }
+
+    this.cdr.detectChanges();
+    this.bindScrollContainer();
+  }
 }
 
 export class FilterMenu {
@@ -506,9 +647,6 @@ export class FilterMenu {
   }
 
   private onFilterChange(): void {
-    // Logic to handle filter changes
+    // Le pipe est impure et relit directement l'état du filtre.
   }
-}
-function uniqNumbers(arr: (number | null | undefined)[]): number[] {
-  return Array.from(new Set(arr.filter((x): x is number => typeof x === 'number' && !isNaN(x))));
 }

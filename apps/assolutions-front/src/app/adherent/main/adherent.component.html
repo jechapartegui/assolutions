@@ -2,7 +2,7 @@
   <ng-container *ngIf="vm.loading">
     <div class="adherent-loading">
       <progress class="progress is-large is-info" max="100">60%</progress>
-      <p>Chargement en cours</p>
+      <p i18n>Chargement en cours</p>
     </div>
   </ng-container>
 
@@ -10,12 +10,12 @@
     <section class="adherent-hero">
       <div class="adherent-hero-header">
         <div class="adherent-hero-title">
-          <h1 class="title is-5 mb-0">Adhérents</h1>
-          <p class="subtitle is-6 mb-0">
+          <h1 class="title is-5 mb-0" i18n>Adhérents</h1>
+          <p class="subtitle is-6 mb-0" i18n>
             Gestion des adhérents, filtres, édition et suivi de saison
           </p>
 
-          <p class="adherent-refresh-info" *ngIf="vm.lastLoadedAt">
+          <p class="adherent-refresh-info" *ngIf="vm.lastLoadedAt" i18n>
             Dernière mise à jour :
             {{ vm.lastLoadedAt | date : 'dd/MM/yyyy HH:mm:ss' }}
           </p>
@@ -33,7 +33,7 @@
               <ng-container *ngIf="pendingCountLabel; else refreshDefaultLabel">
                 {{ pendingCountLabel }}
               </ng-container>
-              <ng-template #refreshDefaultLabel>
+              <ng-template #refreshDefaultLabel i18n>
                 Appliquer les nouveautés
               </ng-template>
             </span>
@@ -46,7 +46,7 @@
   (click)="onRefreshNow()"
 >
             <span class="icon"><i class="fas fa-arrows-rotate"></i></span>
-            <span>Rafraîchir</span>
+            <span i18n>Rafraîchir</span>
           </button>
         </div>
       </div>

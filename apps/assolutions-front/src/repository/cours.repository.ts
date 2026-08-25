@@ -34,10 +34,6 @@ export class CoursRepository {
     private readonly mapper: CoursMapper,
   ) {}
 
-  /**
-   * Compatibilité temporaire avec les anciens écrans.
-   * La cible, c'est plutôt : CoursStore compose directement CoursDataStore + refs data stores.
-   */
   async loadPageData(saisonId: number, options: { force?: boolean } = {}): Promise<CoursPageData> {
     const [saisons, profs, lieux, groupes, list] = await Promise.all([
       this.saisonService.list(),
@@ -127,9 +123,28 @@ export class CoursRepository {
 
   async createCours(coursVm: Cours_VM): Promise<Cours_VM> {
     const projectId = this.appStore.selectedProjectId();
+    const professeurs = [...(coursVm.professeursCours ?? [])];
+    const groupeIds = [...new Set(
+      (coursVm.groupes ?? [])
+        .map((g: any) => Number(g?.groupe_id ?? g?.id ?? 0))
+        .filter((id: number) => Number.isFinite(id) && id > 0),
+    )];
+
     const dto = this.mapper.toCreateDto(coursVm, projectId);
-    const created = await this.coursApiService.create(dto);
-    return this.mapper.toCoursVm(created);
+    const created = this.mapper.toCoursVm(await this.coursApiService.create(dto));
+
+    if (!created.id || created.id <= 0) {
+      throw new Error('Le cours a été créé sans identifiant');
+    }
+
+    await this.updateCoursProfs(
+      created.id,
+      professeurs as Array<ProfLight_VM | any>,
+      Number(coursVm.saison_id),
+    );
+    await this.updateCoursGroupes(created.id, groupeIds);
+
+    return created;
   }
 
   async updateCours(coursVm: Cours_VM): Promise<Cours_VM> {
@@ -149,6 +164,19 @@ export class CoursRepository {
     if (!coursVm?.id) {
       throw new Error($localize`Impossible de modifier la série d'un cours sans identifiant`);
     }
+
+    const saisonId = Number(coursVm.saison_id || this.appStore.saison_active_id());
+    const groupeIds = [...new Set(
+      (coursVm.groupes ?? [])
+        .map((g: any) => Number(g?.groupe_id ?? g?.id ?? 0))
+        .filter((id: number) => Number.isFinite(id) && id > 0),
+    )];
+
+    // La série doit refléter l'état exact du cours au moment du clic :
+    // données principales + professeurs + groupes.
+    await this.updateCours(coursVm);
+    await this.updateCoursProfs(coursVm.id, coursVm.professeursCours ?? [], saisonId);
+    await this.updateCoursGroupes(coursVm.id, groupeIds);
 
     const projectId = this.appStore.selectedProjectId();
     const dto = this.mapper.toUpdateDto(coursVm, projectId);
@@ -177,7 +205,6 @@ export class CoursRepository {
 
   private toProfFilter(profs: ProfLight_VM[]): KeyValuePair[] {
     return (profs ?? []).map((x: ProfLight_VM) => ({
-      // Important : dans l'écran cours, on manipule l'id du contrat professeur.
       key: x.contrat_id ?? x.id ?? 0,
       value: `${x.prenom ?? ''} ${x.nom ?? ''}`.trim(),
     }));

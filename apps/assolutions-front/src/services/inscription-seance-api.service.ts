@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import {
@@ -32,26 +33,38 @@ export class InscriptionSeanceApiService {
   remove(personneId: number, seanceId: number): Promise<void> {
     return this.api.POST<void>(`${this.base}/${personneId}/${seanceId}/delete`, {});
   }
+
   maj(dto: CreateInscriptionSeanceDto): Promise<InscriptionSeance> {
-  return this.api.POST<InscriptionSeance>(`${this.base}/maj`, dto);
-}
+    return this.api.POST<InscriptionSeance>(`${this.base}/maj`, dto);
+  }
 
+  listBySaison(saisonId: number): Promise<InscriptionSeance[]> {
+    return this.api.GET<InscriptionSeance[]>(`${this.base}/saison/${saisonId}`);
+  }
 
-listBySaison(saisonId: number): Promise<InscriptionSeance[]>{
-  return this.api.GET<InscriptionSeance[]>(`${this.base}/saison/` + saisonId);
-}
-listBySaison_UniqueID(saisonId: number): Promise<number[]>{
-  return this.api.GET<number[]>(`${this.base}/saison/uniqueid/` + saisonId);
-}
+  listBySaison_UniqueID(saisonId: number): Promise<number[]> {
+    return this.api.GET<number[]>(`${this.base}/saison/uniqueid/${saisonId}`);
+  }
 
   listByPersonneAndSaison(personneId: number, saisonId: number): Promise<InscriptionSeance[]> {
     return this.api.GET<InscriptionSeance[]>(`${this.base}/personne/${personneId}/saison/${saisonId}`);
   }
-  
-  GetAllSeanceFull(seanceId: number): Promise<InscriptionSeance[]> {
-    return this.api.GET<InscriptionSeance[]>(`${this.base}/full/${seanceId}`);
+
+  async GetAllSeanceFull(seanceId: number): Promise<InscriptionSeance[]> {
+    try {
+      return await this.api.GET<InscriptionSeance[]>(`${this.base}/full/${seanceId}`);
+    } catch (error) {
+      const http = error as HttpErrorResponse;
+      const message = String(http?.error?.message ?? '');
+      if (http?.status === 403 && message === 'SEANCE_ROSTER_NOT_VISIBLE') {
+        // La séance reste consultable : seul le roster est volontairement masqué.
+        return [];
+      }
+      throw error;
+    }
   }
+
   GetAdherentCompte(login: string, seanceId: number): Promise<FullInscriptionSeance_VM[]> {
     return this.api.GET<FullInscriptionSeance_VM[]>(`${this.base}/compte/${login}/seance/${seanceId}`);
   }
-  }
+}

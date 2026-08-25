@@ -7,8 +7,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import * as crypto from 'crypto';
 
+import {
+  assertPasswordPolicy,
+  createTimedToken,
+  hashOpaqueToken,
+  hashPassword,
+  verifyTimedToken,
+} from '../auth/security.utils';
 import { MessageService } from '../message/message.service';
 import { LoginProjectEntity } from '../login_project/login_project.entity';
 import { CompteEntity } from './compte.entity';
@@ -19,38 +25,34 @@ import {
   UpdateCompteDto,
 } from './compte.dto';
 
+const ACTIVATION_TOKEN_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
 @Injectable()
 export class CompteService {
-  private readonly pepper: string;
+  private readonly tokenPepper: string;
+  private readonly legacyPepper: string;
 
   constructor(
     @InjectRepository(CompteEntity)
     private readonly repo: Repository<CompteEntity>,
-
     private readonly dataSource: DataSource,
     private readonly config: ConfigService,
     private readonly messageService: MessageService,
   ) {
-    this.pepper = this.config.get<string>('PEPPER') ?? '';
+    this.tokenPepper = this.requireSecret('TOKEN_PEPPER');
+    this.legacyPepper =
+      this.config.get<string>('PASSWORD_LEGACY_PEPPER') ??
+      this.config.get<string>('PEPPER') ??
+      '';
   }
 
-  /**
-   * Liste des comptes rattachés au projet courant.
-   * Utilisé par le select compte côté prof/admin.
-   */
   list(projectId: number): Promise<CompteEntity[]> {
-    if (!projectId) {
-      throw new NotFoundException('projet introuvable');
-    }
-
+    if (!projectId) throw new NotFoundException('projet introuvable');
     return this.listByProject(projectId);
   }
 
   async listByProject(projectId: number): Promise<CompteEntity[]> {
-    if (!projectId) {
-      throw new NotFoundException('projet introuvable');
-    }
-
+    if (!projectId) throw new NotFoundException('projet introuvable');
     const comptes = await this.repo
       .createQueryBuilder('compte')
       .innerJoin(
@@ -61,169 +63,102 @@ export class CompteService {
       )
       .orderBy('compte.login', 'ASC')
       .getMany();
-
     return comptes.map((compte) => this.hideSensitiveData(compte));
   }
 
   async get(id: number): Promise<CompteEntity> {
     const item = await this.repo.findOne({ where: { id } });
-
-    if (!item) {
-      throw new NotFoundException(`compte ${id} introuvable`);
-    }
-
+    if (!item) throw new NotFoundException(`compte ${id} introuvable`);
     return this.hideSensitiveData(item);
   }
 
-  /**
-   * Création simple.
-   * À réserver aux usages admin/backoffice.
-   * Les parcours normaux doivent plutôt passer par createWithProject/registerWithProject.
-   */
   async create(dto: CreateCompteDto): Promise<CompteEntity> {
     const login = this.resolveLogin(dto);
-
     await this.ensureLoginAvailable(login);
-
-    const entity = this.repo.create({
-      login,
-      password: this.hashPassword(dto.password),
-      actif: dto.actif ?? false,
-      mail_actif: dto.mail_actif ?? false,
-      echec_connexion: dto.echec_connexion ?? false,
-      activation_token: dto.activation_token ?? null,
-    });
-
-    const saved = await this.repo.save(entity);
-
+    const saved = await this.repo.save(
+      this.repo.create({
+        login,
+        password: this.hashOptionalPassword(dto.password),
+        actif: dto.actif ?? false,
+        mail_actif: dto.mail_actif ?? false,
+        echec_connexion: dto.echec_connexion ?? false,
+        activation_token: dto.activation_token
+          ? hashOpaqueToken(dto.activation_token, this.tokenPepper)
+          : null,
+      }),
+    );
     return this.hideSensitiveData(saved);
   }
 
-  /**
-   * Admin/projet : crée le compte puis son rattachement login_project.
-   * Le tout est transactionnel pour éviter les comptes orphelins.
-   *
-   * Le compte reste inactif tant que l'utilisateur n'a pas utilisé le lien
-   * reçu par mail pour définir son mot de passe / activer son compte.
-   */
   async createWithProject(dto: CreateCompteWithProjectDto): Promise<CompteEntity> {
-    const login = this.resolveLogin(dto);
-    const projectId = Number(dto.project_id);
+    return this.createAccountAndQueueActivation(
+      this.resolveLogin(dto),
+      Number(dto.project_id),
+      dto.password,
+    );
+  }
 
-    if (!projectId) {
-      throw new BadRequestException('project_id obligatoire');
+  async registerWithProject(dto: RegisterCompteWithProjectDto): Promise<CompteEntity> {
+    const projectId = Number(dto.project_id);
+    await this.assertPublicProject(projectId);
+
+    return this.createAccountAndQueueActivation(
+      this.normalizeLogin(dto.email),
+      projectId,
+      dto.password,
+    );
+  }
+
+  async resendActivation(email: string): Promise<{ ok: true }> {
+    const login = this.normalizeLogin(email);
+    const account = await this.repo.findOne({ where: { login } });
+
+    // Ne jamais révéler si l'adresse existe.
+    if (!account || account.actif || account.mail_actif) {
+      return { ok: true };
     }
 
-    await this.ensureLoginAvailable(login);
-
-    const rawToken = this.createRawToken();
-    const hashedToken = this.hashToken(rawToken);
-
-    const compte = await this.dataSource.transaction(async (manager) => {
-      const created = await manager.save(CompteEntity, {
-        login,
-        password: this.hashPassword(dto.password),
-        actif: false,
-        mail_actif: false,
-        echec_connexion: false,
-        activation_token: hashedToken,
-      });
-
-      await manager.save(LoginProjectEntity, {
-        login_id: created.id,
-        project_id: projectId,
-      });
-
-      return created;
-    });
-
-    await this.sendActivationMail(login, rawToken);
-
-    return this.hideSensitiveData(compte);
+    const rawToken = createTimedToken();
+    account.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
+    await this.repo.save(account);
+    this.queueActivationMail(login, rawToken);
+    return { ok: true };
   }
 
-  /**
-   * Public : création de compte depuis /creer-compte.
-   * project_id est obligatoire, sinon l’utilisateur crée un compte qui ne sert à rien.
-   */
-  async registerWithProject(
-    dto: RegisterCompteWithProjectDto,
-  ): Promise<CompteEntity> {
-    const login = this.normalizeLogin(dto.email);
-    const projectId = Number(dto.project_id);
-
-    if (!projectId) {
-      throw new BadRequestException('project_id obligatoire');
+  async check_token(login: string, token: string): Promise<CompteEntity> {
+    const normalizedLogin = this.normalizeLogin(login);
+    const item = await this.repo.findOne({ where: { login: normalizedLogin } });
+    if (!item) {
+      throw new NotFoundException({
+        code: 'TOKEN_INVALID',
+        message: 'Le lien d’activation est incorrect ou expiré.',
+      });
     }
 
-    await this.ensureLoginAvailable(login);
+    const validNewToken = verifyTimedToken(
+      token,
+      item.activation_token,
+      this.tokenPepper,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
+    const validLegacyToken = this.verifyLegacyToken(token, item.activation_token);
 
-    const rawToken = this.createRawToken();
-    const hashedToken = this.hashToken(rawToken);
-
-    const compte = await this.dataSource.transaction(async (manager) => {
-      const created = await manager.save(CompteEntity, {
-        login,
-        password: this.hashPassword(dto.password),
-        actif: false,
-        mail_actif: false,
-        echec_connexion: false,
-        activation_token: hashedToken,
+    if (!validNewToken && !validLegacyToken) {
+      throw new NotFoundException({
+        code: 'TOKEN_INVALID',
+        message: 'Le lien d’activation est incorrect ou expiré.',
       });
+    }
 
-      await manager.save(LoginProjectEntity, {
-        login_id: created.id,
-        project_id: projectId,
-      });
-
-      return created;
-    });
-
-    await this.sendActivationMail(login, rawToken);
-
-    return this.hideSensitiveData(compte);
+    item.mail_actif = true;
+    item.actif = true;
+    item.activation_token = null;
+    return this.hideSensitiveData(await this.repo.save(item));
   }
-
-  /**
-   * Validation simple du token.
-   *
-   * Important : on ne consomme pas le token ici.
-   * Le flux /login?context=REINIT doit pouvoir vérifier le token puis appeler
-   * l'endpoint auth qui définit le mot de passe et active vraiment le compte.
-   */
-async check_token(login: string, token: string): Promise<CompteEntity> {
-  const normalizedLogin = this.normalizeLogin(login);
-  const item = await this.repo.findOne({ where: { login: normalizedLogin } });
-
-  if (!item) {
-    throw new NotFoundException(`compte ${normalizedLogin} introuvable`);
-  }
-
-  const received = this.hashToken(token);
-
-  if (!item.activation_token || item.activation_token !== received) {
-    throw new NotFoundException(`token incorrect pour le compte ${normalizedLogin}`);
-  }
-
-  item.mail_actif = true;
-  item.actif = true;
-  item.activation_token = null;
-
-  const saved = await this.repo.save(item);
-
-  saved.password = null;
-  saved.activation_token = null;
-
-  return saved;
-}
-
 
   async update(id: number, dto: UpdateCompteDto): Promise<CompteEntity> {
     const item = await this.repo.findOne({ where: { id } });
-
-    if (!item) {
-      throw new NotFoundException(`compte ${id} introuvable`);
-    }
+    if (!item) throw new NotFoundException(`compte ${id} introuvable`);
 
     if (dto.login && this.normalizeLogin(dto.login) !== item.login) {
       const login = this.normalizeLogin(dto.login);
@@ -232,131 +167,166 @@ async check_token(login: string, token: string): Promise<CompteEntity> {
     }
 
     if (dto.password !== undefined) {
-      item.password = this.hashPassword(dto.password);
+      const clean = dto.password?.trim() ?? '';
+      if (!clean) throw new BadRequestException('PASSWORD_REQUIRED');
+      item.password = this.hashRequiredPassword(clean);
     }
 
-    if (dto.actif !== undefined) {
-      item.actif = dto.actif;
-    }
-
-    if (dto.mail_actif !== undefined) {
-      item.mail_actif = dto.mail_actif;
-    }
-
+    if (dto.actif !== undefined) item.actif = dto.actif;
+    if (dto.mail_actif !== undefined) item.mail_actif = dto.mail_actif;
     if (dto.activation_token !== undefined) {
       item.activation_token = dto.activation_token
-        ? this.hashToken(dto.activation_token)
+        ? hashOpaqueToken(dto.activation_token, this.tokenPepper)
         : null;
     }
-
-    const saved = await this.repo.save(item);
-
-    return this.hideSensitiveData(saved);
+    return this.hideSensitiveData(await this.repo.save(item));
   }
 
   async remove(id: number): Promise<{ ok: true }> {
     const item = await this.repo.findOne({ where: { id } });
+    if (!item) throw new NotFoundException(`compte ${id} introuvable`);
+    await this.repo.remove(item);
+    return { ok: true };
+  }
 
-    if (!item) {
-      throw new NotFoundException(`compte ${id} introuvable`);
+  private async createAccountAndQueueActivation(
+    login: string,
+    projectId: number,
+    password: string | null | undefined,
+  ): Promise<CompteEntity> {
+    if (!projectId) {
+      throw new BadRequestException({
+        code: 'PROJECT_REQUIRED',
+        message: 'project_id obligatoire',
+      });
     }
 
-    await this.repo.remove(item);
+    await this.ensureLoginAvailable(login);
+    const rawToken = createTimedToken();
+    const hashedToken = hashOpaqueToken(rawToken, this.tokenPepper);
+    const compte = await this.dataSource.transaction(async (manager) => {
+      const created = await manager.save(CompteEntity, {
+        login,
+        password: this.hashOptionalPassword(password),
+        actif: false,
+        mail_actif: false,
+        echec_connexion: false,
+        activation_token: hashedToken,
+      });
+      await manager.save(LoginProjectEntity, {
+        login_id: created.id,
+        project_id: projectId,
+      });
+      return created;
+    });
 
-    return { ok: true };
+    this.queueActivationMail(login, rawToken);
+    return this.hideSensitiveData(compte);
+  }
+
+  private queueActivationMail(login: string, rawToken: string): void {
+    const activationUrl = this.buildActivationUrl(login, rawToken);
+    void this.messageService
+      .sendActivationMail(login, activationUrl)
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Échec envoi activation: ${message}`);
+      });
   }
 
   private resolveLogin(dto: CreateCompteDto): string {
     const raw = dto.email ?? dto.login;
-
-    if (!raw) {
-      throw new BadRequestException('login/email obligatoire');
-    }
-
+    if (!raw) throw new BadRequestException('login/email obligatoire');
     return this.normalizeLogin(raw);
   }
 
   private normalizeLogin(login: string): string {
     const normalized = (login ?? '').trim().toLowerCase();
-
-    if (!normalized) {
-      throw new BadRequestException('login obligatoire');
-    }
-
+    if (!normalized) throw new BadRequestException('login obligatoire');
     return normalized;
   }
 
-  private async ensureLoginAvailable(
-    login: string,
-    exceptId?: number,
-  ): Promise<void> {
+  private async ensureLoginAvailable(login: string, exceptId?: number): Promise<void> {
     const existing = await this.repo.findOne({ where: { login } });
-
     if (existing && Number(existing.id) !== Number(exceptId)) {
-      throw new ConflictException(`Le compte ${login} existe déjà`);
+      throw new ConflictException({
+        code: 'ACCOUNT_ALREADY_EXISTS',
+        message: `Un compte existe déjà avec l’adresse ${login}.`,
+        details: { login, actif: existing.actif, mail_actif: existing.mail_actif },
+      });
     }
   }
 
-  private hashPassword(password: string | null | undefined): string | null {
+  private hashOptionalPassword(password: string | null | undefined): string | null {
     const clean = password?.trim() ?? '';
+    return clean ? this.hashRequiredPassword(clean) : null;
+  }
 
-    if (!clean) {
-      return null;
+  private hashRequiredPassword(password: string): string {
+    try {
+      assertPasswordPolicy(password);
+      return hashPassword(password);
+    } catch {
+      throw new BadRequestException('PASSWORD_TOO_WEAK');
+    }
+  }
+
+  private async assertPublicProject(projectId: number): Promise<void> {
+    if (!projectId) throw new BadRequestException('PROJECT_REQUIRED');
+
+    const rows = await this.dataSource.query(
+      `SELECT 1 FROM project WHERE id = $1 AND actif = true AND public = true LIMIT 1`,
+      [projectId],
+    );
+
+    if (!rows.length) {
+      throw new NotFoundException('PROJECT_NOT_FOUND');
+    }
+  }
+
+  private verifyLegacyToken(
+    token: string,
+    expectedHash: string | null | undefined,
+  ): boolean {
+    if (!this.legacyPepper || !token || !expectedHash || token.includes('.')) {
+      return false;
     }
 
-    return crypto
-      .createHmac('sha256', this.pepper)
-      .update(clean)
-      .digest('hex');
-  }
-
-  private createRawToken(): string {
-    return crypto.randomBytes(32).toString('hex');
-  }
-
-  private hashToken(token: string): string {
-    return crypto
-      .createHmac('sha256', this.pepper)
+    const legacyHash = require('node:crypto')
+      .createHmac('sha256', this.legacyPepper)
       .update(token)
       .digest('hex');
+
+    return legacyHash === expectedHash;
   }
 
-private buildActivationUrl(login: string, rawToken: string): string {
-  const frontUrl = this.getFrontUrl();
-
-  return (
-    `${frontUrl}/login?context=ACTIVATION` +
-    `&user=${encodeURIComponent(login)}` +
-    `&token=${encodeURIComponent(rawToken)}`
-  );
-}
-
+  private buildActivationUrl(login: string, rawToken: string): string {
+    return (
+      `${this.getFrontUrl()}/login?context=ACTIVATION` +
+      `&user=${encodeURIComponent(login)}` +
+      `&token=${encodeURIComponent(rawToken)}`
+    );
+  }
 
   private getFrontUrl(): string {
     const value =
       this.config.get<string>('FRONT_URL') ??
       process.env.FRONT_URL ??
       'http://localhost:2211';
-
     return value.replace(/\/+$/, '');
   }
 
-  private async sendActivationMail(
-    login: string,
-    rawToken: string,
-  ): Promise<void> {
-    const activationUrl = this.buildActivationUrl(login, rawToken);
-
-    await this.messageService.sendActivationMail(login, activationUrl);
-
-    // Très pratique en recette/dev, inoffensif en prod mais tu peux le retirer.
-    console.log('ACTIVATION URL:', activationUrl);
+  private requireSecret(name: string): string {
+    const value = this.config.get<string>(name)?.trim();
+    if (!value || value.startsWith('CHANGE_ME')) {
+      throw new Error(`${name} must be configured`);
+    }
+    return value;
   }
 
   private hideSensitiveData(compte: CompteEntity): CompteEntity {
     compte.password = null;
     compte.activation_token = null;
-
     return compte;
   }
 }
