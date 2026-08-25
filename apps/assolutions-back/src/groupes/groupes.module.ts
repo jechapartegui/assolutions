@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AccessControlModule } from '../common/access-control.module';
 import { SaisonEntity } from '../saison/saison.entity';
-import { SaisonService } from '../saison/saison.service';
 import { GroupesController } from './groupes.controller';
 import { GroupesEntity } from './groupes.entity';
 import { GroupesService } from './groupes.service';
@@ -14,6 +13,6 @@ import { GroupesService } from './groupes.service';
     AccessControlModule,
   ],
   controllers: [GroupesController],
-  providers: [GroupesService, SaisonService],
+  providers: [GroupesService],
 })
 export class GroupesModule {}

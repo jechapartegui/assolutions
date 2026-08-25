@@ -1,0 +1,19 @@
+/*
+ * Le menu de statut de Ma séance doit rester visible quelle que soit la ligne
+ * (haut/bas de la liste) et malgré les conteneurs scrollables/overflow:hidden.
+ * On l'affiche donc comme un popover viewport, centré et toujours au-dessus.
+ */
+app-ma-seance .menu-icons.is-visible {
+  display: block !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 10000 !important;
+  width: min(240px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

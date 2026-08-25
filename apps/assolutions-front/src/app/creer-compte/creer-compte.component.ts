@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment.prod';
 import { ApiError } from '../../services/api-client.service';
 import { CompteApiService } from '../../services/compte-api.service';
 import { ErrorService } from '../../services/error.service';
+import { ProjectApiService } from '../../services/project-api.service';
 import { Login_VM } from '../../vm/login.vm';
 
 @Component({
@@ -25,12 +26,16 @@ export class CreerCompteComponent implements OnInit {
 
   libelle_titre = $localize`Saisissez une adresse mail pour créer un compte`;
   loading = false;
+  projectLoading = false;
+  projectLoadFailed = false;
+  projectName = '';
   rProject = { key: true, value: '' };
 
   constructor(
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly compteApi: CompteApiService
+    private readonly compteApi: CompteApiService,
+    private readonly projectApi: ProjectApiService
   ) {
     this.VM.compte.login = environment.defaultlogin;
     this.VM.compte.password = environment.defaultpassword;
@@ -38,6 +43,7 @@ export class CreerCompteComponent implements OnInit {
 
   ngOnInit(): void {
     this.resolveProjectFromRoute();
+    void this.loadProjectName();
     this.validateLogin();
     if (this.VM.mdp_requis) this.validatePassword(this.VM.compte.password);
     this.valide();
@@ -52,6 +58,25 @@ export class CreerCompteComponent implements OnInit {
       this.route.snapshot.queryParamMap.get('projetId');
     const id = Number(raw);
     this.projectId = Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private async loadProjectName(): Promise<void> {
+    const id = Number(this.projectId);
+    this.projectName = '';
+    this.projectLoadFailed = false;
+
+    if (!id) return;
+
+    this.projectLoading = true;
+    try {
+      const project = await this.projectApi.getPublic(id);
+      this.projectName = (project?.nom ?? '').trim();
+      this.projectLoadFailed = !this.projectName;
+    } catch {
+      this.projectLoadFailed = true;
+    } finally {
+      this.projectLoading = false;
+    }
   }
 
   get hasProject(): boolean {

@@ -17,7 +17,8 @@ export class DocumentEntity {
   @Column({ type: 'varchar', length: 25 })
   typedoc: string;
 
-  @Column({ type: 'bytea', nullable: true })
+  // Le binaire n'est chargé que sur les routes qui en ont réellement besoin.
+  @Column({ type: 'bytea', nullable: true, select: false })
   file_data: Buffer | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

@@ -1,19 +1,47 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Public } from '../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import {
+  ChangePasswordDto,
+  LoginDto,
+  LoginIdentifierDto,
+  ResetTokenDto,
+  SetPasswordWithTokenDto,
+} from './auth.dto';
 import { AuthService } from './auth.services';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  @Public()
   @Post('prelogin')
-  prelogin(@Body() body: { login: string }) {
+  prelogin(@Body() body: LoginIdentifierDto) {
     return this.auth.prelogin(body.login);
   }
 
+  @Public()
   @Post('login')
-  login(@Body() body: { login: string; password?: string }) {
+  login(@Body() body: LoginDto) {
     return this.auth.login(body.login, body.password);
+  }
+
+  @Public()
+  @Post('activate')
+  activate(@Body() body: ResetTokenDto) {
+    return this.auth.activateAndLogin(body.login, body.token);
+  }
+
+  @Public()
+  @Post('request-login-link')
+  requestLoginLink(@Body() body: LoginIdentifierDto) {
+    return this.auth.requestLoginLink(body.login);
+  }
+
+  @Public()
+  @Post('login-with-token')
+  loginWithToken(@Body() body: ResetTokenDto) {
+    return this.auth.loginWithToken(body.login, body.token);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -24,23 +52,25 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('change-my-password')
-  changeMyPassword(@Req() req: any, @Body() body: { newPassword: string | null }) {
-    return this.auth.changeMyPassword(req.user.id, body.newPassword ?? null);
+  changeMyPassword(@Req() req: any, @Body() body: ChangePasswordDto) {
+    return this.auth.changeMyPassword(req.user.id, body.newPassword ?? '');
   }
-@Post('reinit_mdp')
-reinit_mdp(@Body() body: { login: string }) {
-  return this.auth.reinit_mdp(body.login);
-}
 
-@Post('check-reset-token')
-checkResetToken(@Body() body: { login: string; token: string }) {
-  return this.auth.checkResetToken(body.login, body.token);
-}
+  @Public()
+  @Post('reinit_mdp')
+  reinitMdp(@Body() body: LoginIdentifierDto) {
+    return this.auth.reinit_mdp(body.login);
+  }
 
-@Post('set-password-with-token')
-setPasswordWithToken(
-  @Body() body: { login: string; token: string; newPassword: string }
-) {
-  return this.auth.setPasswordWithToken(body.login, body.token, body.newPassword);
-}
+  @Public()
+  @Post('check-reset-token')
+  checkResetToken(@Body() body: ResetTokenDto) {
+    return this.auth.checkResetToken(body.login, body.token);
+  }
+
+  @Public()
+  @Post('set-password-with-token')
+  setPasswordWithToken(@Body() body: SetPasswordWithTokenDto) {
+    return this.auth.setPasswordWithToken(body.login, body.token, body.newPassword);
+  }
 }

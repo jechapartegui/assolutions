@@ -94,7 +94,6 @@ export class GroupeRepository {
   ): Promise<number | null> {
     const lien = await this.lienGroupeApi.create({
       object_id: Number(adherentId),
-      personne_id: Number(adherentId),
       object_type: 'rider',
       groupe_id: Number(groupeId),
     } as CreateLienGroupeDto);

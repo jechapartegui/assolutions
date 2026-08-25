@@ -36,11 +36,10 @@
       }
     },
     "serve": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "assolutions-back:build",
-        "watch": true
+        "command": "npm run start:dev --workspace @assolutions/back"
       },
       "configurations": {
         "development": {},

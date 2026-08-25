@@ -33,6 +33,7 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+*-errors.txt
 
 # System Files
 .DS_Store
@@ -51,9 +52,17 @@ apps/assolutions-front/src/locale/messages.en.json
 # Environment files: never commit secrets
 .env
 .env.*
+*.env
 !.env.example
 !.env.*.example
 apps/assolutions-back/.env
 apps/assolutions-back/.env.*
 !apps/assolutions-back/.env.example
 !apps/assolutions-back/.env.*.example
+
+# Local database exports / personal-data extracts: never commit
+**/DOUBLONS*.csv
+**/doublons*.csv
+**/*.backup
+**/*.dump
+apps/assolutions-back/exports/

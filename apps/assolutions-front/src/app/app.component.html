@@ -20,7 +20,8 @@
             aria-label="menu"
             [attr.aria-expanded]="isactive"
             data-target="navMaSeance"
-           i18n-aria-label>
+            i18n-aria-label
+          >
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -148,6 +149,40 @@
                 >
                   <i class="fa-solid fa-table-columns"></i>
                 </a>
+
+                <div
+                  class="dropdown is-right"
+                  [class.is-active]="helpOpen"
+                  (click)="$event.stopPropagation()"
+                >
+                  <div class="dropdown-trigger">
+                    <button
+                      type="button"
+                      class="button is-light is-rounded"
+                      (click)="toggleHelp($event)"
+                      aria-haspopup="true"
+                      [attr.aria-expanded]="helpOpen"
+                      title="Aide en ligne"
+                      i18n-title
+                    >
+                      <i class="fa-solid fa-circle-question"></i>
+                      <span class="is-hidden-touch ml-1" i18n>Aide</span>
+                    </button>
+                  </div>
+                  <div class="dropdown-menu" role="menu">
+                    <div class="dropdown-content">
+                      <a
+                        href="#"
+                        class="dropdown-item"
+                        *ngFor="let topic of visibleHelpTopics"
+                        (click)="openHelpTopic(topic, $event)"
+                      >
+                        {{ topic.label }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
                 <a class="button is-danger is-light is-rounded" (click)="LogOut()" title="Se déconnecter" i18n-title>
                   <i class="fa-solid fa-right-from-bracket"></i>
                 </a>
@@ -241,6 +276,33 @@
                 <span class="icon is-large"><i class="fas fa-2x fa-layer-group"></i></span>
                 <span class="tablet" i18n>Groupes</span>
               </a>
+            </li>
+
+            <li *ngIf="store.isLoggedIn()">
+              <div
+                class="dropdown is-up is-right"
+                [class.is-active]="helpOpen"
+                (click)="$event.stopPropagation()"
+              >
+                <div class="dropdown-trigger">
+                  <a href="#" (click)="toggleHelp($event)">
+                    <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
+                    <span class="tablet" i18n>Aide</span>
+                  </a>
+                </div>
+                <div class="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a
+                      href="#"
+                      class="dropdown-item"
+                      *ngFor="let topic of visibleHelpTopics"
+                      (click)="openHelpTopic(topic, $event)"
+                    >
+                      {{ topic.label }}
+                    </a>
+                  </div>
+                </div>
+              </div>
             </li>
           </ul>
         </div>

@@ -34,7 +34,8 @@
         ],
         "styles": [
           "apps/assolutions-front/src/styles.css",
-          "apps/assolutions-front/src/light-theme.css"
+          "apps/assolutions-front/src/light-theme.css",
+          "apps/assolutions-front/src/ma-seance-overlay.css"
         ],
         "scripts": [],
         "localize": ["fr", "en"]
@@ -150,7 +151,8 @@
         ],
         "styles": [
           "apps/assolutions-front/src/styles.css",
-          "apps/assolutions-front/src/light-theme.css"
+          "apps/assolutions-front/src/light-theme.css",
+          "apps/assolutions-front/src/ma-seance-overlay.css"
         ],
         "scripts": []
       }

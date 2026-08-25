@@ -6,7 +6,6 @@ import { GlobalService } from '../../services/global.services';
 import { MeResponse, PreLoginResponse, ProjetView, Session } from '@shared/lib/compte.interface';
 import { AppStore } from '../app.store';
 import { AuthApiService } from '../../services/auth-api.service';
-import { CompteApiService } from '../../services/compte-api.service';
 import { ProjectApiService } from '../../services/project-api.service';
 import { Login_VM } from '../../vm/login.vm';
 import { AdhesionApiService } from '../../services/adhesion-api.service';
@@ -31,15 +30,15 @@ export class LoginComponent implements OnInit {
   showPassword = false;
 
   resetToken: string | null = null;
-resetMode = false;
-newPassword = '';
-newPasswordConfirm = '';
+  resetMode = false;
+  newPassword = '';
+  newPasswordConfirm = '';
 
   /** Projet demandé depuis un lien externe : /login?context=CREATE&project=123 */
   requestedProjectId: number | null = null;
   requestedProject: any = null;
 
-  @Input() context: 'REINIT' | 'ACTIVATION' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
+  @Input() context: 'REINIT' | 'ACTIVATION' | 'MAGIC' | 'SEANCE' | 'MENU' | 'ESSAI' | 'CREATE' = 'MENU';
   @Input() login_seance: string = null;
 
   loading = false;
@@ -49,7 +48,6 @@ newPasswordConfirm = '';
     private login_serv_nest: AuthApiService,
     private adhesion_serv: AdhesionApiService,
     private project_serv: ProjectApiService,
-    private compte_serv: CompteApiService,
     private router: Router,
     private route: ActivatedRoute,
     public GlobalService: GlobalService,
@@ -62,241 +60,277 @@ newPasswordConfirm = '';
     this.validateLogin();
   }
 
-async ngOnInit(): Promise<void> {
-  this.action = $localize`Chargement de la page`;
-  const errorService = ErrorService.instance;
+  async ngOnInit(): Promise<void> {
+    this.action = $localize`Chargement de la page`;
+    const errorService = ErrorService.instance;
 
-  const initialContext = this.context ?? 'MENU';
-  const params = this.route.snapshot.queryParams;
+    const initialContext = this.context ?? 'MENU';
+    const params = this.route.snapshot.queryParams;
 
-  if ('context' in params) {
-    try {
-      this.context = params['context'];
-      console.log(`Context de connexion : ${this.context}`);
-    } catch (error) {
+    if ('context' in params) {
+      try {
+        this.context = params['context'];
+        console.log(`Context de connexion : ${this.context}`);
+      } catch (error) {
+        const o = errorService.CreateError(
+          this.action,
+          $localize`Erreur sur la requête`
+        );
+        errorService.emitChange(o);
+        await this.router.navigate(['/login']);
+        return;
+      }
+    } else {
+      this.context = initialContext;
+    }
+
+    if (params['user']) {
+      this.VM.compte.login = String(params['user']).trim().toLowerCase();
+      this.validateLogin();
+    }
+
+    this.requestedProjectId = this.readProjectIdFromParams(params);
+
+    switch (this.context) {
+      case 'ACTIVATION':
+        await this.handleActivationLink(params);
+        return;
+
+      case 'MAGIC':
+        await this.handleMagicLoginLink(params);
+        return;
+
+      case 'REINIT':
+        await this.handleResetPasswordLink(params);
+        return;
+
+      case 'CREATE':
+        await this.initCreateMode();
+        break;
+
+      case 'ESSAI':
+        this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
+        break;
+
+      case 'SEANCE':
+        this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
+
+        if (this.login_seance) {
+          this.VM.compte.login = this.login_seance;
+          this.validateLogin();
+          this.Login();
+        }
+
+        break;
+
+      case 'MENU':
+      default:
+        this.libelle_titre = $localize`Saisissez votre email pour vous connecter`;
+        break;
+    }
+
+    if (!this.VM.compte.login) {
+      this.VM.compte.login = environment.defaultlogin ?? '';
+      this.validateLogin();
+    }
+  }
+
+  private activationProcessingKey: string | null = null;
+  private activationDoneKey: string | null = null;
+
+  private async handleActivationLink(params: any): Promise<void> {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Activer le compte`;
+
+    const token = params['token'];
+    const user = params['user'];
+
+    if (!token || !user) {
       const o = errorService.CreateError(
         this.action,
-        $localize`Erreur sur la requête`
+        $localize`Lien d'activation incomplet`
       );
       errorService.emitChange(o);
-      await this.router.navigate(['/login']);
+
+      await this.router.navigate(['/login'], {
+        replaceUrl: true,
+      });
       return;
     }
-  } else {
-    this.context = initialContext;
-  }
 
-  if (params['user']) {
-    this.VM.compte.login = String(params['user']).trim().toLowerCase();
-    this.validateLogin();
-  }
+    const login = String(user).trim().toLowerCase();
+    const activationKey = `${login}|${token}`;
 
-  this.requestedProjectId = this.readProjectIdFromParams(params);
-
-  switch (this.context) {
-    case 'ACTIVATION':
-      await this.handleActivationLink(params);
+    if (
+      this.activationProcessingKey === activationKey ||
+      this.activationDoneKey === activationKey
+    ) {
       return;
+    }
 
-    case 'REINIT':
-      await this.handleResetPasswordLink(params);
+    this.activationProcessingKey = activationKey;
+    this.loading = true;
+
+    try {
+      const mr = await this.login_serv_nest.activate(login, token);
+      this.activationDoneKey = activationKey;
+      this.VM.compte.login = login;
+      this.VM.mode = mr.mode;
+
+      const o = errorService.OKMessage(
+        $localize`Compte activé. Connexion réussie.`
+      );
+      errorService.emitChange(o);
+
+      await this.openSession(mr);
+    } catch (error: any) {
+      const o = errorService.CreateError(
+        this.action,
+        error?.message ?? $localize`Lien d'activation invalide ou expiré`
+      );
+      errorService.emitChange(o);
+
+      await this.router.navigate(['/login'], {
+        replaceUrl: true,
+      });
+    } finally {
+      this.activationProcessingKey = null;
+      this.loading = false;
+    }
+  }
+
+  private async handleMagicLoginLink(params: any): Promise<void> {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Connexion par email`;
+
+    const token = params['token'];
+    const user = params['user'];
+
+    if (!token || !user) {
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Lien de connexion incomplet`
+      );
+      errorService.emitChange(o);
+      await this.router.navigate(['/login'], { replaceUrl: true });
       return;
+    }
 
-    case 'CREATE':
-      await this.initCreateMode();
-      break;
+    this.loading = true;
 
-    case 'ESSAI':
-      this.libelle_titre = $localize`Saisissez une adresse mail pour vous connecter et essayer la séance`;
-      break;
+    try {
+      const login = String(user).trim().toLowerCase();
+      const mr = await this.login_serv_nest.loginWithToken(login, token);
+      this.VM.compte.login = login;
+      this.VM.mode = mr.mode;
 
-    case 'SEANCE':
-      this.libelle_titre = $localize`Connectez-vous pour répondre au sondage de présence`;
-
-      if (this.login_seance) {
-        this.VM.compte.login = this.login_seance;
-        this.validateLogin();
-        this.Login();
-      }
-
-      break;
-
-    case 'MENU':
-    default:
-      this.libelle_titre = $localize`Saisissez votre email pour vous connecter`;
-      break;
+      const o = errorService.OKMessage($localize`Connexion réussie`);
+      errorService.emitChange(o);
+      await this.openSession(mr);
+    } catch (error: any) {
+      const o = errorService.CreateError(
+        this.action,
+        error?.message ?? $localize`Lien de connexion invalide ou expiré`
+      );
+      errorService.emitChange(o);
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    } finally {
+      this.loading = false;
+    }
   }
 
-  if (!this.VM.compte.login) {
-    this.VM.compte.login = environment.defaultlogin ?? '';
-    this.validateLogin();
+  private async handleResetPasswordLink(params: any): Promise<void> {
+    const errorService = ErrorService.instance;
+    this.action = $localize`Réinitialiser le mot de passe`;
+
+    const token = params['token'];
+    const user = params['user'];
+
+    if (!token || !user) {
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Lien de réinitialisation incomplet`
+      );
+      errorService.emitChange(o);
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.loading = true;
+
+    try {
+      await this.login_serv_nest.checkResetToken(user, token);
+
+      this.VM.compte.login = String(user).trim().toLowerCase();
+      this.resetToken = token;
+      this.resetMode = true;
+      this.VM.mdp_requis = false;
+      this.selectedLogin = true;
+      this.libelle_titre = $localize`Mot de passe facultatif`;
+    } catch (error: any) {
+      const o = errorService.CreateError(
+        this.action,
+        error?.message ?? $localize`Lien invalide ou expiré`
+      );
+      errorService.emitChange(o);
+      this.router.navigate(['/login']);
+    } finally {
+      this.loading = false;
+    }
   }
-}private activationProcessingKey: string | null = null;
-private activationDoneKey: string | null = null;
-private async handleActivationLink(params: any): Promise<void> {
-  const errorService = ErrorService.instance;
-  this.action = $localize`Activer le compte`;
-
-  const token = params['token'];
-  const user = params['user'];
-
-  if (!token || !user) {
-    const o = errorService.CreateError(
-      this.action,
-      $localize`Lien d'activation incomplet`
-    );
-    errorService.emitChange(o);
-
-    await this.router.navigate(['/login'], {
-      replaceUrl: true,
-    });
-
-    return;
-  }
-
-  const login = String(user).trim().toLowerCase();
-  const activationKey = `${login}|${token}`;
-
-  if (
-    this.activationProcessingKey === activationKey ||
-    this.activationDoneKey === activationKey
-  ) {
-    return;
-  }
-
-  this.activationProcessingKey = activationKey;
-  this.loading = true;
-
-  try {
-    await this.compte_serv.check_token(login, token);
-
-    this.activationDoneKey = activationKey;
-
-    this.resetMode = false;
-    this.resetToken = null;
-    this.newPassword = '';
-    this.newPasswordConfirm = '';
-    this.selectedLogin = false;
-    this.VM.mdp_requis = false;
-    this.VM.compte.login = login;
-    this.validateLogin();
-
-    const o = errorService.OKMessage(
-      $localize`Compte activé. Vous pouvez maintenant vous connecter.`
-    );
-    errorService.emitChange(o);
-
-    await this.router.navigate(['/login'], {
-      queryParams: {
-        user: login,
-        activated: 1,
-      },
-      replaceUrl: true,
-    });
-  } catch (error: any) {
-    const o = errorService.CreateError(
-      this.action,
-      error?.message ?? $localize`Lien d'activation invalide ou expiré`
-    );
-    errorService.emitChange(o);
-
-    await this.router.navigate(['/login'], {
-      replaceUrl: true,
-    });
-  } finally {
-    this.activationProcessingKey = null;
-    this.loading = false;
-  }
-}
-
-private async handleResetPasswordLink(params: any): Promise<void> {
-  const errorService = ErrorService.instance;
-  this.action = $localize`Réinitialiser le mot de passe`;
-
-  const token = params['token'];
-  const user = params['user'];
-
-  if (!token || !user) {
-    const o = errorService.CreateError(
-      this.action,
-      $localize`Lien de réinitialisation incomplet`
-    );
-    errorService.emitChange(o);
-    this.router.navigate(['/login']);
-    return;
-  }
-
-  this.loading = true;
-
-  try {
-    await this.login_serv_nest.checkResetToken(user, token);
-
-    this.VM.compte.login = String(user).trim().toLowerCase();
-    this.resetToken = token;
-    this.resetMode = true;
-    this.VM.mdp_requis = false;
-    this.selectedLogin = true;
-    this.libelle_titre = $localize`Choisissez votre nouveau mot de passe`;
-  } catch (error: any) {
-    const o = errorService.CreateError(
-      this.action,
-      error?.message ?? $localize`Lien invalide ou expiré`
-    );
-    errorService.emitChange(o);
-    this.router.navigate(['/login']);
-  } finally {
-    this.loading = false;
-  }
-}
 
   async ValiderNouveauMotDePasse(): Promise<void> {
-  const errorService = ErrorService.instance;
-  this.action = $localize`Définir le mot de passe`;
+    const errorService = ErrorService.instance;
+    this.action = $localize`Définir le mot de passe`;
 
-  if (!this.resetToken) return;
+    if (!this.resetToken) return;
 
-  if (this.newPassword !== this.newPasswordConfirm) {
-    const o = errorService.CreateError(this.action, $localize`Les mots de passe ne correspondent pas`);
-    errorService.emitChange(o);
-    return;
+    if (this.newPassword !== this.newPasswordConfirm) {
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Les mots de passe ne correspondent pas`
+      );
+      errorService.emitChange(o);
+      return;
+    }
+
+    const cleanPassword = this.newPassword?.trim() ?? '';
+
+    if (cleanPassword) {
+      this.validatePassword(cleanPassword);
+      if (!this.VM.isPasswordValid) {
+        const o = errorService.CreateError(
+          this.action,
+          $localize`Le mot de passe doit contenir au moins 8 caractères et un nombre`
+        );
+        errorService.emitChange(o);
+        return;
+      }
+    }
+
+    try {
+      await this.login_serv_nest.setPasswordWithToken(
+        this.VM.compte.login,
+        this.resetToken,
+        cleanPassword
+      );
+
+      const o = errorService.OKMessage(
+        cleanPassword
+          ? $localize`Mot de passe enregistré. Vous pouvez maintenant vous connecter.`
+          : $localize`Aucun mot de passe enregistré. Vous pourrez vous connecter par email.`
+      );
+      errorService.emitChange(o);
+
+      window.location.href = '/login';
+    } catch (error: any) {
+      const o = errorService.CreateError(
+        this.action,
+        error?.message ?? $localize`Erreur inconnue`
+      );
+      errorService.emitChange(o);
+    }
   }
-
-const cleanPassword = this.newPassword?.trim() ?? '';
-
-if (cleanPassword.length > 0) {
-  this.validatePassword(cleanPassword);
-
-  if (!this.VM.isPasswordValid) {
-    const o = errorService.CreateError(
-      this.action,
-      $localize`Le mot de passe doit contenir au moins 8 caractères et un nombre`
-    );
-    errorService.emitChange(o);
-    return;
-  }
-}
-
-  try {
-  await this.login_serv_nest.setPasswordWithToken(
-  this.VM.compte.login,
-  this.resetToken,
-  cleanPassword
-);
-
-    const o = errorService.OKMessage(
-  $localize`Mot de passe enregistré. Vous pouvez maintenant vous connecter.`
-);
-errorService.emitChange(o);
-
-window.location.href = '/login';
- 
-
-
-  } catch (error: any) {
-    const o = errorService.CreateError(this.action, error?.message ?? $localize`Erreur inconnue`);
-    errorService.emitChange(o);
-  }
-}
 
   private readProjectIdFromParams(params: any): number | null {
     const raw = params['projectId'] ?? params['project'] ?? params['projetId'] ?? params['idProjet'] ?? params['id'];
@@ -377,13 +411,14 @@ window.location.href = '/login';
   }
 
   private get redirectUrl(): string | null {
-  return this.route.snapshot.queryParamMap.get('redirect');
-}
+    return this.route.snapshot.queryParamMap.get('redirect');
+  }
 
-private isSeanceRedirect(): boolean {
-  const redirect = this.redirectUrl ?? '';
-  return redirect.startsWith('/ma-seance');
-} 
+  private isSeanceRedirect(): boolean {
+    const redirect = this.redirectUrl ?? '';
+    return redirect.startsWith('/ma-seance');
+  }
+
   async Login() {
     this.action = $localize`Se connecter`;
     const errorService = ErrorService.instance;
@@ -401,12 +436,17 @@ private isSeanceRedirect(): boolean {
           this.VM.mdp_requis = prelogin.password_required;
           this.selectedLogin = this.VM.mdp_requis;
 
-          if (!this.VM.mdp_requis && this.VM.mode === 'APPLI') {
-            this.action = $localize`Connexion sans mot de passe`;
+          if (!this.VM.mdp_requis) {
+            this.action = $localize`Connexion`;
+            this.loading = true;
+
             this.login_serv_nest
-              .login(this.VM.compte.login, null)
+              .login(this.VM.compte.login, '')
               .then((mr: MeResponse) => this.openSession(mr))
-              .catch((error: Error) => this.handleLoginError(error));
+              .catch((error: Error) => this.handleLoginError(error))
+              .finally(() => {
+                this.loading = false;
+              });
           }
         })
         .catch((error: Error) => {
@@ -422,47 +462,55 @@ private isSeanceRedirect(): boolean {
         .catch((error: Error) => this.handleLoginError(error));
     }
   }
+
   private getAutoProject(
-  projectFromContext: ProjetView | null | undefined,
-  projets: ProjetView[],
-): ProjetView | null {
-  if (projectFromContext) return projectFromContext;
+    projectFromContext: ProjetView | null | undefined,
+    projets: ProjetView[],
+  ): ProjetView | null {
+    if (projectFromContext) return projectFromContext;
 
-  if (projets.length === 0) return null;
+    if (projets.length === 0) return null;
 
-  if (projets.length === 1) return projets[0];
+    if (projets.length === 1) return projets[0];
 
-  const projetsAvecDroits = projets.filter(p =>
-    !!p.rights?.adherent ||
-    !!p.rights?.prof 
-  );
+    const projetsAvecDroits = projets.filter(p =>
+      !!p.rights?.adherent ||
+      !!p.rights?.prof
+    );
 
-  return projetsAvecDroits.length === 1 ? projetsAvecDroits[0] : null;
-}
+    return projetsAvecDroits.length === 1 ? projetsAvecDroits[0] : null;
+  }
 
   private async openSession(mr: MeResponse): Promise<void> {
-    if(mr.mode ==="ADMIN") {
-      if(!mr.projects || mr.projects.length === 0 || mr.projects.length > 1) {
+    this.VM.mode = mr.mode;
+
+    if (mr.mode === 'ADMIN') {
+      if (!mr.projects || mr.projects.length === 0 || mr.projects.length > 1) {
         const errorService = ErrorService.instance;
-        const o = errorService.CreateError(this.action, $localize`Aucun projet associé au compte`);
+        const o = errorService.CreateError(
+          this.action,
+          $localize`Aucun projet associé au compte`
+        );
         errorService.emitChange(o);
         return;
       }
-       const s: Session = {
+
+      const s: Session = {
         token: mr.token,
-        mode: this.VM.mode,
+        mode: mr.mode,
         compte: mr.compte,
         projects: mr.projects,
         selectedProjectId: mr.projects[0].id,
-        rights: mr.projects[0].rights
+        rights: mr.projects[0].rights,
       };
-        await this.store.setSession(s);
+      await this.store.setSession(s);
 
-        this.resetProjectCaches();
-        this.store.selectProject(mr.projects[0].id);
-        this.navigateAfterProjectSelection();
+      this.resetProjectCaches();
+      this.store.selectProject(mr.projects[0].id);
+      this.navigateAfterProjectSelection();
       return;
     }
+
     const errorService = ErrorService.instance;
     this.VM.compte = mr.compte;
     this.action = $localize`Lister les projets associés au compte`;
@@ -472,12 +520,11 @@ private isSeanceRedirect(): boolean {
       this.VM.projets = projets;
 
       const projectFromContext = this.findRequestedProject(projets);
-      
       const autoProject = this.getAutoProject(projectFromContext, projets);
-      
+
       const s: Session = {
         token: mr.token,
-        mode: this.VM.mode,
+        mode: mr.mode,
         compte: mr.compte,
         projects: projets,
         selectedProjectId: autoProject?.id ?? null,
@@ -505,7 +552,10 @@ private isSeanceRedirect(): boolean {
       errorService.emitChange(o);
       this.router.navigate(['/mon-compte']);
     } catch (error: any) {
-      const o = errorService.CreateError(this.action, error?.message ?? $localize`Erreur inconnue`);
+      const o = errorService.CreateError(
+        this.action,
+        error?.message ?? $localize`Erreur inconnue`
+      );
       errorService.emitChange(o);
       this.resetProjectCaches();
       this.store.clearSession();
@@ -523,34 +573,35 @@ private isSeanceRedirect(): boolean {
     this.adherentStore.reset();
   }
 
-private navigateAfterProjectSelection(): void {
-  const redirect = this.redirectUrl;
+  private navigateAfterProjectSelection(): void {
+    const redirect = this.redirectUrl;
 
-  if (this.context === 'SEANCE' || this.isSeanceRedirect()) {
-    this.store.updateSelectedMenu('MA-SEANCE');
+    if (this.context === 'SEANCE' || this.isSeanceRedirect()) {
+      this.store.updateSelectedMenu('MA-SEANCE');
+
+      if (redirect) {
+        this.router.navigateByUrl(redirect);
+        return;
+      }
+
+      this.loggedIn.emit();
+      return;
+    }
 
     if (redirect) {
       this.router.navigateByUrl(redirect);
       return;
     }
 
-    this.loggedIn.emit();
-    return;
+    if (this.VM.mode === 'APPLI') {
+      this.store.updateSelectedMenu('MENU');
+      this.router.navigate(['/menu']);
+    } else {
+      this.store.updateSelectedMenu('MENU-ADMIN');
+      this.router.navigate(['/menu-admin']);
+    }
   }
 
-  if (redirect) {
-    this.router.navigateByUrl(redirect);
-    return;
-  }
-
-  if (this.VM.mode === 'APPLI') {
-    this.store.updateSelectedMenu('MENU');
-    this.router.navigate(['/menu']);
-  } else {
-    this.store.updateSelectedMenu('MENU-ADMIN');
-    this.router.navigate(['/menu-admin']);
-  }
-}
   private handleLoginError(error: Error): void {
     const errorService = ErrorService.instance;
     const o = errorService.CreateError(this.action, error.message);
@@ -578,10 +629,10 @@ private navigateAfterProjectSelection(): void {
   ReinitMDP() {
     if (!this.VM.isLoginValid) return;
 
-    const c = window.confirm($localize`Voulez-vous réinitialiser votre mot de passe ?`);
+    const c = window.confirm($localize`Voulez-vous définir ou modifier votre mot de passe ?`);
     if (!c) return;
 
-    this.action = $localize`Réinitialiser le mot de passe`;
+    this.action = $localize`Définir ou modifier le mot de passe`;
     const errorService = ErrorService.instance;
 
     this.login_serv_nest
@@ -619,7 +670,10 @@ private navigateAfterProjectSelection(): void {
     const errorService = ErrorService.instance;
 
     if (!this.projets_select) {
-      const o = errorService.CreateError(this.action, $localize`Pas de projet sélectionné`);
+      const o = errorService.CreateError(
+        this.action,
+        $localize`Pas de projet sélectionné`
+      );
       errorService.emitChange(o);
       return;
     }
@@ -637,7 +691,6 @@ private navigateAfterProjectSelection(): void {
 
       this.resetProjectCaches();
       this.store.clearSession();
-      localStorage.removeItem('auth_token');
       await this.router.navigate(['/login']);
     }
   }

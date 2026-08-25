@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SCRIPT_VERSION="2026-08-18-01"
+SCRIPT_VERSION="2026-08-20-02"
 
 # Rafraîchit la base de préproduction à partir d'une copie logique complète de
 # la production.
@@ -12,6 +12,15 @@ SCRIPT_VERSION="2026-08-18-01"
 # Variables requises :
 #   PROD_DATABASE_URL
 #   PREPROD_DATABASE_URL
+#
+# Anonymisation optionnelle, dans LE MÊME CRON :
+#   PREPROD_ANONYMIZE_AFTER_REFRESH=true
+#
+# Si l'anonymisation est activée, le script scripts/anonymize-preprod.cjs exige
+# également PREPROD_EXPECTED_DATABASE, PREPROD_EXPECTED_HOST_FRAGMENT et
+# PREPROD_TEST_PASSWORD. Laisser la variable à false permet temporairement de
+# conserver une copie fidèle de PROD pour reproduire un cas réel ; dans ce mode
+# la PREPROD doit être considérée comme contenant des données sensibles.
 #
 # ATTENTION : les objets présents dans le dump de production remplacent ceux de
 # préproduction. En revanche, la restauration est atomique : en cas d'erreur,
@@ -162,5 +171,31 @@ SELECT current_database() AS database,
            AND column_name = 'compte_bancaire_id'
        ) AS compte_bancaire_tarif_present;
 SQL
+
+ANONYMIZE_FLAG="$(printf '%s' "${PREPROD_ANONYMIZE_AFTER_REFRESH:-false}" | tr '[:upper:]' '[:lower:]')"
+case "$ANONYMIZE_FLAG" in
+  true|1|yes)
+    echo "==> Anonymisation PREPROD activée dans le CRON"
+    APP_ENV=preprod \
+    ANONYMIZE_PREPROD_CONFIRM=ANONYMIZE_PREPROD \
+    PREPROD_DATABASE_URL="$PREPROD_DATABASE_URL" \
+      node /app/scripts/anonymize-preprod.cjs
+
+    NON_ANON_ACCOUNT_COUNT="$(sql_scalar "$PREPROD_DATABASE_URL" "SELECT count(*) FROM public.compte WHERE login IS NOT NULL AND login NOT LIKE 'preprod.compte.%@example.invalid';")"
+    if [[ "$NON_ANON_ACCOUNT_COUNT" != "0" ]]; then
+      echo "Contrôle anonymisation KO : $NON_ANON_ACCOUNT_COUNT compte(s) non anonymisé(s)" >&2
+      exit 1
+    fi
+    echo "==> Contrôle anonymisation OK"
+    ;;
+  false|0|no|'')
+    echo "==> Anonymisation PREPROD désactivée (PREPROD_ANONYMIZE_AFTER_REFRESH=$ANONYMIZE_FLAG)"
+    echo "==> ATTENTION : la PREPROD contient donc une copie fidèle de données PROD"
+    ;;
+  *)
+    echo "PREPROD_ANONYMIZE_AFTER_REFRESH doit valoir true/false (reçu: $ANONYMIZE_FLAG)" >&2
+    exit 1
+    ;;
+esac
 
 echo "==> Rafraîchissement PROD -> PREPROD terminé avec succès"

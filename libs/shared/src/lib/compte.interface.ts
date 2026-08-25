@@ -1,11 +1,9 @@
-import { Saison} from "./saison.interface";
+import { Saison } from './saison.interface';
+
 export interface Compte {
   id: number;
   login: string;
-
-  // selon ton back, souvent non renvoyé (mais présent ici car dans DTO)
   password?: string | null;
-
   actif?: boolean;
   mail_actif?: boolean;
   activation_token?: string | null;
@@ -24,25 +22,23 @@ export type UpdateCompteDto = {
   activation_token?: string | null;
 };
 
-  export class ProjetLogin {
-    id: number;
-    nom: string;
-    actif: boolean;
-    date_debut: Date;
-    password: string;
-    login: string;
-  }
+export class ProjetLogin {
+  id: number;
+  nom: string;
+  actif: boolean;
+  date_debut: Date;
+  password: string;
+  login: string;
+}
 
-  
+export type ProjetView = {
+  id: number;
+  nom: string;
+  rights: ProjectRights;
+  saison_active: Saison | null;
+};
 
-  export type ProjetView = {
-    id: number;
-    nom: string;
-   rights: ProjectRights;
-    saison_active:Saison | null;
-  };
-
-  export type MeResponse = {
+export type MeResponse = {
   compte: Compte;
   projects: ProjetView[];
   token: string;
@@ -52,9 +48,11 @@ export type UpdateCompteDto = {
 export type PreLoginResponse = {
   mode: AppMode;
   password_required: boolean;
+  /** Legacy account that must define a password before authentication. */
+  password_setup_required?: boolean;
 };
 
-export type AppMode = "APPLI" | "ADMIN";
+export type AppMode = 'APPLI' | 'ADMIN';
 
 export type ProjectRights = {
   adherent: boolean;
@@ -64,10 +62,9 @@ export type ProjectRights = {
 
 export type Session = {
   token: string;
-  mode: AppMode;                 // APPLI ou ADMIN (admin => menu/admin routes)
+  mode: AppMode;
   compte: Compte;
-  projects: ProjetView[];        // liste de choix
+  projects: ProjetView[];
   selectedProjectId: number | null;
-  rights: ProjectRights | null;  // droits du projet sélectionné (ProjectView)
+  rights: ProjectRights | null;
 };
-

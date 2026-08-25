@@ -44,6 +44,7 @@ import { DossierDocumentUploadComponent } from './souscription/dossier-document-
 import { PayerBoxDirective } from './souscription/payer-box.directive';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
 import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proof-editor.component';
+import { HelpComponent } from './help/help.component';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -95,6 +96,7 @@ import { CoursStore } from '../store/cours.store';
     PayerBoxDirective,
     SouscriptionTunnelComponent,
     MedicalProofEditorComponent,
+    HelpComponent,
   ],
   imports: [
     BrowserModule,

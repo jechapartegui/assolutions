@@ -37,29 +37,6 @@ export class HelloAssoService {
   private readonly logger = new Logger(HelloAssoService.name);
   private cachedToken: { value: string; expiresAt: number } | null = null;
 
-  async createTestCheckout() {
-    const checkout = await this.createCheckout({
-      totalAmount: 100,
-      initialAmount: 100,
-      installments: 1,
-      itemName: 'POC Assolutions - adhesion',
-      payer: {
-        firstName: 'Jean-Emmanuel',
-        lastName: 'Chapartegui',
-        email: 'jechapartegui@gmail.com',
-      },
-      backPath: '/helloasso-test',
-      errorPath: '/helloasso-test-erreur',
-      returnPath: '/helloasso-test-ok',
-    });
-
-    return {
-      ok: true,
-      checkoutIntentId: checkout.id,
-      redirectUrl: checkout.redirectUrl,
-    };
-  }
-
   async createCheckout(
     request: HelloAssoCheckoutRequest,
   ): Promise<HelloAssoCheckoutResponse> {
@@ -107,9 +84,8 @@ export class HelloAssoService {
     const id = Number((response as any)?.id);
     const redirectUrl = String((response as any)?.redirectUrl ?? '');
     if (!id || !redirectUrl) {
-      throw new InternalServerErrorException(
-        `Réponse HelloAsso invalide : ${JSON.stringify(response)}`,
-      );
+      this.logger.error('[HELLOASSO] réponse checkout invalide');
+      throw new InternalServerErrorException('Réponse HelloAsso invalide');
     }
 
     return { id, redirectUrl };
@@ -195,13 +171,19 @@ export class HelloAssoService {
     });
     const responseText = await response.text();
     if (!response.ok) {
-      this.logger.error(responseText);
+      this.logger.error(`[HELLOASSO] OAuth -> ${response.status}`);
       throw new InternalServerErrorException(
-        `Erreur token HelloAsso ${response.status} : ${responseText}`,
+        `Erreur token HelloAsso (${response.status})`,
       );
     }
 
-    const data = JSON.parse(responseText) as HelloAssoTokenResponse;
+    let data: HelloAssoTokenResponse;
+    try {
+      data = JSON.parse(responseText) as HelloAssoTokenResponse;
+    } catch {
+      throw new InternalServerErrorException('Réponse OAuth HelloAsso non JSON');
+    }
+
     if (!data.access_token) {
       throw new InternalServerErrorException(
         'Réponse HelloAsso invalide : access_token absent',
@@ -234,8 +216,7 @@ export class HelloAssoService {
     const text = await response.text();
     if (!response.ok) {
       this.logger.error(`[HELLOASSO] ${method} ${url} -> ${response.status}`);
-      this.logger.error(text);
-      const message = this.extractHelloAssoError(text);
+      const message = this.extractHelloAssoError(text, response.status);
       throw new InternalServerErrorException(message);
     }
 
@@ -318,19 +299,20 @@ export class HelloAssoService {
     return `${frontUrl}${normalizedPath}`;
   }
 
-  private extractHelloAssoError(text: string): string {
+  private extractHelloAssoError(text: string, status: number): string {
     try {
       const parsed = JSON.parse(text);
       const messages = Array.isArray(parsed?.errors)
         ? parsed.errors
             .map((error: any) => String(error?.message ?? '').trim())
             .filter(Boolean)
+            .slice(0, 3)
         : [];
       if (messages.length) return `HelloAsso : ${messages.join(' · ')}`;
     } catch {
-      // Le corps brut est conservé ci-dessous.
+      // Ne jamais renvoyer ni journaliser le corps brut d'une erreur externe.
     }
-    return `Erreur HelloAsso : ${text || 'réponse vide'}`;
+    return `Erreur HelloAsso (${status})`;
   }
 
   private collectStateValues(payload: unknown): string[] {

@@ -18,11 +18,8 @@ export class SeanceApiService {
     dateFin: Date,
     jourSemaine: string,
   ): Promise<number[]> {
-    // On envoie des dates calendaires et non des Date sérialisées en UTC.
-    // Une date saisie à minuit en Europe/Paris pouvait sinon devenir la veille,
-    // ce qui excluait artificiellement les bornes exactes de la saison.
     const payload = {
-      seances: dto,
+      seances: this.toPayload(dto),
       dateDebut: this.toDateOnly(dateDebut),
       dateFin: this.toDateOnly(dateFin),
       jourSemaine,
@@ -35,11 +32,11 @@ export class SeanceApiService {
   }
 
   create(dto: CreateSeanceDto): Promise<Seance> {
-    return this.api.POST<Seance>(this.base, dto);
+    return this.api.POST<Seance>(this.base, this.toPayload(dto));
   }
 
   update(id: number, dto: UpdateSeanceDto): Promise<Seance> {
-    return this.api.POST<Seance>(`${this.base}/${id}/update`, dto);
+    return this.api.POST<Seance>(`${this.base}/${id}/update`, this.toPayload(dto));
   }
 
   remove(id: number): Promise<void> {
@@ -49,6 +46,36 @@ export class SeanceApiService {
   get_seance_by_ids(ids: number[]): Promise<Seance[]> {
     const url = `${this.base}/liste_by_ids`;
     return this.api.POST<Seance[]>(url, ids);
+  }
+
+  private toPayload(dto: any): Record<string, unknown> {
+    return {
+      saison_id: dto?.saison_id,
+      cours: dto?.cours,
+      label: dto?.label,
+      type_seance: dto?.type_seance,
+      date_seance: this.normalizeDate(dto?.date_seance),
+      heure_debut: dto?.heure_debut,
+      duree_seance: dto?.duree_seance,
+      lieu_id: dto?.lieu_id,
+      statut: dto?.statut,
+      age_minimum: dto?.age_minimum,
+      age_maximum: dto?.age_maximum,
+      place_maximum: dto?.place_maximum,
+      essai_possible: dto?.essai_possible,
+      nb_essai_possible: dto?.nb_essai_possible,
+      info_seance: dto?.info_seance,
+      convocation_nominative: dto?.convocation_nominative,
+      afficher_present: dto?.afficher_present,
+      appointment: dto?.appointment ?? dto?.rdv,
+      est_limite_age_minimum: dto?.est_limite_age_minimum,
+      est_limite_age_maximum: dto?.est_limite_age_maximum,
+      est_place_maximum: dto?.est_place_maximum,
+    };
+  }
+
+  private normalizeDate(value: unknown): unknown {
+    return value instanceof Date ? this.toDateOnly(value) : value;
   }
 
   private toDateOnly(value: Date): string {
