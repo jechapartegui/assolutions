@@ -138,120 +138,115 @@ export class PreuveMedicaleService {
       (item) => item.type_preuve === 'CERTIFICAT',
     );
 
-    const age = this.civilAge(personne.date_naissance, saison.date_debut);
+    // La validité du certificat s'apprécie au jour où le dossier est évalué
+    // (donc au jour de l'inscription), et non au premier jour de la saison.
+    const today = new Date().toISOString().slice(0, 10);
     const currentSeasonQs =
-      activeQs &&
-      activeQs.saison_id === saison.id &&
-      activeQs.qs_reponses_negatives === true
-        ? activeQs
+      activeQs && activeQs.saison_id === saison.id ? activeQs : undefined;
+    const negativeCurrentSeasonQs =
+      currentSeasonQs?.qs_reponses_negatives === true
+        ? currentSeasonQs
         : undefined;
-    const certificates = activeCertificate ? [activeCertificate] : [];
-    const recentCertificate = certificates.find((item) =>
-      this.isWithinMonths(item.date_document, saison.date_debut, 12),
-    );
-    const competitionCertificates = certificates.filter(
-      (item) => item.valable_competition,
-    );
-    const recentCompetitionCertificate = competitionCertificates.find((item) =>
-      this.isWithinMonths(item.date_document, saison.date_debut, 12),
-    );
-    const referenceCompetitionCertificate = competitionCertificates.find((item) =>
-      this.isWithinMonths(item.date_document, saison.date_debut, 36),
-    );
 
-    if (dto.type_licence === 'LOISIR') {
-      if (currentSeasonQs) {
-        return {
-          eligible: true,
-          statut: 'QS_VALIDE',
-          message: 'Questionnaire de santé de la saison validé',
-          certificat: recentCertificate ?? null,
-          qs_sport: currentSeasonQs,
-        };
-      }
-      if (recentCertificate) {
-        return {
-          eligible: true,
-          statut: 'CERTIFICAT_VALIDE',
-          message: 'Certificat médical récent enregistré',
-          certificat: recentCertificate,
-          qs_sport: null,
-        };
-      }
-      return {
-        eligible: false,
-        statut: 'SITUATION_MEDICALE_MANQUANTE',
-        message:
-          'Renseigne le questionnaire de santé de la saison ou un certificat médical récent',
-        certificat: null,
-        qs_sport: null,
-      };
+    const recentCertificate =
+      activeCertificate &&
+      this.isWithinMonths(activeCertificate.date_document, today, 12)
+        ? activeCertificate
+        : undefined;
+    const referenceCertificate =
+      activeCertificate &&
+      this.isWithinMonths(activeCertificate.date_document, today, 36)
+        ? activeCertificate
+        : undefined;
+    const recentCompetitionCertificate =
+      recentCertificate?.valable_competition === true
+        ? recentCertificate
+        : undefined;
+    const referenceCompetitionCertificate =
+      referenceCertificate?.valable_competition === true
+        ? referenceCertificate
+        : undefined;
+
+    // Dossier médical général : trois parcours sont valides.
+    // 1. certificat médical récent ;
+    // 2. certificat de référence de moins de 3 ans + QS Sport annuel négatif ;
+    // 3. QS Sport annuel négatif seul.
+    let dossierEligible = false;
+    let dossierStatut = 'SITUATION_MEDICALE_MANQUANTE';
+    let dossierMessage =
+      'Renseigne le questionnaire de santé de la saison ou un certificat médical';
+
+    if (recentCertificate) {
+      dossierEligible = true;
+      dossierStatut = 'CERTIFICAT_VALIDE';
+      dossierMessage = 'Certificat médical récent enregistré';
+    } else if (referenceCertificate && negativeCurrentSeasonQs) {
+      dossierEligible = true;
+      dossierStatut = 'CERTIFICAT_REFERENCE_ET_QS';
+      dossierMessage =
+        'Certificat de moins de 3 ans et questionnaire de santé annuel validés';
+    } else if (negativeCurrentSeasonQs) {
+      dossierEligible = true;
+      dossierStatut = 'QS_VALIDE';
+      dossierMessage = 'Questionnaire de santé de la saison validé';
+    } else if (
+      currentSeasonQs &&
+      currentSeasonQs.qs_reponses_negatives === false
+    ) {
+      dossierStatut = 'QS_POSITIF_CERTIFICAT_REQUIS';
+      dossierMessage =
+        'Le questionnaire comporte une réponse positive : ajoute un certificat médical récent';
+    } else if (referenceCertificate) {
+      dossierStatut = 'QS_MANQUANT';
+      dossierMessage =
+        'Le certificat a moins de 3 ans : complète le questionnaire de santé de la saison';
     }
 
-    if (age < 18) {
-      if (currentSeasonQs) {
-        return {
-          eligible: true,
-          statut: 'QS_VALIDE',
-          message: 'Questionnaire de santé de la saison validé',
-          certificat: referenceCompetitionCertificate ?? null,
-          qs_sport: currentSeasonQs,
-        };
-      }
-      if (recentCompetitionCertificate) {
-        return {
-          eligible: true,
-          statut: 'CERTIFICAT_VALIDE',
-          message: 'Certificat médical récent valide pour la compétition',
-          certificat: recentCompetitionCertificate,
-          qs_sport: null,
-        };
-      }
-      return {
-        eligible: false,
-        statut: 'PREUVE_MANQUANTE',
-        message:
-          'Questionnaire de santé négatif requis ; en cas de réponse positive, fournir un certificat médical récent',
-        certificat: referenceCompetitionCertificate ?? null,
-        qs_sport: null,
-      };
-    }
+    // Compatibilité compétition : le dossier doit réellement comporter un
+    // certificat mentionnant la compétition. Un QS Sport seul reste une preuve
+    // médicale valable pour le dossier, mais ne suffit pas pour ce niveau.
+    let competitionCompatible = false;
+    let competitionStatut = 'CERTIFICAT_COMPETITION_MANQUANT';
+    let competitionMessage =
+      'Un certificat médical compatible avec la pratique en compétition est requis';
 
     if (recentCompetitionCertificate) {
-      return {
-        eligible: true,
-        statut: 'CERTIFICAT_VALIDE',
-        message: 'Certificat médical récent valide pour la compétition',
-        certificat: recentCompetitionCertificate,
-        qs_sport: currentSeasonQs ?? null,
-      };
+      competitionCompatible = true;
+      competitionStatut = 'CERTIFICAT_COMPETITION_VALIDE';
+      competitionMessage =
+        'Certificat médical récent compatible avec la compétition';
+    } else if (
+      referenceCompetitionCertificate &&
+      negativeCurrentSeasonQs
+    ) {
+      competitionCompatible = true;
+      competitionStatut = 'CERTIFICAT_COMPETITION_REFERENCE_ET_QS';
+      competitionMessage =
+        'Certificat compétition de moins de 3 ans et questionnaire de santé annuel validés';
+    } else if (referenceCompetitionCertificate) {
+      competitionStatut = 'QS_COMPETITION_MANQUANT';
+      competitionMessage =
+        'Le certificat compétition a moins de 3 ans : complète le questionnaire de santé de la saison';
+    } else if (activeCertificate) {
+      competitionStatut = 'CERTIFICAT_NON_COMPETITION';
+      competitionMessage =
+        'Le certificat enregistré ne mentionne pas la pratique en compétition';
+    } else if (negativeCurrentSeasonQs) {
+      competitionStatut = 'CERTIFICAT_COMPETITION_MANQUANT';
+      competitionMessage =
+        'Le questionnaire de santé est valide, mais un certificat compatible compétition manque';
     }
-    if (referenceCompetitionCertificate && currentSeasonQs) {
-      return {
-        eligible: true,
-        statut: 'CERTIFICAT_REFERENCE_ET_QS',
-        message:
-          'Certificat de référence encore utilisable et questionnaire de santé annuel validé',
-        certificat: referenceCompetitionCertificate,
-        qs_sport: currentSeasonQs,
-      };
-    }
-    if (referenceCompetitionCertificate) {
-      return {
-        eligible: false,
-        statut: 'QS_MANQUANT',
-        message:
-          'Le certificat de référence est encore utilisable, mais le questionnaire de santé annuel manque',
-        certificat: referenceCompetitionCertificate,
-        qs_sport: null,
-      };
-    }
+
+    const competitionContext = dto.type_licence === 'COMPETITION';
     return {
-      eligible: false,
-      statut: 'CERTIFICAT_MANQUANT',
-      message:
-        'Un certificat médical de moins d’un an mentionnant la pratique en compétition est requis',
-      certificat: null,
+      eligible: competitionContext ? competitionCompatible : dossierEligible,
+      statut: competitionContext ? competitionStatut : dossierStatut,
+      message: competitionContext ? competitionMessage : dossierMessage,
+      dossier_eligible: dossierEligible,
+      compatible_competition: competitionCompatible,
+      message_dossier: dossierMessage,
+      message_competition: competitionMessage,
+      certificat: activeCertificate ?? null,
       qs_sport: currentSeasonQs ?? null,
     };
   }
@@ -340,20 +335,6 @@ export class PreuveMedicaleService {
     const expiry = new Date(documentDate);
     expiry.setMonth(expiry.getMonth() + months);
     return documentDate <= reference && expiry >= reference;
-  }
-
-  private civilAge(birthDate: string, referenceDate: string) {
-    const birth = new Date(`${birthDate}T00:00:00`);
-    const reference = new Date(`${referenceDate}T00:00:00`);
-    let age = reference.getFullYear() - birth.getFullYear();
-    if (
-      reference.getMonth() < birth.getMonth() ||
-      (reference.getMonth() === birth.getMonth() &&
-        reference.getDate() < birth.getDate())
-    ) {
-      age -= 1;
-    }
-    return age;
   }
 
   private text(value: string | null | undefined) {
