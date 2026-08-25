@@ -1,7 +1,7 @@
-import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCoursDto {
-    @IsString()
+  @IsString()
   @MaxLength(255)
   nom: string;
 
@@ -115,4 +115,9 @@ export class UpdateCoursDto {
   @IsString()
   @MaxLength(255)
   appointment?: string | null;
+}
+
+export class UpdateCoursSerieDto extends UpdateCoursDto {
+  @IsDateString()
+  fromDate: string;
 }

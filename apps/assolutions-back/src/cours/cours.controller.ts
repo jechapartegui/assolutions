@@ -3,7 +3,7 @@ import { AccessControlService } from '../common/access-control.service';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
-import { CreateCoursDto, UpdateCoursDto } from './cours.dto';
+import { CreateCoursDto, UpdateCoursDto, UpdateCoursSerieDto } from './cours.dto';
 import { CoursService } from './cours.service';
 
 @Controller('cours')
@@ -14,14 +14,14 @@ export class CoursController {
   ) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('saison/:saison_id')
-  async list(
+  @Get('saison/:saisonId')
+  async listBySaison(
     @Req() req: any,
-    @Param('saison_id', ParseIntPipe) saisonId: number,
+    @Param('saisonId', ParseIntPipe) saisonId: number,
     @ProjectId() projectId: number,
   ) {
     await this.access.assertAccountHasProjectContext(req.user.id, projectId);
-    return this.service.listForProject(saisonId, projectId);
+    return this.service.listForSaison(saisonId, projectId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -58,9 +58,24 @@ export class CoursController {
     return this.service.update(id, dto, projectId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/serie')
+  async updateSerie(
+    @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+    @Body() dto: UpdateCoursSerieDto,
+  ) {
+    await this.access.assertProjectStaff(req.user.id, projectId);
+    return this.service.updateSerie(id, dto, projectId);
+  }
+
   @UseGuards(JwtAuthGuard, ProjectAdminGuard)
   @Post(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
     return this.service.remove(id, projectId);
   }
 }
