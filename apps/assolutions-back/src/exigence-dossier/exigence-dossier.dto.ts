@@ -25,6 +25,14 @@ export class ExigencePorteeDto {
   @IsString()
   @MaxLength(100)
   cible_code?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  obligatoire_override?: boolean | null;
+
+  @IsOptional()
+  @IsBoolean()
+  bloquante_override?: boolean | null;
 }
 
 export class SaveExigenceDossierDto {
