@@ -5,7 +5,7 @@
   </div>
 
   <div class="notification is-light is-size-7 mt-3 mb-3" i18n>
-    <strong>Preuve médicale acceptée :</strong> un certificat médical récent, un certificat de moins de 3 ans accompagné du QS Sport de la saison, ou le QS Sport seul. Pour une exigence compétition, le certificat doit mentionner la pratique en compétition.
+    <strong>Preuve médicale acceptée :</strong> un certificat médical récent, un certificat de moins de 3 ans accompagné du QS Sport de la saison, ou le QS Sport seul. Pour une exigence compétition, un certificat doit faire partie du parcours valide.
   </div>
 
   <div class="medical-history" *ngIf="showHistory && proofs.length">
@@ -53,13 +53,6 @@
       <div class="field" *ngIf="type === 'CERTIFICAT'">
         <label class="label" i18n>RPPS</label>
         <input class="input" [(ngModel)]="rpps" />
-      </div>
-
-      <div class="field" *ngIf="type === 'CERTIFICAT'">
-        <label class="checkbox checkbox-card" i18n>
-          <input type="checkbox" [(ngModel)]="competition" />
-          Le certificat mentionne la pratique en compétition
-        </label>
       </div>
 
       <div class="field medical-file-field">
