@@ -30,7 +30,12 @@
         "tsConfig": "apps/assolutions-front/tsconfig.app.json",
         "assets": [
           "apps/assolutions-front/src/favicon.ico",
-          "apps/assolutions-front/src/assets"
+          "apps/assolutions-front/src/assets",
+          {
+            "glob": "**/*",
+            "input": "tutos",
+            "output": "tutos"
+          }
         ],
         "styles": [
           "apps/assolutions-front/src/styles.css",
