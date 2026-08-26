@@ -8,11 +8,13 @@ import { AppStore } from './app.store';
 import { distinctUntilChanged, filter, map, startWith, Subscription } from 'rxjs';
 import { MenuType } from '../store/session.store';
 
+type HelpAudience = 'USER' | 'PROF' | 'ADMIN';
+
 type HelpTopic = {
   key: string;
   label: string;
-  staffOnly?: boolean;
-  url?: string | null;
+  audience: HelpAudience;
+  url: string;
 };
 
 @Component({
@@ -33,13 +35,113 @@ export class AppComponent implements OnInit, OnDestroy {
   defaultProjectLabel = $localize`Projet`;
 
   readonly helpTopics: HelpTopic[] = [
-    { key: 'mon-compte', label: $localize`Gérer mon compte` },
-    { key: 'presences', label: $localize`Gérer mes présences` },
-    { key: 'inscriptions', label: $localize`Gérer mes inscriptions` },
-    { key: 'adherents', label: $localize`Gérer les adhérents`, staffOnly: true },
-    { key: 'seances-cours', label: $localize`Gérer mes séances / cours`, staffOnly: true },
-    { key: 'groupes', label: $localize`Gérer mes groupes`, staffOnly: true },
-    { key: 'deroulement-seance', label: $localize`Déroulement d’une séance`, staffOnly: true },
+    // Utilisateur
+    {
+      key: 'user-mon-compte',
+      label: $localize`Mon compte`,
+      audience: 'USER',
+      url: 'tutos/01_Aide_utilisateur_Mon_compte.pdf',
+    },
+    {
+      key: 'user-personne',
+      label: $localize`Créer ou modifier une personne`,
+      audience: 'USER',
+      url: 'tutos/02_Aide_utilisateur_Personne.pdf',
+    },
+    {
+      key: 'user-inscription',
+      label: $localize`Inscription et paiement`,
+      audience: 'USER',
+      url: 'tutos/03_Aide_utilisateur_Inscription_et_paiement.pdf',
+    },
+    {
+      key: 'user-seances',
+      label: $localize`Séances, présences et essais`,
+      audience: 'USER',
+      url: 'tutos/04_Aide_utilisateur_Seances_et_essais.pdf',
+    },
+
+    // Professeur
+    {
+      key: 'prof-adherents',
+      label: $localize`Gérer les adhérents`,
+      audience: 'PROF',
+      url: 'tutos/01_Aide_prof_Adherents.pdf',
+    },
+    {
+      key: 'prof-groupes',
+      label: $localize`Gérer les groupes`,
+      audience: 'PROF',
+      url: 'tutos/02_Aide_prof_Groupes.pdf',
+    },
+    {
+      key: 'prof-cours-seances',
+      label: $localize`Cours et séances`,
+      audience: 'PROF',
+      url: 'tutos/03_Aide_prof_Cours_et_seances.pdf',
+    },
+    {
+      key: 'prof-piloter-seance',
+      label: $localize`Piloter une séance`,
+      audience: 'PROF',
+      url: 'tutos/04_Aide_prof_Piloter_une_seance.pdf',
+    },
+
+    // Administrateur
+    {
+      key: 'admin-centre-pilotage',
+      label: $localize`Centre de pilotage`,
+      audience: 'ADMIN',
+      url: 'tutos/01_Aide_admin_Centre_de_pilotage.pdf',
+    },
+    {
+      key: 'admin-saisons',
+      label: $localize`Gérer les saisons`,
+      audience: 'ADMIN',
+      url: 'tutos/02_Aide_admin_Saisons.pdf',
+    },
+    {
+      key: 'admin-tarifs',
+      label: $localize`Tarifs d’inscription`,
+      audience: 'ADMIN',
+      url: 'tutos/03_Aide_admin_Tarifs_inscription.pdf',
+    },
+    {
+      key: 'admin-codes-promo',
+      label: $localize`Codes promotionnels`,
+      audience: 'ADMIN',
+      url: 'tutos/04_Aide_admin_Codes_promotionnels.pdf',
+    },
+    {
+      key: 'admin-exigences',
+      label: $localize`Exigences des dossiers`,
+      audience: 'ADMIN',
+      url: 'tutos/05_Aide_admin_Exigences_dossiers.pdf',
+    },
+    {
+      key: 'admin-professeurs-contrats',
+      label: $localize`Professeurs et contrats`,
+      audience: 'ADMIN',
+      url: 'tutos/06_Aide_admin_Professeurs_et_contrats.pdf',
+    },
+    {
+      key: 'admin-lieux',
+      label: $localize`Gérer les lieux`,
+      audience: 'ADMIN',
+      url: 'tutos/07_Aide_admin_Lieux.pdf',
+    },
+    {
+      key: 'admin-finances',
+      label: $localize`Gérer les finances`,
+      audience: 'ADMIN',
+      url: 'tutos/08_Aide_admin_Finances.pdf',
+    },
+    {
+      key: 'admin-communication',
+      label: $localize`Communication`,
+      audience: 'ADMIN',
+      url: 'tutos/09_Aide_admin_Communication.pdf',
+    },
   ];
 
   @ViewChild(NotifJechaComponent, { static: true })
@@ -61,8 +163,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   get visibleHelpTopics(): HelpTopic[] {
-    const canSeeStaffHelp = this.store.isProf() || this.store.isAdmin();
-    return this.helpTopics.filter((topic) => !topic.staffOnly || canSeeStaffHelp);
+    if (this.store.isAdmin()) {
+      return this.helpTopics.filter((topic) => topic.audience === 'ADMIN');
+    }
+
+    if (this.store.isProf()) {
+      return this.helpTopics.filter(
+        (topic) => topic.audience === 'USER' || topic.audience === 'PROF',
+      );
+    }
+
+    return this.helpTopics.filter((topic) => topic.audience === 'USER');
   }
 
   ngOnInit(): void {
@@ -115,10 +226,8 @@ export class AppComponent implements OnInit, OnDestroy {
     event?.stopPropagation();
     this.helpOpen = false;
 
-    // Les PDF seront branchés ici : il suffira de renseigner l'URL du sujet.
-    if (topic.url) {
-      window.open(topic.url, '_blank', 'noopener,noreferrer');
-    }
+    const target = new URL(topic.url, document.baseURI).toString();
+    window.open(target, '_blank', 'noopener,noreferrer');
   }
 
   @HostListener('document:click')
