@@ -92,7 +92,7 @@
         },
         "development": {
           "optimization": false,
-          "buildOptimizer": true,
+          "buildOptimizer": false,
           "vendorChunk": true,
           "extractLicenses": false,
           "sourceMap": true,
