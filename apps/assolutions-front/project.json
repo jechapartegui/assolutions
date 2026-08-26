@@ -34,7 +34,7 @@
           {
             "glob": "**/*.pdf",
             "input": "tutos",
-            "output": "tutos"
+            "output": "/tutos/"
           }
         ],
         "styles": [
@@ -92,7 +92,7 @@
         },
         "development": {
           "optimization": false,
-          "buildOptimizer": false,
+          "buildOptimizer": true,
           "vendorChunk": true,
           "extractLicenses": false,
           "sourceMap": true,
