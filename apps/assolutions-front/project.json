@@ -32,7 +32,7 @@
           "apps/assolutions-front/src/favicon.ico",
           "apps/assolutions-front/src/assets",
           {
-            "glob": "**/*",
+            "glob": "**/*.pdf",
             "input": "tutos",
             "output": "tutos"
           }
