@@ -15,8 +15,10 @@
 .flags-column { display: flex; align-items: center; padding-top: 2.2rem; }
 .scope-editor { margin-top: .75rem; padding: .9rem; border: 1px solid rgba(15,23,42,.09); border-radius: 13px; background: #fff; }
 .scope-editor-header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
-.scope-row { display: grid; grid-template-columns: 190px minmax(180px, 1fr) auto; gap: .55rem; align-items: center; margin-top: .65rem; }
+.scope-row { display: grid; grid-template-columns: minmax(145px,.8fr) minmax(160px,1.2fr) minmax(155px,1fr) minmax(145px,1fr) auto; gap: .55rem; align-items: center; margin-top: .65rem; }
+.scope-row > .select, .scope-row > .select select { width: 100%; }
 .scope-general-label { color: #64748b; font-size: .85rem; }
 .select.is-expanded, .select.is-expanded select { width: 100%; }
-@media (max-width: 1000px) { .requirements-content { grid-template-columns: 1fr; } .requirements-list { border-right: 0; border-bottom: 1px solid rgba(15,23,42,.08); } }
+@media (max-width: 1200px) { .scope-row { grid-template-columns: minmax(150px,1fr) minmax(180px,1.4fr) auto; } .scope-row > .select:nth-of-type(3), .scope-row > .select:nth-of-type(4) { grid-column: span 1; } }
+@media (max-width: 1000px) { .requirements-content { grid-template-columns: 1fr; } .requirements-list { border-right: 0; border-bottom: 1px solid rgba(15,23,42,.08); } .scope-row { grid-template-columns: minmax(150px,.8fr) minmax(180px,1.2fr) minmax(155px,1fr) minmax(145px,1fr) auto; } }
 @media (max-width: 767px) { :host { height: calc(100dvh - var(--mobile-footer-h, 64px)); } .requirements-page { padding: .55rem .55rem calc(var(--mobile-footer-h, 64px) + 1rem); } .requirements-header, .requirement-item, .requirements-toolbar, .scope-editor-header { align-items: stretch; flex-direction: column; } .scope-row { grid-template-columns: 1fr; } .flags-column { padding-top: .75rem; flex-direction: column; align-items: flex-start; gap: .5rem; } }

@@ -39,7 +39,6 @@ export class MedicalProofEditorComponent implements OnChanges {
   qsNegative = true;
   doctorName = '';
   rpps = '';
-  competition = false;
   comment = '';
 
   selectedFileName = '';
@@ -54,7 +53,6 @@ export class MedicalProofEditorComponent implements OnChanges {
       changes['seasonId'] ||
       changes['licenceType']
     ) {
-      this.competition = this.licenceType === 'COMPETITION';
       await this.reload();
     }
   }
@@ -151,8 +149,9 @@ export class MedicalProofEditorComponent implements OnChanges {
         date_document: this.date,
         qs_reponses_negatives:
           this.type === 'QS_SPORT' ? this.qsNegative : null,
-        valable_competition:
-          this.type === 'CERTIFICAT' && this.competition,
+        // Un certificat fait désormais partie des parcours compatibles
+        // compétition ; le back applique également cette règle.
+        valable_competition: this.type === 'CERTIFICAT',
         medecin_nom: this.type === 'CERTIFICAT' ? this.doctorName.trim() : null,
         medecin_rpps: this.type === 'CERTIFICAT' ? this.rpps.trim() : null,
         document_id: document.id,
@@ -174,9 +173,7 @@ export class MedicalProofEditorComponent implements OnChanges {
         ? $localize`:@@medical.negativeQuestionnaire:Questionnaire de santé négatif`
         : $localize`:@@medical.positiveQuestionnaire:Questionnaire avec réponse positive`;
     }
-    return proof.valable_competition
-      ? $localize`:@@medical.competitionCertificate:Certificat médical compétition`
-      : $localize`:@@medical.certificate:Certificat médical`;
+    return $localize`:@@medical.certificate:Certificat médical`;
   }
 
   private resetForm(): void {
@@ -185,7 +182,6 @@ export class MedicalProofEditorComponent implements OnChanges {
     this.qsNegative = true;
     this.doctorName = '';
     this.rpps = '';
-    this.competition = this.licenceType === 'COMPETITION';
     this.comment = '';
     this.clearFile();
   }

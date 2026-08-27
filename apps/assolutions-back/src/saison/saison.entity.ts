@@ -23,6 +23,13 @@ export class SaisonEntity {
   @Column({ type: 'int' })
   saison_precedente: number;
 
+  /**
+   * false : l'adhérent choisit d'abord ses groupes, puis un tarif compatible.
+   * true  : l'adhérent choisit d'abord son tarif, puis les groupes accessibles.
+   */
+  @Column({ type: 'boolean', default: false })
+  tarif_avant_groupes: boolean;
+
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_creation: Date;
 

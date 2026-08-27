@@ -82,6 +82,10 @@ export class SessionStore {
   readonly isVisible = computed(() => !!this.rights()?.visible);
   readonly hasProjet = computed(() => this.projects().length > 0);
 
+  readonly saisonContextId = computed(() =>
+    this.isAdmin() ? this.saisonConsultationId() : this.saisonActiveId(),
+  );
+
   setSession(session: Session): void {
     const selectedProjectId = this.cleanSelectedProjectId(
       session.selectedProjectId ?? null,

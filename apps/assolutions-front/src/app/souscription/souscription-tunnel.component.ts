@@ -17,6 +17,7 @@ import {
 import { environment } from '../../environments/environment';
 import { DossierPersonneApiService } from '../../services/dossier-personne-api.service';
 import { ErrorService } from '../../services/error.service';
+import { SaisonApiService } from '../../services/saison-api.service';
 import { SouscriptionApiService } from '../../services/souscription-api.service';
 import { AppStore } from '../app.store';
 
@@ -72,6 +73,7 @@ export class SouscriptionTunnelComponent implements OnInit {
   returnMessage = '';
   returnConfirmed = false;
   isReturnMode = false;
+  tarifAvantGroupes = false;
 
   adminPersonId = 0;
   adminAccountId = 0;
@@ -87,6 +89,7 @@ export class SouscriptionTunnelComponent implements OnInit {
   constructor(
     private readonly api: SouscriptionApiService,
     private readonly dossierApi: DossierPersonneApiService,
+    private readonly saisonApi: SaisonApiService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     public readonly appStore: AppStore,
@@ -183,9 +186,18 @@ export class SouscriptionTunnelComponent implements OnInit {
   }
 
   eligibleGroups(person: SouscriptionPersonneContexte): SouscriptionGroupeOption[] {
-    return person.groupes
+    const eligible = person.groupes
       .filter((group) => group.visible && group.eligible && !group.complet)
       .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+
+    if (!this.tarifAvantGroupes) return eligible;
+
+    const tariff = this.tariffFor(person);
+    if (!tariff) return [];
+    if (tariff.general) return eligible;
+
+    const allowed = new Set(tariff.groupe_ids);
+    return eligible.filter((group) => allowed.has(group.id));
   }
 
   hiddenGroupCount(person: SouscriptionPersonneContexte): number {
@@ -197,11 +209,21 @@ export class SouscriptionTunnelComponent implements OnInit {
     group: SouscriptionGroupeOption,
   ): void {
     if (!group.eligible || group.complet) return;
+    if (
+      this.tarifAvantGroupes &&
+      !this.eligibleGroups(person).some((item) => item.id === group.id)
+    ) {
+      return;
+    }
+
     const current = this.choice(person.id);
     const ids = new Set(current.groupIds);
     ids.has(group.id) ? ids.delete(group.id) : ids.add(group.id);
     current.groupIds = Array.from(ids);
-    this.ensureCompatibleTariff(person);
+
+    if (!this.tarifAvantGroupes) {
+      this.ensureCompatibleTariff(person);
+    }
     this.storeState();
   }
 
@@ -210,11 +232,13 @@ export class SouscriptionTunnelComponent implements OnInit {
   }
 
   compatibleTariffs(person: SouscriptionPersonneContexte): SouscriptionTarifOption[] {
+    const eligible = person.tarifs.filter((tariff) => tariff.eligible);
     const selectedGroups = this.choice(person.id).groupIds;
-    return person.tarifs
-      .filter((tariff) => tariff.eligible)
+
+    return eligible
       .filter(
         (tariff) =>
+          this.tarifAvantGroupes ||
           tariff.general ||
           selectedGroups.every((groupId) => tariff.groupe_ids.includes(groupId)),
       )
@@ -226,6 +250,9 @@ export class SouscriptionTunnelComponent implements OnInit {
 
   selectTariff(person: SouscriptionPersonneContexte, tariffId: number): void {
     this.choice(person.id).tariffId = Number(tariffId);
+    if (this.tarifAvantGroupes) {
+      this.ensureGroupsCompatibleWithTariff(person);
+    }
     this.installments = Math.min(this.installments, this.maxInstallments);
     this.clearPromoResult();
     this.storeState();
@@ -349,14 +376,22 @@ export class SouscriptionTunnelComponent implements OnInit {
       );
     }
     if (this.step === 2) {
-      return this.selectedPeople.every(
-        (person) => this.choice(person.id).groupIds.length > 0,
-      );
+      return this.tarifAvantGroupes
+        ? this.selectedPeople.every(
+            (person) => this.choice(person.id).tariffId != null,
+          )
+        : this.selectedPeople.every(
+            (person) => this.choice(person.id).groupIds.length > 0,
+          );
     }
     if (this.step === 3) {
-      return this.selectedPeople.every(
-        (person) => this.choice(person.id).tariffId != null,
-      );
+      return this.tarifAvantGroupes
+        ? this.selectedPeople.every(
+            (person) => this.choice(person.id).groupIds.length > 0,
+          )
+        : this.selectedPeople.every(
+            (person) => this.choice(person.id).tariffId != null,
+          );
     }
     if (this.step === 4) {
       return this.selectedPeople.every(
@@ -606,6 +641,9 @@ export class SouscriptionTunnelComponent implements OnInit {
   private async loadContext(): Promise<void> {
     await this.run('Chargement du tunnel', async () => {
       const seasonId = Number(this.appStore.saison_active_id());
+      const season = await this.saisonApi.get(seasonId);
+      this.tarifAvantGroupes = !!season.tarif_avant_groupes;
+
       if (this.adminPersonId > 0 && this.appStore.isAdmin()) {
         const adminContext = await this.api.adminContextFromPerson(
           seasonId,
@@ -660,6 +698,15 @@ export class SouscriptionTunnelComponent implements OnInit {
     this.clearPromoResult();
   }
 
+  private ensureGroupsCompatibleWithTariff(
+    person: SouscriptionPersonneContexte,
+  ): void {
+    const allowed = new Set(this.eligibleGroups(person).map((group) => group.id));
+    this.choice(person.id).groupIds = this.choice(person.id).groupIds.filter((id) =>
+      allowed.has(id),
+    );
+  }
+
   private isPayerValid(): boolean {
     return (
       this.payerMode != null &&
@@ -704,6 +751,14 @@ export class SouscriptionTunnelComponent implements OnInit {
       this.payerLastName = state.payerLastName ?? '';
       this.payerEmail = state.payerEmail ?? '';
       this.step = Math.max(1, Math.min(5, Number(state.step || 1)));
+
+      if (this.tarifAvantGroupes) {
+        this.selectedPeople.forEach((person) =>
+          this.ensureGroupsCompatibleWithTariff(person),
+        );
+      } else {
+        this.selectedPeople.forEach((person) => this.ensureCompatibleTariff(person));
+      }
     } catch {
       this.clearStoredState();
     }

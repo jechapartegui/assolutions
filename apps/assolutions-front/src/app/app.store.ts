@@ -14,7 +14,8 @@ export class AppStore {
   get projects() { return this.sessionStore.projects; }
   get selectedProject() { return this.sessionStore.selectedProject; }
   get selectedProjectId() { return this.sessionStore.selectedProjectId; }
-  get saison_active_id() { return this.sessionStore.saisonActiveId; }
+  get saison_active_id() { return this.sessionStore.saisonContextId; }
+  get saison_active_reelle_id() { return this.sessionStore.saisonActiveId; }
   get saison_active() { return this.sessionStore.saisonActive; }
   get saison_consultation_id() { return this.sessionStore.saisonConsultationId; }
   get rights() { return this.sessionStore.rights; }

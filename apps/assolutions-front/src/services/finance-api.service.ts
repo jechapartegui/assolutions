@@ -20,6 +20,8 @@ import {
 } from '@shared/lib/operation.interface';
 
 import { FluxFinancier } from '@shared/lib/flux-financier.interface';
+import { AppStore } from '../app/app.store';
+import { FluxFinancierApiService } from './flux-financiers-api.service';
 
 export interface BudgetRealiseItem {
   classe_comptable_id: number | null;
@@ -36,7 +38,11 @@ export interface CreateFluxFromOperationResult {
 export class FinanceApiService {
   private readonly base = '/finance';
 
-  constructor(private api: ApiClientService) {}
+  constructor(
+    private api: ApiClientService,
+    private store: AppStore,
+    private fluxApi: FluxFinancierApiService,
+  ) {}
 
   listClasses(pays = 'FR', lang = 'fr'): Promise<ClasseComptable[]> {
     return this.api.GET<ClasseComptable[]>(
@@ -96,12 +102,29 @@ export class FinanceApiService {
     return this.api.POST<void>(`${this.base}/budget-ligne/${id}/delete`, {});
   }
 
-  listOperations(fluxFinancierId?: number): Promise<Operation[]> {
-    const url = fluxFinancierId
-      ? `${this.base}/operation?flux_financier_id=${fluxFinancierId}`
-      : `${this.base}/operation`;
+  async listOperations(fluxFinancierId?: number): Promise<Operation[]> {
+    if (fluxFinancierId) {
+      return this.api.GET<Operation[]>(
+        `${this.base}/operation?flux_financier_id=${fluxFinancierId}`,
+      );
+    }
 
-    return this.api.GET<Operation[]>(url);
+    const operations = await this.api.GET<Operation[]>(`${this.base}/operation`);
+    const saisonId = Number(this.store.saison_active_id() ?? 0);
+
+    if (!saisonId) return operations ?? [];
+
+    // L'API historique des opérations n'a pas de filtre saison. On limite donc
+    // explicitement les opérations aux flux de la saison de travail courante.
+    // En mode ADMIN, cette saison est celle choisie dans menu-admin.
+    const flux = await this.fluxApi.list(saisonId, true);
+    const fluxIds = new Set((flux ?? []).map((item) => Number(item.id)));
+
+    return (operations ?? []).filter(
+      (operation) =>
+        operation.flux_financier_id != null &&
+        fluxIds.has(Number(operation.flux_financier_id)),
+    );
   }
 
   createOperation(dto: CreateOperationDto): Promise<Operation> {

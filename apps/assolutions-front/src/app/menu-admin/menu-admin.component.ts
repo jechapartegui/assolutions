@@ -87,7 +87,7 @@ export class MenuAdminComponent implements OnInit {
   }
 
   get activeSaisonId(): number | null {
-    return Number(this.store.saison_active_id() ?? 0) || null;
+    return Number(this.store.saison_active_reelle_id() ?? 0) || null;
   }
 
   get consultationSaisonId(): number | null {

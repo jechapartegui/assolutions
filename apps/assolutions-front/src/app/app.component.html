@@ -172,10 +172,12 @@
                   <div class="dropdown-menu" role="menu">
                     <div class="dropdown-content">
                       <a
-                        href="#"
+                        [href]="topic.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         class="dropdown-item"
                         *ngFor="let topic of visibleHelpTopics"
-                        (click)="openHelpTopic(topic, $event)"
+                        (click)="helpOpen = false"
                       >
                         {{ topic.label }}
                       </a>
@@ -293,10 +295,12 @@
                 <div class="dropdown-menu" role="menu">
                   <div class="dropdown-content">
                     <a
-                      href="#"
+                      [href]="topic.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       class="dropdown-item"
                       *ngFor="let topic of visibleHelpTopics"
-                      (click)="openHelpTopic(topic, $event)"
+                      (click)="helpOpen = false"
                     >
                       {{ topic.label }}
                     </a>
