@@ -35,6 +35,11 @@
             "glob": "**/*.pdf",
             "input": "tutos",
             "output": "/tutos/"
+          },
+          {
+            "glob": "index.html",
+            "input": "tutos",
+            "output": "/tutos/"
           }
         ],
         "styles": [
