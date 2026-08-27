@@ -117,7 +117,7 @@ export class MessageService {
     const clubName = project?.nom?.trim() || 'votre club';
     const frontUrl = this.getFrontUrl();
     const loginUrl = `${frontUrl}/fr/login`;
-    const tutorialsUrl = `${frontUrl}/tutos/`;
+    const tutorialsUrl = `${frontUrl}/fr/tutos/`;
     const displayPerson = personName?.trim() || 'l’adhérent';
 
     await this.sendAutomaticMail({
