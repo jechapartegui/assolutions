@@ -40,6 +40,26 @@
             "glob": "index.html",
             "input": "tutos",
             "output": "/tutos/"
+          },
+          {
+            "glob": "**/*.pdf",
+            "input": "tutos",
+            "output": "/fr/tutos/"
+          },
+          {
+            "glob": "index.html",
+            "input": "tutos",
+            "output": "/fr/tutos/"
+          },
+          {
+            "glob": "**/*.pdf",
+            "input": "tutos",
+            "output": "/en/tutos/"
+          },
+          {
+            "glob": "index.html",
+            "input": "tutos",
+            "output": "/en/tutos/"
           }
         ],
         "styles": [
