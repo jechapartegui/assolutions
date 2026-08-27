@@ -111,18 +111,47 @@ export class MessageService {
     subscriptionId: number,
     projectId?: number,
   ): Promise<void> {
+    const project = projectId
+      ? await this.projectRepo.findOne({ where: { id: projectId } })
+      : null;
+    const clubName = project?.nom?.trim() || 'votre club';
+    const frontUrl = this.getFrontUrl();
+    const loginUrl = `${frontUrl}/fr/login`;
+    const tutorialsUrl = `${frontUrl}/tutos/`;
+    const displayPerson = personName?.trim() || 'l’adhérent';
+
     await this.sendAutomaticMail({
       to: email,
       name: personName || null,
       projectId,
       record: `MAIL_SOUSCRIPTION_OK_${subscriptionId}`,
-      subject: `Inscription confirmée pour ${personName || 'un adhérent'}`,
+      subject: `${clubName} - inscription confirmée pour ${personName || 'un adhérent'}`,
       html: this.automaticTemplate(
-        'Inscription confirmée',
+        `Bienvenue à ${clubName} !`,
         `
-          <p>Le paiement du dossier <strong>#${subscriptionId}</strong> est confirmé.</p>
-          <p>L’inscription de <strong>${this.escapeHtml(personName)}</strong> est finalisée et ses groupes ont été enregistrés.</p>
-          <p>Les éventuelles pièces non bloquantes peuvent encore être complétées depuis Assolutions.</p>
+          <p>Bonne nouvelle : l’inscription de <strong>${this.escapeHtml(displayPerson)}</strong> à <strong>${this.escapeHtml(clubName)}</strong> est bien enregistrée.</p>
+          <p>Le paiement est confirmé et l’inscription est maintenant finalisée.</p>
+
+          <div style="margin:24px 0;padding:16px 18px;background:#f4f7fb;border:1px solid #d8e2ee;border-radius:8px">
+            <strong>Votre accès Assolutions</strong>
+            <p style="margin:8px 0 0">Pour vous connecter, utilisez cette adresse email comme identifiant : <strong>${this.escapeHtml(email)}</strong>.</p>
+          </div>
+
+          ${this.actionButton('Accéder à mon espace Assolutions', loginUrl)}
+
+          <p>Depuis votre espace, vous pourrez notamment consulter vos informations, gérer les personnes rattachées à votre compte, suivre les séances et compléter les éventuelles pièces encore attendues.</p>
+
+          <p><strong>Besoin d’un coup de main ?</strong> Nous avons préparé des tutoriels simples pour :</p>
+          <ul style="padding-left:20px">
+            <li>gérer votre compte ;</li>
+            <li>créer ou modifier une personne ;</li>
+            <li>comprendre l’inscription et le paiement ;</li>
+            <li>gérer les séances, présences et essais.</li>
+          </ul>
+
+          ${this.actionButton('Voir les tutoriels utilisateur', tutorialsUrl)}
+
+          <p style="margin-top:28px">À bientôt au club !</p>
         `,
       ),
     });
@@ -329,6 +358,14 @@ export class MessageService {
 
   private fallbackLink(url: string): string {
     return `<p>Si le bouton ne fonctionne pas, copiez-collez ce lien :</p><p style="word-break:break-all">${this.escapeHtml(url)}</p>`;
+  }
+
+  private getFrontUrl(): string {
+    const value =
+      process.env.FRONT_URL ||
+      process.env.HELLOASSO_FRONT_URL ||
+      'http://localhost:2211';
+    return value.replace(/\/+$/, '');
   }
 
   private normalizeAddress(address: MailAddressVm): MailAddressVm {
