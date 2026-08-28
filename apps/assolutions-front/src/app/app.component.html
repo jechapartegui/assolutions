@@ -177,7 +177,7 @@
                         rel="noopener noreferrer"
                         class="dropdown-item"
                         *ngFor="let topic of visibleHelpTopics"
-                        (click)="helpOpen = false"
+                        (click)="openHelpTopic(topic, $event)"
                       >
                         {{ topic.label }}
                       </a>
@@ -300,7 +300,7 @@
                       rel="noopener noreferrer"
                       class="dropdown-item"
                       *ngFor="let topic of visibleHelpTopics"
-                      (click)="helpOpen = false"
+                      (click)="openHelpTopic(topic, $event)"
                     >
                       {{ topic.label }}
                     </a>
