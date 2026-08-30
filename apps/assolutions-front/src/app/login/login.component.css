@@ -14,6 +14,19 @@
     radial-gradient(ellipse at bottom, rgba(72, 199, 116, 0.12), transparent 55%);
 }
 
+/* Les columns Bulma ont des marges négatives et, dans un parent flex,
+   ne prennent pas toujours toute la largeur. On force un vrai axe centré. */
+.login-wrapper > .columns {
+  width: 100%;
+  margin: 0;
+  justify-content: center;
+}
+
+.login-wrapper > .columns > .column {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .login-card {
   border-radius: 1.25rem;
   border: 1px solid rgba(0, 0, 0, 0.04);
@@ -70,6 +83,16 @@
 
 /* Mobile : un peu moins de padding */
 @media (max-width: 767px) {
+  .login-wrapper {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .login-wrapper > .columns > .column {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .login-card {
     padding: 1.25rem 1rem;
     border-radius: 1rem;
