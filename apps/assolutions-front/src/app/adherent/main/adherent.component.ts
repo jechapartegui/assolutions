@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Saison } from '@shared/index';
 
 import { MultifiltersAdherentPipe } from '../../../filters/multifilters-adherent.pipe';
 import { ErrorService } from '../../../services/error.service';
@@ -14,6 +15,8 @@ import { AppStore } from '../../app.store';
   providers: [MultifiltersAdherentPipe],
 })
 export class AdherentComponent implements OnInit {
+  registrationSeasonId: number | null = null;
+
   constructor(
     public readonly store: AppStore,
     public readonly adherentStore: AdherentStore,
@@ -60,6 +63,48 @@ export class AdherentComponent implements OnInit {
     return count === 1 ? '1 nouveauté' : `${count} nouveautés`;
   }
 
+  get registrationSeasons(): Saison[] {
+    const byId = new Map<number, Saison>();
+
+    for (const season of this.vm.refs?.listeSaison ?? []) {
+      if (season?.id) byId.set(Number(season.id), season);
+    }
+
+    const active = this.store.selectedProject()?.saison_active as Saison | null | undefined;
+    if (active?.id && !byId.has(Number(active.id))) {
+      byId.set(Number(active.id), active);
+    }
+
+    return [...byId.values()].sort((a, b) => Number(b.id) - Number(a.id));
+  }
+
+  get canStartRegistration(): boolean {
+    const person = this.vm.editAdherent;
+    return (
+      this.isAdmin &&
+      !!person &&
+      Number(person.id) > 0 &&
+      !person.archive &&
+      this.registrationSeasons.length > 0
+    );
+  }
+
+  get isAlreadyRegisteredForTargetSeason(): boolean {
+    const seasonId = Number(this.registrationSeasonId ?? 0);
+    if (!seasonId) return false;
+
+    return !!this.vm.editAdherent?.inscriptionsSaison?.some(
+      (registration: any) => Number(registration.saison_id) === seasonId,
+    );
+  }
+
+  get registrationTargetLabel(): string {
+    const season = this.registrationSeasons.find(
+      (item) => Number(item.id) === Number(this.registrationSeasonId),
+    );
+    return season?.nom ?? season?.libelle ?? `Saison ${this.registrationSeasonId ?? ''}`;
+  }
+
   async ngOnInit(): Promise<void> {
     const errorService = ErrorService.instance;
 
@@ -83,7 +128,7 @@ export class AdherentComponent implements OnInit {
         const id = rawId ? Number(rawId) : 0;
 
         if (context === 'MON_COMPTE') {
-          await this.loadMonCompteMode(action, id, this.activeSeasonId());
+          await this.loadMonCompteMode(action, id, this.realActiveSeasonId());
           return;
         }
 
@@ -93,7 +138,10 @@ export class AdherentComponent implements OnInit {
         }
 
         await this.adherentStore.init(saisonId);
-        if (id > 0) await this.adherentStore.openAdherent(id, saisonId);
+        if (id > 0) {
+          await this.adherentStore.openAdherent(id, saisonId);
+          this.syncRegistrationSeason();
+        }
       } catch (err: any) {
         errorService.emitChange(
           errorService.CreateError(
@@ -143,13 +191,34 @@ export class AdherentComponent implements OnInit {
 
   async onOpen(id: number): Promise<void> {
     await this.adherentStore.openAdherent(id, this.consultedSeasonId());
+    this.syncRegistrationSeason();
   }
 
   onCreate(): void {
+    this.registrationSeasonId = null;
     this.adherentStore.createEmpty();
   }
 
+  async startRegistration(): Promise<void> {
+    const person = this.vm.editAdherent;
+    const seasonId = Number(this.registrationSeasonId ?? 0);
+    if (!this.canStartRegistration || !person || seasonId <= 0) return;
+    if (this.isAlreadyRegisteredForTargetSeason) return;
+
+    const realActiveSeasonId = this.realActiveSeasonId();
+    this.store.setConsultationSaison(
+      seasonId === realActiveSeasonId ? null : seasonId,
+    );
+
+    await this.router.navigate(['/souscription'], {
+      queryParams: {
+        adminPersonId: Number(person.id),
+      },
+    });
+  }
+
   async onEditorBack(): Promise<void> {
+    this.registrationSeasonId = null;
     this.adherentStore.closeDetail();
 
     if (this.returnUrl) {
@@ -166,6 +235,7 @@ export class AdherentComponent implements OnInit {
   }
 
   async onBackToList(): Promise<void> {
+    this.registrationSeasonId = null;
     this.adherentStore.closeDetail();
     if (this.returnUrl) {
       await this.router.navigateByUrl(this.returnUrl);
@@ -174,11 +244,33 @@ export class AdherentComponent implements OnInit {
     await this.adherentStore.refreshNow(this.consultedSeasonId());
   }
 
+  private syncRegistrationSeason(): void {
+    if (!this.isAdmin || !this.vm.editAdherent?.id) {
+      this.registrationSeasonId = null;
+      return;
+    }
+
+    const seasons = this.registrationSeasons;
+    const realActiveSeasonId = this.realActiveSeasonId();
+
+    if (seasons.some((season) => Number(season.id) === realActiveSeasonId)) {
+      this.registrationSeasonId = realActiveSeasonId;
+      return;
+    }
+
+    const consulted = this.consultedSeasonId();
+    this.registrationSeasonId = seasons.some(
+      (season) => Number(season.id) === consulted,
+    )
+      ? consulted
+      : Number(seasons[0]?.id ?? 0) || null;
+  }
+
   private resolveConsultedSeasonId(raw?: string | number | null): number {
     const requested = Number(raw);
     if (Number.isInteger(requested) && requested > 0) {
       this.store.setConsultationSaison(
-        requested === this.activeSeasonId() ? null : requested,
+        requested === this.realActiveSeasonId() ? null : requested,
       );
       return requested;
     }
@@ -186,10 +278,10 @@ export class AdherentComponent implements OnInit {
   }
 
   private consultedSeasonId(): number {
-    return Number(this.store.saison_consultation_id() ?? this.activeSeasonId());
+    return Number(this.store.saison_consultation_id() ?? this.realActiveSeasonId());
   }
 
-  private activeSeasonId(): number {
-    return Number(this.store.saison_active_id() ?? 0);
+  private realActiveSeasonId(): number {
+    return Number(this.store.saison_active_reelle_id() ?? 0);
   }
 }
