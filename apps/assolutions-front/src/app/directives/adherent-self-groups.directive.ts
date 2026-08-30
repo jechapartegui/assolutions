@@ -22,8 +22,6 @@ export class AdherentSelfGroupsDirective implements AfterViewChecked {
   ) {}
 
   ngAfterViewChecked(): void {
-    if (this.context !== 'MON_COMPTE') return;
-
     const section = Array.from(
       this.host.nativeElement.querySelectorAll<HTMLElement>('section.editor-box'),
     ).find((item) =>
@@ -31,6 +29,20 @@ export class AdherentSelfGroupsDirective implements AfterViewChecked {
     );
 
     if (!section) return;
+
+    const editableGrid = section.querySelector<HTMLElement>('.editor-check-grid');
+
+    if (this.context !== 'MON_COMPTE') {
+      if (editableGrid) editableGrid.style.removeProperty('display');
+      section.querySelector('.self-groups-readonly')?.remove();
+      this.lastSignature = '';
+      return;
+    }
+
+    // On garde le DOM Angular en place pour éviter de perturber le change
+    // detection, mais les cases d'affectation ne sont jamais visibles en mode
+    // MON_COMPTE : l'adhérent ne peut donc pas modifier ses groupes.
+    if (editableGrid) editableGrid.style.display = 'none';
 
     const groups = (this.editor.groupesDisponibles ?? []).filter(
       (groupe: any) =>
@@ -42,12 +54,14 @@ export class AdherentSelfGroupsDirective implements AfterViewChecked {
       .map((groupe: any) => `${groupe.id}:${groupe.nom}:${groupe.whatsapp ?? ''}`)
       .join('|');
 
-    if (this.lastSignature === signature && section.querySelector('.self-groups-readonly')) {
+    if (
+      this.lastSignature === signature &&
+      section.querySelector('.self-groups-readonly')
+    ) {
       return;
     }
 
     this.lastSignature = signature;
-    section.querySelector('.editor-check-grid')?.remove();
     section.querySelector('.self-groups-readonly')?.remove();
 
     const container = document.createElement('div');
