@@ -46,6 +46,20 @@ export class MonCompteComponent {
     return this.publicProjects.filter((project) => !joinedIds.has(Number(project.id)));
   }
 
+  get canStartSubscription(): boolean {
+    const projectId = Number(this.selectedProject()?.id ?? 0);
+    if (!projectId || !this.personnes.length) return false;
+
+    return this.personnes.some((personne) => {
+      if (!personne?.id || personne.archive === true || personne.archived === true) return false;
+
+      return !this.getInscriptionsForPersonne(personne.id).some(
+        (inscription) =>
+          Number(inscription.project_id) === projectId && inscription.active === true,
+      );
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     await this.loadPage();
   }

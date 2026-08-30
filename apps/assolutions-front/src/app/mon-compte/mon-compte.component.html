@@ -12,7 +12,7 @@
   </div>
 
   <div *ngIf="!loading" class="account-content">
-    <section class="box account-card account-subscription-card" *ngIf="selectedProject()">
+    <section class="box account-card account-subscription-card" *ngIf="selectedProject() && canStartSubscription">
       <div class="account-card-heading">
         <div class="account-card-icon"><i class="fas fa-id-card"></i></div>
         <div>
