@@ -61,13 +61,54 @@
         (createAdherent)="onCreate()"
       ></app-adherent-list>
 
-      <app-adherent-editor
-        *ngIf="vm.editAdherent"
-        [vm]="vm"
-        [isAdmin]="isAdmin"
-        [context]="isMonCompteContext ? 'MON_COMPTE' : 'ADHERENT'"
-        (back)="onEditorBack()"
-      ></app-adherent-editor>
+      <div class="adherent-detail-layout" *ngIf="vm.editAdherent">
+        <section class="registration-target-bar" *ngIf="canStartRegistration">
+          <div class="registration-target-copy">
+            <span class="registration-target-icon">
+              <i class="fas fa-id-card"></i>
+            </span>
+            <div>
+              <strong i18n>Inscrire cette personne</strong>
+              <p class="mb-0" i18n>
+                Choisissez la saison cible. Les groupes, tarifs et exigences du dossier seront chargés pour cette saison.
+              </p>
+            </div>
+          </div>
+
+          <div class="registration-target-actions">
+            <div class="select registration-season-select">
+              <select [(ngModel)]="registrationSeasonId" aria-label="Saison d'inscription" i18n-aria-label>
+                <option *ngFor="let season of registrationSeasons" [ngValue]="season.id">
+                  {{ season.nom }}
+                </option>
+              </select>
+            </div>
+
+            <button
+              class="button is-primary registration-start-button"
+              type="button"
+              [disabled]="!registrationSeasonId || isAlreadyRegisteredForTargetSeason"
+              (click)="startRegistration()"
+            >
+              <span class="icon"><i class="fas fa-arrow-right"></i></span>
+              <span *ngIf="!isAlreadyRegisteredForTargetSeason" i18n>Inscrire</span>
+              <span *ngIf="isAlreadyRegisteredForTargetSeason" i18n>Déjà inscrit</span>
+            </button>
+          </div>
+
+          <p class="registration-target-status" *ngIf="isAlreadyRegisteredForTargetSeason">
+            <i class="fas fa-circle-check"></i>
+            <span i18n>Cette personne possède déjà une inscription pour {{ registrationTargetLabel }}.</span>
+          </p>
+        </section>
+
+        <app-adherent-editor
+          [vm]="vm"
+          [isAdmin]="isAdmin"
+          [context]="isMonCompteContext ? 'MON_COMPTE' : 'ADHERENT'"
+          (back)="onEditorBack()"
+        ></app-adherent-editor>
+      </div>
     </div>
   </ng-container>
 </div>
