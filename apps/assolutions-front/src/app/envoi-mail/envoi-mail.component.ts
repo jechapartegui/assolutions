@@ -45,7 +45,10 @@ export class EnvoiMailComponent implements OnInit {
   }
 
   get saisonId(): number {
-    return this.appStore.saison_active().id;
+    // Important : l'administration peut consulter une saison différente de la
+    // saison active réelle. L'audience mail (adhérents, séances, groupes et
+    // contrats prof) doit suivre ce contexte de consultation.
+    return this.appStore.saison_active_id();
   }
 
   get selectedAdherents(): AdherentListItem_VM[] {
