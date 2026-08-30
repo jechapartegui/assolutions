@@ -27,6 +27,21 @@
       margin: 0 auto;
       padding: 32px 20px 48px;
     }
+    .back-app {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin: 0 0 14px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
+    }
     .hero {
       background: var(--primary);
       color: #fff;
@@ -100,7 +115,8 @@
       text-align: center;
     }
     @media (max-width: 700px) {
-      .page { padding: 20px 14px 36px; }
+      .page { padding: 14px 14px 36px; }
+      .back-app { display: inline-flex; }
       .hero { padding: 22px 20px; }
       .hero h1 { font-size: 25px; }
       .grid { grid-template-columns: 1fr; }
@@ -122,6 +138,8 @@
 </head>
 <body>
   <main class="page">
+    <a class="back-app" href="../" aria-label="Retour à Assolutions">← Retour à l’application</a>
+
     <section class="hero">
       <h1>Tutoriels Assolutions</h1>
       <p>Retrouvez ici l’ensemble des guides disponibles. Choisissez votre profil puis ouvrez le tutoriel souhaité en PDF.</p>
