@@ -48,15 +48,20 @@ export class MonCompteComponent {
 
   get canStartSubscription(): boolean {
     const projectId = Number(this.selectedProject()?.id ?? 0);
+    const saisonId = Number(this.store.saison_active_id() ?? 0);
     if (!projectId || !this.personnes.length) return false;
 
     return this.personnes.some((personne) => {
-      if (!personne?.id || personne.archive === true || personne.archived === true) return false;
+      if (!personne?.id || this.isArchived(personne)) return false;
 
-      return !this.getInscriptionsForPersonne(personne.id).some(
+      const alreadyRegisteredForCurrentSeason = this.getInscriptionsForPersonne(personne.id).some(
         (inscription) =>
-          Number(inscription.project_id) === projectId && inscription.active === true,
+          Number(inscription.project_id) === projectId &&
+          (!saisonId || Number(inscription.saison_id) === saisonId) &&
+          inscription.active === true,
       );
+
+      return !alreadyRegisteredForCurrentSeason;
     });
   }
 
@@ -168,6 +173,11 @@ export class MonCompteComponent {
         errorService.emitChange(notification);
         this.loading = false;
       });
+  }
+
+  private isArchived(personne: any): boolean {
+    const value = personne?.archive ?? personne?.archived ?? false;
+    return value === true || value === 1 || String(value).toLowerCase() === 'true';
   }
 
   private async loadInscriptionsPersonnes(): Promise<void> {
