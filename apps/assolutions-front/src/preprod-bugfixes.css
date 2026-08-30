@@ -33,14 +33,111 @@
   }
 }
 
-/* Bug #12 — palette mobile sombre cohérente. Les composants ont beaucoup de
-   cartes custom qui n'utilisent pas toujours .box/.card : on les couvre ici
-   explicitement pour éviter les fonds blancs + textes pâles observés sur iOS. */
-@media (max-width: 767px) and (prefers-color-scheme: dark) {
+/* Bug #15 — les flèches de navigation des personnes reflètent réellement la
+   position de scroll : droite au début, gauche à la fin, les deux au milieu. */
+@media (max-width: 1023px) {
+  .riders-scroll-container.rider-scroll-hints-managed::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .riders-scroll-container.rider-scroll-hints-managed {
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(0, 209, 178, 0.78) rgba(127, 143, 158, 0.14);
+    padding-bottom: 0.45rem !important;
+  }
+
+  .rider-scroll-hint {
+    position: sticky;
+    z-index: 6;
+    align-self: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 209, 178, 0.6);
+    background: rgba(15, 28, 39, 0.94);
+    color: #61ead5;
+    font: inherit;
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+    cursor: pointer;
+    transition: opacity 120ms ease, visibility 120ms ease, transform 120ms ease;
+  }
+
+  .rider-scroll-hint:hover,
+  .rider-scroll-hint:focus-visible {
+    transform: scale(1.06);
+  }
+
+  .rider-scroll-hint--left {
+    left: 0.15rem;
+    margin-right: -2.15rem;
+  }
+
+  .rider-scroll-hint--right {
+    right: 0.15rem;
+    margin-left: -2.15rem;
+  }
+
+  .rider-scroll-hint.is-hidden-edge {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Bug #16 — la fiole est vraiment positionnée à hauteur du nom de séance,
+     et non plus simplement alignée en haut de la colonne d'actions. */
+  .mobile-item {
+    position: relative;
+  }
+
+  .mobile-item:has(.trial-action-btn) .mobile-item-main {
+    padding-right: 3rem;
+  }
+
+  .mobile-item:has(.trial-action-btn) .mobile-item-actions {
+    padding-top: 2.55rem !important;
+  }
+
+  .mobile-item .trial-action-btn {
+    position: absolute !important;
+    top: 0.55rem;
+    right: 0.55rem;
+    z-index: 5;
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+    min-width: 2.2rem !important;
+    margin: 0 !important;
+    display: inline-grid !important;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid #f1bd32 !important;
+    background: #fff9e8 !important;
+  }
+
+  /* Bug #17 — une demande d'essai n'est pas une déclaration de présence. */
+  .mobile-item:has(.trial-status-tag.is-warning:not(.is-light))
+    .mobile-action-btn:has(.fa-thumbs-up) {
+    display: none !important;
+  }
+}
+
+/* Bug #12 — passe sombre complète, mobile ET desktop. Les écrans de la recette
+   utilisent beaucoup de cartes custom avec des fonds blancs déclarés dans les
+   CSS locaux ; les règles ci-dessous sont donc volontairement globales et
+   explicites afin d'obtenir une palette cohérente partout. */
+@media (prefers-color-scheme: dark) {
   :root {
     --preprod-dark-bg: #09131c;
     --preprod-dark-surface: #101e29;
     --preprod-dark-surface-2: #152532;
+    --preprod-dark-surface-3: #0c1822;
     --preprod-dark-border: rgba(203, 213, 225, 0.18);
     --preprod-dark-text: #e8eef5;
     --preprod-dark-muted: #a8b7c7;
@@ -54,17 +151,17 @@
   .container-box,
   .account-wrapper,
   .adherent-shell,
-  .adherent-editor-card,
   .cours-shell,
   .seance-shell,
   .groupe-page,
-  .menu-shell {
+  .menu-shell,
+  .subscription-page {
     background: var(--preprod-dark-bg) !important;
     background-image: none !important;
     color: var(--preprod-dark-text) !important;
   }
 
-  /* Toutes les grandes surfaces rencontrées dans les captures iPhone. */
+  /* Grandes surfaces et cartes. */
   .box,
   .card,
   .card-content,
@@ -72,13 +169,10 @@
   .card-footer,
   .editor-box,
   .account-card,
-  .person-row,
-  .project-row,
-  .mobile-item,
-  .mobile-list article,
+  .account-advanced,
+  .account-advanced-grid,
   .contact-panel,
   .contact-preview,
-  .notification.is-light,
   .menu-hero,
   .menu-main-card,
   .menu-card-header,
@@ -90,15 +184,28 @@
   .adherent-card-body,
   .adherent-filter-panel,
   .adherent-filter-panel-inner,
+  .adherent-scroll-zone,
+  .adherent-mobile-list,
   .adherent-tile,
+  .adherent-editor-card,
   .adherent-editor-header,
   .adherent-editor-body,
+  .coordinate-copy-box,
+  .coordinate-source-summary,
+  .coordinate-copy-option,
+  .history-item,
+  .empty-state,
+  .contact-row,
+  .photo-preview,
+  .photo-empty,
   .cours-hero,
   .cours-main-card,
   .cours-card-header,
   .cours-card-body,
   .cours-filter-panel,
   .cours-filter-panel-inner,
+  .cours-scroll-zone,
+  .cours-mobile-list,
   .cours-tile,
   .seance-hero,
   .seance-main-card,
@@ -106,7 +213,12 @@
   .seance-card-body,
   .seance-filter-panel,
   .seance-filter-panel-inner,
+  .seance-scroll-zone,
+  .seance-mobile-list,
   .seance-tile,
+  .seance-editor-card,
+  .seance-editor-header,
+  .seance-editor-body,
   .groupe-main-card,
   .groupe-card-header,
   .groupe-layout,
@@ -117,9 +229,31 @@
   .groupe-section-header,
   .groupe-edit-content,
   .groupe-criteria-box,
+  .groupe-criteria-summary,
   .groupe-list-item,
-  .groupe-member-card,
-  .groupe-add-member {
+  .groupe-add-panel,
+  .groupe-members-zone,
+  .groupe-mobile-list,
+  .groupe-member-tile,
+  .subscription-card,
+  .subscription-header,
+  .subscription-content,
+  .subscription-footer,
+  .steps,
+  .steps button,
+  .person-card,
+  .choice-block,
+  .payer-box,
+  .dossier-card,
+  .dossier-header,
+  .option-card,
+  .radio-card,
+  .requirement-row,
+  .summary-person,
+  .medical-proof-form,
+  .medical-history-item,
+  .checkbox-card,
+  .simulation-box {
     background: var(--preprod-dark-surface) !important;
     background-image: none !important;
     color: var(--preprod-dark-text) !important;
@@ -127,36 +261,46 @@
     box-shadow: none !important;
   }
 
-  .groupe-list-item.is-active {
+  /* Une seconde profondeur évite l'effet "gros pavé noir" tout en restant sombre. */
+  .adherent-scroll-zone,
+  .cours-scroll-zone,
+  .seance-scroll-zone,
+  .adherent-mobile-list,
+  .cours-mobile-list,
+  .seance-mobile-list,
+  .groupe-list-panel,
+  .account-advanced-grid,
+  .coordinate-source-summary,
+  .coordinate-copy-option,
+  .history-item,
+  .medical-proof-form,
+  .requirement-row,
+  .summary-person,
+  .subscription-footer {
+    background: var(--preprod-dark-surface-2) !important;
+  }
+
+  .adherent-tile,
+  .cours-tile,
+  .seance-tile,
+  .groupe-member-tile,
+  .medical-history-item,
+  .checkbox-card,
+  .person-card,
+  .option-card,
+  .radio-card {
+    background: #11212d !important;
+  }
+
+  .groupe-list-item.is-active,
+  .person-card.is-selected,
+  .option-card.is-selected,
+  .radio-card.is-selected {
     background: rgba(0, 209, 178, 0.12) !important;
     border-color: rgba(53, 221, 194, 0.58) !important;
   }
 
-  /* Sous-zones de formulaires. */
-  .editor-fields,
-  .editor-stack,
-  .editor-check-grid,
-  .editor-check-item,
-  .coordinate-copy-panel,
-  .coordinate-source-summary,
-  .coordinate-copy-option,
-  .history-item,
-  .photo-editor,
-  .status-stack,
-  .contact-row,
-  .field,
-  .control,
-  .account-advanced,
-  .account-advanced-grid,
-  .groupe-criteria-heading,
-  .groupe-checkbox-column,
-  .cours-tile-main,
-  .seance-tile-main,
-  .adherent-tile-main {
-    color: var(--preprod-dark-text) !important;
-  }
-
-  /* Texte : neutralise les gris pensés pour une surface blanche. */
+  /* Titres et gris pensés à l'origine pour des fonds blancs. */
   .title,
   .subtitle,
   .label,
@@ -172,11 +316,21 @@
   .rider-name,
   .rider-role,
   .groupe-list-name,
+  .groupe-criteria-summary-title,
   .cours-tile-title,
+  .cours-tile-line,
+  .cours-tile-meta,
   .seance-tile-title,
+  .seance-tile-line,
+  .seance-tile-meta,
   .adherent-tile-title,
+  .adherent-tile-line,
+  .adherent-tile-meta,
+  .history-item-title,
   .has-text-grey,
   .has-text-grey-dark,
+  .previous-groups,
+  .summary-person p,
   strong,
   th,
   td {
@@ -192,20 +346,25 @@
   .rider-role,
   .cours-tile-meta,
   .seance-tile-meta,
-  .adherent-tile-meta {
+  .adherent-tile-meta,
+  .medical-history-item small,
+  .option-main small,
+  .radio-card small,
+  .person-select small {
     color: var(--preprod-dark-muted) !important;
   }
 
-  /* Champs de saisie et listes déroulantes. */
+  /* Formulaires : même contraste en édition personne / séance / groupe. */
   .input,
   .textarea,
   .select select,
   input:not([type='checkbox']):not([type='radio']),
   textarea,
   select {
-    background: #0c1822 !important;
+    color-scheme: dark;
+    background: var(--preprod-dark-surface-3) !important;
     color: var(--preprod-dark-text) !important;
-    border-color: rgba(203, 213, 225, 0.22) !important;
+    border-color: rgba(203, 213, 225, 0.24) !important;
     box-shadow: none !important;
   }
 
@@ -221,14 +380,29 @@
     border-color: #63d7c4 !important;
   }
 
-  /* Tables et listes. */
+  select option {
+    background: var(--preprod-dark-surface-3);
+    color: var(--preprod-dark-text);
+  }
+
+  /* Tables : le header blanc était particulièrement visible en desktop. */
   .table,
-  .table thead,
   .table tbody,
   .table tr,
-  .table th,
-  .table td {
+  .table td,
+  .table th {
     background-color: transparent !important;
+    color: var(--preprod-dark-text) !important;
+  }
+
+  .table thead,
+  .table thead tr,
+  .table thead th,
+  .adherent-table thead th,
+  .cours-table thead th,
+  .seance-table thead th,
+  .groupe-members-table thead th {
+    background: var(--preprod-dark-surface-2) !important;
     color: var(--preprod-dark-text) !important;
   }
 
@@ -236,32 +410,63 @@
     background-color: rgba(255, 255, 255, 0.035) !important;
   }
 
-  .tag:not(.is-primary):not(.is-success):not(.is-info):not(.is-warning):not(.is-danger):not(.is-link) {
-    background: var(--preprod-dark-surface-2) !important;
-    color: var(--preprod-dark-text) !important;
+  .table.is-hoverable tbody tr:hover:not(.is-selected):not([class*='has-background-']) {
+    background-color: rgba(255, 255, 255, 0.07) !important;
   }
 
-  /* Boutons secondaires / barres fixes. */
+  /* Boutons secondaires et barres d'action. */
   .button.is-light,
   .button.is-ghost,
   .adherent-editor-actions .button.is-light,
+  .seance-editor-actions .button.is-light,
+  .groupe-editor-header-actions .button.is-light,
   .card-footer .button.is-light {
     background: #172734 !important;
     color: var(--preprod-dark-text) !important;
     border-color: var(--preprod-dark-border) !important;
   }
 
-  .adherent-editor-header,
-  .account-header,
-  .account-section-heading,
-  .editor-box-title-row {
-    color: var(--preprod-dark-text) !important;
+  .adherent-editor-actions,
+  .seance-editor-actions,
+  .groupe-editor-header-actions {
+    background: rgba(12, 24, 34, 0.97) !important;
     border-color: var(--preprod-dark-border) !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.32) !important;
+  }
+
+  .tag:not(.is-primary):not(.is-success):not(.is-info):not(.is-warning):not(.is-danger):not(.is-link) {
+    background: var(--preprod-dark-surface-2) !important;
+    color: var(--preprod-dark-text) !important;
+  }
+
+  /* Les statuts médicaux gardent leur sémantique mais ne deviennent plus blancs. */
+  .medical-status {
+    background: rgba(245, 158, 11, 0.16) !important;
+    color: #f5d28a !important;
+    border: 1px solid rgba(245, 158, 11, 0.22);
+  }
+
+  .medical-status.is-ok,
+  .notification.is-success.is-light {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #9ce5c5 !important;
+    border-color: rgba(16, 185, 129, 0.22) !important;
+  }
+
+  .notification.is-warning.is-light {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #f5d28a !important;
   }
 
   .mobile .footer,
   .mobile-footer {
     background: #0b1721 !important;
     border-color: var(--preprod-dark-border) !important;
+  }
+
+  .rider-scroll-hint {
+    background: rgba(8, 18, 27, 0.97);
+    border-color: rgba(97, 234, 213, 0.58);
+    color: #61ead5;
   }
 }
