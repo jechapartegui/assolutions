@@ -47,6 +47,7 @@ import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proo
 import { HelpComponent } from './help/help.component';
 import { CopyTextDirective } from './directives/copy-text.directive';
 import { AdherentSelfGroupsDirective } from './directives/adherent-self-groups.directive';
+import { RiderScrollHintsDirective } from './directives/rider-scroll-hints.directive';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -101,6 +102,7 @@ import { CoursStore } from '../store/cours.store';
     HelpComponent,
     CopyTextDirective,
     AdherentSelfGroupsDirective,
+    RiderScrollHintsDirective,
   ],
   imports: [
     BrowserModule,
