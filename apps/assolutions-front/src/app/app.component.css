@@ -120,7 +120,6 @@
   background: rgba(255, 255, 255, 0.94) !important;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.06);
-  /* Le menu d'aide remonte au-dessus de la barre : il ne doit pas être rogné. */
   overflow: visible;
 }
 
@@ -154,8 +153,6 @@
   line-height: 1;
 }
 
-/* Le dernier item contient un vrai dropdown Bulma. Il doit occuper la même
-   cellule que les autres boutons et son menu doit rester dans le viewport. */
 .mobile .footer .tabs li > .dropdown,
 .mobile .footer .tabs li > .dropdown .dropdown-trigger,
 .mobile .footer .tabs li > .dropdown .dropdown-trigger > a {
@@ -201,6 +198,66 @@
 
   .navbar-menu.is-active {
     box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+  }
+
+  /* #15 : garder un indice visuel lorsqu'il existe d'autres personnes à droite. */
+  :host ::ng-deep .riders-scroll-container {
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(0, 209, 178, 0.75) rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.45rem !important;
+  }
+
+  :host ::ng-deep .riders-scroll-container::-webkit-scrollbar {
+    display: block !important;
+    height: 7px !important;
+  }
+
+  :host ::ng-deep .riders-scroll-container::-webkit-scrollbar-track {
+    background: rgba(127, 143, 158, 0.14);
+    border-radius: 999px;
+  }
+
+  :host ::ng-deep .riders-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 209, 178, 0.78);
+    border-radius: 999px;
+  }
+
+  :host ::ng-deep .riders-scroll-container:has(.rider-card-button:nth-child(3))::after {
+    content: '›';
+    position: sticky;
+    right: 0.15rem;
+    align-self: center;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(15, 28, 39, 0.92);
+    border: 1px solid rgba(0, 209, 178, 0.55);
+    color: #55e5cf;
+    font-size: 1.5rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* #16 : sur une séance d'essai, le bouton fiole part du haut de la carte,
+     au niveau du nom de la séance, au lieu d'être centré verticalement. */
+  :host ::ng-deep .mobile-item:has(.trial-status-tag) .mobile-item-actions {
+    justify-content: flex-start !important;
+    padding-top: 0.05rem;
+  }
+
+  :host ::ng-deep .mobile-item:has(.trial-status-tag) .trial-action-btn {
+    margin-top: 0 !important;
+    align-self: flex-start;
+  }
+
+  /* #17 : une demande d'essai n'est pas une déclaration de présence. */
+  :host ::ng-deep .mobile-item:has(.trial-status-tag.is-warning:not(.is-light)) .mobile-action-btn:has(.fa-thumbs-up) {
+    display: none !important;
   }
 }
 
@@ -305,5 +362,115 @@
   .mobile .footer .dropdown-item:hover {
     background: #1b2a37 !important;
     color: #fff !important;
+  }
+
+  /* #12 : garde-fou global pour les derniers panneaux encore clairs dans
+     les composants enfants (notamment inscription, groupes et listes). */
+  :host ::ng-deep .subscription-card,
+  :host ::ng-deep .subscription-header,
+  :host ::ng-deep .subscription-content,
+  :host ::ng-deep .subscription-footer,
+  :host ::ng-deep .steps,
+  :host ::ng-deep .steps button,
+  :host ::ng-deep .person-card,
+  :host ::ng-deep .choice-block,
+  :host ::ng-deep .payer-box,
+  :host ::ng-deep .dossier-card,
+  :host ::ng-deep .dossier-header,
+  :host ::ng-deep .option-card,
+  :host ::ng-deep .radio-card,
+  :host ::ng-deep .requirement-row,
+  :host ::ng-deep .summary-person,
+  :host ::ng-deep .medical-form,
+  :host ::ng-deep .simulation-box,
+  :host ::ng-deep .box,
+  :host ::ng-deep .card,
+  :host ::ng-deep .panel,
+  :host ::ng-deep .table-container,
+  :host ::ng-deep div[class*='-card'],
+  :host ::ng-deep section[class*='-card'],
+  :host ::ng-deep article[class*='-card'],
+  :host ::ng-deep div[class*='-panel'] {
+    border-color: rgba(188, 211, 229, 0.18) !important;
+    box-shadow: none !important;
+  }
+
+  :host ::ng-deep .subscription-card,
+  :host ::ng-deep .subscription-header,
+  :host ::ng-deep .subscription-content,
+  :host ::ng-deep .subscription-footer,
+  :host ::ng-deep .steps button,
+  :host ::ng-deep .person-card,
+  :host ::ng-deep .choice-block,
+  :host ::ng-deep .payer-box,
+  :host ::ng-deep .dossier-card,
+  :host ::ng-deep .dossier-header,
+  :host ::ng-deep .option-card,
+  :host ::ng-deep .radio-card,
+  :host ::ng-deep .requirement-row,
+  :host ::ng-deep .summary-person,
+  :host ::ng-deep .medical-form,
+  :host ::ng-deep .simulation-box,
+  :host ::ng-deep .box,
+  :host ::ng-deep .card,
+  :host ::ng-deep .panel,
+  :host ::ng-deep div[class*='-card'],
+  :host ::ng-deep section[class*='-card'],
+  :host ::ng-deep article[class*='-card'],
+  :host ::ng-deep div[class*='-panel'] {
+    background-color: #111e28 !important;
+    color: #dce6ee !important;
+  }
+
+  :host ::ng-deep .subscription-card h1,
+  :host ::ng-deep .subscription-card h2,
+  :host ::ng-deep .subscription-card h3,
+  :host ::ng-deep .subscription-card h4,
+  :host ::ng-deep .subscription-card strong,
+  :host ::ng-deep .person-card strong,
+  :host ::ng-deep .choice-block strong,
+  :host ::ng-deep .dossier-card strong {
+    color: #edf4f8 !important;
+  }
+
+  :host ::ng-deep .subscription-card p,
+  :host ::ng-deep .subscription-card small,
+  :host ::ng-deep .previous-groups,
+  :host ::ng-deep .summary-person p,
+  :host ::ng-deep .person-select small,
+  :host ::ng-deep .option-main small,
+  :host ::ng-deep .radio-card small {
+    color: #9fb0c0 !important;
+  }
+
+  :host ::ng-deep .steps {
+    border-color: rgba(188, 211, 229, 0.16) !important;
+  }
+
+  :host ::ng-deep .steps button {
+    color: #9fb0c0 !important;
+    border-color: rgba(188, 211, 229, 0.13) !important;
+  }
+
+  :host ::ng-deep .steps button.is-active {
+    color: #5ce1ce !important;
+    background: rgba(20, 184, 166, 0.12) !important;
+  }
+
+  :host ::ng-deep .subscription-footer {
+    background: rgba(17, 30, 40, 0.97) !important;
+    border-top-color: rgba(188, 211, 229, 0.16) !important;
+  }
+
+  :host ::ng-deep .requirement-row,
+  :host ::ng-deep .dossier-section,
+  :host ::ng-deep .requirement-answer {
+    border-color: rgba(188, 211, 229, 0.15) !important;
+  }
+
+  :host ::ng-deep .input,
+  :host ::ng-deep .textarea,
+  :host ::ng-deep .select select {
+    border-color: rgba(188, 211, 229, 0.2) !important;
   }
 }
