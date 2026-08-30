@@ -234,10 +234,18 @@ export class HelloAssoService {
     let remainder = remainingAmount - base * count;
     const today = new Date();
 
+    // HelloAsso refuse certaines échéances trop proches de la fin du mois.
+    // Toutes les échéances différées tombent donc le 5. Jusqu'au 20 inclus,
+    // la première est le mois suivant ; à partir du 21, on saute un mois.
+    const firstDueMonthOffset = today.getUTCDate() > 20 ? 2 : 1;
+
     return Array.from({ length: count }, (_, index) => {
       const amount = base + (remainder-- > 0 ? 1 : 0);
-      const date = new Date(today);
-      date.setUTCMonth(date.getUTCMonth() + index + 1);
+      const date = new Date(Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth() + firstDueMonthOffset + index,
+        5,
+      ));
       return {
         amount,
         date: date.toISOString().slice(0, 10),
