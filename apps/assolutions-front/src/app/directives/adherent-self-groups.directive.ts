@@ -81,8 +81,8 @@ export class AdherentSelfGroupsDirective implements AfterViewChecked {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'tag is-primary is-light';
-        button.textContent = `${groupe.nom} · WhatsApp`;
-        button.title = 'Cliquer pour copier le lien WhatsApp';
+        button.textContent = String(groupe.nom ?? 'Groupe');
+        button.title = 'Cliquez sur le groupe pour copier le groupe WhatsApp';
         button.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopPropagation();
