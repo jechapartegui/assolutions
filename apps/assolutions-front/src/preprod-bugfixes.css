@@ -1,0 +1,8 @@
+/* Correctifs transverses de recette préprod. Chaque section est rattachée au numéro de bug. */
+
+/* Bug #5 — pour un professeur, le bouton d'accès/édition de la séance remplace
+   le bouton supplémentaire "Afficher les présents". */
+.presence-actions:has(> btn) > .presence-view-btn,
+.mobile-item-actions:has(> btn) > .presence-view-btn {
+  display: none !important;
+}
