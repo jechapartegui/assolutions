@@ -5,6 +5,7 @@ import {
   Host,
   Input,
 } from '@angular/core';
+import { ErrorService } from '../../services/error.service';
 import { AdherentEditorComponent } from '../adherent/detail/adherent-editor.component';
 
 @Directive({
@@ -102,10 +103,25 @@ export class AdherentSelfGroupsDirective implements AfterViewChecked {
 
   private copy(text: string): void {
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).catch(() => this.copyFallback(text));
+      navigator.clipboard
+        .writeText(text)
+        .then(() => this.notifyCopied())
+        .catch(() => {
+          this.copyFallback(text);
+          this.notifyCopied();
+        });
       return;
     }
+
     this.copyFallback(text);
+    this.notifyCopied();
+  }
+
+  private notifyCopied(): void {
+    const errorService = ErrorService.instance;
+    errorService.emitChange(
+      errorService.OKMessage($localize`Groupe WhatsApp copié`),
+    );
   }
 
   private copyFallback(text: string): void {
