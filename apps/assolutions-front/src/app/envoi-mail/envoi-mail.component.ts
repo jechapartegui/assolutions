@@ -4,6 +4,8 @@ import { MailComposerStore } from '../../store/mail-composer.store';
 import { AdherentListItem_VM } from '../../vm/adherent-page.vm';
 import { MailStep } from '../../vm/mail-composer.vm';
 import { Seance_VM } from '@shared/index';
+import { ContratProfApiService } from '../../services/contrat-prof-api.service';
+import { PersonneApiService } from '../../services/personne-api.service';
 
 type GroupOption = {
   id: number;
@@ -17,13 +19,25 @@ type GroupOption = {
   styleUrls: ['./envoi-mail.component.css'],
 })
 export class EnvoiMailComponent implements OnInit {
+  public contractProfessors: AdherentListItem_VM[] = [];
+  private readonly baseAdherentIds = new Set<number>();
+
   constructor(
     public mailStore: MailComposerStore,
     private appStore: AppStore,
+    private readonly contratProfApi: ContratProfApiService,
+    private readonly personneApi: PersonneApiService,
   ) {}
 
   async ngOnInit(): Promise<void> {
     await this.mailStore.init(this.saisonId);
+
+    this.baseAdherentIds.clear();
+    for (const adherent of this.vm.adherents) {
+      this.baseAdherentIds.add(Number(adherent.id));
+    }
+
+    await this.loadContractProfessors();
   }
 
   get vm() {
@@ -59,26 +73,20 @@ export class EnvoiMailComponent implements OnInit {
 
   get filteredAdherents(): AdherentListItem_VM[] {
     const search = (this.vm.audienceSearch ?? '').trim().toLowerCase();
+    const adherents = this.vm.adherents.filter(a => this.baseAdherentIds.has(Number(a.id)));
 
     if (!search) {
-      return this.vm.adherents;
+      return adherents;
     }
 
-    return this.vm.adherents.filter(a => {
-      const haystack = [
-        a.libelle,
-        a.nom,
-        a.prenom,
-        a.surnom,
-        a.login,
-        ...this.getAdherentEmails(a),
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+    return adherents.filter(a => this.matchesRecipientSearch(a, search));
+  }
 
-      return haystack.includes(search);
-    });
+  get filteredContractProfessors(): AdherentListItem_VM[] {
+    const search = (this.vm.audienceSearch ?? '').trim().toLowerCase();
+
+    if (!search) return this.contractProfessors;
+    return this.contractProfessors.filter(a => this.matchesRecipientSearch(a, search));
   }
 
   selectType(type: any): void {
@@ -150,12 +158,52 @@ export class EnvoiMailComponent implements OnInit {
     this.mailStore.addSelectedAdherent(adherent);
   }
 
+  addContractProfessor(professor: AdherentListItem_VM): void {
+    this.ensureRecipientAvailable(professor);
+    this.mailStore.addSelectedAdherent(professor);
+  }
+
+  addAllContractProfessors(): void {
+    if (!this.contractProfessors.length) return;
+
+    const recipients = [...this.vm.adherents];
+    const recipientIds = new Set(recipients.map(a => Number(a.id)));
+
+    for (const professor of this.contractProfessors) {
+      if (!recipientIds.has(Number(professor.id))) {
+        recipients.push(professor);
+        recipientIds.add(Number(professor.id));
+      }
+    }
+
+    const selectedIds = new Set(this.vm.selectedAdherentIds.map(Number));
+    for (const professor of this.contractProfessors) {
+      selectedIds.add(Number(professor.id));
+    }
+
+    this.mailStore.patchParams({
+      adherents: recipients,
+      selectedAdherentIds: [...selectedIds],
+      audienceType: 'ADHERENT',
+      sendInfo: '',
+    });
+  }
+
   removeAdherent(adherent: AdherentListItem_VM): void {
     this.mailStore.removeSelectedAdherent(adherent.id);
+
+    if (this.isContractOnlyRecipient(adherent)) {
+      this.mailStore.patchParams({
+        adherents: this.vm.adherents.filter(a => Number(a.id) !== Number(adherent.id)),
+      });
+    }
   }
 
   clearAudience(): void {
     this.mailStore.clearAudience();
+    this.mailStore.patchParams({
+      adherents: this.vm.adherents.filter(a => this.baseAdherentIds.has(Number(a.id))),
+    });
   }
 
   async goDraft(): Promise<void> {
@@ -250,5 +298,93 @@ export class EnvoiMailComponent implements OnInit {
     }
 
     return true;
+  }
+
+  private async loadContractProfessors(): Promise<void> {
+    try {
+      const contracts = await this.contratProfApi.list(this.saisonId);
+      const professorIds = Array.from(
+        new Set(
+          (contracts ?? [])
+            .map(contract => Number(contract.professeur_id))
+            .filter(id => Number.isFinite(id) && id > 0),
+        ),
+      );
+
+      if (!professorIds.length) {
+        this.contractProfessors = [];
+        return;
+      }
+
+      const adherentsById = new Map(
+        this.vm.adherents.map(adherent => [Number(adherent.id), adherent]),
+      );
+      const missingIds = professorIds.filter(id => !adherentsById.has(id));
+      const personnes = missingIds.length
+        ? await this.personneApi.list_by_id(missingIds)
+        : [];
+      const personnesById = new Map(
+        (personnes ?? []).map(personne => [Number(personne.id), personne]),
+      );
+
+      this.contractProfessors = professorIds
+        .map(id => adherentsById.get(id) ?? this.toMailRecipient(personnesById.get(id)))
+        .filter((recipient): recipient is AdherentListItem_VM => !!recipient)
+        .sort((a, b) => a.libelle.localeCompare(b.libelle, 'fr'));
+    } catch (error) {
+      console.error('Chargement des professeurs sous contrat impossible', error);
+      this.contractProfessors = [];
+    }
+  }
+
+  private toMailRecipient(personne: any): AdherentListItem_VM | null {
+    if (!personne?.id) return null;
+
+    const recipient = new AdherentListItem_VM();
+    recipient.id = Number(personne.id);
+    recipient.nom = String(personne.nom ?? personne.last_name ?? '');
+    recipient.prenom = String(personne.prenom ?? personne.first_name ?? '');
+    recipient.surnom = String(personne.surnom ?? personne.nickname ?? '');
+    recipient.login = String(personne.login ?? '').trim();
+    recipient.contact = [];
+    recipient.groupesActifs = [];
+    recipient.inscrit = false;
+    recipient.archive = !!personne.archive;
+
+    const birthDate = personne.date_naissance ? new Date(personne.date_naissance) : null;
+    recipient.date_naissance = birthDate && !Number.isNaN(birthDate.getTime())
+      ? birthDate
+      : (null as any);
+
+    (recipient as any).__contractProfessorOnly = true;
+    return recipient;
+  }
+
+  private ensureRecipientAvailable(recipient: AdherentListItem_VM): void {
+    if (this.vm.adherents.some(a => Number(a.id) === Number(recipient.id))) return;
+
+    this.mailStore.patchParams({
+      adherents: [...this.vm.adherents, recipient],
+    });
+  }
+
+  private isContractOnlyRecipient(recipient: AdherentListItem_VM): boolean {
+    return (recipient as any).__contractProfessorOnly === true;
+  }
+
+  private matchesRecipientSearch(adherent: AdherentListItem_VM, search: string): boolean {
+    const haystack = [
+      adherent.libelle,
+      adherent.nom,
+      adherent.prenom,
+      adherent.surnom,
+      adherent.login,
+      ...this.getAdherentEmails(adherent),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return haystack.includes(search);
   }
 }
