@@ -143,7 +143,8 @@
                 type="button"
                 [disabled]="!vm.selectedSeance"
                 (click)="addSerieSeance()"
-               i18n>
+                i18n
+              >
                 Ajouter à la série
               </button>
 
@@ -169,7 +170,8 @@
               type="button"
               [disabled]="!canValidateParams()"
               (click)="validateParams()"
-             i18n>
+              i18n
+            >
               Valider les paramètres et choisir l’audience
             </button>
           </div>
@@ -195,7 +197,8 @@
                 class="button is-info is-light"
                 type="button"
                 (click)="addEligibleForSelectedSeance()"
-               i18n>
+                i18n
+              >
                 Éligibles à la séance
               </button>
             </div>
@@ -221,7 +224,8 @@
                   type="button"
                   [disabled]="!vm.selectedGroupId"
                   (click)="addSelectedGroup()"
-                 i18n>
+                  i18n
+                >
                   Ajouter groupe
                 </button>
               </div>
@@ -235,9 +239,48 @@
                 placeholder="Nom, prénom, email…"
                 [ngModel]="vm.audienceSearch"
                 (ngModelChange)="updateAudienceSearch($event)"
-               i18n-placeholder/>
+                i18n-placeholder
+              />
             </div>
 
+            <div class="is-flex is-justify-content-space-between is-align-items-center mt-4 mb-2">
+              <div>
+                <label class="label mb-0" i18n>Contrats prof</label>
+                <p class="help mb-0" i18n>
+                  Professeurs disposant d’un contrat sur la saison active.
+                </p>
+              </div>
+              <button
+                class="button is-small is-info is-light"
+                type="button"
+                [disabled]="contractProfessors.length === 0"
+                (click)="addAllContractProfessors()"
+                i18n
+              >
+                Ajouter tous
+              </button>
+            </div>
+
+            <div class="adherent-list" *ngIf="filteredContractProfessors.length; else noContractProfessor">
+              <button
+                type="button"
+                class="adherent-row"
+                *ngFor="let professor of filteredContractProfessors"
+                (click)="addContractProfessor(professor)"
+              >
+                <span>
+                  <strong>{{ professor.libelle }}</strong>
+                  <small>{{ getAdherentEmailLabel(professor) }}</small>
+                </span>
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+
+            <ng-template #noContractProfessor>
+              <p class="help mb-4" i18n>Aucun professeur sous contrat trouvé pour cette saison.</p>
+            </ng-template>
+
+            <label class="label mt-4" i18n>Adhérents</label>
             <div class="adherent-list">
               <button
                 type="button"
@@ -273,7 +316,8 @@
               type="button"
               [disabled]="selectedAdherents.length === 0"
               (click)="goDraft()"
-             i18n>
+              i18n
+            >
               Préparer le brouillon
             </button>
           </div>
@@ -309,7 +353,8 @@
                 type="button"
                 [disabled]="vm.mailType === 'vide'"
                 (click)="saveTemplate()"
-               i18n>
+                i18n
+              >
                 Sauvegarder le template
               </button>
             </div>
@@ -345,7 +390,8 @@
                   type="button"
                   [disabled]="!mail.to?.email || mail.status === 'SENT'"
                   (click)="sendOne()"
-                 i18n>
+                  i18n
+                >
                   Envoyer cet email
                 </button>
 
@@ -354,7 +400,8 @@
                   type="button"
                   [disabled]="!vm.generated.length"
                   (click)="sendAll()"
-                 i18n>
+                  i18n
+                >
                   Envoyer tous les mails
                 </button>
               </div>
