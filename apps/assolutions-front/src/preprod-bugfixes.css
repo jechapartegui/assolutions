@@ -6,3 +6,29 @@
 .mobile-item-actions:has(> btn) > .presence-view-btn {
   display: none !important;
 }
+
+/* Bug #11 — en mode contact, le menu doit pouvoir défiler jusqu'aux boutons
+   Envoyer / Annuler, y compris avec la barre d'actions fixe sur mobile. */
+.menu-shell:has(.contact-panel) {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+.menu-shell:has(.contact-panel) .menu-hero {
+  overflow: visible !important;
+  flex: 0 0 auto !important;
+}
+
+@media (max-width: 767px) {
+  .menu-shell:has(.contact-panel) {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .contact-panel .buttons.is-right {
+    position: relative;
+    z-index: 2;
+    padding-bottom: 0.5rem;
+  }
+}
