@@ -46,6 +46,7 @@ import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.
 import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proof-editor.component';
 import { HelpComponent } from './help/help.component';
 import { CopyTextDirective } from './directives/copy-text.directive';
+import { AdherentSelfGroupsDirective } from './directives/adherent-self-groups.directive';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -99,6 +100,7 @@ import { CoursStore } from '../store/cours.store';
     MedicalProofEditorComponent,
     HelpComponent,
     CopyTextDirective,
+    AdherentSelfGroupsDirective,
   ],
   imports: [
     BrowserModule,
