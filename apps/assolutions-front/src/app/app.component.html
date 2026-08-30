@@ -31,7 +31,7 @@
         <div id="navMaSeance" [class]="isactive ? 'navbar-menu is-active' : 'navbar-menu'">
           <div class="navbar-start">
             <a
-              *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin() && !store.rights()?.adherent"
+              *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin()"
               [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'"
               (click)="selectMenu('PAIEMENT')"
               [routerLink]="['/souscription']"
@@ -225,7 +225,7 @@
               </a>
             </li>
 
-            <li *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin() && !store.rights()?.adherent">
+            <li *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin()">
               <a
                 [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'"
                 (click)="selectMenu('PAIEMENT')"
@@ -281,7 +281,7 @@
             </li>
 
             <li *ngIf="store.isLoggedIn()">
-              <a href="/tutos/" aria-label="Ouvrir les tutoriels" i18n-aria-label>
+              <a href="tutos/" aria-label="Ouvrir les tutoriels" i18n-aria-label>
                 <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
                 <span class="tablet" i18n>Aide</span>
               </a>
