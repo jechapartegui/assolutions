@@ -52,6 +52,13 @@ export class SeanceMapper {
     list: Seance_VM[],
     activeSaison: Saison | null,
   ): SeancePageData {
+    // Certaines anciennes séances contiennent encore une heure_fin persistée
+    // incohérente. L'éditeur travaille directement sur l'objet de la liste :
+    // on la recalcule donc dès l'entrée dans la page, avant même toute édition.
+    for (const seance of list) {
+      seance.heure_fin = calculerHeureFinUtil(seance.heure_debut, seance.duree_seance);
+    }
+
     return {
       refs,
       list: this.sortByDate([...list], 'ASC'),
@@ -80,7 +87,9 @@ export class SeanceMapper {
       date_seance: this.toIsoDate(vm.date_seance),
       heure_debut: vm.heure_debut,
       duree_seance: vm.duree_seance,
-      heure_fin: vm.heure_fin || calculerHeureFinUtil(vm.heure_debut, vm.duree_seance),
+      // Toujours dérivée de l'heure de début et de la durée : aucune ancienne
+      // valeur incohérente ne doit repartir vers le backend.
+      heure_fin: calculerHeureFinUtil(vm.heure_debut, vm.duree_seance),
       lieu_id: vm.lieu_id,
       statut: vm.statut,
       age_minimum: ageMinimum,
