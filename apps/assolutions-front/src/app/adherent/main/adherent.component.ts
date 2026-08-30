@@ -102,7 +102,7 @@ export class AdherentComponent implements OnInit {
     const season = this.registrationSeasons.find(
       (item) => Number(item.id) === Number(this.registrationSeasonId),
     );
-    return season?.nom ?? season?.libelle ?? `Saison ${this.registrationSeasonId ?? ''}`;
+    return season?.nom ?? `Saison ${this.registrationSeasonId ?? ''}`;
   }
 
   async ngOnInit(): Promise<void> {
