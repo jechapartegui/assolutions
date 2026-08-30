@@ -13,8 +13,6 @@
     --final-dark-muted: #a8b7c7;
   }
 
-  /* Listes adhérents / séances / cours : le header et le conteneur de table
-     avaient encore des backgrounds clairs codés directement dans les CSS. */
   .adherent-main-card,
   .seance-main-card,
   .cours-main-card,
@@ -75,7 +73,6 @@
     color: var(--final-dark-text) !important;
   }
 
-  /* Groupes : mêmes surfaces custom que les listes mais avec leur propre layout. */
   .groupe-page,
   .groupe-main-card,
   .groupe-card-header,
@@ -115,8 +112,6 @@
     color: var(--final-dark-text) !important;
   }
 
-  /* Editeur de cours : contrairement aux éditeurs adhérent/séance il restait
-     entièrement piloté par sa palette claire, y compris le bandeau supérieur. */
   .cours-editor-card,
   .cours-editor-header,
   .cours-editor-body,
@@ -155,7 +150,6 @@
     box-shadow: none !important;
   }
 
-  /* Preuve médicale dans l'éditeur adhérent. */
   .medical-proof-editor,
   .medical-proof-form,
   .medical-history,
@@ -186,8 +180,6 @@
     border-color: var(--final-dark-border) !important;
   }
 
-  /* Les headers génériques des écrans de gestion doivent rester sombres,
-     y compris sur desktop. */
   .adherent-hero,
   .seance-hero,
   .cours-hero,
@@ -200,7 +192,6 @@
     border-color: var(--final-dark-border) !important;
   }
 
-  /* Les gris historiques devenaient quasiment invisibles sur les surfaces dark. */
   .adherent-main-card .subtitle,
   .seance-main-card .subtitle,
   .cours-main-card .subtitle,
@@ -211,18 +202,18 @@
   .groupe-main-card .has-text-grey {
     color: var(--final-dark-muted) !important;
   }
+}
 
-  @media (max-width: 480px) {
-    .cours-editor-actions {
-      background: rgba(16, 30, 41, 0.98) !important;
-      border-color: var(--final-dark-border) !important;
-      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28) !important;
-    }
+@media (prefers-color-scheme: dark) and (max-width: 480px) {
+  .cours-editor-actions {
+    background: rgba(16, 30, 41, 0.98) !important;
+    border-color: rgba(203, 213, 225, 0.18) !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28) !important;
+  }
 
-    .cours-editor-card,
-    .cours-editor-header,
-    .cours-editor-body {
-      background: var(--final-dark-surface) !important;
-    }
+  .cours-editor-card,
+  .cours-editor-header,
+  .cours-editor-body {
+    background: #101e29 !important;
   }
 }
