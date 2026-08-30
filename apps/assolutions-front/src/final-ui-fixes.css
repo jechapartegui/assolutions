@@ -1,0 +1,228 @@
+/* Dernière couche d'harmonisation UI.
+   Chargée après les styles historiques afin de neutraliser les surfaces claires
+   qui restent dans les composants custom en mode sombre. */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --final-dark-bg: #09131c;
+    --final-dark-surface: #101e29;
+    --final-dark-surface-2: #152532;
+    --final-dark-surface-3: #0c1822;
+    --final-dark-border: rgba(203, 213, 225, 0.18);
+    --final-dark-text: #e8eef5;
+    --final-dark-muted: #a8b7c7;
+  }
+
+  /* Listes adhérents / séances / cours : le header et le conteneur de table
+     avaient encore des backgrounds clairs codés directement dans les CSS. */
+  .adherent-main-card,
+  .seance-main-card,
+  .cours-main-card,
+  .adherent-card-header,
+  .seance-card-header,
+  .cours-card-header,
+  .adherent-card-body,
+  .seance-card-body,
+  .cours-card-body,
+  .adherent-filter-panel,
+  .seance-filter-panel,
+  .cours-filter-panel,
+  .adherent-filter-panel-inner,
+  .seance-filter-panel-inner,
+  .cours-filter-panel-inner,
+  .adherent-scroll-zone,
+  .seance-scroll-zone,
+  .cours-scroll-zone,
+  .adherent-table-wrapper,
+  .seance-table-wrapper,
+  .cours-table-wrapper,
+  .adherent-mobile-list,
+  .seance-mobile-list,
+  .cours-mobile-list {
+    background: var(--final-dark-surface) !important;
+    background-image: none !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+    box-shadow: none !important;
+  }
+
+  .adherent-table thead th,
+  .seance-table thead th,
+  .cours-table thead th,
+  .groupe-members-table thead th {
+    background: var(--final-dark-surface-2) !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+  }
+
+  .adherent-table,
+  .seance-table,
+  .cours-table,
+  .groupe-members-table,
+  .adherent-table tbody,
+  .seance-table tbody,
+  .cours-table tbody,
+  .groupe-members-table tbody,
+  .adherent-table tr,
+  .seance-table tr,
+  .cours-table tr,
+  .groupe-members-table tr,
+  .adherent-table td,
+  .seance-table td,
+  .cours-table td,
+  .groupe-members-table td {
+    background-color: transparent !important;
+    color: var(--final-dark-text) !important;
+  }
+
+  /* Groupes : mêmes surfaces custom que les listes mais avec leur propre layout. */
+  .groupe-page,
+  .groupe-main-card,
+  .groupe-card-header,
+  .groupe-layout,
+  .groupe-list-panel,
+  .groupe-detail-panel,
+  .groupe-detail-card,
+  .groupe-edit-card,
+  .groupe-edit-content,
+  .groupe-section-header,
+  .groupe-add-panel,
+  .groupe-members-zone,
+  .groupe-member-tile,
+  .groupe-criteria-summary,
+  .groupe-criteria-box {
+    background: var(--final-dark-surface) !important;
+    background-image: none !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+    box-shadow: none !important;
+  }
+
+  .groupe-list-item {
+    background: var(--final-dark-surface-2) !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+  }
+
+  .groupe-list-item.is-active {
+    background: rgba(0, 209, 178, 0.13) !important;
+    border-color: rgba(83, 226, 205, 0.6) !important;
+  }
+
+  .groupe-list-name,
+  .groupe-identite-nom,
+  .groupe-criteria-summary-title {
+    color: var(--final-dark-text) !important;
+  }
+
+  /* Editeur de cours : contrairement aux éditeurs adhérent/séance il restait
+     entièrement piloté par sa palette claire, y compris le bandeau supérieur. */
+  .cours-editor-card,
+  .cours-editor-header,
+  .cours-editor-body,
+  .cours-editor-grid,
+  .cours-editor-card .editor-box {
+    background: var(--final-dark-surface) !important;
+    background-image: none !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+    box-shadow: none !important;
+  }
+
+  .cours-editor-header {
+    border-bottom-color: var(--final-dark-border) !important;
+  }
+
+  .cours-editor-title .title,
+  .cours-editor-card .label,
+  .cours-editor-card .checkbox,
+  .cours-editor-card .checkbox span,
+  .cours-editor-card .subtitle {
+    color: var(--final-dark-text) !important;
+  }
+
+  .cours-editor-title .subtitle,
+  .cours-editor-summary {
+    color: var(--final-dark-muted) !important;
+  }
+
+  .cours-editor-card .input,
+  .cours-editor-card .textarea,
+  .cours-editor-card .select select {
+    background: var(--final-dark-surface-3) !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+    box-shadow: none !important;
+  }
+
+  /* Preuve médicale dans l'éditeur adhérent. */
+  .medical-proof-editor,
+  .medical-proof-form,
+  .medical-history,
+  .medical-history-item,
+  .checkbox-card {
+    background: var(--final-dark-surface) !important;
+    background-image: none !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+    box-shadow: none !important;
+  }
+
+  .medical-proof-form {
+    background: var(--final-dark-surface-2) !important;
+  }
+
+  .medical-history-item small,
+  .medical-proof-editor .help {
+    color: var(--final-dark-muted) !important;
+  }
+
+  .medical-proof-editor .input,
+  .medical-proof-editor .textarea,
+  .medical-proof-editor .select select,
+  .medical-proof-editor input:not([type='checkbox']):not([type='radio']) {
+    background: var(--final-dark-surface-3) !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+  }
+
+  /* Les headers génériques des écrans de gestion doivent rester sombres,
+     y compris sur desktop. */
+  .adherent-hero,
+  .seance-hero,
+  .cours-hero,
+  .groupe-hero,
+  .adherent-editor-header,
+  .seance-editor-header {
+    background: var(--final-dark-surface) !important;
+    background-image: none !important;
+    color: var(--final-dark-text) !important;
+    border-color: var(--final-dark-border) !important;
+  }
+
+  /* Les gris historiques devenaient quasiment invisibles sur les surfaces dark. */
+  .adherent-main-card .subtitle,
+  .seance-main-card .subtitle,
+  .cours-main-card .subtitle,
+  .groupe-main-card .subtitle,
+  .adherent-main-card .has-text-grey,
+  .seance-main-card .has-text-grey,
+  .cours-main-card .has-text-grey,
+  .groupe-main-card .has-text-grey {
+    color: var(--final-dark-muted) !important;
+  }
+
+  @media (max-width: 480px) {
+    .cours-editor-actions {
+      background: rgba(16, 30, 41, 0.98) !important;
+      border-color: var(--final-dark-border) !important;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28) !important;
+    }
+
+    .cours-editor-card,
+    .cours-editor-header,
+    .cours-editor-body {
+      background: var(--final-dark-surface) !important;
+    }
+  }
+}
