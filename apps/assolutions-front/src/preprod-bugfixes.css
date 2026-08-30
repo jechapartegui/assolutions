@@ -32,3 +32,179 @@
     padding-bottom: 0.5rem;
   }
 }
+
+/* Bug #12 — les styles de composants utilisaient encore des surfaces claires
+   en mode sombre mobile. On impose une palette cohérente sur les écrans de
+   gestion, les listes et Mon compte sans modifier le rendu desktop. */
+@media (max-width: 767px) and (prefers-color-scheme: dark) {
+  :root {
+    --preprod-dark-bg: #09131c;
+    --preprod-dark-surface: #101e29;
+    --preprod-dark-surface-2: #152532;
+    --preprod-dark-border: rgba(203, 213, 225, 0.18);
+    --preprod-dark-text: #e8eef5;
+    --preprod-dark-muted: #a8b7c7;
+  }
+
+  html,
+  body,
+  app-root,
+  .app-shell,
+  .page-fill,
+  .container-box,
+  .account-wrapper,
+  .adherent-editor-card,
+  .menu-shell {
+    background: var(--preprod-dark-bg) !important;
+    color: var(--preprod-dark-text) !important;
+  }
+
+  /* Surfaces : fiches groupe/personne/séance et cartes de listes. */
+  .box,
+  .card,
+  .card-content,
+  .card-header,
+  .card-footer,
+  .editor-box,
+  .account-card,
+  .person-row,
+  .project-row,
+  .mobile-item,
+  .mobile-list article,
+  .contact-panel,
+  .contact-preview,
+  .notification.is-light,
+  .menu-hero,
+  .menu-main-card,
+  .menu-card-header,
+  .menu-card-body,
+  .rider-card-button {
+    background: var(--preprod-dark-surface) !important;
+    background-image: none !important;
+    color: var(--preprod-dark-text) !important;
+    border-color: var(--preprod-dark-border) !important;
+    box-shadow: none !important;
+  }
+
+  /* Les sous-zones de formulaires doivent elles aussi rester sombres. */
+  .editor-fields,
+  .editor-stack,
+  .editor-check-grid,
+  .editor-check-item,
+  .coordinate-copy-panel,
+  .coordinate-source-summary,
+  .coordinate-copy-option,
+  .history-item,
+  .photo-editor,
+  .status-stack,
+  .contact-row,
+  .field,
+  .control,
+  .account-advanced,
+  .account-advanced-grid {
+    color: var(--preprod-dark-text) !important;
+  }
+
+  /* Texte : certains composants forçaient des gris conçus pour fond blanc. */
+  .title,
+  .subtitle,
+  .label,
+  .help,
+  .content,
+  .card-header-title,
+  .person-name,
+  .person-birthdate,
+  .account-email,
+  .menu-card-name,
+  .menu-card-subtitle,
+  .rider-name,
+  .rider-role,
+  .has-text-grey,
+  .has-text-grey-dark,
+  strong,
+  th,
+  td {
+    color: var(--preprod-dark-text) !important;
+  }
+
+  .help,
+  .has-text-grey,
+  .subtitle.is-6,
+  .subtitle.is-7,
+  .person-birthdate,
+  .menu-card-subtitle,
+  .rider-role {
+    color: var(--preprod-dark-muted) !important;
+  }
+
+  /* Champs de saisie et listes déroulantes. */
+  .input,
+  .textarea,
+  .select select,
+  input:not([type='checkbox']):not([type='radio']),
+  textarea,
+  select {
+    background: #0c1822 !important;
+    color: var(--preprod-dark-text) !important;
+    border-color: rgba(203, 213, 225, 0.22) !important;
+    box-shadow: none !important;
+  }
+
+  .input::placeholder,
+  .textarea::placeholder,
+  input::placeholder,
+  textarea::placeholder {
+    color: #8393a4 !important;
+    opacity: 1 !important;
+  }
+
+  .select:not(.is-multiple):not(.is-loading)::after {
+    border-color: #63d7c4 !important;
+  }
+
+  /* Les cartes de liste Bulma héritaient encore d'un fond blanc via .table. */
+  .table,
+  .table thead,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    background-color: transparent !important;
+    color: var(--preprod-dark-text) !important;
+  }
+
+  .table:not(.is-striped) tbody tr:nth-child(odd):not(.is-selected):not([class*='has-background-']) {
+    background-color: rgba(255, 255, 255, 0.035) !important;
+  }
+
+  /* Conserve les couleurs fonctionnelles des tags, mais rend les tags neutres lisibles. */
+  .tag:not(.is-primary):not(.is-success):not(.is-info):not(.is-warning):not(.is-danger):not(.is-link) {
+    background: var(--preprod-dark-surface-2) !important;
+    color: var(--preprod-dark-text) !important;
+  }
+
+  /* Boutons secondaires / barres d'actions fixes. */
+  .button.is-light,
+  .adherent-editor-actions .button.is-light,
+  .card-footer .button.is-light {
+    background: #172734 !important;
+    color: var(--preprod-dark-text) !important;
+    border-color: var(--preprod-dark-border) !important;
+  }
+
+  .adherent-editor-header,
+  .account-header,
+  .account-section-heading,
+  .editor-box-title-row {
+    background: transparent !important;
+    color: var(--preprod-dark-text) !important;
+    border-color: var(--preprod-dark-border) !important;
+  }
+
+  /* Le footer mobile reste séparé visuellement du contenu, sans zone blanche. */
+  .mobile .footer,
+  .mobile-footer {
+    background: #0b1721 !important;
+    border-color: var(--preprod-dark-border) !important;
+  }
+}
