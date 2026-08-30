@@ -45,6 +45,7 @@ import { PayerBoxDirective } from './souscription/payer-box.directive';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
 import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proof-editor.component';
 import { HelpComponent } from './help/help.component';
+import { CopyTextDirective } from './directives/copy-text.directive';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -97,6 +98,7 @@ import { CoursStore } from '../store/cours.store';
     SouscriptionTunnelComponent,
     MedicalProofEditorComponent,
     HelpComponent,
+    CopyTextDirective,
   ],
   imports: [
     BrowserModule,

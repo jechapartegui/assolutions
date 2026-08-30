@@ -44,8 +44,19 @@
           <thead><tr><th *ngIf="isAdmin && vm.multiSelectMode"></th><th (click)="sort('nom')" class="is-clickable" i18n>Nom</th><th (click)="sort('cours')" class="is-clickable" i18n>Cours / Type</th><th (click)="sort('date')" class="is-clickable" i18n>Date</th><th i18n>Heure / Durée</th><th i18n>Professeurs</th><th (click)="sort('lieu')" class="is-clickable" i18n>Lieu</th><th i18n>Groupes</th><th i18n>Statut</th><th i18n>Action</th></tr></thead>
           <tbody><tr *ngFor="let seance of getFilteredSeances()">
             <td *ngIf="isAdmin && vm.multiSelectMode"><label class="checkbox"><input type="checkbox" [checked]="isSelected(seance.id)" (change)="toggleSelection(seance.id)" /></label></td>
-            <td><button class="seance-name-button" type="button" (click)="open(seance)">{{ seance.nom }}</button></td><td>{{ getTypeLabel(seance) }}</td><td>{{ seance.date_seance | date:'dd/MM/yyyy' }}</td><td>{{ seance.heure_debut }} - {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}</td>
-            <td><div class="tags is-small"><span class="tag is-success" *ngFor="let prof of seance.seanceProfesseurs">{{ prof.prenom }} {{ prof.nom }}</span></div></td><td>{{ seance.lieu_nom }}</td><td><div class="tags is-small"><span class="tag is-info is-light" *ngFor="let gr of seance.groupes">{{ gr.nom }}</span></div></td><td><span class="tag" [ngClass]="getStatutClass(seance)">{{ seance.statut }}</span></td><td><button class="button is-small is-light" type="button" (click)="open(seance)"><span class="icon"><i class="fas fa-pen"></i></span></button></td>
+            <td><button class="seance-name-button" type="button" (click)="open(seance)">{{ seance.nom }}</button></td>
+            <td>{{ getTypeLabel(seance) }}</td>
+            <td>{{ seance.date_seance | date:'dd/MM/yyyy' }}</td>
+            <td>{{ seance.heure_debut }} - {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}</td>
+            <td><div class="tags is-small"><span class="tag is-success" *ngFor="let prof of seance.seanceProfesseurs">{{ prof.prenom }} {{ prof.nom }}</span></div></td>
+            <td>
+              <button *ngIf="seance.lieu_nom" type="button" class="button is-ghost is-small px-0" [appCopyLieuAddress]="seance.lieu_id" i18n-title title="Cliquer pour copier l'adresse">
+                {{ seance.lieu_nom }}
+              </button>
+            </td>
+            <td><div class="tags is-small"><span class="tag is-info is-light" *ngFor="let gr of seance.groupes">{{ gr.nom }}</span></div></td>
+            <td><span class="tag" [ngClass]="getStatutClass(seance)">{{ seance.statut }}</span></td>
+            <td><button class="button is-small is-light" type="button" (click)="open(seance)"><span class="icon"><i class="fas fa-pen"></i></span></button></td>
           </tr></tbody>
         </table>
       </div>
@@ -58,7 +69,11 @@
               <button type="button" class="seance-name-button seance-tile-title" (click)="open(seance)">{{ seance.nom || 'Séance sans nom' }}</button>
               <p class="seance-tile-line"><span class="icon-text"><span class="icon"><i class="fas fa-calendar-days"></i></span><span>{{ seance.date_seance | date:'dd/MM/yyyy' }}</span></span></p>
               <p class="seance-tile-line"><span class="icon-text"><span class="icon"><i class="fas fa-clock"></i></span><span>{{ seance.heure_debut }} - {{ calculerHeureFin(seance.heure_debut, seance.duree_seance) }}</span></span></p>
-              <p class="seance-tile-line" *ngIf="seance.lieu_nom"><span class="icon-text"><span class="icon"><i class="fas fa-location-dot"></i></span><span>{{ seance.lieu_nom }}</span></span></p>
+              <p class="seance-tile-line" *ngIf="seance.lieu_nom">
+                <button type="button" class="button is-ghost is-small px-0" [appCopyLieuAddress]="seance.lieu_id" i18n-title title="Cliquer pour copier l'adresse">
+                  <span class="icon-text"><span class="icon"><i class="fas fa-location-dot"></i></span><span>{{ seance.lieu_nom }}</span></span>
+                </button>
+              </p>
               <p class="seance-tile-meta" *ngIf="getProfesseursLabel(seance)"><strong i18n>Encadrants :</strong> {{ getProfesseursLabel(seance) }}</p>
               <p class="seance-tile-meta" *ngIf="getGroupesLabel(seance)"><strong i18n>Groupes :</strong> {{ getGroupesLabel(seance) }}</p>
             </div>
