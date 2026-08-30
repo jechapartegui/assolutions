@@ -221,13 +221,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.helpOpen = !this.helpOpen;
   }
 
-  openHelpTopic(topic: HelpTopic, event?: Event): void {
-    event?.preventDefault();
+  openHelpTopic(_topic: HelpTopic, event?: Event): void {
+    // Laisser le lien <a target="_blank"> faire l'ouverture nativement.
+    // Safari iOS peut bloquer window.open() quand il est déclenché après un
+    // preventDefault ; le comportement natif est fiable et garde le nouvel onglet.
     event?.stopPropagation();
     this.helpOpen = false;
-
-    const target = new URL(topic.url, document.baseURI).toString();
-    window.open(target, '_blank', 'noopener,noreferrer');
   }
 
   @HostListener('document:click')

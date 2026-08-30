@@ -120,7 +120,8 @@
   background: rgba(255, 255, 255, 0.94) !important;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.06);
-  overflow: hidden;
+  /* Le menu d'aide remonte au-dessus de la barre : il ne doit pas être rogné. */
+  overflow: visible;
 }
 
 .mobile .footer .tabs,
@@ -151,6 +152,40 @@
 .mobile .footer .tablet {
   font-size: 0.68rem;
   line-height: 1;
+}
+
+/* Le dernier item contient un vrai dropdown Bulma. Il doit occuper la même
+   cellule que les autres boutons et son menu doit rester dans le viewport. */
+.mobile .footer .tabs li > .dropdown,
+.mobile .footer .tabs li > .dropdown .dropdown-trigger,
+.mobile .footer .tabs li > .dropdown .dropdown-trigger > a {
+  width: 100%;
+  height: 100%;
+}
+
+.mobile .footer .dropdown-menu {
+  right: 0;
+  left: auto;
+  min-width: min(19rem, calc(100vw - 1rem));
+  max-width: calc(100vw - 1rem);
+  z-index: 500;
+}
+
+.mobile .footer .dropdown-content {
+  max-height: min(60vh, 28rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile .footer .dropdown-item {
+  height: auto !important;
+  min-height: 44px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  white-space: normal;
+  text-align: left;
+  padding: 0.75rem 1rem !important;
 }
 
 @media screen and (max-width: 1023px) {
@@ -259,5 +294,16 @@
   .mobile .footer .navbar-item.is-selected {
     background: rgba(0, 209, 178, 0.1) !important;
     color: #4fe2cc !important;
+  }
+
+  .mobile .footer .dropdown-content,
+  .mobile .footer .dropdown-item {
+    background: #111c26 !important;
+    color: #dce5ed !important;
+  }
+
+  .mobile .footer .dropdown-item:hover {
+    background: #1b2a37 !important;
+    color: #fff !important;
   }
 }
