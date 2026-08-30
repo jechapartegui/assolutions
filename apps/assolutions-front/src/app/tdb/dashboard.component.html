@@ -12,7 +12,7 @@
         <div class="menu-hero-title">
           <h1 class="title is-5 mb-0" i18n>Tableau de bord</h1>
           <p class="subtitle is-6" i18n>
-            Synthèse complète de vos séances, déclarations et présences
+            Synthèse de vos séances, déclarations et présences
           </p>
         </div>
 
@@ -23,9 +23,7 @@
             type="button"
             (click)="applyRefresh()"
           >
-            <span class="icon">
-              <i class="fas fa-rotate"></i>
-            </span>
+            <span class="icon"><i class="fas fa-rotate"></i></span>
             <span i18n>Actualiser</span>
           </button>
         </div>
@@ -63,29 +61,15 @@
                   </div>
                 </div>
               </div>
-
-              <p class="rider-name">
-                {{ personne.prenom }} {{ personne.nom }}
-              </p>
-
-              <p
-                class="rider-role"
-                [ngClass]="{
-                  'has-text-primary': personne.profil === 'ADH',
-                  'has-text-info': personne.profil === 'PROF'
-                }"
-              >
-                {{ getLibelleProfil(personne.profil) }}
-              </p>
+              <p class="rider-name">{{ personne.prenom }} {{ personne.nom }}</p>
+              <p class="rider-role">{{ getLibelleProfil(personne.profil) }}</p>
             </div>
           </ng-container>
 
           <ng-template #compactRider>
             <div class="rider-card-compact">
               <span class="rider-compact-dot"></span>
-              <span class="rider-compact-name">
-                {{ personne.prenom }} {{ personne.nom }}
-              </span>
+              <span class="rider-compact-name">{{ personne.prenom }} {{ personne.nom }}</span>
             </div>
           </ng-template>
         </button>
@@ -114,519 +98,171 @@
                             'has-photo': !!rider.photo
                           }"
                         >
-                          <img
-                            *ngIf="rider.photo"
-                            [src]="rider.photo"
-                            [alt]="'Photo de ' + rider.libelle"
-                          />
-                          <span *ngIf="!rider.photo" class="menu-card-avatar-fallback">
-                            {{ getInitiales(rider) }}
-                          </span>
+                          <img *ngIf="rider.photo" [src]="rider.photo" [alt]="'Photo de ' + rider.libelle" />
+                          <span *ngIf="!rider.photo" class="menu-card-avatar-fallback">{{ getInitiales(rider) }}</span>
                         </div>
-
                         <div class="menu-card-identity">
                           <div class="menu-card-name">{{ rider.libelle }}</div>
                           <div class="menu-card-subtitle" i18n>
-                            {{ getLibelleProfil(rider.profil) }} ·
-                            {{ dash.stats.total }} séance(s) ·
-                            {{ dash.groups.length }} cours / événement(s)
+                            {{ dash.stats.total }} séance(s) · {{ dash.stats.futures }} à venir
                           </div>
                         </div>
-                      </div>
-
-                      <div class="menu-card-header-actions">
-                        <button
-                          title="Voir la fiche"
-                          class="button is-small is-light is-rounded menu-icon-btn"
-                          type="button"
-                          (click)="Voir(rider.id)"
-                         i18n-title>
-                          <i class="fa-solid fa-user-pen"></i>
-                        </button>
                       </div>
                     </header>
 
                     <div class="menu-card-body">
                       <div class="menu-scroll-zone" #scrollableContent>
-                        <div class="desktop-view">
-                          <div class="mobile-list">
-                            <article class="mobile-item">
-                              <div class="mobile-item-title mb-2" i18n>📌 Vue générale</div>
+                        <div class="mobile-list">
+                          <!-- 1. SYNTHESES -->
+                          <details class="mobile-item" open>
+                            <summary class="mobile-item-title mb-2" i18n>📌 Synthèses</summary>
 
-                              <div class="tags are-medium">
-                                <span class="tag is-link is-light" i18n>
-                                  Total : {{ dash.stats.total }}
-                                </span>
-                                <span class="tag is-info is-light" i18n>
-                                  À venir : {{ dash.stats.futures }}
-                                </span>
-                                <span class="tag is-success is-light" i18n>
-                                  Réalisées : {{ dash.stats.realisees }}
-                                </span>
-                                <span class="tag is-warning is-light" i18n>
-                                  À déclarer : {{ dash.stats.todoDeclaration }}
-                                </span>
-                                <span class="tag is-danger is-light" i18n>
-                                  Annulées : {{ dash.stats.annulees }}
-                                </span>
-                              </div>
+                            <div class="tags are-medium mt-3">
+                              <span class="tag is-link is-light" i18n>Total : {{ dash.stats.total }}</span>
+                              <span class="tag is-info is-light" i18n>À venir : {{ dash.stats.futures }}</span>
+                              <span class="tag is-success is-light" i18n>Réalisées : {{ dash.stats.realisees }}</span>
+                              <span class="tag is-danger is-light" i18n>Annulées : {{ dash.stats.annulees }}</span>
+                              <span class="tag is-success" i18n>Déclaration : {{ percent(dash.stats.tauxDeclaration) }}</span>
+                            </div>
 
-                              <div class="columns is-multiline mt-2">
-                                <div class="column is-3">
-                                  <div class="box">
-                                    <p class="heading" i18n>Taux de déclaration</p>
-                                    <p class="title is-4">{{ percent(dash.stats.tauxDeclaration) }}</p>
-                                    <p class="is-size-7 has-text-grey" i18n>
-                                      Présent / absent / essai / convoqué
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div class="column is-3">
-                                  <div class="box">
-                                    <p class="heading" i18n>Présences déclarées</p>
-                                    <p class="title is-4">{{ dash.stats.declarePresent + dash.stats.declareEssai }}</p>
-                                    <p class="is-size-7 has-text-grey" i18n>
-                                      dont essais : {{ dash.stats.declareEssai }}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div class="column is-3">
-                                  <div class="box">
-                                    <p class="heading" i18n>Absences déclarées</p>
-                                    <p class="title is-4">{{ dash.stats.declareAbsent }}</p>
-                                    <p class="is-size-7 has-text-grey" i18n>
-                                      Non déclarées : {{ dash.stats.declareNone }}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div class="column is-3">
-                                  <div class="box">
-                                    <p class="heading" i18n>Présence réelle</p>
-                                    <p class="title is-4">{{ percent(dash.stats.tauxPresenceReelle) }}</p>
-                                    <p class="is-size-7 has-text-grey" i18n>
-                                      {{ dash.stats.realPresent }} présent(s) / {{ dash.stats.realAbsent }} absent(s)
-                                    </p>
-                                  </div>
+                            <div class="columns is-multiline mt-2">
+                              <div class="column is-12-mobile is-6-tablet is-3-desktop">
+                                <div class="box">
+                                  <p class="heading" i18n>Présences déclarées</p>
+                                  <p class="title is-4">{{ dash.stats.declarePresent + dash.stats.declareEssai }}</p>
+                                  <p class="is-size-7 has-text-grey" i18n>dont essais : {{ dash.stats.declareEssai }}</p>
                                 </div>
                               </div>
-                            </article>
-
-                            <article class="mobile-item" *ngIf="dash.todoItems.length">
-                              <div class="mobile-item-title mb-2" i18n>⚠️ Séances à déclarer</div>
-
-                              <table class="table is-fullwidth is-hoverable menu-table">
-                                <thead>
-                                  <tr>
-                                    <th i18n>Cours</th>
-                                    <th i18n>Date</th>
-                                    <th i18n>Lieu</th>
-                                    <th i18n>Statut</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr *ngFor="let ms of dash.todoItems">
-                                    <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
-                                      <i [class]="getSeanceTypeIcon(ms)"></i>
-                                      {{ getCoursLabel(ms) }}
-                                    </td>
-                                    <td>
-                                      {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
-                                      {{ ms.seance.heure_debut }}
-                                    </td>
-                                    <td>{{ getLieuLabel(ms) }}</td>
-                                    <td>
-                                      <span class="tag is-warning is-light">
-                                        {{ getDeclarationLabel(ms) }}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </article>
-
-                            <article class="mobile-item">
-                              <div class="mobile-item-title mb-2" i18n>🎯 Synthèse par cours / événement</div>
-
-                              <table class="table is-fullwidth is-hoverable menu-table">
-                                <thead>
-                                  <tr>
-                                    <th i18n>Cours</th>
-                                    <th class="has-text-centered" i18n>Total</th>
-                                    <th class="has-text-centered" i18n>À venir</th>
-                                    <th class="has-text-centered" i18n>Réalisées</th>
-                                    <th class="has-text-centered" i18n>Prés. décl.</th>
-                                    <th class="has-text-centered" i18n>Abs. décl.</th>
-                                    <th class="has-text-centered" i18n>Non décl.</th>
-                                    <th class="has-text-centered" i18n>Prés. réel</th>
-                                    <th class="has-text-centered" i18n>Abs. réel</th>
-                                  </tr>
-                                </thead>
-
-                                <tbody>
-                                  <tr *ngFor="let g of dash.groups">
-                                    <td>
-                                      <strong>{{ g.label }}</strong>
-                                      <br />
-                                      <span class="tag is-light is-small">{{ g.typeLabel }}</span>
-                                    </td>
-                                    <td class="has-text-centered">{{ g.total }}</td>
-                                    <td class="has-text-centered">{{ g.futures }}</td>
-                                    <td class="has-text-centered">{{ g.realisees }}</td>
-                                    <td class="has-text-centered">{{ g.declarePresent + g.declareEssai }}</td>
-                                    <td class="has-text-centered">{{ g.declareAbsent }}</td>
-                                    <td class="has-text-centered">{{ g.declareNone }}</td>
-                                    <td class="has-text-centered">{{ g.realPresent }}</td>
-                                    <td class="has-text-centered">{{ g.realAbsent }}</td>
-                                  </tr>
-
-                                  <tr *ngIf="dash.groups.length === 0">
-                                    <td colspan="9" class="has-text-centered" i18n>
-                                      Aucune séance disponible.
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </article>
-
-                            <div class="columns is-multiline">
-                              <div class="column is-6">
-                                <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2" i18n>🏷️ Par type</div>
-                                  <div class="tags">
-                                    <span
-                                      *ngFor="let x of dash.byType"
-                                      class="tag is-info is-light"
-                                    >
-                                      {{ x.label }} : {{ x.count }} · {{ x.percent }} %
-                                    </span>
-                                  </div>
-                                </article>
+                              <div class="column is-12-mobile is-6-tablet is-3-desktop">
+                                <div class="box">
+                                  <p class="heading" i18n>Absences déclarées</p>
+                                  <p class="title is-4">{{ dash.stats.declareAbsent }}</p>
+                                  <p class="is-size-7 has-text-grey" i18n>Non déclarées : {{ dash.stats.declareNone }}</p>
+                                </div>
                               </div>
-
-                              <div class="column is-6">
-                                <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2" i18n>📅 Par statut</div>
-                                  <div class="tags">
-                                    <span
-                                      *ngFor="let x of dash.byStatus"
-                                      class="tag is-link is-light"
-                                    >
-                                      {{ x.label }} : {{ x.count }} · {{ x.percent }} %
-                                    </span>
-                                  </div>
-                                </article>
+                              <div class="column is-12-mobile is-6-tablet is-3-desktop">
+                                <div class="box">
+                                  <p class="heading" i18n>Présence réelle</p>
+                                  <p class="title is-4">{{ percent(dash.stats.tauxPresenceReelle) }}</p>
+                                  <p class="is-size-7 has-text-grey" i18n>{{ dash.stats.realPresent }} présent(s) / {{ dash.stats.realAbsent }} absent(s)</p>
+                                </div>
                               </div>
-
-                              <div class="column is-6">
-                                <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2" i18n>👍 Déclarations</div>
-                                  <div class="tags">
-                                    <span
-                                      *ngFor="let x of dash.byDeclaration"
-                                      class="tag is-success is-light"
-                                    >
-                                      {{ x.label }} : {{ x.count }} · {{ x.percent }} %
-                                    </span>
-                                  </div>
-                                </article>
-                              </div>
-
-                              <div class="column is-6">
-                                <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2" i18n>📍 Par lieu</div>
-                                  <div class="tags">
-                                    <span
-                                      *ngFor="let x of dash.byLieu"
-                                      class="tag is-light"
-                                    >
-                                      {{ x.label }} : {{ x.count }} · {{ x.percent }} %
-                                    </span>
-                                  </div>
-                                </article>
+                              <div class="column is-12-mobile is-6-tablet is-3-desktop">
+                                <div class="box">
+                                  <p class="heading" i18n>À déclarer</p>
+                                  <p class="title is-4">{{ dash.stats.todoDeclaration }}</p>
+                                  <p class="is-size-7 has-text-grey" i18n>Présence non encore déclarée</p>
+                                </div>
                               </div>
                             </div>
 
-                            <div class="columns is-multiline">
-                              <div class="column is-6">
-                                <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2" i18n>⏭️ Prochaines séances</div>
-
-                                  <table class="table is-fullwidth is-hoverable menu-table">
-                                    <thead>
-                                      <tr>
-                                        <th i18n>Cours</th>
-                                        <th i18n>Date</th>
-                                        <th i18n>Déclaration</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr *ngFor="let ms of dash.upcomingItems">
-                                        <td class="cell-click" >
-                                          {{ getCoursLabel(ms) }}
-                                        </td>
-                                        <td>
-                                          {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
-                                          {{ ms.seance.heure_debut }}
-                                        </td>
-                                        <td>
-                                          <i [class]="getDeclarationIcon(ms)"></i>
-                                          {{ getDeclarationLabel(ms) }}
-                                        </td>
-                                      </tr>
-
-                                      <tr *ngIf="dash.upcomingItems.length === 0">
-                                        <td colspan="3" class="has-text-centered" i18n>
-                                          Aucune séance à venir.
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </article>
+                            <div class="columns is-multiline mt-1">
+                              <div class="column is-12-mobile is-6-tablet">
+                                <p class="has-text-weight-semibold mb-2" i18n>Par type</p>
+                                <div class="tags">
+                                  <span *ngFor="let x of dash.byType" class="tag is-info is-light">{{ x.label }} : {{ x.count }}</span>
+                                </div>
                               </div>
-
-                              <div class="column is-6">
-                                <article class="mobile-item">
-                                  <div class="mobile-item-title mb-2" i18n>⏮️ Dernières séances</div>
-
-                                  <table class="table is-fullwidth is-hoverable menu-table">
-                                    <thead>
-                                      <tr>
-                                        <th i18n>Cours</th>
-                                        <th i18n>Date</th>
-                                        <th i18n>Réel</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr *ngFor="let ms of dash.recentItems">
-                                        <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
-                                          {{ getCoursLabel(ms) }}
-                                        </td>
-                                        <td>
-                                          {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
-                                          {{ ms.seance.heure_debut }}
-                                        </td>
-                                        <td>
-                                          <i [class]="getRealPresenceIcon(ms)"></i>
-                                          {{ getRealPresenceLabel(ms) }}
-                                        </td>
-                                      </tr>
-
-                                      <tr *ngIf="dash.recentItems.length === 0">
-                                        <td colspan="3" class="has-text-centered" i18n>
-                                          Aucune séance passée.
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </article>
+                              <div class="column is-12-mobile is-6-tablet">
+                                <p class="has-text-weight-semibold mb-2" i18n>Déclarations</p>
+                                <div class="tags">
+                                  <span *ngFor="let x of dash.byDeclaration" class="tag is-success is-light">{{ x.label }} : {{ x.count }}</span>
+                                </div>
                               </div>
                             </div>
+                          </details>
+
+                          <!-- 2. PROCHAINES SEANCES, Y COMPRIS HORS GROUPE -->
+                          <details class="mobile-item" open>
+                            <summary class="mobile-item-title mb-2" i18n>⏭️ Prochaines séances</summary>
+
+                            <div class="mt-3" *ngFor="let ms of dash.upcomingItems">
+                              <div class="mobile-item-top mb-3">
+                                <div class="mobile-item-main">
+                                  <p class="mobile-item-title mb-1">{{ getCoursLabel(ms) }}</p>
+                                  <p class="mobile-item-meta">
+                                    {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
+                                    {{ ms.seance.heure_debut }} -
+                                    {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
+                                  </p>
+                                  <p class="is-size-7 mb-1">
+                                    <span
+                                      class="cell-link"
+                                      [title]="getadresse(ms.seance.lieu_id)"
+                                      (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
+                                    >{{ getLieuLabel(ms) }}</span>
+                                  </p>
+                                  <div class="tags is-small">
+                                    <span class="tag is-light">{{ getDeclarationLabel(ms) }}</span>
+                                    <span *ngIf="ms.dansGroupeAdherent === false" class="tag is-warning is-light" i18n>Hors groupe</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <p *ngIf="dash.upcomingItems.length === 0" class="menu-empty" i18n>Aucune séance à venir.</p>
+                          </details>
+
+                          <!-- 3. DETAIL DES GROUPES / COURS -->
+                          <details class="mobile-item">
+                            <summary class="mobile-item-title mb-2" i18n>📚 Détail des groupes</summary>
 
                             <ng-container *ngFor="let g of dash.groups">
-                              <article class="mobile-item">
-                                <div class="mobile-item-title mb-2">📚 {{ g.label }}</div>
-
+                              <div class="box mt-3">
+                                <p class="has-text-weight-bold mb-2">{{ g.label }}</p>
                                 <div class="tags is-small mb-3">
                                   <span class="tag is-link is-light" i18n>Total : {{ g.total }}</span>
                                   <span class="tag is-info is-light" i18n>À venir : {{ g.futures }}</span>
                                   <span class="tag is-success is-light" i18n>Réalisées : {{ g.realisees }}</span>
-                                  <span class="tag is-warning is-light" i18n>À déclarer : {{ g.todoDeclaration }}</span>
-                                  <span class="tag is-success" i18n>
-                                    Déclarés présents : {{ g.declarePresent + g.declareEssai }}
-                                  </span>
-                                  <span class="tag is-danger" i18n>
-                                    Déclarés absents : {{ g.declareAbsent }}
-                                  </span>
                                 </div>
 
-                                <table class="table is-fullwidth is-hoverable menu-table">
-                                  <thead>
-                                    <tr>
-                                      <th i18n>Nom</th>
-                                      <th i18n>Date Heure</th>
-                                      <th i18n>Lieu</th>
-                                      <th i18n>Statut</th>
-                                      <th i18n>Déclaré</th>
-                                      <th i18n>Réel</th>
-                                      <th></th>
-                                    </tr>
-                                  </thead>
-
-                                  <tbody>
-                                    <tr *ngFor="let ms of g.items">
-                                      <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
-                                        <i [class]="getSeanceTypeIcon(ms)"></i>
-                                        {{ getSeanceName(ms) }}
-                                      </td>
-
-                                      <td class="cell-click" (click)="GotoSeance(ms.seance.id)">
-                                        {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
-                                        {{ ms.seance.heure_debut }} -
-                                        {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
-                                        ({{ ms.seance.duree_seance | dureeHHMM }})
-                                      </td>
-
-                                      <td>
-                                        <span
-                                          class="cell-link"
-                                          [title]="getadresse(ms.seance.lieu_id)"
-                                          (click)="copierDansPressePapier(getadresse(ms.seance.lieu_id))"
-                                        >
-                                          {{ getLieuLabel(ms) }}
-                                        </span>
-                                      </td>
-
-                                      <td>{{ getSeanceStatusLabel(ms) }}</td>
-
-                                      <td>
-                                        <i [class]="getDeclarationIcon(ms)"></i>
-                                        {{ getDeclarationLabel(ms) }}
-                                      </td>
-
-                                      <td>
-                                        <i [class]="getRealPresenceIcon(ms)"></i>
-                                        {{ getRealPresenceLabel(ms) }}
-                                      </td>
-
-                                      <td>
-                                        <btn
-                                          *ngIf="rider.profil === 'PROF'"
-                                          [type_button]="'VoirLight'"
-                                          (click)="VoirMaSeance(ms.seance)"
-                                        ></btn>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </article>
-                            </ng-container>
-                          </div>
-                        </div>
-
-                        <div class="mobile-view">
-                          <div class="mobile-list">
-                            <article class="mobile-item">
-                              <div class="mobile-item-title mb-2" i18n>📌 Vue générale</div>
-
-                              <div class="tags is-small">
-                                <span class="tag is-link is-light" i18n>Total : {{ dash.stats.total }}</span>
-                                <span class="tag is-info is-light" i18n>À venir : {{ dash.stats.futures }}</span>
-                                <span class="tag is-success is-light" i18n>Réalisées : {{ dash.stats.realisees }}</span>
-                                <span class="tag is-warning is-light" i18n>À déclarer : {{ dash.stats.todoDeclaration }}</span>
-                                <span class="tag is-danger is-light" i18n>Annulées : {{ dash.stats.annulees }}</span>
-                                <span class="tag is-success" i18n>Déclaration : {{ percent(dash.stats.tauxDeclaration) }}</span>
+                                <div *ngFor="let ms of g.items" class="mb-3">
+                                  <p class="mb-1"><strong>{{ getSeanceName(ms) }}</strong></p>
+                                  <p class="is-size-7 mb-1">
+                                    {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }} · {{ getLieuLabel(ms) }}
+                                  </p>
+                                  <div class="tags is-small">
+                                    <span class="tag is-info is-light" *ngFor="let groupName of ms.groupeNoms">{{ groupName }}</span>
+                                    <span *ngIf="!ms.groupeNoms?.length" class="tag is-light" i18n>Groupe non renseigné</span>
+                                    <span class="tag is-light" [class.is-warning]="getDeclarationLabel(ms) === 'Non déclaré'">{{ getDeclarationLabel(ms) }}</span>
+                                    <span class="tag is-light" [class.is-warning]="getRealPresenceLabel(ms) === 'Non renseigné'">{{ getRealPresenceLabel(ms) }}</span>
+                                  </div>
+                                </div>
                               </div>
-                            </article>
-
-                            <article class="mobile-item" *ngIf="dash.todoItems.length">
-                              <div class="mobile-item-title mb-2" i18n>⚠️ À déclarer</div>
-
-                              <ng-container *ngFor="let ms of dash.todoItems">
-                                <div class="mobile-item-top mb-3">
-                                  <div class="mobile-item-main">
-                                    <button
-                                      class="mobile-item-title-btn"
-                                      type="button"
-                                      (click)="GotoSeance(ms.seance.id)"
-                                    >
-                                      <span class="mobile-item-title">
-                                        {{ getCoursLabel(ms) }}
-                                      </span>
-                                    </button>
-
-                                    <p class="mobile-item-meta">
-                                      {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
-                                      {{ ms.seance.heure_debut }} -
-                                      {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
-                                    </p>
-
-                                    <p class="is-size-7 mb-0">
-                                      {{ getLieuLabel(ms) }}
-                                    </p>
-                                  </div>
-                                </div>
-                              </ng-container>
-                            </article>
-
-                            <ng-container *ngFor="let g of dash.groups">
-                              <article class="mobile-item">
-                                <div class="mobile-item-title mb-2">📚 {{ g.label }}</div>
-
-                                <div class="tags is-small mb-3">
-                                  <span class="tag is-link is-light" i18n>Total : {{ g.total }}</span>
-                                  <span class="tag is-info is-light" i18n>À venir : {{ g.futures }}</span>
-                                  <span class="tag is-success is-light" i18n>Réalisées : {{ g.realisees }}</span>
-                                  <span class="tag is-warning is-light" i18n>À déclarer : {{ g.todoDeclaration }}</span>
-                                </div>
-
-                                <ng-container *ngFor="let ms of g.items">
-                                  <div class="mobile-item-top mb-3">
-                                    <div class="mobile-item-main">
-                                      <button
-                                        class="mobile-item-title-btn"
-                                        type="button"
-                                      >
-                                        <span class="mobile-item-title">
-                                          <i [class]="getSeanceTypeIcon(ms)"></i>
-                                          {{ getSeanceName(ms) }}
-                                        </span>
-                                      </button>
-
-                                      <p class="mobile-item-meta">
-                                        {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
-                                        {{ ms.seance.heure_debut }} -
-                                        {{ calculerHeureFin(ms.seance.heure_debut, ms.seance.duree_seance) }}
-                                        ({{ ms.seance.duree_seance | dureeHHMM }})
-                                      </p>
-
-                                      <p class="is-size-7 mb-1">
-                                        {{ getLieuLabel(ms) }} · {{ getSeanceStatusLabel(ms) }}
-                                      </p>
-
-                                      <div class="tags is-small">
-                                        <span class="tag is-light">
-                                          <i [class]="getDeclarationIcon(ms)"></i>
-                                          &nbsp;{{ getDeclarationLabel(ms) }}
-                                        </span>
-
-                                        <span class="tag is-light">
-                                          <i [class]="getRealPresenceIcon(ms)"></i>
-                                          &nbsp;{{ getRealPresenceLabel(ms) }}
-                                        </span>
-                                      </div>
-                                    </div>
-
-                                    <div class="mobile-item-actions">
-                                      <btn
-                                        *ngIf="rider.profil === 'PROF'"
-                                        [type_button]="'VoirLight'"
-                                        (click)="VoirMaSeance(ms.seance)"
-                                      ></btn>
-                                    </div>
-                                  </div>
-                                </ng-container>
-                              </article>
                             </ng-container>
 
-                            <p *ngIf="dash.groups.length === 0" class="menu-empty" i18n>
-                              Aucune séance disponible.
-                            </p>
-                          </div>
+                            <p *ngIf="dash.groups.length === 0" class="menu-empty" i18n>Aucun groupe renseigné.</p>
+                          </details>
+
+                          <!-- 4. SEANCES HORS GROUPE -->
+                          <details class="mobile-item">
+                            <summary class="mobile-item-title mb-2" i18n>⚠️ Séances hors groupe</summary>
+
+                            <ng-container *ngFor="let ms of dash.allItems">
+                              <div *ngIf="ms.dansGroupeAdherent === false" class="box mt-3">
+                                <p class="mb-1"><strong>{{ getCoursLabel(ms) }}</strong></p>
+                                <p class="is-size-7 mb-1">
+                                  {{ ms.seance.date_seance | date : 'dd/MM/yyyy' }}
+                                  {{ ms.seance.heure_debut }} · {{ getLieuLabel(ms) }}
+                                </p>
+                                <div class="tags is-small">
+                                  <span class="tag is-warning is-light" i18n>Séance hors groupe</span>
+                                  <span class="tag is-light">{{ getDeclarationLabel(ms) }}</span>
+                                </div>
+                              </div>
+                            </ng-container>
+                          </details>
                         </div>
+
+                        <button
+                          class="scroll-to-top"
+                          *ngIf="showScrollToTop"
+                          (click)="scrollToTop()"
+                          title="Revenir en haut"
+                          type="button"
+                          i18n-title
+                        >↑</button>
                       </div>
-
-                      <button
-                        class="scroll-to-top"
-                        *ngIf="showScrollToTop"
-                        (click)="scrollToTop()"
-                        title="Revenir en haut"
-                        type="button"
-                       i18n-title>
-                        ↑
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -638,9 +274,7 @@
     </ng-container>
 
     <ng-template #noRider>
-      <div class="menu-empty" i18n>
-        Aucun profil disponible pour ce tableau de bord.
-      </div>
+      <div class="menu-empty" i18n>Aucun profil disponible pour ce tableau de bord.</div>
     </ng-template>
   </ng-container>
 </div>
