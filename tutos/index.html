@@ -3,94 +3,164 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Assolutions - Tutoriels utilisateur</title>
+  <title>Assolutions - Tutoriels</title>
   <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --border: #dbe2ea;
+      --primary: #1e3a5f;
+      --accent: #0f766e;
+    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      color: #1f2937;
+      background: var(--bg);
+      color: var(--text);
     }
     .page {
-      max-width: 820px;
+      max-width: 980px;
       margin: 0 auto;
       padding: 32px 20px 48px;
     }
     .hero {
-      background: #1e3a5f;
+      background: var(--primary);
       color: #fff;
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 28px;
-      margin-bottom: 22px;
+      margin-bottom: 28px;
     }
-    .hero h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+    .hero h1 { margin: 0 0 8px; font-size: 30px; }
+    .hero p { margin: 0; opacity: .92; line-height: 1.5; }
+    .section { margin: 28px 0 36px; }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      color: var(--primary);
+      font-size: 22px;
     }
-    .hero p {
-      margin: 0;
-      opacity: .9;
-      line-height: 1.5;
+    .section-title span {
+      display: inline-flex;
+      min-width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #dff7f2;
+      color: #075e54;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
     .card {
       display: block;
-      background: #fff;
+      background: var(--surface);
       color: inherit;
       text-decoration: none;
-      border: 1px solid #dbe2ea;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 18px 20px;
-      margin-bottom: 12px;
       box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+      transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
     }
-    .card:hover {
-      border-color: #1e3a5f;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, .08);
+    .card:hover,
+    .card:focus-visible {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 16px rgba(15, 23, 42, .09);
+      outline: none;
     }
     .card strong {
       display: block;
-      margin-bottom: 5px;
-      color: #1e3a5f;
+      margin-bottom: 6px;
+      color: var(--primary);
+      line-height: 1.35;
     }
     .card span {
       font-size: 14px;
-      color: #5f6b7a;
+      color: var(--muted);
       line-height: 1.45;
     }
     .footer {
-      margin-top: 26px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
       font-size: 13px;
-      color: #6b7280;
+      color: var(--muted);
       text-align: center;
+    }
+    @media (max-width: 700px) {
+      .page { padding: 20px 14px 36px; }
+      .hero { padding: 22px 20px; }
+      .hero h1 { font-size: 25px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #09131c;
+        --surface: #101e29;
+        --text: #e8eef5;
+        --muted: #a8b7c7;
+        --border: rgba(203, 213, 225, .18);
+        --primary: #87c9ff;
+        --accent: #63d7c4;
+      }
+      .hero { background: #102d49; }
+      .section-title span { background: #123c38; color: #8ce9da; }
     }
   </style>
 </head>
 <body>
   <main class="page">
     <section class="hero">
-      <h1>Tutoriels utilisateur Assolutions</h1>
-      <p>Les principaux guides pour gérer votre compte, vos personnes, votre inscription et vos séances.</p>
+      <h1>Tutoriels Assolutions</h1>
+      <p>Retrouvez ici l’ensemble des guides disponibles. Choisissez votre profil puis ouvrez le tutoriel souhaité en PDF.</p>
     </section>
 
-    <a class="card" href="01_Aide_utilisateur_Mon_compte.pdf" target="_blank" rel="noopener noreferrer">
-      <strong>1. Mon compte</strong>
-      <span>Retrouver les informations de votre compte et accéder aux personnes qui y sont rattachées.</span>
-    </a>
+    <section class="section">
+      <h2 class="section-title">Utilisateur <span>4</span></h2>
+      <div class="grid">
+        <a class="card" href="01_Aide_utilisateur_Mon_compte.pdf" target="_blank" rel="noopener noreferrer"><strong>1. Mon compte</strong><span>Gérer son compte et les personnes qui y sont rattachées.</span></a>
+        <a class="card" href="02_Aide_utilisateur_Personne.pdf" target="_blank" rel="noopener noreferrer"><strong>2. Créer ou modifier une personne</strong><span>Identité, contacts, adresse et informations personnelles.</span></a>
+        <a class="card" href="03_Aide_utilisateur_Inscription_et_paiement.pdf" target="_blank" rel="noopener noreferrer"><strong>3. Inscription et paiement</strong><span>Choisir une inscription, compléter le dossier et payer.</span></a>
+        <a class="card" href="04_Aide_utilisateur_Seances_et_essais.pdf" target="_blank" rel="noopener noreferrer"><strong>4. Séances et essais</strong><span>Consulter les séances, déclarer sa présence ou demander un essai.</span></a>
+      </div>
+    </section>
 
-    <a class="card" href="02_Aide_utilisateur_Personne.pdf" target="_blank" rel="noopener noreferrer">
-      <strong>2. Créer ou modifier une personne</strong>
-      <span>Compléter une fiche, les contacts, l’adresse et les informations nécessaires au club.</span>
-    </a>
+    <section class="section">
+      <h2 class="section-title">Professeur / encadrant <span>4</span></h2>
+      <div class="grid">
+        <a class="card" href="01_Aide_prof_Adherents.pdf" target="_blank" rel="noopener noreferrer"><strong>1. Adhérents</strong><span>Consulter et gérer les fiches adhérents.</span></a>
+        <a class="card" href="02_Aide_prof_Groupes.pdf" target="_blank" rel="noopener noreferrer"><strong>2. Groupes</strong><span>Créer, modifier et gérer les membres d’un groupe.</span></a>
+        <a class="card" href="03_Aide_prof_Cours_et_seances.pdf" target="_blank" rel="noopener noreferrer"><strong>3. Cours et séances</strong><span>Créer et administrer les cours et les séances.</span></a>
+        <a class="card" href="04_Aide_prof_Piloter_une_seance.pdf" target="_blank" rel="noopener noreferrer"><strong>4. Piloter une séance</strong><span>Présences, communication et suivi opérationnel d’une séance.</span></a>
+      </div>
+    </section>
 
-    <a class="card" href="03_Aide_utilisateur_Inscription_et_paiement.pdf" target="_blank" rel="noopener noreferrer">
-      <strong>3. Inscription et paiement</strong>
-      <span>Choisir les groupes et le tarif, compléter le dossier puis finaliser l’inscription.</span>
-    </a>
-
-    <a class="card" href="04_Aide_utilisateur_Seances_et_essais.pdf" target="_blank" rel="noopener noreferrer">
-      <strong>4. Séances, présences et essais</strong>
-      <span>Consulter les séances et gérer une présence, une absence ou une séance d’essai.</span>
-    </a>
+    <section class="section">
+      <h2 class="section-title">Administrateur <span>9</span></h2>
+      <div class="grid">
+        <a class="card" href="01_Aide_admin_Centre_de_pilotage.pdf" target="_blank" rel="noopener noreferrer"><strong>1. Centre de pilotage</strong><span>Accéder aux fonctions d’administration et au pilotage du club.</span></a>
+        <a class="card" href="02_Aide_admin_Saisons.pdf" target="_blank" rel="noopener noreferrer"><strong>2. Saisons</strong><span>Créer et administrer les saisons du projet.</span></a>
+        <a class="card" href="03_Aide_admin_Tarifs_inscription.pdf" target="_blank" rel="noopener noreferrer"><strong>3. Tarifs d’inscription</strong><span>Configurer les offres et tarifs proposés à l’inscription.</span></a>
+        <a class="card" href="04_Aide_admin_Codes_promotionnels.pdf" target="_blank" rel="noopener noreferrer"><strong>4. Codes promotionnels</strong><span>Créer et administrer les réductions applicables aux inscriptions.</span></a>
+        <a class="card" href="05_Aide_admin_Exigences_dossiers.pdf" target="_blank" rel="noopener noreferrer"><strong>5. Exigences des dossiers</strong><span>Configurer les pièces et validations nécessaires à l’inscription.</span></a>
+        <a class="card" href="06_Aide_admin_Professeurs_et_contrats.pdf" target="_blank" rel="noopener noreferrer"><strong>6. Professeurs et contrats</strong><span>Gérer les encadrants et leurs contrats sur la saison.</span></a>
+        <a class="card" href="07_Aide_admin_Lieux.pdf" target="_blank" rel="noopener noreferrer"><strong>7. Lieux</strong><span>Administrer les gymnases, salles et autres lieux utilisés.</span></a>
+        <a class="card" href="08_Aide_admin_Finances.pdf" target="_blank" rel="noopener noreferrer"><strong>8. Finances</strong><span>Suivre et administrer les données financières.</span></a>
+        <a class="card" href="09_Aide_admin_Communication.pdf" target="_blank" rel="noopener noreferrer"><strong>9. Communication</strong><span>Utiliser les fonctions d’envoi et de communication du club.</span></a>
+      </div>
+    </section>
 
     <div class="footer">Assolutions — aide en ligne</div>
   </main>
