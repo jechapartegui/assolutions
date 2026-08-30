@@ -281,32 +281,10 @@
             </li>
 
             <li *ngIf="store.isLoggedIn()">
-              <div
-                class="dropdown is-up is-right"
-                [class.is-active]="helpOpen"
-                (click)="$event.stopPropagation()"
-              >
-                <div class="dropdown-trigger">
-                  <a href="#" (click)="toggleHelp($event)">
-                    <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
-                    <span class="tablet" i18n>Aide</span>
-                  </a>
-                </div>
-                <div class="dropdown-menu" role="menu">
-                  <div class="dropdown-content">
-                    <a
-                      [href]="topic.url"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="dropdown-item"
-                      *ngFor="let topic of visibleHelpTopics"
-                      (click)="openHelpTopic(topic, $event)"
-                    >
-                      {{ topic.label }}
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <a href="/tutos/" aria-label="Ouvrir les tutoriels" i18n-aria-label>
+                <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
+                <span class="tablet" i18n>Aide</span>
+              </a>
             </li>
           </ul>
         </div>
