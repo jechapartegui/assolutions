@@ -114,7 +114,9 @@ export class SeanceMapper {
     vm.date_seance = raw.date_seance ? new Date(raw.date_seance) : new Date();
     vm.heure_debut = raw.heure_debut ?? '11:00';
     vm.duree_seance = raw.duree_seance ?? 0;
-    vm.heure_fin = raw.heure_fin ?? calculerHeureFinUtil(vm.heure_debut, vm.duree_seance);
+    // L'heure de fin est une information calculée. Ne jamais réutiliser une
+    // ancienne valeur persistée qui peut être incohérente avec début + durée.
+    vm.heure_fin = calculerHeureFinUtil(vm.heure_debut, vm.duree_seance);
     vm.lieu_id = raw.lieu_id ?? 0;
     vm.statut = (raw.statut as any) ?? 'prévue';
     vm.age_minimum = raw.age_minimum ?? null;
