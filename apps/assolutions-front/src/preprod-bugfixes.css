@@ -33,9 +33,9 @@
   }
 }
 
-/* Bug #12 — les styles de composants utilisaient encore des surfaces claires
-   en mode sombre mobile. On impose une palette cohérente sur les écrans de
-   gestion, les listes et Mon compte sans modifier le rendu desktop. */
+/* Bug #12 — palette mobile sombre cohérente. Les composants ont beaucoup de
+   cartes custom qui n'utilisent pas toujours .box/.card : on les couvre ici
+   explicitement pour éviter les fonds blancs + textes pâles observés sur iOS. */
 @media (max-width: 767px) and (prefers-color-scheme: dark) {
   :root {
     --preprod-dark-bg: #09131c;
@@ -53,13 +53,18 @@
   .page-fill,
   .container-box,
   .account-wrapper,
+  .adherent-shell,
   .adherent-editor-card,
+  .cours-shell,
+  .seance-shell,
+  .groupe-page,
   .menu-shell {
     background: var(--preprod-dark-bg) !important;
+    background-image: none !important;
     color: var(--preprod-dark-text) !important;
   }
 
-  /* Surfaces : fiches groupe/personne/séance et cartes de listes. */
+  /* Toutes les grandes surfaces rencontrées dans les captures iPhone. */
   .box,
   .card,
   .card-content,
@@ -78,7 +83,43 @@
   .menu-main-card,
   .menu-card-header,
   .menu-card-body,
-  .rider-card-button {
+  .rider-card-button,
+  .adherent-hero,
+  .adherent-main-card,
+  .adherent-card-header,
+  .adherent-card-body,
+  .adherent-filter-panel,
+  .adherent-filter-panel-inner,
+  .adherent-tile,
+  .adherent-editor-header,
+  .adherent-editor-body,
+  .cours-hero,
+  .cours-main-card,
+  .cours-card-header,
+  .cours-card-body,
+  .cours-filter-panel,
+  .cours-filter-panel-inner,
+  .cours-tile,
+  .seance-hero,
+  .seance-main-card,
+  .seance-card-header,
+  .seance-card-body,
+  .seance-filter-panel,
+  .seance-filter-panel-inner,
+  .seance-tile,
+  .groupe-main-card,
+  .groupe-card-header,
+  .groupe-layout,
+  .groupe-list-panel,
+  .groupe-detail-panel,
+  .groupe-edit-card,
+  .groupe-detail-card,
+  .groupe-section-header,
+  .groupe-edit-content,
+  .groupe-criteria-box,
+  .groupe-list-item,
+  .groupe-member-card,
+  .groupe-add-member {
     background: var(--preprod-dark-surface) !important;
     background-image: none !important;
     color: var(--preprod-dark-text) !important;
@@ -86,7 +127,12 @@
     box-shadow: none !important;
   }
 
-  /* Les sous-zones de formulaires doivent elles aussi rester sombres. */
+  .groupe-list-item.is-active {
+    background: rgba(0, 209, 178, 0.12) !important;
+    border-color: rgba(53, 221, 194, 0.58) !important;
+  }
+
+  /* Sous-zones de formulaires. */
   .editor-fields,
   .editor-stack,
   .editor-check-grid,
@@ -101,15 +147,21 @@
   .field,
   .control,
   .account-advanced,
-  .account-advanced-grid {
+  .account-advanced-grid,
+  .groupe-criteria-heading,
+  .groupe-checkbox-column,
+  .cours-tile-main,
+  .seance-tile-main,
+  .adherent-tile-main {
     color: var(--preprod-dark-text) !important;
   }
 
-  /* Texte : certains composants forçaient des gris conçus pour fond blanc. */
+  /* Texte : neutralise les gris pensés pour une surface blanche. */
   .title,
   .subtitle,
   .label,
   .help,
+  .heading,
   .content,
   .card-header-title,
   .person-name,
@@ -119,6 +171,10 @@
   .menu-card-subtitle,
   .rider-name,
   .rider-role,
+  .groupe-list-name,
+  .cours-tile-title,
+  .seance-tile-title,
+  .adherent-tile-title,
   .has-text-grey,
   .has-text-grey-dark,
   strong,
@@ -133,7 +189,10 @@
   .subtitle.is-7,
   .person-birthdate,
   .menu-card-subtitle,
-  .rider-role {
+  .rider-role,
+  .cours-tile-meta,
+  .seance-tile-meta,
+  .adherent-tile-meta {
     color: var(--preprod-dark-muted) !important;
   }
 
@@ -162,7 +221,7 @@
     border-color: #63d7c4 !important;
   }
 
-  /* Les cartes de liste Bulma héritaient encore d'un fond blanc via .table. */
+  /* Tables et listes. */
   .table,
   .table thead,
   .table tbody,
@@ -177,14 +236,14 @@
     background-color: rgba(255, 255, 255, 0.035) !important;
   }
 
-  /* Conserve les couleurs fonctionnelles des tags, mais rend les tags neutres lisibles. */
   .tag:not(.is-primary):not(.is-success):not(.is-info):not(.is-warning):not(.is-danger):not(.is-link) {
     background: var(--preprod-dark-surface-2) !important;
     color: var(--preprod-dark-text) !important;
   }
 
-  /* Boutons secondaires / barres d'actions fixes. */
+  /* Boutons secondaires / barres fixes. */
   .button.is-light,
+  .button.is-ghost,
   .adherent-editor-actions .button.is-light,
   .card-footer .button.is-light {
     background: #172734 !important;
@@ -196,12 +255,10 @@
   .account-header,
   .account-section-heading,
   .editor-box-title-row {
-    background: transparent !important;
     color: var(--preprod-dark-text) !important;
     border-color: var(--preprod-dark-border) !important;
   }
 
-  /* Le footer mobile reste séparé visuellement du contenu, sans zone blanche. */
   .mobile .footer,
   .mobile-footer {
     background: #0b1721 !important;
