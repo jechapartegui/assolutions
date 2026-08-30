@@ -6,10 +6,15 @@
   Objectif métier :
   - PREUVE_MEDICALE_STANDARD : règle générale d'inscription, obligatoire + bloquante.
   - PREUVE_MEDICALE_COMPETITION : règle de licence compétition, obligatoire mais
-    non bloquante par défaut ; le groupe Derby la rend obligatoire + bloquante.
-  - PHOTO : comportement actuel conservé ; Derby ajoute obligatoire + bloquante.
-  - FFRS_DROIT_IMAGE : comportement actuel conservé ; Derby ajoute obligatoire
-    + bloquante. Un consentement n'est satisfait que par OUI côté moteur.
+    non bloquante par défaut ; les groupes de pratique Derby la rendent
+    obligatoire + bloquante.
+  - PHOTO : comportement actuel conservé ; les groupes de pratique Derby ajoutent
+    obligatoire + bloquante.
+  - FFRS_DROIT_IMAGE : comportement actuel conservé ; les groupes de pratique Derby
+    ajoutent obligatoire + bloquante. Un consentement n'est satisfait que par OUI.
+
+  IMPORTANT : le groupe "Arbitre Roller Derby" est explicitement exclu du
+  périmètre Derby renforcé.
 
   Le script conserve l'id de l'ancienne exigence médicale générale afin de ne
   pas casser les réponses/références historiques. Il est réexécutable.
@@ -17,10 +22,26 @@
 
 BEGIN;
 
-/* Défensif : nécessaire si l'upgrade du 25/08 n'a pas encore été joué. */
 ALTER TABLE public.exigence_dossier_portee
   ADD COLUMN IF NOT EXISTS obligatoire_override boolean NULL,
   ADD COLUMN IF NOT EXISTS bloquante_override boolean NULL;
+
+/*
+  On matérialise une seule fois les vrais groupes de pratique Derby.
+  Le groupe d'arbitrage est volontairement exclu, même si son nom contient Derby.
+*/
+CREATE TEMP TABLE tmp_assolutions_derby_ids (
+  id integer PRIMARY KEY
+) ON COMMIT DROP;
+
+INSERT INTO tmp_assolutions_derby_ids (id)
+SELECT g.id
+FROM public.groupes g
+JOIN public.saison s ON s.id = g.saison_id
+WHERE s.project_id = 1
+  AND g.saison_id = 6
+  AND lower(btrim(g.nom)) LIKE '%derby%'
+  AND lower(btrim(g.nom)) <> lower('Arbitre Roller Derby');
 
 DO $$
 DECLARE
@@ -32,11 +53,19 @@ DECLARE
   v_image_id integer;
   v_derby_count integer;
 BEGIN
+  SELECT count(*) INTO v_derby_count
+  FROM tmp_assolutions_derby_ids;
+
+  IF v_derby_count = 0 THEN
+    RAISE EXCEPTION
+      'Aucun groupe de pratique Derby trouvé pour project_id=% / saison_id=%. Le groupe Arbitre Roller Derby est exclu.',
+      v_project_id, v_saison_id;
+  END IF;
+
   /* ---------------------------------------------------------------
      1. PREUVE_MEDICALE_STANDARD
      --------------------------------------------------------------- */
 
-  /* Si la nouvelle règle STANDARD existe déjà, on la réutilise. */
   SELECT e.id
   INTO v_standard_id
   FROM public.exigence_dossier e
@@ -46,7 +75,7 @@ BEGIN
   ORDER BY e.id
   LIMIT 1;
 
-  /* Sinon on recycle la règle historique actuelle (orthographe sans E). */
+  /* Ancien code historique sans le E final de MEDICALE. */
   IF v_standard_id IS NULL THEN
     SELECT e.id
     INTO v_standard_id
@@ -58,9 +87,7 @@ BEGIN
     LIMIT 1;
   END IF;
 
-  /* Compatibilité avec une éventuelle ancienne base où le code avait déjà le E :
-     on ne recycle PREUVE_MEDICALE_COMPETITION que si elle est encore une règle
-     d'INSCRIPTION avec portée GENERAL, donc bien l'ancienne règle générale. */
+  /* Ancienne règle générale éventuellement déjà orthographiée avec le E. */
   IF v_standard_id IS NULL THEN
     SELECT e.id
     INTO v_standard_id
@@ -113,7 +140,7 @@ BEGIN
     WHERE id = v_standard_id;
   END IF;
 
-  /* STANDARD possède exactement une portée GENERAL, en héritage. */
+  /* STANDARD = une portée GENERAL qui hérite du défaut true / true. */
   DELETE FROM public.exigence_dossier_portee
   WHERE exigence_id = v_standard_id;
 
@@ -173,7 +200,7 @@ BEGIN
     WHERE id = v_competition_id;
   END IF;
 
-  /* Pas de GENERAL pour COMPETITION : uniquement le contexte licence + Derby. */
+  /* COMPETITION n'a pas de GENERAL : licence compétition + vrais groupes Derby. */
   DELETE FROM public.exigence_dossier_portee
   WHERE exigence_id = v_competition_id;
 
@@ -184,59 +211,15 @@ BEGIN
     v_competition_id, 'TYPE_LICENCE', NULL, 'COMPETITION', NULL, NULL
   );
 
-  /* ---------------------------------------------------------------
-     3. Groupe(s) Derby de la saison
-     --------------------------------------------------------------- */
-
-  SELECT count(*)
-  INTO v_derby_count
-  FROM public.groupes g
-  JOIN public.saison s ON s.id = g.saison_id
-  WHERE s.project_id = v_project_id
-    AND g.saison_id = v_saison_id
-    AND lower(btrim(g.nom)) LIKE '%derby%';
-
-  IF v_derby_count = 0 THEN
-    RAISE EXCEPTION
-      'Aucun groupe Derby trouvé pour project_id=% / saison_id=%. Le script est annulé : vérifie le nom du groupe.',
-      v_project_id, v_saison_id;
-  END IF;
-
-  /* COMPETITION : Derby devient explicitement obligatoire + bloquant. */
   INSERT INTO public.exigence_dossier_portee (
     exigence_id, type_portee, cible_id, cible_code,
     obligatoire_override, bloquante_override
   )
-  SELECT v_competition_id, 'GROUPE', g.id, NULL, true, true
-  FROM public.groupes g
-  JOIN public.saison s ON s.id = g.saison_id
-  WHERE s.project_id = v_project_id
-    AND g.saison_id = v_saison_id
-    AND lower(btrim(g.nom)) LIKE '%derby%'
-    AND NOT EXISTS (
-      SELECT 1
-      FROM public.exigence_dossier_portee p
-      WHERE p.exigence_id = v_competition_id
-        AND p.type_portee = 'GROUPE'
-        AND p.cible_id = g.id
-    );
-
-  UPDATE public.exigence_dossier_portee p
-  SET obligatoire_override = true,
-      bloquante_override = true
-  WHERE p.exigence_id = v_competition_id
-    AND p.type_portee = 'GROUPE'
-    AND p.cible_id IN (
-      SELECT g.id
-      FROM public.groupes g
-      JOIN public.saison s ON s.id = g.saison_id
-      WHERE s.project_id = v_project_id
-        AND g.saison_id = v_saison_id
-        AND lower(btrim(g.nom)) LIKE '%derby%'
-    );
+  SELECT v_competition_id, 'GROUPE', d.id, NULL, true, true
+  FROM tmp_assolutions_derby_ids d;
 
   /* ---------------------------------------------------------------
-     4. PHOTO : on ne modifie pas l'existant, on durcit seulement Derby
+     3. PHOTO : on conserve l'existant et on durcit seulement le vrai Derby
      --------------------------------------------------------------- */
 
   SELECT e.id
@@ -249,44 +232,43 @@ BEGIN
   LIMIT 1;
 
   IF v_photo_id IS NULL THEN
-    RAISE EXCEPTION 'Exigence PHOTO introuvable pour project_id=% / saison_id=%',
+    RAISE EXCEPTION
+      'Exigence PHOTO introuvable pour project_id=% / saison_id=%',
       v_project_id, v_saison_id;
   END IF;
+
+  /* Nettoie une éventuelle ancienne surcharge créée sur le groupe arbitre. */
+  DELETE FROM public.exigence_dossier_portee p
+  USING public.groupes g
+  WHERE p.exigence_id = v_photo_id
+    AND p.type_portee = 'GROUPE'
+    AND p.cible_id = g.id
+    AND g.saison_id = v_saison_id
+    AND lower(btrim(g.nom)) = lower('Arbitre Roller Derby');
 
   INSERT INTO public.exigence_dossier_portee (
     exigence_id, type_portee, cible_id, cible_code,
     obligatoire_override, bloquante_override
   )
-  SELECT v_photo_id, 'GROUPE', g.id, NULL, true, true
-  FROM public.groupes g
-  JOIN public.saison s ON s.id = g.saison_id
-  WHERE s.project_id = v_project_id
-    AND g.saison_id = v_saison_id
-    AND lower(btrim(g.nom)) LIKE '%derby%'
-    AND NOT EXISTS (
-      SELECT 1
-      FROM public.exigence_dossier_portee p
-      WHERE p.exigence_id = v_photo_id
-        AND p.type_portee = 'GROUPE'
-        AND p.cible_id = g.id
-    );
+  SELECT v_photo_id, 'GROUPE', d.id, NULL, true, true
+  FROM tmp_assolutions_derby_ids d
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM public.exigence_dossier_portee p
+    WHERE p.exigence_id = v_photo_id
+      AND p.type_portee = 'GROUPE'
+      AND p.cible_id = d.id
+  );
 
   UPDATE public.exigence_dossier_portee p
   SET obligatoire_override = true,
       bloquante_override = true
   WHERE p.exigence_id = v_photo_id
     AND p.type_portee = 'GROUPE'
-    AND p.cible_id IN (
-      SELECT g.id
-      FROM public.groupes g
-      JOIN public.saison s ON s.id = g.saison_id
-      WHERE s.project_id = v_project_id
-        AND g.saison_id = v_saison_id
-        AND lower(btrim(g.nom)) LIKE '%derby%'
-    );
+    AND p.cible_id IN (SELECT id FROM tmp_assolutions_derby_ids);
 
   /* ---------------------------------------------------------------
-     5. DROIT A L'IMAGE : même principe
+     4. DROIT A L'IMAGE : même principe
      --------------------------------------------------------------- */
 
   SELECT e.id
@@ -299,52 +281,51 @@ BEGIN
   LIMIT 1;
 
   IF v_image_id IS NULL THEN
-    RAISE EXCEPTION 'Exigence FFRS_DROIT_IMAGE introuvable pour project_id=% / saison_id=%',
+    RAISE EXCEPTION
+      'Exigence FFRS_DROIT_IMAGE introuvable pour project_id=% / saison_id=%',
       v_project_id, v_saison_id;
   END IF;
+
+  DELETE FROM public.exigence_dossier_portee p
+  USING public.groupes g
+  WHERE p.exigence_id = v_image_id
+    AND p.type_portee = 'GROUPE'
+    AND p.cible_id = g.id
+    AND g.saison_id = v_saison_id
+    AND lower(btrim(g.nom)) = lower('Arbitre Roller Derby');
 
   INSERT INTO public.exigence_dossier_portee (
     exigence_id, type_portee, cible_id, cible_code,
     obligatoire_override, bloquante_override
   )
-  SELECT v_image_id, 'GROUPE', g.id, NULL, true, true
-  FROM public.groupes g
-  JOIN public.saison s ON s.id = g.saison_id
-  WHERE s.project_id = v_project_id
-    AND g.saison_id = v_saison_id
-    AND lower(btrim(g.nom)) LIKE '%derby%'
-    AND NOT EXISTS (
-      SELECT 1
-      FROM public.exigence_dossier_portee p
-      WHERE p.exigence_id = v_image_id
-        AND p.type_portee = 'GROUPE'
-        AND p.cible_id = g.id
-    );
+  SELECT v_image_id, 'GROUPE', d.id, NULL, true, true
+  FROM tmp_assolutions_derby_ids d
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM public.exigence_dossier_portee p
+    WHERE p.exigence_id = v_image_id
+      AND p.type_portee = 'GROUPE'
+      AND p.cible_id = d.id
+  );
 
   UPDATE public.exigence_dossier_portee p
   SET obligatoire_override = true,
       bloquante_override = true
   WHERE p.exigence_id = v_image_id
     AND p.type_portee = 'GROUPE'
-    AND p.cible_id IN (
-      SELECT g.id
-      FROM public.groupes g
-      JOIN public.saison s ON s.id = g.saison_id
-      WHERE s.project_id = v_project_id
-        AND g.saison_id = v_saison_id
-        AND lower(btrim(g.nom)) LIKE '%derby%'
-    );
+    AND p.cible_id IN (SELECT id FROM tmp_assolutions_derby_ids);
 END $$;
 
 COMMIT;
 
 /* -----------------------------------------------------------------
-   CONTROLE PGADMIN : le résultat doit montrer :
-   - STANDARD / GENERAL / overrides NULL / défaut true,true
-   - COMPETITION / TYPE_LICENCE COMPETITION / overrides NULL / défaut true,false
-   - COMPETITION / Derby / overrides true,true
-   - PHOTO / TYPE_LICENCE COMPETITION conservé + Derby true,true
-   - FFRS_DROIT_IMAGE / LOISIR + COMPETITION conservés + Derby true,true
+   CONTROLE PGADMIN
+   - STANDARD / GENERAL / héritage / défaut true,true
+   - COMPETITION / TYPE_LICENCE COMPETITION / héritage / défaut true,false
+   - COMPETITION / groupes Derby pratiquants / true,true
+   - PHOTO / groupes Derby pratiquants / true,true
+   - FFRS_DROIT_IMAGE / groupes Derby pratiquants / true,true
+   - aucune ligne GROUPE pour "Arbitre Roller Derby" sur ces 3 exigences
    ----------------------------------------------------------------- */
 SELECT
   e.id AS exigence_id,
