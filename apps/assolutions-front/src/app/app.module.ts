@@ -27,6 +27,7 @@ import { GroupeComponent } from './groupe/groupe.component';
 import { AddInfoEditorComponent } from './add-info-editor/add-info-editor.component';
 import { DashboardComponent } from './tdb/dashboard.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
+import { AdminProjectComponent } from './admin-project/admin-project.component';
 import { LieuComponent } from './lieu/lieu.component';
 import { SaisonComponent } from './saison/saison.component';
 import { CompteBancaireComponent } from './compte-bancaire/compte-bancaire.component';
@@ -87,6 +88,7 @@ import { CoursStore } from '../store/cours.store';
     DashboardComponent,
     CompteBancaireComponent,
     MenuAdminComponent,
+    AdminProjectComponent,
     NotifJechaComponent,
     DureeHHMMPipe,
     AdherentComponent,

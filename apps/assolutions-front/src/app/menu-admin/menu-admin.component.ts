@@ -68,6 +68,7 @@ export class MenuAdminComponent implements OnInit {
       title: $localize`:@@admin.settings.title:Paramétrage`,
       subtitle: $localize`:@@admin.settings.subtitle:Référentiels et configuration stable`,
       tiles: [
+        { label: $localize`:@@admin.project:Projet`, icon: 'fa-sliders', menu: 'PROJETINFO', route: '/admin-projet', hint: $localize`:@@admin.projectHint:Infos, comptes et personnes du projet` },
         { label: $localize`:@@admin.seasons:Saisons`, icon: 'fa-calendar', menu: 'SAISON', route: '/saison' },
         { label: $localize`:@@admin.locations:Lieux`, icon: 'fa-location-dot', menu: 'LIEU', route: '/lieu' },
         { label: $localize`:@@admin.instructors:Professeurs`, icon: 'fa-person-chalkboard', menu: 'PROF', route: '/professeur' },

@@ -1,0 +1,283 @@
+<div class="admin-project-page" *ngIf="store.isLoggedIn() && store.hasProjet()">
+  <header class="project-hero">
+    <div class="hero-title">
+      <button type="button" class="back-button" routerLink="/menu-admin" title="Retour à l'administration">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div>
+        <p class="eyebrow">Administration</p>
+        <h1>{{ project?.nom || 'Projet' }}</h1>
+        <p class="subtitle">Le référentiel du club, indépendant de la saison consultée.</p>
+      </div>
+    </div>
+    <div class="hero-stats" *ngIf="overview">
+      <span><strong>{{ overview.accountCount }}</strong> comptes</span>
+      <span><strong>{{ overview.personCount }}</strong> personnes</span>
+    </div>
+  </header>
+
+  <section class="elevation-panel" [class.is-elevated]="isElevated">
+    <div class="elevation-copy">
+      <i class="fa-solid" [ngClass]="isElevated ? 'fa-unlock-keyhole' : 'fa-shield-halved'"></i>
+      <div>
+        <strong>{{ isElevated ? 'Super Admin temporaire actif' : 'Accès Super Admin' }}</strong>
+        <p *ngIf="!isElevated">Nécessaire pour modifier un compte partagé avec plusieurs projets. Le code n'est jamais conservé dans le navigateur.</p>
+        <p *ngIf="isElevated">Autorisation limitée à ce projet et à cette session d'écran.</p>
+      </div>
+    </div>
+    <div class="elevation-actions" *ngIf="!isElevated">
+      <input
+        class="input is-small"
+        type="password"
+        [(ngModel)]="superCode"
+        (keyup.enter)="unlockSuperAdmin()"
+        placeholder="Code Super Admin"
+        autocomplete="off"
+      />
+      <button type="button" class="button is-small is-dark" (click)="unlockSuperAdmin()">
+        Déverrouiller
+      </button>
+    </div>
+    <button *ngIf="isElevated" type="button" class="button is-small" (click)="lockSuperAdmin()">
+      Verrouiller
+    </button>
+  </section>
+
+  <div class="notification is-success is-light py-2" *ngIf="message">{{ message }}</div>
+  <div class="notification is-danger is-light py-2" *ngIf="error">{{ error }}</div>
+
+  <nav class="project-tabs" aria-label="Administration du projet">
+    <button type="button" [class.active]="tab === 'PROJECT'" (click)="setTab('PROJECT')">
+      <i class="fa-solid fa-sliders"></i><span>Projet</span>
+    </button>
+    <button type="button" [class.active]="tab === 'ACCOUNTS'" (click)="setTab('ACCOUNTS')">
+      <i class="fa-solid fa-key"></i><span>Comptes</span>
+    </button>
+    <button type="button" [class.active]="tab === 'PEOPLE'" (click)="setTab('PEOPLE')">
+      <i class="fa-solid fa-address-book"></i><span>Personnes</span>
+    </button>
+  </nav>
+
+  <div class="loading-box" *ngIf="loading">
+    <span class="loader-dot"></span> Chargement…
+  </div>
+
+  <section class="content-card" *ngIf="!loading && tab === 'PROJECT'">
+    <header class="content-header">
+      <div>
+        <h2>Informations du projet</h2>
+        <p>Ces données sont stables et ne dépendent pas d'une saison.</p>
+      </div>
+      <span class="status-pill" [class.inactive]="!project?.actif">
+        {{ project?.actif ? 'Projet actif' : 'Projet inactif' }}
+      </span>
+    </header>
+
+    <div class="form-grid">
+      <div class="field span-2">
+        <label class="label">Nom du projet</label>
+        <input class="input" [(ngModel)]="projectDraft.nom" />
+      </div>
+      <div class="field">
+        <label class="label">Email du projet</label>
+        <input class="input" type="email" [(ngModel)]="projectDraft.login" />
+      </div>
+      <div class="field">
+        <label class="label">Activité</label>
+        <input class="input" [(ngModel)]="projectDraft.activite" placeholder="Roller, association sportive…" />
+      </div>
+      <div class="field">
+        <label class="label">Langue</label>
+        <input class="input" [(ngModel)]="projectDraft.lang" placeholder="fr" />
+      </div>
+      <div class="field">
+        <label class="label">Couleur</label>
+        <input class="input" [(ngModel)]="projectDraft.couleur" placeholder="#1e3a5f" />
+      </div>
+      <div class="field">
+        <label class="label">Date de début</label>
+        <input class="input" type="date" [(ngModel)]="projectDraft.date_debut" />
+      </div>
+      <div class="field">
+        <label class="label">Date de fin</label>
+        <input class="input" type="date" [(ngModel)]="projectDraft.date_fin" />
+      </div>
+      <label class="check-row span-2">
+        <input type="checkbox" [(ngModel)]="projectDraft.public" />
+        <span>Projet visible publiquement</span>
+      </label>
+      <div class="field span-2">
+        <label class="label">Contact <span class="technical-label">JSON</span></label>
+        <textarea class="textarea code-field" rows="5" [(ngModel)]="projectDraft.contactJson"></textarea>
+      </div>
+      <div class="field span-2">
+        <label class="label">Adresse <span class="technical-label">JSON</span></label>
+        <textarea class="textarea code-field" rows="5" [(ngModel)]="projectDraft.adresseJson"></textarea>
+      </div>
+    </div>
+
+    <div class="security-note">
+      <i class="fa-solid fa-lock"></i>
+      Les champs techniques sensibles de la table project (mot de passe, token d'activation, compte propriétaire) ne sont volontairement jamais exposés ici.
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="button is-primary" [class.is-loading]="saving" (click)="saveProject()">
+        <i class="fa-solid fa-floppy-disk mr-2"></i>Enregistrer
+      </button>
+    </div>
+  </section>
+
+  <section class="content-card" *ngIf="!loading && tab === 'ACCOUNTS'">
+    <header class="content-header list-header">
+      <div>
+        <h2>Comptes du projet</h2>
+        <p>Tous les comptes reliés au projet via <code>login_project</code>.</p>
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input class="input" [(ngModel)]="accountSearch" placeholder="Email, personne, projet…" />
+      </div>
+    </header>
+
+    <div class="empty-state" *ngIf="filteredAccounts.length === 0">Aucun compte trouvé.</div>
+
+    <div class="account-list">
+      <article class="account-card" *ngFor="let account of filteredAccounts; trackBy: trackById">
+        <div class="account-main">
+          <div class="account-icon"><i class="fa-solid fa-user-lock"></i></div>
+          <div class="account-copy">
+            <strong>{{ account.login }}</strong>
+            <div class="tags mt-1">
+              <span class="tag" [class.is-success]="account.actif" [class.is-danger]="!account.actif">
+                {{ account.actif ? 'Actif' : 'Inactif' }}
+              </span>
+              <span class="tag" [class.is-info]="account.mail_actif">
+                {{ account.mail_actif ? 'Mails actifs' : 'Mails désactivés' }}
+              </span>
+              <span class="tag is-warning is-light" *ngIf="account.mail_ko">Mail en erreur</span>
+              <span class="tag shared-tag" *ngIf="account.project_count > 1">
+                <i class="fa-solid fa-share-nodes mr-1"></i>{{ account.project_count }} projets
+              </span>
+              <span class="tag is-light" *ngIf="account.project_count <= 1">Compte propre au projet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="account-meta">
+          <div>
+            <span class="meta-label">Personnes</span>
+            <div class="person-chips" *ngIf="account.people?.length; else noPersonAccount">
+              <button type="button" class="person-chip" *ngFor="let person of account.people" (click)="openPerson(person)">
+                {{ displayPersonName(person) }}
+              </button>
+            </div>
+            <ng-template #noPersonAccount><span class="muted">Aucune personne rattachée</span></ng-template>
+          </div>
+          <div *ngIf="account.projects?.length">
+            <span class="meta-label">Projets liés</span>
+            <span class="muted">{{ account.projects | json }}</span>
+          </div>
+        </div>
+
+        <div class="locked-hint" *ngIf="account.project_count > 1 && !isElevated">
+          <i class="fa-solid fa-shield-halved"></i>
+          Compte partagé : déverrouille le mode Super Admin pour modifier ses données globales.
+        </div>
+
+        <div class="account-edit" *ngIf="editingAccountId === account.id && accountDraft">
+          <div class="field grow">
+            <label class="label is-size-7">Email / login</label>
+            <input class="input is-small" type="email" [(ngModel)]="accountDraft.login" />
+          </div>
+          <label class="check-row compact"><input type="checkbox" [(ngModel)]="accountDraft.actif" /> Compte actif</label>
+          <label class="check-row compact"><input type="checkbox" [(ngModel)]="accountDraft.mail_actif" /> Mails actifs</label>
+        </div>
+
+        <div class="card-actions">
+          <ng-container *ngIf="editingAccountId !== account.id">
+            <button type="button" class="button is-small" [disabled]="!canManageAccount(account)" (click)="beginAccountEdit(account)">
+              <i class="fa-solid fa-pen mr-1"></i>Modifier
+            </button>
+            <button type="button" class="button is-small" [disabled]="!canManageAccount(account)" (click)="resetPassword(account)">
+              <i class="fa-solid fa-key mr-1"></i>Réinitialiser le mot de passe
+            </button>
+          </ng-container>
+          <ng-container *ngIf="editingAccountId === account.id">
+            <button type="button" class="button is-small is-primary" [class.is-loading]="saving" (click)="saveAccount(account)">Enregistrer</button>
+            <button type="button" class="button is-small" (click)="cancelAccountEdit()">Annuler</button>
+          </ng-container>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="content-card" *ngIf="!loading && tab === 'PEOPLE'">
+    <header class="content-header list-header">
+      <div>
+        <h2>Personnes du projet</h2>
+        <p>Y compris les personnes qui ne sont inscrites à aucune saison.</p>
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input class="input" [(ngModel)]="personSearch" placeholder="Nom, prénom ou email…" />
+      </div>
+    </header>
+
+    <div class="empty-state" *ngIf="filteredPeople.length === 0">Aucune personne trouvée.</div>
+
+    <div class="people-list">
+      <article class="person-card" *ngFor="let person of filteredPeople; trackBy: trackById">
+        <div class="person-header">
+          <div>
+            <strong>{{ displayPersonName(person) }}</strong>
+            <p>{{ person.login }}</p>
+          </div>
+          <div class="tags">
+            <span class="tag is-danger is-light" *ngIf="person.archive">Archivée</span>
+            <span class="tag is-success is-light" *ngIf="!person.archive">Active</span>
+            <span class="tag is-warning is-light" *ngIf="!person.compte_actif">Compte inactif</span>
+          </div>
+        </div>
+
+        <div class="season-history">
+          <span class="meta-label">Historique d'inscription</span>
+          <div class="tags" *ngIf="person.saisons?.length; else noSeason">
+            <span class="tag is-light" *ngFor="let season of person.saisons">
+              {{ season.nom }}<span *ngIf="season.active === false"> · inactive</span>
+            </span>
+          </div>
+          <ng-template #noSeason>
+            <span class="never-registered"><i class="fa-solid fa-circle-info"></i> Jamais inscrite à une saison de ce projet</span>
+          </ng-template>
+        </div>
+
+        <div class="person-actions">
+          <button type="button" class="button is-small" (click)="openPerson(person)">
+            <i class="fa-solid fa-user-pen mr-1"></i>Modifier la fiche
+          </button>
+
+          <div class="registration-action">
+            <div class="select is-small">
+              <select
+                [ngModel]="registrationSeasonByPerson[person.id]"
+                (ngModelChange)="onRegistrationSeasonChange(person.id, $event)"
+              >
+                <option *ngFor="let saison of saisons" [ngValue]="saison.id">{{ seasonLabel(saison) }}</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              class="button is-small is-primary"
+              [disabled]="person.archive || isRegistered(person)"
+              (click)="startRegistration(person)"
+            >
+              <i class="fa-solid fa-file-signature mr-1"></i>
+              {{ isRegistered(person) ? 'Déjà inscrite' : 'Inscrire' }}
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
