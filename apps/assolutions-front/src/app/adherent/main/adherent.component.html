@@ -40,7 +40,7 @@
           </button>
 
           <button
-            *ngIf="!isMonCompteContext"
+            *ngIf="!isMonCompteContext && !isProjectContext"
             class="button is-info is-light"
             type="button"
             (click)="onRefreshNow()"
