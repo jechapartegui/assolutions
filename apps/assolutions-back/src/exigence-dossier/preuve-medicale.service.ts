@@ -165,7 +165,8 @@ export class PreuveMedicaleService {
       activeCertificate && !recentCertificate ? activeCertificate : undefined;
 
     // Règle standard / loisir.
-    // - Mineur : QS Sport obligatoire ; si réponse positive, certificat récent.
+    // - Mineur : certificat de moins d'un an OU QS Sport négatif. Si le QS est
+    //   positif, un certificat récent est nécessaire.
     // - Adulte : QS Sport négatif suffit. Un certificat récent reste également
     //   une preuve recevable. Si le QS est positif, un certificat récent est requis.
     let dossierEligible = false;
@@ -173,24 +174,24 @@ export class PreuveMedicaleService {
     let dossierMessage = 'Situation médicale à renseigner';
 
     if (isMinor) {
-      if (negativeCurrentSeasonQs) {
+      if (recentCertificate) {
+        dossierEligible = true;
+        dossierStatut = 'CERTIFICAT_JEUNE_VALIDE';
+        dossierMessage =
+          'Certificat médical de moins d’un an enregistré : aucun QS Sport n’est requis';
+      } else if (negativeCurrentSeasonQs) {
         dossierEligible = true;
         dossierStatut = 'QS_JEUNE_VALIDE';
         dossierMessage =
           'Questionnaire de santé de la saison validé : aucun certificat médical n’est requis';
-      } else if (positiveCurrentSeasonQs && recentCertificate) {
-        dossierEligible = true;
-        dossierStatut = 'QS_JEUNE_POSITIF_CERTIFICAT_VALIDE';
-        dossierMessage =
-          'Questionnaire de santé avec réponse positive et certificat médical récent enregistrés';
       } else if (positiveCurrentSeasonQs) {
         dossierStatut = 'QS_JEUNE_POSITIF_CERTIFICAT_REQUIS';
         dossierMessage =
           'Le questionnaire comporte une réponse positive : un certificat médical de moins d’un an est requis';
       } else {
-        dossierStatut = 'QS_JEUNE_MANQUANT';
+        dossierStatut = 'PREUVE_MEDICALE_JEUNE_MANQUANTE';
         dossierMessage =
-          'Pour un mineur, le questionnaire de santé de la saison est requis';
+          'Pour un mineur, ajoute un certificat médical de moins d’un an ou le questionnaire de santé de la saison';
       }
     } else if (positiveCurrentSeasonQs) {
       if (recentCertificate) {
@@ -219,8 +220,8 @@ export class PreuveMedicaleService {
     }
 
     // Règle compétition.
-    // - Mineur : même règle que le dossier standard, donc QS Sport obligatoire
-    //   et certificat récent uniquement si le QS comporte une réponse positive.
+    // - Mineur : certificat récent OU QS Sport négatif ; le certificat récent
+    //   suffit à lui seul, sans QS Sport.
     // - Adulte : certificat obligatoire. Moins d'un an = OK ; au-delà d'un an,
     //   QS Sport négatif de la saison obligatoire en complément.
     let competitionCompatible = false;
@@ -230,9 +231,7 @@ export class PreuveMedicaleService {
     if (isMinor) {
       competitionCompatible = dossierEligible;
       competitionStatut = dossierStatut;
-      competitionMessage = dossierEligible
-        ? 'Questionnaire de santé valide pour une licence compétition jeune'
-        : dossierMessage;
+      competitionMessage = dossierMessage;
     } else if (recentCertificate) {
       competitionCompatible = true;
       competitionStatut = 'CERTIFICAT_ADULTE_COMPETITION_VALIDE';
