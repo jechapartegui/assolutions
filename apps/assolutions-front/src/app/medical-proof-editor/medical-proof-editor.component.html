@@ -9,9 +9,9 @@
 
     <div class="mt-2" *ngIf="evaluation?.mineur === true" i18n>
       <strong>Mineur (moins de 18 ans) — loisir ou compétition :</strong>
-      le <strong>QS Sport de la saison</strong> est requis. Si toutes les réponses sont négatives,
-      aucun certificat médical n'est demandé. Si une réponse est positive, un certificat médical
-      de moins d'un an devient nécessaire.
+      deux possibilités : un <strong>certificat médical de moins d'un an</strong>, qui suffit à lui seul,
+      ou le <strong>QS Sport de la saison</strong>. Si toutes les réponses au QS Sport sont négatives,
+      aucun certificat n'est demandé. Si une réponse est positive, un certificat médical de moins d'un an devient nécessaire.
     </div>
 
     <div class="mt-2" *ngIf="evaluation?.mineur === false && licenceType !== 'COMPETITION'" i18n>
@@ -29,8 +29,7 @@
     </div>
 
     <div class="mt-2" *ngIf="evaluation?.mineur == null" i18n>
-      <strong>Mineurs :</strong> QS Sport en loisir comme en compétition ; certificat uniquement
-      si le questionnaire comporte une réponse positive.<br />
+      <strong>Mineurs :</strong> certificat médical de moins d'un an <em>ou</em> QS Sport de la saison ; si le QS comporte une réponse positive, un certificat récent devient nécessaire.<br />
       <strong>Adultes en loisir :</strong> le QS Sport suffit ; certificat récent seulement si le questionnaire comporte une réponse positive.<br />
       <strong>Adultes en compétition :</strong> certificat de moins d'un an, ou certificat plus ancien complété par le QS Sport de la saison.
     </div>
