@@ -52,11 +52,11 @@ export class ExigenceDossierComponent implements OnInit {
   readonly medicalLevels = [
     {
       code: 'STANDARD',
-      label: 'Dossier médical : certificat ou QS Sport',
+      label: "Règle médicale selon l'âge",
     },
     {
       code: 'COMPETITION',
-      label: 'Preuve compatible compétition',
+      label: "Règle selon l'âge — contexte compétition",
     },
   ];
 
@@ -135,8 +135,8 @@ export class ExigenceDossierComponent implements OnInit {
       item.source_code = this.documentTypes[0].code;
       item.type_reponse = 'DOCUMENT';
     } else if (item.type_exigence === 'PREUVE_MEDICALE') {
-      // La preuve médicale n'impose plus automatiquement une licence ou une
-      // portée. C'est le paramétrage de l'exigence qui décide du contexte.
+      // La preuve médicale applique elle-même la distinction mineur/adulte.
+      // Le contexte compétition ne doit jamais forcer un certificat chez un jeune.
       item.source_code = 'STANDARD';
       item.type_reponse = 'AUCUNE';
       item.validite_mois = null;
