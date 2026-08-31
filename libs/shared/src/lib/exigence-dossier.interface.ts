@@ -134,17 +134,17 @@ export interface SavePreuveMedicaleDto {
 }
 
 export interface EvaluationPreuveMedicale {
-  /** Éligibilité correspondant au contexte demandé. La licence compétition ne durcit plus la règle liée à l'âge. */
+  /** Éligibilité correspondant au contexte demandé : loisir ou compétition. */
   eligible: boolean;
   statut: string;
   message: string;
-  /** Dossier médical évalué selon l'âge : QS Sport pour les mineurs, certificat pour les adultes. */
+  /** Règle standard/loisir : le QS Sport suffit chez l'adulte comme chez le mineur, sauf réponse positive. */
   dossier_eligible: boolean;
-  /** Même règle médicale pour la compétition : elle ne force pas un certificat chez un mineur. */
+  /** Règle compétition : QS Sport chez le mineur ; certificat obligatoire chez l'adulte. */
   compatible_competition: boolean;
   message_dossier: string;
   message_competition: string;
-  /** Âge civil au début de la saison, utilisé pour choisir le parcours médical. */
+  /** Âge civil au début de la saison, utilisé avec le type de licence pour choisir le parcours médical. */
   age: number;
   mineur: boolean;
   certificat: PreuveMedicale | null;
