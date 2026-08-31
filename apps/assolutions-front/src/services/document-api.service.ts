@@ -5,6 +5,8 @@ import { Document, CreateDocumentDto, UpdateDocumentDto } from '@shared/lib/docu
 @Injectable({ providedIn: 'root' })
 export class DocumentApiService {
   private readonly base = '/documents';
+  private readonly photoBatchSize = 10;
+  private readonly photoBatchConcurrency = 3;
 
   constructor(private api: ApiClientService) {}
 
@@ -34,8 +36,48 @@ export class DocumentApiService {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
 
-  photo_by_id(ids: number[]): Promise<{ [id: number]: string | null }> {
-    return this.api.POST<{ [id: number]: string | null }>(`${this.base}/photo-by-id`, ids);
+  /**
+   * Le back limite volontairement /photo-by-id à 10 personnes pour éviter
+   * d'embarquer des dizaines de Mo de base64 dans une seule réponse.
+   *
+   * Les anciens appels envoyaient pourtant toute une liste d'adhérents ou
+   * tous les riders du menu en une fois. Au-delà de 10 ids le back retournait
+   * donc uniquement des photos nulles : d'où l'impression de chargement
+   * aléatoire selon la taille de la population.
+   *
+   * On découpe désormais systématiquement en lots de 10, avec au maximum
+   * trois requêtes simultanées. Cela couvre tous les écrans qui utilisent ce
+   * service (adhérents, menu, groupes...) sans faire exploser la réponse HTTP.
+   */
+  async photo_by_id(ids: number[]): Promise<{ [id: number]: string | null }> {
+    const cleanIds = [...new Set((ids ?? [])
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id) && id > 0))];
+
+    if (!cleanIds.length) return {};
+
+    const batches: number[][] = [];
+    for (let i = 0; i < cleanIds.length; i += this.photoBatchSize) {
+      batches.push(cleanIds.slice(i, i + this.photoBatchSize));
+    }
+
+    const merged: { [id: number]: string | null } = {};
+    for (const id of cleanIds) merged[id] = null;
+
+    for (let i = 0; i < batches.length; i += this.photoBatchConcurrency) {
+      const window = batches.slice(i, i + this.photoBatchConcurrency);
+      const results = await Promise.all(
+        window.map((batch) =>
+          this.api.POST<{ [id: number]: string | null }>(`${this.base}/photo-by-id`, batch),
+        ),
+      );
+
+      for (const result of results) {
+        Object.assign(merged, result ?? {});
+      }
+    }
+
+    return merged;
   }
 
   setPhoto(
