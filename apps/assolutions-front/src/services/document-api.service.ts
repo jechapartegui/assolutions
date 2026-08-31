@@ -46,8 +46,9 @@ export class DocumentApiService {
    * aléatoire selon la taille de la population.
    *
    * On découpe désormais systématiquement en lots de 10, avec au maximum
-   * trois requêtes simultanées. Cela couvre tous les écrans qui utilisent ce
-   * service (adhérents, menu, groupes...) sans faire exploser la réponse HTTP.
+   * trois requêtes simultanées. Un lot en échec ne fait pas disparaître les
+   * autres et ses ids ne sont pas marqués comme chargés, ce qui autorise un
+   * prochain essai par le PersonneDataStore.
    */
   async photo_by_id(ids: number[]): Promise<{ [id: number]: string | null }> {
     const cleanIds = [...new Set((ids ?? [])
@@ -62,19 +63,25 @@ export class DocumentApiService {
     }
 
     const merged: { [id: number]: string | null } = {};
-    for (const id of cleanIds) merged[id] = null;
 
     for (let i = 0; i < batches.length; i += this.photoBatchConcurrency) {
       const window = batches.slice(i, i + this.photoBatchConcurrency);
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         window.map((batch) =>
           this.api.POST<{ [id: number]: string | null }>(`${this.base}/photo-by-id`, batch),
         ),
       );
 
-      for (const result of results) {
-        Object.assign(merged, result ?? {});
-      }
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          Object.assign(merged, result.value ?? {});
+          return;
+        }
+        console.warn('Lot de photos non chargé, un prochain chargement pourra le retenter.', {
+          ids: window[index],
+          error: result.reason,
+        });
+      });
     }
 
     return merged;
