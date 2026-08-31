@@ -6,6 +6,7 @@ import { join } from 'path';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 import { AddinfoModule } from '../addinfo/addinfo.module';
+import { AdminProjectModule } from '../admin_project/admin-project.module';
 import { AuthModule } from '../auth/auth.module';
 import { CompteModule } from '../compte/compte.module';
 import { CompteBancaireModule } from '../compte_bancaire/compte_bancaire.module';
@@ -134,6 +135,7 @@ const environmentFile = resolveEnvironmentFile();
     CompteModule,
     MesSeancesModule,
     AuthModule,
+    AdminProjectModule,
     AddinfoModule,
     LoginProjectModule,
     ContactModule,
