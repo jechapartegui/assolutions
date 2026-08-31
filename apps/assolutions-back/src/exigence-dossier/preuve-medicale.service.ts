@@ -93,8 +93,8 @@ export class PreuveMedicaleService {
             dto.type_preuve === 'QS_SPORT'
               ? dto.qs_reponses_negatives ?? null
               : null,
-          // La compatibilité compétition dépend désormais du parcours médical
-          // lié à l'âge, pas de la seule présence d'un certificat.
+          // Cette propriété reste une information sur le document. La règle
+          // finale dépend du type de licence et de l'âge de la personne.
           valable_competition: dto.type_preuve === 'CERTIFICAT',
           medecin_nom:
             dto.type_preuve === 'CERTIFICAT'
@@ -164,19 +164,20 @@ export class PreuveMedicaleService {
     const olderCertificate =
       activeCertificate && !recentCertificate ? activeCertificate : undefined;
 
+    // Règle standard / loisir.
+    // - Mineur : QS Sport obligatoire ; si réponse positive, certificat récent.
+    // - Adulte : QS Sport négatif suffit. Un certificat récent reste également
+    //   une preuve recevable. Si le QS est positif, un certificat récent est requis.
     let dossierEligible = false;
     let dossierStatut = 'SITUATION_MEDICALE_MANQUANTE';
     let dossierMessage = 'Situation médicale à renseigner';
 
     if (isMinor) {
-      // Mineur, loisir comme compétition : le QS Sport de la saison est la
-      // règle normale. Le certificat n'est demandé que si le questionnaire
-      // comporte une réponse positive.
       if (negativeCurrentSeasonQs) {
         dossierEligible = true;
         dossierStatut = 'QS_JEUNE_VALIDE';
         dossierMessage =
-          'Questionnaire de santé de la saison validé : aucun certificat médical n’est requis pour un mineur';
+          'Questionnaire de santé de la saison validé : aucun certificat médical n’est requis';
       } else if (positiveCurrentSeasonQs && recentCertificate) {
         dossierEligible = true;
         dossierStatut = 'QS_JEUNE_POSITIF_CERTIFICAT_VALIDE';
@@ -189,47 +190,72 @@ export class PreuveMedicaleService {
       } else {
         dossierStatut = 'QS_JEUNE_MANQUANT';
         dossierMessage =
-          'Pour un mineur, le questionnaire de santé de la saison est requis, en loisir comme en compétition';
+          'Pour un mineur, le questionnaire de santé de la saison est requis';
       }
-    } else {
-      // Adulte : un certificat médical est obligatoire. S'il a moins d'un an,
-      // il suffit. Au-delà d'un an, il doit être complété par le QS Sport de
-      // la saison. Il n'y a plus de seuil artificiel à trois ans.
+    } else if (positiveCurrentSeasonQs) {
       if (recentCertificate) {
         dossierEligible = true;
-        dossierStatut = 'CERTIFICAT_ADULTE_VALIDE';
-        dossierMessage = 'Certificat médical de moins d’un an enregistré';
-      } else if (olderCertificate && negativeCurrentSeasonQs) {
-        dossierEligible = true;
-        dossierStatut = 'CERTIFICAT_ADULTE_ET_QS_VALIDE';
+        dossierStatut = 'QS_ADULTE_POSITIF_CERTIFICAT_VALIDE';
         dossierMessage =
-          'Certificat médical de plus d’un an complété par le questionnaire de santé de la saison';
-      } else if (positiveCurrentSeasonQs) {
-        dossierStatut = 'QS_ADULTE_POSITIF_CERTIFICAT_RECENT_REQUIS';
-        dossierMessage =
-          'Le questionnaire comporte une réponse positive : ajoute un certificat médical de moins d’un an';
-      } else if (olderCertificate) {
-        dossierStatut = 'QS_ADULTE_MANQUANT';
-        dossierMessage =
-          'Le certificat médical a plus d’un an : complète le questionnaire de santé de la saison';
+          'Questionnaire de santé avec réponse positive et certificat médical récent enregistrés';
       } else {
-        dossierStatut = 'CERTIFICAT_ADULTE_MANQUANT';
-        dossierMessage = 'Un certificat médical est requis pour les adultes';
+        dossierStatut = 'QS_ADULTE_POSITIF_CERTIFICAT_REQUIS';
+        dossierMessage =
+          'Le questionnaire comporte une réponse positive : un certificat médical de moins d’un an est requis';
       }
+    } else if (negativeCurrentSeasonQs) {
+      dossierEligible = true;
+      dossierStatut = 'QS_ADULTE_LOISIR_VALIDE';
+      dossierMessage =
+        'Questionnaire de santé de la saison validé : il suffit pour une licence loisir adulte';
+    } else if (recentCertificate) {
+      dossierEligible = true;
+      dossierStatut = 'CERTIFICAT_ADULTE_LOISIR_VALIDE';
+      dossierMessage = 'Certificat médical de moins d’un an enregistré';
+    } else {
+      dossierStatut = 'QS_ADULTE_LOISIR_MANQUANT';
+      dossierMessage =
+        'Pour une licence loisir adulte, le questionnaire de santé de la saison suffit';
     }
 
-    // Loisir et compétition utilisent désormais la même règle médicale liée à
-    // l'âge. Une licence compétition ne force donc jamais, à elle seule, un
-    // certificat chez un mineur.
-    const competitionCompatible = dossierEligible;
-    const competitionStatut = dossierStatut;
-    const competitionMessage = isMinor
-      ? dossierEligible
-        ? 'Situation médicale valide pour une licence compétition jeune'
-        : dossierMessage
-      : dossierEligible
-        ? 'Situation médicale adulte valide pour la compétition'
+    // Règle compétition.
+    // - Mineur : même règle que le dossier standard, donc QS Sport obligatoire
+    //   et certificat récent uniquement si le QS comporte une réponse positive.
+    // - Adulte : certificat obligatoire. Moins d'un an = OK ; au-delà d'un an,
+    //   QS Sport négatif de la saison obligatoire en complément.
+    let competitionCompatible = false;
+    let competitionStatut = 'SITUATION_MEDICALE_COMPETITION_MANQUANTE';
+    let competitionMessage = 'Situation médicale compétition à renseigner';
+
+    if (isMinor) {
+      competitionCompatible = dossierEligible;
+      competitionStatut = dossierStatut;
+      competitionMessage = dossierEligible
+        ? 'Questionnaire de santé valide pour une licence compétition jeune'
         : dossierMessage;
+    } else if (recentCertificate) {
+      competitionCompatible = true;
+      competitionStatut = 'CERTIFICAT_ADULTE_COMPETITION_VALIDE';
+      competitionMessage =
+        'Certificat médical de moins d’un an valide pour une licence compétition adulte';
+    } else if (olderCertificate && negativeCurrentSeasonQs) {
+      competitionCompatible = true;
+      competitionStatut = 'CERTIFICAT_ADULTE_COMPETITION_ET_QS_VALIDE';
+      competitionMessage =
+        'Certificat médical de plus d’un an complété par le questionnaire de santé de la saison';
+    } else if (positiveCurrentSeasonQs) {
+      competitionStatut = 'QS_ADULTE_COMPETITION_POSITIF_CERTIFICAT_REQUIS';
+      competitionMessage =
+        'Le questionnaire comporte une réponse positive : un nouveau certificat médical de moins d’un an est requis pour la compétition';
+    } else if (olderCertificate) {
+      competitionStatut = 'QS_ADULTE_COMPETITION_MANQUANT';
+      competitionMessage =
+        'Le certificat médical a plus d’un an : complète le questionnaire de santé de la saison';
+    } else {
+      competitionStatut = 'CERTIFICAT_ADULTE_COMPETITION_MANQUANT';
+      competitionMessage =
+        'Un certificat médical est requis pour une licence compétition adulte';
+    }
 
     const competitionContext = dto.type_licence === 'COMPETITION';
     return {
