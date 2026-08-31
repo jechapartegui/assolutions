@@ -176,7 +176,7 @@
           </div>
           <div *ngIf="account.projects?.length">
             <span class="meta-label">Projets liés</span>
-            <span class="muted">{{ account.projects | json }}</span>
+            <span class="muted">{{ projectNames(account) }}</span>
           </div>
         </div>
 
