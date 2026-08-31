@@ -12,6 +12,21 @@ import {
 import { AppStore } from '../app.store';
 
 type AdminProjectTab = 'PROJECT' | 'ACCOUNTS' | 'PEOPLE';
+type ProjectContactType = 'EMAIL' | 'PHONE';
+
+type ProjectContactDraft = {
+  Type: ProjectContactType;
+  Value: string;
+  Pref: boolean;
+  Diffusion: boolean;
+};
+
+type ProjectAddressDraft = {
+  Street: string;
+  PostCode: string;
+  City: string;
+  Country: string;
+};
 
 type ProjectDraft = {
   nom: string;
@@ -22,8 +37,8 @@ type ProjectDraft = {
   activite: string;
   lang: string;
   couleur: string;
-  contactJson: string;
-  adresseJson: string;
+  contacts: ProjectContactDraft[];
+  adresse: ProjectAddressDraft;
 };
 
 type AccountDraft = {
@@ -135,7 +150,7 @@ export class AdminProjectComponent implements OnInit {
       this.projectDraft = this.toProjectDraft(overview.project);
       this.initializeRegistrationSeasons();
     } catch (error: any) {
-      this.error = error?.message ?? 'Chargement de l’administration projet impossible.';
+      this.error = this.errorMessage(error, 'Chargement de l’administration projet impossible.');
     } finally {
       this.loading = false;
     }
@@ -146,12 +161,88 @@ export class AdminProjectComponent implements OnInit {
     this.clearFeedback();
   }
 
+  addProjectContact(type: ProjectContactType): void {
+    this.projectDraft.contacts.push({
+      Type: type,
+      Value: '',
+      Pref: this.projectDraft.contacts.length === 0,
+      Diffusion: type === 'EMAIL',
+    });
+  }
+
+  removeProjectContact(index: number): void {
+    const removedPreferred = !!this.projectDraft.contacts[index]?.Pref;
+    this.projectDraft.contacts.splice(index, 1);
+    if (removedPreferred && this.projectDraft.contacts.length) {
+      this.projectDraft.contacts[0].Pref = true;
+    }
+  }
+
+  setPreferredProjectContact(index: number): void {
+    this.projectDraft.contacts.forEach((contact, currentIndex) => {
+      contact.Pref = currentIndex === index;
+    });
+  }
+
+  onProjectContactTypeChange(contact: ProjectContactDraft, type: ProjectContactType): void {
+    contact.Type = type;
+    if (type === 'PHONE') contact.Diffusion = false;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   async saveProject(): Promise<void> {
     this.saving = true;
     this.clearFeedback();
     try {
-      const contact = this.parseJsonField(this.projectDraft.contactJson, 'Contact');
-      const adresse = this.parseJsonField(this.projectDraft.adresseJson, 'Adresse');
+      const contacts = this.projectDraft.contacts
+        .map((contact) => ({
+          Type: contact.Type,
+          Value: String(contact.Value ?? '').trim(),
+          Pref: !!contact.Pref,
+          Diffusion: contact.Type === 'EMAIL' && !!contact.Diffusion,
+        }))
+        .filter((contact) => !!contact.Value);
+
+      const preferred = contacts.find((contact) => contact.Pref) ?? contacts[0] ?? null;
+      if (contacts.length && !contacts.some((contact) => contact.Pref)) contacts[0].Pref = true;
+
+      const preferredEmail = contacts.find((contact) => contact.Type === 'EMAIL' && contact.Pref)
+        ?? contacts.find((contact) => contact.Type === 'EMAIL')
+        ?? null;
+      const preferredPhone = contacts.find((contact) => contact.Type === 'PHONE' && contact.Pref)
+        ?? contacts.find((contact) => contact.Type === 'PHONE')
+        ?? null;
+
+      // On conserve les clés simples Email/Phone pour compatibilité avec les
+      // anciennes lectures du JSON project.contact, et la liste complète pour
+      // disposer du même fonctionnement que la fiche Personne.
+      const contact = contacts.length
+        ? {
+            Email: preferredEmail?.Value ?? null,
+            Phone: preferredPhone?.Value ?? null,
+            PreferredType: preferred?.Type ?? null,
+            contacts,
+          }
+        : null;
+
+      const addressValues = this.projectDraft.adresse;
+      const adresse = [
+        addressValues.Street,
+        addressValues.PostCode,
+        addressValues.City,
+        addressValues.Country,
+      ].some((value) => String(value ?? '').trim())
+        ? {
+            Street: String(addressValues.Street ?? '').trim(),
+            PostCode: String(addressValues.PostCode ?? '').trim(),
+            City: String(addressValues.City ?? '').trim(),
+            Country: String(addressValues.Country ?? '').trim(),
+          }
+        : null;
+
       const project = await this.api.updateProject({
         nom: this.projectDraft.nom.trim(),
         login: this.projectDraft.login.trim() || null,
@@ -168,7 +259,7 @@ export class AdminProjectComponent implements OnInit {
       this.projectDraft = this.toProjectDraft(project);
       this.message = 'Informations du projet enregistrées.';
     } catch (error: any) {
-      this.error = error?.message ?? 'Enregistrement du projet impossible.';
+      this.error = this.errorMessage(error, 'Enregistrement du projet impossible.');
     } finally {
       this.saving = false;
     }
@@ -189,7 +280,7 @@ export class AdminProjectComponent implements OnInit {
     } catch (error: any) {
       this.elevationToken = null;
       this.elevationExpiresAt = 0;
-      this.error = error?.message ?? 'Code Super Admin incorrect.';
+      this.error = this.errorMessage(error, 'Code Super Admin incorrect.');
     }
   }
 
@@ -245,7 +336,7 @@ export class AdminProjectComponent implements OnInit {
       this.cancelAccountEdit();
       this.message = 'Compte mis à jour.';
     } catch (error: any) {
-      this.error = error?.message ?? 'Modification du compte impossible.';
+      this.error = this.errorMessage(error, 'Modification du compte impossible.');
     } finally {
       this.saving = false;
     }
@@ -262,7 +353,7 @@ export class AdminProjectComponent implements OnInit {
       );
       this.message = `Mail de réinitialisation envoyé à ${account.login}.`;
     } catch (error: any) {
-      this.error = error?.message ?? 'Réinitialisation impossible.';
+      this.error = this.errorMessage(error, 'Réinitialisation impossible.');
     }
   }
 
@@ -340,35 +431,67 @@ export class AdminProjectComponent implements OnInit {
       activite: project?.activite ?? '',
       lang: project?.lang ?? 'fr',
       couleur: project?.couleur ?? '',
-      contactJson: this.prettyJson(project?.contact),
-      adresseJson: this.prettyJson(project?.adresse),
+      contacts: this.normalizeProjectContacts(project?.contact),
+      adresse: this.normalizeProjectAddress(project?.adresse),
     };
   }
 
   private emptyProjectDraft(): ProjectDraft {
     return {
-      nom: '', login: '', public: false, date_debut: '', date_fin: '',
-      activite: '', lang: 'fr', couleur: '', contactJson: '', adresseJson: '',
+      nom: '',
+      login: '',
+      public: false,
+      date_debut: '',
+      date_fin: '',
+      activite: '',
+      lang: 'fr',
+      couleur: '',
+      contacts: [],
+      adresse: { Street: '', PostCode: '', City: '', Country: 'France' },
     };
   }
 
-  private prettyJson(value: unknown): string {
-    if (value == null) return '';
-    try { return JSON.stringify(value, null, 2); } catch { return String(value); }
+  private normalizeProjectContacts(value: any): ProjectContactDraft[] {
+    const candidates = Array.isArray(value)
+      ? value
+      : Array.isArray(value?.contacts)
+        ? value.contacts
+        : Array.isArray(value?.Items)
+          ? value.Items
+          : [];
+
+    const contacts: ProjectContactDraft[] = candidates
+      .map((raw: any) => {
+        const type = String(raw?.Type ?? raw?.type ?? '').toUpperCase();
+        if (type !== 'EMAIL' && type !== 'PHONE') return null;
+        return {
+          Type: type as ProjectContactType,
+          Value: String(raw?.Value ?? raw?.value ?? ''),
+          Pref: !!(raw?.Pref ?? raw?.pref),
+          Diffusion: type === 'EMAIL' && !!(raw?.Diffusion ?? raw?.diffusion ?? true),
+        };
+      })
+      .filter((item: ProjectContactDraft | null): item is ProjectContactDraft => !!item);
+
+    if (!contacts.length && value && typeof value === 'object') {
+      const email = value.Email ?? value.email ?? value.EMAIL ?? null;
+      const phone = value.Phone ?? value.phone ?? value.PHONE ?? value.Telephone ?? value.telephone ?? null;
+      if (email) contacts.push({ Type: 'EMAIL', Value: String(email), Pref: true, Diffusion: true });
+      if (phone) contacts.push({ Type: 'PHONE', Value: String(phone), Pref: !email, Diffusion: false });
+    }
+
+    if (contacts.length && !contacts.some((contact) => contact.Pref)) contacts[0].Pref = true;
+    return contacts;
   }
 
-  private parseJsonField(value: string, label: string): unknown {
-    if (!value.trim()) return null;
-    try {
-      const parsed = JSON.parse(value);
-      if (typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new Error(`${label} doit être un objet JSON.`);
-      }
-      return parsed;
-    } catch (error: any) {
-      if (error?.message?.includes('doit être')) throw error;
-      throw new Error(`${label} : JSON invalide.`);
-    }
+  private normalizeProjectAddress(value: any): ProjectAddressDraft {
+    const source = value && typeof value === 'object' ? value : {};
+    return {
+      Street: String(source.Street ?? source.street ?? source.Address ?? source.address ?? ''),
+      PostCode: String(source.PostCode ?? source.postCode ?? source.postcode ?? source.zip ?? ''),
+      City: String(source.City ?? source.city ?? source.ville ?? ''),
+      Country: String(source.Country ?? source.country ?? source.pays ?? 'France'),
+    };
   }
 
   private toDateInput(value: string | null | undefined): string {
@@ -381,6 +504,21 @@ export class AdminProjectComponent implements OnInit {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
+  }
+
+  private errorMessage(error: any, fallback: string): string {
+    const raw = String(error?.message ?? '').trim();
+    if (raw === 'ADMIN_PROJECT_SUPER_CODE_NOT_CONFIGURED') {
+      return 'Code Super Admin non chargé côté serveur. Vérifie ADMIN_PROJECT_SUPER_CODE dans .env.local (12 caractères minimum), puis redémarre le back.';
+    }
+    if (raw === 'SUPER_ADMIN_CODE_INVALID') return 'Code Super Admin incorrect.';
+    if (raw === 'SUPER_ADMIN_CODE_TEMPORARILY_LOCKED') {
+      return 'Trop de tentatives : accès Super Admin verrouillé temporairement.';
+    }
+    if (raw === 'SUPER_ADMIN_ELEVATION_REQUIRED') {
+      return 'Ce compte est partagé : déverrouille le mode Super Admin avant cette opération.';
+    }
+    return raw || fallback;
   }
 
   private clearFeedback(): void {
