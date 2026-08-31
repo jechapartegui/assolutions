@@ -50,14 +50,15 @@
               </select>
             </div>
             <p class="help" i18n>
-              Le contexte compétition ne rend pas le certificat obligatoire chez un mineur. Le moteur applique toujours la règle correspondant à l'âge de la personne.
+              Le contexte compétition ne rend le certificat obligatoire que pour un adulte. Chez un mineur, le QS Sport reste la règle, même en compétition.
             </p>
           </div>
           <div class="column is-6" *ngIf="item.type_exigence === 'PREUVE_MEDICALE'">
             <div class="notification is-link is-light mb-0 is-size-7" i18n>
               <strong>Règle appliquée :</strong><br />
               • <strong>Mineur, loisir ou compétition :</strong> QS Sport de la saison. Si toutes les réponses sont négatives, aucun certificat n'est requis ; si une réponse est positive, certificat de moins d'un an.<br />
-              • <strong>Adulte, loisir ou compétition :</strong> certificat obligatoire. Moins d'un an = OK ; plus d'un an = QS Sport de la saison obligatoire.
+              • <strong>Adulte en loisir :</strong> le QS Sport de la saison suffit. Si une réponse est positive, certificat de moins d'un an.<br />
+              • <strong>Adulte en compétition :</strong> certificat obligatoire. Moins d'un an = OK ; plus d'un an = QS Sport de la saison obligatoire en complément.
             </div>
           </div>
 
