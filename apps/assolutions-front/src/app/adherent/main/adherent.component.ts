@@ -40,6 +40,10 @@ export class AdherentComponent implements OnInit {
     return this.context === 'MON_COMPTE';
   }
 
+  get isProjectContext(): boolean {
+    return this.context === 'PROJET';
+  }
+
   get isAdmin(): boolean {
     return this.store.mode?.() === 'ADMIN';
   }
@@ -49,12 +53,17 @@ export class AdherentComponent implements OnInit {
       this.store.isLoggedIn() &&
       this.store.hasProjet() &&
       this.store.isProf() &&
-      !this.isMonCompteContext
+      !this.isMonCompteContext &&
+      !this.isProjectContext
     );
   }
 
   get hasRefreshAvailable(): boolean {
-    return !this.isMonCompteContext && !!this.vm.refreshAvailable;
+    return (
+      !this.isMonCompteContext &&
+      !this.isProjectContext &&
+      !!this.vm.refreshAvailable
+    );
   }
 
   get pendingCountLabel(): string {
@@ -137,6 +146,20 @@ export class AdherentComponent implements OnInit {
           return;
         }
 
+        // Depuis Administration > Projet, la personne peut n'avoir aucune
+        // inscription sur la saison choisie. On charge donc uniquement le
+        // shell d'édition + cette personne, sans charger toute la liste de la
+        // saison (et notamment toutes ses photos).
+        if (context === 'PROJET') {
+          if (!id || id <= 0) {
+            await this.router.navigate(['/admin-projet']);
+            return;
+          }
+          await this.adherentStore.openMonCompteAdherent(id, saisonId);
+          this.syncRegistrationSeason();
+          return;
+        }
+
         await this.adherentStore.init(saisonId);
         if (id > 0) {
           await this.adherentStore.openAdherent(id, saisonId);
@@ -172,7 +195,7 @@ export class AdherentComponent implements OnInit {
   }
 
   async onRefreshNow(): Promise<void> {
-    if (this.isMonCompteContext) return;
+    if (this.isMonCompteContext || this.isProjectContext) return;
     try {
       await this.adherentStore.refreshNow(this.consultedSeasonId());
     } catch (err: any) {
@@ -186,7 +209,9 @@ export class AdherentComponent implements OnInit {
   }
 
   onApplyRefresh(): void {
-    if (!this.isMonCompteContext) this.adherentStore.applyRefresh();
+    if (!this.isMonCompteContext && !this.isProjectContext) {
+      this.adherentStore.applyRefresh();
+    }
   }
 
   async onOpen(id: number): Promise<void> {
