@@ -6,24 +6,35 @@
 
   <div class="notification is-light is-size-7 mt-3 mb-3">
     <strong i18n>Règles médicales :</strong>
+
     <div class="mt-2" *ngIf="evaluation?.mineur === true" i18n>
       <strong>Mineur (moins de 18 ans) — loisir ou compétition :</strong>
       le <strong>QS Sport de la saison</strong> est requis. Si toutes les réponses sont négatives,
       aucun certificat médical n'est demandé. Si une réponse est positive, un certificat médical
       de moins d'un an devient nécessaire.
     </div>
-    <div class="mt-2" *ngIf="evaluation?.mineur === false" i18n>
-      <strong>Adulte (18 ans et plus) — loisir ou compétition :</strong>
+
+    <div class="mt-2" *ngIf="evaluation?.mineur === false && licenceType !== 'COMPETITION'" i18n>
+      <strong>Adulte (18 ans et plus) — loisir :</strong>
+      le <strong>QS Sport de la saison suffit</strong>. Si toutes les réponses sont négatives,
+      aucun certificat médical n'est obligatoire. Si une réponse est positive, un certificat médical
+      de moins d'un an devient nécessaire. Un certificat médical récent peut également être utilisé.
+    </div>
+
+    <div class="mt-2" *ngIf="evaluation?.mineur === false && licenceType === 'COMPETITION'" i18n>
+      <strong>Adulte (18 ans et plus) — compétition :</strong>
       un <strong>certificat médical</strong> est obligatoire. S'il a moins d'un an, le dossier est OK.
       S'il a plus d'un an, il doit être complété par le <strong>QS Sport de la saison</strong>.
       En cas de réponse positive au QS Sport, un nouveau certificat de moins d'un an est nécessaire.
     </div>
+
     <div class="mt-2" *ngIf="evaluation?.mineur == null" i18n>
-      <strong>Mineurs :</strong> QS Sport pour le loisir comme pour la compétition ; certificat uniquement
+      <strong>Mineurs :</strong> QS Sport en loisir comme en compétition ; certificat uniquement
       si le questionnaire comporte une réponse positive.<br />
-      <strong>Adultes :</strong> certificat de moins d'un an, ou certificat plus ancien complété par le
-      QS Sport de la saison.
+      <strong>Adultes en loisir :</strong> le QS Sport suffit ; certificat récent seulement si le questionnaire comporte une réponse positive.<br />
+      <strong>Adultes en compétition :</strong> certificat de moins d'un an, ou certificat plus ancien complété par le QS Sport de la saison.
     </div>
+
     <div class="mt-2">
       <a href="https://assolutions.club/qs_sport.pdf" target="_blank" rel="noopener" i18n>
         Ouvrir le questionnaire QS Sport
