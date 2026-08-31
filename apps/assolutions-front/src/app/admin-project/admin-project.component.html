@@ -106,14 +106,75 @@
         <input type="checkbox" [(ngModel)]="projectDraft.public" />
         <span>Projet visible publiquement</span>
       </label>
-      <div class="field span-2">
-        <label class="label">Contact <span class="technical-label">JSON</span></label>
-        <textarea class="textarea code-field" rows="5" [(ngModel)]="projectDraft.contactJson"></textarea>
-      </div>
-      <div class="field span-2">
-        <label class="label">Adresse <span class="technical-label">JSON</span></label>
-        <textarea class="textarea code-field" rows="5" [(ngModel)]="projectDraft.adresseJson"></textarea>
-      </div>
+
+      <section class="coordinate-panel span-2">
+        <div class="coordinate-title">
+          <div>
+            <h3>Contacts principaux</h3>
+            <p>Même fonctionnement que sur une fiche personne : email, téléphone, contact préféré et diffusion.</p>
+          </div>
+        </div>
+
+        <div class="project-contact-list">
+          <div class="project-contact-row" *ngFor="let contact of projectDraft.contacts; let i = index; trackBy: trackByIndex">
+            <div class="select">
+              <select [ngModel]="contact.Type" (ngModelChange)="onProjectContactTypeChange(contact, $event)">
+                <option [ngValue]="'EMAIL'">Email</option>
+                <option [ngValue]="'PHONE'">Téléphone</option>
+              </select>
+            </div>
+            <input
+              class="input project-contact-value"
+              [type]="contact.Type === 'PHONE' ? 'tel' : 'email'"
+              [(ngModel)]="contact.Value"
+              [placeholder]="contact.Type === 'PHONE' ? 'Téléphone' : 'Email'"
+            />
+            <label class="check-row compact">
+              <input type="radio" name="project-preferred-contact" [checked]="contact.Pref" (change)="setPreferredProjectContact(i)" />
+              Préféré
+            </label>
+            <label class="check-row compact" *ngIf="contact.Type === 'EMAIL'">
+              <input type="checkbox" [(ngModel)]="contact.Diffusion" />
+              Recevoir les emails
+            </label>
+            <button type="button" class="button is-light contact-delete" title="Supprimer" (click)="removeProjectContact(i)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="buttons mt-3 mb-0">
+          <button type="button" class="button is-primary is-light" (click)="addProjectContact('EMAIL')">Ajouter un email</button>
+          <button type="button" class="button is-primary is-light" (click)="addProjectContact('PHONE')">Ajouter un téléphone</button>
+        </div>
+      </section>
+
+      <section class="coordinate-panel span-2">
+        <div class="coordinate-title">
+          <div>
+            <h3>Adresse</h3>
+            <p>Adresse structurée comme sur une fiche personne.</p>
+          </div>
+        </div>
+        <div class="form-grid address-grid">
+          <div class="field span-2">
+            <label class="label">Adresse</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.Street" placeholder="Adresse" />
+          </div>
+          <div class="field">
+            <label class="label">Code postal</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.PostCode" placeholder="Code postal" />
+          </div>
+          <div class="field">
+            <label class="label">Ville</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.City" placeholder="Ville" />
+          </div>
+          <div class="field span-2">
+            <label class="label">Pays</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.Country" placeholder="Pays" />
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="security-note">
