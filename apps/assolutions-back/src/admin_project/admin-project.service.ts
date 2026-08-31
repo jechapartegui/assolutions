@@ -176,18 +176,53 @@ export class AdminProjectService {
     const current = await this.getProject(projectId);
     const next = {
       nom: this.textOr(current.nom, dto.nom),
-      login: this.nullableTextOr(current.login, dto.login),
+      login: this.textOr(current.login, dto.login),
       public: dto.public == null ? !!current.public : !!dto.public,
-      date_debut: dto.date_debut === undefined ? current.date_debut : dto.date_debut || null,
-      date_fin: dto.date_fin === undefined ? current.date_fin : dto.date_fin || null,
+      date_debut: dto.date_debut === undefined
+        ? String(current.date_debut ?? '').slice(0, 10)
+        : String(dto.date_debut ?? '').trim(),
+      date_fin: dto.date_fin === undefined
+        ? String(current.date_fin ?? '').slice(0, 10)
+        : String(dto.date_fin ?? '').trim(),
       activite: this.nullableTextOr(current.activite, dto.activite),
       lang: this.nullableTextOr(current.lang, dto.lang),
       couleur: this.nullableTextOr(current.couleur, dto.couleur),
-      contact: dto.contact === undefined ? current.contact : dto.contact,
-      adresse: dto.adresse === undefined ? current.adresse : dto.adresse,
+      contact: this.objectOrNull(current.contact, dto.contact, 'PROJECT_CONTACT_INVALID'),
+      adresse: this.objectOrNull(current.adresse, dto.adresse, 'PROJECT_ADDRESS_INVALID'),
     };
 
     if (!next.nom) throw new BadRequestException('PROJECT_NAME_REQUIRED');
+    if (next.nom.length > 100) throw new BadRequestException('PROJECT_NAME_TOO_LONG');
+
+    if (!next.login) throw new BadRequestException('PROJECT_EMAIL_REQUIRED');
+    if (next.login.length > 50 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.login)) {
+      throw new BadRequestException('PROJECT_EMAIL_INVALID');
+    }
+
+    if (!this.isIsoDate(next.date_debut) || !this.isIsoDate(next.date_fin)) {
+      throw new BadRequestException('PROJECT_DATES_REQUIRED');
+    }
+    if (next.date_debut > next.date_fin) {
+      throw new BadRequestException('PROJECT_DATE_RANGE_INVALID');
+    }
+
+    if (next.activite && next.activite.length > 100) {
+      throw new BadRequestException('PROJECT_ACTIVITY_TOO_LONG');
+    }
+    if (next.lang && next.lang.length > 10) {
+      throw new BadRequestException('PROJECT_LANGUAGE_TOO_LONG');
+    }
+    if (next.couleur && !/^#[0-9a-fA-F]{6}$/.test(next.couleur)) {
+      throw new BadRequestException('PROJECT_COLOR_INVALID');
+    }
+
+    const duplicateLogin = await this.dataSource.query(
+      `SELECT id FROM project WHERE LOWER(login) = LOWER($1) AND id <> $2 LIMIT 1`,
+      [next.login, projectId],
+    );
+    if (duplicateLogin.length) {
+      throw new BadRequestException('PROJECT_EMAIL_ALREADY_USED');
+    }
 
     await this.dataSource.query(
       `
@@ -272,7 +307,7 @@ export class AdminProjectService {
     const login = dto.login === undefined
       ? String(account.login)
       : String(dto.login ?? '').trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login)) {
+    if (login.length > 50 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login)) {
       throw new BadRequestException('ACCOUNT_EMAIL_INVALID');
     }
 
@@ -444,5 +479,20 @@ export class AdminProjectService {
     if (next === undefined) return current == null ? null : String(current);
     const value = String(next ?? '').trim();
     return value || null;
+  }
+
+  private objectOrNull(current: unknown, next: unknown, errorCode: string): unknown {
+    if (next === undefined) return current ?? null;
+    if (next === null) return null;
+    if (typeof next !== 'object' || Array.isArray(next)) {
+      throw new BadRequestException(errorCode);
+    }
+    return next;
+  }
+
+  private isIsoDate(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parsed = new Date(`${value}T00:00:00Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
   }
 }
