@@ -148,8 +148,8 @@ export class CreerCompteComponent implements OnInit {
 
     const confirmed = window.confirm(
       this.VM.mdp_requis
-        ? $localize`Voulez-vous confirmer la création d'un compte avec mot de passe ?`
-        : $localize`Voulez-vous confirmer la création d'un compte sans mot de passe ?`
+        ? $localize`Voulez-vous confirmer la création d'un compte avec mot de passe ?\n\nAttention : le mail d’activation peut arriver dans vos spams ou courriers indésirables.`
+        : $localize`Voulez-vous confirmer la création d'un compte sans mot de passe ?\n\nAttention : le mail d’activation peut arriver dans vos spams ou courriers indésirables.`
     );
     if (!confirmed) return;
 
