@@ -19,7 +19,15 @@ export class ErrorService {
   }
 
   CreateError(action: string, error: unknown): notification {
-    return this.Create(action, this.getMessage(error), 'KO');
+    const activationEmailResent =
+      (error instanceof Error && error.message === 'ACTIVATION_EMAIL_RESENT') ||
+      error === 'ACTIVATION_EMAIL_RESENT';
+
+    return this.Create(
+      action,
+      this.getMessage(error),
+      activationEmailResent ? 'OK' : 'KO'
+    );
   }
 
   Create(action: string, content: string, alert: string): notification {
@@ -77,6 +85,7 @@ export class ErrorService {
       NO_ACCOUNT_FOUND: $localize`Compte non trouvé.`,
       ACCOUNT_NOT_ACTIVE: $localize`Ce compte n’est pas encore actif.`,
       INACTIVE_ACCOUNT: $localize`Ce compte n’est pas encore actif.`,
+      ACTIVATION_EMAIL_RESENT: $localize`Un nouveau mail d’activation a été envoyé. Pensez à vérifier vos spams ou courriers indésirables.`,
       INCORRECT_PASSWORD: $localize`Mot de passe incorrect.`,
       INCORRECT_LOGIN: $localize`Identifiant incorrect.`,
       INCORRECT_TOKEN: $localize`Le lien utilisé est incorrect ou expiré.`,

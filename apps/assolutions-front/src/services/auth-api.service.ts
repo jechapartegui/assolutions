@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { GlobalService } from './global.services';
 import { environment } from '../environments/environment';
 import { MeResponse } from '@shared/lib/compte.interface';
+import { CompteApiService } from './compte-api.service';
 
 export type AppMode = 'ADMIN' | 'APPLI';
 
@@ -14,7 +15,10 @@ export interface PreloginResponse {
 export class AuthApiService {
   private readonly baseUrl = environment.apiUrl;
 
-  constructor(private global: GlobalService) {}
+  constructor(
+    private global: GlobalService,
+    private compteApi: CompteApiService
+  ) {}
 
   private url(path: string): string {
     return `${this.baseUrl}${path}`;
@@ -27,14 +31,46 @@ export class AuthApiService {
     }
   }
 
+  private isInactiveAccountError(error: unknown): boolean {
+    return error instanceof Error && error.message === 'ACCOUNT_NOT_ACTIVE';
+  }
+
+  private async handleInactiveAccount(login: string): Promise<never> {
+    const email = (login ?? '').trim().toLowerCase();
+    const resend = window.confirm(
+      $localize`Ce compte n’est pas encore activé. Voulez-vous recevoir un nouveau mail d’activation ? Pensez à vérifier vos spams ou courriers indésirables.`
+    );
+
+    if (!resend) {
+      throw new Error('ACCOUNT_NOT_ACTIVE');
+    }
+
+    await this.compteApi.resendActivation(email);
+    throw new Error('ACTIVATION_EMAIL_RESENT');
+  }
+
   async prelogin(login: string): Promise<PreloginResponse> {
-    return await this.global.POST(this.url('/auth/prelogin'), { login });
+    try {
+      return await this.global.POST(this.url('/auth/prelogin'), { login });
+    } catch (error: unknown) {
+      if (this.isInactiveAccountError(error)) {
+        return await this.handleInactiveAccount(login);
+      }
+      throw error;
+    }
   }
 
   async login(login: string, password?: string): Promise<MeResponse> {
-    const res = await this.global.POST(this.url('/auth/login'), { login, password });
-    this.persistToken(res);
-    return res;
+    try {
+      const res = await this.global.POST(this.url('/auth/login'), { login, password });
+      this.persistToken(res);
+      return res;
+    } catch (error: unknown) {
+      if (this.isInactiveAccountError(error)) {
+        return await this.handleInactiveAccount(login);
+      }
+      throw error;
+    }
   }
 
   async activate(login: string, token: string): Promise<MeResponse> {

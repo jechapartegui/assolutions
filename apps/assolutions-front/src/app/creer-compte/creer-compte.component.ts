@@ -169,7 +169,7 @@ export class CreerCompteComponent implements OnInit {
       errors.emitChange(
         errors.OKMessage(
           this.action,
-          $localize`Compte créé. Un mail d’activation a été envoyé à ${email}. Pensez à vérifier vos courriers indésirables.`
+          $localize`Compte créé. Un mail d’activation a été envoyé à ${email}. Pensez à vérifier vos spams ou courriers indésirables.`
         )
       );
       this.router.navigate(['/login'], {
@@ -186,7 +186,7 @@ export class CreerCompteComponent implements OnInit {
         errors.emitChange(
           errors.OKMessage(
             this.action,
-            $localize`Ce compte existait déjà mais n’était pas activé. Un nouveau mail d’activation a été envoyé à ${email}.`
+            $localize`Ce compte existait déjà mais n’était pas activé. Un nouveau mail d’activation a été envoyé à ${email}. Pensez à vérifier vos spams ou courriers indésirables.`
           )
         );
         this.router.navigate(['/login'], {
