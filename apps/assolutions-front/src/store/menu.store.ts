@@ -39,10 +39,12 @@ export class MenuStore extends CachedScreenStore<MenuPendingRefresh> {
   ): Promise<void> {
     const state = this._vm();
 
+    // Quand on revient sur le menu après une action métier (notamment une
+    // souscription), le cache peut encore dater de quelques minutes. Dans ce
+    // cas on recharge réellement les données au lieu de conserver l'ancien
+    // affichage : les nouveaux adhérents/groupes apparaissent immédiatement.
     if (this.hasCurrentCache(state.initialized)) {
-      if (this.shouldRefreshSilently(state.initialized, state.lastLoadedAt)) {
-        void this.refreshSilently(projectId, saisonId, rights);
-      }
+      await this.refreshNow(projectId, saisonId, rights);
       return;
     }
 
