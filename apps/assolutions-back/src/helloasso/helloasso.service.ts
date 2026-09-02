@@ -60,6 +60,15 @@ export class HelloAssoService {
       payer: request.payer,
     };
 
+    // HelloAsso renvoie les metadata du checkout dans ses notifications.
+    // Le sid du returnPath est notre identifiant stable de souscription : il
+    // permet de rattacher un webhook même lorsque checkoutIntentId n'est pas
+    // présent dans le type de notification reçu.
+    const subscriptionId = this.subscriptionIdFromReturnPath(request.returnPath);
+    if (subscriptionId) {
+      payload.metadata = { souscription_id: subscriptionId };
+    }
+
     if (installments > 1) {
       payload.terms = this.buildPaymentTerms(
         totalAmount - initialAmount,
@@ -137,6 +146,19 @@ export class HelloAssoService {
     const found = this.findNumericValue(
       payload,
       new Set(['checkoutintentid', 'checkout_intent_id', 'checkoutid']),
+    );
+    return found && found > 0 ? found : null;
+  }
+
+  extractSubscriptionId(payload: unknown): number | null {
+    const found = this.findNumericValue(
+      payload,
+      new Set([
+        'souscriptionid',
+        'souscription_id',
+        'subscriptionid',
+        'subscription_id',
+      ]),
     );
     return found && found > 0 ? found : null;
   }
@@ -305,6 +327,16 @@ export class HelloAssoService {
   private buildFrontUrl(frontUrl: string, path: string): string {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     return `${frontUrl}${normalizedPath}`;
+  }
+
+  private subscriptionIdFromReturnPath(path: string): number | null {
+    try {
+      const parsed = new URL(path, 'https://assolutions.local');
+      const value = Number(parsed.searchParams.get('sid'));
+      return Number.isFinite(value) && value > 0 ? value : null;
+    } catch {
+      return null;
+    }
   }
 
   private extractHelloAssoError(text: string, status: number): string {

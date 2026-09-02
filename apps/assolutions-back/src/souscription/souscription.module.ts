@@ -27,6 +27,7 @@ import { SouscriptionFinanceService } from './souscription-finance.service';
 import { SouscriptionPersonneEntity } from './souscription-personne.entity';
 import { SouscriptionPersonneGroupeEntity } from './souscription-personne-groupe.entity';
 import { SouscriptionService } from './souscription.service';
+import { SouscriptionWebhookResolverService } from './souscription-webhook-resolver.service';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { SouscriptionService } from './souscription.service';
     SouscriptionCapacityService,
     SouscriptionConfirmationService,
     SouscriptionFinanceService,
+    SouscriptionWebhookResolverService,
     CodePromoService,
   ],
 })

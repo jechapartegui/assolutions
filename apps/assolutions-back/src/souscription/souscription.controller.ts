@@ -29,6 +29,7 @@ import { SouscriptionCapacityService } from './souscription-capacity.service';
 import { SouscriptionConfirmationService } from './souscription-confirmation.service';
 import { SouscriptionFinanceService } from './souscription-finance.service';
 import { SouscriptionService } from './souscription.service';
+import { SouscriptionWebhookResolverService } from './souscription-webhook-resolver.service';
 
 type AuthenticatedRequest = Request & { user?: { id?: number } };
 type AdminSaveSouscriptionDto = SaveSouscriptionDto & { compte_id: number };
@@ -46,6 +47,7 @@ export class SouscriptionController {
     private readonly medicalGuard: SouscriptionMedicalGuardService,
     private readonly views: SouscriptionViewEnricherService,
     private readonly notifications: SouscriptionNotificationService,
+    private readonly webhookResolver: SouscriptionWebhookResolverService,
   ) {}
 
   @Get('contexte/:saisonId')
@@ -256,10 +258,11 @@ export class SouscriptionController {
 
   @Post('helloasso/webhook')
   async webhook(@Body() payload: unknown) {
-    await this.capacity.assertWebhookCapacity(payload);
-    const result = await this.service.handleHelloAssoWebhook(payload);
-    await this.finance.ensureFromWebhook(payload);
-    await this.notifications.sendFromWebhook(payload);
+    const normalizedPayload = await this.webhookResolver.normalize(payload);
+    await this.capacity.assertWebhookCapacity(normalizedPayload);
+    const result = await this.service.handleHelloAssoWebhook(normalizedPayload);
+    await this.finance.ensureFromWebhook(normalizedPayload);
+    await this.notifications.sendFromWebhook(normalizedPayload);
     return result;
   }
 
