@@ -196,7 +196,34 @@ export class CoursService {
         }
       }
 
-      const seances: Array<{ seance_id: number }> = await manager.query(
+      // On sélectionne d'abord explicitement les séances à propager.
+      // TypeORM/PostgreSQL peut retourner [rows, rowCount] pour un UPDATE ... RETURNING,
+      // ce qui faisait croire à l'ancien code qu'aucune séance n'avait été trouvée.
+      const seanceRows: Array<{ seance_id: number }> = await manager.query(
+        `
+          SELECT seance_id
+          FROM seance
+          WHERE cours = $1
+            AND saison_id = $2
+            AND date_seance >= GREATEST($3::date, CURRENT_DATE)
+          ORDER BY seance_id
+        `,
+        [id, saisonId, fromDate],
+      );
+
+      const seanceIds = seanceRows
+        .map((row) => Number(row.seance_id))
+        .filter((value) => Number.isInteger(value) && value > 0);
+
+      if (!seanceIds.length) {
+        return {
+          updated: 0,
+          professeurs: profIds.length,
+          groupes: groupeIds.length,
+        };
+      }
+
+      await manager.query(
         `
           UPDATE seance
           SET label = $1,
@@ -214,10 +241,7 @@ export class CoursService {
               est_limite_age_maximum = ($6::int IS NOT NULL),
               est_place_maximum = ($7::int IS NOT NULL),
               date_maj = now()
-          WHERE cours = $12
-            AND saison_id = $13
-            AND date_seance >= GREATEST($14::date, CURRENT_DATE)
-          RETURNING seance_id
+          WHERE seance_id = ANY($12::int[])
         `,
         [
           values.nom,
@@ -231,23 +255,9 @@ export class CoursService {
           values.afficherPresent,
           values.essaiPossible,
           values.appointment,
-          id,
-          saisonId,
-          fromDate,
+          seanceIds,
         ],
       );
-
-      const seanceIds = seances
-        .map((row) => Number(row.seance_id))
-        .filter((value) => value > 0);
-
-      if (!seanceIds.length) {
-        return {
-          updated: 0,
-          professeurs: profIds.length,
-          groupes: groupeIds.length,
-        };
-      }
 
       await manager.query(
         `DELETE FROM seance_professeur WHERE seance_id = ANY($1::int[])`,
