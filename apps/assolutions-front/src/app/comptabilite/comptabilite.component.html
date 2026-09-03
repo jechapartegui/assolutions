@@ -121,7 +121,7 @@
           <div class="card-content scenario-content">
             <div class="field has-addons mb-3">
               <div class="control is-expanded">
-                <input class="input is-small" [(ngModel)]="newScenarioName" placeholder="Nouveau scénario"  i18n-placeholder/>
+                <input class="input is-small" [(ngModel)]="newScenarioName" placeholder="Nouveau scénario" i18n-placeholder/>
               </div>
               <div class="control">
                 <button class="button is-small is-primary" (click)="createScenario()" [disabled]="saving" i18n>Ajouter</button>
@@ -158,8 +158,8 @@
                   </option>
                 </select>
               </div>
-              <input class="input is-small budget-amount" type="number" [(ngModel)]="newLigneMontant" placeholder="Montant"  i18n-placeholder/>
-              <input class="input is-small" [(ngModel)]="newLigneInfo" placeholder="Commentaire"  i18n-placeholder/>
+              <input class="input is-small budget-amount" type="number" [(ngModel)]="newLigneMontant" placeholder="Montant" i18n-placeholder/>
+              <input class="input is-small" [(ngModel)]="newLigneInfo" placeholder="Commentaire" i18n-placeholder/>
               <button class="button is-small is-primary" (click)="addBudgetLigne()" i18n>Ajouter</button>
             </div>
 
@@ -213,8 +213,8 @@
 
     <!-- FLUX -->
     <section *ngIf="vue === 'FLUX'" class="finance-section flux-section">
-      <div class="flux-toolbar">
-        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer libellé / destinataire"  i18n-placeholder/>
+      <div class="flux-toolbar" *ngIf="!selectedFlux">
+        <input class="input is-small" [(ngModel)]="filterTexte" placeholder="Filtrer libellé / destinataire" i18n-placeholder/>
 
         <div class="select is-small">
           <select [(ngModel)]="filterClasseId">
@@ -247,7 +247,7 @@
               <p class="card-header-title" i18n>Flux financiers</p>
             </header>
 
-            <div  class="card-content p-0 flux-table-wrapper">
+            <div class="card-content p-0 flux-table-wrapper">
               <table class="table is-fullwidth is-striped is-hoverable is-narrow">
                 <thead>
                   <tr>
@@ -296,7 +296,7 @@
             <header class="card-header">
               <p class="card-header-title">{{ selectedFlux.id ? 'Modifier le flux' : 'Nouveau flux' }}</p>
               <div class="is-flex is-align-items-center mr-3">
-                <button class="button is-small is-primary mr-3" (click)="saveFlux()" [disabled]="saving" i18n>
+                <button class="button is-primary mr-3" (click)="saveFlux()" [disabled]="saving" i18n>
                   Sauvegarder
                 </button>
                 <button class="delete" (click)="closeFlux()"></button>
@@ -309,61 +309,62 @@
               </article>
 
               <!-- Bloc 1 : Informations -->
-<section class="flux-block flux-block-compact">
-  <h3 class="title is-6" i18n>1. Informations</h3>
+              <section class="flux-block flux-block-compact">
+                <h3 class="title is-6" i18n>1. Informations</h3>
 
-  <div class="flux-info-grid">
-    <div class="field flux-field-wide">
-      <label class="label is-small" i18n>Libellé</label>
-      <input class="input is-small is-fullwidth" [(ngModel)]="selectedFlux.libelle" list="flux-libelles" />
-      <datalist id="flux-libelles">
-        <option *ngFor="let label of libelleSuggestions" [value]="label"></option>
-      </datalist>
-    </div>
+                <div class="flux-info-grid">
+                  <div class="field flux-field-wide">
+                    <label class="label is-small" i18n>Libellé</label>
+                    <input class="input is-small is-fullwidth" [(ngModel)]="selectedFlux.libelle" list="flux-libelles" />
+                    <datalist id="flux-libelles">
+                      <option *ngFor="let label of libelleSuggestions" [value]="label"></option>
+                    </datalist>
+                  </div>
 
-    <div class="field">
-      <label class="label is-small" i18n>Date</label>
-      <input class="input is-small" type="date" [(ngModel)]="selectedFlux.date" />
-    </div>
+                  <div class="field">
+                    <label class="label is-small" i18n>Date</label>
+                    <input class="input is-small" type="date" [(ngModel)]="selectedFlux.date" />
+                  </div>
 
-    <div class="field">
-      <label class="label is-small" i18n>Montant</label>
-      <input class="input is-small" type="number" [(ngModel)]="selectedFlux.montant" />
-    </div>
+                  <div class="field">
+                    <label class="label is-small" i18n>Montant</label>
+                    <input class="input is-small" type="number" [(ngModel)]="selectedFlux.montant" />
+                  </div>
 
-    <div class="field">
-      <label class="label is-small" i18n>Type</label>
-      <div class="select is-small is-fullwidth">
-        <select [(ngModel)]="selectedFlux.recette">
-          <option [ngValue]="true" i18n>Recette</option>
-          <option [ngValue]="false" i18n>Dépense</option>
-        </select>
-      </div>
-    </div>
+                  <div class="field">
+                    <label class="label is-small" i18n>Type</label>
+                    <div class="select is-small is-fullwidth">
+                      <select [(ngModel)]="selectedFlux.recette">
+                        <option [ngValue]="true" i18n>Recette</option>
+                        <option [ngValue]="false" i18n>Dépense</option>
+                      </select>
+                    </div>
+                  </div>
 
-    <div class="field ">
-      <label class="label is-small" i18n>Classe</label>
-      <div class="select is-small is-fullwidth">
-        <select [(ngModel)]="selectedFlux.classe_comptable_id">
-          <option [ngValue]="null" i18n>Non classé</option>
-          <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
-            {{ c.code }} - {{ c.libelle }}
-          </option>
-        </select>
-      </div>
-    </div>
-<div class="field">
-  <label class="label is-small">&nbsp;</label>
-  <button
-    class="button is-small is-light is-fullwidth"
-    type="button"
-    (click)="syncFluxMontantFromOperations()"
-   i18n>
-    Montant = paiements
-  </button>
-</div>
-  </div>
-</section>
+                  <div class="field">
+                    <label class="label is-small" i18n>Classe</label>
+                    <div class="select is-small is-fullwidth">
+                      <select [(ngModel)]="selectedFlux.classe_comptable_id">
+                        <option [ngValue]="null" i18n>Non classé</option>
+                        <option *ngFor="let c of getClasseChildren()" [ngValue]="c.id">
+                          {{ c.code }} - {{ c.libelle }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="label is-small">&nbsp;</label>
+                    <button
+                      class="button is-small is-light is-fullwidth"
+                      type="button"
+                      (click)="syncFluxMontantFromOperations()"
+                      i18n>
+                      Montant = paiements
+                    </button>
+                  </div>
+                </div>
+              </section>
 
               <!-- Bloc 2 : Destinataire -->
               <section class="flux-block">
@@ -393,7 +394,7 @@
                     [(personneId)]="selectedFlux.personne_id"
                     (selectedChange)="onFluxPersonneSelected($event)"
                     placeholder="Rechercher adhérent / prof"
-                   i18n-placeholder></app-personne-selector>
+                    i18n-placeholder></app-personne-selector>
                   <p class="help" *ngIf="selectedFlux.destinataire" i18n>Libellé retenu : {{ selectedFlux.destinataire }}</p>
                 </div>
 
@@ -454,29 +455,27 @@
               <section class="flux-block">
                 <h3 class="title is-6" i18n>4. Documents</h3>
 
-<div class="document-add-grid">
-  <div class="select is-small">
-    <select [(ngModel)]="newDocumentType">
-      <option *ngFor="let type of typedocLov" [ngValue]="type.libelle">
-        {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
-      </option>
-    </select>
-  </div>
+                <div class="document-add-grid">
+                  <div class="select is-small">
+                    <select [(ngModel)]="newDocumentType">
+                      <option *ngFor="let type of typedocLov" [ngValue]="type.libelle">
+                        {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
+                      </option>
+                    </select>
+                  </div>
 
-  <label class="button is-small is-link is-light">
-    <input type="file" hidden (change)="onDocumentFileSelected($event)" />
-    {{ newDocumentFile?.name || 'Fichier' }}
-  </label>
+                  <label class="button is-small is-link is-light">
+                    <input type="file" hidden (change)="onDocumentFileSelected($event)" />
+                    {{ newDocumentFile?.name || 'Fichier' }}
+                  </label>
 
-  <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre"  i18n-placeholder/>
+                  <input class="input is-small" [(ngModel)]="newDocumentTitle" placeholder="Titre" i18n-placeholder/>
+                  <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire" i18n-placeholder/>
 
-  <input class="input is-small" [(ngModel)]="newDocumentComment" placeholder="Commentaire"  i18n-placeholder/>
-
-  <button class="button is-small is-primary" (click)="addDocumentToFlux()" i18n>
-    Ajouter
-  </button>
-</div>
-                 
+                  <button class="button is-small is-primary" (click)="addDocumentToFlux()" i18n>
+                    Ajouter
+                  </button>
+                </div>
 
                 <div class="linked-list" *ngIf="documentsFlux.length; else noDocuments">
                   <div class="linked-item" *ngFor="let doc of documentsFlux">
@@ -485,15 +484,15 @@
                       <span class="tag is-light ml-1">{{ doc.typedoc }}</span>
                       <p class="is-size-7 has-text-grey" *ngIf="doc.file_path">{{ doc.file_path }}</p>
                     </div>
-                   <div class="linked-actions">
-  <button class="button is-small is-white" (click)="downloadDocument(doc)">
-    <i class="fa-solid fa-download"></i>
-  </button>
+                    <div class="linked-actions">
+                      <button class="button is-small is-white" (click)="downloadDocument(doc)">
+                        <i class="fa-solid fa-download"></i>
+                      </button>
 
-  <button class="button is-small is-white has-text-danger" (click)="removeDocumentFromFlux(doc)">
-    <i class="fa-solid fa-trash"></i>
-  </button>
-</div>
+                      <button class="button is-small is-white has-text-danger" (click)="removeDocumentFromFlux(doc)">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -506,50 +505,49 @@
               <section class="flux-block">
                 <h3 class="title is-6" i18n>5. Stocks</h3>
 
-<div class="stock-add-grid stock-add-grid-compact">
-  <input class="input is-small stock-qte" type="number" [(ngModel)]="newStock.qte" placeholder="Qté"  i18n-placeholder/>
+                <div class="stock-add-grid stock-add-grid-compact">
+                  <input class="input is-small stock-qte" type="number" [(ngModel)]="newStock.qte" placeholder="Qté" i18n-placeholder/>
 
-  <div class="select is-small is-fullwidth stock-type">
-    <select [ngModel]="newStock.type_stock_id" (ngModelChange)="onStockTypeChange($event)">
-      <option [ngValue]="null" i18n>Type stock</option>
-      <option *ngFor="let type of stockTypeLov" [ngValue]="type.id">
-        {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
-      </option>
-    </select>
-  </div>
+                  <div class="select is-small is-fullwidth stock-type">
+                    <select [ngModel]="newStock.type_stock_id" (ngModelChange)="onStockTypeChange($event)">
+                      <option [ngValue]="null" i18n>Type stock</option>
+                      <option *ngFor="let type of stockTypeLov" [ngValue]="type.id">
+                        {{ type.categorie ? type.categorie + ' - ' : '' }}{{ type.libelle }}
+                      </option>
+                    </select>
+                  </div>
 
-  <input class="input is-small stock-libelle" [(ngModel)]="newStock.libelle" placeholder="Libellé"  i18n-placeholder/>
+                  <input class="input is-small stock-libelle" [(ngModel)]="newStock.libelle" placeholder="Libellé" i18n-placeholder/>
 
-  <div class="select is-small is-fullwidth stock-lieu-mode">
-    <select [(ngModel)]="lieuMode">
-      <option value="LIBRE" i18n>Libre</option>
-      <option value="EXISTE" i18n>Lieu</option>
-    </select>
-  </div>
+                  <div class="select is-small is-fullwidth stock-lieu-mode">
+                    <select [(ngModel)]="lieuMode">
+                      <option value="LIBRE" i18n>Libre</option>
+                      <option value="EXISTE" i18n>Lieu</option>
+                    </select>
+                  </div>
 
-  <app-lieu-selector
-    *ngIf="lieuMode === 'EXISTE'"
-    class="stock-lieu"
-    [(lieuId)]="newStock.lieu_id"
-    (selectedChange)="onStockLieuSelected($event)"
-    placeholder="Lieu"
-   i18n-placeholder></app-lieu-selector>
+                  <app-lieu-selector
+                    *ngIf="lieuMode === 'EXISTE'"
+                    class="stock-lieu"
+                    [(lieuId)]="newStock.lieu_id"
+                    (selectedChange)="onStockLieuSelected($event)"
+                    placeholder="Lieu"
+                    i18n-placeholder></app-lieu-selector>
 
-  <input
-    *ngIf="lieuMode === 'LIBRE'"
-    class="input is-small stock-lieu"
-    [(ngModel)]="newStock.lieu_stockage"
-    placeholder="Lieu de stockage"
-   i18n-placeholder/>
+                  <input
+                    *ngIf="lieuMode === 'LIBRE'"
+                    class="input is-small stock-lieu"
+                    [(ngModel)]="newStock.lieu_stockage"
+                    placeholder="Lieu de stockage"
+                    i18n-placeholder/>
 
-  <input class="input is-small stock-valeur" type="number" [(ngModel)]="newStock.valeur_achat" placeholder="Valeur"  i18n-placeholder/>
+                  <input class="input is-small stock-valeur" type="number" [(ngModel)]="newStock.valeur_achat" placeholder="Valeur" i18n-placeholder/>
+                  <input class="input is-small stock-date" type="date" [(ngModel)]="newStock.date_achat" />
 
-  <input class="input is-small stock-date" type="date" [(ngModel)]="newStock.date_achat" />
-
-  <button class="button is-small is-primary stock-add-button" (click)="addStockToFlux()" i18n>
-    Ajouter
-  </button>
-</div>
+                  <button class="button is-small is-primary stock-add-button" (click)="addStockToFlux()" i18n>
+                    Ajouter
+                  </button>
+                </div>
 
                 <div class="linked-list" *ngIf="stocksFlux.length; else noStocks">
                   <div class="linked-item" *ngFor="let stock of stocksFlux">
