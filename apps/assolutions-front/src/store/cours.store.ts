@@ -8,6 +8,7 @@ import { CoursMapper } from '../mapper/cours.mapper';
 
 import { SaisonApiService } from '../services/saison-api.service';
 import { CoursDataStore } from '../data-store/cours-data.store';
+import { SeanceDataStore } from '../data-store/seance-data.store';
 import { LieuDataStore } from '../data-store/lieu-data.store';
 import { GroupeDataStore } from '../data-store/groupe-data.store';
 import { ContratProfDataStore } from '../data-store/contrat-prof-data.store';
@@ -60,6 +61,7 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
 
   constructor(
     private readonly coursDataStore: CoursDataStore,
+    private readonly seanceDataStore: SeanceDataStore,
     private readonly lieuDataStore: LieuDataStore,
     private readonly groupeDataStore: GroupeDataStore,
     private readonly contratProfDataStore: ContratProfDataStore,
@@ -295,8 +297,11 @@ export class CoursStore extends CachedScreenStore<CoursPageVm> {
     const saisonId = this.state().activeSaison?.id ?? current?.saison_id ?? 0;
     if (!current?.id || !saisonId) return;
 
-    await this.coursDataStore.update(current, saisonId);
+    // updateSerie persiste déjà l'état courant du cours, de ses professeurs et de
+    // ses groupes avant d'appliquer la série. On évite donc une sauvegarde
+    // intermédiaire redondante et on invalide ensuite les séances mises en cache.
     await this.coursDataStore.updateSerie(current, fromDate);
+    this.seanceDataStore.clear();
     await this.refreshNow(saisonId);
   }
 
