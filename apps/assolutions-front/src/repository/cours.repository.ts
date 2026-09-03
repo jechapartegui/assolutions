@@ -165,22 +165,35 @@ export class CoursRepository {
       throw new Error($localize`Impossible de modifier la série d'un cours sans identifiant`);
     }
 
-    const saisonId = Number(coursVm.saison_id || this.appStore.saison_active_id());
-    const groupeIds = [...new Set(
-      (coursVm.groupes ?? [])
-        .map((g: any) => Number(g?.groupe_id ?? g?.id ?? 0))
-        .filter((id: number) => Number.isFinite(id) && id > 0),
-    )];
-
-    // La série doit refléter l'état exact du cours au moment du clic :
-    // données principales + professeurs + groupes.
-    await this.updateCours(coursVm);
-    await this.updateCoursProfs(coursVm.id, coursVm.professeursCours ?? [], saisonId);
-    await this.updateCoursGroupes(coursVm.id, groupeIds);
-
     const projectId = this.appStore.selectedProjectId();
     const dto = this.mapper.toUpdateDto(coursVm, projectId);
-    await this.coursApiService.updateSerieCours(coursVm.id, dto, fromDate);
+    const professeurContratIds = this.cleanIds(
+      (coursVm.professeursCours ?? []).map(
+        (prof: any) => prof?.contrat_id ?? prof?.contratId ?? prof?.id ?? 0,
+      ),
+    );
+    const groupeIds = this.cleanIds(
+      (coursVm.groupes ?? []).map(
+        (groupe: any) => groupe?.groupe_id ?? groupe?.id ?? 0,
+      ),
+    );
+
+    // Un seul appel : le back persiste le cours, ses liaisons et les séances
+    // futures dans une transaction unique. On évite ainsi les écarts entre
+    // cours_professeur/lien_groupe et les séances propagées.
+    await this.coursApiService.updateSerieCours(
+      coursVm.id,
+      {
+        ...dto,
+        professeur_contrat_ids: professeurContratIds,
+        groupe_ids: groupeIds,
+      },
+      fromDate,
+    );
+
+    // La modification atomique se fait directement au back : ce store relationnel
+    // doit donc être rechargé au prochain accès au lieu de servir son ancien cache.
+    this.coursProfesseurDataStore.invalidateForCours?.(coursVm.id);
   }
 
   async updateCoursProfs(
@@ -208,5 +221,15 @@ export class CoursRepository {
       key: x.contrat_id ?? x.id ?? 0,
       value: `${x.prenom ?? ''} ${x.nom ?? ''}`.trim(),
     }));
+  }
+
+  private cleanIds(values: Array<number | string | null | undefined>): number[] {
+    return Array.from(
+      new Set(
+        (values ?? [])
+          .map((value) => Number(value))
+          .filter((value) => Number.isInteger(value) && value > 0),
+      ),
+    );
   }
 }
