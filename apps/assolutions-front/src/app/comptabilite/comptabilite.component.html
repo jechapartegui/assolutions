@@ -236,8 +236,6 @@
         <label class="checkbox is-size-7" i18n>
           <input type="checkbox" [(ngModel)]="showSystemFlux" /> Afficher flux système
         </label>
-
-        <button class="button is-small is-primary" (click)="createFlux()" i18n>Nouveau flux</button>
       </div>
 
       <div class="flux-layout">
@@ -245,6 +243,12 @@
           <div class="card full-height">
             <header class="card-header">
               <p class="card-header-title" i18n>Flux financiers</p>
+              <div class="is-flex is-align-items-center mr-3">
+                <button class="button is-primary is-light" type="button" (click)="createFlux()">
+                  <span class="icon"><i class="fas fa-plus"></i></span>
+                  <span i18n>Créer</span>
+                </button>
+              </div>
             </header>
 
             <div class="card-content p-0 flux-table-wrapper">
