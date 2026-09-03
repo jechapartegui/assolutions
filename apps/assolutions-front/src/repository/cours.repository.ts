@@ -193,7 +193,7 @@ export class CoursRepository {
 
     // La modification atomique se fait directement au back : ce store relationnel
     // doit donc être rechargé au prochain accès au lieu de servir son ancien cache.
-    this.coursProfesseurDataStore.invalidateForCours?.(coursVm.id);
+    this.coursProfesseurDataStore.invalidateCours(coursVm.id);
   }
 
   async updateCoursProfs(
