@@ -4,6 +4,10 @@ import { Cours } from '@shared/lib/cours.interface';
 
 export type CreateCoursDto = Omit<Cours, 'id'>;
 export type UpdateCoursDto = Partial<Omit<Cours, 'id' | 'project_id'>>;
+export type UpdateCoursSeriePayload = UpdateCoursDto & {
+  professeur_contrat_ids: number[];
+  groupe_ids: number[];
+};
 
 @Injectable({ providedIn: 'root' })
 export class CoursApiService {
@@ -31,10 +35,16 @@ export class CoursApiService {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
 
-  updateSerieCours(id: number, dto: UpdateCoursDto, fromDate: Date): Promise<void> {
+  updateSerieCours(
+    id: number,
+    dto: UpdateCoursSeriePayload,
+    fromDate: Date,
+  ): Promise<void> {
     const payload = {
       ...this.toPayload(dto),
-      fromDate,
+      professeur_contrat_ids: this.cleanIds(dto.professeur_contrat_ids),
+      groupe_ids: this.cleanIds(dto.groupe_ids),
+      fromDate: this.toLocalDate(fromDate),
     };
     return this.api.POST<void>(`${this.base}/${id}/serie`, payload);
   }
@@ -62,5 +72,22 @@ export class CoursApiService {
       essai_possible: dto?.essai_possible,
       appointment: dto?.appointment ?? dto?.rdv,
     };
+  }
+
+  private cleanIds(values: number[] | null | undefined): number[] {
+    return Array.from(
+      new Set(
+        (values ?? [])
+          .map((value) => Number(value))
+          .filter((value) => Number.isInteger(value) && value > 0),
+      ),
+    );
+  }
+
+  private toLocalDate(value: Date): string {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
