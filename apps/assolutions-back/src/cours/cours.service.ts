@@ -96,7 +96,7 @@ export class CoursService {
               date_maj = now()
           WHERE cours = $12
             AND saison_id = $13
-            AND date_seance >= $14::date
+            AND date_seance >= GREATEST($14::date, CURRENT_DATE)
           RETURNING seance_id
         `,
         [
