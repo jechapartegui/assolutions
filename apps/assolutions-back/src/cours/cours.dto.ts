@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCoursDto {
   @IsString()
@@ -120,4 +120,14 @@ export class UpdateCoursDto {
 export class UpdateCoursSerieDto extends UpdateCoursDto {
   @IsDateString()
   fromDate: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  professeur_contrat_ids?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  groupe_ids?: number[];
 }
