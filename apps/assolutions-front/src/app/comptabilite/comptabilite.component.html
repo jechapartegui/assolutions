@@ -295,7 +295,12 @@
           <div class="card flux-editor">
             <header class="card-header">
               <p class="card-header-title">{{ selectedFlux.id ? 'Modifier le flux' : 'Nouveau flux' }}</p>
-              <button class="delete m-3" (click)="closeFlux()"></button>
+              <div class="is-flex is-align-items-center mr-3">
+                <button class="button is-small is-primary mr-3" (click)="saveFlux()" [disabled]="saving" i18n>
+                  Sauvegarder
+                </button>
+                <button class="delete" (click)="closeFlux()"></button>
+              </div>
             </header>
 
             <div class="card-content flux-editor-content">
@@ -565,13 +570,6 @@
                   <p class="help" i18n>Aucun stock lié.</p>
                 </ng-template>
               </section>
-
-              <div class="buttons is-right mt-4">
-                <button class="button is-light" (click)="closeFlux()" i18n>Annuler</button>
-                <button class="button is-primary" (click)="saveFlux()" [disabled]="saving" i18n>
-                  Sauvegarder
-                </button>
-              </div>
             </div>
           </div>
         </div>
