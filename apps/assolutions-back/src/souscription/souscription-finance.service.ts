@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
 
+import { ClasseComptableEntity } from '../finance/classe_comptable.entity';
 import { FluxFinancierEntity } from '../flux_financier/flux_financier.entity';
 import { HelloAssoService } from '../helloasso/helloasso.service';
 import { OperationEntity } from '../operation/operation.entity';
@@ -29,6 +30,7 @@ export class SouscriptionFinanceService {
       const lineRepo = manager.getRepository(SouscriptionPersonneEntity);
       const tariffRepo = manager.getRepository(TarifInscriptionEntity);
       const personneRepo = manager.getRepository(PersonneEntity);
+      const classeRepo = manager.getRepository(ClasseComptableEntity);
 
       const subscription = await subscriptionRepo.findOne({
         where: { id: Number(subscriptionId) },
@@ -109,6 +111,32 @@ export class SouscriptionFinanceService {
         }
       }
 
+      const cotisationClass = await classeRepo
+        .createQueryBuilder('classe')
+        .where('classe.code = :code', { code: '75' })
+        .andWhere('classe.actif = true')
+        .andWhere('classe.recette = true')
+        .andWhere('classe.lang = :lang', { lang: 'fr' })
+        .andWhere('(classe.pays IS NULL OR UPPER(classe.pays) = :pays)', {
+          pays: 'FR',
+        })
+        .andWhere(
+          '(classe.project_id IS NULL OR classe.project_id = :projectId)',
+          { projectId: subscription.project_id },
+        )
+        .orderBy(
+          'CASE WHEN classe.project_id = :projectId THEN 0 ELSE 1 END',
+          'ASC',
+        )
+        .addOrderBy('classe.id', 'ASC')
+        .getOne();
+
+      if (!cotisationClass) {
+        this.logger.warn(
+          `Souscription ${subscription.id} : classe comptable 75 active introuvable, flux laissé non classé`,
+        );
+      }
+
       const paymentDate = this.dateOnly(
         subscription.paid_at ?? subscription.finalized_at ?? new Date(),
       );
@@ -128,7 +156,7 @@ export class SouscriptionFinanceService {
           info: `Paiement d'inscription${subscription.helloasso_checkout_intent_id ? ` - HelloAsso #${subscription.helloasso_checkout_intent_id}` : ''}`,
           project_id: subscription.project_id,
           saison_id: subscription.saison_id,
-          classe_comptable_id: null,
+          classe_comptable_id: cotisationClass?.id ?? null,
           nb_paiement: Math.max(1, Number(subscription.nb_echeances ?? 1)),
           type_frais: null,
           personne_id: subscription.payeur_personne_id ?? null,
