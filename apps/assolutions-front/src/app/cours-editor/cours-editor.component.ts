@@ -151,8 +151,10 @@ export class CoursEditorComponent implements OnInit, OnChanges {
     if (!this.cours.prof_principal_id || this.cours.prof_principal_id <= 0) {
       this.cours.prof_principal_id = contratId;
     }
-    if (this.cours.id > 0) await this.store.updateCurrentCoursProfs();
 
+    // On garde l'édition locale jusqu'à Sauvegarder / Modifier la série.
+    // Cela évite qu'un rechargement intermédiaire des profs écrase des groupes
+    // ou d'autres changements encore non sauvegardés dans le formulaire.
     this.currentProfId = null;
     this.majListeProf();
     this.checkall();
@@ -168,8 +170,9 @@ export class CoursEditorComponent implements OnInit, OnChanges {
       const next = this.cours.professeursCours?.[0] as any;
       this.cours.prof_principal_id = this.getProfKey(next);
     }
-    if (this.cours.id > 0) await this.store.updateCurrentCoursProfs();
 
+    // Même règle qu'à l'ajout : la modification reste dans le formulaire
+    // jusqu'à l'action explicite de sauvegarde ou de propagation de série.
     this.majListeProf();
     this.checkall();
   }
