@@ -13,7 +13,7 @@ import { SouscriptionPersonneEntity } from '../souscription/souscription-personn
 type NotificationKind = 'OK' | 'KO';
 
 type WelcomeTemplate = {
-  projectName: string;
+  subject: string;
   html: string;
 };
 
@@ -148,7 +148,7 @@ export class SouscriptionNotificationService {
               name: name || null,
               projectId,
               record: `MAIL_SOUSCRIPTION_OK_${subscription.id}`,
-              subject: `${welcomeTemplate.projectName} - Bienvenue au club !`,
+              subject: welcomeTemplate.subject,
               html: welcomeTemplate.html,
             });
           } else {
@@ -187,12 +187,17 @@ export class SouscriptionNotificationService {
   private async loadWelcomeTemplate(projectId: number): Promise<WelcomeTemplate | null> {
     try {
       const rows = (await this.souscriptionRepo.query(
-        `SELECT nom, mail_bienvenue
-           FROM project
-          WHERE id = $1
+        `SELECT p.nom, mp.mail_bienvenue, mp.sujet_bienvenue
+           FROM mail_project mp
+           LEFT JOIN project p ON p.id = mp.id
+          WHERE mp.id = $1
           LIMIT 1`,
         [projectId],
-      )) as Array<{ nom?: unknown; mail_bienvenue?: unknown }>;
+      )) as Array<{
+        nom?: unknown;
+        mail_bienvenue?: unknown;
+        sujet_bienvenue?: unknown;
+      }>;
 
       const row = rows[0];
       const html = typeof row?.mail_bienvenue === 'string' ? row.mail_bienvenue.trim() : '';
@@ -200,8 +205,12 @@ export class SouscriptionNotificationService {
 
       const projectName =
         typeof row?.nom === 'string' && row.nom.trim() ? row.nom.trim() : 'Votre club';
+      const subject =
+        typeof row?.sujet_bienvenue === 'string' && row.sujet_bienvenue.trim()
+          ? row.sujet_bienvenue.trim()
+          : `${projectName} - Bienvenue au club !`;
 
-      return { projectName, html };
+      return { subject, html };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
