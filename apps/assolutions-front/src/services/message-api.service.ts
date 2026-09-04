@@ -5,6 +5,7 @@ import { AppStore } from '../app/app.store';
 import { MenuStore } from '../store/menu.store';
 import { RefDataStore } from '../store/ref-data.store';
 import {
+  MailAddressVm,
   OutgoingMessageVm,
   SendMessagesDto,
   SendMessagesResultVm,
@@ -19,6 +20,7 @@ type LegacyOutgoingMessageVm = OutgoingMessageVm & {
 @Injectable({ providedIn: 'root' })
 export class MessageApiService {
   private readonly base = '/messages';
+  private readonly clubContactSubject = `Message depuis l'application`;
 
   constructor(
     private api: ApiClientService,
@@ -80,24 +82,78 @@ export class MessageApiService {
         ? legacyBody
         : message.html || legacyBody;
 
+      const isClubContact =
+        String(message.subject ?? '').trim() === this.clubContactSubject;
+      const accountEmail = String(this.appStore.compte()?.login ?? '').trim();
+      const normalizedSubject =
+        isClubContact && accountEmail
+          ? `${message.subject} - ${accountEmail}`
+          : message.subject;
+
+      let normalizedHtml = this.enrichTrialConfirmation(
+        message.subject,
+        initialHtml,
+      );
+      if (isClubContact) {
+        normalizedHtml = this.enrichClubContact(normalizedHtml, accountEmail);
+      }
+
       return {
         to: {
           email,
           name: message.to?.name ?? null,
         },
-        subject: message.subject,
+        subject: normalizedSubject,
         // Ma séance fournit encore deux représentations : `body` contient le
         // template HTML original alors que `html` peut contenir ce même document
         // échappé (&lt;html&gt;), ce qui affiche le code source dans le mail.
         // Pour un vrai document HTML, on conserve donc le template original.
-        html: this.enrichTrialConfirmation(message.subject, initialHtml),
-        cc: message.cc,
+        html: normalizedHtml,
+        cc: isClubContact
+          ? this.buildClubContactCc(message.cc, accountEmail, email)
+          : message.cc,
         bcc: message.bcc,
         record:
           message.record ??
           (personId > 0 ? `personne:${personId}` : null),
       };
     });
+  }
+
+  private buildClubContactCc(
+    currentCc: MailAddressVm[] | undefined,
+    accountEmail: string,
+    destinationEmail: string,
+  ): MailAddressVm[] | undefined {
+    const normalizedAccountEmail = String(accountEmail ?? '').trim().toLowerCase();
+    const normalizedDestinationEmail = String(destinationEmail ?? '').trim().toLowerCase();
+
+    const result = [...(currentCc ?? [])];
+    if (
+      normalizedAccountEmail &&
+      normalizedAccountEmail !== normalizedDestinationEmail &&
+      !result.some(
+        (item) =>
+          String(item?.email ?? '').trim().toLowerCase() === normalizedAccountEmail,
+      )
+    ) {
+      result.push({ email: accountEmail });
+    }
+
+    return result.length ? result : undefined;
+  }
+
+  private enrichClubContact(html: string, accountEmail: string): string {
+    const senderLabel = accountEmail || 'Compte Assolutions non identifié';
+    const source = String(html ?? '').trim();
+
+    return [
+      `<p><strong>Message envoyé par le compte Assolutions :</strong> ${this.escapeHtml(senderLabel)}</p>`,
+      source
+        ? `<p>${this.escapeHtml(source).replace(/\r?\n/g, '<br>')}</p>`
+        : '',
+      '<p><small>Message envoyé depuis le bloc « Contacter le club » d’Assolutions.</small></p>',
+    ].join('');
   }
 
   private enrichTrialConfirmation(subject: string, html: string): string {
