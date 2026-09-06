@@ -38,6 +38,7 @@ import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { MailRecordMonitorComponent } from './mail-record-monitor/mail-record-monitor.component';
+import { SouscriptionMonitorComponent } from './souscription-monitor/souscription-monitor.component';
 import { StockComponent } from './stock/stock.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
@@ -76,6 +77,7 @@ import { CoursStore } from '../store/cours.store';
     EnvoiMailComponent,
     ProjetMailComponent,
     MailRecordMonitorComponent,
+    SouscriptionMonitorComponent,
     StockComponent,
     ComptabiliteComponent,
     OperationsComponent,

@@ -56,6 +56,7 @@ export class MenuAdminComponent implements OnInit {
       tiles: [
         { label: $localize`:@@admin.members:Adhérents`, icon: 'fa-users', menu: 'ADHERENT', route: '/adherent' },
         { label: $localize`:@@admin.registrationFees:Tarifs d'inscription`, icon: 'fa-tags', menu: 'INSCRIPTION', route: '/inscription' },
+        { label: $localize`:@@admin.registrationTracking:Suivi des inscriptions`, icon: 'fa-route', menu: 'TRACES_PAIEMENT', route: '/suivi-inscriptions', hint: $localize`:@@admin.registrationTrackingHint:Diagnostic des dossiers, paiements et finalisations` },
         { label: $localize`:@@admin.promoCodes:Codes promotionnels`, icon: 'fa-ticket', menu: 'INSCRIPTION', route: '/codes-promo' },
         { label: $localize`:@@admin.requirements:Exigences des dossiers`, icon: 'fa-list-check', menu: 'INSCRIPTION', route: '/exigences-dossier' },
         { label: $localize`:@@admin.classes:Cours`, icon: 'fa-chalkboard-user', menu: 'COURS', route: '/cours' },
@@ -106,11 +107,11 @@ export class MenuAdminComponent implements OnInit {
         { label: $localize`:@@admin.instructors:Professeurs`, icon: 'fa-person-chalkboard', menu: 'PROF', route: '/professeur' },
         { label: $localize`:@@admin.bankAccounts:Comptes bancaires`, icon: 'fa-building-columns', menu: 'CB', route: '/compte-bancaire' },
         {
-          label: $localize`:@@admin.addinfoLists:Listes complémentaires`,
-          icon: 'fa-list-ul',
+          label: $localize`:@@admin.addinfoLists:Champs complémentaires`,
+          icon: 'fa-table-list',
           menu: 'ADDINFO',
           route: '/addinfo-listes',
-          hint: $localize`:@@admin.addinfoListsHint:Valeurs proposées par les champs complémentaires`,
+          hint: $localize`:@@admin.addinfoListsHint:Champs personnalisés et valeurs des listes`,
         },
       ],
     },

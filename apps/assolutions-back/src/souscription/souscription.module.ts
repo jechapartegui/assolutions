@@ -3,7 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CompteEntity } from '../compte/compte.entity';
 import { Contact } from '../contact/contact.entity';
+import { ExigenceDossierEntity } from '../exigence-dossier/exigence-dossier.entity';
 import { ExigenceDossierModule } from '../exigence-dossier/exigence-dossier.module';
+import { ReponseExigenceDossierEntity } from '../exigence-dossier/reponse-exigence-dossier.entity';
 import { FluxFinancierEntity } from '../flux_financier/flux_financier.entity';
 import { GroupesEntity } from '../groupes/groupes.entity';
 import { HelloAssoModule } from '../helloasso/helloasso.module';
@@ -24,6 +26,7 @@ import { SouscriptionController } from './souscription.controller';
 import { SouscriptionEntity } from './souscription.entity';
 import { SouscriptionEvenementEntity } from './souscription-evenement.entity';
 import { SouscriptionFinanceService } from './souscription-finance.service';
+import { SouscriptionMonitorService } from './souscription-monitor.service';
 import { SouscriptionPersonneEntity } from './souscription-personne.entity';
 import { SouscriptionPersonneGroupeEntity } from './souscription-personne-groupe.entity';
 import { SouscriptionService } from './souscription.service';
@@ -49,6 +52,8 @@ import { SouscriptionWebhookResolverService } from './souscription-webhook-resol
       LienGroupeEntity,
       FluxFinancierEntity,
       OperationEntity,
+      ExigenceDossierEntity,
+      ReponseExigenceDossierEntity,
     ]),
     HelloAssoModule,
     ExigenceDossierModule,
@@ -60,6 +65,7 @@ import { SouscriptionWebhookResolverService } from './souscription-webhook-resol
     SouscriptionConfirmationService,
     SouscriptionFinanceService,
     SouscriptionWebhookResolverService,
+    SouscriptionMonitorService,
     CodePromoService,
   ],
 })

@@ -1,0 +1,288 @@
+<div class="subscription-monitor-page">
+  <section class="monitor-toolbar box">
+    <div class="toolbar-top">
+      <div>
+        <h1 class="title is-5 mb-1" i18n>Suivi des inscriptions</h1>
+        <p class="help mb-0" i18n>
+          Retrouve un dossier, son paiement et les étapes techniques du tunnel sans modifier l’inscription.
+        </p>
+      </div>
+      <button type="button" class="button is-light is-small" [class.is-loading]="loading" (click)="reload()" i18n>
+        Actualiser
+      </button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value">{{ records.length }}</span>
+        <span class="stat-label" i18n>Dossiers chargés</span>
+      </div>
+      <div class="stat-card is-success-soft">
+        <span class="stat-value">{{ finalizedCount }}</span>
+        <span class="stat-label" i18n>Finalisés</span>
+      </div>
+      <div class="stat-card is-warning-soft">
+        <span class="stat-value">{{ pendingCount }}</span>
+        <span class="stat-label" i18n>En attente paiement</span>
+      </div>
+      <div class="stat-card is-danger-soft">
+        <span class="stat-value">{{ warningCount }}</span>
+        <span class="stat-label" i18n>À vérifier</span>
+      </div>
+    </div>
+
+    <div class="filters-grid">
+      <div class="field mb-0 filter-search">
+        <label class="label is-small" i18n>Recherche</label>
+        <div class="control has-icons-left">
+          <input
+            class="input is-small"
+            type="search"
+            [(ngModel)]="search"
+            placeholder="Personne, email, compte, n° dossier, intent…"
+            i18n-placeholder
+          />
+          <span class="icon is-small is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+      </div>
+
+      <div class="field mb-0">
+        <label class="label is-small" i18n>État</label>
+        <div class="select is-small is-fullwidth">
+          <select [(ngModel)]="statusFilter">
+            <option value="ALL" i18n>Tous</option>
+            <option *ngFor="let status of statuses" [value]="status">{{ statusLabel(status) }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field mb-0">
+        <label class="label is-small" i18n>Saison</label>
+        <div class="select is-small is-fullwidth">
+          <select [(ngModel)]="seasonFilter">
+            <option value="ALL" i18n>Toutes</option>
+            <option *ngFor="let season of seasons" [value]="season.id">{{ season.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field mb-0">
+        <label class="label is-small" i18n>Du</label>
+        <input class="input is-small" type="date" [(ngModel)]="dateFrom" />
+      </div>
+
+      <div class="field mb-0">
+        <label class="label is-small" i18n>Au</label>
+        <input class="input is-small" type="date" [(ngModel)]="dateTo" />
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" class="button is-small is-light" (click)="clearFilters()" i18n>Effacer</button>
+      </div>
+    </div>
+  </section>
+
+  <article class="message is-danger" *ngIf="error">
+    <div class="message-body">{{ error }}</div>
+  </article>
+
+  <div class="loading-state" *ngIf="loading && !records.length">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <span i18n>Chargement des inscriptions…</span>
+  </div>
+
+  <section class="records-card" *ngIf="!loading || records.length">
+    <div class="records-heading">
+      <p class="has-text-weight-semibold mb-0" i18n>Résultats</p>
+      <span class="tag is-light">{{ filteredRecords.length }}</span>
+    </div>
+
+    <article class="message is-info" *ngIf="!filteredRecords.length && !error">
+      <div class="message-body" i18n>Aucune inscription ne correspond aux filtres.</div>
+    </article>
+
+    <div class="records-list">
+      <button
+        type="button"
+        class="record-row"
+        *ngFor="let item of filteredRecords; trackBy: trackById"
+        (click)="openDetail(item)"
+      >
+        <div class="record-main">
+          <div class="record-title-row">
+            <strong>#{{ item.id }}</strong>
+            <span class="tag" [ngClass]="statusClass(item.statut)">{{ statusLabel(item.statut) }}</span>
+            <span class="tag is-danger is-light" *ngIf="item.warnings.length">
+              {{ item.warnings.length }} alerte(s)
+            </span>
+          </div>
+          <p class="record-persons mb-1">{{ item.personnes.join(', ') || 'Aucune personne' }}</p>
+          <p class="record-meta mb-0">
+            {{ item.compte_login || ('Compte #' + item.compte_id) }} · {{ item.saison_nom }} · {{ formatDate(item.created_at) }}
+          </p>
+        </div>
+        <div class="record-payment">
+          <strong>{{ money(item.montant_total_centimes) }}</strong>
+          <span>{{ item.payment_state || '—' }}</span>
+          <span class="icon"><i class="fa-solid fa-chevron-right"></i></span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <article class="message is-danger mt-4" *ngIf="detailError">
+    <div class="message-body">{{ detailError }}</div>
+  </article>
+
+  <div class="detail-loading" *ngIf="detailLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <span i18n>Chargement du diagnostic…</span>
+  </div>
+
+  <section class="detail-panel" *ngIf="selected as detail">
+    <header class="detail-header">
+      <div>
+        <p class="page-kicker" i18n>Diagnostic</p>
+        <div class="detail-title-row">
+          <h2 class="title is-4 mb-0">Souscription #{{ detail.souscription.id }}</h2>
+          <span class="tag is-medium" [ngClass]="statusClass(detail.souscription.statut)">
+            {{ statusLabel(detail.souscription.statut) }}
+          </span>
+        </div>
+        <p class="help mt-1 mb-0">
+          {{ detail.compte?.login || ('Compte #' + (detail.compte?.id || '—')) }} · {{ detail.saison?.nom || 'Saison inconnue' }}
+        </p>
+      </div>
+      <button type="button" class="delete is-medium" (click)="closeDetail()" aria-label="Fermer" i18n-aria-label></button>
+    </header>
+
+    <div class="detail-summary-grid">
+      <div class="summary-item">
+        <span i18n>Montant</span>
+        <strong>{{ money(detail.souscription.montant_total_centimes) }}</strong>
+      </div>
+      <div class="summary-item">
+        <span i18n>Paiement</span>
+        <strong>{{ detail.souscription.helloasso_payment_state || '—' }}</strong>
+      </div>
+      <div class="summary-item">
+        <span i18n>Checkout intent</span>
+        <strong>{{ detail.souscription.helloasso_checkout_intent_id || '—' }}</strong>
+      </div>
+      <div class="summary-item">
+        <span i18n>Order HelloAsso</span>
+        <strong>{{ detail.souscription.helloasso_order_id || '—' }}</strong>
+      </div>
+      <div class="summary-item">
+        <span i18n>Créée</span>
+        <strong>{{ formatDate(detail.souscription.created_at) }}</strong>
+      </div>
+      <div class="summary-item">
+        <span i18n>Finalisée</span>
+        <strong>{{ formatDate(detail.souscription.finalized_at) }}</strong>
+      </div>
+    </div>
+
+    <article class="message is-danger" *ngIf="detail.souscription.error_message">
+      <div class="message-body">
+        <strong i18n>Erreur enregistrée :</strong> {{ detail.souscription.error_message }}
+      </div>
+    </article>
+
+    <article class="message is-warning" *ngIf="detail.warnings.length">
+      <div class="message-body">
+        <strong i18n>Points à vérifier</strong>
+        <ul>
+          <li *ngFor="let warning of detail.warnings">{{ warning }}</li>
+        </ul>
+      </div>
+    </article>
+
+    <div class="detail-columns">
+      <section class="detail-card">
+        <h3 class="title is-6 mb-3" i18n>Personnes et dossier</h3>
+        <article class="person-card" *ngFor="let person of detail.personnes">
+          <div class="person-heading">
+            <div>
+              <strong>{{ person.personne_nom }}</strong>
+              <p class="help mb-0">#{{ person.personne_id }} · {{ person.type_licence }}</p>
+            </div>
+            <span class="tag" [ngClass]="statusClass(person.statut)">{{ person.statut }}</span>
+          </div>
+
+          <div class="tags mt-2 mb-2">
+            <span class="tag is-primary is-light" *ngIf="person.tarif">{{ person.tarif.nom }}</span>
+            <span class="tag is-light" *ngFor="let group of person.groupes">{{ group.nom }}</span>
+            <span class="tag" [class.is-success]="person.dossier_complet" [class.is-warning]="!person.dossier_complet">
+              {{ person.dossier_complet ? 'Dossier complet' : 'Dossier incomplet' }}
+            </span>
+          </div>
+
+          <p class="help mb-2">
+            {{ money(person.prix_final_centimes) }}
+            <span *ngIf="person.remise_centimes"> · remise {{ money(person.remise_centimes) }}</span>
+            · inscription saison {{ person.inscription_saison_id || '—' }}
+          </p>
+
+          <details *ngIf="person.exigences.length">
+            <summary i18n>Exigences renseignées ({{ person.exigences.length }})</summary>
+            <div class="requirements-list">
+              <div class="requirement-row" *ngFor="let requirement of person.exigences">
+                <span>{{ requirement.libelle }}</span>
+                <span class="tag is-small" [class.is-success]="requirement.has_value" [class.is-light]="!requirement.has_value">
+                  {{ requirement.has_value ? 'Renseignée' : 'Sans valeur' }}
+                </span>
+              </div>
+            </div>
+          </details>
+        </article>
+      </section>
+
+      <section class="detail-card">
+        <h3 class="title is-6 mb-3" i18n>Chronologie</h3>
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let event of detail.timeline" [ngClass]="timelineClass(event)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-heading">
+                <strong>{{ event.label }}</strong>
+                <span>{{ formatDate(event.created_at) }}</span>
+              </div>
+              <p class="help mb-0">{{ event.type }}</p>
+              <details *ngIf="event.details">
+                <summary i18n>Détail technique</summary>
+                <pre>{{ detailsText(event.details) }}</pre>
+              </details>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="detail-card finance-card">
+      <h3 class="title is-6 mb-2" i18n>Finalisation financière</h3>
+      <ng-container *ngIf="detail.finance; else noFinance">
+        <p class="mb-2">
+          <strong>Flux #{{ detail.finance.flux_id }}</strong> · {{ detail.finance.montant | number:'1.2-2' }} € · {{ detail.finance.date }}
+        </p>
+        <div class="table-container" *ngIf="detail.finance.operations.length">
+          <table class="table is-fullwidth is-size-7">
+            <thead>
+              <tr><th i18n>Opération</th><th i18n>Montant</th><th i18n>Exécutée</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let operation of detail.finance.operations">
+                <td>#{{ operation.id }} · {{ operation.libelle_bancaire || '—' }}</td>
+                <td>{{ operation.solde | number:'1.2-2' }} €</td>
+                <td>{{ operation.paiement_execute ? 'Oui' : 'Non' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+      <ng-template #noFinance>
+        <p class="has-text-grey is-size-7 mb-0" i18n>Aucun flux financier lié à cette souscription.</p>
+      </ng-template>
+    </section>
+  </section>
+</div>

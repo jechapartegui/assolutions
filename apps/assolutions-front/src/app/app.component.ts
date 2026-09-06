@@ -52,6 +52,11 @@ export class AppComponent implements OnInit, OnDestroy {
       description: 'Configurer les offres, tarifs et règles proposés pendant le parcours d’inscription.',
       icon: 'fa-tags',
     },
+    '/suivi-inscriptions': {
+      title: 'Suivi des inscriptions',
+      description: 'Diagnostiquer les dossiers, paiements, finalisations et éventuelles incohérences du tunnel.',
+      icon: 'fa-route',
+    },
     '/codes-promo': {
       title: 'Codes promotionnels',
       description: 'Créer et administrer les réductions utilisables pendant une inscription.',
@@ -140,108 +145,23 @@ export class AppComponent implements OnInit, OnDestroy {
   };
 
   readonly helpTopics: HelpTopic[] = [
-    {
-      key: 'user-mon-compte',
-      label: $localize`Mon compte`,
-      audience: 'USER',
-      url: '/tutos/01_Aide_utilisateur_Mon_compte.pdf',
-    },
-    {
-      key: 'user-personne',
-      label: $localize`Créer ou modifier une personne`,
-      audience: 'USER',
-      url: '/tutos/02_Aide_utilisateur_Personne.pdf',
-    },
-    {
-      key: 'user-inscription',
-      label: $localize`Inscription et paiement`,
-      audience: 'USER',
-      url: '/tutos/03_Aide_utilisateur_Inscription_et_paiement.pdf',
-    },
-    {
-      key: 'user-seances',
-      label: $localize`Séances, présences et essais`,
-      audience: 'USER',
-      url: '/tutos/04_Aide_utilisateur_Seances_et_essais.pdf',
-    },
-    {
-      key: 'prof-adherents',
-      label: $localize`Gérer les adhérents`,
-      audience: 'PROF',
-      url: '/tutos/01_Aide_prof_Adherents.pdf',
-    },
-    {
-      key: 'prof-groupes',
-      label: $localize`Gérer les groupes`,
-      audience: 'PROF',
-      url: '/tutos/02_Aide_prof_Groupes.pdf',
-    },
-    {
-      key: 'prof-cours-seances',
-      label: $localize`Cours et séances`,
-      audience: 'PROF',
-      url: '/tutos/03_Aide_prof_Cours_et_seances.pdf',
-    },
-    {
-      key: 'prof-piloter-seance',
-      label: $localize`Piloter une séance`,
-      audience: 'PROF',
-      url: '/tutos/04_Aide_prof_Piloter_une_seance.pdf',
-    },
-    {
-      key: 'admin-centre-pilotage',
-      label: $localize`Centre de pilotage`,
-      audience: 'ADMIN',
-      url: '/tutos/01_Aide_admin_Centre_de_pilotage.pdf',
-    },
-    {
-      key: 'admin-saisons',
-      label: $localize`Gérer les saisons`,
-      audience: 'ADMIN',
-      url: '/tutos/02_Aide_admin_Saisons.pdf',
-    },
-    {
-      key: 'admin-tarifs',
-      label: $localize`Tarifs d’inscription`,
-      audience: 'ADMIN',
-      url: '/tutos/03_Aide_admin_Tarifs_inscription.pdf',
-    },
-    {
-      key: 'admin-codes-promo',
-      label: $localize`Codes promotionnels`,
-      audience: 'ADMIN',
-      url: '/tutos/04_Aide_admin_Codes_promotionnels.pdf',
-    },
-    {
-      key: 'admin-exigences',
-      label: $localize`Exigences des dossiers`,
-      audience: 'ADMIN',
-      url: '/tutos/05_Aide_admin_Exigences_dossiers.pdf',
-    },
-    {
-      key: 'admin-professeurs-contrats',
-      label: $localize`Professeurs et contrats`,
-      audience: 'ADMIN',
-      url: '/tutos/06_Aide_admin_Professeurs_et_contrats.pdf',
-    },
-    {
-      key: 'admin-lieux',
-      label: $localize`Gérer les lieux`,
-      audience: 'ADMIN',
-      url: '/tutos/07_Aide_admin_Lieux.pdf',
-    },
-    {
-      key: 'admin-finances',
-      label: $localize`Gérer les finances`,
-      audience: 'ADMIN',
-      url: '/tutos/08_Aide_admin_Finances.pdf',
-    },
-    {
-      key: 'admin-communication',
-      label: $localize`Communication`,
-      audience: 'ADMIN',
-      url: '/tutos/09_Aide_admin_Communication.pdf',
-    },
+    { key: 'user-mon-compte', label: $localize`Mon compte`, audience: 'USER', url: '/tutos/01_Aide_utilisateur_Mon_compte.pdf' },
+    { key: 'user-personne', label: $localize`Créer ou modifier une personne`, audience: 'USER', url: '/tutos/02_Aide_utilisateur_Personne.pdf' },
+    { key: 'user-inscription', label: $localize`Inscription et paiement`, audience: 'USER', url: '/tutos/03_Aide_utilisateur_Inscription_et_paiement.pdf' },
+    { key: 'user-seances', label: $localize`Séances, présences et essais`, audience: 'USER', url: '/tutos/04_Aide_utilisateur_Seances_et_essais.pdf' },
+    { key: 'prof-adherents', label: $localize`Gérer les adhérents`, audience: 'PROF', url: '/tutos/01_Aide_prof_Adherents.pdf' },
+    { key: 'prof-groupes', label: $localize`Gérer les groupes`, audience: 'PROF', url: '/tutos/02_Aide_prof_Groupes.pdf' },
+    { key: 'prof-cours-seances', label: $localize`Cours et séances`, audience: 'PROF', url: '/tutos/03_Aide_prof_Cours_et_seances.pdf' },
+    { key: 'prof-piloter-seance', label: $localize`Piloter une séance`, audience: 'PROF', url: '/tutos/04_Aide_prof_Piloter_une_seance.pdf' },
+    { key: 'admin-centre-pilotage', label: $localize`Centre de pilotage`, audience: 'ADMIN', url: '/tutos/01_Aide_admin_Centre_de_pilotage.pdf' },
+    { key: 'admin-saisons', label: $localize`Gérer les saisons`, audience: 'ADMIN', url: '/tutos/02_Aide_admin_Saisons.pdf' },
+    { key: 'admin-tarifs', label: $localize`Tarifs d’inscription`, audience: 'ADMIN', url: '/tutos/03_Aide_admin_Tarifs_inscription.pdf' },
+    { key: 'admin-codes-promo', label: $localize`Codes promotionnels`, audience: 'ADMIN', url: '/tutos/04_Aide_admin_Codes_promotionnels.pdf' },
+    { key: 'admin-exigences', label: $localize`Exigences des dossiers`, audience: 'ADMIN', url: '/tutos/05_Aide_admin_Exigences_dossiers.pdf' },
+    { key: 'admin-professeurs-contrats', label: $localize`Professeurs et contrats`, audience: 'ADMIN', url: '/tutos/06_Aide_admin_Professeurs_et_contrats.pdf' },
+    { key: 'admin-lieux', label: $localize`Gérer les lieux`, audience: 'ADMIN', url: '/tutos/07_Aide_admin_Lieux.pdf' },
+    { key: 'admin-finances', label: $localize`Gérer les finances`, audience: 'ADMIN', url: '/tutos/08_Aide_admin_Finances.pdf' },
+    { key: 'admin-communication', label: $localize`Communication`, audience: 'ADMIN', url: '/tutos/09_Aide_admin_Communication.pdf' },
   ];
 
   @ViewChild(NotifJechaComponent, { static: true })
@@ -256,23 +176,14 @@ export class AppComponent implements OnInit, OnDestroy {
     public store: AppStore,
   ) {
     this.g = globals;
-
-    erroservice.changeEmitted$.subscribe((data) => {
-      this.DisplayError(data);
-    });
+    erroservice.changeEmitted$.subscribe((data) => this.DisplayError(data));
   }
 
   get visibleHelpTopics(): HelpTopic[] {
-    if (this.store.isAdmin()) {
-      return this.helpTopics.filter((topic) => topic.audience === 'ADMIN');
-    }
-
+    if (this.store.isAdmin()) return this.helpTopics.filter((topic) => topic.audience === 'ADMIN');
     if (this.store.isProf()) {
-      return this.helpTopics.filter(
-        (topic) => topic.audience === 'USER' || topic.audience === 'PROF',
-      );
+      return this.helpTopics.filter((topic) => topic.audience === 'USER' || topic.audience === 'PROF');
     }
-
     return this.helpTopics.filter((topic) => topic.audience === 'USER');
   }
 
@@ -295,9 +206,7 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
-  }
+  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
   private resolveAdminPageMeta(url: string): AdminPageMeta | null {
     const path = String(url ?? '').split('?')[0].split('#')[0];
@@ -309,22 +218,12 @@ export class AppComponent implements OnInit, OnDestroy {
     const hasPublicSuffix = /(^|\/)[^?#]*-public(\/|$|\?)/.test(url);
     const inPublicSegment = /(^|\/)public(\/|$|\?)/.test(url);
     const embedParam = url.includes('embed=1');
-
     return hasPublicSuffix || inPublicSegment || embedParam;
   }
 
-  isact(): void {
-    this.isactive = !this.isactive;
-  }
-
-  closeMenu(): void {
-    this.isactive = false;
-  }
-
-  selectMenu(menu: MenuType): void {
-    this.store.updateSelectedMenu(menu);
-    this.closeMenu();
-  }
+  isact(): void { this.isactive = !this.isactive; }
+  closeMenu(): void { this.isactive = false; }
+  selectMenu(menu: MenuType): void { this.store.updateSelectedMenu(menu); this.closeMenu(); }
 
   toggleHelp(event?: Event): void {
     event?.preventDefault();
@@ -337,25 +236,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.helpOpen = false;
   }
 
-  @HostListener('document:click')
-  closeHelp(): void {
-    this.helpOpen = false;
-  }
-
-  @HostListener('document:keydown.escape')
-  closeHelpOnEscape(): void {
-    this.helpOpen = false;
-  }
+  @HostListener('document:click') closeHelp(): void { this.helpOpen = false; }
+  @HostListener('document:keydown.escape') closeHelpOnEscape(): void { this.helpOpen = false; }
 
   LogOut(): void {
     const errorService = ErrorService.instance;
-
     this.action = $localize`Se déconnecter`;
     this.store.clearSession();
     this.router.navigate(['/login']);
-
-    const notification = errorService.OKMessage(this.action);
-    errorService.emitChange(notification);
+    errorService.emitChange(errorService.OKMessage(this.action));
   }
 
   Dashboard(): void {
@@ -364,7 +253,5 @@ export class AppComponent implements OnInit, OnDestroy {
     this.closeMenu();
   }
 
-  DisplayError(val: any): void {
-    this.child.display_notification(val);
-  }
+  DisplayError(val: any): void { this.child.display_notification(val); }
 }
