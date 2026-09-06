@@ -1,3 +1,13 @@
+:host {
+  display: block;
+  height: calc(100dvh - 10rem);
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
 .mail-monitor-page {
   padding: 1.25rem;
   min-height: calc(100vh - 4rem);
@@ -254,6 +264,10 @@
 }
 
 @media (max-width: 768px) {
+  :host {
+    height: calc(100dvh - var(--mobile-footer-h) - 7.5rem);
+  }
+
   .mail-monitor-page {
     padding: 0.75rem;
   }
