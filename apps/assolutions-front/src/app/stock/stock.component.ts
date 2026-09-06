@@ -167,11 +167,13 @@ export class StockComponent implements OnInit {
     this.error = '';
 
     try {
-      const saisonId = Number(this.store.saison_consultation_id() ?? 0) || undefined;
       const [stocks, lieux, flux] = await Promise.all([
         this.stockApi.list(),
         this.lieuApi.list(),
-        this.fluxApi.list(saisonId, true),
+        // Un stock peut rester lié à un achat d'une saison précédente ou à
+        // un flux sans saison. Le catalogue doit donc résoudre les flux sur
+        // l'ensemble du projet et pas uniquement sur la saison consultée.
+        this.fluxApi.list(undefined, true),
       ]);
 
       this.stocks = [...(stocks ?? [])].sort((a, b) =>
