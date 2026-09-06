@@ -1,5 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayUnique,
+  IsArray,
   IsBoolean,
   IsInt,
   IsOptional,
@@ -41,6 +44,15 @@ export class UpdateAddinfoFieldDto {
   @ToText()
   @IsString()
   text?: string;
+}
+
+export class UpdateAddinfoOptionsDto {
+  @IsArray()
+  @ArrayMaxSize(25)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  options: string[];
 }
 
 export class SetAddinfoValueDto {

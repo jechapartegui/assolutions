@@ -105,6 +105,13 @@ export class MenuAdminComponent implements OnInit {
         { label: $localize`:@@admin.locations:Lieux`, icon: 'fa-location-dot', menu: 'LIEU', route: '/lieu' },
         { label: $localize`:@@admin.instructors:Professeurs`, icon: 'fa-person-chalkboard', menu: 'PROF', route: '/professeur' },
         { label: $localize`:@@admin.bankAccounts:Comptes bancaires`, icon: 'fa-building-columns', menu: 'CB', route: '/compte-bancaire' },
+        {
+          label: $localize`:@@admin.addinfoLists:Listes complémentaires`,
+          icon: 'fa-list-ul',
+          menu: 'ADDINFO',
+          route: '/addinfo-listes',
+          hint: $localize`:@@admin.addinfoListsHint:Valeurs proposées par les champs complémentaires`,
+        },
       ],
     },
     {

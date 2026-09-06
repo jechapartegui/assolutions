@@ -1,0 +1,192 @@
+<div class="addinfo-admin-page">
+  <section class="page-hero">
+    <div>
+      <p class="page-kicker" i18n>Paramétrage</p>
+      <h1 class="title is-4 mb-1" i18n>Listes complémentaires</h1>
+      <p class="has-text-grey is-size-7 mb-0" i18n>
+        Modifie les valeurs proposées par les champs complémentaires de type liste.
+        Une valeur retirée n’est plus proposée, mais les réponses déjà enregistrées restent conservées.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="button is-light is-small"
+      [class.is-loading]="loading"
+      [disabled]="loading"
+      (click)="load()"
+      i18n
+    >
+      Actualiser
+    </button>
+  </section>
+
+  <article class="message is-danger" *ngIf="loadError">
+    <div class="message-body">{{ loadError }}</div>
+  </article>
+
+  <div class="loading-state" *ngIf="loading && !items.length">
+    <span class="icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
+    <span i18n>Chargement des listes…</span>
+  </div>
+
+  <article class="message is-info" *ngIf="!loading && !loadError && !items.length">
+    <div class="message-body" i18n>
+      Aucun champ complémentaire de type liste n’est encore configuré pour ce projet.
+    </div>
+  </article>
+
+  <section class="lists-grid" *ngIf="items.length">
+    <article
+      class="list-card"
+      *ngFor="let item of items; trackBy: trackByFieldId"
+    >
+      <header class="list-card-header">
+        <div>
+          <div class="list-title-row">
+            <h2 class="title is-6 mb-0">{{ item.field.text }}</h2>
+            <span class="tag is-light">{{ item.field.object_type }}</span>
+          </div>
+          <p class="help mb-0">
+            <span i18n>Champ</span> #{{ item.field.id }} ·
+            <span i18n>{{ item.options.length }} valeur(s) active(s)</span>
+          </p>
+        </div>
+      </header>
+
+      <div class="option-list" *ngIf="item.draftOptions.length; else emptyOptions">
+        <div
+          class="option-row"
+          *ngFor="let option of item.draftOptions; let i = index"
+        >
+          <div class="option-main">
+            <input
+              class="input is-small"
+              type="text"
+              maxlength="40"
+              [(ngModel)]="item.draftOptions[i]"
+              (ngModelChange)="item.success = ''; item.error = ''"
+            />
+            <span
+              class="tag is-success is-light usage-tag"
+              *ngIf="usageCount(item, option) > 0"
+              [title]="usageCount(item, option) + ' réponse(s) enregistrée(s)'"
+            >
+              {{ usageCount(item, option) }}
+            </span>
+          </div>
+
+          <div class="option-actions">
+            <button
+              type="button"
+              class="button is-small is-light"
+              [disabled]="i === 0 || item.saving"
+              (click)="moveOption(item, i, -1)"
+              aria-label="Monter"
+              i18n-aria-label
+            >
+              <i class="fa-solid fa-arrow-up"></i>
+            </button>
+            <button
+              type="button"
+              class="button is-small is-light"
+              [disabled]="i === item.draftOptions.length - 1 || item.saving"
+              (click)="moveOption(item, i, 1)"
+              aria-label="Descendre"
+              i18n-aria-label
+            >
+              <i class="fa-solid fa-arrow-down"></i>
+            </button>
+            <button
+              type="button"
+              class="button is-small is-danger is-light"
+              [disabled]="item.saving"
+              (click)="removeOption(item, i)"
+              aria-label="Retirer"
+              i18n-aria-label
+            >
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyOptions>
+        <p class="empty-options" i18n>Aucune valeur active dans cette liste.</p>
+      </ng-template>
+
+      <div class="add-option-row">
+        <div class="control is-expanded">
+          <input
+            class="input is-small"
+            type="text"
+            maxlength="40"
+            [(ngModel)]="item.newOption"
+            (keyup.enter)="addOption(item)"
+            placeholder="Nouvelle valeur"
+            i18n-placeholder
+          />
+        </div>
+        <div class="control">
+          <button
+            type="button"
+            class="button is-small is-primary is-light"
+            [disabled]="!item.newOption.trim() || item.saving"
+            (click)="addOption(item)"
+            i18n
+          >
+            Ajouter
+          </button>
+        </div>
+      </div>
+
+      <div class="history-box" *ngIf="historicalValues(item).length">
+        <p class="history-title" i18n>Valeurs historiques conservées</p>
+        <div class="tags">
+          <span
+            class="tag is-warning is-light"
+            *ngFor="let historical of historicalValues(item)"
+          >
+            {{ historical.value }} · {{ historical.count }}
+          </span>
+        </div>
+        <p class="help mb-0" i18n>
+          Elles restent visibles sur les personnes déjà renseignées mais ne sont plus proposées pour une nouvelle saisie.
+        </p>
+      </div>
+
+      <div class="capacity-row" [class.has-text-danger]="isTooLong(item)">
+        <span i18n>Configuration</span> : {{ serializedLength(item) }}/50
+      </div>
+
+      <article class="message is-danger is-small-message" *ngIf="item.error">
+        <div class="message-body">{{ item.error }}</div>
+      </article>
+      <article class="message is-success is-small-message" *ngIf="item.success">
+        <div class="message-body">{{ item.success }}</div>
+      </article>
+
+      <footer class="list-card-footer">
+        <button
+          type="button"
+          class="button is-small is-light"
+          [disabled]="!isDirty(item) || item.saving"
+          (click)="reset(item)"
+          i18n
+        >
+          Annuler les modifications
+        </button>
+        <button
+          type="button"
+          class="button is-small is-primary"
+          [class.is-loading]="item.saving"
+          [disabled]="!isDirty(item) || item.saving || isTooLong(item)"
+          (click)="save(item)"
+          i18n
+        >
+          Enregistrer la liste
+        </button>
+      </footer>
+    </article>
+  </section>
+</div>

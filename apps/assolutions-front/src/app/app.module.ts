@@ -25,6 +25,7 @@ import { MailTemplatePreviewComponent } from './mail-template-preview/mail-templ
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { GroupeComponent } from './groupe/groupe.component';
 import { AddInfoEditorComponent } from './add-info-editor/add-info-editor.component';
+import { AddinfoListAdminComponent } from './addinfo-list-admin/addinfo-list-admin.component';
 import { DashboardComponent } from './tdb/dashboard.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { AdminProjectComponent } from './admin-project/admin-project.component';
@@ -101,6 +102,7 @@ import { CoursStore } from '../store/cours.store';
     AdherentEditorComponent,
     GroupeComponent,
     AddInfoEditorComponent,
+    AddinfoListAdminComponent,
     InscriptionComponent,
     DossierDocumentUploadComponent,
     PayerBoxDirective,

@@ -15,6 +15,7 @@ import { GroupeComponent } from './groupe/groupe.component';
 import { DashboardComponent } from './tdb/dashboard.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { AdminProjectComponent } from './admin-project/admin-project.component';
+import { AddinfoListAdminComponent } from './addinfo-list-admin/addinfo-list-admin.component';
 import { LieuComponent } from './lieu/lieu.component';
 import { SaisonComponent } from './saison/saison.component';
 import { CompteBancaireComponent } from './compte-bancaire/compte-bancaire.component';
@@ -56,6 +57,7 @@ const routes: Routes = [
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'admin-projet', component: AdminProjectComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'addinfo-listes', component: AddinfoListAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'lieu', component: LieuComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'saison', component: SaisonComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'compte-bancaire', component: CompteBancaireComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
