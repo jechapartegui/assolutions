@@ -50,6 +50,8 @@ import { PayerBoxDirective } from './souscription/payer-box.directive';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
 import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proof-editor.component';
 import { HelpComponent } from './help/help.component';
+import { PublicLandingComponent } from './public-landing/public-landing.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 import { CopyTextDirective } from './directives/copy-text.directive';
 import { AdherentSelfGroupsDirective } from './directives/adherent-self-groups.directive';
 import { RiderScrollHintsDirective } from './directives/rider-scroll-hints.directive';
@@ -68,6 +70,8 @@ import { CoursStore } from '../store/cours.store';
   declarations: [
     AppComponent,
     LoginComponent,
+    PublicLandingComponent,
+    OnboardingComponent,
     MenuComponent,
     CreerCompteComponent,
     PersonneSelectorComponent,

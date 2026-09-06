@@ -4,6 +4,8 @@ import type { AppMode } from '@shared/lib/compte.interface';
 
 import { AuthGuard } from './auth.guard';
 import { LoginComponent } from './login/login.component';
+import { PublicLandingComponent } from './public-landing/public-landing.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 import { MenuComponent } from './menu/menu.component';
 import { AdherentComponent } from './adherent/main/adherent.component';
 import { SeanceComponent } from './seance/seance.component';
@@ -40,9 +42,11 @@ const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
 const LOGGED_ANY = { auth: {} };
 
 const routes: Routes = [
-  { path: '', component: LoginComponent },
+  { path: '', redirectTo: 'public', pathMatch: 'full' },
+  { path: 'public', component: PublicLandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'creer-compte', component: CreerCompteComponent },
+  { path: 'onboarding', component: OnboardingComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'menu', component: MenuComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'mon-compte', component: MonCompteComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'souscription/retour', component: SouscriptionTunnelComponent, canActivate: [AuthGuard], data: LOGGED_ANY },

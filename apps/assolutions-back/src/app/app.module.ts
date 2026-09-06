@@ -31,6 +31,7 @@ import { MailProjectModule } from '../mail_project/mail_project.module';
 import { MailRecordModule } from '../mail_record/mail_record.module';
 import { MessageModule } from '../message/message.module';
 import { NoteModule } from '../note/note.module';
+import { OnboardingModule } from '../onboarding/onboarding.module';
 import { OperationModule } from '../operation/operation.module';
 import { PersonneModule } from '../personne/personne.module';
 import { ProfesseurModule } from '../professeur/professeur.module';
@@ -148,6 +149,7 @@ const environmentFile = resolveEnvironmentFile();
     AccessControlModule,
     AdhesionModule,
     MessageModule,
+    OnboardingModule,
     FinanceModule,
     HelloAssoModule,
     CoursModule,
