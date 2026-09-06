@@ -3,89 +3,43 @@
     <span class="fullscreen">
       <nav class="navbar app-navbar" role="navigation" aria-label="main navigation" i18n-aria-label>
         <div class="navbar-brand">
-          <a
-            class="navbar-item app-logo"
-            (click)="selectMenu('MENU')"
-            [routerLink]="store.isLoggedIn() ? (store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']) : null"
-            aria-label="Accueil"
-            i18n-aria-label
-          >
+          <a class="navbar-item app-logo" (click)="selectMenu('MENU')" [routerLink]="store.isLoggedIn() ? (store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']) : null" aria-label="Accueil" i18n-aria-label>
             <span class="logo-mark" i18n>AS</span>
           </a>
-
-          <a
-            role="button"
-            [class]="isactive ? 'navbar-burger is-active' : 'navbar-burger'"
-            (click)="isact()"
-            aria-label="menu"
-            [attr.aria-expanded]="isactive"
-            data-target="navMaSeance"
-            i18n-aria-label
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
+          <a role="button" [class]="isactive ? 'navbar-burger is-active' : 'navbar-burger'" (click)="isact()" aria-label="menu" [attr.aria-expanded]="isactive" data-target="navMaSeance" i18n-aria-label>
+            <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
           </a>
         </div>
 
         <div id="navMaSeance" [class]="isactive ? 'navbar-menu is-active' : 'navbar-menu'">
           <div class="navbar-start">
-            <a
-              *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin()"
-              [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'"
-              (click)="selectMenu('PAIEMENT')"
-              [routerLink]="['/souscription']"
-              i18n
-            >
-              Inscription
-            </a>
+            <a *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin()" [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('PAIEMENT')" [routerLink]="['/souscription']" i18n>Inscription</a>
 
             <ng-container *ngIf="store.isLoggedIn() && store.hasProjet() && store.isProf() && store.mode() !== 'ADMIN'">
-              <a
-                [class]="store.selectedMenu() === 'ADHERENT' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('ADHERENT')"
-                [routerLink]="['/adherent']"
-                i18n
-              >
-                Adhérents
-              </a>
-              <a
-                [class]="store.selectedMenu() === 'COURS' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('COURS')"
-                [routerLink]="['/cours']"
-                i18n
-              >
-                Cours
-              </a>
-              <a
-                [class]="store.selectedMenu() === 'SEANCE' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('SEANCE')"
-                [routerLink]="['/seance']"
-                i18n
-              >
-                Séances
-              </a>
-              <a
-                [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('GROUPE')"
-                [routerLink]="['/groupe']"
-                i18n
-              >
-                Groupes
-              </a>
+              <a [class]="store.selectedMenu() === 'ADHERENT' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']" i18n>Adhérents</a>
+              <a [class]="store.selectedMenu() === 'COURS' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('COURS')" [routerLink]="['/cours']" i18n>Cours</a>
+              <a [class]="store.selectedMenu() === 'SEANCE' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']" i18n>Séances</a>
+              <a [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('GROUPE')" [routerLink]="['/groupe']" i18n>Groupes</a>
             </ng-container>
 
             <ng-container *ngIf="store.mode() === 'ADMIN'">
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link" i18n>Gestion</a>
+                <a class="navbar-link" i18n>Gestion saison</a>
                 <div class="navbar-dropdown">
                   <a class="navbar-item" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']" i18n>Adhérents</a>
-                  <a class="navbar-item" (click)="selectMenu('COURS')" [routerLink]="['/cours']" i18n>Cours</a>
                   <a class="navbar-item" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']" i18n>Séances</a>
+                  <a class="navbar-item" (click)="selectMenu('COURS')" [routerLink]="['/cours']" i18n>Cours</a>
                   <a class="navbar-item" (click)="selectMenu('GROUPE')" [routerLink]="['/groupe']" i18n>Groupes</a>
+                </div>
+              </div>
+
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link" i18n>Inscriptions</a>
+                <div class="navbar-dropdown">
                   <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/inscription']" i18n>Tarifs d'inscription</a>
-                  <a class="navbar-item" (click)="selectMenu('EXIGENCE_DOSSIER')" [routerLink]="['/exigences-dossier']" i18n>Exigences des dossiers</a>
+                  <a class="navbar-item" (click)="selectMenu('TRACES_PAIEMENT')" [routerLink]="['/suivi-inscriptions']" i18n>Suivi des inscriptions</a>
                   <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/codes-promo']" i18n>Codes promotionnels</a>
+                  <a class="navbar-item" (click)="selectMenu('EXIGENCE_DOSSIER')" [routerLink]="['/exigences-dossier']" i18n>Exigences des dossiers</a>
                   <a class="navbar-item" (click)="selectMenu('CONTRAT_PROF')" [routerLink]="['/contrat-prof']" i18n>Contrats professeurs</a>
                 </div>
               </div>
@@ -97,6 +51,7 @@
                   <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'BUDGET' }" i18n>Budget</a>
                   <a class="navbar-item" (click)="selectMenu('COMPTA')" [routerLink]="['/comptabilite']" [queryParams]="{ vue: 'FLUX' }" i18n>Flux financiers</a>
                   <a class="navbar-item" (click)="selectMenu('TRANSACTION')" [routerLink]="['/operations']" [queryParams]="{ context: 'LISTE' }" i18n>Opérations</a>
+                  <a class="navbar-item" (click)="selectMenu('STOCK')" [routerLink]="['/stock']" i18n>Stocks</a>
                 </div>
               </div>
 
@@ -105,17 +60,19 @@
                 <div class="navbar-dropdown">
                   <a class="navbar-item" (click)="selectMenu('ENVOIMAIL')" [routerLink]="['/envoi-mail']" i18n>Envoyer des mails</a>
                   <a class="navbar-item" (click)="selectMenu('PROJETMAIL')" [routerLink]="['/projet-mail']" i18n>Configuration mails</a>
-                  <a class="navbar-item" (click)="selectMenu('SUIVIMAIL')" [routerLink]="['/projet-mail']" i18n>Suivi des mails</a>
+                  <a class="navbar-item" (click)="selectMenu('SUIVIMAIL')" [routerLink]="['/suivi-mails']" i18n>Suivi des mails</a>
                 </div>
               </div>
 
               <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link" i18n>Paramétrage</a>
                 <div class="navbar-dropdown">
+                  <a class="navbar-item" (click)="selectMenu('PROJETINFO')" [routerLink]="['/admin-projet']" i18n>Projet</a>
                   <a class="navbar-item" (click)="selectMenu('SAISON')" [routerLink]="['/saison']" i18n>Saisons</a>
                   <a class="navbar-item" (click)="selectMenu('LIEU')" [routerLink]="['/lieu']" i18n>Lieux</a>
                   <a class="navbar-item" (click)="selectMenu('PROF')" [routerLink]="['/professeur']" i18n>Professeurs</a>
                   <a class="navbar-item" (click)="selectMenu('CB')" [routerLink]="['/compte-bancaire']" i18n>Comptes bancaires</a>
+                  <a class="navbar-item" (click)="selectMenu('ADDINFO')" [routerLink]="['/addinfo-listes']" i18n>Champs complémentaires</a>
                 </div>
               </div>
             </ng-container>
@@ -127,67 +84,20 @@
                 <span class="icon"><i class="fa-solid fa-diagram-project"></i></span>
                 <span class="account-project-name">{{ store.selectedProject()?.nom || defaultProjectLabel }}</span>
               </div>
-
               <div class="buttons account-actions">
-                <a
-                  *ngIf="!store.isAdmin()"
-                  class="button is-light is-rounded"
-                  [routerLink]="['/mon-compte']"
-                  (click)="selectMenu('MON_COMPTE')"
-                  title="Mon compte"
-                  i18n-title
-                >
-                  <i class="fa-solid fa-user-gear"></i>
-                  <span class="is-hidden-touch ml-1" i18n>Mon compte</span>
-                </a>
-                <a
-                  *ngIf="store.hasProjet() && !store.isAdmin()"
-                  class="button is-light is-rounded"
-                  (click)="Dashboard()"
-                  title="Tableau de bord"
-                  i18n-title
-                >
-                  <i class="fa-solid fa-table-columns"></i>
-                </a>
-
-                <div
-                  class="dropdown is-right"
-                  [class.is-active]="helpOpen"
-                  (click)="$event.stopPropagation()"
-                >
+                <a *ngIf="!store.isAdmin()" class="button is-light is-rounded" [routerLink]="['/mon-compte']" (click)="selectMenu('MON_COMPTE')" title="Mon compte" i18n-title><i class="fa-solid fa-user-gear"></i><span class="is-hidden-touch ml-1" i18n>Mon compte</span></a>
+                <a *ngIf="store.hasProjet() && !store.isAdmin()" class="button is-light is-rounded" (click)="Dashboard()" title="Tableau de bord" i18n-title><i class="fa-solid fa-table-columns"></i></a>
+                <div class="dropdown is-right" [class.is-active]="helpOpen" (click)="$event.stopPropagation()">
                   <div class="dropdown-trigger">
-                    <button
-                      type="button"
-                      class="button is-light is-rounded"
-                      (click)="toggleHelp($event)"
-                      aria-haspopup="true"
-                      [attr.aria-expanded]="helpOpen"
-                      title="Aide en ligne"
-                      i18n-title
-                    >
-                      <i class="fa-solid fa-circle-question"></i>
-                      <span class="is-hidden-touch ml-1" i18n>Aide</span>
-                    </button>
+                    <button type="button" class="button is-light is-rounded" (click)="toggleHelp($event)" aria-haspopup="true" [attr.aria-expanded]="helpOpen" title="Aide en ligne" i18n-title><i class="fa-solid fa-circle-question"></i><span class="is-hidden-touch ml-1" i18n>Aide</span></button>
                   </div>
                   <div class="dropdown-menu" role="menu">
                     <div class="dropdown-content">
-                      <a
-                        [href]="topic.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="dropdown-item"
-                        *ngFor="let topic of visibleHelpTopics"
-                        (click)="openHelpTopic(topic, $event)"
-                      >
-                        {{ topic.label }}
-                      </a>
+                      <a [href]="topic.url" target="_blank" rel="noopener noreferrer" class="dropdown-item" *ngFor="let topic of visibleHelpTopics" (click)="openHelpTopic(topic, $event)">{{ topic.label }}</a>
                     </div>
                   </div>
                 </div>
-
-                <a class="button is-danger is-light is-rounded" (click)="LogOut()" title="Se déconnecter" i18n-title>
-                  <i class="fa-solid fa-right-from-bracket"></i>
-                </a>
+                <a class="button is-danger is-light is-rounded" (click)="LogOut()" title="Se déconnecter" i18n-title><i class="fa-solid fa-right-from-bracket"></i></a>
               </div>
             </div>
           </div>
@@ -196,98 +106,36 @@
     </span>
   </ng-container>
 
+  <section class="section py-3 px-3" *ngIf="showAdminPageMeta && adminPageMeta as meta">
+    <div class="container is-max-desktop">
+      <div class="notification is-light mb-0 py-3 px-4">
+        <div class="is-flex is-align-items-flex-start" style="gap: 0.75rem">
+          <span class="icon has-text-primary mt-1"><i class="fa-solid" [ngClass]="meta.icon"></i></span>
+          <div>
+            <p class="is-size-7 has-text-grey mb-1" i18n>Centre de pilotage</p>
+            <p class="has-text-weight-semibold mb-1">{{ meta.title }}</p>
+            <p class="is-size-7 has-text-grey mb-0">{{ meta.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <router-outlet></router-outlet>
 
   <ng-container *ngIf="!isPublic">
     <span class="mobile">
       <footer class="footer mobile-footer" *ngIf="store.isLoggedIn()">
-        <div class="tabs is-toggle is-fullwidth">
-          <ul>
-            <li>
-              <a
-                [class]="store.selectedMenu() === 'MENU' || store.selectedMenu() === 'MENU-ADMIN' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu(store.mode() === 'ADMIN' ? 'MENU-ADMIN' : 'MENU')"
-                [routerLink]="store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']"
-              >
-                <span class="icon is-large"><span class="mobile-logo" i18n>AS</span></span>
-                <span class="tablet" i18n>Menu</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn()">
-              <a
-                [class]="store.selectedMenu() === 'MON_COMPTE' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('MON_COMPTE')"
-                [routerLink]="['/mon-compte']"
-              >
-                <span class="icon is-large"><i class="fas fa-2x fa-user-gear"></i></span>
-                <span class="tablet" i18n>Compte</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin()">
-              <a
-                [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('PAIEMENT')"
-                [routerLink]="['/souscription']"
-              >
-                <span class="icon is-large"><i class="fas fa-2x fa-id-card"></i></span>
-                <span class="tablet" i18n>Inscription</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn() && store.isProf()">
-              <a
-                [class]="store.selectedMenu() === 'ADHERENT' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('ADHERENT')"
-                [routerLink]="['/adherent']"
-              >
-                <span class="icon is-large"><i class="fas fa-2x fa-users"></i></span>
-                <span class="tablet" i18n>Adhérents</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn() && store.isProf()">
-              <a
-                [class]="store.selectedMenu() === 'SEANCE' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('SEANCE')"
-                [routerLink]="['/seance']"
-              >
-                <span class="icon is-large"><i class="fas fa-2x fa-clipboard-list"></i></span>
-                <span class="tablet" i18n>Séances</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn() && store.isProf()">
-              <a
-                [class]="store.selectedMenu() === 'COURS' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('COURS')"
-                [routerLink]="['/cours']"
-              >
-                <span class="icon is-large"><i class="fas fa-2x fa-chalkboard-teacher"></i></span>
-                <span class="tablet" i18n>Cours</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn() && store.isProf()">
-              <a
-                [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'"
-                (click)="selectMenu('GROUPE')"
-                [routerLink]="['/groupe']"
-              >
-                <span class="icon is-large"><i class="fas fa-2x fa-layer-group"></i></span>
-                <span class="tablet" i18n>Groupes</span>
-              </a>
-            </li>
-
-            <li *ngIf="store.isLoggedIn()">
-              <a href="tutos/" aria-label="Ouvrir les tutoriels" i18n-aria-label>
-                <span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span>
-                <span class="tablet" i18n>Aide</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+        <div class="tabs is-toggle is-fullwidth"><ul>
+          <li><a [class]="store.selectedMenu() === 'MENU' || store.selectedMenu() === 'MENU-ADMIN' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu(store.mode() === 'ADMIN' ? 'MENU-ADMIN' : 'MENU')" [routerLink]="store.mode() === 'ADMIN' ? ['/menu-admin'] : ['/menu']"><span class="icon is-large"><span class="mobile-logo" i18n>AS</span></span><span class="tablet" i18n>Menu</span></a></li>
+          <li *ngIf="store.isLoggedIn()"><a [class]="store.selectedMenu() === 'MON_COMPTE' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('MON_COMPTE')" [routerLink]="['/mon-compte']"><span class="icon is-large"><i class="fas fa-2x fa-user-gear"></i></span><span class="tablet" i18n>Compte</span></a></li>
+          <li *ngIf="store.isLoggedIn() && store.hasProjet() && !store.isAdmin()"><a [class]="store.selectedMenu() === 'PAIEMENT' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('PAIEMENT')" [routerLink]="['/souscription']"><span class="icon is-large"><i class="fas fa-2x fa-id-card"></i></span><span class="tablet" i18n>Inscription</span></a></li>
+          <li *ngIf="store.isLoggedIn() && store.isProf()"><a [class]="store.selectedMenu() === 'ADHERENT' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']"><span class="icon is-large"><i class="fas fa-2x fa-users"></i></span><span class="tablet" i18n>Adhérents</span></a></li>
+          <li *ngIf="store.isLoggedIn() && store.isProf()"><a [class]="store.selectedMenu() === 'SEANCE' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']"><span class="icon is-large"><i class="fas fa-2x fa-clipboard-list"></i></span><span class="tablet" i18n>Séances</span></a></li>
+          <li *ngIf="store.isLoggedIn() && store.isProf()"><a [class]="store.selectedMenu() === 'COURS' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('COURS')" [routerLink]="['/cours']"><span class="icon is-large"><i class="fas fa-2x fa-chalkboard-teacher"></i></span><span class="tablet" i18n>Cours</span></a></li>
+          <li *ngIf="store.isLoggedIn() && store.isProf()"><a [class]="store.selectedMenu() === 'GROUPE' ? 'navbar-item is-selected' : 'navbar-item'" (click)="selectMenu('GROUPE')" [routerLink]="['/groupe']"><span class="icon is-large"><i class="fas fa-2x fa-layer-group"></i></span><span class="tablet" i18n>Groupes</span></a></li>
+          <li *ngIf="store.isLoggedIn()"><a href="tutos/" aria-label="Ouvrir les tutoriels" i18n-aria-label><span class="icon is-large"><i class="fas fa-2x fa-circle-question"></i></span><span class="tablet" i18n>Aide</span></a></li>
+        </ul></div>
       </footer>
     </span>
   </ng-container>

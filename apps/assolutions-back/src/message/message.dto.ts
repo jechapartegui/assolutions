@@ -56,3 +56,57 @@ export class SendMessagesDto {
   @Type(() => OutgoingMessageDto)
   messages: OutgoingMessageDto[];
 }
+
+export class BugReportDto {
+  @IsString()
+  @MaxLength(200)
+  title: string;
+
+  @IsString()
+  @MaxLength(8000)
+  description: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  screen?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  severity?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  steps?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  expected?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  actual?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  route?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  browser?: string;
+
+  @IsOptional()
+  @IsEmail()
+  accountEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  version?: string;
+}

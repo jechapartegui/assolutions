@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -28,6 +29,7 @@ import {
 import { SouscriptionCapacityService } from './souscription-capacity.service';
 import { SouscriptionConfirmationService } from './souscription-confirmation.service';
 import { SouscriptionFinanceService } from './souscription-finance.service';
+import { SouscriptionMonitorService } from './souscription-monitor.service';
 import { SouscriptionService } from './souscription.service';
 import { SouscriptionWebhookResolverService } from './souscription-webhook-resolver.service';
 
@@ -48,6 +50,7 @@ export class SouscriptionController {
     private readonly views: SouscriptionViewEnricherService,
     private readonly notifications: SouscriptionNotificationService,
     private readonly webhookResolver: SouscriptionWebhookResolverService,
+    private readonly monitor: SouscriptionMonitorService,
   ) {}
 
   @Get('contexte/:saisonId')
@@ -66,6 +69,35 @@ export class SouscriptionController {
       context.brouillon = await this.views.subscription(context.brouillon);
     }
     return this.views.context(context);
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/suivi')
+  monitorList(
+    @ProjectId() projectId: number,
+    @Query('search') search?: string,
+    @Query('statut') statut?: string,
+    @Query('saison_id') saisonIdRaw?: string,
+    @Query('date_from') dateFrom?: string,
+    @Query('date_to') dateTo?: string,
+  ) {
+    const saisonId = Number(saisonIdRaw ?? 0) || null;
+    return this.monitor.list(projectId, {
+      search,
+      statut,
+      saisonId,
+      dateFrom: this.safeDate(dateFrom),
+      dateTo: this.safeDate(dateTo),
+    });
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/suivi/:id')
+  monitorDetail(
+    @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number,
+  ) {
+    return this.monitor.detail(id, projectId);
   }
 
   @UseGuards(ProjectAdminGuard)
@@ -284,6 +316,11 @@ export class SouscriptionController {
       context.brouillon = await this.views.subscription(context.brouillon);
     }
     return this.views.context(context);
+  }
+
+  private safeDate(value?: string): string | null {
+    const date = String(value ?? '').trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
   }
 
   private accountId(req: AuthenticatedRequest): number {

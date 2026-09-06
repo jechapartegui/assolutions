@@ -25,6 +25,7 @@ import { MailTemplatePreviewComponent } from './mail-template-preview/mail-templ
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { GroupeComponent } from './groupe/groupe.component';
 import { AddInfoEditorComponent } from './add-info-editor/add-info-editor.component';
+import { AddinfoListAdminComponent } from './addinfo-list-admin/addinfo-list-admin.component';
 import { DashboardComponent } from './tdb/dashboard.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { AdminProjectComponent } from './admin-project/admin-project.component';
@@ -36,6 +37,9 @@ import { ProfesseurComponent } from './professeur/professeur.component';
 import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
+import { MailRecordMonitorComponent } from './mail-record-monitor/mail-record-monitor.component';
+import { SouscriptionMonitorComponent } from './souscription-monitor/souscription-monitor.component';
+import { StockComponent } from './stock/stock.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
 import { LieuSelectorComponent } from './component/lieu-selector/lieu-selector.component';
@@ -46,9 +50,12 @@ import { PayerBoxDirective } from './souscription/payer-box.directive';
 import { SouscriptionTunnelComponent } from './souscription/souscription-tunnel.component';
 import { MedicalProofEditorComponent } from './medical-proof-editor/medical-proof-editor.component';
 import { HelpComponent } from './help/help.component';
+import { PublicLandingComponent } from './public-landing/public-landing.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 import { CopyTextDirective } from './directives/copy-text.directive';
 import { AdherentSelfGroupsDirective } from './directives/adherent-self-groups.directive';
 import { RiderScrollHintsDirective } from './directives/rider-scroll-hints.directive';
+import { DateFrMaskDirective } from './directives/date-fr-mask.directive';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -63,6 +70,8 @@ import { CoursStore } from '../store/cours.store';
   declarations: [
     AppComponent,
     LoginComponent,
+    PublicLandingComponent,
+    OnboardingComponent,
     MenuComponent,
     CreerCompteComponent,
     PersonneSelectorComponent,
@@ -71,6 +80,9 @@ import { CoursStore } from '../store/cours.store';
     ProfesseurComponent,
     EnvoiMailComponent,
     ProjetMailComponent,
+    MailRecordMonitorComponent,
+    SouscriptionMonitorComponent,
+    StockComponent,
     ComptabiliteComponent,
     OperationsComponent,
     MultifiltersMenuPipe,
@@ -96,6 +108,7 @@ import { CoursStore } from '../store/cours.store';
     AdherentEditorComponent,
     GroupeComponent,
     AddInfoEditorComponent,
+    AddinfoListAdminComponent,
     InscriptionComponent,
     DossierDocumentUploadComponent,
     PayerBoxDirective,
@@ -105,6 +118,7 @@ import { CoursStore } from '../store/cours.store';
     CopyTextDirective,
     AdherentSelfGroupsDirective,
     RiderScrollHintsDirective,
+    DateFrMaskDirective,
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,55 @@
+<main class="onboarding-page">
+  <section class="onboarding-hero">
+    <div>
+      <p class="eyebrow">Initialisation du club</p>
+      <h1>{{ status?.project?.nom || 'Configurer mon club' }}</h1>
+      <p>Avance étape par étape. Tu peux quitter ce parcours à tout moment : l’avancement est recalculé à partir des vraies données du projet.</p>
+    </div>
+    <button type="button" class="button is-light" (click)="finish()">Centre de pilotage</button>
+  </section>
+
+  <section class="progress-card" *ngIf="status">
+    <div class="progress-copy">
+      <strong>{{ status.required_done }} / {{ status.required_total }} étapes obligatoires</strong>
+      <span *ngIf="status.complete">Initialisation principale terminée</span>
+      <span *ngIf="!status.complete">Encore {{ status.required_total - status.required_done }} étape(s) obligatoire(s)</span>
+    </div>
+    <progress class="progress is-primary" [value]="percent" max="100">{{ percent }}%</progress>
+  </section>
+
+  <div class="notification is-danger is-light" *ngIf="error">{{ error }}</div>
+  <div class="loading-state" *ngIf="loading"><span class="loader-dot"></span>Chargement de la configuration…</div>
+
+  <section class="steps-grid" *ngIf="!loading && status">
+    <article class="step-card" *ngFor="let step of steps" [class.is-done]="isDone(step.key)">
+      <div class="step-icon"><i class="fa-solid" [ngClass]="step.icon"></i></div>
+      <div class="step-copy">
+        <div class="step-title-row">
+          <h2>{{ step.label }}</h2>
+          <span class="tag is-light" *ngIf="!step.required">Facultatif</span>
+          <span class="tag is-success is-light" *ngIf="isDone(step.key)"><i class="fa-solid fa-check mr-1"></i>Fait</span>
+        </div>
+        <p>{{ step.description }}</p>
+      </div>
+      <div class="step-actions">
+        <button type="button" class="button is-small" [class.is-primary]="!isDone(step.key)" (click)="open(step.route)">
+          {{ isDone(step.key) ? 'Revoir' : 'Configurer' }}
+        </button>
+        <button
+          *ngIf="step.key === 'banque' && !isDone(step.key)"
+          type="button"
+          class="button is-small is-light"
+          [class.is-loading]="bankLoading"
+          [disabled]="bankLoading"
+          (click)="createDefaultBank()"
+        >Créer un compte par défaut</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="done-card" *ngIf="status?.complete">
+    <i class="fa-solid fa-circle-check"></i>
+    <div><strong>Le socle du club est prêt.</strong><p>Tu peux continuer à enrichir les paramètres maintenant ou plus tard.</p></div>
+    <button type="button" class="button is-primary" (click)="finish()">Accéder au centre de pilotage</button>
+  </section>
+</main>

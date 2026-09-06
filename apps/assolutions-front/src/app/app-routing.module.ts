@@ -4,6 +4,8 @@ import type { AppMode } from '@shared/lib/compte.interface';
 
 import { AuthGuard } from './auth.guard';
 import { LoginComponent } from './login/login.component';
+import { PublicLandingComponent } from './public-landing/public-landing.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 import { MenuComponent } from './menu/menu.component';
 import { AdherentComponent } from './adherent/main/adherent.component';
 import { SeanceComponent } from './seance/seance.component';
@@ -15,6 +17,7 @@ import { GroupeComponent } from './groupe/groupe.component';
 import { DashboardComponent } from './tdb/dashboard.component';
 import { MenuAdminComponent } from './menu-admin/menu-admin.component';
 import { AdminProjectComponent } from './admin-project/admin-project.component';
+import { AddinfoListAdminComponent } from './addinfo-list-admin/addinfo-list-admin.component';
 import { LieuComponent } from './lieu/lieu.component';
 import { SaisonComponent } from './saison/saison.component';
 import { CompteBancaireComponent } from './compte-bancaire/compte-bancaire.component';
@@ -22,6 +25,9 @@ import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
 import { ProfesseurComponent } from './professeur/professeur.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
+import { MailRecordMonitorComponent } from './mail-record-monitor/mail-record-monitor.component';
+import { SouscriptionMonitorComponent } from './souscription-monitor/souscription-monitor.component';
+import { StockComponent } from './stock/stock.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
 import { CreerCompteComponent } from './creer-compte/creer-compte.component';
@@ -36,9 +42,11 @@ const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
 const LOGGED_ANY = { auth: {} };
 
 const routes: Routes = [
-  { path: '', component: LoginComponent },
+  { path: '', redirectTo: 'public', pathMatch: 'full' },
+  { path: 'public', component: PublicLandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'creer-compte', component: CreerCompteComponent },
+  { path: 'onboarding', component: OnboardingComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'menu', component: MenuComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'mon-compte', component: MonCompteComponent, canActivate: [AuthGuard], data: APPLI_ONLY },
   { path: 'souscription/retour', component: SouscriptionTunnelComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
@@ -54,6 +62,7 @@ const routes: Routes = [
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'admin-projet', component: AdminProjectComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'addinfo-listes', component: AddinfoListAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'lieu', component: LieuComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'saison', component: SaisonComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'compte-bancaire', component: CompteBancaireComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
@@ -61,6 +70,9 @@ const routes: Routes = [
   { path: 'professeur', component: ProfesseurComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'projet-mail', component: ProjetMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'envoi-mail', component: EnvoiMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'suivi-mails', component: MailRecordMonitorComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'suivi-inscriptions', component: SouscriptionMonitorComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'stock', component: StockComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'inscription', component: InscriptionComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'codes-promo', component: CodePromoComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'exigences-dossier', component: ExigenceDossierComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
