@@ -4,17 +4,15 @@ Ce document est la **source de vérité des identifiants de recette Assolutions*
 
 ## Convention
 
-- `Fix N` est l'identifiant fonctionnel stable : **Fix 1, Fix 2, …**
-- chaque issue de suivi porte obligatoirement son identifiant dans le titre : **`[Fix N] ...`** ;
-- les commits créés à partir du Fix 36 utilisent aussi **`[Fix N]`** et jamais `Fix #N` ;
-- le numéro GitHub `#xx` reste un identifiant technique séparé, car GitHub partage le même compteur entre issues et pull requests et le dépôt possédait déjà un historique avant cette campagne ;
-- une demande fonctionnelle = un numéro de Fix ; plusieurs commits peuvent appartenir au même Fix ;
-- l'issue reste la fiche fonctionnelle que l'on enrichit quand une règle supplémentaire est découverte ;
-- après livraison, l'issue est fermée `completed` et les SHA de livraison sont ajoutés au registre.
+- Les **Fix 1 à 35** correspondent à la campagne historique démarrée le 30 août 2026 et ont été rétrodocumentés après livraison.
+- À partir du **Fix 77**, le numéro fonctionnel et le numéro de l'issue GitHub sont identiques : **Fix 77 = issue #77**, **Fix 78 = issue #78**, etc.
+- Le titre d'une issue suit donc la forme **`[Fix N] ...`**.
+- Les commits de développement suivent également **`[Fix N] ...`** et non `Fix #N`.
+- Une demande fonctionnelle = un numéro de Fix ; plusieurs commits peuvent appartenir au même Fix.
+- L'issue est la fiche fonctionnelle de référence et peut être enrichie quand une nouvelle règle métier est découverte.
+- Après validation/livraison, l'issue est fermée `completed` et les SHA de livraison sont ajoutés au registre.
 
-> Historique : les Fix 1 à 35 de la campagne commencée le 30 août 2026 ont été committés avec la syntaxe `Fix #N`. GitHub pouvait interpréter `#N` comme une ancienne issue/PR sans rapport. Ils ont donc été rétrodocumentés sous forme d'issues dédiées et fermées.
->
-> Des commits encore plus anciens (notamment en mai 2026) portent déjà des messages tels que `fix #4` ou `fix #7`. Ils sont antérieurs à cette campagne et ne définissent pas les Fix décrits ci-dessous.
+> Les Fix 1 à 35 ont été committés historiquement avec la syntaxe `Fix #N`. Le dépôt contenait déjà des issues/PR plus anciennes, donc leurs numéros GitHub ne peuvent pas coïncider rétrospectivement. Leur identifiant fonctionnel `[Fix N]` reste la référence.
 
 ## Fix 1 à 35 — livrés et rétrodocumentés
 
@@ -58,31 +56,32 @@ Ce document est la **source de vérité des identifiants de recette Assolutions*
 
 Toutes ces issues sont fermées avec l'état **completed**.
 
-## Fix 36 à 49 — backlog courant
+## Fix 77 à 90 — backlog courant
 
 | Fix | Objet fonctionnel | Issue | État |
 |---:|---|---:|---|
-| 36 | Landing publique + parcours d'initialisation d'un club | GH #77 | Open |
-| 37 | Remonter un bug depuis le centre de pilotage | GH #78 | Open |
-| 38 | Stabiliser le token d'activation de compte | GH #79 | Open |
-| 39 | Stabiliser le token de réinitialisation de mot de passe | GH #80 | Open |
-| 40 | Ajouter la gestion des stocks | GH #81 | Open |
-| 41 | Vue des stocks par lieu | GH #82 | Open |
-| 42 | Inventaire et édition du catalogue de stocks | GH #83 | Open |
-| 43 | Visualiser le suivi des emails (`mail_record`) | GH #84 | Open |
-| 44 | Visualiser le suivi et les logs d'inscription | GH #85 | Open |
-| 45 | Permettre la mise à jour des listes `addinfo` | GH #86 | Open |
-| 46 | Ajouter un outil de création de champs `addinfo` | GH #87 | Open |
-| 47 | Corriger la saisie de date personne sur Android | GH #88 | Open |
-| 48 | Rendre l'`app-nav` du centre de pilotage cohérent avec le menu | GH #89 | Open |
-| 49 | Généraliser les descriptions dans le centre de pilotage | GH #90 | Open |
+| 77 | Landing publique + parcours d'initialisation d'un club | GH #77 | Open |
+| 78 | Remonter un bug depuis le centre de pilotage | GH #78 | Open |
+| 79 | Stabiliser le token d'activation de compte | GH #79 | Open |
+| 80 | Stabiliser le token de réinitialisation de mot de passe | GH #80 | Open |
+| 81 | Ajouter la gestion des stocks | GH #81 | Open |
+| 82 | Vue des stocks par lieu | GH #82 | Open |
+| 83 | Inventaire et édition du catalogue de stocks | GH #83 | Open |
+| 84 | Visualiser le suivi des emails (`mail_record`) | GH #84 | Open |
+| 85 | Visualiser le suivi et les logs d'inscription | GH #85 | Open |
+| 86 | Permettre la mise à jour des listes `addinfo` | GH #86 | Open |
+| 87 | Ajouter un outil de création de champs `addinfo` | GH #87 | Open |
+| 88 | Corriger la saisie de date personne sur Android | GH #88 | Open |
+| 89 | Rendre l'`app-nav` du centre de pilotage cohérent avec le menu | GH #89 | Open |
+| 90 | Généraliser les descriptions dans le centre de pilotage | GH #90 | Open |
 
-## Règle de livraison à partir du Fix 36
+## Règle de livraison à partir du Fix 77
 
-1. la fiche GitHub `[Fix N]` porte l'objectif et les règles métier ;
-2. toute nouvelle règle découverte est ajoutée à cette issue avant ou pendant le développement ;
-3. les commits concernés commencent par `[Fix N]` ;
-4. plusieurs commits peuvent traiter le même Fix ;
-5. les autres Fix ne doivent pas être embarqués discrètement dans le même commit ;
-6. une fois validé/livré, l'issue est fermée `completed` et les SHA sont ajoutés ici ;
-7. le prochain sujet fonctionnel prend simplement le numéro de Fix suivant.
+1. **Fix N = issue GitHub #N** ;
+2. la fiche `[Fix N]` porte l'objectif et les règles métier ;
+3. toute nouvelle règle découverte est ajoutée à cette issue avant ou pendant le développement ;
+4. les commits concernés commencent par `[Fix N]` ;
+5. plusieurs commits peuvent traiter le même Fix ;
+6. les autres Fix ne doivent pas être embarqués discrètement dans le même commit ;
+7. une fois validé/livré, l'issue est fermée `completed` et les SHA sont ajoutés ici ;
+8. le prochain sujet fonctionnel prend le prochain numéro GitHub disponible, qui devient automatiquement son numéro de Fix.
