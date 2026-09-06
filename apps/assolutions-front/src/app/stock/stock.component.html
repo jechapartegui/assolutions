@@ -9,7 +9,7 @@
         <p class="eyebrow" i18n>Matériel</p>
         <h1 class="title is-4 mb-1" i18n>Gestion des stocks</h1>
         <p class="subtitle is-6 has-text-grey mb-0" i18n>
-          Consulte, ajoute et mets à jour le matériel possédé par le club.
+          Consulte, ajoute et mets à jour le matériel possédé par le club, regroupé par lieu de stockage.
         </p>
       </div>
     </div>
@@ -41,21 +41,32 @@
   <section class="stock-panel">
     <header class="panel-toolbar">
       <div>
-        <h2 class="title is-6 mb-1" i18n>Catalogue du stock</h2>
+        <h2 class="title is-6 mb-1" i18n>Stocks par lieu</h2>
         <p class="is-size-7 has-text-grey mb-0" i18n>
-          Une quantité à zéro reste visible afin de conserver la référence dans le catalogue.
+          Les anciennes lignes sans lieu référencé restent regroupées selon leur lieu libre historique.
         </p>
       </div>
 
-      <div class="control has-icons-left stock-search">
-        <input
-          class="input"
-          type="search"
-          [(ngModel)]="search"
-          placeholder="Rechercher un matériel, un type, un lieu…"
-          i18n-placeholder
-        />
-        <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <div class="stock-filters">
+        <div class="select">
+          <select [(ngModel)]="locationFilter" aria-label="Filtrer par lieu" i18n-aria-label>
+            <option value="ALL" i18n>Tous les lieux</option>
+            <option *ngFor="let option of locationFilterOptions" [value]="option.key">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="control has-icons-left stock-search">
+          <input
+            class="input"
+            type="search"
+            [(ngModel)]="search"
+            placeholder="Rechercher un matériel, un type, un lieu…"
+            i18n-placeholder
+          />
+          <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
       </div>
     </header>
 
@@ -67,51 +78,65 @@
     <div class="empty-state" *ngIf="!loading && filteredStocks.length === 0">
       <i class="fa-solid fa-box-open"></i>
       <strong i18n>Aucun matériel trouvé</strong>
-      <span i18n>Ajoute une première référence ou modifie ta recherche.</span>
+      <span i18n>Ajoute une première référence ou modifie tes filtres.</span>
     </div>
 
-    <div class="table-container stock-table-wrap" *ngIf="!loading && filteredStocks.length">
-      <table class="table is-fullwidth is-hoverable stock-table">
-        <thead>
-          <tr>
-            <th i18n>Matériel</th>
-            <th i18n>Type</th>
-            <th i18n>Lieu</th>
-            <th class="has-text-right" i18n>Qté</th>
-            <th class="has-text-right" i18n>Valeur achat</th>
-            <th i18n>Flux financier</th>
-            <th class="actions-col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let stock of filteredStocks; trackBy: trackById">
-            <td>
-              <strong>{{ stock.libelle }}</strong>
-              <p class="stock-info" *ngIf="stock.info">{{ stock.info }}</p>
-            </td>
-            <td>{{ stock.type_stock || '—' }}</td>
-            <td>{{ getLieuLabel(stock) }}</td>
-            <td class="has-text-right"><span class="quantity-pill">{{ stock.qte ?? 0 }}</span></td>
-            <td class="has-text-right">{{ formatMoney(stock.valeur_achat) }}</td>
-            <td>
-              <span *ngIf="stock.flux_financier_id; else noFlux">
-                {{ getFluxLabel(stock.flux_financier_id) }}
-              </span>
-              <ng-template #noFlux>—</ng-template>
-            </td>
-            <td>
-              <div class="buttons are-small is-justify-content-flex-end">
-                <button class="button is-light" type="button" (click)="openEdit(stock)" title="Modifier" i18n-title>
-                  <span class="icon"><i class="fa-solid fa-pen"></i></span>
-                </button>
-                <button class="button is-danger is-light" type="button" (click)="remove(stock)" title="Supprimer" i18n-title>
-                  <span class="icon"><i class="fa-solid fa-trash"></i></span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="location-groups" *ngIf="!loading && filteredStocks.length">
+      <article class="location-group" *ngFor="let group of locationGroups; trackBy: trackByLocation">
+        <header class="location-header">
+          <div>
+            <span class="location-icon"><i class="fa-solid fa-location-dot"></i></span>
+            <strong>{{ group.label }}</strong>
+            <span class="tag is-light ml-2" *ngIf="!group.referenced" i18n>Lieu non référencé</span>
+          </div>
+          <div class="location-summary">
+            <span>{{ group.items.length }} référence{{ group.items.length > 1 ? 's' : '' }}</span>
+            <strong>{{ group.quantity }} unité{{ group.quantity > 1 ? 's' : '' }}</strong>
+          </div>
+        </header>
+
+        <div class="table-container stock-table-wrap">
+          <table class="table is-fullwidth is-hoverable stock-table">
+            <thead>
+              <tr>
+                <th i18n>Matériel</th>
+                <th i18n>Type</th>
+                <th class="has-text-right" i18n>Qté</th>
+                <th class="has-text-right" i18n>Valeur achat</th>
+                <th i18n>Flux financier</th>
+                <th class="actions-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stock of group.items; trackBy: trackById">
+                <td>
+                  <strong>{{ stock.libelle }}</strong>
+                  <p class="stock-info" *ngIf="stock.info">{{ stock.info }}</p>
+                </td>
+                <td>{{ stock.type_stock || '—' }}</td>
+                <td class="has-text-right"><span class="quantity-pill">{{ stock.qte ?? 0 }}</span></td>
+                <td class="has-text-right">{{ formatMoney(stock.valeur_achat) }}</td>
+                <td>
+                  <span *ngIf="stock.flux_financier_id; else noFlux">
+                    {{ getFluxLabel(stock.flux_financier_id) }}
+                  </span>
+                  <ng-template #noFlux>—</ng-template>
+                </td>
+                <td>
+                  <div class="buttons are-small is-justify-content-flex-end">
+                    <button class="button is-light" type="button" (click)="openEdit(stock)" title="Modifier" i18n-title>
+                      <span class="icon"><i class="fa-solid fa-pen"></i></span>
+                    </button>
+                    <button class="button is-danger is-light" type="button" (click)="remove(stock)" title="Supprimer" i18n-title>
+                      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
     </div>
   </section>
 </div>

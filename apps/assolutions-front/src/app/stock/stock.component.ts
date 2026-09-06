@@ -22,6 +22,14 @@ type StockDraft = {
   info: string;
 };
 
+type StockLocationGroup = {
+  key: string;
+  label: string;
+  referenced: boolean;
+  items: Stock[];
+  quantity: number;
+};
+
 @Component({
   selector: 'app-stock',
   templateUrl: './stock.component.html',
@@ -38,6 +46,7 @@ export class StockComponent implements OnInit {
   error = '';
   message = '';
   search = '';
+  locationFilter = 'ALL';
 
   editorOpen = false;
   editingId: number | null = null;
@@ -56,7 +65,7 @@ export class StockComponent implements OnInit {
     await this.load();
   }
 
-  get filteredStocks(): Stock[] {
+  get searchedStocks(): Stock[] {
     const query = this.search.trim().toLowerCase();
     if (!query) return this.stocks;
 
@@ -72,6 +81,49 @@ export class StockComponent implements OnInit {
         .toLowerCase()
         .includes(query),
     );
+  }
+
+  get filteredStocks(): Stock[] {
+    if (this.locationFilter === 'ALL') return this.searchedStocks;
+    return this.searchedStocks.filter(
+      (stock) => this.getLocationKey(stock) === this.locationFilter,
+    );
+  }
+
+  get locationGroups(): StockLocationGroup[] {
+    const groups = new Map<string, StockLocationGroup>();
+
+    for (const stock of this.filteredStocks) {
+      const key = this.getLocationKey(stock);
+      const current = groups.get(key) ?? {
+        key,
+        label: this.getLieuLabel(stock),
+        referenced: Number(stock.lieu_id) > 0,
+        items: [],
+        quantity: 0,
+      };
+
+      current.items.push(stock);
+      current.quantity += Number(stock.qte ?? 0);
+      groups.set(key, current);
+    }
+
+    return [...groups.values()].sort((a, b) => {
+      if (a.referenced !== b.referenced) return a.referenced ? -1 : 1;
+      return a.label.localeCompare(b.label, 'fr');
+    });
+  }
+
+  get locationFilterOptions(): Array<{ key: string; label: string }> {
+    const groups = new Map<string, string>();
+
+    for (const stock of this.stocks) {
+      groups.set(this.getLocationKey(stock), this.getLieuLabel(stock));
+    }
+
+    return [...groups.entries()]
+      .map(([key, label]) => ({ key, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
   }
 
   get totalQuantity(): number {
@@ -114,6 +166,13 @@ export class StockComponent implements OnInit {
       this.flux = [...(flux ?? [])].sort((a, b) =>
         String(b.date ?? '').localeCompare(String(a.date ?? '')),
       );
+
+      if (
+        this.locationFilter !== 'ALL' &&
+        !this.locationFilterOptions.some((option) => option.key === this.locationFilter)
+      ) {
+        this.locationFilter = 'ALL';
+      }
     } catch (error) {
       console.error('Chargement du stock impossible', error);
       this.error = 'Impossible de charger le stock.';
@@ -233,7 +292,18 @@ export class StockComponent implements OnInit {
 
   getLieuLabel(stock: Stock): string {
     const lieu = this.lieux.find((item) => Number(item.id) === Number(stock.lieu_id));
-    return lieu?.nom || stock.lieu_stockage || 'Sans lieu';
+    if (lieu?.nom) return lieu.nom;
+
+    const legacy = String(stock.lieu_stockage ?? '').trim();
+    return legacy || 'Sans lieu référencé';
+  }
+
+  getLocationKey(stock: Stock): string {
+    const lieuId = Number(stock.lieu_id);
+    if (Number.isFinite(lieuId) && lieuId > 0) return `LIEU:${lieuId}`;
+
+    const legacy = String(stock.lieu_stockage ?? '').trim().toLowerCase();
+    return legacy ? `LEGACY:${legacy}` : 'UNASSIGNED';
   }
 
   getFluxLabel(id: number): string {
@@ -260,6 +330,10 @@ export class StockComponent implements OnInit {
 
   trackById(_index: number, item: Stock): number {
     return item.id;
+  }
+
+  trackByLocation(_index: number, group: StockLocationGroup): string {
+    return group.key;
   }
 
   private emptyDraft(): StockDraft {
