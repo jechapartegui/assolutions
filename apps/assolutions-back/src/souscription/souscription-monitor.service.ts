@@ -186,7 +186,7 @@ export class SouscriptionMonitorService {
     ]);
 
     const lineIds = lines.map((line) => line.id);
-    const personIds = Array.from(new Set(lines.map((line) => line.personne_id));
+    const personIds = Array.from(new Set(lines.map((line) => line.personne_id)));
     const tariffIds = Array.from(
       new Set(lines.map((line) => Number(line.tarif_inscription_id ?? 0)).filter(Boolean)),
     );
