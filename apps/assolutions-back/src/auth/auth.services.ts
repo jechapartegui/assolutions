@@ -22,6 +22,7 @@ import {
   hashOpaqueToken,
   hashPassword,
   verifyPassword,
+  verifyReusableTimedToken,
   verifyTimedToken,
 } from './security.utils';
 
@@ -193,6 +194,14 @@ export class AuthService {
 
   async activateAndLogin(login: string, token: string): Promise<any> {
     const compte = await this.findAccountForToken(login);
+    const validReusableToken = verifyReusableTimedToken(
+      token,
+      compte.activation_token,
+      compte.login,
+      'activation',
+      this.tokenPepper,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
     const validNewToken = verifyTimedToken(
       token,
       compte.activation_token,
@@ -201,7 +210,7 @@ export class AuthService {
     );
     const validLegacyToken = this.verifyLegacyToken(token, compte.activation_token);
 
-    if (!validNewToken && !validLegacyToken) {
+    if (!validReusableToken && !validNewToken && !validLegacyToken) {
       throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
     }
 
