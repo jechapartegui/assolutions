@@ -30,6 +30,8 @@ type StockLocationGroup = {
   quantity: number;
 };
 
+type StockMode = 'CATALOGUE' | 'INVENTAIRE';
+
 @Component({
   selector: 'app-stock',
   templateUrl: './stock.component.html',
@@ -43,10 +45,14 @@ export class StockComponent implements OnInit {
 
   loading = false;
   saving = false;
+  inventorySaving = false;
   error = '';
   message = '';
   search = '';
   locationFilter = 'ALL';
+  mode: StockMode = 'CATALOGUE';
+
+  inventoryQuantities: Record<number, number> = {};
 
   editorOpen = false;
   editingId: number | null = null;
@@ -145,6 +151,17 @@ export class StockComponent implements OnInit {
     )].sort((a, b) => a.localeCompare(b, 'fr'));
   }
 
+  get inventoryDirtyCount(): number {
+    return this.stocks.filter((stock) => this.isInventoryChanged(stock)).length;
+  }
+
+  get inventoryDelta(): number {
+    return this.stocks.reduce(
+      (sum, stock) => sum + this.getInventoryDelta(stock),
+      0,
+    );
+  }
+
   async load(): Promise<void> {
     this.loading = true;
     this.error = '';
@@ -173,12 +190,93 @@ export class StockComponent implements OnInit {
       ) {
         this.locationFilter = 'ALL';
       }
+
+      this.resetInventoryQuantities();
     } catch (error) {
       console.error('Chargement du stock impossible', error);
       this.error = 'Impossible de charger le stock.';
     } finally {
       this.loading = false;
     }
+  }
+
+  setMode(mode: StockMode): void {
+    if (this.inventorySaving) return;
+
+    if (this.mode === 'INVENTAIRE' && mode === 'CATALOGUE' && this.inventoryDirtyCount > 0) {
+      const confirmed = window.confirm(
+        'Des quantités d’inventaire ne sont pas enregistrées. Les abandonner ?',
+      );
+      if (!confirmed) return;
+    }
+
+    this.mode = mode;
+    this.error = '';
+    this.message = '';
+    if (mode === 'INVENTAIRE') this.resetInventoryQuantities();
+  }
+
+  setInventoryQuantity(stock: Stock, value: number | string | null): void {
+    const parsed = Number(value);
+    this.inventoryQuantities[stock.id] = Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  adjustInventory(stock: Stock, delta: number): void {
+    const current = Number(this.inventoryQuantities[stock.id] ?? stock.qte ?? 0);
+    this.inventoryQuantities[stock.id] = Math.max(0, current + delta);
+  }
+
+  isInventoryChanged(stock: Stock): boolean {
+    return Number(this.inventoryQuantities[stock.id] ?? 0) !== Number(stock.qte ?? 0);
+  }
+
+  getInventoryDelta(stock: Stock): number {
+    return Number(this.inventoryQuantities[stock.id] ?? 0) - Number(stock.qte ?? 0);
+  }
+
+  async saveInventory(): Promise<void> {
+    const changed = this.stocks.filter((stock) => this.isInventoryChanged(stock));
+    if (!changed.length) {
+      this.message = 'Aucun écart à enregistrer.';
+      return;
+    }
+
+    const invalid = changed.find((stock) => {
+      const qte = Number(this.inventoryQuantities[stock.id]);
+      return !Number.isFinite(qte) || qte < 0;
+    });
+
+    if (invalid) {
+      this.error = `La quantité saisie pour « ${invalid.libelle} » est invalide.`;
+      return;
+    }
+
+    this.inventorySaving = true;
+    this.error = '';
+    this.message = '';
+
+    try {
+      await Promise.all(
+        changed.map((stock) =>
+          this.stockApi.update(stock.id, {
+            qte: Number(this.inventoryQuantities[stock.id]),
+          }),
+        ),
+      );
+      this.message = `${changed.length} quantité${changed.length > 1 ? 's' : ''} mise${changed.length > 1 ? 's' : ''} à jour.`;
+      await this.load();
+    } catch (error) {
+      console.error('Enregistrement de l’inventaire impossible', error);
+      this.error = "Impossible d'enregistrer toutes les quantités de l'inventaire.";
+    } finally {
+      this.inventorySaving = false;
+    }
+  }
+
+  cancelInventoryChanges(): void {
+    this.resetInventoryQuantities();
+    this.message = '';
+    this.error = '';
   }
 
   openCreate(): void {
@@ -334,6 +432,12 @@ export class StockComponent implements OnInit {
 
   trackByLocation(_index: number, group: StockLocationGroup): string {
     return group.key;
+  }
+
+  private resetInventoryQuantities(): void {
+    this.inventoryQuantities = Object.fromEntries(
+      this.stocks.map((stock) => [stock.id, Number(stock.qte ?? 0)]),
+    );
   }
 
   private emptyDraft(): StockDraft {

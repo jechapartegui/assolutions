@@ -9,12 +9,12 @@
         <p class="eyebrow" i18n>Matériel</p>
         <h1 class="title is-4 mb-1" i18n>Gestion des stocks</h1>
         <p class="subtitle is-6 has-text-grey mb-0" i18n>
-          Consulte, ajoute et mets à jour le matériel possédé par le club, regroupé par lieu de stockage.
+          Gère le catalogue, les lieux de stockage et réalise un inventaire rapide des quantités.
         </p>
       </div>
     </div>
 
-    <button class="button is-primary" type="button" (click)="openCreate()">
+    <button class="button is-primary" type="button" (click)="openCreate()" *ngIf="mode === 'CATALOGUE'">
       <span class="icon"><i class="fa-solid fa-plus"></i></span>
       <span i18n>Ajouter du matériel</span>
     </button>
@@ -22,6 +22,29 @@
 
   <div class="notification is-danger is-light" *ngIf="error">{{ error }}</div>
   <div class="notification is-success is-light" *ngIf="message">{{ message }}</div>
+
+  <div class="stock-mode-tabs">
+    <button
+      class="button"
+      type="button"
+      [class.is-primary]="mode === 'CATALOGUE'"
+      [class.is-light]="mode !== 'CATALOGUE'"
+      (click)="setMode('CATALOGUE')"
+    >
+      <span class="icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+      <span i18n>Catalogue</span>
+    </button>
+    <button
+      class="button"
+      type="button"
+      [class.is-primary]="mode === 'INVENTAIRE'"
+      [class.is-light]="mode !== 'INVENTAIRE'"
+      (click)="setMode('INVENTAIRE')"
+    >
+      <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span>
+      <span i18n>Inventaire</span>
+    </button>
+  </div>
 
   <section class="stock-stats">
     <article class="stat-card">
@@ -32,18 +55,29 @@
       <span class="stat-label" i18n>Quantité totale</span>
       <strong>{{ totalQuantity }}</strong>
     </article>
-    <article class="stat-card">
+    <article class="stat-card" *ngIf="mode === 'CATALOGUE'">
       <span class="stat-label" i18n>Valeur d'achat estimée</span>
       <strong>{{ formatMoney(totalValue) }}</strong>
+    </article>
+    <article class="stat-card" *ngIf="mode === 'INVENTAIRE'">
+      <span class="stat-label" i18n>Écarts à enregistrer</span>
+      <strong>{{ inventoryDirtyCount }}</strong>
+      <small [class.has-text-danger]="inventoryDelta < 0" [class.has-text-success]="inventoryDelta > 0">
+        {{ inventoryDelta > 0 ? '+' : '' }}{{ inventoryDelta }} unité{{ inventoryDelta > 1 || inventoryDelta < -1 ? 's' : '' }}
+      </small>
     </article>
   </section>
 
   <section class="stock-panel">
     <header class="panel-toolbar">
       <div>
-        <h2 class="title is-6 mb-1" i18n>Stocks par lieu</h2>
-        <p class="is-size-7 has-text-grey mb-0" i18n>
+        <h2 class="title is-6 mb-1" *ngIf="mode === 'CATALOGUE'" i18n>Stocks par lieu</h2>
+        <h2 class="title is-6 mb-1" *ngIf="mode === 'INVENTAIRE'" i18n>Inventaire des quantités</h2>
+        <p class="is-size-7 has-text-grey mb-0" *ngIf="mode === 'CATALOGUE'" i18n>
           Les anciennes lignes sans lieu référencé restent regroupées selon leur lieu libre historique.
+        </p>
+        <p class="is-size-7 has-text-grey mb-0" *ngIf="mode === 'INVENTAIRE'" i18n>
+          Saisis la quantité réellement constatée. Une quantité à zéro conserve la référence dans le catalogue.
         </p>
       </div>
 
@@ -70,6 +104,34 @@
       </div>
     </header>
 
+    <div class="inventory-actions" *ngIf="mode === 'INVENTAIRE' && !loading">
+      <div>
+        <strong>{{ inventoryDirtyCount }}</strong>
+        <span i18n> ligne(s) modifiée(s)</span>
+      </div>
+      <div class="buttons mb-0">
+        <button
+          class="button is-light"
+          type="button"
+          [disabled]="inventorySaving || inventoryDirtyCount === 0"
+          (click)="cancelInventoryChanges()"
+          i18n
+        >
+          Annuler les écarts
+        </button>
+        <button
+          class="button is-primary"
+          type="button"
+          [class.is-loading]="inventorySaving"
+          [disabled]="inventorySaving || inventoryDirtyCount === 0"
+          (click)="saveInventory()"
+        >
+          <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+          <span i18n>Enregistrer l'inventaire</span>
+        </button>
+      </div>
+    </div>
+
     <div class="loading-state" *ngIf="loading">
       <span class="icon"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
       <span i18n>Chargement du stock…</span>
@@ -95,7 +157,7 @@
           </div>
         </header>
 
-        <div class="table-container stock-table-wrap">
+        <div class="table-container stock-table-wrap" *ngIf="mode === 'CATALOGUE'">
           <table class="table is-fullwidth is-hoverable stock-table">
             <thead>
               <tr>
@@ -135,6 +197,58 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="inventory-list" *ngIf="mode === 'INVENTAIRE'">
+          <div
+            class="inventory-row"
+            *ngFor="let stock of group.items; trackBy: trackById"
+            [class.is-changed]="isInventoryChanged(stock)"
+          >
+            <div class="inventory-item-copy">
+              <strong>{{ stock.libelle }}</strong>
+              <span>{{ stock.type_stock || 'Sans type' }}</span>
+            </div>
+
+            <div class="inventory-before">
+              <span i18n>Avant</span>
+              <strong>{{ stock.qte ?? 0 }}</strong>
+            </div>
+
+            <div class="inventory-stepper">
+              <button
+                class="button is-light"
+                type="button"
+                [disabled]="inventorySaving"
+                (click)="adjustInventory(stock, -1)"
+                aria-label="Retirer une unité"
+                i18n-aria-label
+              >−</button>
+              <input
+                class="input"
+                type="number"
+                min="0"
+                step="1"
+                [ngModel]="inventoryQuantities[stock.id]"
+                (ngModelChange)="setInventoryQuantity(stock, $event)"
+                [disabled]="inventorySaving"
+                [attr.aria-label]="'Quantité constatée pour ' + stock.libelle"
+              />
+              <button
+                class="button is-light"
+                type="button"
+                [disabled]="inventorySaving"
+                (click)="adjustInventory(stock, 1)"
+                aria-label="Ajouter une unité"
+                i18n-aria-label
+              >+</button>
+            </div>
+
+            <div class="inventory-delta" [class.is-negative]="getInventoryDelta(stock) < 0" [class.is-positive]="getInventoryDelta(stock) > 0">
+              <span i18n>Écart</span>
+              <strong>{{ getInventoryDelta(stock) > 0 ? '+' : '' }}{{ getInventoryDelta(stock) }}</strong>
+            </div>
+          </div>
         </div>
       </article>
     </div>
