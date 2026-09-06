@@ -17,6 +17,12 @@ type HelpTopic = {
   url: string;
 };
 
+type AdminPageMeta = {
+  title: string;
+  description: string;
+  icon: string;
+};
+
 @Component({
   standalone: false,
   selector: 'app-root',
@@ -33,9 +39,107 @@ export class AppComponent implements OnInit, OnDestroy {
   envt = environment;
   isPublic = false;
   defaultProjectLabel = $localize`Projet`;
+  adminPageMeta: AdminPageMeta | null = null;
+
+  private readonly adminPageMetadata: Record<string, AdminPageMeta> = {
+    '/adherent': {
+      title: 'Adhérents',
+      description: 'Rechercher, créer et mettre à jour les personnes suivies par le club.',
+      icon: 'fa-users',
+    },
+    '/inscription': {
+      title: "Tarifs d'inscription",
+      description: 'Configurer les offres, tarifs et règles proposés pendant le parcours d’inscription.',
+      icon: 'fa-tags',
+    },
+    '/codes-promo': {
+      title: 'Codes promotionnels',
+      description: 'Créer et administrer les réductions utilisables pendant une inscription.',
+      icon: 'fa-ticket',
+    },
+    '/exigences-dossier': {
+      title: 'Exigences des dossiers',
+      description: 'Définir les pièces et validations attendues selon les groupes et les licences.',
+      icon: 'fa-list-check',
+    },
+    '/cours': {
+      title: 'Cours',
+      description: 'Organiser les séries récurrentes qui servent de base aux séances de la saison.',
+      icon: 'fa-chalkboard-user',
+    },
+    '/seance': {
+      title: 'Séances',
+      description: 'Consulter et ajuster les séances, leurs groupes, leurs encadrants et leurs participants.',
+      icon: 'fa-calendar-days',
+    },
+    '/groupe': {
+      title: 'Groupes',
+      description: 'Structurer les adhérents et définir les critères d’accès aux activités du club.',
+      icon: 'fa-layer-group',
+    },
+    '/contrat-prof': {
+      title: 'Contrats professeurs',
+      description: 'Suivre les engagements des encadrants pour la saison consultée.',
+      icon: 'fa-file-signature',
+    },
+    '/stock': {
+      title: 'Stocks',
+      description: 'Gérer le matériel, sa localisation et les quantités constatées lors des inventaires.',
+      icon: 'fa-boxes-stacked',
+    },
+    '/comptabilite': {
+      title: 'Finances',
+      description: 'Piloter le budget, les flux financiers et la situation comptable du club.',
+      icon: 'fa-chart-pie',
+    },
+    '/operations': {
+      title: 'Opérations',
+      description: 'Consulter et rapprocher les opérations financières enregistrées dans Assolutions.',
+      icon: 'fa-right-left',
+    },
+    '/envoi-mail': {
+      title: 'Envoyer des mails',
+      description: 'Préparer une communication et sélectionner ses destinataires selon le contexte du club.',
+      icon: 'fa-paper-plane',
+    },
+    '/projet-mail': {
+      title: 'Configuration mails',
+      description: 'Configurer les modèles et paramètres utilisés par les communications automatiques.',
+      icon: 'fa-envelope-circle-check',
+    },
+    '/suivi-mails': {
+      title: 'Suivi des mails',
+      description: 'Contrôler les envois effectués et identifier rapidement les éventuelles erreurs.',
+      icon: 'fa-chart-line',
+    },
+    '/saison': {
+      title: 'Saisons',
+      description: 'Créer les saisons du club et choisir celle qui sert de référence à l’activité courante.',
+      icon: 'fa-calendar',
+    },
+    '/lieu': {
+      title: 'Lieux',
+      description: 'Maintenir les gymnases, salles et autres lieux utilisés par les activités du club.',
+      icon: 'fa-location-dot',
+    },
+    '/professeur': {
+      title: 'Professeurs',
+      description: 'Gérer les encadrants et les informations nécessaires à leur activité dans le club.',
+      icon: 'fa-person-chalkboard',
+    },
+    '/compte-bancaire': {
+      title: 'Comptes bancaires',
+      description: 'Référencer les comptes utilisés pour le suivi des paiements et des opérations.',
+      icon: 'fa-building-columns',
+    },
+    '/addinfo-listes': {
+      title: 'Champs complémentaires',
+      description: 'Créer les informations propres au club et administrer les valeurs proposées par les listes.',
+      icon: 'fa-table-list',
+    },
+  };
 
   readonly helpTopics: HelpTopic[] = [
-    // Utilisateur
     {
       key: 'user-mon-compte',
       label: $localize`Mon compte`,
@@ -60,8 +164,6 @@ export class AppComponent implements OnInit, OnDestroy {
       audience: 'USER',
       url: '/tutos/04_Aide_utilisateur_Seances_et_essais.pdf',
     },
-
-    // Professeur
     {
       key: 'prof-adherents',
       label: $localize`Gérer les adhérents`,
@@ -86,8 +188,6 @@ export class AppComponent implements OnInit, OnDestroy {
       audience: 'PROF',
       url: '/tutos/04_Aide_prof_Piloter_une_seance.pdf',
     },
-
-    // Administrateur
     {
       key: 'admin-centre-pilotage',
       label: $localize`Centre de pilotage`,
@@ -176,6 +276,10 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.helpTopics.filter((topic) => topic.audience === 'USER');
   }
 
+  get showAdminPageMeta(): boolean {
+    return !this.isPublic && this.store.isAdmin() && !!this.adminPageMeta;
+  }
+
   ngOnInit(): void {
     this.sub = this.router.events
       .pipe(
@@ -186,12 +290,19 @@ export class AppComponent implements OnInit, OnDestroy {
       )
       .subscribe((url) => {
         this.isPublic = this.isPublicUrl(url);
+        this.adminPageMeta = this.resolveAdminPageMeta(url);
         this.helpOpen = false;
       });
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+  }
+
+  private resolveAdminPageMeta(url: string): AdminPageMeta | null {
+    const path = String(url ?? '').split('?')[0].split('#')[0];
+    if (!path || path === '/menu-admin' || path === '/admin-projet') return null;
+    return this.adminPageMetadata[path] ?? null;
   }
 
   private isPublicUrl(url: string): boolean {
@@ -222,9 +333,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openHelpTopic(_topic: HelpTopic, event?: Event): void {
-    // Laisser le lien <a target="_blank"> faire l'ouverture nativement.
-    // Safari iOS peut bloquer window.open() quand il est déclenché après un
-    // preventDefault ; le comportement natif est fiable et garde le nouvel onglet.
     event?.stopPropagation();
     this.helpOpen = false;
   }

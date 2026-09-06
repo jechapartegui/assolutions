@@ -118,6 +118,7 @@
                   <a class="navbar-item" (click)="selectMenu('LIEU')" [routerLink]="['/lieu']" i18n>Lieux</a>
                   <a class="navbar-item" (click)="selectMenu('PROF')" [routerLink]="['/professeur']" i18n>Professeurs</a>
                   <a class="navbar-item" (click)="selectMenu('CB')" [routerLink]="['/compte-bancaire']" i18n>Comptes bancaires</a>
+                  <a class="navbar-item" (click)="selectMenu('ADDINFO')" [routerLink]="['/addinfo-listes']" i18n>Champs complémentaires</a>
                 </div>
               </div>
             </ng-container>
@@ -197,6 +198,21 @@
       </nav>
     </span>
   </ng-container>
+
+  <section class="section py-3 px-3" *ngIf="showAdminPageMeta && adminPageMeta as meta">
+    <div class="container is-max-desktop">
+      <div class="notification is-light mb-0 py-3 px-4">
+        <div class="is-flex is-align-items-flex-start" style="gap: 0.75rem">
+          <span class="icon has-text-primary mt-1"><i class="fa-solid" [ngClass]="meta.icon"></i></span>
+          <div>
+            <p class="is-size-7 has-text-grey mb-1" i18n>Centre de pilotage</p>
+            <p class="has-text-weight-semibold mb-1">{{ meta.title }}</p>
+            <p class="is-size-7 has-text-grey mb-0">{{ meta.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <router-outlet></router-outlet>
 
