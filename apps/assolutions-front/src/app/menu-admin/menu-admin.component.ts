@@ -62,6 +62,7 @@ export class MenuAdminComponent implements OnInit {
       tiles: [
         { label: $localize`:@@admin.sendEmails:Envoyer des mails`, icon: 'fa-paper-plane', menu: 'ENVOIMAIL', route: '/envoi-mail' },
         { label: $localize`:@@admin.emailSettings:Configuration mails`, icon: 'fa-envelope-circle-check', menu: 'PROJETMAIL', route: '/projet-mail' },
+        { label: $localize`:@@admin.emailTracking:Suivi des mails`, icon: 'fa-chart-line', menu: 'SUIVIMAIL', route: '/suivi-mails', hint: $localize`:@@admin.emailTrackingHint:Historique des envois et erreurs` },
       ],
     },
     {

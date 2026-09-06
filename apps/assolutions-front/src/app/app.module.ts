@@ -36,6 +36,7 @@ import { ProfesseurComponent } from './professeur/professeur.component';
 import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
+import { MailRecordMonitorComponent } from './mail-record-monitor/mail-record-monitor.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
 import { LieuSelectorComponent } from './component/lieu-selector/lieu-selector.component';
@@ -72,6 +73,7 @@ import { CoursStore } from '../store/cours.store';
     ProfesseurComponent,
     EnvoiMailComponent,
     ProjetMailComponent,
+    MailRecordMonitorComponent,
     ComptabiliteComponent,
     OperationsComponent,
     MultifiltersMenuPipe,

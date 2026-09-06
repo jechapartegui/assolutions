@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
 import { MailAddressVm } from '@shared/lib/mail-input.interface';
 
-import { MailRecordEntity } from '../mail_record/mail_record.entity';
+import { MailRecordEntity, MailRecordStatus } from '../mail_record/mail_record.entity';
 import { ProjectEntity } from '../project/project.entity';
 import { OutgoingMessageDto, SendMessagesDto } from './message.dto';
 
@@ -191,6 +191,7 @@ export class MessageService {
     const subject = this.isSandboxMode
       ? this.prefixTestSubject(options.subject)
       : options.subject;
+    const record = (options.record || 'automatic-mail').slice(0, 200);
     const startedAt = Date.now();
 
     try {
@@ -202,14 +203,13 @@ export class MessageService {
       });
 
       if (options.projectId) {
-        await this.mailRecordRepo.save(
-          this.mailRecordRepo.create({
-            record: (options.record || 'automatic-mail').slice(0, 200),
-            to: destination.email.slice(0, 200),
-            subject: subject.slice(0, 200),
-            project_id: options.projectId,
-          }),
-        );
+        await this.traceMail({
+          record,
+          to: destination.email,
+          subject,
+          projectId: options.projectId,
+          status: 'SENT',
+        });
       }
 
       this.logger.log(
@@ -217,6 +217,18 @@ export class MessageService {
       );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
+
+      if (options.projectId) {
+        await this.traceMail({
+          record,
+          to: destination.email,
+          subject,
+          projectId: options.projectId,
+          status: 'FAILED',
+          error: message,
+        });
+      }
+
       this.logger.error(
         `Échec mail ${options.record || 'automatique'} vers ${destination.email} après ${Date.now() - startedAt} ms : ${message}`,
       );
@@ -247,14 +259,13 @@ export class MessageService {
           html: prepared.html,
         });
 
-        await this.mailRecordRepo.save(
-          this.mailRecordRepo.create({
-            record: prepared.record,
-            to: prepared.traceTo,
-            subject: prepared.subject,
-            project_id: projectId,
-          }),
-        );
+        await this.traceMail({
+          record: prepared.record,
+          to: prepared.traceTo,
+          subject: prepared.subject,
+          projectId,
+          status: 'SENT',
+        });
         results.push({
           to: prepared.traceTo,
           subject: prepared.subject,
@@ -262,12 +273,24 @@ export class MessageService {
         });
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        const traceTo = message?.to?.email || '';
+        const traceSubject = message?.subject || '';
+
+        await this.traceMail({
+          record: (message?.record || 'mail').slice(0, 200),
+          to: traceTo,
+          subject: traceSubject,
+          projectId,
+          status: 'FAILED',
+          error: errorMessage,
+        });
+
         this.logger.error(
-          `Erreur envoi mail projet ${projectId} vers ${message?.to?.email}: ${errorMessage}`,
+          `Erreur envoi mail projet ${projectId} vers ${traceTo}: ${errorMessage}`,
         );
         results.push({
-          to: message?.to?.email || '',
-          subject: message?.subject || '',
+          to: traceTo,
+          subject: traceSubject,
           success: false,
           error: errorMessage,
         });
@@ -314,6 +337,34 @@ export class MessageService {
       record: (message.record || 'mail').slice(0, 200),
       traceTo: finalTo.email.slice(0, 200),
     };
+  }
+
+  private async traceMail(input: {
+    record: string;
+    to: string;
+    subject: string;
+    projectId: number;
+    status: MailRecordStatus;
+    error?: string | null;
+  }): Promise<void> {
+    try {
+      await this.mailRecordRepo.save(
+        this.mailRecordRepo.create({
+          record: String(input.record || 'mail').slice(0, 200),
+          to: String(input.to || '').slice(0, 200),
+          subject: String(input.subject || '').slice(0, 200),
+          project_id: input.projectId,
+          status: input.status,
+          error: input.error ? String(input.error).slice(0, 4000) : null,
+        }),
+      );
+    } catch (traceError: unknown) {
+      const traceMessage =
+        traceError instanceof Error ? traceError.message : String(traceError);
+      this.logger.warn(
+        `Impossible d'enregistrer la trace mail ${input.record} (${input.status}) : ${traceMessage}`,
+      );
+    }
   }
 
   private resolveSandboxMode(): boolean {

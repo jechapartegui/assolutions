@@ -22,6 +22,7 @@ import { ContratProfComponent } from './contrat-prof/contrat-prof.component';
 import { ProfesseurComponent } from './professeur/professeur.component';
 import { ProjetMailComponent } from './projet-mail/projet-mail.component';
 import { EnvoiMailComponent } from './envoi-mail/envoi-mail.component';
+import { MailRecordMonitorComponent } from './mail-record-monitor/mail-record-monitor.component';
 import { ComptabiliteComponent } from './comptabilite/comptabilite.component';
 import { OperationsComponent } from './operations/operations.component';
 import { CreerCompteComponent } from './creer-compte/creer-compte.component';
@@ -61,6 +62,7 @@ const routes: Routes = [
   { path: 'professeur', component: ProfesseurComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'projet-mail', component: ProjetMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'envoi-mail', component: EnvoiMailComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'suivi-mails', component: MailRecordMonitorComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'inscription', component: InscriptionComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'codes-promo', component: CodePromoComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'exigences-dossier', component: ExigenceDossierComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
