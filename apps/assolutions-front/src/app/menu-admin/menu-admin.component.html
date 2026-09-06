@@ -74,6 +74,156 @@
   </section>
 </div>
 
+<div class="modal" [class.is-active]="bugReportOpen" *ngIf="bugReportOpen">
+  <div class="modal-background" (click)="closeBugReport()"></div>
+
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <div>
+        <p class="modal-card-title" i18n>Signaler un bug</p>
+        <p class="is-size-7 has-text-grey mt-1" i18n>
+          Le signalement est envoyé directement par mail à l’équipe Assolutions.
+        </p>
+      </div>
+      <button
+        class="delete"
+        type="button"
+        aria-label="Fermer"
+        i18n-aria-label
+        [disabled]="bugReportSending"
+        (click)="closeBugReport()"
+      ></button>
+    </header>
+
+    <section class="modal-card-body">
+      <div class="notification is-success is-light" *ngIf="bugReportSuccess">
+        {{ bugReportSuccess }}
+      </div>
+      <div class="notification is-danger is-light" *ngIf="bugReportError">
+        {{ bugReportError }}
+      </div>
+
+      <div class="field">
+        <label class="label" i18n>Titre *</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            maxlength="200"
+            [(ngModel)]="bugReport.title"
+            placeholder="Ex. Impossible d'enregistrer un adhérent"
+            i18n-placeholder
+          />
+        </div>
+      </div>
+
+      <div class="columns is-variable is-3">
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Écran / module</label>
+            <div class="control">
+              <input
+                class="input"
+                type="text"
+                maxlength="200"
+                [(ngModel)]="bugReport.screen"
+                placeholder="Ex. Adhérents / création"
+                i18n-placeholder
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Gravité</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="bugReport.severity">
+                <option [ngValue]="'FAIBLE'" i18n>Faible</option>
+                <option [ngValue]="'NORMALE'" i18n>Normale</option>
+                <option [ngValue]="'BLOQUANTE'" i18n>Bloquante</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" i18n>Description *</label>
+        <div class="control">
+          <textarea
+            class="textarea"
+            rows="5"
+            maxlength="8000"
+            [(ngModel)]="bugReport.description"
+            placeholder="Décris ce qui s'est passé et ce qui te bloque."
+            i18n-placeholder
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" i18n>Étapes pour reproduire</label>
+        <div class="control">
+          <textarea
+            class="textarea"
+            rows="3"
+            maxlength="4000"
+            [(ngModel)]="bugReport.steps"
+            placeholder="1. J'ouvre... 2. Je clique..."
+            i18n-placeholder
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="columns is-variable is-3">
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Résultat attendu</label>
+            <div class="control">
+              <textarea class="textarea" rows="3" maxlength="4000" [(ngModel)]="bugReport.expected"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Résultat obtenu</label>
+            <div class="control">
+              <textarea class="textarea" rows="3" maxlength="4000" [(ngModel)]="bugReport.actual"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="help" i18n>
+        La route courante, le projet, ton compte et le navigateur sont ajoutés automatiquement. Aucun mot de passe ni token n’est envoyé.
+      </p>
+    </section>
+
+    <footer class="modal-card-foot is-justify-content-flex-end">
+      <button
+        class="button"
+        type="button"
+        [disabled]="bugReportSending"
+        (click)="closeBugReport()"
+        i18n
+      >
+        Fermer
+      </button>
+      <button
+        class="button is-primary"
+        type="button"
+        [class.is-loading]="bugReportSending"
+        [disabled]="bugReportSending || !!bugReportSuccess"
+        (click)="submitBugReport()"
+        i18n
+      >
+        Envoyer le signalement
+      </button>
+    </footer>
+  </div>
+</div>
+
 <div class="container mt-4" *ngIf="!(store.isLoggedIn() && store.hasProjet() && store.isProf())">
   <article class="message is-warning">
     <div class="message-header">

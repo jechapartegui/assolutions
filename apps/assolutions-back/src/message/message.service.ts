@@ -6,7 +6,7 @@ import { MailAddressVm } from '@shared/lib/mail-input.interface';
 
 import { MailRecordEntity, MailRecordStatus } from '../mail_record/mail_record.entity';
 import { ProjectEntity } from '../project/project.entity';
-import { OutgoingMessageDto, SendMessagesDto } from './message.dto';
+import { BugReportDto, OutgoingMessageDto, SendMessagesDto } from './message.dto';
 
 export interface AutomaticMailOptions {
   to: string;
@@ -68,6 +68,81 @@ export class MessageService {
   async verifyConnection(): Promise<boolean> {
     await this.transporter.verify();
     return true;
+  }
+
+  async sendBugReport(projectId: number, dto: BugReportDto): Promise<{ ok: true }> {
+    const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    if (!project) throw new BadRequestException(`Projet ${projectId} introuvable`);
+
+    const supportEmail = String(
+      process.env.BUG_REPORT_EMAIL ||
+        process.env.SUPPORT_EMAIL ||
+        this.smtpUser,
+    ).trim();
+    const destination = this.normalizeAddress({
+      email: supportEmail,
+      name: 'Support Assolutions',
+    });
+    const severity = String(dto.severity || 'NORMALE').trim().toUpperCase();
+    const environmentPrefix = this.isSandboxMode ? '[PREPROD] ' : '';
+    const projectLabel = project.nom?.trim() || `Projet ${projectId}`;
+    const subject = `${environmentPrefix}[BUG][${severity}] ${projectLabel} - ${dto.title.trim()}`;
+
+    const html = this.automaticTemplate(
+      'Signalement de bug Assolutions',
+      `
+        <p><strong>Projet :</strong> ${this.formatBugReportValue(projectLabel)} (#${projectId})</p>
+        <p><strong>Compte :</strong> ${this.formatBugReportValue(dto.accountEmail)}</p>
+        <p><strong>Gravité :</strong> ${this.formatBugReportValue(severity)}</p>
+        <p><strong>Écran / module :</strong> ${this.formatBugReportValue(dto.screen)}</p>
+        <p><strong>Route :</strong> ${this.formatBugReportValue(dto.route)}</p>
+        <hr style="border:0;border-top:1px solid #ddd;margin:20px 0">
+        <p><strong>Titre :</strong> ${this.formatBugReportValue(dto.title)}</p>
+        <p><strong>Description :</strong><br>${this.formatBugReportValue(dto.description)}</p>
+        <p><strong>Étapes pour reproduire :</strong><br>${this.formatBugReportValue(dto.steps)}</p>
+        <p><strong>Résultat attendu :</strong><br>${this.formatBugReportValue(dto.expected)}</p>
+        <p><strong>Résultat obtenu :</strong><br>${this.formatBugReportValue(dto.actual)}</p>
+        <hr style="border:0;border-top:1px solid #ddd;margin:20px 0">
+        <p style="font-size:12px;color:#666"><strong>Navigateur :</strong> ${this.formatBugReportValue(dto.browser)}</p>
+        <p style="font-size:12px;color:#666"><strong>Version :</strong> ${this.formatBugReportValue(dto.version)}</p>
+      `,
+    );
+
+    try {
+      await this.transporter.sendMail({
+        from: `"Assolutions" <${this.smtpUser}>`,
+        to: this.formatAddress(destination),
+        replyTo: dto.accountEmail || undefined,
+        subject,
+        html,
+      });
+
+      await this.traceMail({
+        record: 'BUG_REPORT',
+        to: destination.email,
+        subject,
+        projectId,
+        status: 'SENT',
+      });
+
+      return { ok: true };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      await this.traceMail({
+        record: 'BUG_REPORT',
+        to: destination.email,
+        subject,
+        projectId,
+        status: 'FAILED',
+        error: message,
+      });
+
+      this.logger.error(
+        `Échec de l'envoi du signalement de bug du projet ${projectId}: ${message}`,
+      );
+      throw error;
+    }
   }
 
   async sendPasswordReset(login: string, resetUrl: string): Promise<void> {
@@ -455,6 +530,12 @@ export class MessageService {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  private formatBugReportValue(value: unknown): string {
+    const text = String(value ?? '').trim();
+    if (!text) return '—';
+    return this.escapeHtml(text).replace(/\r?\n/g, '<br>');
   }
 
   private wait(ms: number): Promise<void> {

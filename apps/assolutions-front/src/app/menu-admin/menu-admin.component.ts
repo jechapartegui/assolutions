@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppStore } from '../app.store';
 import { SaisonApiService } from '../../services/saison-api.service';
+import { BugReportApiService, BugReportSeverity } from '../../services/bug-report-api.service';
 import { MenuType } from '../../store/session.store';
 
 type AdminTile = {
@@ -12,12 +13,23 @@ type AdminTile = {
   queryParams?: Record<string, any>;
   disabled?: boolean;
   hint?: string;
+  action?: 'BUG_REPORT';
 };
 
 type AdminSection = {
   title: string;
   subtitle?: string;
   tiles: AdminTile[];
+};
+
+type BugReportForm = {
+  title: string;
+  description: string;
+  screen: string;
+  severity: BugReportSeverity;
+  steps: string;
+  expected: string;
+  actual: string;
 };
 
 @Component({
@@ -30,6 +42,12 @@ export class MenuAdminComponent implements OnInit {
   saisons: any[] = [];
   selectedSaisonId: number | null = null;
   loadingSaisons = false;
+
+  bugReportOpen = false;
+  bugReportSending = false;
+  bugReportSuccess = '';
+  bugReportError = '';
+  bugReport: BugReportForm = this.createEmptyBugReport();
 
   sections: AdminSection[] = [
     {
@@ -76,12 +94,26 @@ export class MenuAdminComponent implements OnInit {
         { label: $localize`:@@admin.bankAccounts:Comptes bancaires`, icon: 'fa-building-columns', menu: 'CB', route: '/compte-bancaire' },
       ],
     },
+    {
+      title: $localize`:@@admin.support.title:Assistance`,
+      subtitle: $localize`:@@admin.support.subtitle:Signaler rapidement un problème rencontré dans Assolutions`,
+      tiles: [
+        {
+          label: $localize`:@@admin.reportBug:Signaler un bug`,
+          icon: 'fa-bug',
+          menu: 'JOURNAL_ERREURS',
+          action: 'BUG_REPORT',
+          hint: $localize`:@@admin.reportBugHint:Envoyer un mail avec le contexte utile`,
+        },
+      ],
+    },
   ];
 
   constructor(
     public store: AppStore,
     private router: Router,
     private saisonApi: SaisonApiService,
+    private bugReportApi: BugReportApiService,
   ) {}
 
   ngOnInit(): void {
@@ -149,6 +181,11 @@ export class MenuAdminComponent implements OnInit {
   }
 
   open(tile: AdminTile): void {
+    if (tile.action === 'BUG_REPORT') {
+      this.openBugReport();
+      return;
+    }
+
     if (!tile.route || tile.disabled) return;
     this.store.updateSelectedMenu(tile.menu);
     this.router.navigate([tile.route], {
@@ -157,5 +194,70 @@ export class MenuAdminComponent implements OnInit {
         saisonId: this.consultationSaisonId,
       },
     });
+  }
+
+  openBugReport(): void {
+    this.bugReport = this.createEmptyBugReport();
+    this.bugReport.screen = this.router.url;
+    this.bugReportError = '';
+    this.bugReportSuccess = '';
+    this.bugReportOpen = true;
+  }
+
+  closeBugReport(): void {
+    if (this.bugReportSending) return;
+    this.bugReportOpen = false;
+    this.bugReportError = '';
+    this.bugReportSuccess = '';
+  }
+
+  async submitBugReport(): Promise<void> {
+    const title = this.bugReport.title.trim();
+    const description = this.bugReport.description.trim();
+
+    this.bugReportError = '';
+    this.bugReportSuccess = '';
+
+    if (!title || !description) {
+      this.bugReportError = $localize`:@@admin.reportBugRequired:Le titre et la description sont obligatoires.`;
+      return;
+    }
+
+    const accountEmail = String(this.store.compte()?.login ?? '').trim();
+
+    this.bugReportSending = true;
+    try {
+      await this.bugReportApi.send({
+        title,
+        description,
+        screen: this.bugReport.screen.trim() || undefined,
+        severity: this.bugReport.severity,
+        steps: this.bugReport.steps.trim() || undefined,
+        expected: this.bugReport.expected.trim() || undefined,
+        actual: this.bugReport.actual.trim() || undefined,
+        route: this.router.url,
+        browser: window.navigator.userAgent,
+        accountEmail: accountEmail || undefined,
+      });
+
+      this.bugReportSuccess = $localize`:@@admin.reportBugSuccess:Le signalement a bien été envoyé. Merci !`;
+    } catch (error) {
+      console.error('Envoi du signalement impossible', error);
+      this.bugReportError = $localize`:@@admin.reportBugError:L’envoi du signalement a échoué. Réessaie dans quelques instants.`;
+    } finally {
+      this.bugReportSending = false;
+    }
+  }
+
+  private createEmptyBugReport(): BugReportForm {
+    return {
+      title: '',
+      description: '',
+      screen: '',
+      severity: 'NORMALE',
+      steps: '',
+      expected: '',
+      actual: '',
+    };
   }
 }

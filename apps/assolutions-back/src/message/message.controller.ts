@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { ProjectId } from '../common/decorators/project-id.decorator';
-import { SendMessagesDto } from './message.dto';
+import { BugReportDto, SendMessagesDto } from './message.dto';
 import { MessageService } from './message.service';
 
 @Controller('messages')
@@ -13,6 +13,12 @@ export class MessageController {
   @Post('send')
   send(@ProjectId() projectId: number, @Body() dto: SendMessagesDto) {
     return this.service.send(projectId, dto);
+  }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('bug-report')
+  reportBug(@ProjectId() projectId: number, @Body() dto: BugReportDto) {
+    return this.service.sendBugReport(projectId, dto);
   }
 
   @UseGuards(ProjectAdminGuard)
