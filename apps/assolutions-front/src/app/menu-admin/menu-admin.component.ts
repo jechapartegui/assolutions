@@ -75,6 +75,19 @@ export class MenuAdminComponent implements OnInit {
       ],
     },
     {
+      title: $localize`:@@admin.stock.title:Matériel`,
+      subtitle: $localize`:@@admin.stock.subtitle:Stocks, localisation et inventaire du matériel du club`,
+      tiles: [
+        {
+          label: $localize`:@@admin.stock:Stocks`,
+          icon: 'fa-boxes-stacked',
+          menu: 'STOCK',
+          route: '/stock',
+          hint: $localize`:@@admin.stockHint:Quantités, lieux, achats et informations du matériel`,
+        },
+      ],
+    },
+    {
       title: $localize`:@@admin.communication.title:Communication`,
       subtitle: $localize`:@@admin.communication.subtitle:Mails et modèles`,
       tiles: [
