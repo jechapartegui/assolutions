@@ -21,6 +21,7 @@ import {
   createTimedToken,
   hashOpaqueToken,
   hashPassword,
+  issueReusableTimedToken,
   verifyPassword,
   verifyReusableTimedToken,
   verifyTimedToken,
@@ -329,14 +330,24 @@ export class AuthService {
     // Réponse identique pour éviter l'énumération des comptes.
     if (!compte) return true;
 
-    const rawToken = createTimedToken();
-    compte.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
-    await this.compteRepo.save(compte);
+    const issued = issueReusableTimedToken(
+      compte.login,
+      'reset',
+      this.tokenPepper,
+      compte.activation_token,
+      RESET_TOKEN_MAX_AGE_MS,
+    );
+
+    // Un renvoi pendant la fenêtre de validité reconstruit le même lien.
+    if (!issued.reused) {
+      compte.activation_token = issued.storedToken;
+      await this.compteRepo.save(compte);
+    }
 
     const resetUrl =
       `${this.getFrontUrl()}/login?context=REINIT` +
       `&user=${encodeURIComponent(compte.login)}` +
-      `&token=${encodeURIComponent(rawToken)}`;
+      `&token=${encodeURIComponent(issued.rawToken)}`;
 
     await this.mailService.sendPasswordReset(compte.login, resetUrl);
     return true;
@@ -348,14 +359,24 @@ export class AuthService {
     }
 
     const compte = await this.findAccountForReset(login);
-    const valid = verifyTimedToken(
+    const validReusableToken = verifyReusableTimedToken(
+      token,
+      compte.activation_token,
+      compte.login,
+      'reset',
+      this.tokenPepper,
+      RESET_TOKEN_MAX_AGE_MS,
+    );
+    const validLegacyTimedToken = verifyTimedToken(
       token,
       compte.activation_token,
       this.tokenPepper,
       RESET_TOKEN_MAX_AGE_MS,
     );
 
-    if (!valid) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    if (!validReusableToken && !validLegacyTimedToken) {
+      throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    }
     return true;
   }
 
@@ -371,14 +392,24 @@ export class AuthService {
     }
 
     const compte = await this.findAccountForReset(login);
-    const valid = verifyTimedToken(
+    const validReusableToken = verifyReusableTimedToken(
+      token,
+      compte.activation_token,
+      compte.login,
+      'reset',
+      this.tokenPepper,
+      RESET_TOKEN_MAX_AGE_MS,
+    );
+    const validLegacyTimedToken = verifyTimedToken(
       token,
       compte.activation_token,
       this.tokenPepper,
       RESET_TOKEN_MAX_AGE_MS,
     );
 
-    if (!valid) throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    if (!validReusableToken && !validLegacyTimedToken) {
+      throw new BadRequestException('INVALID_OR_EXPIRED_TOKEN');
+    }
 
     const cleanPassword = newPassword?.trim() ?? '';
     if (cleanPassword) this.assertPassword(cleanPassword);
