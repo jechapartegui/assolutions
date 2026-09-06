@@ -42,6 +42,66 @@
   color: #6b7280;
 }
 
+.admin-section,
+.field-form-card {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+}
+
+.section-heading,
+.field-form-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.field-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  gap: 1rem;
+}
+
+.field-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.field-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: #fafbfc;
+}
+
+.field-card-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.field-card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
 .lists-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -159,7 +219,8 @@
 }
 
 @media screen and (max-width: 900px) {
-  .lists-grid {
+  .lists-grid,
+  .fields-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -170,8 +231,26 @@
     padding-bottom: 5rem;
   }
 
-  .page-hero {
+  .page-hero,
+  .section-heading,
+  .field-form-heading,
+  .field-card {
     flex-direction: column;
+  }
+
+  .field-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-card-actions,
+  .field-form-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .field-card-actions .button,
+  .field-form-actions .button {
+    width: 100%;
   }
 
   .option-row {

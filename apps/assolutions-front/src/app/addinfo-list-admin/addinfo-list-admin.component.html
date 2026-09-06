@@ -2,191 +2,312 @@
   <section class="page-hero">
     <div>
       <p class="page-kicker" i18n>Paramétrage</p>
-      <h1 class="title is-4 mb-1" i18n>Listes complémentaires</h1>
+      <h1 class="title is-4 mb-1" i18n>Champs complémentaires</h1>
       <p class="has-text-grey is-size-7 mb-0" i18n>
-        Modifie les valeurs proposées par les champs complémentaires de type liste.
-        Une valeur retirée n’est plus proposée, mais les réponses déjà enregistrées restent conservées.
+        Crée les informations propres à une personne. Une fois définies ici, elles apparaissent automatiquement dans la fiche personne.
       </p>
     </div>
 
-    <button
-      type="button"
-      class="button is-light is-small"
-      [class.is-loading]="loading"
-      [disabled]="loading"
-      (click)="load()"
-      i18n
-    >
-      Actualiser
-    </button>
+    <div class="buttons mb-0">
+      <button type="button" class="button is-primary is-small" (click)="openCreateField()" i18n>
+        <span class="icon"><i class="fa-solid fa-plus"></i></span>
+        <span>Nouveau champ</span>
+      </button>
+      <button
+        type="button"
+        class="button is-light is-small"
+        [class.is-loading]="loading"
+        [disabled]="loading"
+        (click)="load()"
+        i18n
+      >
+        Actualiser
+      </button>
+    </div>
   </section>
 
   <article class="message is-danger" *ngIf="loadError">
     <div class="message-body">{{ loadError }}</div>
   </article>
-
-  <div class="loading-state" *ngIf="loading && !items.length">
-    <span class="icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
-    <span i18n>Chargement des listes…</span>
-  </div>
-
-  <article class="message is-info" *ngIf="!loading && !loadError && !items.length">
-    <div class="message-body" i18n>
-      Aucun champ complémentaire de type liste n’est encore configuré pour ce projet.
-    </div>
+  <article class="message is-danger" *ngIf="fieldActionError">
+    <div class="message-body">{{ fieldActionError }}</div>
+  </article>
+  <article class="message is-success" *ngIf="fieldActionSuccess">
+    <div class="message-body">{{ fieldActionSuccess }}</div>
   </article>
 
-  <section class="lists-grid" *ngIf="items.length">
-    <article
-      class="list-card"
-      *ngFor="let item of items; trackBy: trackByFieldId"
-    >
-      <header class="list-card-header">
-        <div>
-          <div class="list-title-row">
-            <h2 class="title is-6 mb-0">{{ item.field.text }}</h2>
-            <span class="tag is-light">{{ item.field.object_type }}</span>
-          </div>
-          <p class="help mb-0">
-            <span i18n>Champ</span> #{{ item.field.id }} ·
-            <span i18n>{{ item.options.length }} valeur(s) active(s)</span>
-          </p>
-        </div>
-      </header>
+  <section class="field-form-card" *ngIf="fieldFormOpen">
+    <div class="field-form-heading">
+      <div>
+        <p class="page-kicker mb-1" i18n>Personne</p>
+        <h2 class="title is-6 mb-1">
+          {{ fieldForm.id ? 'Modifier le champ' : 'Créer un champ' }}
+        </h2>
+        <p class="help mb-0" *ngIf="fieldForm.usageCount > 0" i18n>
+          Ce champ possède déjà des réponses : son type est verrouillé pour protéger les données existantes.
+        </p>
+      </div>
+      <button class="delete" type="button" (click)="closeFieldForm()" aria-label="Fermer" i18n-aria-label></button>
+    </div>
 
-      <div class="option-list" *ngIf="item.draftOptions.length; else emptyOptions">
-        <div
-          class="option-row"
-          *ngFor="let option of item.draftOptions; let i = index"
-        >
-          <div class="option-main">
+    <div class="field-form-grid">
+      <div class="field mb-0">
+        <label class="label" i18n>Libellé *</label>
+        <input
+          class="input"
+          type="text"
+          maxlength="120"
+          [(ngModel)]="fieldForm.label"
+          placeholder="Ex. Numéro de licence"
+          i18n-placeholder
+        />
+      </div>
+
+      <div class="field mb-0">
+        <label class="label" i18n>Type de donnée *</label>
+        <div class="select is-fullwidth">
+          <select [(ngModel)]="fieldForm.kind" [disabled]="fieldForm.usageCount > 0">
+            <option *ngFor="let kind of fieldKinds" [ngValue]="kind.value">{{ kind.label }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <p class="notification is-info is-light mt-3 mb-0" *ngIf="fieldForm.kind === 'select'" i18n>
+      Enregistre d’abord le champ. Ses valeurs seront ensuite administrables dans la section « Listes » juste en dessous.
+    </p>
+
+    <article class="message is-danger mt-3 mb-0" *ngIf="fieldFormError">
+      <div class="message-body">{{ fieldFormError }}</div>
+    </article>
+
+    <div class="field-form-actions">
+      <button type="button" class="button is-light" [disabled]="fieldFormSaving" (click)="closeFieldForm()" i18n>
+        Annuler
+      </button>
+      <button
+        type="button"
+        class="button is-primary"
+        [class.is-loading]="fieldFormSaving"
+        [disabled]="fieldFormSaving || !fieldForm.label.trim()"
+        (click)="saveField()"
+        i18n
+      >
+        Enregistrer le champ
+      </button>
+    </div>
+  </section>
+
+  <div class="loading-state" *ngIf="loading && !fields.length">
+    <span class="icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
+    <span i18n>Chargement des champs…</span>
+  </div>
+
+  <section class="admin-section" *ngIf="!loading || fields.length">
+    <div class="section-heading">
+      <div>
+        <h2 class="title is-5 mb-1" i18n>Champs de la fiche personne</h2>
+        <p class="help mb-0" i18n>
+          Le moteur AddInfo reste générique : PERSONNE est simplement le premier objet administrable depuis cet écran.
+        </p>
+      </div>
+      <span class="tag is-primary is-light">PERSONNE</span>
+    </div>
+
+    <article class="message is-info" *ngIf="!fields.length && !loadError">
+      <div class="message-body" i18n>
+        Aucun champ complémentaire n’est encore configuré. Crée le premier avec le bouton « Nouveau champ ».
+      </div>
+    </article>
+
+    <div class="fields-grid" *ngIf="fields.length">
+      <article class="field-card" *ngFor="let item of fields; trackBy: trackByAdminFieldId">
+        <div class="field-card-main">
+          <div>
+            <h3 class="title is-6 mb-1">{{ item.field.text }}</h3>
+            <div class="tags mb-1">
+              <span class="tag is-light">{{ kindLabel(item.kind) }}</span>
+              <span class="tag is-info is-light" *ngIf="item.usageCount > 0">
+                {{ item.usageCount }} réponse(s)
+              </span>
+              <span class="tag is-light" *ngIf="item.usageCount === 0" i18n>Non utilisé</span>
+            </div>
+            <p class="help mb-0">#{{ item.field.id }} · {{ item.field.object_type }}</p>
+          </div>
+        </div>
+
+        <div class="field-card-actions">
+          <button type="button" class="button is-small is-light" (click)="openEditField(item)" i18n>
+            Modifier
+          </button>
+          <button
+            type="button"
+            class="button is-small is-danger is-light"
+            [disabled]="item.usageCount > 0"
+            [title]="item.usageCount > 0 ? 'Champ utilisé : suppression protégée' : 'Supprimer le champ'"
+            (click)="deleteField(item)"
+            i18n
+          >
+            Supprimer
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="admin-section" *ngIf="items.length">
+    <div class="section-heading">
+      <div>
+        <h2 class="title is-5 mb-1" i18n>Valeurs des champs de type liste</h2>
+        <p class="help mb-0" i18n>
+          Une valeur retirée n’est plus proposée aux nouvelles saisies, mais les réponses historiques restent conservées.
+        </p>
+      </div>
+    </div>
+
+    <section class="lists-grid">
+      <article class="list-card" *ngFor="let item of items; trackBy: trackByFieldId">
+        <header class="list-card-header">
+          <div>
+            <div class="list-title-row">
+              <h3 class="title is-6 mb-0">{{ item.field.text }}</h3>
+              <span class="tag is-light">{{ item.field.object_type }}</span>
+            </div>
+            <p class="help mb-0">
+              <span i18n>Champ</span> #{{ item.field.id }} ·
+              <span i18n>{{ item.options.length }} valeur(s) active(s)</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="option-list" *ngIf="item.draftOptions.length; else emptyOptions">
+          <div class="option-row" *ngFor="let option of item.draftOptions; let i = index">
+            <div class="option-main">
+              <input
+                class="input is-small"
+                type="text"
+                maxlength="40"
+                [(ngModel)]="item.draftOptions[i]"
+                (ngModelChange)="item.success = ''; item.error = ''"
+              />
+              <span
+                class="tag is-success is-light usage-tag"
+                *ngIf="usageCount(item, option) > 0"
+                [title]="usageCount(item, option) + ' réponse(s) enregistrée(s)'"
+              >
+                {{ usageCount(item, option) }}
+              </span>
+            </div>
+
+            <div class="option-actions">
+              <button
+                type="button"
+                class="button is-small is-light"
+                [disabled]="i === 0 || item.saving"
+                (click)="moveOption(item, i, -1)"
+                aria-label="Monter"
+                i18n-aria-label
+              >
+                <i class="fa-solid fa-arrow-up"></i>
+              </button>
+              <button
+                type="button"
+                class="button is-small is-light"
+                [disabled]="i === item.draftOptions.length - 1 || item.saving"
+                (click)="moveOption(item, i, 1)"
+                aria-label="Descendre"
+                i18n-aria-label
+              >
+                <i class="fa-solid fa-arrow-down"></i>
+              </button>
+              <button
+                type="button"
+                class="button is-small is-danger is-light"
+                [disabled]="item.saving"
+                (click)="removeOption(item, i)"
+                aria-label="Retirer"
+                i18n-aria-label
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #emptyOptions>
+          <p class="empty-options" i18n>Aucune valeur active dans cette liste.</p>
+        </ng-template>
+
+        <div class="add-option-row">
+          <div class="control is-expanded">
             <input
               class="input is-small"
               type="text"
               maxlength="40"
-              [(ngModel)]="item.draftOptions[i]"
-              (ngModelChange)="item.success = ''; item.error = ''"
+              [(ngModel)]="item.newOption"
+              (keyup.enter)="addOption(item)"
+              placeholder="Nouvelle valeur"
+              i18n-placeholder
             />
-            <span
-              class="tag is-success is-light usage-tag"
-              *ngIf="usageCount(item, option) > 0"
-              [title]="usageCount(item, option) + ' réponse(s) enregistrée(s)'"
+          </div>
+          <div class="control">
+            <button
+              type="button"
+              class="button is-small is-primary is-light"
+              [disabled]="!item.newOption.trim() || item.saving"
+              (click)="addOption(item)"
+              i18n
             >
-              {{ usageCount(item, option) }}
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <div class="history-box" *ngIf="historicalValues(item).length">
+          <p class="history-title" i18n>Valeurs historiques conservées</p>
+          <div class="tags">
+            <span class="tag is-warning is-light" *ngFor="let historical of historicalValues(item)">
+              {{ historical.value }} · {{ historical.count }}
             </span>
           </div>
-
-          <div class="option-actions">
-            <button
-              type="button"
-              class="button is-small is-light"
-              [disabled]="i === 0 || item.saving"
-              (click)="moveOption(item, i, -1)"
-              aria-label="Monter"
-              i18n-aria-label
-            >
-              <i class="fa-solid fa-arrow-up"></i>
-            </button>
-            <button
-              type="button"
-              class="button is-small is-light"
-              [disabled]="i === item.draftOptions.length - 1 || item.saving"
-              (click)="moveOption(item, i, 1)"
-              aria-label="Descendre"
-              i18n-aria-label
-            >
-              <i class="fa-solid fa-arrow-down"></i>
-            </button>
-            <button
-              type="button"
-              class="button is-small is-danger is-light"
-              [disabled]="item.saving"
-              (click)="removeOption(item, i)"
-              aria-label="Retirer"
-              i18n-aria-label
-            >
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
+          <p class="help mb-0" i18n>
+            Elles restent visibles sur les personnes déjà renseignées mais ne sont plus proposées pour une nouvelle saisie.
+          </p>
         </div>
-      </div>
 
-      <ng-template #emptyOptions>
-        <p class="empty-options" i18n>Aucune valeur active dans cette liste.</p>
-      </ng-template>
-
-      <div class="add-option-row">
-        <div class="control is-expanded">
-          <input
-            class="input is-small"
-            type="text"
-            maxlength="40"
-            [(ngModel)]="item.newOption"
-            (keyup.enter)="addOption(item)"
-            placeholder="Nouvelle valeur"
-            i18n-placeholder
-          />
+        <div class="capacity-row" [class.has-text-danger]="isTooLong(item)">
+          <span i18n>Configuration</span> : {{ serializedLength(item) }}/50
         </div>
-        <div class="control">
+
+        <article class="message is-danger is-small-message" *ngIf="item.error">
+          <div class="message-body">{{ item.error }}</div>
+        </article>
+        <article class="message is-success is-small-message" *ngIf="item.success">
+          <div class="message-body">{{ item.success }}</div>
+        </article>
+
+        <footer class="list-card-footer">
           <button
             type="button"
-            class="button is-small is-primary is-light"
-            [disabled]="!item.newOption.trim() || item.saving"
-            (click)="addOption(item)"
+            class="button is-small is-light"
+            [disabled]="!isDirty(item) || item.saving"
+            (click)="reset(item)"
             i18n
           >
-            Ajouter
+            Annuler les modifications
           </button>
-        </div>
-      </div>
-
-      <div class="history-box" *ngIf="historicalValues(item).length">
-        <p class="history-title" i18n>Valeurs historiques conservées</p>
-        <div class="tags">
-          <span
-            class="tag is-warning is-light"
-            *ngFor="let historical of historicalValues(item)"
+          <button
+            type="button"
+            class="button is-small is-primary"
+            [class.is-loading]="item.saving"
+            [disabled]="!isDirty(item) || item.saving || isTooLong(item)"
+            (click)="save(item)"
+            i18n
           >
-            {{ historical.value }} · {{ historical.count }}
-          </span>
-        </div>
-        <p class="help mb-0" i18n>
-          Elles restent visibles sur les personnes déjà renseignées mais ne sont plus proposées pour une nouvelle saisie.
-        </p>
-      </div>
-
-      <div class="capacity-row" [class.has-text-danger]="isTooLong(item)">
-        <span i18n>Configuration</span> : {{ serializedLength(item) }}/50
-      </div>
-
-      <article class="message is-danger is-small-message" *ngIf="item.error">
-        <div class="message-body">{{ item.error }}</div>
+            Enregistrer la liste
+          </button>
+        </footer>
       </article>
-      <article class="message is-success is-small-message" *ngIf="item.success">
-        <div class="message-body">{{ item.success }}</div>
-      </article>
-
-      <footer class="list-card-footer">
-        <button
-          type="button"
-          class="button is-small is-light"
-          [disabled]="!isDirty(item) || item.saving"
-          (click)="reset(item)"
-          i18n
-        >
-          Annuler les modifications
-        </button>
-        <button
-          type="button"
-          class="button is-small is-primary"
-          [class.is-loading]="item.saving"
-          [disabled]="!isDirty(item) || item.saving || isTooLong(item)"
-          (click)="save(item)"
-          i18n
-        >
-          Enregistrer la liste
-        </button>
-      </footer>
-    </article>
+    </section>
   </section>
 </div>

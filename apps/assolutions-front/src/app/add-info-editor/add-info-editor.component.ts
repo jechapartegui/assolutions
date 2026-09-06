@@ -17,7 +17,6 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
   items: AddInfoEditorItem_VM[] = [];
   fields: AddInfo[] = [];
   values: AddInfo[] = [];
-  selectedFieldId = 0;
 
   constructor(
     private readonly addInfoApi: AddInfoApiService,
@@ -30,10 +29,14 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
 
   get showMedicalSection(): boolean {
     return (
-      this.objectType?.trim().toUpperCase() === 'PERSONNE' &&
+      this.effectiveObjectType.toUpperCase() === 'PERSONNE' &&
       Number(this.objectId) > 0 &&
       this.activeSeasonId > 0
     );
+  }
+
+  private get effectiveObjectType(): string {
+    return String(this.objectType ?? '').trim();
   }
 
   async ngOnInit(): Promise<void> {
@@ -44,33 +47,29 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
     if (this.objectType && this.objectId !== undefined) await this.load();
   }
 
-  get availableFields(): AddInfo[] {
-    const usedFieldIds = new Set(this.items.map((item) => item.fieldId));
-    return this.fields.filter((field) => !usedFieldIds.has(field.id));
-  }
-
   async load(): Promise<void> {
-    if (!this.objectType || this.objectId === undefined || this.objectId === null) {
+    if (!this.effectiveObjectType || this.objectId === undefined || this.objectId === null) {
       return;
     }
 
     const [fields, values] = await Promise.all([
-      this.addInfoApi.listFields(this.objectType),
+      this.addInfoApi.listFields(this.effectiveObjectType),
       this.objectId > 0
-        ? this.addInfoApi.listValues(this.objectType, this.objectId)
+        ? this.addInfoApi.listValues(this.effectiveObjectType, this.objectId)
         : Promise.resolve([]),
     ]);
 
     this.fields = fields ?? [];
     this.values = values ?? [];
-    this.items = this.values
-      .map((value) => {
-        const field = this.fields.find(
-          (candidate) => String(candidate.id) === value.value_type,
-        );
-        return field ? this.toVm(field, value) : null;
-      })
-      .filter((item): item is AddInfoEditorItem_VM => !!item);
+
+    // Les définitions pilotent directement le formulaire : un écran métier fournit
+    // seulement objectType/objectId et tous les champs configurés apparaissent.
+    this.items = this.fields.map((field) => {
+      const value = this.values.find(
+        (candidate) => String(candidate.value_type) === String(field.id),
+      );
+      return this.toVm(field, value ?? null);
+    });
   }
 
   toVm(field: AddInfo, value?: AddInfo | null): AddInfoEditorItem_VM {
@@ -99,19 +98,6 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
       boolValue: currentValue === 'true',
       options,
     };
-  }
-
-  addSelectedField(): void {
-    const field = this.fields.find(
-      (candidate) => candidate.id === this.selectedFieldId,
-    );
-    if (!field) return;
-    this.items.push(this.toVm(field, null));
-    this.selectedFieldId = 0;
-  }
-
-  removeItem(item: AddInfoEditorItem_VM): void {
-    this.items = this.items.filter((candidate) => candidate !== item);
   }
 
   getFieldKind(valueType: string): string {
@@ -150,32 +136,30 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
     if (this.getFieldKind(item.fieldType) === 'boolean') {
       return item.boolValue ? 'true' : 'false';
     }
-    return item.value ?? '';
+    return String(item.value ?? '').trim();
   }
 
   async save(): Promise<void> {
-    if (!this.objectType || !this.objectId || this.objectId <= 0) return;
+    if (!this.effectiveObjectType || !this.objectId || this.objectId <= 0) return;
 
-    const currentFieldIds = new Set(this.items.map((item) => item.fieldId));
-    const deleted = this.values.filter(
-      (value) => !currentFieldIds.has(Number(value.value_type)),
-    );
-    const existingToUpdate = this.items.filter(
+    const changedExisting = this.items.filter(
       (item) =>
         item.valueId > 0 && this.normalizeValue(item) !== item.initialValue,
     );
-    const created = this.items.filter((item) => item.valueId === 0);
+    const created = this.items.filter(
+      (item) => item.valueId === 0 && this.shouldPersistNewValue(item),
+    );
 
     await Promise.all([
-      ...deleted.map((value) => this.addInfoApi.deleteValue(value.id)),
-      ...existingToUpdate.map((item) =>
-        this.addInfoApi.updateValue(item.valueId, {
-          text: this.normalizeValue(item),
-        }),
-      ),
+      ...changedExisting.map((item) => {
+        const text = this.normalizeValue(item);
+        return text === ''
+          ? this.addInfoApi.deleteValue(item.valueId)
+          : this.addInfoApi.updateValue(item.valueId, { text });
+      }),
       ...created.map((item) =>
         this.addInfoApi.createValue({
-          object_type: this.objectType,
+          object_type: this.effectiveObjectType,
           object_id: this.objectId,
           field_id: item.fieldId,
           text: this.normalizeValue(item),
@@ -184,5 +168,11 @@ export class AddInfoEditorComponent implements OnInit, OnChanges {
     ]);
 
     await this.load();
+  }
+
+  private shouldPersistNewValue(item: AddInfoEditorItem_VM): boolean {
+    const kind = this.getFieldKind(item.fieldType);
+    if (kind === 'boolean') return item.boolValue === true;
+    return this.normalizeValue(item) !== '';
   }
 }

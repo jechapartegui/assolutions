@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {
+  AddInfoAdminFieldVm,
   AddInfoApiService,
+  AddInfoFieldKind,
   AddInfoListFieldVm,
 } from '../../services/addinfo-api.service';
 import { AppStore } from '../app.store';
@@ -13,6 +15,13 @@ type EditableListField = AddInfoListFieldVm & {
   success: string;
 };
 
+type FieldForm = {
+  id: number;
+  label: string;
+  kind: AddInfoFieldKind;
+  usageCount: number;
+};
+
 @Component({
   selector: 'app-addinfo-list-admin',
   templateUrl: './addinfo-list-admin.component.html',
@@ -20,9 +29,30 @@ type EditableListField = AddInfoListFieldVm & {
   standalone: false,
 })
 export class AddinfoListAdminComponent implements OnInit {
+  readonly objectType = 'PERSONNE';
+  readonly fieldKinds: Array<{ value: AddInfoFieldKind; label: string }> = [
+    { value: 'string', label: 'Texte' },
+    { value: 'number', label: 'Nombre' },
+    { value: 'boolean', label: 'Oui / Non' },
+    { value: 'date', label: 'Date' },
+    { value: 'select', label: 'Liste' },
+    { value: 'textarea', label: 'Texte long' },
+    { value: 'email', label: 'Email' },
+    { value: 'phone', label: 'Téléphone' },
+    { value: 'url', label: 'Lien / URL' },
+  ];
+
+  fields: AddInfoAdminFieldVm[] = [];
   items: EditableListField[] = [];
   loading = false;
   loadError = '';
+
+  fieldFormOpen = false;
+  fieldFormSaving = false;
+  fieldFormError = '';
+  fieldForm: FieldForm = this.emptyFieldForm();
+  fieldActionError = '';
+  fieldActionSuccess = '';
 
   constructor(
     private readonly addInfoApi: AddInfoApiService,
@@ -39,15 +69,115 @@ export class AddinfoListAdminComponent implements OnInit {
     this.loadError = '';
 
     try {
-      const fields = await this.addInfoApi.listSelectableFields();
-      this.items = (fields ?? []).map((item) => this.toEditable(item));
+      const [fields, listFields] = await Promise.all([
+        this.addInfoApi.listAdminFields(this.objectType),
+        this.addInfoApi.listSelectableFields(),
+      ]);
+      this.fields = fields ?? [];
+      this.items = (listFields ?? [])
+        .filter((item) => item.field.object_type === this.objectType)
+        .map((item) => this.toEditable(item));
     } catch (error) {
-      console.error('Chargement des listes addinfo impossible', error);
+      console.error('Chargement des champs addinfo impossible', error);
       this.loadError =
-        'Impossible de charger les listes complémentaires. Réessaie dans quelques instants.';
+        'Impossible de charger les champs complémentaires. Réessaie dans quelques instants.';
     } finally {
       this.loading = false;
     }
+  }
+
+  openCreateField(): void {
+    this.fieldForm = this.emptyFieldForm();
+    this.fieldFormError = '';
+    this.fieldActionError = '';
+    this.fieldActionSuccess = '';
+    this.fieldFormOpen = true;
+  }
+
+  openEditField(item: AddInfoAdminFieldVm): void {
+    this.fieldForm = {
+      id: item.field.id,
+      label: item.field.text,
+      kind: item.kind,
+      usageCount: Number(item.usageCount ?? 0),
+    };
+    this.fieldFormError = '';
+    this.fieldActionError = '';
+    this.fieldActionSuccess = '';
+    this.fieldFormOpen = true;
+  }
+
+  closeFieldForm(): void {
+    if (this.fieldFormSaving) return;
+    this.fieldFormOpen = false;
+    this.fieldFormError = '';
+  }
+
+  async saveField(): Promise<void> {
+    const label = String(this.fieldForm.label ?? '').trim();
+    this.fieldFormError = '';
+    this.fieldActionError = '';
+    this.fieldActionSuccess = '';
+
+    if (!label) {
+      this.fieldFormError = 'Le libellé est obligatoire.';
+      return;
+    }
+
+    this.fieldFormSaving = true;
+    try {
+      if (this.fieldForm.id > 0) {
+        await this.addInfoApi.updateAdminField(this.fieldForm.id, {
+          label,
+          kind: this.fieldForm.kind,
+        });
+        this.fieldActionSuccess = `Le champ « ${label} » a été modifié.`;
+      } else {
+        await this.addInfoApi.createAdminField({
+          object_type: this.objectType,
+          label,
+          kind: this.fieldForm.kind,
+          options: this.fieldForm.kind === 'select' ? [] : undefined,
+        });
+        this.fieldActionSuccess = `Le champ « ${label} » a été créé.`;
+      }
+
+      this.fieldFormOpen = false;
+      await this.load();
+    } catch (error: any) {
+      console.error('Enregistrement du champ addinfo impossible', error);
+      this.fieldFormError =
+        error?.error?.message || error?.message || 'Impossible d’enregistrer ce champ.';
+    } finally {
+      this.fieldFormSaving = false;
+    }
+  }
+
+  async deleteField(item: AddInfoAdminFieldVm): Promise<void> {
+    this.fieldActionError = '';
+    this.fieldActionSuccess = '';
+
+    if (Number(item.usageCount ?? 0) > 0) {
+      this.fieldActionError =
+        `Le champ « ${item.field.text} » possède ${item.usageCount} réponse(s) et ne peut pas être supprimé.`;
+      return;
+    }
+
+    if (!window.confirm(`Supprimer le champ « ${item.field.text} » ?`)) return;
+
+    try {
+      await this.addInfoApi.deleteAdminField(item.field.id);
+      this.fieldActionSuccess = `Le champ « ${item.field.text} » a été supprimé.`;
+      await this.load();
+    } catch (error: any) {
+      console.error('Suppression du champ addinfo impossible', error);
+      this.fieldActionError =
+        error?.error?.message || error?.message || 'Impossible de supprimer ce champ.';
+    }
+  }
+
+  kindLabel(kind: AddInfoFieldKind): string {
+    return this.fieldKinds.find((item) => item.value === kind)?.label ?? kind;
   }
 
   addOption(item: EditableListField): void {
@@ -151,6 +281,7 @@ export class AddinfoListAdminComponent implements OnInit {
       item.draftOptions = [...saved.options];
       item.usage = { ...(saved.usage ?? {}) };
       item.success = 'Liste enregistrée.';
+      await this.refreshFieldMetadata();
     } catch (error: any) {
       console.error('Enregistrement de la liste addinfo impossible', error);
       item.error =
@@ -171,6 +302,14 @@ export class AddinfoListAdminComponent implements OnInit {
 
   trackByFieldId(_index: number, item: EditableListField): number {
     return item.field.id;
+  }
+
+  trackByAdminFieldId(_index: number, item: AddInfoAdminFieldVm): number {
+    return item.field.id;
+  }
+
+  private async refreshFieldMetadata(): Promise<void> {
+    this.fields = await this.addInfoApi.listAdminFields(this.objectType);
   }
 
   private toEditable(item: AddInfoListFieldVm): EditableListField {
@@ -200,5 +339,14 @@ export class AddinfoListAdminComponent implements OnInit {
       seen.add(key);
     }
     return null;
+  }
+
+  private emptyFieldForm(): FieldForm {
+    return {
+      id: 0,
+      label: '',
+      kind: 'string',
+      usageCount: 0,
+    };
   }
 }

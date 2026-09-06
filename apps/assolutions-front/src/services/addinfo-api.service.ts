@@ -7,10 +7,33 @@ import {
   UpdateAddInfoDto,
 } from '@shared/index';
 
+export type AddInfoFieldKind =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'select'
+  | 'email'
+  | 'phone'
+  | 'url'
+  | 'textarea';
+
 export interface AddInfoListFieldVm {
   field: AddInfo;
   options: string[];
   usage: Record<string, number>;
+}
+
+export interface AddInfoAdminFieldVm extends AddInfoListFieldVm {
+  kind: AddInfoFieldKind;
+  usageCount: number;
+}
+
+export interface AddInfoAdminFieldPayload {
+  object_type?: string;
+  label: string;
+  kind: AddInfoFieldKind;
+  options?: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +62,32 @@ export class AddInfoApiService {
     return this.api.POST<void>(`${this.base}/${id}/delete`, {});
   }
 
+  listAdminFields(objectType: string): Promise<AddInfoAdminFieldVm[]> {
+    return this.api.GET<AddInfoAdminFieldVm[]>(
+      `${this.base}/admin/fields/${encodeURIComponent(objectType)}`,
+    );
+  }
+
+  createAdminField(
+    dto: AddInfoAdminFieldPayload & { object_type: string },
+  ): Promise<AddInfoAdminFieldVm> {
+    return this.api.POST<AddInfoAdminFieldVm>(`${this.base}/admin/fields`, dto);
+  }
+
+  updateAdminField(
+    id: number,
+    dto: Partial<AddInfoAdminFieldPayload>,
+  ): Promise<AddInfoAdminFieldVm> {
+    return this.api.POST<AddInfoAdminFieldVm>(
+      `${this.base}/admin/fields/${id}/update`,
+      dto,
+    );
+  }
+
+  deleteAdminField(id: number): Promise<void> {
+    return this.api.POST<void>(`${this.base}/admin/fields/${id}/delete`, {});
+  }
+
   listSelectableFields(): Promise<AddInfoListFieldVm[]> {
     return this.api.GET<AddInfoListFieldVm[]>(`${this.base}/admin/list-fields`);
   }
@@ -54,15 +103,19 @@ export class AddInfoApiService {
   }
 
   listFields(objectType: string): Promise<AddInfo[]> {
-    return this.api.GET<AddInfo[]>(`${this.base}/fields/${objectType}`);
+    return this.api.GET<AddInfo[]>(`${this.base}/fields/${encodeURIComponent(objectType)}`);
   }
 
   listValues(objectType: string, objectId: number): Promise<AddInfo[]> {
-    return this.api.GET<AddInfo[]>(`${this.base}/values/${objectType}/${objectId}`);
+    return this.api.GET<AddInfo[]>(
+      `${this.base}/values/${encodeURIComponent(objectType)}/${objectId}`,
+    );
   }
 
   getForm(objectType: string, objectId: number): Promise<AddInfoFormItem_VM[]> {
-    return this.api.GET<AddInfoFormItem_VM[]>(`${this.base}/form/${objectType}/${objectId}`);
+    return this.api.GET<AddInfoFormItem_VM[]>(
+      `${this.base}/form/${encodeURIComponent(objectType)}/${objectId}`,
+    );
   }
 
   setValue(dto: {

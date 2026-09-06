@@ -4,12 +4,27 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
   MaxLength,
   Min,
 } from 'class-validator';
+
+export const ADDINFO_ADMIN_FIELD_KINDS = [
+  'string',
+  'number',
+  'boolean',
+  'date',
+  'select',
+  'email',
+  'phone',
+  'url',
+  'textarea',
+] as const;
+
+export type AddinfoAdminFieldKind = (typeof ADDINFO_ADMIN_FIELD_KINDS)[number];
 
 function ToText() {
   return Transform(({ value }) => (value == null ? '' : String(value)));
@@ -53,6 +68,50 @@ export class UpdateAddinfoOptionsDto {
   @IsString({ each: true })
   @MaxLength(40, { each: true })
   options: string[];
+}
+
+export class CreateAdminAddinfoFieldDto {
+  @IsString()
+  @MaxLength(50)
+  object_type: string;
+
+  @ToText()
+  @IsString()
+  @MaxLength(120)
+  label: string;
+
+  @IsString()
+  @IsIn(ADDINFO_ADMIN_FIELD_KINDS)
+  kind: AddinfoAdminFieldKind;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(25)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  options?: string[];
+}
+
+export class UpdateAdminAddinfoFieldDto {
+  @IsOptional()
+  @ToText()
+  @IsString()
+  @MaxLength(120)
+  label?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(ADDINFO_ADMIN_FIELD_KINDS)
+  kind?: AddinfoAdminFieldKind;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(25)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  options?: string[];
 }
 
 export class SetAddinfoValueDto {
