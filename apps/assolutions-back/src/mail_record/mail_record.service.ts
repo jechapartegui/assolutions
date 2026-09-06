@@ -68,14 +68,21 @@ export class MailRecordService {
   }
 
   private isLegacySchemaError(error: unknown): boolean {
-    const message = error instanceof Error ? error.message : String(error ?? '');
-    const normalized = message.toLowerCase();
+    const raw = error as {
+      code?: string;
+      driverError?: { code?: string; message?: string };
+      message?: string;
+    };
+    const code = raw?.driverError?.code ?? raw?.code;
+    const message = String(raw?.driverError?.message ?? raw?.message ?? error ?? '')
+      .toLowerCase();
+
+    if (code !== '42703') return false;
+
     return (
-      normalized.includes('column') &&
-      normalized.includes('does not exist') &&
-      (normalized.includes('created_at') ||
-        normalized.includes('status') ||
-        normalized.includes('error'))
+      message.includes('created_at') ||
+      message.includes('status') ||
+      message.includes('error')
     );
   }
 }
