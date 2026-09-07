@@ -1,6 +1,243 @@
+.template-workshop {
+  border: 0;
+  min-width: 0;
+  padding: 0;
+}
 
-/* réutilise le pattern lock overlay comme envoi-mail */ /* :contentReference[oaicite:2]{index=2} */
-.card.is-relative { position: relative; }
+.workshop-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e6e9ef;
+  background: #fff;
+}
+
+.workshop-kicker {
+  margin: 0 0 .2rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .72rem;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.hero-status,
+.fields-toolbar,
+.loop-heading,
+.loop-item-header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.hero-status {
+  justify-content: flex-end;
+}
+
+.template-tabs {
+  display: flex;
+  gap: .45rem;
+  overflow-x: auto;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid #e6e9ef;
+  background: #fff;
+}
+
+.template-tab {
+  border: 1px solid #d9dee7;
+  background: #fff;
+  border-radius: 999px;
+  padding: .45rem .8rem;
+  font-size: .82rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.template-tab.is-active {
+  border-color: #485fc7;
+  background: #eef1ff;
+  color: #3247a8;
+  font-weight: 700;
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.5rem;
+}
+
+.workshop-card {
+  min-width: 0;
+  border: 1px solid #e2e6ed;
+  border-radius: .85rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.editor-card,
+.fields-card {
+  align-self: start;
+}
+
+.preview-card,
+.test-card {
+  grid-column: span 1;
+}
+
+.workshop-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .9rem 1rem;
+  border-bottom: 1px solid #edf0f4;
+  background: #fafbfc;
+}
+
+.workshop-card-header h2 {
+  margin: 0 0 .15rem;
+  font-size: .96rem;
+  font-weight: 700;
+}
+
+.workshop-card-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: .78rem;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: 0 0 1.7rem;
+  border-radius: 50%;
+  background: #eef1ff;
+  color: #3247a8;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.workshop-card-body {
+  padding: 1rem;
+}
+
+.template-editor {
+  min-height: 25rem;
+  resize: vertical;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.input--dense {
+  height: 2.25rem;
+  font-size: .9rem;
+}
+
+.generated-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .7rem;
+}
+
+.fields-toolbar {
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.field-group + .field-group {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid #edf0f4;
+}
+
+.field-group h3 {
+  margin: 0 0 .7rem;
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.loop-heading {
+  justify-content: space-between;
+  margin-bottom: .75rem;
+}
+
+.loop-heading h3 {
+  margin-bottom: .1rem;
+}
+
+.loop-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: .75rem;
+}
+
+.loop-item {
+  padding: .8rem;
+  border: 1px solid #e6e9ef;
+  border-radius: .65rem;
+  background: #fafbfc;
+}
+
+.loop-item + .loop-item {
+  margin-top: .7rem;
+}
+
+.loop-item-header {
+  justify-content: space-between;
+  margin-bottom: .7rem;
+}
+
+.empty-fields {
+  display: flex;
+  gap: .75rem;
+  align-items: flex-start;
+  padding: .9rem;
+  border-radius: .65rem;
+  background: #f5faf7;
+  color: #2f6f4e;
+}
+
+.empty-fields p {
+  margin: .15rem 0 0;
+  font-size: .78rem;
+  color: #5f7468;
+}
+
+.preview-subject {
+  display: flex;
+  gap: .6rem;
+  align-items: baseline;
+  padding: .65rem .75rem;
+  margin-bottom: .75rem;
+  border: 1px solid #e6e9ef;
+  border-radius: .55rem;
+  background: #fafbfc;
+  font-size: .82rem;
+}
+
+.preview-subject span {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.preview-frame {
+  min-height: 14rem;
+  border: 1px solid #e6e9ef;
+  border-radius: .65rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.test-mail-field {
+  align-items: stretch;
+}
 
 .ui-lock-overlay {
   position: fixed;
@@ -24,7 +261,46 @@
   font-weight: 600;
 }
 
-.input--dense {
-  height: 2.25rem;
-  font-size: .9rem;
+@media (max-width: 900px) {
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-card,
+  .test-card {
+    grid-column: span 1;
+  }
+
+  .generated-fields-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .workshop-hero {
+    flex-direction: column;
+  }
+
+  .hero-status {
+    justify-content: flex-start;
+  }
+
+  .workflow-grid,
+  .template-tabs,
+  .workshop-hero {
+    padding-left: .75rem;
+    padding-right: .75rem;
+  }
+
+  .test-mail-field {
+    display: block;
+  }
+
+  .test-mail-field .control + .control {
+    margin-top: .5rem;
+  }
+
+  .test-mail-field .button {
+    width: 100%;
+  }
 }
