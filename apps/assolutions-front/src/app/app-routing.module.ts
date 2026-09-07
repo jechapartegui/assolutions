@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import type { AppMode } from '@shared/lib/compte.interface';
 
 import { AuthGuard } from './auth.guard';
+import { OnboardingCompleteGuard } from './onboarding-complete.guard';
 import { LoginComponent } from './login/login.component';
 import { PublicLandingComponent } from './public-landing/public-landing.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
@@ -60,7 +61,7 @@ const routes: Routes = [
   { path: 's/:slug', component: ShortLinkRedirectComponent },
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
-  { path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
+  { path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard, OnboardingCompleteGuard], data: ADMIN_ONLY },
   { path: 'admin-projet', component: AdminProjectComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'addinfo-listes', component: AddinfoListAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'lieu', component: LieuComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },

@@ -73,6 +73,7 @@ export class OnboardingComponent implements OnInit {
   }
 
   finish(): void {
+    if (!this.status?.complete) return;
     void this.router.navigate(['/menu-admin']);
   }
 }

@@ -3,9 +3,11 @@
     <div>
       <p class="eyebrow">Initialisation du club</p>
       <h1>{{ status?.project?.nom || 'Configurer mon club' }}</h1>
-      <p>Avance étape par étape. Tu peux quitter ce parcours à tout moment : l’avancement est recalculé à partir des vraies données du projet.</p>
+      <p *ngIf="!status?.complete">Complète les étapes obligatoires ci-dessous. Tant que le socle du club n’est pas prêt, l’assistant reste ton point d’entrée principal.</p>
+      <p *ngIf="status?.complete">Le socle du club est prêt. Tu peux continuer à enrichir les paramètres maintenant ou plus tard.</p>
     </div>
-    <button type="button" class="button is-light" (click)="finish()">Centre de pilotage</button>
+    <button *ngIf="status?.complete" type="button" class="button is-light" (click)="finish()">Centre de pilotage</button>
+    <span *ngIf="status && !status.complete" class="tag is-warning is-light">Configuration en cours</span>
   </section>
 
   <section class="progress-card" *ngIf="status">
