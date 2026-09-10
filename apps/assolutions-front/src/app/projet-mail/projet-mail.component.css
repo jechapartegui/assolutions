@@ -1,7 +1,18 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+
 .template-workshop {
   border: 0;
   min-width: 0;
   padding: 0;
+  height: calc(100vh - var(--app-topbar-height, 52px) - 44px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 .workshop-hero {
@@ -259,6 +270,12 @@
   background: white;
   box-shadow: 0 8px 24px rgba(0,0,0,.12);
   font-weight: 600;
+}
+
+@media (max-width: 1023px) {
+  .template-workshop {
+    height: calc(100vh - var(--app-topbar-height, 52px) - var(--app-bottombar-height, 60px) - 44px);
+  }
 }
 
 @media (max-width: 900px) {
