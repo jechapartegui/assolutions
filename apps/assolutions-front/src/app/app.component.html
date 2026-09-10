@@ -106,17 +106,17 @@
     </span>
   </ng-container>
 
-  <section class="section py-3 px-3" *ngIf="showAdminPageMeta && adminPageMeta as meta">
-    <div class="container is-max-desktop">
-      <div class="notification is-light mb-0 py-3 px-4">
-        <div class="is-flex is-align-items-flex-start" style="gap: 0.75rem">
-          <span class="icon has-text-primary mt-1"><i class="fa-solid" [ngClass]="meta.icon"></i></span>
-          <div>
-            <p class="is-size-7 has-text-grey mb-1" i18n>Centre de pilotage</p>
-            <p class="has-text-weight-semibold mb-1">{{ meta.title }}</p>
-            <p class="is-size-7 has-text-grey mb-0">{{ meta.description }}</p>
-          </div>
-        </div>
+  <section class="px-3 py-2" *ngIf="showAdminPageMeta && adminPageMeta as meta">
+    <div class="container is-fluid">
+      <div
+        class="is-flex is-align-items-center px-3 py-2"
+        style="gap:.6rem; border-left:3px solid var(--bulma-primary, #00d1b2); background:rgba(15,23,42,.035); border-radius:6px"
+      >
+        <span class="icon has-text-primary is-small"><i class="fa-solid" [ngClass]="meta.icon"></i></span>
+        <p class="is-size-7 mb-0" style="min-width:0">
+          <strong>{{ meta.title }}</strong>
+          <span class="has-text-grey"> — {{ meta.description }}</span>
+        </p>
       </div>
     </div>
   </section>
