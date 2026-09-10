@@ -10,6 +10,16 @@ const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 const SCRYPT_KEY_LENGTH = 64;
 const SCRYPT_MAXMEM = 64 * 1024 * 1024;
+const REUSABLE_TOKEN_STORAGE_PREFIX = 'rt1';
+const REUSABLE_TOKEN_NONCE_BYTES = 16;
+
+type ReusableTimedTokenPurpose = 'activation' | 'reset';
+
+export interface ReusableTimedTokenIssue {
+  rawToken: string;
+  storedToken: string;
+  reused: boolean;
+}
 
 export function hashPassword(password: string): string {
   const salt = randomBytes(16);
@@ -122,6 +132,96 @@ export function hashOpaqueToken(token: string, pepper: string): string {
   return createHmac('sha256', pepper).update(token).digest('hex');
 }
 
+export function issueReusableTimedToken(
+  subject: string,
+  purpose: ReusableTimedTokenPurpose,
+  pepper: string,
+  existingStoredToken: string | null | undefined,
+  maxAgeMs: number,
+): ReusableTimedTokenIssue {
+  if (!pepper) throw new Error('TOKEN_PEPPER_REQUIRED');
+
+  const existing = parseReusableStoredToken(
+    existingStoredToken,
+    purpose,
+    maxAgeMs,
+  );
+
+  if (existing) {
+    return {
+      rawToken: buildReusableRawToken(
+        subject,
+        purpose,
+        existing.timestampRaw,
+        existing.nonce,
+        pepper,
+      ),
+      storedToken: String(existingStoredToken),
+      reused: true,
+    };
+  }
+
+  const timestampRaw = Date.now().toString(36);
+  const nonce = randomBytes(REUSABLE_TOKEN_NONCE_BYTES).toString('hex');
+  const storedToken = [
+    REUSABLE_TOKEN_STORAGE_PREFIX,
+    purpose,
+    timestampRaw,
+    nonce,
+  ].join('$');
+
+  return {
+    rawToken: buildReusableRawToken(
+      subject,
+      purpose,
+      timestampRaw,
+      nonce,
+      pepper,
+    ),
+    storedToken,
+    reused: false,
+  };
+}
+
+export function verifyReusableTimedToken(
+  rawToken: string,
+  storedToken: string | null | undefined,
+  subject: string,
+  purpose: ReusableTimedTokenPurpose,
+  pepper: string,
+  maxAgeMs: number,
+): boolean {
+  if (!rawToken || !pepper) return false;
+
+  const stored = parseReusableStoredToken(storedToken, purpose, maxAgeMs);
+  if (!stored) return false;
+
+  const [timestampRaw, rawPayload, ...extra] = String(rawToken).split('.');
+  if (!timestampRaw || !rawPayload || extra.length) return false;
+  if (timestampRaw !== stored.timestampRaw) return false;
+
+  const prefix = `${purpose}-`;
+  if (!rawPayload.startsWith(prefix)) return false;
+
+  const signature = rawPayload.slice(prefix.length);
+  if (!/^[a-f0-9]{64}$/i.test(signature)) return false;
+
+  const expectedSignature = reusableTokenSignature(
+    subject,
+    purpose,
+    stored.timestampRaw,
+    stored.nonce,
+    pepper,
+  );
+
+  const expected = Buffer.from(expectedSignature, 'hex');
+  const received = Buffer.from(signature, 'hex');
+
+  return (
+    expected.length === received.length && timingSafeEqual(expected, received)
+  );
+}
+
 export function verifyTimedToken(
   rawToken: string,
   expectedHash: string | null | undefined,
@@ -129,6 +229,10 @@ export function verifyTimedToken(
   maxAgeMs: number,
 ): boolean {
   if (!rawToken || !expectedHash || !pepper) return false;
+
+  // Les nouveaux tokens réutilisables stockent un descripteur et non un hash.
+  // Cette garde évite de tenter de l'interpréter comme un ancien HMAC hexadécimal.
+  if (!/^[a-f0-9]{64}$/i.test(expectedHash)) return false;
 
   const [timestampRaw, randomPart, ...extra] = rawToken.split('.');
   if (!timestampRaw || !randomPart || extra.length) return false;
@@ -148,4 +252,71 @@ export function verifyTimedToken(
     expected.length === received.length &&
     timingSafeEqual(expected, received)
   );
+}
+
+function parseReusableStoredToken(
+  storedToken: string | null | undefined,
+  purpose: ReusableTimedTokenPurpose,
+  maxAgeMs: number,
+): { timestampRaw: string; nonce: string } | null {
+  if (!storedToken) return null;
+
+  const [prefix, storedPurpose, timestampRaw, nonce, ...extra] =
+    String(storedToken).split('$');
+
+  if (
+    prefix !== REUSABLE_TOKEN_STORAGE_PREFIX ||
+    storedPurpose !== purpose ||
+    !timestampRaw ||
+    !/^[a-f0-9]{32}$/i.test(nonce ?? '') ||
+    extra.length
+  ) {
+    return null;
+  }
+
+  const timestamp = Number.parseInt(timestampRaw, 36);
+  if (!Number.isFinite(timestamp)) return null;
+
+  const age = Date.now() - timestamp;
+  if (age < 0 || age > maxAgeMs) return null;
+
+  return { timestampRaw, nonce };
+}
+
+function buildReusableRawToken(
+  subject: string,
+  purpose: ReusableTimedTokenPurpose,
+  timestampRaw: string,
+  nonce: string,
+  pepper: string,
+): string {
+  const signature = reusableTokenSignature(
+    subject,
+    purpose,
+    timestampRaw,
+    nonce,
+    pepper,
+  );
+  return `${timestampRaw}.${purpose}-${signature}`;
+}
+
+function reusableTokenSignature(
+  subject: string,
+  purpose: ReusableTimedTokenPurpose,
+  timestampRaw: string,
+  nonce: string,
+  pepper: string,
+): string {
+  const normalizedSubject = String(subject ?? '').trim().toLowerCase();
+  if (!normalizedSubject) throw new Error('TOKEN_SUBJECT_REQUIRED');
+
+  const payload = [
+    REUSABLE_TOKEN_STORAGE_PREFIX,
+    purpose,
+    normalizedSubject,
+    timestampRaw,
+    nonce,
+  ].join('\n');
+
+  return createHmac('sha256', pepper).update(payload).digest('hex');
 }

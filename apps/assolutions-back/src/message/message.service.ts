@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
 import { MailAddressVm } from '@shared/lib/mail-input.interface';
 
-import { MailRecordEntity } from '../mail_record/mail_record.entity';
+import { MailRecordEntity, MailRecordStatus } from '../mail_record/mail_record.entity';
 import { ProjectEntity } from '../project/project.entity';
-import { OutgoingMessageDto, SendMessagesDto } from './message.dto';
+import { BugReportDto, OutgoingMessageDto, SendMessagesDto } from './message.dto';
 
 export interface AutomaticMailOptions {
   to: string;
@@ -68,6 +68,81 @@ export class MessageService {
   async verifyConnection(): Promise<boolean> {
     await this.transporter.verify();
     return true;
+  }
+
+  async sendBugReport(projectId: number, dto: BugReportDto): Promise<{ ok: true }> {
+    const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    if (!project) throw new BadRequestException(`Projet ${projectId} introuvable`);
+
+    const supportEmail = String(
+      process.env.BUG_REPORT_EMAIL ||
+        process.env.SUPPORT_EMAIL ||
+        this.smtpUser,
+    ).trim();
+    const destination = this.normalizeAddress({
+      email: supportEmail,
+      name: 'Support Assolutions',
+    });
+    const severity = String(dto.severity || 'NORMALE').trim().toUpperCase();
+    const environmentPrefix = this.isSandboxMode ? '[PREPROD] ' : '';
+    const projectLabel = project.nom?.trim() || `Projet ${projectId}`;
+    const subject = `${environmentPrefix}[BUG][${severity}] ${projectLabel} - ${dto.title.trim()}`;
+
+    const html = this.automaticTemplate(
+      'Signalement de bug Assolutions',
+      `
+        <p><strong>Projet :</strong> ${this.formatBugReportValue(projectLabel)} (#${projectId})</p>
+        <p><strong>Compte :</strong> ${this.formatBugReportValue(dto.accountEmail)}</p>
+        <p><strong>Gravité :</strong> ${this.formatBugReportValue(severity)}</p>
+        <p><strong>Écran / module :</strong> ${this.formatBugReportValue(dto.screen)}</p>
+        <p><strong>Route :</strong> ${this.formatBugReportValue(dto.route)}</p>
+        <hr style="border:0;border-top:1px solid #ddd;margin:20px 0">
+        <p><strong>Titre :</strong> ${this.formatBugReportValue(dto.title)}</p>
+        <p><strong>Description :</strong><br>${this.formatBugReportValue(dto.description)}</p>
+        <p><strong>Étapes pour reproduire :</strong><br>${this.formatBugReportValue(dto.steps)}</p>
+        <p><strong>Résultat attendu :</strong><br>${this.formatBugReportValue(dto.expected)}</p>
+        <p><strong>Résultat obtenu :</strong><br>${this.formatBugReportValue(dto.actual)}</p>
+        <hr style="border:0;border-top:1px solid #ddd;margin:20px 0">
+        <p style="font-size:12px;color:#666"><strong>Navigateur :</strong> ${this.formatBugReportValue(dto.browser)}</p>
+        <p style="font-size:12px;color:#666"><strong>Version :</strong> ${this.formatBugReportValue(dto.version)}</p>
+      `,
+    );
+
+    try {
+      await this.transporter.sendMail({
+        from: `"Assolutions" <${this.smtpUser}>`,
+        to: this.formatAddress(destination),
+        replyTo: dto.accountEmail || undefined,
+        subject,
+        html,
+      });
+
+      await this.traceMail({
+        record: 'BUG_REPORT',
+        to: destination.email,
+        subject,
+        projectId,
+        status: 'SENT',
+      });
+
+      return { ok: true };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      await this.traceMail({
+        record: 'BUG_REPORT',
+        to: destination.email,
+        subject,
+        projectId,
+        status: 'FAILED',
+        error: message,
+      });
+
+      this.logger.error(
+        `Échec de l'envoi du signalement de bug du projet ${projectId}: ${message}`,
+      );
+      throw error;
+    }
   }
 
   async sendPasswordReset(login: string, resetUrl: string): Promise<void> {
@@ -191,6 +266,7 @@ export class MessageService {
     const subject = this.isSandboxMode
       ? this.prefixTestSubject(options.subject)
       : options.subject;
+    const record = (options.record || 'automatic-mail').slice(0, 200);
     const startedAt = Date.now();
 
     try {
@@ -202,14 +278,13 @@ export class MessageService {
       });
 
       if (options.projectId) {
-        await this.mailRecordRepo.save(
-          this.mailRecordRepo.create({
-            record: (options.record || 'automatic-mail').slice(0, 200),
-            to: destination.email.slice(0, 200),
-            subject: subject.slice(0, 200),
-            project_id: options.projectId,
-          }),
-        );
+        await this.traceMail({
+          record,
+          to: destination.email,
+          subject,
+          projectId: options.projectId,
+          status: 'SENT',
+        });
       }
 
       this.logger.log(
@@ -217,6 +292,18 @@ export class MessageService {
       );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
+
+      if (options.projectId) {
+        await this.traceMail({
+          record,
+          to: destination.email,
+          subject,
+          projectId: options.projectId,
+          status: 'FAILED',
+          error: message,
+        });
+      }
+
       this.logger.error(
         `Échec mail ${options.record || 'automatique'} vers ${destination.email} après ${Date.now() - startedAt} ms : ${message}`,
       );
@@ -247,14 +334,13 @@ export class MessageService {
           html: prepared.html,
         });
 
-        await this.mailRecordRepo.save(
-          this.mailRecordRepo.create({
-            record: prepared.record,
-            to: prepared.traceTo,
-            subject: prepared.subject,
-            project_id: projectId,
-          }),
-        );
+        await this.traceMail({
+          record: prepared.record,
+          to: prepared.traceTo,
+          subject: prepared.subject,
+          projectId,
+          status: 'SENT',
+        });
         results.push({
           to: prepared.traceTo,
           subject: prepared.subject,
@@ -262,12 +348,24 @@ export class MessageService {
         });
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        const traceTo = message?.to?.email || '';
+        const traceSubject = message?.subject || '';
+
+        await this.traceMail({
+          record: (message?.record || 'mail').slice(0, 200),
+          to: traceTo,
+          subject: traceSubject,
+          projectId,
+          status: 'FAILED',
+          error: errorMessage,
+        });
+
         this.logger.error(
-          `Erreur envoi mail projet ${projectId} vers ${message?.to?.email}: ${errorMessage}`,
+          `Erreur envoi mail projet ${projectId} vers ${traceTo}: ${errorMessage}`,
         );
         results.push({
-          to: message?.to?.email || '',
-          subject: message?.subject || '',
+          to: traceTo,
+          subject: traceSubject,
           success: false,
           error: errorMessage,
         });
@@ -314,6 +412,34 @@ export class MessageService {
       record: (message.record || 'mail').slice(0, 200),
       traceTo: finalTo.email.slice(0, 200),
     };
+  }
+
+  private async traceMail(input: {
+    record: string;
+    to: string;
+    subject: string;
+    projectId: number;
+    status: MailRecordStatus;
+    error?: string | null;
+  }): Promise<void> {
+    try {
+      await this.mailRecordRepo.save(
+        this.mailRecordRepo.create({
+          record: String(input.record || 'mail').slice(0, 200),
+          to: String(input.to || '').slice(0, 200),
+          subject: String(input.subject || '').slice(0, 200),
+          project_id: input.projectId,
+          status: input.status,
+          error: input.error ? String(input.error).slice(0, 4000) : null,
+        }),
+      );
+    } catch (traceError: unknown) {
+      const traceMessage =
+        traceError instanceof Error ? traceError.message : String(traceError);
+      this.logger.warn(
+        `Impossible d'enregistrer la trace mail ${input.record} (${input.status}) : ${traceMessage}`,
+      );
+    }
   }
 
   private resolveSandboxMode(): boolean {
@@ -404,6 +530,12 @@ export class MessageService {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  private formatBugReportValue(value: unknown): string {
+    const text = String(value ?? '').trim();
+    if (!text) return '—';
+    return this.escapeHtml(text).replace(/\r?\n/g, '<br>');
   }
 
   private wait(ms: number): Promise<void> {

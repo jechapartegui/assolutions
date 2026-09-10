@@ -1,0 +1,104 @@
+<div class="mail-monitor-page">
+  <header class="monitor-hero">
+    <div class="hero-title">
+      <a class="back-button" routerLink="/menu-admin" title="Retour au centre de pilotage">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div>
+        <p class="eyebrow">Communication</p>
+        <h1>Suivi des mails</h1>
+        <p class="subtitle">Consulte les envois enregistrés par Assolutions et repère rapidement les échecs.</p>
+      </div>
+    </div>
+
+    <button type="button" class="button is-light" [class.is-loading]="loading" (click)="reload()">
+      <i class="fa-solid fa-rotate mr-2"></i>Actualiser
+    </button>
+  </header>
+
+  <section class="summary-grid">
+    <article class="summary-card">
+      <span class="summary-icon"><i class="fa-solid fa-envelope"></i></span>
+      <div><strong>{{ records.length }}</strong><span>traces</span></div>
+    </article>
+    <article class="summary-card success">
+      <span class="summary-icon"><i class="fa-solid fa-circle-check"></i></span>
+      <div><strong>{{ sentCount }}</strong><span>envoyés</span></div>
+    </article>
+    <article class="summary-card danger">
+      <span class="summary-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <div><strong>{{ failedCount }}</strong><span>échecs</span></div>
+    </article>
+  </section>
+
+  <section class="filter-panel">
+    <div class="field search-field">
+      <label class="label is-size-7">Recherche</label>
+      <div class="control has-icons-left">
+        <input class="input" [(ngModel)]="search" placeholder="Destinataire, sujet, type ou erreur…" />
+        <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label is-size-7">Statut</label>
+      <div class="select is-fullwidth">
+        <select [(ngModel)]="statusFilter">
+          <option value="ALL">Tous</option>
+          <option value="SENT">Envoyés</option>
+          <option value="FAILED">Échecs</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label is-size-7">Type</label>
+      <div class="select is-fullwidth">
+        <select [(ngModel)]="typeFilter">
+          <option value="ALL">Tous les types</option>
+          <option *ngFor="let type of recordTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <div class="notification is-danger is-light" *ngIf="error">{{ error }}</div>
+
+  <section class="records-panel">
+    <div class="loading-state" *ngIf="loading">
+      <span class="loader-dot"></span> Chargement des traces…
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && filteredRecords.length === 0">
+      <i class="fa-regular fa-envelope-open"></i>
+      <strong>Aucun mail ne correspond aux filtres.</strong>
+      <span>Les nouvelles traces apparaîtront ici après les envois.</span>
+    </div>
+
+    <div class="record-list" *ngIf="!loading && filteredRecords.length > 0">
+      <article class="record-card" *ngFor="let item of filteredRecords; trackBy: trackById" [class.failed]="normalizedStatus(item) === 'FAILED'">
+        <div class="record-status">
+          <span class="status-dot"></span>
+          <span class="status-label">{{ statusLabel(item) }}</span>
+        </div>
+
+        <div class="record-main">
+          <div class="record-heading">
+            <strong>{{ item.subject || 'Sans objet' }}</strong>
+            <span class="record-date">{{ formatDate(item.created_at) }}</span>
+          </div>
+
+          <div class="record-meta">
+            <span><i class="fa-solid fa-at"></i>{{ item.to }}</span>
+            <span><i class="fa-solid fa-tag"></i>{{ item.record }}</span>
+          </div>
+
+          <div class="record-error" *ngIf="item.error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ item.error }}</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>

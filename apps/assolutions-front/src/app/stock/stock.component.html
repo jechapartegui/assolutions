@@ -1,0 +1,364 @@
+<div class="stock-page" *ngIf="store.isLoggedIn() && store.hasProjet()">
+  <header class="stock-hero">
+    <div class="stock-title-block">
+      <button class="button is-light is-small" type="button" (click)="back()" i18n>
+        <span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+        <span>Centre de pilotage</span>
+      </button>
+      <div>
+        <p class="eyebrow" i18n>Matériel</p>
+        <h1 class="title is-4 mb-1" i18n>Gestion des stocks</h1>
+        <p class="subtitle is-6 has-text-grey mb-0" i18n>
+          Gère le catalogue, les lieux de stockage et réalise un inventaire rapide des quantités.
+        </p>
+      </div>
+    </div>
+
+    <button class="button is-primary" type="button" (click)="openCreate()" *ngIf="mode === 'CATALOGUE'">
+      <span class="icon"><i class="fa-solid fa-plus"></i></span>
+      <span i18n>Ajouter du matériel</span>
+    </button>
+  </header>
+
+  <div class="notification is-danger is-light" *ngIf="error">{{ error }}</div>
+  <div class="notification is-success is-light" *ngIf="message">{{ message }}</div>
+
+  <div class="stock-mode-tabs">
+    <button
+      class="button"
+      type="button"
+      [class.is-primary]="mode === 'CATALOGUE'"
+      [class.is-light]="mode !== 'CATALOGUE'"
+      (click)="setMode('CATALOGUE')"
+    >
+      <span class="icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+      <span i18n>Catalogue</span>
+    </button>
+    <button
+      class="button"
+      type="button"
+      [class.is-primary]="mode === 'INVENTAIRE'"
+      [class.is-light]="mode !== 'INVENTAIRE'"
+      (click)="setMode('INVENTAIRE')"
+    >
+      <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span>
+      <span i18n>Inventaire</span>
+    </button>
+  </div>
+
+  <section class="stock-stats">
+    <article class="stat-card">
+      <span class="stat-label" i18n>Références</span>
+      <strong>{{ stocks.length }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label" i18n>Quantité totale</span>
+      <strong>{{ totalQuantity }}</strong>
+    </article>
+    <article class="stat-card" *ngIf="mode === 'CATALOGUE'">
+      <span class="stat-label" i18n>Valeur d'achat estimée</span>
+      <strong>{{ formatMoney(totalValue) }}</strong>
+    </article>
+    <article class="stat-card" *ngIf="mode === 'INVENTAIRE'">
+      <span class="stat-label" i18n>Écarts à enregistrer</span>
+      <strong>{{ inventoryDirtyCount }}</strong>
+      <small [class.has-text-danger]="inventoryDelta < 0" [class.has-text-success]="inventoryDelta > 0">
+        {{ inventoryDelta > 0 ? '+' : '' }}{{ inventoryDelta }} unité{{ inventoryDelta > 1 || inventoryDelta < -1 ? 's' : '' }}
+      </small>
+    </article>
+  </section>
+
+  <section class="stock-panel">
+    <header class="panel-toolbar">
+      <div>
+        <h2 class="title is-6 mb-1" *ngIf="mode === 'CATALOGUE'" i18n>Stocks par lieu</h2>
+        <h2 class="title is-6 mb-1" *ngIf="mode === 'INVENTAIRE'" i18n>Inventaire des quantités</h2>
+        <p class="is-size-7 has-text-grey mb-0" *ngIf="mode === 'CATALOGUE'" i18n>
+          Les anciennes lignes sans lieu référencé restent regroupées selon leur lieu libre historique.
+        </p>
+        <p class="is-size-7 has-text-grey mb-0" *ngIf="mode === 'INVENTAIRE'" i18n>
+          Saisis la quantité réellement constatée. Une quantité à zéro conserve la référence dans le catalogue.
+        </p>
+      </div>
+
+      <div class="stock-filters">
+        <div class="select">
+          <select [(ngModel)]="locationFilter" aria-label="Filtrer par lieu" i18n-aria-label>
+            <option value="ALL" i18n>Tous les lieux</option>
+            <option *ngFor="let option of locationFilterOptions" [value]="option.key">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="control has-icons-left stock-search">
+          <input
+            class="input"
+            type="search"
+            [(ngModel)]="search"
+            placeholder="Rechercher un matériel, un type, un lieu…"
+            i18n-placeholder
+          />
+          <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="inventory-actions" *ngIf="mode === 'INVENTAIRE' && !loading">
+      <div>
+        <strong>{{ inventoryDirtyCount }}</strong>
+        <span i18n> ligne(s) modifiée(s)</span>
+      </div>
+      <div class="buttons mb-0">
+        <button
+          class="button is-light"
+          type="button"
+          [disabled]="inventorySaving || inventoryDirtyCount === 0"
+          (click)="cancelInventoryChanges()"
+          i18n
+        >
+          Annuler les écarts
+        </button>
+        <button
+          class="button is-primary"
+          type="button"
+          [class.is-loading]="inventorySaving"
+          [disabled]="inventorySaving || inventoryDirtyCount === 0"
+          (click)="saveInventory()"
+        >
+          <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+          <span i18n>Enregistrer l'inventaire</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      <span class="icon"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+      <span i18n>Chargement du stock…</span>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && filteredStocks.length === 0">
+      <i class="fa-solid fa-box-open"></i>
+      <strong i18n>Aucun matériel trouvé</strong>
+      <span i18n>Ajoute une première référence ou modifie tes filtres.</span>
+    </div>
+
+    <div class="location-groups" *ngIf="!loading && filteredStocks.length">
+      <article class="location-group" *ngFor="let group of locationGroups; trackBy: trackByLocation">
+        <header class="location-header">
+          <div>
+            <span class="location-icon"><i class="fa-solid fa-location-dot"></i></span>
+            <strong>{{ group.label }}</strong>
+            <span class="tag is-light ml-2" *ngIf="!group.referenced" i18n>Lieu non référencé</span>
+          </div>
+          <div class="location-summary">
+            <span>{{ group.items.length }} référence{{ group.items.length > 1 ? 's' : '' }}</span>
+            <strong>{{ group.quantity }} unité{{ group.quantity > 1 ? 's' : '' }}</strong>
+          </div>
+        </header>
+
+        <div class="table-container stock-table-wrap" *ngIf="mode === 'CATALOGUE'">
+          <table class="table is-fullwidth is-hoverable stock-table">
+            <thead>
+              <tr>
+                <th i18n>Matériel</th>
+                <th i18n>Type</th>
+                <th class="has-text-right" i18n>Qté</th>
+                <th class="has-text-right" i18n>Valeur achat</th>
+                <th i18n>Flux financier</th>
+                <th class="actions-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stock of group.items; trackBy: trackById">
+                <td>
+                  <strong>{{ stock.libelle }}</strong>
+                  <p class="stock-info" *ngIf="stock.info">{{ stock.info }}</p>
+                </td>
+                <td>{{ stock.type_stock || '—' }}</td>
+                <td class="has-text-right"><span class="quantity-pill">{{ stock.qte ?? 0 }}</span></td>
+                <td class="has-text-right">{{ formatMoney(stock.valeur_achat) }}</td>
+                <td>
+                  <span *ngIf="stock.flux_financier_id; else noFlux">
+                    {{ getFluxLabel(stock.flux_financier_id) }}
+                  </span>
+                  <ng-template #noFlux>—</ng-template>
+                </td>
+                <td>
+                  <div class="buttons are-small is-justify-content-flex-end">
+                    <button class="button is-light" type="button" (click)="openEdit(stock)" title="Modifier" i18n-title>
+                      <span class="icon"><i class="fa-solid fa-pen"></i></span>
+                    </button>
+                    <button class="button is-danger is-light" type="button" (click)="remove(stock)" title="Supprimer" i18n-title>
+                      <span class="icon"><i class="fa-solid fa-trash"></i></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="inventory-list" *ngIf="mode === 'INVENTAIRE'">
+          <div
+            class="inventory-row"
+            *ngFor="let stock of group.items; trackBy: trackById"
+            [class.is-changed]="isInventoryChanged(stock)"
+          >
+            <div class="inventory-item-copy">
+              <strong>{{ stock.libelle }}</strong>
+              <span>{{ stock.type_stock || 'Sans type' }}</span>
+            </div>
+
+            <div class="inventory-before">
+              <span i18n>Avant</span>
+              <strong>{{ stock.qte ?? 0 }}</strong>
+            </div>
+
+            <div class="inventory-stepper">
+              <button
+                class="button is-light"
+                type="button"
+                [disabled]="inventorySaving"
+                (click)="adjustInventory(stock, -1)"
+                aria-label="Retirer une unité"
+                i18n-aria-label
+              >−</button>
+              <input
+                class="input"
+                type="number"
+                min="0"
+                step="1"
+                [ngModel]="inventoryQuantities[stock.id]"
+                (ngModelChange)="setInventoryQuantity(stock, $event)"
+                [disabled]="inventorySaving"
+                [attr.aria-label]="'Quantité constatée pour ' + stock.libelle"
+              />
+              <button
+                class="button is-light"
+                type="button"
+                [disabled]="inventorySaving"
+                (click)="adjustInventory(stock, 1)"
+                aria-label="Ajouter une unité"
+                i18n-aria-label
+              >+</button>
+            </div>
+
+            <div class="inventory-delta" [class.is-negative]="getInventoryDelta(stock) < 0" [class.is-positive]="getInventoryDelta(stock) > 0">
+              <span i18n>Écart</span>
+              <strong>{{ getInventoryDelta(stock) > 0 ? '+' : '' }}{{ getInventoryDelta(stock) }}</strong>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
+
+<div class="modal" [class.is-active]="editorOpen" *ngIf="editorOpen">
+  <div class="modal-background" (click)="closeEditor()"></div>
+  <div class="modal-card stock-modal">
+    <header class="modal-card-head">
+      <div>
+        <p class="modal-card-title">{{ editingId ? 'Modifier le matériel' : 'Ajouter du matériel' }}</p>
+        <p class="is-size-7 has-text-grey mt-1" i18n>
+          Les données sont rattachées uniquement au projet courant.
+        </p>
+      </div>
+      <button class="delete" type="button" aria-label="Fermer" i18n-aria-label (click)="closeEditor()"></button>
+    </header>
+
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label" i18n>Libellé *</label>
+        <input class="input" [(ngModel)]="draft.libelle" maxlength="255" placeholder="Ex. Ballons RollBall" i18n-placeholder />
+      </div>
+
+      <div class="columns is-variable is-3">
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Type</label>
+            <input
+              class="input"
+              [(ngModel)]="draft.type_stock"
+              list="stock-types"
+              placeholder="Ex. Ballon, maillot, protection…"
+              i18n-placeholder
+            />
+            <datalist id="stock-types">
+              <option *ngFor="let type of existingTypes" [value]="type"></option>
+            </datalist>
+          </div>
+        </div>
+        <div class="column is-one-third">
+          <div class="field">
+            <label class="label" i18n>Quantité *</label>
+            <input class="input" type="number" min="0" step="1" [(ngModel)]="draft.qte" />
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-variable is-3">
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Lieu référencé</label>
+            <div class="select is-fullwidth">
+              <select [ngModel]="draft.lieu_id" (ngModelChange)="onLieuChange($event)">
+                <option [ngValue]="null" i18n>Sans lieu référencé</option>
+                <option *ngFor="let lieu of lieux" [ngValue]="lieu.id">{{ lieu.nom }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Lieu libre / historique</label>
+            <input class="input" [(ngModel)]="draft.lieu_stockage" placeholder="Ex. Local du club" i18n-placeholder />
+            <p class="help" i18n>Conservé pour compatibilité avec les anciennes données.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-variable is-3">
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Valeur d'achat unitaire</label>
+            <div class="control has-icons-right">
+              <input class="input" type="number" min="0" step="0.01" [(ngModel)]="draft.valeur_achat" />
+              <span class="icon is-right">€</span>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="field">
+            <label class="label" i18n>Date d'achat</label>
+            <input class="input" type="date" [(ngModel)]="draft.date_achat" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" i18n>Flux financier associé</label>
+        <div class="select is-fullwidth">
+          <select [(ngModel)]="draft.flux_financier_id">
+            <option [ngValue]="null" i18n>Aucun flux associé</option>
+            <option *ngFor="let item of flux" [ngValue]="item.id">{{ getFluxLabel(item.id) }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" i18n>Informations complémentaires</label>
+        <textarea class="textarea" rows="3" [(ngModel)]="draft.info" placeholder="État, taille, remarques…" i18n-placeholder></textarea>
+      </div>
+    </section>
+
+    <footer class="modal-card-foot is-justify-content-flex-end">
+      <button class="button" type="button" [disabled]="saving" (click)="closeEditor()" i18n>Annuler</button>
+      <button class="button is-primary" type="button" [class.is-loading]="saving" [disabled]="saving" (click)="save()">
+        <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+        <span i18n>Enregistrer</span>
+      </button>
+    </footer>
+  </div>
+</div>
