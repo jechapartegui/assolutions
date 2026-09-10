@@ -17,3 +17,256 @@ app-ma-seance .menu-icons.is-visible {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+
+/*
+ * Ma séance — mode mobile dense.
+ * Priorité : laisser le maximum de hauteur à la liste des élèves.
+ * Les libellés des actions restent accessibles aux lecteurs d'écran mais
+ * sont visuellement remplacés par leurs icônes sur petit écran.
+ */
+@media screen and (max-width: 767px) {
+  app-ma-seance .ms-shell {
+    height: calc(100dvh - 60px) !important;
+    padding: 0.25rem !important;
+    padding-bottom: calc(0.25rem + env(safe-area-inset-bottom)) !important;
+    gap: 0.25rem !important;
+  }
+
+  app-ma-seance .ms-hero {
+    position: relative;
+    padding: 0.45rem 0.55rem !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  app-ma-seance .ms-hero-header {
+    display: block !important;
+  }
+
+  app-ma-seance .ms-title-row {
+    gap: 0.3rem !important;
+    padding-right: 8.5rem;
+  }
+
+  app-ma-seance .ms-title-row .title {
+    font-size: 1rem !important;
+    line-height: 1.15 !important;
+    margin: 0 !important;
+  }
+
+  app-ma-seance .ms-status-tag {
+    min-height: 1.35rem !important;
+    height: auto !important;
+    padding: 0.1rem 0.4rem !important;
+    font-size: 0.66rem !important;
+  }
+
+  app-ma-seance .ms-hero-title > .subtitle {
+    padding-right: 8.5rem;
+    margin-top: 0.15rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.2 !important;
+  }
+
+  app-ma-seance .ms-summary-tags {
+    gap: 0.22rem !important;
+    margin-top: 0.32rem !important;
+  }
+
+  app-ma-seance .ms-summary-tags .tag {
+    min-height: 1.45rem !important;
+    height: auto !important;
+    padding: 0.1rem 0.38rem !important;
+    font-size: 0.66rem !important;
+  }
+
+  app-ma-seance .ms-summary-tags .tag .mr-1 {
+    margin-right: 0.18rem !important;
+  }
+
+  app-ma-seance .ms-hero-actions.buttons {
+    position: absolute;
+    top: 0.42rem;
+    right: 0.45rem;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-end !important;
+    gap: 0.22rem !important;
+    width: auto !important;
+    margin: 0 !important;
+  }
+
+  app-ma-seance .ms-hero-actions .button,
+  app-ma-seance .ms-hero-actions .dropdown,
+  app-ma-seance .ms-hero-actions .dropdown-trigger,
+  app-ma-seance .ms-hero-actions .dropdown-trigger .button {
+    width: auto !important;
+    margin: 0 !important;
+  }
+
+  app-ma-seance .ms-hero-actions .button {
+    width: 2.35rem !important;
+    min-width: 2.35rem !important;
+    height: 2.35rem !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+
+  app-ma-seance .ms-hero-actions .button .icon {
+    width: 1.1rem !important;
+    height: 1.1rem !important;
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+  }
+
+  app-ma-seance .ms-hero-actions .button > span:not(.icon) {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  app-ma-seance .ms-content {
+    padding-right: 0 !important;
+  }
+
+  app-ma-seance .ms-sections {
+    gap: 0.3rem !important;
+  }
+
+  app-ma-seance .ms-section-card {
+    border-radius: 11px !important;
+  }
+
+  app-ma-seance .ms-section-header {
+    min-height: 2.35rem;
+    padding: 0.38rem 0.5rem !important;
+    gap: 0.4rem !important;
+  }
+
+  app-ma-seance .ms-section-header .title {
+    font-size: 0.82rem !important;
+    line-height: 1.1 !important;
+  }
+
+  app-ma-seance .ms-section-subtitle {
+    margin-top: 0.05rem !important;
+    font-size: 0.68rem !important;
+    line-height: 1.1 !important;
+  }
+
+  app-ma-seance .ms-toggle-btn {
+    width: 2rem !important;
+    min-width: 2rem !important;
+    height: 2rem !important;
+    padding: 0 !important;
+  }
+
+  app-ma-seance .ms-section-body {
+    padding: 0.1rem 0.18rem 0.2rem !important;
+  }
+
+  app-ma-seance .ms-person-row {
+    min-height: 3rem;
+    padding: 0.25rem 0.18rem !important;
+    gap: 0.3rem !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    border-radius: 9px !important;
+  }
+
+  app-ma-seance .ms-person-main {
+    gap: 0.38rem !important;
+    min-width: 0;
+  }
+
+  app-ma-seance .ms-person-status-wrap,
+  app-ma-seance .ms-status-icon {
+    width: 20px !important;
+    min-width: 20px !important;
+  }
+
+  app-ma-seance .ms-status-icon {
+    font-size: 0.9rem !important;
+  }
+
+  app-ma-seance .ms-avatar.image.is-40x40,
+  app-ma-seance .ms-avatar img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  app-ma-seance .ms-person-topline {
+    gap: 0.22rem !important;
+    flex-wrap: nowrap !important;
+    min-width: 0;
+  }
+
+  app-ma-seance .ms-person-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.82rem !important;
+    line-height: 1.1 !important;
+  }
+
+  app-ma-seance .ms-person-topline .tag {
+    flex: 0 0 auto;
+    min-height: 1.25rem !important;
+    height: auto !important;
+    padding: 0.05rem 0.3rem !important;
+    font-size: 0.6rem !important;
+  }
+
+  app-ma-seance .ms-person-subline {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.15rem !important;
+    min-width: 0;
+    margin-top: 0.08rem !important;
+    overflow: hidden;
+    font-size: 0.68rem !important;
+    line-height: 1.1 !important;
+  }
+
+  app-ma-seance .ms-person-contact,
+  app-ma-seance .ms-person-contact-info {
+    display: block !important;
+    min-width: 0;
+    margin-top: 0 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  app-ma-seance .ms-person-actions.buttons {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    gap: 0.12rem !important;
+    margin: 0 !important;
+  }
+
+  app-ma-seance .ms-person-actions .button {
+    flex: 0 0 2.35rem !important;
+    width: 2.35rem !important;
+    min-width: 2.35rem !important;
+    height: 2.35rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 9px !important;
+  }
+
+  app-ma-seance .ms-person-actions .button i {
+    font-size: 0.9rem !important;
+  }
+}
