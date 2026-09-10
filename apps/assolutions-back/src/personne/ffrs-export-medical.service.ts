@@ -6,7 +6,7 @@ import { FfrsExportResult, FfrsExportService } from './ffrs-export.service';
 
 type MedicalProofRow = {
   personne_id: number;
-  date_document: string | null;
+  date_document: string | Date | null;
   medecin_nom: string | null;
   medecin_rpps: string | null;
 };
@@ -145,9 +145,25 @@ export class FfrsExportMedicalService extends FfrsExportService {
     return String(value ?? '').trim().slice(0, maxLength);
   }
 
-  private formatMedicalDate(value: string | null | undefined): string {
+  /**
+   * node-postgres peut restituer une colonne PostgreSQL DATE sous forme de
+   * Date JavaScript. String(date).slice(0, 10) produit alors par exemple
+   * "Thu Sep 10" et l'ancien parseur rejetait systématiquement la valeur.
+   * On gère donc explicitement les deux représentations possibles.
+   */
+  private formatMedicalDate(
+    value: string | Date | null | undefined,
+  ): string {
     if (!value) return '';
-    const raw = String(value).slice(0, 10);
+
+    if (value instanceof Date) {
+      if (Number.isNaN(value.getTime())) return '';
+      const dd = String(value.getDate()).padStart(2, '0');
+      const mm = String(value.getMonth() + 1).padStart(2, '0');
+      return `${dd}/${mm}/${value.getFullYear()}`;
+    }
+
+    const raw = String(value).trim().slice(0, 10);
     const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return match ? `${match[3]}/${match[2]}/${match[1]}` : '';
   }
