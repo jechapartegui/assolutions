@@ -10,9 +10,10 @@ import { DataSource, Repository } from 'typeorm';
 
 import {
   assertPasswordPolicy,
-  createTimedToken,
   hashOpaqueToken,
   hashPassword,
+  issueReusableTimedToken,
+  verifyReusableTimedToken,
   verifyTimedToken,
 } from '../auth/security.utils';
 import { MessageService } from '../message/message.service';
@@ -118,10 +119,22 @@ export class CompteService {
       return { ok: true };
     }
 
-    const rawToken = createTimedToken();
-    account.activation_token = hashOpaqueToken(rawToken, this.tokenPepper);
-    await this.repo.save(account);
-    this.queueActivationMail(login, rawToken);
+    const issued = issueReusableTimedToken(
+      login,
+      'activation',
+      this.tokenPepper,
+      account.activation_token,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
+
+    // Tant que le descripteur est encore valide, on ne le remplace pas :
+    // chaque renvoi reconstruit donc exactement le même lien d'activation.
+    if (!issued.reused) {
+      account.activation_token = issued.storedToken;
+      await this.repo.save(account);
+    }
+
+    this.queueActivationMail(login, issued.rawToken);
     return { ok: true };
   }
 
@@ -135,6 +148,14 @@ export class CompteService {
       });
     }
 
+    const validReusableToken = verifyReusableTimedToken(
+      token,
+      item.activation_token,
+      normalizedLogin,
+      'activation',
+      this.tokenPepper,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
     const validNewToken = verifyTimedToken(
       token,
       item.activation_token,
@@ -143,7 +164,7 @@ export class CompteService {
     );
     const validLegacyToken = this.verifyLegacyToken(token, item.activation_token);
 
-    if (!validNewToken && !validLegacyToken) {
+    if (!validReusableToken && !validNewToken && !validLegacyToken) {
       throw new NotFoundException({
         code: 'TOKEN_INVALID',
         message: 'Le lien d’activation est incorrect ou expiré.',
@@ -202,8 +223,14 @@ export class CompteService {
     }
 
     await this.ensureLoginAvailable(login);
-    const rawToken = createTimedToken();
-    const hashedToken = hashOpaqueToken(rawToken, this.tokenPepper);
+    const issued = issueReusableTimedToken(
+      login,
+      'activation',
+      this.tokenPepper,
+      null,
+      ACTIVATION_TOKEN_MAX_AGE_MS,
+    );
+
     const compte = await this.dataSource.transaction(async (manager) => {
       const created = await manager.save(CompteEntity, {
         login,
@@ -211,7 +238,7 @@ export class CompteService {
         actif: false,
         mail_actif: false,
         echec_connexion: false,
-        activation_token: hashedToken,
+        activation_token: issued.storedToken,
       });
       await manager.save(LoginProjectEntity, {
         login_id: created.id,
@@ -220,7 +247,7 @@ export class CompteService {
       return created;
     });
 
-    this.queueActivationMail(login, rawToken);
+    this.queueActivationMail(login, issued.rawToken);
     return this.hideSensitiveData(compte);
   }
 

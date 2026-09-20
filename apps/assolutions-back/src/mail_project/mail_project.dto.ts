@@ -1,4 +1,4 @@
-﻿import { IsIn, IsString, MaxLength } from 'class-validator';
+﻿import { IsEmail, IsIn, IsString, MaxLength } from 'class-validator';
 
 export const MAIL_PROJECT_TEMPLATE_TYPES = [
   'relance',
@@ -74,6 +74,22 @@ export class UpdateMailProjectBodylessTemplateDto {
 }
 
 export class GetMailProjectTemplateParamsDto {
+  @IsString()
+  @IsIn(MAIL_PROJECT_TEMPLATE_TYPES)
+  type: MailProjectTemplateType;
+}
+
+export class SendMailProjectTestDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MaxLength(200)
+  subject: string;
+
+  @IsString()
+  html: string;
+
   @IsString()
   @IsIn(MAIL_PROJECT_TEMPLATE_TYPES)
   type: MailProjectTemplateType;

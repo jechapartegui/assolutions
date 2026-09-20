@@ -363,6 +363,26 @@
           <div class="panel-card">
             <h2 class="subtitle is-6 mb-3" i18n>Aperçu généré</h2>
 
+            <div class="notification is-light mb-3" *ngIf="vm.mailType === 'vide'">
+              <label class="checkbox">
+                <input
+                  type="checkbox"
+                  [ngModel]="oneMailPerAccount"
+                  (ngModelChange)="setOneMailPerAccount($event)"
+                />
+                <strong class="ml-2" i18n>Un seul mail par compte</strong>
+              </label>
+              <p class="help mt-1 mb-0" i18n>
+                Déduplique les personnes qui partagent la même adresse email. Par exemple, trois personnes rattachées au même compte ne recevront qu’un seul exemplaire de ce mail libre.
+              </p>
+              <p class="is-size-7 mt-2 mb-0" *ngIf="vm.generated.length">
+                <strong>{{ sendableMailCount }}</strong>
+                <span i18n> envoi(s) réel(s) pour </span>
+                <strong>{{ selectedAdherents.length }}</strong>
+                <span i18n> personne(s) sélectionnée(s).</span>
+              </p>
+            </div>
+
             <div class="select is-fullwidth mb-3" *ngIf="vm.generated.length">
               <select
                 [ngModel]="vm.selectedGeneratedIndex"

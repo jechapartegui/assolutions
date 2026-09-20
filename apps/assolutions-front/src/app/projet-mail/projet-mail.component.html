@@ -4,149 +4,234 @@
     <span class="ml-2" i18n>Veuillez patienter…</span>
   </div>
 </div>
-<fieldset [disabled]="uiLock">
-  <div class="columns page-fill">
-    <div class="column">
-      <div class="card card--scroller">
-        <header class="card-header" style="align-items:center">
-          <p class="card-header-title" i18n>Administration des templates de mail</p>
 
-          <!-- Onglets types -->
-          <div class="card-header-icon">
-            <div class="tabs is-toggle is-small">
-              <ul>
-                <li *ngFor="let t of types" [class.is-active]="typeActif===t">
-                  <a (click)="activerType(t)">
-                    <span>{{ t }}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
+<fieldset [disabled]="uiLock" class="template-workshop">
+  <section class="workshop-hero">
+    <div>
+      <p class="workshop-kicker" i18n>Communication</p>
+      <h1 class="title is-4 mb-1" i18n>Atelier des templates mail</h1>
+      <p class="has-text-grey is-size-7 mb-0" i18n>
+        Édite un modèle, génère ses champs de test, vérifie le rendu puis envoie-toi un exemplaire avant utilisation réelle.
+      </p>
+    </div>
+    <div class="hero-status">
+      <span class="tag is-info is-light">{{ fieldsCount }} champ(s)</span>
+      <span class="tag is-success is-light" *ngIf="previewHtml" i18n>Aperçu prêt</span>
+    </div>
+  </section>
+
+  <nav class="template-tabs" aria-label="Types de mails" i18n-aria-label>
+    <button
+      type="button"
+      class="template-tab"
+      *ngFor="let type of types"
+      [class.is-active]="typeActif === type"
+      (click)="activerType(type)"
+    >
+      {{ typeLabel(type) }}
+    </button>
+  </nav>
+
+  <section class="workflow-grid">
+    <article class="workshop-card editor-card">
+      <header class="workshop-card-header">
+        <div class="step-number">1</div>
+        <div>
+          <h2 i18n>Écrire le template</h2>
+          <p i18n>Le sujet et le HTML enregistrés pour ce type de mail.</p>
+        </div>
+      </header>
+
+      <div class="workshop-card-body">
+        <div class="field" *ngIf="typeActif !== 'vide'">
+          <label class="label" i18n>Sujet</label>
+          <input
+            class="input"
+            [(ngModel)]="sujet"
+            (input)="detecterChamps()"
+            name="template-subject"
+            placeholder="Sujet du mail"
+            i18n-placeholder
+          />
+        </div>
+
+        <div class="field">
+          <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap mb-2">
+            <label class="label mb-0" i18n>Contenu HTML</label>
+            <span class="is-size-7 has-text-grey" i18n>
+              Syntaxe : champ dynamique entre doubles accolades · boucle <code>[[ ... ]]</code>
+            </span>
           </div>
-        </header>
+          <textarea
+            class="textarea template-editor"
+            rows="20"
+            [(ngModel)]="html"
+            (input)="detecterChamps()"
+            name="template-html"
+            placeholder="Votre template HTML avec des champs dynamiques et des boucles [[ ... ]]."
+            i18n-placeholder
+          ></textarea>
+        </div>
 
-        <div class="card-content">
-          <div class="content">
-            <div class="columns is-variable is-4">
-              <!-- Édition -->
-              <div class="column is-full-tablet is-half-desktop">
-                <article class="panel is-info">
-                  <p class="panel-heading" i18n>Template</p>
+        <div class="buttons mt-4">
+          <button type="button" class="button is-primary" (click)="sauvegarder()">
+            <span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+            <span i18n>Sauvegarder le template</span>
+          </button>
+          <button type="button" class="button is-light" (click)="detecterChamps()">
+            <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+            <span i18n>Regénérer les champs</span>
+          </button>
+        </div>
+      </div>
+    </article>
 
-                  <div class="panel-block">
-                    <div class="field" style="width:100%">
-                      <label class="label" i18n>Sujet</label>
-                      <input class="input" [(ngModel)]="sujet" (input)="genererPreview()" />
-                    </div>
-                  </div>
+    <article class="workshop-card fields-card">
+      <header class="workshop-card-header">
+        <div class="step-number">2</div>
+        <div>
+          <h2 i18n>Renseigner les champs de test</h2>
+          <p i18n>Les champs sont détectés automatiquement dans le sujet et le HTML.</p>
+        </div>
+      </header>
 
-<div class="panel-block">
-  <div class="field" style="width:100%">
-    <label class="label" i18n>Contenu HTML</label>
-
-   <textarea
-  class="textarea"
-  rows="18"
-  [(ngModel)]="html"
-  (input)="detecterChamps(); genererPreview()"
-  i18n-placeholder
-  placeholder="Votre template HTML avec &#123; &#123;CHAMP&#125;&#125; et les boucles [[ ... ]].">
-</textarea>
-
-  <p class="help">
-  <ng-container i18n>Utilisez</ng-container>
-  <code i18n>&#123; &#123;NOM&#125;&#125;</code>
-  <ng-container i18n>pour un champ global, et entourez les lignes répétées avec</ng-container>
-  <code>[[ ... ]]</code>
-  <ng-container i18n>pour les boucles.</ng-container>
-</p>
-  </div>
-</div>
-
-
-                  <div class="panel-block">
-                    <button class="button is-primary is-light"
-                            (click)="sauvegarder()">
-                      <i class="fa-solid fa-floppy-disk"></i>&nbsp;<span i18n>Sauvegarder</span>
-                    </button>
-                  </div>
-                </article>
-              </div>
-
-              <!-- Paramètres / valeurs de test + Preview -->
-              <div class="column is-full-tablet is-half-desktop">
-                <article class="panel is-success">
-                  <p class="panel-heading" i18n>Champs & Aperçu</p>
-
-                  <!-- Champs globaux -->
-                  <div class="panel-block" *ngIf="placeholdersGlobaux.length>0">
-                    <div class="field" style="width:100%">
-                      <label class="label" i18n>Valeurs globales</label>
-                      <div class="columns is-multiline is-variable is-2">
-                        <div class="column is-half" *ngFor="let k of placeholdersGlobaux">
-                          <label class="label is-size-7">{{ k }}</label>
-                          <input class="input input--dense"
-                                 [(ngModel)]="formGlobaux[k]"
-                                 (input)="genererPreview()"
-                                 [placeholder]="k" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Boucle -->
-                  <div class="panel-block" *ngIf="placeholdersLoop.length>0">
-                    <div style="width:100%">
-                      <label class="label" i18n>Boucle (répéter pour chaque élément)</label>
-
-                      <div class="box is-light" *ngFor="let item of formLoopItems; let i = index">
-                        <div class="is-flex is-justify-content-space-between is-align-items-center mb-2">
-                          <strong i18n>Élément {{ i + 1 }}</strong>
-                          <button class="delete" title="Supprimer" (click)="supprimerLigneLoop(i)" i18n-title></button>
-                        </div>
-
-                        <div class="columns is-multiline is-variable is-2">
-                          <div class="column is-half" *ngFor="let k of placeholdersLoop">
-                            <label class="label is-size-7">{{ k }}</label>
-                            <input class="input input--dense"
-                                   [(ngModel)]="item[k]"
-                                   (input)="genererPreview()"
-                                   [placeholder]="k" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="buttons">
-                        <button class="button is-outlined is-success is-small"
-                                (click)="ajouterLigneLoop()">
-                          <i class="fas fa-plus"></i>&nbsp;<span i18n>Ajouter un élément</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Aperçu rendu (sujet + HTML) -->
-                  <div class="panel-block">
-                    <div style="width:100%">
-                      <label class="label" i18n>Aperçu rendu</label>
-                      <mail-template-preview [html]="previewHtml"></mail-template-preview>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </div>
-
+      <div class="workshop-card-body">
+        <div class="empty-fields" *ngIf="fieldsCount === 0">
+          <i class="fa-solid fa-circle-check"></i>
+          <div>
+            <strong i18n>Aucun champ dynamique détecté</strong>
+            <p i18n>Le template peut être visualisé et envoyé tel quel.</p>
           </div>
         </div>
 
-        <footer class="card-footer">
-          <div class="card-footer-item">
-            <span class="is-size-7 has-text-grey" i18n>
-              Astuce : les champs à l’intérieur de <code>[[ ... ]]</code> seront répétés pour chaque ligne que tu ajoutes ci-dessus.
-            </span>
+        <div class="fields-toolbar" *ngIf="fieldsCount > 0">
+          <span class="tag is-info is-light">{{ fieldsCount }} champ(s) détecté(s)</span>
+          <button type="button" class="button is-small is-light" (click)="remplirExemples()">
+            <span class="icon"><i class="fa-solid fa-dice"></i></span>
+            <span i18n>Remplir avec des exemples</span>
+          </button>
+        </div>
+
+        <section class="field-group" *ngIf="placeholdersGlobaux.length > 0">
+          <h3 i18n>Champs globaux</h3>
+          <div class="generated-fields-grid">
+            <div class="field mb-0" *ngFor="let key of placeholdersGlobaux">
+              <label class="label is-size-7">{{ key }}</label>
+              <input
+                class="input input--dense"
+                [(ngModel)]="formGlobaux[key]"
+                (input)="genererPreview()"
+                [name]="'global-' + key"
+                [placeholder]="key"
+              />
+            </div>
           </div>
-        </footer>
+        </section>
+
+        <section class="field-group" *ngIf="placeholdersLoop.length > 0">
+          <div class="loop-heading">
+            <div>
+              <h3 i18n>Éléments répétés</h3>
+              <p i18n>Chaque ligne simule un élément du bloc <code>[[ ... ]]</code>.</p>
+            </div>
+            <button type="button" class="button is-small is-light" (click)="ajouterLigneLoop()">
+              <span class="icon"><i class="fa-solid fa-plus"></i></span>
+              <span i18n>Ajouter une ligne</span>
+            </button>
+          </div>
+
+          <div class="loop-item" *ngFor="let item of formLoopItems; let i = index">
+            <div class="loop-item-header">
+              <strong i18n>Élément {{ i + 1 }}</strong>
+              <button
+                type="button"
+                class="delete"
+                title="Supprimer"
+                i18n-title
+                (click)="supprimerLigneLoop(i)"
+              ></button>
+            </div>
+            <div class="generated-fields-grid">
+              <div class="field mb-0" *ngFor="let key of placeholdersLoop">
+                <label class="label is-size-7">{{ key }}</label>
+                <input
+                  class="input input--dense"
+                  [(ngModel)]="item[key]"
+                  (input)="genererPreview()"
+                  [name]="'loop-' + i + '-' + key"
+                  [placeholder]="key"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
-  </div>
+    </article>
+
+    <article class="workshop-card preview-card">
+      <header class="workshop-card-header">
+        <div class="step-number">3</div>
+        <div>
+          <h2 i18n>Visualiser le rendu</h2>
+          <p i18n>Ce rendu utilise exactement les valeurs de test renseignées ci-dessus.</p>
+        </div>
+      </header>
+
+      <div class="workshop-card-body">
+        <div class="preview-subject">
+          <span i18n>Sujet</span>
+          <strong>{{ previewSubject || '—' }}</strong>
+        </div>
+        <div class="preview-frame">
+          <mail-template-preview [html]="previewHtml"></mail-template-preview>
+        </div>
+      </div>
+    </article>
+
+    <article class="workshop-card test-card">
+      <header class="workshop-card-header">
+        <div class="step-number">4</div>
+        <div>
+          <h2 i18n>Envoyer un mail de test</h2>
+          <p i18n>Le mail envoyé reprend le rendu courant, sans modifier le template sauvegardé.</p>
+        </div>
+      </header>
+
+      <div class="workshop-card-body">
+        <div class="notification is-success is-light" *ngIf="testInfo">{{ testInfo }}</div>
+        <div class="notification is-danger is-light" *ngIf="testError">{{ testError }}</div>
+
+        <div class="field">
+          <label class="label" i18n>Adresse de test</label>
+          <div class="field has-addons test-mail-field">
+            <div class="control is-expanded">
+              <input
+                class="input"
+                type="email"
+                [(ngModel)]="testEmail"
+                name="test-email"
+                placeholder="vous@exemple.fr"
+                i18n-placeholder
+                [class.is-danger]="testEmail && !testEmailValid"
+              />
+            </div>
+            <div class="control">
+              <button
+                type="button"
+                class="button is-primary"
+                [disabled]="!canSendTest"
+                (click)="envoyerMailTest()"
+              >
+                <span class="icon"><i class="fa-solid fa-paper-plane"></i></span>
+                <span i18n>Envoyer le test</span>
+              </button>
+            </div>
+          </div>
+          <p class="help" i18n>
+            En préproduction, les règles de redirection de mails de test Assolutions restent appliquées.
+          </p>
+        </div>
+      </div>
+    </article>
+  </section>
 </fieldset>

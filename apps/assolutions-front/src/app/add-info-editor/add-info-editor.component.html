@@ -1,9 +1,12 @@
-<section class="box editor-box" *ngIf="items.length || availableFields.length">
+<section class="box editor-box" *ngIf="items.length">
   <div class="editor-box-title-row">
-    <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Informations complémentaires</h3>
+    <div>
+      <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Informations complémentaires</h3>
+      <p class="help mb-0" i18n>Ces champs sont configurés par le club et s’affichent automatiquement.</p>
+    </div>
   </div>
 
-  <div class="editor-fields editor-fields--two" *ngIf="items.length">
+  <div class="editor-fields editor-fields--two">
     <div class="field" *ngFor="let item of items">
       <label class="label">{{ item.label }}</label>
       <ng-container [ngSwitch]="getFieldKind(item.fieldType)">
@@ -12,7 +15,9 @@
         <input *ngSwitchCase="'email'" class="input" type="email" [(ngModel)]="item.value" />
         <input *ngSwitchCase="'phone'" class="input" type="tel" [(ngModel)]="item.value" />
         <input *ngSwitchCase="'url'" class="input" type="url" [(ngModel)]="item.value" />
-        <label *ngSwitchCase="'boolean'" class="checkbox" i18n><input type="checkbox" [(ngModel)]="item.boolValue" /> Oui</label>
+        <label *ngSwitchCase="'boolean'" class="checkbox" i18n>
+          <input type="checkbox" [(ngModel)]="item.boolValue" /> Oui
+        </label>
         <textarea *ngSwitchCase="'textarea'" class="textarea" rows="3" [(ngModel)]="item.value"></textarea>
         <div *ngSwitchCase="'select'" class="select is-fullwidth">
           <select [(ngModel)]="item.value">
@@ -22,24 +27,6 @@
         </div>
         <input *ngSwitchDefault class="input" type="text" [(ngModel)]="item.value" />
       </ng-container>
-      <button class="button is-small is-light mt-2" type="button" (click)="removeItem(item)" i18n>Retirer</button>
-    </div>
-  </div>
-
-  <div class="field mt-3" *ngIf="availableFields.length">
-    <label class="label" i18n>Ajouter une information</label>
-    <div class="field has-addons">
-      <div class="control is-expanded">
-        <div class="select is-fullwidth">
-          <select [(ngModel)]="selectedFieldId">
-            <option [ngValue]="0" i18n>Choisir un champ</option>
-            <option *ngFor="let field of availableFields" [ngValue]="field.id">{{ field.text }}</option>
-          </select>
-        </div>
-      </div>
-      <div class="control">
-        <button class="button is-primary is-light" type="button" [disabled]="!selectedFieldId" (click)="addSelectedField()" i18n>Ajouter</button>
-      </div>
     </div>
   </div>
 </section>
@@ -66,7 +53,8 @@
     class="button is-warning is-light"
     [routerLink]="['/souscription']"
     [queryParams]="{ adminPersonId: objectId }"
-   i18n>
+    i18n
+  >
     Créer une souscription pour cette personne
   </a>
 </section>

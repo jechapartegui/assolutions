@@ -9,6 +9,13 @@ import {
   UpdateMailProjectTemplateDto,
 } from '@shared/lib/mail-project.interface';
 
+type SendTemplateTestDto = {
+  email: string;
+  subject: string;
+  html: string;
+  type: MailProjectTemplateType;
+};
+
 @Injectable({ providedIn: 'root' })
 export class MailProjectApiService {
   private readonly base = '/mail-project';
@@ -32,5 +39,9 @@ export class MailProjectApiService {
     dto: UpdateMailProjectTemplateDto | UpdateMailProjectBodylessTemplateDto,
   ): Promise<MailProjectTemplateVm> {
     return this.api.POST<MailProjectTemplateVm>(`${this.base}/${type}`, dto);
+  }
+
+  sendTest(dto: SendTemplateTestDto): Promise<{ ok: true }> {
+    return this.api.POST<{ ok: true }>(`${this.base}/test`, dto);
   }
 }

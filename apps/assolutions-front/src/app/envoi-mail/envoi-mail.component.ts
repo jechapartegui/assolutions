@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AppStore } from '../app.store';
 import { MailComposerStore } from '../../store/mail-composer.store';
 import { AdherentListItem_VM } from '../../vm/adherent-page.vm';
-import { MailStep } from '../../vm/mail-composer.vm';
+import { GeneratedMailVm, MailStep } from '../../vm/mail-composer.vm';
 import { Seance_VM } from '@shared/index';
 import { ContratProfApiService } from '../../services/contrat-prof-api.service';
 import { PersonneApiService } from '../../services/personne-api.service';
@@ -20,6 +20,7 @@ type GroupOption = {
 })
 export class EnvoiMailComponent implements OnInit {
   public contractProfessors: AdherentListItem_VM[] = [];
+  public oneMailPerAccount = false;
   private readonly baseAdherentIds = new Set<number>();
 
   constructor(
@@ -53,6 +54,10 @@ export class EnvoiMailComponent implements OnInit {
 
   get selectedAdherents(): AdherentListItem_VM[] {
     return this.mailStore.selectedAdherents;
+  }
+
+  get sendableMailCount(): number {
+    return this.vm.generated.filter(mail => !!String(mail.to?.email ?? '').trim()).length;
   }
 
   get groupOptions(): GroupOption[] {
@@ -93,6 +98,7 @@ export class EnvoiMailComponent implements OnInit {
   }
 
   selectType(type: any): void {
+    this.oneMailPerAccount = false;
     this.mailStore.selectType(type);
   }
 
@@ -231,6 +237,19 @@ export class EnvoiMailComponent implements OnInit {
 
   generate(): void {
     this.mailStore.generatePreview();
+    this.applyOneMailPerAccount();
+  }
+
+  setOneMailPerAccount(enabled: boolean): void {
+    this.oneMailPerAccount = this.vm.mailType === 'vide' && !!enabled;
+
+    if (!this.vm.generated.length) return;
+
+    if (this.oneMailPerAccount) {
+      this.applyOneMailPerAccount();
+    } else {
+      this.mailStore.generatePreview();
+    }
   }
 
   saveTemplate(): void {
@@ -301,6 +320,34 @@ export class EnvoiMailComponent implements OnInit {
     }
 
     return true;
+  }
+
+  private applyOneMailPerAccount(): void {
+    if (this.vm.mailType !== 'vide' || !this.oneMailPerAccount || !this.vm.generated.length) {
+      return;
+    }
+
+    this.mailStore.patchParams({
+      generated: this.deduplicateGeneratedByEmail(this.vm.generated),
+      selectedGeneratedIndex: 0,
+      sendInfo: '',
+    });
+  }
+
+  private deduplicateGeneratedByEmail(mails: GeneratedMailVm[]): GeneratedMailVm[] {
+    const seen = new Set<string>();
+
+    return mails.filter(mail => {
+      const email = String(mail.to?.email ?? '').trim().toLowerCase();
+
+      // Une personne sans adresse reste visible dans la génération afin de
+      // conserver l'erreur "Adresse mail manquante" au lieu de la masquer.
+      if (!email) return true;
+      if (seen.has(email)) return false;
+
+      seen.add(email);
+      return true;
+    });
   }
 
   private async loadContractProfessors(): Promise<void> {

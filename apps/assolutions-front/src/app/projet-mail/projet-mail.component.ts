@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ErrorService } from '../../services/error.service';
 import { MailProjectApiService } from '../../services/mail-project-api.service';
 import { MailProjectTemplateType } from '@shared/lib/mail-project.interface';
+import { AppStore } from '../app.store';
 
 export type TemplateType = MailProjectTemplateType;
 
@@ -10,62 +11,231 @@ export type TemplateType = MailProjectTemplateType;
   standalone: false,
   selector: 'app-projet-mail',
   templateUrl: './projet-mail.component.html',
-  styleUrls: ['./projet-mail.component.css']
+  styleUrls: ['./projet-mail.component.css'],
 })
 export class ProjetMailComponent implements OnInit {
-
-  // --- UI Lock (même approche que l’écran envoi-mail) ---
   uiLock = false;
-  private runLocked<T>(p: Promise<T>): void {
-    this.uiLock = true;
-    p.finally(() => (this.uiLock = false));
-  }
 
-  // --- Onglets / types ---
-  types: TemplateType[] = ['relance', 'annulation', 'convocation', 'bienvenue', 'serie_seance', 'essai', 'vide'];
+  types: TemplateType[] = [
+    'relance',
+    'annulation',
+    'convocation',
+    'bienvenue',
+    'serie_seance',
+    'essai',
+    'vide',
+  ];
   typeActif: TemplateType = 'relance';
 
-  // --- Modèle éditable ---
   sujet = '';
   html = '';
 
-  // --- Champs détectés ---
   placeholdersGlobaux: string[] = [];
   placeholdersLoop: string[] = [];
-
-  // --- Valeurs de test pour la prévisualisation ---
-  // Globaux: { [NOM_CHAMP]: 'valeur' }
   formGlobaux: Record<string, string> = {};
-  // Boucle: tableau d’items { [NOM_CHAMP_LOOP]: 'valeur' }
   formLoopItems: Array<Record<string, string>> = [];
 
-  // --- Sortie prévisualisée ---
+  previewSubject = '';
   previewHtml = '';
 
-  constructor(private mail: MailProjectApiService) {}
+  testEmail = '';
+  testInfo = '';
+  testError = '';
+
+  constructor(
+    private readonly mail: MailProjectApiService,
+    private readonly appStore: AppStore,
+  ) {}
 
   ngOnInit(): void {
+    this.testEmail = String(this.appStore.compte()?.login ?? '').trim();
     this.chargerTemplate(this.typeActif);
   }
 
-  // --- Changement d’onglet ---
-  activerType(t: TemplateType) {
-    if (this.typeActif === t) return;
-    this.typeActif = t;
-    this.chargerTemplate(t);
+  get fieldsCount(): number {
+    return this.placeholdersGlobaux.length + this.placeholdersLoop.length;
   }
 
-  // --- Charger sujet + html depuis le back (mêmes endpoints que l’envoi) ---
-  private chargerTemplate(t: TemplateType) {
+  get testEmailValid(): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.testEmail.trim());
+  }
+
+  get canSendTest(): boolean {
+    return this.testEmailValid && !!this.html.trim();
+  }
+
+  typeLabel(type: TemplateType): string {
+    const labels: Record<TemplateType, string> = {
+      relance: 'Relance',
+      annulation: 'Annulation',
+      convocation: 'Convocation',
+      bienvenue: 'Bienvenue',
+      serie_seance: 'Série de séances',
+      essai: 'Essai',
+      vide: 'Mail libre',
+    };
+    return labels[type];
+  }
+
+  activerType(type: TemplateType): void {
+    if (this.typeActif === type) return;
+    this.typeActif = type;
+    this.chargerTemplate(type);
+  }
+
+  detecterChamps(): void {
+    const { global, loop } = this.getPlaceholders(`${this.sujet}\n${this.html}`);
+    this.placeholdersGlobaux = global;
+    this.placeholdersLoop = loop;
+
+    const previousGlobals = this.formGlobaux;
+    this.formGlobaux = Object.fromEntries(
+      global.map((key) => [key, previousGlobals[key] ?? '']),
+    );
+
+    this.formLoopItems = this.formLoopItems.map((row) =>
+      Object.fromEntries(loop.map((key) => [key, row[key] ?? ''])),
+    );
+
+    if (loop.length > 0 && this.formLoopItems.length === 0) {
+      this.ajouterLigneLoop(false);
+    }
+    if (loop.length === 0) {
+      this.formLoopItems = [];
+    }
+
+    this.genererPreview();
+  }
+
+  remplirExemples(): void {
+    for (const key of this.placeholdersGlobaux) {
+      this.formGlobaux[key] = this.exampleValue(key, 0);
+    }
+
+    if (this.placeholdersLoop.length > 0 && this.formLoopItems.length === 0) {
+      this.ajouterLigneLoop(false);
+    }
+
+    this.formLoopItems.forEach((row, index) => {
+      for (const key of this.placeholdersLoop) {
+        row[key] = this.exampleValue(key, index);
+      }
+    });
+
+    this.genererPreview();
+  }
+
+  ajouterLigneLoop(refresh = true): void {
+    const row: Record<string, string> = {};
+    for (const key of this.placeholdersLoop) row[key] = '';
+    this.formLoopItems = [...this.formLoopItems, row];
+    if (refresh) this.genererPreview();
+  }
+
+  supprimerLigneLoop(index: number): void {
+    this.formLoopItems = this.formLoopItems.filter((_, i) => i !== index);
+    this.genererPreview();
+  }
+
+  genererPreview(): void {
+    this.previewSubject = this.renderTemplate(
+      this.sujet,
+      this.formGlobaux,
+      this.formLoopItems,
+    );
+    this.previewHtml = this.renderTemplate(
+      this.html,
+      this.formGlobaux,
+      this.formLoopItems,
+    );
+    this.testInfo = '';
+    this.testError = '';
+  }
+
+  sauvegarder(): void {
+    const errorService = ErrorService.instance;
+    const action = $localize`Sauvegarder le template`;
+
+    this.runLocked(
+      this.mail
+        .updateTemplate(this.typeActif, {
+          sujet: this.sujet,
+          mail: this.html,
+        })
+        .then((result) => {
+          const message = result
+            ? errorService.OKMessage(action)
+            : errorService.UnknownError(action);
+          errorService.emitChange(message);
+        })
+        .catch((err: HttpErrorResponse) =>
+          errorService.emitChange(errorService.CreateError(action, err.message)),
+        ),
+    );
+  }
+
+  envoyerMailTest(): void {
+    this.testInfo = '';
+    this.testError = '';
+
+    if (!this.testEmailValid) {
+      this.testError = 'Saisis une adresse email de test valide.';
+      return;
+    }
+    if (!this.html.trim()) {
+      this.testError = 'Le template ne contient aucun HTML à envoyer.';
+      return;
+    }
+
+    const renderedSubject = this.renderTemplate(
+      this.sujet,
+      this.formGlobaux,
+      this.formLoopItems,
+    );
+    const renderedHtml = this.renderTemplate(
+      this.html,
+      this.formGlobaux,
+      this.formLoopItems,
+    );
+    const subject = `[TEST TEMPLATE] ${renderedSubject || this.typeLabel(this.typeActif)}`.slice(
+      0,
+      200,
+    );
+
+    this.runLocked(
+      this.mail
+        .sendTest({
+          email: this.testEmail.trim(),
+          subject,
+          html: renderedHtml,
+          type: this.typeActif,
+        })
+        .then(() => {
+          this.testInfo = `Mail de test envoyé à ${this.testEmail.trim()}.`;
+        })
+        .catch((error: HttpErrorResponse) => {
+          this.testError =
+            error?.error?.message || error?.message || 'Envoi du mail de test impossible.';
+        }),
+    );
+  }
+
+  private chargerTemplate(type: TemplateType): void {
     const errorService = ErrorService.instance;
     const action = $localize`Charger le template`;
+
+    this.formGlobaux = {};
+    this.formLoopItems = [];
+    this.testInfo = '';
+    this.testError = '';
+
     this.runLocked(
-    this.mail.getTemplate(t)
-  .then(template => {
-      this.sujet = template?.sujet ?? '';
-      this.html = template?.mail ?? '';
+      this.mail
+        .getTemplate(type)
+        .then((template) => {
+          this.sujet = template?.sujet ?? '';
+          this.html = template?.mail ?? '';
           this.detecterChamps();
-          this.genererPreview();
         })
         .catch((err: HttpErrorResponse) => {
           errorService.emitChange(errorService.CreateError(action, err.message));
@@ -75,110 +245,87 @@ export class ProjetMailComponent implements OnInit {
           this.placeholdersLoop = [];
           this.formGlobaux = {};
           this.formLoopItems = [];
+          this.previewSubject = '';
           this.previewHtml = '';
-        })
+        }),
     );
   }
 
-  // --- Détection des {{CHAMP}} globaux et ceux à l’intérieur de [[...]] ---
-  // même logique que ta méthode existante dans envoi-mail (adaptée ici) :contentReference[oaicite:1]{index=1}
+  private runLocked<T>(promise: Promise<T>): void {
+    this.uiLock = true;
+    promise.finally(() => (this.uiLock = false));
+  }
+
   private getPlaceholders(text: string): { global: string[]; loop: string[] } {
     if (!text) return { global: [], loop: [] };
 
-    const loopRe = /\[\[([\s\S]*?)\]\]/g;    // capte chaque bloc [[ ... ]]
-    const phRe   = /{{\s*([^{}]+?)\s*}}/g;   // capte {{ PLACEHOLDER }}
-
+    const loopRe = /\[\[([\s\S]*?)\]\]/g;
+    const placeholderRe = /{{\s*([^{}]+?)\s*}}/g;
     const loopSet = new Set<string>();
     const globalSet = new Set<string>();
 
-    // placeholders dans les boucles
-    for (const m of text.matchAll(loopRe)) {
-      const block = m[1];
-      for (const pm of block.matchAll(phRe)) loopSet.add(pm[1].trim());
+    for (const match of text.matchAll(loopRe)) {
+      const block = match[1];
+      for (const placeholder of block.matchAll(placeholderRe)) {
+        loopSet.add(placeholder[1].trim());
+      }
     }
 
-    // placeholders hors boucles
-    const outside = text.replace(loopRe, "");
-    for (const pm of outside.matchAll(phRe)) globalSet.add(pm[1].trim());
-
-    return { global: [...globalSet], loop: [...loopSet] };
-  }
-
-  detecterChamps() {
-    const { global, loop } = this.getPlaceholders(this.html);
-    this.placeholdersGlobaux = global;
-    this.placeholdersLoop = loop;
-
-    // init formulaires si vides
-    for (const k of global) if (!(k in this.formGlobaux)) this.formGlobaux[k] = '';
-    if (this.formLoopItems.length === 0 && this.placeholdersLoop.length > 0) {
-      this.ajouterLigneLoop(); // crée une 1ère ligne
+    const outsideLoops = text.replace(loopRe, '');
+    for (const placeholder of outsideLoops.matchAll(placeholderRe)) {
+      globalSet.add(placeholder[1].trim());
     }
+
+    return {
+      global: [...globalSet].sort(),
+      loop: [...loopSet].sort(),
+    };
   }
 
-  // Gestion des lignes de boucle
-  ajouterLigneLoop() {
-    const row: Record<string, string> = {};
-    for (const k of this.placeholdersLoop) row[k] = '';
-    this.formLoopItems.push(row);
-  }
-  supprimerLigneLoop(i: number) {
-    this.formLoopItems.splice(i, 1);
-  }
+  private renderTemplate(
+    template: string,
+    globals: Record<string, string>,
+    loopItems: Array<Record<string, string>>,
+  ): string {
+    if (!template) return '';
 
-  // --- Rendu local (aperçu) ---
-  genererPreview() {
-    const rendered = this.renderTemplate(this.html, this.formGlobaux, this.formLoopItems);
-    const renderedSujet = this.renderTemplate(this.sujet, this.formGlobaux, this.formLoopItems);
-    // On insère le sujet rendu au-dessus pour rappel visuel
-    this.previewHtml = `<div style="font:14px sans-serif;margin-bottom:8px"><strong>Sujet&nbsp;:</strong> ${this.escapeHtml(renderedSujet)}</div>${rendered}`;
-  }
-
-  // Remplacement {{CHAMP}} + rendu des [[...]] sur nb d’items
-  private renderTemplate(tpl: string, globals: Record<string, string>, loopItems: Array<Record<string, string>>): string {
-    if (!tpl) return '';
-
-    // 1) Rendu boucles
-    const loopRe = /\[\[([\s\S]*?)\]\]/g;
-    tpl = tpl.replace(loopRe, (_m, block: string) => {
-      if (!this.placeholdersLoop.length) return ''; // s'il n'y a pas de placeholders, on supprime le bloc
-      if (!loopItems || loopItems.length === 0) return ''; // pas de données => rien
-      return loopItems.map(item => this.replacePlaceholders(block, item)).join('');
+    let rendered = template.replace(/\[\[([\s\S]*?)\]\]/g, (_match, block: string) => {
+      if (!loopItems.length) return '';
+      return loopItems
+        .map((item) => this.replacePlaceholders(block, item))
+        .join('');
     });
 
-    // 2) Rendu globaux
-    tpl = this.replacePlaceholders(tpl, globals);
-
-    return tpl;
+    rendered = this.replacePlaceholders(rendered, globals);
+    return rendered;
   }
 
-  private replacePlaceholders(s: string, dict: Record<string, string>): string {
-    return s.replace(/{{\s*([^{}]+?)\s*}}/g, (_m, key: string) => (dict[key.trim()] ?? ''));
-  }
-
-  private escapeHtml(s: string): string {
-    return (s ?? '')
-      .replace(/&/g,'&amp;')
-      .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;');
-  }
-
-  // --- Sauvegarde ---
-  sauvegarder() {
-    const errorService = ErrorService.instance;
-    const action = $localize`Sauvegarder le template`;
-    this.runLocked(
-      this.mail.updateTemplate(this.typeActif, {
-        sujet: this.sujet,
-        mail: this.html
-      })
-        .then(ok => {
-          const o = ok ? errorService.OKMessage(action) : errorService.UnknownError(action);
-          errorService.emitChange(o);
-        })
-        .catch((err: HttpErrorResponse) =>
-          errorService.emitChange(errorService.CreateError(action, err.message))
-        )
+  private replacePlaceholders(source: string, values: Record<string, string>): string {
+    return source.replace(
+      /{{\s*([^{}]+?)\s*}}/g,
+      (_match, key: string) => values[key.trim()] ?? '',
     );
+  }
+
+  private exampleValue(key: string, index: number): string {
+    const normalized = key
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase();
+    const n = index + 1;
+
+    if (normalized.includes('PRENOM')) return index ? `Prénom ${n}` : 'Camille';
+    if (normalized.includes('NOM_CLUB') || normalized === 'CLUB') return 'Mon Club';
+    if (normalized.includes('NOM')) return index ? `Nom ${n}` : 'Martin';
+    if (normalized.includes('EMAIL') || normalized.includes('MAIL')) return 'camille@example.org';
+    if (normalized.includes('DATE')) return index ? `1${n}/09/2026` : '15/09/2026';
+    if (normalized.includes('HEURE')) return '18:30';
+    if (normalized.includes('LIEU')) return 'Gymnase municipal';
+    if (normalized.includes('COURS') || normalized.includes('SEANCE')) return `Cours test ${n}`;
+    if (normalized.includes('GROUPE')) return `Groupe ${n}`;
+    if (normalized.includes('MONTANT') || normalized.includes('PRIX')) return '160 €';
+    if (normalized.includes('LIEN') || normalized.includes('URL')) return 'https://assolutions.club';
+    if (normalized.includes('SAISON')) return '2026-2027';
+    return index ? `Valeur ${n}` : 'Valeur de test';
   }
 }

@@ -1,0 +1,70 @@
+<main class="landing-page">
+  <header class="landing-nav">
+    <div class="brand"><span>AS</span><strong>Assolutions</strong></div>
+    <button type="button" class="button is-light" (click)="login()">Se connecter</button>
+  </header>
+
+  <section class="hero-section">
+    <div class="hero-copy">
+      <p class="eyebrow">Gestion associative</p>
+      <h1>Le club au même endroit. Enfin.</h1>
+      <p class="hero-text">
+        Assolutions rassemble adhérents, séances, inscriptions, communications, finances et suivi opérationnel dans un seul outil pensé pour les associations sportives.
+      </p>
+      <div class="hero-actions">
+        <a class="button is-primary is-medium" href="#creer-club">Créer mon club</a>
+        <button type="button" class="button is-light is-medium" (click)="login()">J’ai déjà un compte</button>
+      </div>
+      <div class="trust-row">
+        <span><i class="fa-solid fa-users"></i> Adhérents & groupes</span>
+        <span><i class="fa-solid fa-calendar-days"></i> Cours & séances</span>
+        <span><i class="fa-solid fa-receipt"></i> Inscriptions & finances</span>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="mini-card"><i class="fa-solid fa-user-check"></i><div><strong>Base adhérents</strong><span>Profils, contacts, groupes, documents</span></div></div>
+      <div class="mini-card"><i class="fa-solid fa-route"></i><div><strong>Parcours d’inscription</strong><span>Tarifs, exigences, paiements et suivi</span></div></div>
+      <div class="mini-card"><i class="fa-solid fa-envelope"></i><div><strong>Communication</strong><span>Modèles, ciblage et historique des mails</span></div></div>
+      <div class="mini-card"><i class="fa-solid fa-chart-pie"></i><div><strong>Pilotage</strong><span>Finances, stocks et centre de pilotage</span></div></div>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <p class="eyebrow">Un socle déjà opérationnel</p>
+    <h2>Moins de fichiers dispersés, plus de visibilité.</h2>
+    <div class="features-grid">
+      <article><i class="fa-solid fa-address-card"></i><h3>Suivre les personnes</h3><p>Centralise les données utiles des adhérents, responsables, professeurs et groupes.</p></article>
+      <article><i class="fa-solid fa-stopwatch"></i><h3>Organiser la saison</h3><p>Structure saisons, lieux, cours et séances avec les encadrants associés.</p></article>
+      <article><i class="fa-solid fa-file-circle-check"></i><h3>Fluidifier les inscriptions</h3><p>Paramètre tarifs, pièces, codes promotionnels et parcours de souscription.</p></article>
+      <article><i class="fa-solid fa-coins"></i><h3>Piloter les finances</h3><p>Relie budget, flux, opérations et matériel dans le même environnement.</p></article>
+    </div>
+  </section>
+
+  <section class="signup-section" id="creer-club">
+    <div class="signup-copy">
+      <p class="eyebrow">Préproduction</p>
+      <h2>Crée ton espace club.</h2>
+      <p>Pas de paiement ni de validation manuelle pour l’instant. Après activation de ton email, Assolutions te guide étape par étape pour initialiser le club.</p>
+      <ol>
+        <li>Crée le compte administrateur et le projet.</li>
+        <li>Active ton adresse email.</li>
+        <li>Complète la checklist : saison, lieu, groupe, professeur, contrat et mails.</li>
+      </ol>
+    </div>
+
+    <form class="signup-card" (ngSubmit)="submit()">
+      <h3>Créer mon club</h3>
+      <div class="field"><label class="label">Nom du club</label><div class="control"><input class="input" name="clubName" [(ngModel)]="clubName" maxlength="100" required /></div></div>
+      <div class="field"><label class="label">Activité principale</label><div class="control"><input class="input" name="activity" [(ngModel)]="activity" maxlength="100" placeholder="Roller, football, danse…" required /></div></div>
+      <div class="field"><label class="label">Email administrateur</label><div class="control"><input class="input" type="email" name="email" [(ngModel)]="email" maxlength="50" required /></div></div>
+      <div class="field"><label class="label">Mot de passe <span class="optional">facultatif</span></label><div class="control"><input class="input" type="password" name="password" [(ngModel)]="password" autocomplete="new-password" /></div><p class="help">Sans mot de passe, la connexion par email reste possible.</p></div>
+      <div class="field" *ngIf="password"><label class="label">Confirmer le mot de passe</label><div class="control"><input class="input" type="password" name="passwordConfirm" [(ngModel)]="passwordConfirm" autocomplete="new-password" /></div></div>
+
+      <div class="notification is-danger is-light" *ngIf="error">{{ error }}</div>
+      <div class="notification is-success is-light" *ngIf="success">{{ success }}</div>
+
+      <button class="button is-primary is-fullwidth" type="submit" [class.is-loading]="loading" [disabled]="loading || !!success">Créer mon espace</button>
+    </form>
+  </section>
+</main>

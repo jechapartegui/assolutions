@@ -1,1 +1,86 @@
 .medical-proof-editor{display:grid;gap:1rem}.medical-status{display:flex;align-items:center;gap:.6rem;padding:.8rem 1rem;border-radius:10px;background:#fff3cd;color:#8a4b00}.medical-status.is-ok{background:#e7faf0;color:#087a52}.medical-history{display:grid;gap:.5rem}.medical-history-item{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem .85rem;border:1px solid #e7e9ef;border-radius:10px;background:#fff}.medical-history-item div{display:grid}.medical-history-item small{color:#6b7280}.medical-proof-form{padding:1rem;border:1px solid #b9d9ea;border-radius:12px;background:#eef8fd}.medical-proof-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.medical-file-field,.medical-comment-field{grid-column:1/-1}.checkbox-card{display:flex;align-items:center;gap:.5rem;min-height:40px;padding:.65rem .75rem;border:1px solid #d9dde6;border-radius:8px;background:#fff}@media(max-width:768px){.medical-proof-grid{grid-template-columns:1fr}.medical-file-field,.medical-comment-field{grid-column:auto}.medical-history-item{align-items:flex-start;flex-direction:column}}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    color: #dce6ee;
+  }
+
+  .medical-status {
+    background: #3a2f18;
+    color: #f4cf7a;
+    border: 1px solid rgba(244, 207, 122, 0.22);
+  }
+
+  .medical-status.is-ok {
+    background: #12392f;
+    color: #7ce3bd;
+    border-color: rgba(124, 227, 189, 0.22);
+  }
+
+  .notification.is-light {
+    background: #182531 !important;
+    color: #dce6ee !important;
+    border: 1px solid rgba(188, 211, 229, 0.16);
+  }
+
+  .notification.is-light strong {
+    color: #f1f6f9;
+  }
+
+  .notification.is-light a {
+    color: #64e0cf;
+  }
+
+  .notification.is-light a:hover {
+    color: #9af2e6;
+  }
+
+  .medical-history-item {
+    background: #111e28;
+    color: #dce6ee;
+    border-color: rgba(188, 211, 229, 0.16);
+  }
+
+  .medical-history-item small {
+    color: #9fb0bf;
+  }
+
+  .medical-proof-form {
+    background: #10232f;
+    border-color: rgba(91, 167, 201, 0.34);
+  }
+
+  .checkbox-card {
+    background: #111e28;
+    color: #dce6ee;
+    border-color: rgba(188, 211, 229, 0.18);
+  }
+
+  .label {
+    color: #e7edf3;
+  }
+
+  .help {
+    color: #9fb0bf;
+  }
+
+  .input,
+  .textarea,
+  .select select {
+    background: #0f1c26;
+    color: #e7edf3;
+    border-color: rgba(188, 211, 229, 0.2);
+  }
+
+  .input::placeholder,
+  .textarea::placeholder {
+    color: #7f91a0;
+  }
+
+  .input:focus,
+  .textarea:focus,
+  .select select:focus {
+    border-color: #35ddc2;
+    box-shadow: 0 0 0 0.125em rgba(53, 221, 194, 0.16);
+  }
+}
