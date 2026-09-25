@@ -13,6 +13,7 @@ import {
 import { Response } from 'express';
 import { AccessControlService } from '../common/access-control.service';
 import { OptionalProjectId } from '../common/decorators/optional-project-id.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
@@ -72,6 +73,7 @@ export class PersonneController {
     res.send(photo.buffer);
   }
 
+  @Public()
   @Get(['ffrs-certificat/:id', 'ffrs-certificat/:id/:filename'])
   async getFfrsCertificate(
     @Param('id', ParseIntPipe) id: number,
