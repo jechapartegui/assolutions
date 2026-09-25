@@ -358,7 +358,9 @@ export class FfrsExportService {
   }
 
   async getPhoto(personId: number, token: string): Promise<{ buffer: Buffer; mimetype: string }> {
-    const verified = this.verifyPhotoToken(personId, token);
+    const verified =
+      this.verifyFfrsToken(personId, token, 'photo') ??
+      this.verifyFfrsToken(personId, token);
     if (!verified) throw new ForbiddenException('Lien photo FFRS invalide ou expiré');
 
     const rows = (await this.dataSource.query(
@@ -382,6 +384,92 @@ export class FfrsExportService {
     const photo = rows[0];
     if (!photo?.file_data) throw new NotFoundException('Photo introuvable');
     return { buffer: photo.file_data, mimetype: photo.mimetype || 'image/jpeg' };
+  }
+
+  async getCertificate(
+    personId: number,
+    token: string,
+  ): Promise<{ buffer: Buffer; mimetype: string; filename: string }> {
+    // Les nouveaux liens sont signés spécifiquement pour un certificat.
+    // On accepte aussi temporairement l'ancien token générique afin que les
+    // liens déjà produits à partir des exports photo continuent de fonctionner.
+    const verified =
+      this.verifyFfrsToken(personId, token, 'certificat') ??
+      this.verifyFfrsToken(personId, token);
+    if (!verified) {
+      throw new ForbiddenException('Lien certificat FFRS invalide ou expiré');
+    }
+
+    type CertificateFileRow = {
+      file_data: Buffer;
+      mimetype: string | null;
+    };
+
+    // Priorité au document explicitement rattaché au certificat médical actif.
+    let rows = (await this.dataSource.query(
+      `
+        SELECT d.file_data, d.mimetype
+        FROM preuve_medicale pm
+        INNER JOIN document d ON d.id = pm.document_id
+        WHERE pm.project_id = $2
+          AND pm.personne_id = $1
+          AND pm.type_preuve = 'CERTIFICAT'
+          AND COALESCE(pm.valide, false) = true
+          AND d.file_data IS NOT NULL
+          AND (d.project_id = $2 OR d.project_id IS NULL)
+        ORDER BY
+          pm.date_document DESC,
+          COALESCE(pm.updated_at, pm.created_at) DESC,
+          pm.id DESC
+        LIMIT 1
+      `,
+      [personId, verified.projectId],
+    )) as CertificateFileRow[];
+
+    // Compatibilité avec les anciens certificats enregistrés uniquement comme
+    // documents, avant l'existence de preuve_medicale.document_id.
+    if (!rows[0]?.file_data) {
+      rows = (await this.dataSource.query(
+        `
+          SELECT d.file_data, d.mimetype
+          FROM document d
+          WHERE LOWER(BTRIM(d.objet_type)) IN ('member', 'rider')
+            AND d.objet_id = $1
+            AND (d.project_id = $2 OR d.project_id IS NULL)
+            AND d.file_data IS NOT NULL
+            AND (
+              LOWER(BTRIM(d.typedoc)) IN (
+                'certificat_medical',
+                'certificat-medical',
+                'certificatmedical',
+                'medical_certificate',
+                'certificat'
+              )
+              OR LOWER(d.titre) LIKE '%certificat%médical%'
+              OR LOWER(d.titre) LIKE '%certificat%medical%'
+            )
+          ORDER BY
+            COALESCE(d.date_document, d.date_import::date) DESC,
+            d.date_import DESC,
+            d.id DESC
+          LIMIT 1
+        `,
+        [personId, verified.projectId],
+      )) as CertificateFileRow[];
+    }
+
+    const certificate = rows[0];
+    if (!certificate?.file_data) {
+      throw new NotFoundException('Certificat médical introuvable');
+    }
+
+    const mimetype = certificate.mimetype || 'application/octet-stream';
+    const extension = this.fileExtension(mimetype);
+    return {
+      buffer: certificate.file_data,
+      mimetype,
+      filename: `certificat-medical-${personId}.${extension}`,
+    };
   }
 
   private buildExtraMap(values: AddInfoRow[], fieldsById: Map<string, AddInfoRow>): Map<string, string> {
@@ -591,17 +679,45 @@ export class FfrsExportService {
     requestBaseUrl: string,
     mimetype: string | null,
   ): string {
-    const secret = this.photoSecret();
     const publicBaseUrl = this.resolvePublicBaseUrl(requestBaseUrl);
-    if (!secret || !publicBaseUrl) return '';
+    const token = this.buildFfrsToken(personId, projectId, 7 * 24 * 60 * 60, 'photo');
+    if (!token || !publicBaseUrl) return '';
 
-    const expires = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
-    const payload = `${personId}.${projectId}.${expires}`;
-    const signature = createHmac('sha256', secret).update(payload).digest('base64url');
-    const token = `${projectId}.${expires}.${signature}`;
     const extension = this.photoExtension(mimetype);
-
     return `${publicBaseUrl}/api/personnes/ffrs-photo/${personId}/photo.${extension}?token=${encodeURIComponent(token)}`;
+  }
+
+  protected buildSignedCertificateUrl(
+    personId: number,
+    projectId: number,
+    requestBaseUrl: string,
+  ): string {
+    const publicBaseUrl = this.resolvePublicBaseUrl(requestBaseUrl);
+    // Donnée de santé : les nouveaux liens certificat sont volontairement
+    // plus courts que les liens photo.
+    const token = this.buildFfrsToken(personId, projectId, 24 * 60 * 60, 'certificat');
+    if (!token || !publicBaseUrl) return '';
+
+    return `${publicBaseUrl}/api/personnes/ffrs-certificat/${personId}/certificat?token=${encodeURIComponent(token)}`;
+  }
+
+  private buildFfrsToken(
+    personId: number,
+    projectId: number,
+    ttlSeconds: number,
+    kind?: 'photo' | 'certificat',
+  ): string {
+    const secret = this.photoSecret();
+    if (!secret) return '';
+
+    const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
+    const payload = kind
+      ? `${kind}.${personId}.${projectId}.${expires}`
+      : `${personId}.${projectId}.${expires}`;
+    const signature = createHmac('sha256', secret)
+      .update(payload)
+      .digest('base64url');
+    return `${projectId}.${expires}.${signature}`;
   }
 
   private resolvePublicBaseUrl(requestBaseUrl: string): string {
@@ -644,21 +760,51 @@ export class FfrsExportService {
     }
   }
 
-  private verifyPhotoToken(personId: number, token: string): { projectId: number } | null {
+  private fileExtension(mimetype: string | null): string {
+    switch ((mimetype ?? '').toLowerCase()) {
+      case 'application/pdf':
+        return 'pdf';
+      case 'image/png':
+        return 'png';
+      case 'image/webp':
+        return 'webp';
+      case 'image/gif':
+        return 'gif';
+      case 'image/jpeg':
+      case 'image/jpg':
+        return 'jpg';
+      default:
+        return 'bin';
+    }
+  }
+
+  private verifyFfrsToken(
+    personId: number,
+    token: string,
+    kind?: 'photo' | 'certificat',
+  ): { projectId: number } | null {
     const secret = this.photoSecret();
     if (!secret) return null;
     const [projectRaw, expiresRaw, signature] = String(token ?? '').split('.');
     const projectId = Number(projectRaw);
     const expires = Number(expiresRaw);
-    if (!Number.isFinite(projectId) || projectId <= 0 || !Number.isFinite(expires)) return null;
+    if (!Number.isFinite(projectId) || projectId <= 0 || !Number.isFinite(expires)) {
+      return null;
+    }
     if (expires < Math.floor(Date.now() / 1000)) return null;
 
-    const payload = `${personId}.${projectId}.${expires}`;
-    const expected = createHmac('sha256', secret).update(payload).digest('base64url');
+    const payload = kind
+      ? `${kind}.${personId}.${projectId}.${expires}`
+      : `${personId}.${projectId}.${expires}`;
+    const expected = createHmac('sha256', secret)
+      .update(payload)
+      .digest('base64url');
     const actualBuffer = Buffer.from(signature ?? '');
     const expectedBuffer = Buffer.from(expected);
     if (actualBuffer.length !== expectedBuffer.length) return null;
-    return timingSafeEqual(actualBuffer, expectedBuffer) ? { projectId } : null;
+    return timingSafeEqual(actualBuffer, expectedBuffer)
+      ? { projectId }
+      : null;
   }
 
   private photoSecret(): string {
