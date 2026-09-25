@@ -72,6 +72,23 @@ export class PersonneController {
     res.send(photo.buffer);
   }
 
+  @Get(['ffrs-certificat/:id', 'ffrs-certificat/:id/:filename'])
+  async getFfrsCertificate(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('token') token: string,
+    @Res() res: Response,
+  ) {
+    const certificate = await this.ffrsExport.getCertificate(id, token);
+    res.setHeader('Content-Type', certificate.mimetype);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${certificate.filename}"`,
+    );
+    res.send(certificate.buffer);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('light')
   async listLight(
