@@ -15,6 +15,10 @@ type OrderedPersonRow = {
   id: number;
 };
 
+type MedicalDocumentRow = {
+  personne_id: number;
+};
+
 /**
  * Extension volontairement isolée de l'export FFRS historique.
  *
@@ -49,6 +53,7 @@ export class FfrsExportMedicalService extends FfrsExportService {
       'RPPS',
       'Nom du médecin',
       'Date du certificat',
+      'Certificat médical',
     ];
 
     if (!result.rows.length) {
@@ -67,7 +72,7 @@ export class FfrsExportMedicalService extends FfrsExportService {
       return {
         ...result,
         headers,
-        rows: result.rows.map((row) => [...row, '', '', '']),
+        rows: result.rows.map((row) => [...row, '', '', '', '']),
       };
     }
 
@@ -114,6 +119,42 @@ export class FfrsExportMedicalService extends FfrsExportService {
       medicalProofs.map((proof) => [Number(proof.personne_id), proof]),
     );
 
+    // Le lien n'est produit que lorsqu'un fichier de certificat existe
+    // réellement dans la table document. La route signée retrouve ensuite le
+    // certificat actif, avec fallback vers les anciens documents non liés.
+    const medicalDocuments = (await this.exportDataSource.query(
+      `
+        SELECT DISTINCT ON (d.objet_id)
+               d.objet_id AS personne_id
+        FROM document d
+        WHERE LOWER(BTRIM(d.objet_type)) IN ('member', 'rider')
+          AND d.objet_id = ANY($1::int[])
+          AND (d.project_id = $2 OR d.project_id IS NULL)
+          AND d.file_data IS NOT NULL
+          AND (
+            LOWER(BTRIM(d.typedoc)) IN (
+              'certificat_medical',
+              'certificat-medical',
+              'certificatmedical',
+              'medical_certificate',
+              'certificat'
+            )
+            OR LOWER(d.titre) LIKE '%certificat%médical%'
+            OR LOWER(d.titre) LIKE '%certificat%medical%'
+          )
+        ORDER BY
+          d.objet_id,
+          COALESCE(d.date_document, d.date_import::date) DESC,
+          d.date_import DESC,
+          d.id DESC
+      `,
+      [ids, projectId],
+    )) as MedicalDocumentRow[];
+
+    const certificateFileByPerson = new Set(
+      medicalDocuments.map((document) => Number(document.personne_id)),
+    );
+
     const rows = result.rows.map((row, index) => {
       const personId = Number(orderedPersons[index]?.id ?? 0);
       const proof = proofByPerson.get(personId);
@@ -126,11 +167,16 @@ export class FfrsExportMedicalService extends FfrsExportService {
         result.medicalCertificateDates[personId] ??
         null;
 
+      const certificateUrl = certificateFileByPerson.has(personId)
+        ? this.buildSignedCertificateUrl(personId, projectId, publicBaseUrl)
+        : '';
+
       return [
         ...row,
         this.text(proof?.medecin_rpps, 20),
         this.text(proof?.medecin_nom, 150),
         this.formatMedicalDate(certificateDate),
+        certificateUrl,
       ];
     });
 
