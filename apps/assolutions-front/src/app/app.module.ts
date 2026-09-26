@@ -56,6 +56,7 @@ import { CopyTextDirective } from './directives/copy-text.directive';
 import { AdherentSelfGroupsDirective } from './directives/adherent-self-groups.directive';
 import { RiderScrollHintsDirective } from './directives/rider-scroll-hints.directive';
 import { DateFrMaskDirective } from './directives/date-fr-mask.directive';
+import { CraComponent } from './cra/cra.component';
 
 import { StaticClass } from './global';
 import { ErrorService } from '../services/error.service';
@@ -119,6 +120,7 @@ import { CoursStore } from '../store/cours.store';
     AdherentSelfGroupsDirective,
     RiderScrollHintsDirective,
     DateFrMaskDirective,
+    CraComponent,
   ],
   imports: [
     BrowserModule,
