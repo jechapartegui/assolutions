@@ -39,7 +39,8 @@ CREATE INDEX IF NOT EXISTS idx_contacts_representant_legal
   ON contacts(object_type, object_id, contact_type)
   WHERE contact_type = 'REPRESENTANT_LEGAL';
 
--- 3) QS Sport : l'attestation remplace la présence d'un fichier quand toutes les réponses sont NON.
+-- 3) QS Sport : preuve_medicale existe déjà dans le modèle dossier.
+-- L'interface en ligne ne stocke que qs_reponses_negatives, jamais les 9 réponses de santé.
 ALTER TABLE inscription_saison
   ADD COLUMN IF NOT EXISTS qs_sport_atteste_non boolean NOT NULL DEFAULT false;
 
