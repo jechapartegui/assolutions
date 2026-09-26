@@ -16,4 +16,7 @@ export class InscriptionSaisonEntity {
 
   @Column({ type: 'boolean', default: true })
   active: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  qs_sport_atteste_non: boolean;
 }
