@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
@@ -22,7 +22,15 @@ export class ContactService {
         return this.repo.findOne({ where: { id } });
     }
 
+  private validateLegalRepresentative(dto: CreateContactDto | UpdateContactDto) {
+    if (dto.contact_type !== 'REPRESENTANT_LEGAL') return;
+    if (!dto.nom?.trim() || !dto.prenom?.trim() || !dto.email?.trim() || !dto.telephone?.trim()) {
+      throw new BadRequestException('LEGAL_REPRESENTATIVE_FIELDS_REQUIRED');
+    }
+  }
+
   async create(dto: CreateContactDto) {
+    this.validateLegalRepresentative(dto);
     const entity = this.repo.create({ ...dto as CreateContactDto });
     const saved = await this.repo.save(entity);
     return saved;
@@ -35,6 +43,7 @@ export class ContactService {
     throw new NotFoundException(`Contact ${id} introuvable`);
   }
 
+  this.validateLegalRepresentative(dto);
   Object.assign(item, dto);
   const saved = await this.repo.save(item);
   return saved;
