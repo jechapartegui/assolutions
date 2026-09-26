@@ -1,0 +1,20 @@
+<div class="cra-page">
+  <h1 class="title is-3">Mes heures et prestations</h1>
+  <div class="box cra-filter">
+    <div class="columns is-vcentered">
+      <div class="column"><label class="label">N° contrat professeur</label><input class="input" type="number" [(ngModel)]="contratId"></div>
+      <div class="column"><label class="label">Année</label><input class="input" type="number" [(ngModel)]="year"></div>
+      <div class="column"><label class="label">Mois</label><div class="select is-fullwidth"><select [(ngModel)]="month"><option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [ngValue]="m">{{m}}</option></select></div></div>
+      <div class="column is-narrow"><button class="button is-primary mt-5" [class.is-loading]="loading" (click)="open()">Afficher</button></div>
+    </div>
+  </div>
+  <ng-container *ngIf="cra">
+    <div class="level"><div class="level-left"><span class="tag is-medium">{{cra.statut}}</span></div><div class="level-right"><strong class="cra-total">{{money(cra.montant_total)}}</strong></div></div>
+    <div class="table-container"><table class="table is-fullwidth is-striped"><thead><tr><th>Date</th><th>Type</th><th>Libellé</th><th>Qté / h</th><th>Taux</th><th>Montant</th><th></th></tr></thead><tbody>
+      <tr *ngFor="let l of cra.lignes"><td>{{l.date|date:'dd/MM/yyyy'}}</td><td>{{l.type}}</td><td>{{l.libelle}}</td><td>{{l.quantite}}</td><td>{{money(l.taux)}}</td><td><strong>{{money(l.montant)}}</strong></td><td><button *ngIf="cra.statut==='BROUILLON'" class="button is-small is-danger is-light" (click)="remove(l.id)">×</button></td></tr>
+    </tbody></table></div>
+    <div class="box" *ngIf="cra.statut==='BROUILLON'"><h2 class="title is-5">Ajouter une ligne</h2><div class="columns"><div class="column"><input class="input" type="date" [(ngModel)]="line.date"></div><div class="column"><div class="select is-fullwidth"><select [(ngModel)]="line.type"><option>PRESTATION</option><option>REDUCTION</option><option>FRAIS</option></select></div></div><div class="column is-4"><input class="input" placeholder="Libellé" [(ngModel)]="line.libelle"></div><div class="column"><input class="input" type="number" step=".25" [(ngModel)]="line.quantite"></div><div class="column"><input class="input" type="number" step=".01" [(ngModel)]="line.taux"></div><div class="column is-narrow"><button class="button" (click)="add()">Ajouter</button></div></div>
+      <button class="button is-success" (click)="validate()">Valider le CRA</button>
+    </div>
+  </ng-container>
+</div>
