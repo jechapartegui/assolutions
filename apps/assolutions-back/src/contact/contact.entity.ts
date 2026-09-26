@@ -29,4 +29,17 @@ export class Contact {
 
   @Column({ type: 'boolean' })
   pref: boolean;
+
+  // Renseignés pour contact_type = REPRESENTANT_LEGAL.
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  nom?: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  prenom?: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  email?: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  telephone?: string | null;
 }
