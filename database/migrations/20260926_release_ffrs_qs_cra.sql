@@ -3,6 +3,13 @@
 -- Script idempotent : peut être rejoué.
 BEGIN;
 
+-- Pré-requis issus du socle historique encore utilisé par le code actuel.
+ALTER TABLE public.exigence_dossier_portee
+  ADD COLUMN IF NOT EXISTS obligatoire_override boolean NULL,
+  ADD COLUMN IF NOT EXISTS bloquante_override boolean NULL;
+ALTER TABLE public.saison
+  ADD COLUMN IF NOT EXISTS tarif_avant_groupes boolean NOT NULL DEFAULT false;
+
 -- 1) Addinfo FFRS : on conserve le champ "Numéro de licence" existant.
 DO $$
 DECLARE
