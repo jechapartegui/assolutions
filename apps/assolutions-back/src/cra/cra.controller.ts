@@ -1,12 +1,11 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { AddCraLigneDto, FinalizeFactureDto, OpenCraDto } from './cra.dto';
 import { CraService } from './cra.service';
 
 @Controller('cra')
-@UseGuards(JwtAuthGuard, ProjectAdminGuard)
+@UseGuards(JwtAuthGuard)
 export class CraController {
   constructor(private readonly service: CraService) {}
 
