@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { AddCraLigneDto, FinalizeFactureDto, OpenCraDto } from './cra.dto';
+import { AddCraLigneDto, FinalizeFactureDto } from './cra.dto';
 import { CraService } from './cra.service';
 
 @Controller('cra')
@@ -9,27 +9,38 @@ import { CraService } from './cra.service';
 export class CraController {
   constructor(private readonly service: CraService) {}
 
-  @Post('open')
-  open(@ProjectId() projectId: number, @Body() dto: OpenCraDto) { return this.service.open(dto, projectId); }
+  @Get('me/context')
+  context(@Req() req: any, @ProjectId() projectId: number) {
+    return this.service.getProfessorContext(Number(req.user.id), projectId);
+  }
+
+  @Post('me/open')
+  openMine(@Req() req: any, @ProjectId() projectId: number, @Body() dto: { annee: number; mois: number }) {
+    return this.service.openMine(Number(req.user.id), projectId, Number(dto.annee), Number(dto.mois));
+  }
 
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) { return this.service.get(id, projectId); }
+  get(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+    return this.service.get(id, projectId, Number(req.user.id));
+  }
 
   @Post(':id/lines')
-  addLine(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: AddCraLigneDto) {
-    return this.service.addLine(id, dto, projectId);
+  addLine(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: AddCraLigneDto) {
+    return this.service.addLine(id, dto, projectId, Number(req.user.id));
   }
 
   @Post(':id/lines/:lineId/delete')
-  removeLine(@Param('id', ParseIntPipe) id: number, @Param('lineId', ParseIntPipe) lineId: number, @ProjectId() projectId: number) {
-    return this.service.removeLine(id, lineId, projectId);
+  removeLine(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Param('lineId', ParseIntPipe) lineId: number, @ProjectId() projectId: number) {
+    return this.service.removeLine(id, lineId, projectId, Number(req.user.id));
   }
 
   @Post(':id/validate')
-  validate(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) { return this.service.validate(id, projectId); }
+  validate(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+    return this.service.validate(id, projectId, Number(req.user.id));
+  }
 
   @Post(':id/invoice')
-  invoice(@Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: FinalizeFactureDto) {
-    return this.service.finalizeInvoice(id, dto, projectId);
+  invoice(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: FinalizeFactureDto) {
+    return this.service.finalizeInvoice(id, dto, projectId, Number(req.user.id));
   }
 }
