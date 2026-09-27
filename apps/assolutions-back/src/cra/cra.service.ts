@@ -182,7 +182,15 @@ export class CraService {
     if (!cra || cra.project_id !== projectId) throw new NotFoundException('CRA_NOT_FOUND');
     await this.assertCraOwner(cra, projectId, userId);
     if (cra.statut !== 'BROUILLON') throw new BadRequestException('CRA_LOCKED');
-    const montant = dto.quantite * dto.taux;
+    const periodStart = `${cra.annee}-${String(cra.mois).padStart(2, '0')}-01`;
+    const periodEnd = this.localIsoDate(new Date(cra.annee, cra.mois, 0));
+    const today = this.localIsoDate(new Date());
+    const maxDate = periodEnd < today ? periodEnd : today;
+    if (dto.date < periodStart || dto.date > maxDate) throw new BadRequestException('CRA_LINE_DATE_OUTSIDE_PERIOD');
+    if (!['PRESTATION', 'FRAIS', 'REDUCTION'].includes(dto.type)) throw new BadRequestException('INVALID_CRA_LINE_TYPE');
+    if (dto.quantite <= 0 || dto.taux < 0) throw new BadRequestException('INVALID_CRA_LINE_AMOUNT');
+    const sign = dto.type === 'REDUCTION' ? -1 : 1;
+    const montant = sign * dto.quantite * dto.taux;
     await this.ligneRepo.save(this.ligneRepo.create({
       cra_id: id, seance_professeur_id: null, date: dto.date, type: dto.type,
       libelle: dto.libelle, quantite: dto.quantite.toFixed(2), taux: dto.taux.toFixed(2), montant: montant.toFixed(2),
@@ -226,7 +234,6 @@ export class CraService {
     if (!document || (document.project_id != null && document.project_id !== projectId)) throw new NotFoundException('DOCUMENT_NOT_FOUND');
 
     const { contrat, saison } = await this.contratForProject(cra.contrat_prof_id, projectId);
-    const prof = await this.profRepo.findOne({ where: { id: contrat.professeur_id } });
     const amount = Number(cra.montant_total);
 
     return this.dataSource.transaction(async (manager) => {
