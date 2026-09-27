@@ -108,7 +108,21 @@ CREATE INDEX IF NOT EXISTS idx_cra_project_period ON cra(project_id, annee, mois
 CREATE INDEX IF NOT EXISTS idx_cra_ligne_cra ON cra_ligne(cra_id);
 CREATE INDEX IF NOT EXISTS idx_facture_prof_flux ON facture_prof(flux_financier_id);
 
--- Fix 98 : aucune règle du coeur PERSONNE n'est relâchée ; l'anonymisation conserve des valeurs neutres.
+-- Fix 98 : aucune règle du coeur PERSONNE n'est relâchée.
+-- Répare aussi une base locale ayant exécuté la version intermédiaire qui avait retiré les NOT NULL.
+UPDATE personne
+SET date_naissance = make_date(EXTRACT(YEAR FROM CURRENT_DATE)::int, 1, 1)
+WHERE date_naissance IS NULL;
+UPDATE personne
+SET address = '{"Street":"Adresse anonymisée","PostCode":"00000","City":"Ville anonymisée","Country":"France"}'
+WHERE address IS NULL;
+UPDATE personne
+SET pays = 'France'
+WHERE pays IS NULL;
+
+ALTER TABLE personne ALTER COLUMN date_naissance SET NOT NULL;
+ALTER TABLE personne ALTER COLUMN address SET NOT NULL;
+ALTER TABLE personne ALTER COLUMN pays SET NOT NULL;
 
 -- Fix 98 : journal minimal des demandes RGPD, sans conserver l'identité effacée.
 CREATE TABLE IF NOT EXISTS rgpd_erasure_log (
