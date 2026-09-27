@@ -9,3 +9,6 @@
  .account-section-heading--compact{align-items:flex-start;display:grid;gap:.65rem}.account-password-action{width:100%;justify-content:center;min-height:40px;font-size:.82rem}
  .account-advanced{border-radius:14px}.account-advanced>summary{padding:.8rem .85rem;font-size:.9rem}.account-advanced-grid{grid-template-columns:1fr;padding:.65rem;gap:.65rem}.project-row{align-items:flex-start;flex-direction:column}.project-actions{width:100%;display:flex!important}.project-actions .button{flex:1 1 0}
 }
+
+.account-cra-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;grid-column:1/-1;background:linear-gradient(135deg,#f8fbff,#fff)}.account-card-icon--prof{background:rgba(50,115,220,.1);color:#3273dc}
+@media(max-width:768px){.account-cra-card{grid-column:auto;display:grid;gap:.75rem}.account-cra-card .account-primary-action{width:100%;justify-content:center;min-height:44px}}
