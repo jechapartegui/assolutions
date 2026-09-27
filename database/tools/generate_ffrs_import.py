@@ -2,7 +2,11 @@
 """Génère un SQL idempotent d'import de l'extraction licences FFRS.
 
 Usage:
-  python scripts/generate_ffrs_import.py extraction_licences.xlsx > database/import_ffrs_2026_2027.sql
+  py database/tools/generate_ffrs_import.py extraction_licences.xlsx > database/generated/import_ffrs_2026_2027.sql
+
+Ce générateur ne se connecte à aucune base. Il produit uniquement le SQL FFRS
+(numéro de licence, catégorie, type Loisir/Compétition). Les représentants légaux
+sont importés séparément dans la table representant_legal.
 
 Le rapprochement se fait sur nom + prénom + date de naissance. Les lignes ambiguës
 ne sont jamais appliquées : elles sont remontées à la fin du script SQL.
@@ -98,22 +102,8 @@ FROM tmp_ffrs_match m, addinfo d
 WHERE d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Type licence FFRS'
   AND a.object_id=m.personne_id AND a.object_type='PERSONNE' AND a.value_type=d.id::text AND m.match_count=1;
 
--- Représentants légaux : une ligne structurée par représentant.
-INSERT INTO contacts(object_type,object_id,contact_type,contact_value,diffusion,contact_list,info,pref,nom,prenom,email,telephone)
-SELECT 'PERSONNE',m.personne_id,'REPRESENTANT_LEGAL',m.rl1_email,false,'representants_legaux',NULL,true,
-       m.rl1_nom,m.rl1_prenom,m.rl1_email,m.rl1_tel
-FROM tmp_ffrs_match m
-WHERE m.match_count=1 AND NULLIF(m.rl1_nom,'') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM contacts c WHERE c.object_type='PERSONNE' AND c.object_id=m.personne_id
-    AND c.contact_type='REPRESENTANT_LEGAL' AND lower(coalesce(c.email,''))=lower(coalesce(m.rl1_email,'')));
-
-INSERT INTO contacts(object_type,object_id,contact_type,contact_value,diffusion,contact_list,info,pref,nom,prenom,email,telephone)
-SELECT 'PERSONNE',m.personne_id,'REPRESENTANT_LEGAL',m.rl2_email,false,'representants_legaux',NULL,false,
-       m.rl2_nom,m.rl2_prenom,m.rl2_email,m.rl2_tel
-FROM tmp_ffrs_match m
-WHERE m.match_count=1 AND NULLIF(m.rl2_nom,'') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM contacts c WHERE c.object_type='PERSONNE' AND c.object_id=m.personne_id
-    AND c.contact_type='REPRESENTANT_LEGAL' AND lower(coalesce(c.email,''))=lower(coalesce(m.rl2_email,'')));
+-- Les représentants légaux sont volontairement exclus de cet import.
+-- Ils sont gérés dans la table dédiée representant_legal par un import séparé.
 
 -- Contrôle avant COMMIT : les lignes FFRS sans correspondance exacte restent visibles.
 SELECT f."Nom", f."Prénom", f."Date de naissance", f."Code Adhérent"
