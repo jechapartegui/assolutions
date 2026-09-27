@@ -28,7 +28,7 @@ import { AdherentRepository } from 'apps/assolutions-front/src/repository/adhere
 import { AdherentStore } from 'apps/assolutions-front/src/store/adherent.store';
 import { ErrorService } from 'apps/assolutions-front/src/services/error.service';
 import { CompteApiService } from 'apps/assolutions-front/src/services/compte-api.service';
-import { PersonneApiService } from 'apps/assolutions-front/src/services/personne-api.service';
+import { PersonneApiService, RepresentantLegal } from 'apps/assolutions-front/src/services/personne-api.service';
 import { ContactApiService, ContactDto } from 'apps/assolutions-front/src/services/contact-api.service';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -73,6 +73,8 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
   public rEmail: ValidationItem = { key: true, value: '' };
   public rPhone: ValidationItem = { key: true, value: '' };
   public rAdresse: ValidationItem = { key: true, value: '' };
+  public rRepresentant: ValidationItem = { key: true, value: '' };
+  public representantsLegaux: RepresentantLegal[] = [];
 
   public comptesDisponibles: Compte[] = [];
 
@@ -120,6 +122,7 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
     await this.loadComptesIfNeeded();
     this.syncViewState();
     await this.refreshPersonnesDuCompte(true);
+    await this.loadRepresentantsLegaux();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -127,6 +130,7 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
       this.applyCompteRuleBeforeValidation();
       this.syncViewState();
       void this.loadComptesAndSources();
+      void this.loadRepresentantsLegaux();
     }
   }
 
@@ -164,6 +168,7 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
       await this.loadComptesIfNeeded();
       this.syncViewState();
       await this.refreshPersonnesDuCompte(true);
+      await this.loadRepresentantsLegaux();
     });
   }
 
@@ -1014,6 +1019,10 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
 
       const saved = await this.store.saveDetail();
 
+      if (saved?.id > 0) {
+        await this.personneApi.saveRepresentantsLegaux(saved.id, this.representantsLegaux);
+      }
+
       if (this.addInfoEditor && saved?.id > 0) {
         this.addInfoEditor.objectId = saved.id;
         await this.addInfoEditor.save();
@@ -1091,6 +1100,7 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
     this.rEmail = { key: true, value: '' };
     this.rPhone = { key: true, value: '' };
     this.rAdresse = { key: true, value: '' };
+    this.rRepresentant = { key: true, value: '' };
 
     if (!adherent || !vm) return;
 
@@ -1168,7 +1178,25 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
       this.rAdresse = { key: false, value: $localize`Le pays est obligatoire.` };
     }
 
+    if (this.isMineur) {
+      const complete = this.representantsLegaux.filter((r) =>
+        !!r.nom?.trim() && !!r.prenom?.trim() && !!r.email?.trim() && !!r.telephone?.trim()
+      );
+      if (!complete.length) {
+        this.rRepresentant = {
+          key: false,
+          value: $localize`Au moins un représentant légal complet est obligatoire pour un mineur.`,
+        };
+      } else if (complete.length !== this.representantsLegaux.length) {
+        this.rRepresentant = {
+          key: false,
+          value: $localize`Chaque représentant légal doit avoir un nom, un prénom, un email et un téléphone.`,
+        };
+      }
+    }
+
     vm.isValid =
+      this.rRepresentant.key &&
       this.rNom.key &&
       this.rPrenom.key &&
       this.rDateNaissance.key &&
@@ -1176,6 +1204,47 @@ export class AdherentEditorComponent implements OnInit, OnChanges, OnDestroy {
       this.rEmail.key &&
       this.rPhone.key &&
       this.rAdresse.key;
+  }
+
+  get isMineur(): boolean {
+    const birth = this.parseBirthDate(this.dateNaissanceText);
+    if (!birth) return false;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const beforeBirthday =
+      today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+    if (beforeBirthday) age--;
+    return age < 18;
+  }
+
+  addRepresentantLegal(): void {
+    if (this.representantsLegaux.length >= 2) return;
+    this.representantsLegaux = [
+      ...this.representantsLegaux,
+      { nom: '', prenom: '', email: '', telephone: '' },
+    ];
+    this.checkall();
+  }
+
+  removeRepresentantLegal(index: number): void {
+    this.representantsLegaux = this.representantsLegaux.filter((_, i) => i !== index);
+    this.checkall();
+  }
+
+  private async loadRepresentantsLegaux(): Promise<void> {
+    const id = Number(this.adherent?.id ?? 0);
+    if (!id) {
+      this.representantsLegaux = [];
+      return;
+    }
+    try {
+      this.representantsLegaux = await this.personneApi.listRepresentantsLegaux(id);
+    } catch (err) {
+      console.error('Chargement des représentants légaux impossible', err);
+      this.representantsLegaux = [];
+    }
+    this.checkall();
   }
 
   // ---------------------------------------------------------------------------
