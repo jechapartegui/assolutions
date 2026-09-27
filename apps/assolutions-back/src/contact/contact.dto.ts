@@ -30,11 +30,6 @@ export class CreateContactDto {
 
   @IsBoolean()
   pref: boolean;
-
-  @IsOptional() @IsString() nom?: string;
-  @IsOptional() @IsString() prenom?: string;
-  @IsOptional() @IsString() email?: string;
-  @IsOptional() @IsString() telephone?: string;
 }
 
 
@@ -68,9 +63,4 @@ export class UpdateContactDto {
 
   @IsBoolean()
   pref: boolean;
-
-  @IsOptional() @IsString() nom?: string;
-  @IsOptional() @IsString() prenom?: string;
-  @IsOptional() @IsString() email?: string;
-  @IsOptional() @IsString() telephone?: string;
 }
