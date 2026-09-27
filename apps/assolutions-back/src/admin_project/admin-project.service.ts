@@ -336,6 +336,92 @@ export class AdminProjectService {
     return this.getAccountForProject(projectId, accountId);
   }
 
+  // Fix #85 - droit à l'effacement : anonymisation irréversible plutôt qu'une suppression physique.
+  async anonymizeAccount(
+    userId: number,
+    projectId: number,
+    accountId: number,
+    elevationToken?: string | null,
+  ) {
+    const account = await this.getAccountForProject(projectId, accountId);
+    this.requireElevationForSharedAccount(
+      userId,
+      projectId,
+      Number(account.project_count),
+      elevationToken,
+    );
+
+    const people = await this.dataSource.query(
+      `SELECT id FROM personne WHERE compte = $1`,
+      [accountId],
+    );
+    const personIds = people.map((row: any) => Number(row.id)).filter(Number.isFinite);
+    const anonymizedLogin = `deleted+${accountId}@assolutions.invalid`;
+
+    await this.dataSource.transaction(async (manager) => {
+      if (personIds.length) {
+        // Supprime les coordonnées et données complémentaires directement identifiantes.
+        await manager.query(
+          `DELETE FROM contacts WHERE object_type = 'PERSONNE' AND object_id = ANY($1::int[])`,
+          [personIds],
+        );
+        await manager.query(
+          `DELETE FROM addinfo WHERE object_type = 'PERSONNE' AND object_id = ANY($1::int[])`,
+          [personIds],
+        );
+        await manager.query(
+          `DELETE FROM adresse WHERE object_type = 'PERSONNE' AND object_id = ANY($1::int[])`,
+          [personIds],
+        );
+
+        // Les documents personnels n'ont plus de raison d'être dans la base active.
+        await manager.query(
+          `DELETE FROM document WHERE personne_id = ANY($1::int[])`,
+          [personIds],
+        );
+
+        // On garde les identifiants techniques nécessaires aux relations historiques,
+        // mais plus aucune identité exploitable.
+        await manager.query(
+          `
+            UPDATE personne
+            SET first_name = 'Anonyme',
+                last_name = 'Utilisateur supprimé',
+                nickname = NULL,
+                date_naissance = NULL,
+                pays = NULL,
+                archive = true,
+                date_maj = CURRENT_DATE
+            WHERE id = ANY($1::int[])
+          `,
+          [personIds],
+        );
+      }
+
+      await manager.query(
+        `
+          UPDATE compte
+          SET login = $2,
+              password = NULL,
+              actif = false,
+              mail_actif = false,
+              echec_connexion = false,
+              mail_ko = false,
+              activation_token = NULL
+          WHERE id = $1
+        `,
+        [accountId, anonymizedLogin],
+      );
+    });
+
+    return {
+      ok: true,
+      accountId,
+      anonymizedLogin,
+      anonymizedPeople: personIds.length,
+    };
+  }
+
   async resetPassword(
     userId: number,
     projectId: number,
