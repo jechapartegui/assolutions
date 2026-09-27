@@ -17,6 +17,9 @@ export class CraApiService {
   openMine(annee:number,mois:number){return this.api.POST<CraView>('/cra/me/open',{annee,mois});}
   get(id:number){return this.api.GET<CraView>(`/cra/${id}`);}
   addLine(id:number,line:{date:string;type:string;libelle:string;quantite:number;taux:number}){return this.api.POST<CraView>(`/cra/${id}/lines`,line);}
+  updateLine(id:number,lineId:number,quantite:number,taux:number){return this.api.POST<CraView>(`/cra/${id}/lines/${lineId}`,{quantite,taux});}
+  sessions(id:number){return this.api.GET<any[]>(`/cra/${id}/sessions`);}
+  addSession(id:number,seance_id:number,quantite:number,taux:number){return this.api.POST<CraView>(`/cra/${id}/sessions`,{seance_id,quantite,taux});}
   removeLine(id:number,lineId:number){return this.api.POST<CraView>(`/cra/${id}/lines/${lineId}/delete`,{});}
   validate(id:number){return this.api.POST<CraView>(`/cra/${id}/validate`,{});}
 }
