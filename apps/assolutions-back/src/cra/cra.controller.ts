@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { AddCraLigneDto, AddCraSeanceDto, FinalizeFactureDto, UpdateCraLigneDto } from './cra.dto';
 import { CraService } from './cra.service';
 
@@ -18,6 +19,22 @@ export class CraController {
   openMine(@Req() req: any, @ProjectId() projectId: number, @Body() dto: { annee: number; mois: number }) {
     return this.service.openMine(Number(req.user.id), projectId, Number(dto.annee), Number(dto.mois));
   }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/list')
+  adminList(@ProjectId() projectId: number) { return this.service.listAdmin(projectId); }
+
+  @UseGuards(ProjectAdminGuard)
+  @Get('admin/:id')
+  adminGet(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number) { return this.service.getAdmin(id,projectId); }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('admin/:id/validate')
+  adminValidate(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number) { return this.service.clubValidate(id,projectId); }
+
+  @UseGuards(ProjectAdminGuard)
+  @Post('admin/:id/return')
+  adminReturn(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number) { return this.service.clubReturn(id,projectId); }
 
   @Get(':id')
   get(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
