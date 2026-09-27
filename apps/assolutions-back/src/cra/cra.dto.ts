@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class OpenCraDto {
   @IsInt() contrat_prof_id: number;
@@ -12,6 +12,10 @@ export class AddCraLigneDto {
   @IsString() libelle: string;
   @IsNumber() quantite: number;
   @IsNumber() taux: number;
+}
+
+export class ReviewCraDto {
+  @IsOptional() @IsString() @MaxLength(4000) commentaire?: string;
 }
 
 export class FinalizeFactureDto {
