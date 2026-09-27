@@ -7,9 +7,10 @@ import { FfrsExportService } from './ffrs-export.service';
 import { PersonneController } from './personne.controller';
 import { PersonneEntity } from './personne.entity';
 import { PersonneService } from './personne.service';
+import { RepresentantLegalEntity } from './representant-legal.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PersonneEntity]), AccessControlModule],
+  imports: [TypeOrmModule.forFeature([PersonneEntity, RepresentantLegalEntity]), AccessControlModule],
   controllers: [PersonneController],
   providers: [
     PersonneService,
