@@ -140,26 +140,8 @@ export class FfrsExportService {
       return { headers: [...FFRS_HEADERS], rows: [], warnings: [], medicalCertificateDates: {} };
     }
 
-    const accountIds = [...new Set(personnes.map((p) => Number(p.compte)).filter(Boolean))];
-
-    const [familyPersons, addInfoFields, addInfoValues, photos, medicalDocs, requirementResponses, legalRepresentatives] =
+    const [addInfoFields, addInfoValues, photos, medicalDocs, requirementResponses, legalRepresentatives] =
       await Promise.all([
-        accountIds.length
-          ? (this.dataSource.query(
-              `
-                SELECT p.id, p.compte, p.date_naissance, p.last_name, p.first_name,
-                       p.gender, p.address, p.pays
-                FROM personne p
-                INNER JOIN login_project lp
-                  ON lp.login_id = p.compte
-                 AND lp.project_id = $1
-                WHERE p.compte = ANY($2::int[])
-                  AND COALESCE(p.archive, false) = false
-                ORDER BY p.compte, p.date_naissance, p.last_name, p.first_name
-              `,
-              [projectId, accountIds],
-            ) as Promise<PersonRow[]>)
-          : Promise.resolve([] as PersonRow[]),
         this.dataSource.query(
           `
             SELECT id, object_id, value_type, text
@@ -241,10 +223,7 @@ export class FfrsExportService {
         ) as Promise<LegalRepresentativeRow[]>,
       ]);
 
-    const allPersonIds = this.cleanIds([
-      ...allowedIds,
-      ...familyPersons.map((p) => Number(p.id)),
-    ]);
+    const allPersonIds = allowedIds;
 
     const contacts = (await this.dataSource.query(
       `
@@ -258,7 +237,6 @@ export class FfrsExportService {
     )) as ContactRow[];
 
     const contactsByPerson = this.groupBy(contacts, (x) => Number(x.object_id));
-    const familyByAccount = this.groupBy(familyPersons, (x) => Number(x.compte));
     const fieldsById = new Map(addInfoFields.map((x) => [String(x.id), x]));
     const valuesByPerson = this.groupBy(addInfoValues, (x) => Number(x.object_id));
     const responsesByPerson = this.groupBy(requirementResponses, (x) => Number(x.personne_id));
