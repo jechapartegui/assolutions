@@ -342,7 +342,7 @@ export class AdminProjectComponent implements OnInit {
     }
   }
 
-  // Fix #85 - RGPD / droit à l'effacement
+  // Fix 98 - RGPD / droit à l'effacement
   async anonymizeAccount(account: AdminProjectAccount): Promise<void> {
     if (!this.canManageAccount(account)) return;
     const people = (account.people ?? []).map((p) => this.displayPersonName(p)).join(', ');
@@ -361,7 +361,7 @@ export class AdminProjectComponent implements OnInit {
       );
       await this.reload();
       this.tab = 'ACCOUNTS';
-      this.message = `Compte anonymisé (Fix #85) : ${result.anonymizedPeople} personne(s) traitée(s).`;
+      this.message = `Compte anonymisé (Fix 98) : ${result.anonymizedPeople} personne(s) traitée(s).`;
     } catch (error: any) {
       this.error = this.errorMessage(error, 'Anonymisation impossible.');
     } finally {
