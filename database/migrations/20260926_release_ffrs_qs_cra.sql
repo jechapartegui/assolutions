@@ -37,14 +37,26 @@ BEGIN
   PERFORM setval(pg_get_serial_sequence('addinfo','id'), (SELECT MAX(id) FROM addinfo), true);
 END $$;
 
--- 2) Contacts : un représentant légal est un contact structuré.
-ALTER TABLE contacts ADD COLUMN IF NOT EXISTS nom varchar(100);
-ALTER TABLE contacts ADD COLUMN IF NOT EXISTS prenom varchar(100);
-ALTER TABLE contacts ADD COLUMN IF NOT EXISTS email varchar(255);
-ALTER TABLE contacts ADD COLUMN IF NOT EXISTS telephone varchar(50);
-CREATE INDEX IF NOT EXISTS idx_contacts_representant_legal
-  ON contacts(object_type, object_id, contact_type)
-  WHERE contact_type = 'REPRESENTANT_LEGAL';
+-- 2) Représentants légaux : objet dédié, sans polluer la table générique contacts.
+-- Les DROP corrigent sans risque une exécution d'une version intermédiaire de cette migration.
+DROP INDEX IF EXISTS idx_contacts_representant_legal;
+ALTER TABLE contacts DROP COLUMN IF EXISTS nom;
+ALTER TABLE contacts DROP COLUMN IF EXISTS prenom;
+ALTER TABLE contacts DROP COLUMN IF EXISTS email;
+ALTER TABLE contacts DROP COLUMN IF EXISTS telephone;
+
+CREATE TABLE IF NOT EXISTS representant_legal (
+  id serial PRIMARY KEY,
+  personne_id integer NOT NULL REFERENCES personne(id) ON DELETE CASCADE,
+  nom varchar(100) NOT NULL,
+  prenom varchar(100) NOT NULL,
+  email varchar(255) NOT NULL,
+  telephone varchar(50) NOT NULL,
+  ordre smallint NOT NULL DEFAULT 1 CHECK (ordre BETWEEN 1 AND 2),
+  CONSTRAINT uq_representant_legal_personne_ordre UNIQUE(personne_id, ordre)
+);
+CREATE INDEX IF NOT EXISTS idx_representant_legal_personne
+  ON representant_legal(personne_id);
 
 -- 3) QS Sport : preuve_medicale existe déjà dans le modèle dossier.
 -- L'interface en ligne ne stocke que qs_reponses_negatives, jamais les 9 réponses de santé.
