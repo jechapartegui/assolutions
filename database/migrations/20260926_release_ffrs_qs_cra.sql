@@ -9,6 +9,8 @@ ALTER TABLE public.exigence_dossier_portee
   ADD COLUMN IF NOT EXISTS bloquante_override boolean NULL;
 ALTER TABLE public.saison
   ADD COLUMN IF NOT EXISTS tarif_avant_groupes boolean NOT NULL DEFAULT false;
+ALTER TABLE public.saison
+  ADD COLUMN IF NOT EXISTS inscriptions_ouvertes boolean NOT NULL DEFAULT true;
 
 -- 1) Addinfo FFRS : on conserve le champ "Numéro de licence" existant.
 DO $$
