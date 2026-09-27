@@ -44,12 +44,24 @@
             <tbody>
               <tr *ngFor="let l of cra.lignes">
                 <td>{{l.date|date:'dd/MM/yyyy'}}</td><td><span class="tag is-light">{{l.type}}</span></td><td>{{l.libelle}}</td>
-                <td class="has-text-right">{{qty(l.quantite)}}</td><td class="has-text-right">{{money(l.taux)}}</td><td class="has-text-right"><strong>{{money(l.montant)}}</strong></td>
-                <td *ngIf="isEditable()" class="has-text-right"><button *ngIf="!l.seance_professeur_id" class="button is-small is-danger is-light" type="button" title="Supprimer" (click)="remove(l.id)"><span class="icon"><i class="fas fa-trash"></i></span></button></td>
+                <td class="has-text-right"><input *ngIf="isEditable(); else qtyRead" class="input is-small cra-number" type="number" min=".25" step=".25" [(ngModel)]="l.quantite"><ng-template #qtyRead>{{qty(l.quantite)}}</ng-template></td>
+                <td class="has-text-right"><input *ngIf="isEditable(); else rateRead" class="input is-small cra-number" type="number" min="0" step=".01" [(ngModel)]="l.taux"><ng-template #rateRead>{{money(l.taux)}}</ng-template></td>
+                <td class="has-text-right"><strong>{{money(l.montant)}}</strong></td>
+                <td *ngIf="isEditable()" class="has-text-right"><div class="buttons are-small is-justify-content-flex-end"><button class="button is-link is-light" type="button" title="Enregistrer" (click)="saveLine(l)"><span class="icon"><i class="fas fa-save"></i></span></button><button class="button is-danger is-light" type="button" title="Supprimer" (click)="remove(l.id)"><span class="icon"><i class="fas fa-trash"></i></span></button></div></td>
               </tr>
               <tr *ngIf="!cra.lignes.length"><td [attr.colspan]="isEditable()?7:6" class="has-text-centered has-text-grey py-5">Aucune séance ou prestation sur ce mois.</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="box cra-add" *ngIf="isEditable()">
+        <div class="cra-section-title"><div><h2 class="title is-5 mb-1">Ajouter une séance</h2><p class="is-size-7 has-text-grey mb-0">Sélectionnez une séance existante de ce mois qui manque à votre CRA.</p></div></div>
+        <div class="cra-session-grid">
+          <div class="field"><label class="label">Séance</label><div class="select is-fullwidth"><select [(ngModel)]="selectedSessionId"><option [ngValue]="null">Choisir une séance…</option><option *ngFor="let s of sessions" [ngValue]="s.seance_id">{{s.date|date:'dd/MM'}} · {{s.heure_debut}} · {{s.label}}</option></select></div></div>
+          <div class="field"><label class="label">Heures</label><input class="input" type="number" min=".25" step=".25" [(ngModel)]="sessionQty"></div>
+          <div class="field"><label class="label">Taux (€)</label><input class="input" type="number" min="0" step=".01" [(ngModel)]="sessionRate"></div>
+          <div class="field cra-add-button"><label class="label">&nbsp;</label><button class="button is-link is-fullwidth" [disabled]="!selectedSessionId" (click)="addSession()"><span class="icon"><i class="fas fa-calendar-plus"></i></span><span>Ajouter</span></button></div>
         </div>
       </section>
 
