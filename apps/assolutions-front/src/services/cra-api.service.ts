@@ -21,6 +21,7 @@ export class CraApiService {
   sessions(id:number){return this.api.GET<any[]>(`/cra/${id}/sessions`);}
   addSession(id:number,seance_id:number,quantite:number,taux:number){return this.api.POST<CraView>(`/cra/${id}/sessions`,{seance_id,quantite,taux});}
   removeLine(id:number,lineId:number){return this.api.POST<CraView>(`/cra/${id}/lines/${lineId}/delete`,{});}
+  noInvoice(id:number){return this.api.POST<any>('/cra/'+id+'/no-invoice',{});}
   invoice(id:number,dto:{document_id:number;numero?:string|null;date_facture:string}){return this.api.POST<any>(`/cra/${id}/invoice`,dto);}
   validate(id:number){return this.api.POST<CraView>(`/cra/${id}/validate`,{});}
 }
