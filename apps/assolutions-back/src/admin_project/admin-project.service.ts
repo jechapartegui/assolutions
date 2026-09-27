@@ -336,7 +336,7 @@ export class AdminProjectService {
     return this.getAccountForProject(projectId, accountId);
   }
 
-  // Fix #85 - droit à l'effacement : anonymisation irréversible plutôt qu'une suppression physique.
+  // Fix 98 - droit à l'effacement : anonymisation irréversible plutôt qu'une suppression physique.
   async anonymizeAccount(
     userId: number,
     projectId: number,
@@ -370,13 +370,7 @@ export class AdminProjectService {
           [personIds],
         );
         await manager.query(
-          `DELETE FROM adresse WHERE object_type = 'PERSONNE' AND object_id = ANY($1::int[])`,
-          [personIds],
-        );
-
-        // Les documents personnels n'ont plus de raison d'être dans la base active.
-        await manager.query(
-          `DELETE FROM document WHERE personne_id = ANY($1::int[])`,
+          `DELETE FROM document WHERE UPPER(objet_type) = 'PERSONNE' AND objet_id = ANY($1::int[])`,
           [personIds],
         );
 
@@ -389,6 +383,7 @@ export class AdminProjectService {
                 last_name = 'Utilisateur supprimé',
                 nickname = NULL,
                 date_naissance = NULL,
+                address = NULL,
                 pays = NULL,
                 archive = true,
                 date_maj = CURRENT_DATE
