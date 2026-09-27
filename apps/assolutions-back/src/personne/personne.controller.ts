@@ -150,6 +150,17 @@ export class PersonneController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('representants-legaux/by-ids')
+  async listRepresentantsForPeople(
+    @Req() req: any,
+    @OptionalProjectId() projectId: number | null,
+    @Body() ids: number[],
+  ) {
+    await this.access.assertPersonIdsAccess(req.user.id, ids, projectId);
+    return this.service.listRepresentantsForPeople(ids);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id/representants-legaux')
   async listRepresentants(
     @Req() req: any,
