@@ -69,6 +69,22 @@ export class AdminProjectController {
     );
   }
 
+  // Fix #85
+  @Post('accounts/:id/anonymize')
+  anonymizeAccount(
+    @Req() req: any,
+    @ProjectId() projectId: number,
+    @Param('id', ParseIntPipe) accountId: number,
+    @Body() body: { elevation_token?: string | null },
+  ) {
+    return this.service.anonymizeAccount(
+      req.user.id,
+      projectId,
+      accountId,
+      body?.elevation_token ?? null,
+    );
+  }
+
   @Post('accounts/:id/reset-password')
   resetPassword(
     @Req() req: any,
