@@ -1,52 +1,143 @@
-# Base de données Assolutions
+# Installation PREPROD — release 2026-09
 
-Ce dossier est volontairement organisé pour qu'une installation de PREPROD ne demande pas de deviner quels SQL exécuter.
+Ce README est la procédure de référence pour la release FFRS / représentants légaux / QS Sport / CRA / Fix 98.
 
-## PREPROD — release 2026-09 FFRS / QS Sport / CRA
+## Principe important : le CRON remet PREPROD à l'état de PROD
 
-### Fichier SQL à passer
+Le CRON `ops/render/refresh-preprod-db.sh` fait une copie **PRODUCTION -> PREPRODUCTION** avec `pg_dump/pg_restore --clean`.
 
-Exécuter **uniquement** :
+Donc, tant que la migration de cette release n'est pas aussi présente en PROD, **chaque exécution du CRON efface les tables/colonnes propres à la release PREPROD**.
 
-`migrations/20260926_release_ffrs_qs_cra.sql`
+L'ordre est donc impératif :
 
-Il contient le schéma nécessaire à cette release (FFRS, représentants légaux, QS Sport et CRA), ainsi que les petits prérequis historiques encore nécessaires.
+1. CRON PROD -> PREPROD.
+2. Migration de release sur PREPROD.
+3. Imports de données de release sur PREPROD.
+4. Copie PREPROD -> LOCAL si l'on veut tester exactement cette base.
 
-### Mise à jour des licences FFRS
+Ne pas lancer le CRON entre les étapes 2/3 et l'étape 4.
 
-Le fichier SQL de données est généré depuis l'extraction officielle afin d'éviter de maintenir deux sources.
+## 0 — Code à utiliser
+
+Pour tester cette release avant merge, utiliser la branche :
+
+`feature/release-ffrs-cra`
+
+Le CRON doit lui aussi utiliser cette branche (ou au minimum une image construite depuis cette branche) si l'on veut bénéficier du **Fix 99** de `ops/render/refresh-preprod-db.sh`, qui purge l'ancienne table `document` avant restauration pour limiter le pic d'espace disque.
+
+Attention : publier le code de la branche ne modifie pas le schéma de la base. La migration SQL reste obligatoire après le CRON.
+
+## 1 — Backup PREPROD
+
+Faire un backup de PREPROD avant la première installation.
+
+## 2 — Lancer le CRON PROD -> PREPROD
+
+Lancer le job Render construit depuis `feature/release-ffrs-cra`.
+
+Attendre obligatoirement :
+
+`==> Rafraîchissement PROD -> PREPROD terminé avec succès`
+
+Si le job échoue, **ne pas continuer**.
+
+## 3 — Appliquer la migration de release
+
+Sur PREPROD, exécuter **uniquement** :
+
+`database/migrations/20260926_release_ffrs_qs_cra.sql`
+
+Cette migration est rejouable et crée notamment `representant_legal`, le schéma CRA et les éléments FFRS nécessaires.
+
+Elle ne relâche pas les contraintes du coeur `personne`.
+
+## 4 — Importer les données FFRS
+
+### 4.1 Licence / catégorie / type
 
 Depuis la racine du dépôt :
 
 `python database/tools/generate_ffrs_import.py extraction_licences_20260926120450.xlsx > database/generated/import_ffrs_2026_2027.sql`
 
-Puis exécuter :
+Lire les contrôles en fin de fichier puis exécuter sur PREPROD :
 
 `database/generated/import_ffrs_2026_2027.sql`
 
-Le script met à jour le numéro de licence, la catégorie FFRS et le type de licence (Loisir / Compétition). Le rapprochement se fait sur nom + prénom + date de naissance et refuse les correspondances ambiguës.
+### 4.2 Représentants légaux
 
-## Passage PREPROD vers LOCAL
+Le fichier réel contient des données personnelles et **ne doit pas être committé dans ce dépôt public**.
 
-Les outils de copie de base restent dans `scripts/` car ils concernent l'environnement, pas une migration SQL :
+Utiliser localement le fichier privé :
 
-- `scripts/copy-preprod-to-local.ps1`
-- `scripts/COPY_PREPROD_TO_LOCAL.md`
-- `scripts/anonymize-preprod.cjs`
-- `scripts/ANONYMISATION_PREPROD.md`
+`import_representants_legaux_ffrs_2026_2027.sql`
 
-Ils servent à remplacer la base locale par une copie de PREPROD puis, si nécessaire, à anonymiser les données. Ils ne sont pas à exécuter comme migration de release.
+Il doit être exécuté **après** la migration, car il écrit dans `representant_legal`.
+
+Le fichier `database/generated/import_representants_legaux_ffrs_2026_2027.sql` présent dans Git est seulement un aide-mémoire sans donnée personnelle.
+
+## 5 — Contrôles PREPROD
+
+Exécuter au minimum :
+
+```sql
+SELECT COUNT(*) FROM representant_legal;
+
+SELECT COUNT(*) FROM personne;
+
+SELECT COUNT(*) FROM cra;
+
+SELECT column_name, is_nullable
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'personne'
+  AND column_name IN ('date_naissance', 'address', 'pays')
+ORDER BY column_name;
+```
+
+Les contraintes historiques de `personne` doivent rester celles du modèle existant ; cette release ne les rend pas nullable.
+
+Tester ensuite dans l'application : édition adulte, édition mineur + 1/2 représentants, export Excel, export FFRS et anonymisation RGPD.
+
+## 6 — Copier PREPROD vers LOCAL
+
+Une fois les étapes 2 à 5 terminées, la PREPROD contient PROD + migration + imports. On peut alors la recopier en local.
+
+Dans `apps/assolutions-back/.env.local` :
+
+```env
+DATABASE_URL=postgresql://...base_locale...
+DATABASE_PREPROD=postgresql://...preprod...
+```
+
+Puis, depuis la racine :
+
+`npm run db:preprod-to-local`
+
+Le script `scripts/copy-preprod-to-local.ps1` vérifie que la cible est locale, demande `OUI`, remplace le schéma public local et contrôle le nombre de tables.
+
+À la fin, LOCAL est une copie de la PREPROD **après migration/import**, ce qui est l'état souhaité pour les tests.
+
+## Scripts actifs de cette release
+
+- `database/migrations/20260926_release_ffrs_qs_cra.sql` : migration à passer.
+- `database/tools/generate_ffrs_import.py` : générateur FFRS.
+- `database/generated/import_ffrs_2026_2027.sql` : généré localement, non destiné à Git avec des données personnelles.
+- `import_representants_legaux_ffrs_2026_2027.sql` : fichier privé fourni séparément, à ne pas committer.
+- `ops/render/refresh-preprod-db.sh` : CRON PROD -> PREPROD.
+- `scripts/copy-preprod-to-local.ps1` : PREPROD -> LOCAL.
 
 ## OLD
 
-`database/OLD/` contient les anciens SQL conservés uniquement pour historique ou dépannage.
+`database/OLD/` contient les migrations/scripts historiques conservés uniquement pour référence.
 
-**Ne rien exécuter depuis OLD pour une installation normale.**
+**Ne rien exécuter depuis OLD pour cette installation.**
 
-## Règle pour la suite
+## Résumé ultra-court
 
-- `database/migrations/` : migrations actives à appliquer aux environnements.
-- `database/tools/` : générateurs/utilitaires liés aux données.
-- `database/generated/` : SQL générés localement, prêts à être passés en base.
-- `database/OLD/` : historique, jamais à passer automatiquement.
-- `scripts/` : scripts d'exploitation généraux (copie/anonymisation/sécurité), pas les migrations SQL.
+`CRON PROD -> PREPROD`
+→ `20260926_release_ffrs_qs_cra.sql`
+→ import FFRS
+→ import représentants légaux
+→ tests PREPROD
+→ `npm run db:preprod-to-local`
+→ tests LOCAL.
