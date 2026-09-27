@@ -7,6 +7,16 @@ import {
 } from '@shared/lib/personne.interface';
 import { ApiClientService } from './api-client.service';
 
+export interface RepresentantLegal {
+  id?: number;
+  personne_id?: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  ordre?: number;
+}
+
 export interface FfrsExportResponse {
   headers: string[];
   rows: Array<Array<string | number>>;
@@ -46,6 +56,14 @@ export class PersonneApiService {
 
   update(id: number, dto: UpdatePersonneDto): Promise<Personne> {
     return this.api.POST<Personne>(`${this.base}/${id}/update`, dto);
+  }
+
+  listRepresentantsLegaux(id: number): Promise<RepresentantLegal[]> {
+    return this.api.GET<RepresentantLegal[]>(`${this.base}/${id}/representants-legaux`);
+  }
+
+  saveRepresentantsLegaux(id: number, representants: RepresentantLegal[]): Promise<RepresentantLegal[]> {
+    return this.api.POST<RepresentantLegal[]>(`${this.base}/${id}/representants-legaux`, { representants });
   }
 
   remove(id: number): Promise<void> {
