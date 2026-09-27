@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SCRIPT_VERSION="2026-08-20-02"
+SCRIPT_VERSION="2026-09-27-03"
 
 # Rafraîchit la base de préproduction à partir d'une copie logique complète de
 # la production.
@@ -127,12 +127,33 @@ for expected in "TABLE public personne" "TABLE DATA public personne" "TABLE publ
 done
 
 echo "==> Archive de production validée"
-echo "==> Restauration atomique dans la PREPRODUCTION"
+
+# Fix 99 : la table document peut contenir les fichiers eux-mêmes dans file_data
+# (BYTEA). Avec --single-transaction, l'ancienne PREPROD peut conserver beaucoup
+# d'espace pendant que la nouvelle copie est écrite. On mesure puis on libère
+# volontairement les anciens documents de PREPROD avant le restore.
+PROD_DB_SIZE="$(sql_scalar "$PROD_DATABASE_URL" "SELECT pg_size_pretty(pg_database_size(current_database()));")"
+PREPROD_DB_SIZE="$(sql_scalar "$PREPROD_DATABASE_URL" "SELECT pg_size_pretty(pg_database_size(current_database()));")"
+PROD_DOCUMENT_SIZE="$(sql_scalar "$PROD_DATABASE_URL" "SELECT CASE WHEN to_regclass('public.document') IS NULL THEN 'absente' ELSE pg_size_pretty(pg_total_relation_size('public.document')) END;")"
+PREPROD_DOCUMENT_SIZE="$(sql_scalar "$PREPROD_DATABASE_URL" "SELECT CASE WHEN to_regclass('public.document') IS NULL THEN 'absente' ELSE pg_size_pretty(pg_total_relation_size('public.document')) END;")"
+
+echo "==> Taille PROD     : $PROD_DB_SIZE (document: $PROD_DOCUMENT_SIZE)"
+echo "==> Taille PREPROD  : $PREPROD_DB_SIZE (document: $PREPROD_DOCUMENT_SIZE)"
+
+PREPROD_HAS_DOCUMENT="$(sql_scalar "$PREPROD_DATABASE_URL" "SELECT to_regclass('public.document') IS NOT NULL;")"
+if [[ "$PREPROD_HAS_DOCUMENT" == "t" ]]; then
+  echo "==> Libération préventive de l'ancienne table document en PREPROD"
+  psql "$PREPROD_DATABASE_URL" -X --set=ON_ERROR_STOP=1 --command="TRUNCATE TABLE public.document;"
+fi
+
+echo "==> Restauration dans la PREPRODUCTION (transactionnelle hors purge préalable des anciens documents)"
 
 # IMPORTANT : ne jamais faire de DROP préalable dans une commande séparée.
-# --single-transaction garantit que les DROP/CREATE/COPY du restore sont tous
-# validés ensemble. Si une seule étape échoue, tout est rollbacké et la base de
-# préproduction n'est pas laissée vide ou partiellement restaurée.
+# --single-transaction garantit que les DROP/CREATE/COPY du restore sont validés
+# ensemble. Exception assumée (Fix 99) : l'ancien contenu de document est purgé
+# juste avant afin de libérer les BYTEA et d'éviter un pic disque proche de deux
+# copies complètes. En cas d'échec, le reste de PREPROD est rollbacké mais ses
+# anciens documents restent purgés ; le cron suivant les reconstruira depuis PROD.
 pg_restore \
   --clean \
   --if-exists \
