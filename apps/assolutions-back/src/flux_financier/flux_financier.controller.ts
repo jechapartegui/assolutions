@@ -28,7 +28,7 @@ export class FluxFinancierController {
     return this.service.listForProject(
       projectId,
       saisonId ? +saisonId : undefined,
-      includeSysteme === 'true',
+      includeSysteme !== 'false',
     );
   }
 
