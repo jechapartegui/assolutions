@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from
 import { ProjectId } from '../common/decorators/project-id.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
-import { AddCraLigneDto, AddCraSeanceDto, FinalizeFactureDto, UpdateCraLigneDto } from './cra.dto';
+import { AddCraLigneDto, AddCraSeanceDto, FinalizeFactureDto, ReviewCraDto, UpdateCraLigneDto } from './cra.dto';
 import { CraService } from './cra.service';
 
 @Controller('cra')
@@ -30,11 +30,11 @@ export class CraController {
 
   @UseGuards(ProjectAdminGuard)
   @Post('admin/:id/validate')
-  adminValidate(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number) { return this.service.clubValidate(id,projectId); }
+  adminValidate(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number,@Body() dto: ReviewCraDto) { return this.service.clubValidate(id,projectId,dto.commentaire); }
 
   @UseGuards(ProjectAdminGuard)
   @Post('admin/:id/return')
-  adminReturn(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number) { return this.service.clubReturn(id,projectId); }
+  adminReturn(@Param('id', ParseIntPipe) id:number,@ProjectId() projectId:number,@Body() dto: ReviewCraDto) { return this.service.clubReturn(id,projectId,dto.commentaire); }
 
   @Get(':id')
   get(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
