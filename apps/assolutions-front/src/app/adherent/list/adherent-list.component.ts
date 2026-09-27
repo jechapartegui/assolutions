@@ -43,10 +43,20 @@ export class AdherentListComponent {
     this.selectedPhoto = null;
   }
 
-  exportExcel(): void {
+  async exportExcel(): Promise<void> {
     const rows = this.getFilteredAdherent();
+    const ids = rows.map((a) => Number(a.id)).filter((id) => Number.isInteger(id) && id > 0);
+    const representants = ids.length
+      ? await this.personneApi.listRepresentantsLegauxByIds(ids)
+      : {};
 
-    const columns: ExcelColumn<AdherentListItem_VM>[] = [
+    type ExportRow = AdherentListItem_VM & { representantsLegaux?: any[] };
+    const exportRows: ExportRow[] = rows.map((row) => ({
+      ...row,
+      representantsLegaux: representants[Number(row.id)] ?? [],
+    }));
+
+    const columns: ExcelColumn<ExportRow>[] = [
       { header: $localize`:@@common.id:ID`, value: a => a.id },
       { header: $localize`:@@person.lastname:Nom`, value: a => a.nom },
       { header: $localize`:@@person.firstname:Prénom`, value: a => a.prenom },
@@ -85,9 +95,17 @@ export class AdherentListComponent {
         header: $localize`:@@member.registered:Inscrit`,
         value: a => a.inscrit
       },
+      { header: 'Représentant légal 1 - Nom', value: a => a.representantsLegaux?.[0]?.nom ?? '' },
+      { header: 'Représentant légal 1 - Prénom', value: a => a.representantsLegaux?.[0]?.prenom ?? '' },
+      { header: 'Représentant légal 1 - Email', value: a => a.representantsLegaux?.[0]?.email ?? '' },
+      { header: 'Représentant légal 1 - Téléphone', value: a => a.representantsLegaux?.[0]?.telephone ?? '' },
+      { header: 'Représentant légal 2 - Nom', value: a => a.representantsLegaux?.[1]?.nom ?? '' },
+      { header: 'Représentant légal 2 - Prénom', value: a => a.representantsLegaux?.[1]?.prenom ?? '' },
+      { header: 'Représentant légal 2 - Email', value: a => a.representantsLegaux?.[1]?.email ?? '' },
+      { header: 'Représentant légal 2 - Téléphone', value: a => a.representantsLegaux?.[1]?.telephone ?? '' },
     ];
 
-    this.excel.export('adherents', rows, columns);
+    this.excel.export('adherents', exportRows, columns);
   }
 
   async exportFfrs(): Promise<void> {
