@@ -370,6 +370,10 @@ export class AdminProjectService {
           [personIds],
         );
         await manager.query(
+          `DELETE FROM representant_legal WHERE personne_id = ANY($1::int[])`,
+          [personIds],
+        );
+        await manager.query(
           `DELETE FROM document WHERE UPPER(objet_type) = 'PERSONNE' AND objet_id = ANY($1::int[])`,
           [personIds],
         );
