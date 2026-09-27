@@ -84,13 +84,13 @@
 
       <div class="notification is-info is-light" *ngIf="cra.statut==='SOUMIS'"><strong>CRA transmis au club.</strong> Il est verrouillé pendant son contrôle.</div>
       <section class="box" *ngIf="cra.statut==='VALIDE_CLUB'">
-        <h2 class="title is-5 mb-1">Déposer ma facture</h2><p class="is-size-7 has-text-grey">Le club a validé votre CRA. Déposez maintenant votre facture : le flux financier sera créé automatiquement.</p>
+        <h2 class="title is-5 mb-1">Déposer ma facture</h2><p class="is-size-7 has-text-grey">Le club a validé votre CRA. Si vous émettez une facture, vous pouvez la déposer ci-dessous. Sinon, confirmez simplement que vous n'avez pas de facture à transmettre.</p>
         <div class="cra-form-grid">
           <div class="field cra-field-label"><label class="label">Facture PDF / image</label><input class="input" type="file" accept=".pdf,image/*" (change)="chooseInvoice($event)"></div>
           <div class="field"><label class="label">N° facture</label><input class="input" [(ngModel)]="invoiceNumber"></div>
           <div class="field"><label class="label">Date facture</label><input class="input" type="date" [(ngModel)]="invoiceDate"></div>
           <div class="field cra-add-button"><label class="label">&nbsp;</label><button class="button is-success is-fullwidth" [disabled]="!invoiceFile" [class.is-loading]="saving" (click)="depositInvoice()">Déposer</button></div>
-        </div>
+        </div><div class="has-text-centered mt-4"><span class="is-size-7 has-text-grey">Vous n'avez pas de facture ?</span><br><button class="button is-light mt-2" type="button" [class.is-loading]="saving" (click)="confirmWithoutInvoice()"><span class="icon"><i class="fas fa-check"></i></span><span>Je n'ai pas de facture à transmettre</span></button></div>
       </section>
       <div class="notification is-success is-light" *ngIf="cra.statut==='FACTURE'"><strong>CRA facturé.</strong> La facture associée a été enregistrée.</div>
     </main>
