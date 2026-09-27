@@ -56,7 +56,7 @@ Ce document est la **source de vérité des identifiants de recette Assolutions*
 
 Toutes ces issues sont fermées avec l'état **completed**.
 
-## Fix 77 à 99 — backlog courant
+## Fix 77 à 101 — backlog courant
 
 | Fix | Objet fonctionnel | Issue | État |
 |---:|---|---:|---|
@@ -82,6 +82,8 @@ Toutes ces issues sont fermées avec l'état **completed**.
 | 97 | Corriger le rendu sombre de la situation médicale | GH #97 | Open |
 | 98 | Anonymiser un compte à la demande RGPD | GH #98 | Open |
 | 99 | Éviter la saturation disque lors du refresh PROD vers PREPROD | GH #99 | Open |
+| 100 | Bloquer les nouvelles inscriptions côté adhérent | GH #100 | Open |
+| 101 | Finaliser le workflow CRA professeur / club / facturation | GH #101 | Open |
 
 ## Règle de livraison à partir du Fix 77
 
