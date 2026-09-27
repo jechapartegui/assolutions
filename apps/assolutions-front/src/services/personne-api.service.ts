@@ -58,6 +58,10 @@ export class PersonneApiService {
     return this.api.POST<Personne>(`${this.base}/${id}/update`, dto);
   }
 
+  listRepresentantsLegauxByIds(ids: number[]): Promise<Record<number, RepresentantLegal[]>> {
+    return this.api.POST<Record<number, RepresentantLegal[]>>(`${this.base}/representants-legaux/by-ids`, ids);
+  }
+
   listRepresentantsLegaux(id: number): Promise<RepresentantLegal[]> {
     return this.api.GET<RepresentantLegal[]>(`${this.base}/${id}/representants-legaux`);
   }
