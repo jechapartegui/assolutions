@@ -385,10 +385,10 @@ export class AdminProjectService {
             UPDATE personne
             SET first_name = 'Anonyme',
                 last_name = 'Utilisateur supprimé',
-                nickname = NULL,
-                date_naissance = NULL,
-                address = NULL,
-                pays = NULL,
+                nickname = 'Anonyme',
+                date_naissance = make_date(EXTRACT(YEAR FROM CURRENT_DATE)::int, 1, 1),
+                address = '{"Street":"Adresse anonymisée","PostCode":"00000","City":"Ville anonymisée","Country":"France"}',
+                pays = 'France',
                 archive = true,
                 date_maj = CURRENT_DATE
             WHERE id = ANY($1::int[])
