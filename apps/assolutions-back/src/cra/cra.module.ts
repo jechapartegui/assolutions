@@ -6,12 +6,13 @@ import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceProfesseurEntity } from '../seance_professeur/seance_professeur.entity';
+import { SeanceEntity } from '../seance/seance.entity';
 import { CraController } from './cra.controller';
 import { CraEntity, CraLigneEntity, FactureProfEntity } from './cra.entity';
 import { CraService } from './cra.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CraEntity, CraLigneEntity, FactureProfEntity, ContratProfEntity, ProfesseurEntity, SaisonEntity, SeanceProfesseurEntity, DocumentEntity, PersonneEntity])],
+  imports: [TypeOrmModule.forFeature([CraEntity, CraLigneEntity, FactureProfEntity, ContratProfEntity, ProfesseurEntity, SaisonEntity, SeanceProfesseurEntity, SeanceEntity, DocumentEntity, PersonneEntity])],
   controllers: [CraController],
   providers: [CraService],
   exports: [CraService],
