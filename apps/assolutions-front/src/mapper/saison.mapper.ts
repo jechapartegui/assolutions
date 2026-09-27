@@ -38,6 +38,7 @@ export class SaisonMapper {
       date_fin: raw.date_fin ?? '',
       saison_precedente: raw.saison_precedente ?? undefined,
       tarif_avant_groupes: !!raw.tarif_avant_groupes,
+      inscriptions_ouvertes: raw.inscriptions_ouvertes !== false,
     };
   }
 
@@ -51,6 +52,7 @@ export class SaisonMapper {
       date_fin: '',
       saison_precedente: undefined,
       tarif_avant_groupes: false,
+      inscriptions_ouvertes: true,
     };
   }
 
@@ -62,6 +64,7 @@ export class SaisonMapper {
       date_fin: vm.date_fin,
       saison_precedente: vm.saison_precedente || undefined,
       tarif_avant_groupes: !!vm.tarif_avant_groupes,
+      inscriptions_ouvertes: vm.inscriptions_ouvertes !== false,
     };
   }
 
@@ -72,6 +75,7 @@ export class SaisonMapper {
       date_fin: vm.date_fin,
       saison_precedente: vm.saison_precedente || undefined,
       tarif_avant_groupes: !!vm.tarif_avant_groupes,
+      inscriptions_ouvertes: vm.inscriptions_ouvertes !== false,
     };
   }
 
