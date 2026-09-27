@@ -73,11 +73,14 @@ CREATE TABLE IF NOT EXISTS cra (
   mois integer NOT NULL CHECK (mois BETWEEN 1 AND 12),
   statut varchar(30) NOT NULL DEFAULT 'BROUILLON',
   montant_total numeric(12,2) NOT NULL DEFAULT 0,
+  commentaire_club text NULL,
   date_validation timestamptz NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT uq_cra_contrat_mois UNIQUE(contrat_prof_id, annee, mois)
 );
+
+ALTER TABLE cra ADD COLUMN IF NOT EXISTS commentaire_club text NULL;
 
 CREATE TABLE IF NOT EXISTS cra_ligne (
   id serial PRIMARY KEY,
