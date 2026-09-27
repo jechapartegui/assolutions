@@ -94,21 +94,24 @@ export class AuthService {
     return hasAdminProject ? 'ADMIN' : 'APPLI';
   }
 
-  private async getProjectsForCompte(compteId: number): Promise<ProjectEntity[]> {
+  private async getProjectsForCompte(compteId: number): Promise<any[]> {
     const loginProjects = await this.loginProjectRepo.find({
       where: { login_id: compteId },
       relations: ['project'],
     });
 
-    return loginProjects
-      .map((lp: LoginProjectEntity) => {
-        const project = lp.project;
-        if (!project) return null;
-        project.password = '';
-        project.activation_token = null;
-        return project;
-      })
+    const projects = loginProjects
+      .map((lp: LoginProjectEntity) => lp.project)
       .filter((project): project is ProjectEntity => project !== null);
+
+    return Promise.all(projects.map(async (project) => {
+      project.password = '';
+      project.activation_token = null;
+      const saisonActive = await this.saisonRepo.findOne({
+        where: { project_id: project.id, active: true },
+      });
+      return { ...project, saison_active: saisonActive };
+    }));
   }
 
   private async buildSession(compte: CompteEntity, token = ''): Promise<any> {
