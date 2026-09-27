@@ -20,6 +20,7 @@ import { ProjectAdminGuard } from '../common/guards/project-admin.guard';
 import { FfrsExportService } from './ffrs-export.service';
 import { CreatePersonneDto, UpdatePersonneDto } from './personne.dto';
 import { PersonneService } from './personne.service';
+import { RepresentantLegalDto } from './representant-legal.dto';
 
 @Controller('personnes')
 export class PersonneController {
@@ -146,6 +147,29 @@ export class PersonneController {
     const accountId = Number(dto.compte || req.user.id);
     await this.access.assertAccountAccess(req.user.id, accountId, projectId);
     return this.service.create({ ...dto, compte: accountId }, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/representants-legaux')
+  async listRepresentants(
+    @Req() req: any,
+    @OptionalProjectId() projectId: number | null,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    await this.access.assertPersonAccess(req.user.id, id, projectId);
+    return this.service.listRepresentants(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/representants-legaux')
+  async replaceRepresentants(
+    @Req() req: any,
+    @OptionalProjectId() projectId: number | null,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { representants?: RepresentantLegalDto[] },
+  ) {
+    await this.access.assertPersonAccess(req.user.id, id, projectId);
+    return this.service.replaceRepresentants(id, body?.representants ?? []);
   }
 
   @UseGuards(JwtAuthGuard)
