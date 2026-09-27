@@ -325,20 +325,20 @@ export class CraService {
     return {...cra,lignes};
   }
 
-  async clubValidate(id:number, projectId:number) {
+  async clubValidate(id:number, projectId:number, commentaire?:string) {
     const cra=await this.craRepo.findOne({where:{id,project_id:projectId}});
     if(!cra) throw new NotFoundException('CRA_NOT_FOUND');
     if(cra.statut!=='SOUMIS') throw new BadRequestException('CRA_MUST_BE_SUBMITTED');
-    cra.statut='VALIDE_CLUB'; cra.updated_at=new Date(); await this.craRepo.save(cra);
+    cra.statut='VALIDE_CLUB'; cra.commentaire_club=commentaire?.trim()||null; cra.updated_at=new Date(); await this.craRepo.save(cra);
     await this.mailProfessor(cra,'CRA validé par le club',`<p>Votre CRA de <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong> a été validé par le club.</p><p>Vous pouvez maintenant déposer votre facture depuis Assolutions.</p>`);
     return this.getAdmin(id,projectId);
   }
 
-  async clubReturn(id:number, projectId:number) {
+  async clubReturn(id:number, projectId:number, commentaire?:string) {
     const cra=await this.craRepo.findOne({where:{id,project_id:projectId}});
     if(!cra) throw new NotFoundException('CRA_NOT_FOUND');
     if(cra.statut!=='SOUMIS') throw new BadRequestException('CRA_MUST_BE_SUBMITTED');
-    cra.statut='BROUILLON'; cra.date_validation=null; cra.updated_at=new Date(); await this.craRepo.save(cra);
+    cra.statut='BROUILLON'; cra.commentaire_club=commentaire?.trim()||null; cra.date_validation=null; cra.updated_at=new Date(); await this.craRepo.save(cra);
     await this.mailProfessor(cra,'CRA à corriger',`<p>Votre CRA de <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong> a été renvoyé en correction par le club.</p><p>Vous pouvez le modifier puis le soumettre à nouveau.</p>`);
     return this.getAdmin(id,projectId);
   }
