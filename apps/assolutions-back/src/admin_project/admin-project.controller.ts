@@ -69,7 +69,7 @@ export class AdminProjectController {
     );
   }
 
-  // Fix #85
+  // Fix 98
   @Post('accounts/:id/anonymize')
   anonymizeAccount(
     @Req() req: any,
