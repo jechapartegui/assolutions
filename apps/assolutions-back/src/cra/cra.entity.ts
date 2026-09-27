@@ -26,6 +26,9 @@ export class CraEntity {
   @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
   montant_total: string;
 
+  @Column({ type: 'text', nullable: true })
+  commentaire_club: string | null;
+
   @Column({ type: 'timestamptz', nullable: true })
   date_validation: Date | null;
 
