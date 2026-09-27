@@ -14,6 +14,7 @@ ne sont jamais appliquées : elles sont remontées à la fin du script SQL.
 from __future__ import annotations
 import sys
 from datetime import date, datetime
+import re
 from openpyxl import load_workbook
 
 if len(sys.argv) != 2:
@@ -36,18 +37,34 @@ def q(v):
     if isinstance(v,(date,datetime)): return "'" + v.strftime("%Y-%m-%d") + "'"
     return "'" + str(v).replace("'","''").strip() + "'"
 
+def q_date(v):
+    """Retourne toujours une date SQL ISO YYYY-MM-DD, même si Excel fournit DD/MM/YYYY."""
+    if v is None or str(v).strip() == "":
+        return "NULL"
+    if isinstance(v, (date, datetime)):
+        return "'" + v.strftime("%Y-%m-%d") + "'"
+    s = str(v).strip()
+    for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+        try:
+            return "'" + datetime.strptime(s, fmt).strftime("%Y-%m-%d") + "'"
+        except ValueError:
+            pass
+    raise SystemExit(f"Date de naissance FFRS invalide ou non reconnue: {s!r}")
+
 vals=[]
 for r in rows:
     if not r[idx["Nom"]]: continue
     typ=str(r[idx["Type"]] or "").strip()
     # Le produit ne conserve volontairement que Loisir / Compétition.
     typ = typ if typ in ("Loisir","Compétition") else None
-    fields=[r[idx["Code Adhérent"]],r[idx["Nom"]],r[idx["Prénom"]],r[idx["Date de naissance"]],typ,r[idx["Catégorie âge"]]]
+    fields=[r[idx["Code Adhérent"]],r[idx["Nom"]],r[idx["Prénom"]]]
+    birth_date = r[idx["Date de naissance"]]
+    tail=[typ,r[idx["Catégorie âge"]]]
     for n in (1,2):
         suffix="" if n==1 else " 2"
-        fields += [r[idx["Nom du représentant légal"+suffix]],r[idx["Prénom du représentant légal"+suffix]],
-                   r[idx["Téléphone du représentant légal"+suffix]],r[idx["Email du représentant légal"+suffix]]]
-    vals.append("(" + ",".join(q(x) for x in fields) + ")")
+        tail += [r[idx["Nom du représentant légal"+suffix]],r[idx["Prénom du représentant légal"+suffix]],
+                 r[idx["Téléphone du représentant légal"+suffix]],r[idx["Email du représentant légal"+suffix]]]
+    vals.append("(" + ",".join(q(x) for x in fields) + "," + q_date(birth_date) + "," + ",".join(q(x) for x in tail) + ")")
 
 print("""BEGIN;
 CREATE TEMP TABLE tmp_ffrs(
