@@ -6,6 +6,9 @@ import { DocumentEntity } from '../document/document.entity';
 import { FluxFinancierEntity } from '../flux_financier/flux_financier.entity';
 import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { PersonneEntity } from '../personne/personne.entity';
+import { CompteEntity } from '../compte/compte.entity';
+import { ProjectEntity } from '../project/project.entity';
+import { MessageService } from '../message/message.service';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceProfesseurEntity } from '../seance_professeur/seance_professeur.entity';
 import { SeanceEntity } from '../seance/seance.entity';
@@ -21,11 +24,14 @@ export class CraService {
     @InjectRepository(ContratProfEntity) private readonly contratRepo: Repository<ContratProfEntity>,
     @InjectRepository(ProfesseurEntity) private readonly profRepo: Repository<ProfesseurEntity>,
     @InjectRepository(PersonneEntity) private readonly personneRepo: Repository<PersonneEntity>,
+    @InjectRepository(CompteEntity) private readonly compteRepo: Repository<CompteEntity>,
+    @InjectRepository(ProjectEntity) private readonly projectRepo: Repository<ProjectEntity>,
     @InjectRepository(SaisonEntity) private readonly saisonRepo: Repository<SaisonEntity>,
     @InjectRepository(SeanceProfesseurEntity) private readonly spRepo: Repository<SeanceProfesseurEntity>,
     @InjectRepository(SeanceEntity) private readonly seanceRepo: Repository<SeanceEntity>,
     @InjectRepository(DocumentEntity) private readonly documentRepo: Repository<DocumentEntity>,
     private readonly dataSource: DataSource,
+    private readonly messageService: MessageService,
   ) {}
 
   private async contratForProject(id: number, projectId: number) {
@@ -284,18 +290,74 @@ export class CraService {
     await this.assertCraOwner(cra, projectId, userId);
     if (cra.statut !== 'BROUILLON') throw new BadRequestException('CRA_ALREADY_VALIDATED');
     await this.recalculate(id);
-    cra.statut = 'VALIDE';
+    cra.statut = 'SOUMIS';
     cra.date_validation = new Date();
     cra.updated_at = new Date();
     await this.craRepo.save(cra);
+    const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    if (project?.login) {
+      await this.messageService.sendAutomaticMail({
+        to: project.login, projectId, record: `CRA_SOUMIS_${cra.id}`,
+        subject: `CRA à valider - ${String(cra.mois).padStart(2,'0')}/${cra.annee}`,
+        html: `<p>Un professeur vient de soumettre son CRA pour <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong>.</p><p>Montant : <strong>${Number(cra.montant_total).toFixed(2)} €</strong>.</p><p>Il est disponible dans l'administration Assolutions.</p>`,
+      });
+    }
     return this.get(id, projectId, userId);
+  }
+
+  async listAdmin(projectId: number) {
+    const saison = await this.saisonRepo.findOne({ where: { project_id: projectId, active: true } });
+    if (!saison) return [];
+    const cras = await this.craRepo.find({ where: { project_id: projectId, saison_id: saison.id }, order: { annee: 'DESC', mois: 'DESC', id: 'DESC' } });
+    const result:any[] = [];
+    for (const cra of cras) {
+      const contrat = await this.contratRepo.findOne({ where: { id: cra.contrat_prof_id } });
+      const personne = contrat ? await this.personneRepo.findOne({ where: { id: contrat.professeur_id } }) : null;
+      result.push({ ...cra, professeur: personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat?.professeur_id ?? '?'}` });
+    }
+    return result;
+  }
+
+  async getAdmin(id:number, projectId:number) {
+    const cra=await this.craRepo.findOne({where:{id,project_id:projectId}});
+    if(!cra) throw new NotFoundException('CRA_NOT_FOUND');
+    const lignes=await this.ligneRepo.find({where:{cra_id:id},order:{date:'ASC',id:'ASC'}});
+    return {...cra,lignes};
+  }
+
+  async clubValidate(id:number, projectId:number) {
+    const cra=await this.craRepo.findOne({where:{id,project_id:projectId}});
+    if(!cra) throw new NotFoundException('CRA_NOT_FOUND');
+    if(cra.statut!=='SOUMIS') throw new BadRequestException('CRA_MUST_BE_SUBMITTED');
+    cra.statut='VALIDE_CLUB'; cra.updated_at=new Date(); await this.craRepo.save(cra);
+    await this.mailProfessor(cra,'CRA validé par le club',`<p>Votre CRA de <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong> a été validé par le club.</p><p>Vous pouvez maintenant déposer votre facture depuis Assolutions.</p>`);
+    return this.getAdmin(id,projectId);
+  }
+
+  async clubReturn(id:number, projectId:number) {
+    const cra=await this.craRepo.findOne({where:{id,project_id:projectId}});
+    if(!cra) throw new NotFoundException('CRA_NOT_FOUND');
+    if(cra.statut!=='SOUMIS') throw new BadRequestException('CRA_MUST_BE_SUBMITTED');
+    cra.statut='BROUILLON'; cra.date_validation=null; cra.updated_at=new Date(); await this.craRepo.save(cra);
+    await this.mailProfessor(cra,'CRA à corriger',`<p>Votre CRA de <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong> a été renvoyé en correction par le club.</p><p>Vous pouvez le modifier puis le soumettre à nouveau.</p>`);
+    return this.getAdmin(id,projectId);
+  }
+
+  private async mailProfessor(cra:CraEntity,subject:string,html:string) {
+    const contrat=await this.contratRepo.findOne({where:{id:cra.contrat_prof_id}});
+    if(!contrat)return;
+    const personne=await this.personneRepo.findOne({where:{id:contrat.professeur_id}});
+    if(!personne)return;
+    const compte=await this.compteRepo.findOne({where:{id:personne.compte}});
+    if(!compte?.login)return;
+    await this.messageService.sendAutomaticMail({to:compte.login,name:`${personne.first_name} ${personne.last_name}`,projectId:cra.project_id,record:`CRA_CLUB_${cra.id}_${cra.statut}`,subject,html});
   }
 
   async finalizeInvoice(id: number, dto: FinalizeFactureDto, projectId: number, userId: number) {
     const cra = await this.craRepo.findOne({ where: { id } });
     if (!cra || cra.project_id !== projectId) throw new NotFoundException('CRA_NOT_FOUND');
     await this.assertCraOwner(cra, projectId, userId);
-    if (cra.statut !== 'VALIDE') throw new BadRequestException('CRA_MUST_BE_VALIDATED');
+    if (cra.statut !== 'VALIDE_CLUB') throw new BadRequestException('CRA_MUST_BE_VALIDATED_BY_CLUB');
     if (await this.factureRepo.findOne({ where: { cra_id: id } })) throw new BadRequestException('INVOICE_ALREADY_EXISTS');
     const document = await this.documentRepo.findOne({ where: { id: dto.document_id } });
     if (!document || (document.project_id != null && document.project_id !== projectId)) throw new NotFoundException('DOCUMENT_NOT_FOUND');
