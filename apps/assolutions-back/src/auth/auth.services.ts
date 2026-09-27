@@ -110,7 +110,12 @@ export class AuthService {
       const saisonActive = await this.saisonRepo.findOne({
         where: { project_id: project.id, active: true },
       });
-      return { ...project, saison_active: saisonActive };
+      return {
+        id: project.id,
+        nom: project.nom,
+        rights: { adherent: true, prof: false, visible: true },
+        saison_active: saisonActive,
+      };
     }));
   }
 
