@@ -87,6 +87,15 @@ type MedicalRow = {
   date_document: string | null;
 };
 
+type LegalRepresentativeRow = {
+  personne_id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  ordre: number;
+};
+
 export interface FfrsExportResult {
   headers: string[];
   rows: Array<Array<string | number>>;
@@ -133,7 +142,7 @@ export class FfrsExportService {
 
     const accountIds = [...new Set(personnes.map((p) => Number(p.compte)).filter(Boolean))];
 
-    const [familyPersons, addInfoFields, addInfoValues, photos, medicalDocs, requirementResponses] =
+    const [familyPersons, addInfoFields, addInfoValues, photos, medicalDocs, requirementResponses, legalRepresentatives] =
       await Promise.all([
         accountIds.length
           ? (this.dataSource.query(
@@ -221,6 +230,15 @@ export class FfrsExportService {
               [allowedIds, saisonId, projectId],
             ) as Promise<RequirementResponseRow[]>)
           : Promise.resolve([] as RequirementResponseRow[]),
+        this.dataSource.query(
+          `
+            SELECT personne_id, nom, prenom, email, telephone, ordre
+            FROM representant_legal
+            WHERE personne_id = ANY($1::int[])
+            ORDER BY personne_id, ordre, id
+          `,
+          [allowedIds],
+        ) as Promise<LegalRepresentativeRow[]>,
       ]);
 
     const allPersonIds = this.cleanIds([
@@ -246,6 +264,7 @@ export class FfrsExportService {
     const responsesByPerson = this.groupBy(requirementResponses, (x) => Number(x.personne_id));
     const photoByPerson = new Map(photos.map((x) => [Number(x.objet_id), x]));
     const medicalByPerson = new Map(medicalDocs.map((x) => [Number(x.objet_id), x.date_document ?? null]));
+    const legalRepresentativesByPerson = this.groupBy(legalRepresentatives, (x) => Number(x.personne_id));
 
     const warnings: string[] = [];
     const medicalCertificateDates: Record<number, string | null> = {};
@@ -256,11 +275,14 @@ export class FfrsExportService {
       const contactsForPerson = contactsByPerson.get(personne.id) ?? [];
       const address = this.parseAddress(personne.address, personne.pays ?? 'France');
       const phones = this.pickPhones(contactsForPerson);
-      const guardians = this.pickGuardians(
-        personne,
-        familyByAccount.get(Number(personne.compte)) ?? [],
-        contactsByPerson,
-      );
+      const guardians = (legalRepresentativesByPerson.get(personne.id) ?? [])
+        .slice(0, 2)
+        .map((guardian) => ({
+          lastName: guardian.nom ?? '',
+          firstName: guardian.prenom ?? '',
+          phone: guardian.telephone ?? '',
+          email: guardian.email ?? '',
+        }));
       const photo = photoByPerson.get(personne.id);
       const photoUrl = photo
         ? this.buildSignedPhotoUrl(personne.id, projectId, publicBaseUrl, photo.mimetype)
