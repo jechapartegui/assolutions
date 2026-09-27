@@ -19,3 +19,14 @@ export class FinalizeFactureDto {
   @IsOptional() @IsString() numero?: string;
   @IsInt() document_id: number;
 }
+
+export class UpdateCraLigneDto {
+  @IsNumber() quantite: number;
+  @IsNumber() taux: number;
+}
+
+export class AddCraSeanceDto {
+  @IsInt() seance_id: number;
+  @IsNumber() quantite: number;
+  @IsNumber() taux: number;
+}
