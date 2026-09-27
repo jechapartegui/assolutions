@@ -71,6 +71,11 @@ export class CraController {
     return this.service.validate(id, projectId, Number(req.user.id));
   }
 
+  @Post(':id/no-invoice')
+  noInvoice(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number) {
+    return this.service.finalizeWithoutInvoice(id, projectId, Number(req.user.id));
+  }
+
   @Post(':id/invoice')
   invoice(@Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number, @Body() dto: FinalizeFactureDto) {
     return this.service.finalizeInvoice(id, dto, projectId, Number(req.user.id));
