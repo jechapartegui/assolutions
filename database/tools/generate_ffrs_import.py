@@ -26,9 +26,7 @@ rows = ws.iter_rows(values_only=True)
 headers = [str(x or "").strip() for x in next(rows)]
 idx = {h: i for i, h in enumerate(headers)}
 
-required = ["Code Adhérent","Nom","Prénom","Date de naissance","Type","Catégorie âge",
-"Nom du représentant légal","Prénom du représentant légal","Téléphone du représentant légal","Email du représentant légal",
-"Nom du représentant légal 2","Prénom du représentant légal 2","Téléphone du représentant légal 2","Email du représentant légal 2"]
+required = ["Code Adhérent","Nom","Prénom","Date de naissance","Type","Catégorie âge"]
 missing=[x for x in required if x not in idx]
 if missing: raise SystemExit("Colonnes manquantes: "+", ".join(missing))
 
@@ -60,29 +58,37 @@ for r in rows:
     fields=[r[idx["Code Adhérent"]],r[idx["Nom"]],r[idx["Prénom"]]]
     birth_date = r[idx["Date de naissance"]]
     tail=[typ,r[idx["Catégorie âge"]]]
-    for n in (1,2):
-        suffix="" if n==1 else " 2"
-        tail += [r[idx["Nom du représentant légal"+suffix]],r[idx["Prénom du représentant légal"+suffix]],
-                 r[idx["Téléphone du représentant légal"+suffix]],r[idx["Email du représentant légal"+suffix]]]
     vals.append("(" + ",".join(q(x) for x in fields) + "," + q_date(birth_date) + "," + ",".join(q(x) for x in tail) + ")")
 
 print("""BEGIN;
 CREATE TEMP TABLE tmp_ffrs(
- licence text, nom text, prenom text, date_naissance date, type_licence text, categorie text,
- rl1_nom text, rl1_prenom text, rl1_tel text, rl1_email text,
- rl2_nom text, rl2_prenom text, rl2_tel text, rl2_email text
+ licence text, nom text, prenom text, date_naissance date, type_licence text, categorie text
 ) ON COMMIT DROP;
 INSERT INTO tmp_ffrs VALUES""")
 print(",\n".join(vals) + ";")
 print(r"""
 CREATE TEMP TABLE tmp_ffrs_match AS
-SELECT f.*, p.id personne_id,
-       count(*) OVER (PARTITION BY f.licence, f.nom, f.prenom, f.date_naissance) match_count
-FROM tmp_ffrs f
-JOIN personne p
-  ON lower(trim(p.last_name)) = lower(trim(f.nom))
- AND lower(trim(p.first_name)) = lower(trim(f.prenom))
- AND p.date_naissance = f.date_naissance;
+WITH candidates AS (
+ SELECT DISTINCT f.*, p.id personne_id, COALESCE(p.archive,false) archive
+ FROM tmp_ffrs f
+ JOIN personne p
+   ON lower(trim(p.last_name)) = lower(trim(f.nom))
+  AND lower(trim(p.first_name)) = lower(trim(f.prenom))
+  AND p.date_naissance = f.date_naissance
+ WHERE EXISTS (
+   SELECT 1 FROM login_project lp
+   WHERE lp.login_id = p.compte AND lp.project_id = 1
+ )
+), ranked AS (
+ SELECT c.*,
+        MIN(c.archive::int) OVER (PARTITION BY c.licence,c.nom,c.prenom,c.date_naissance) best_archive_rank
+ FROM candidates c
+), preferred AS (
+ SELECT * FROM ranked WHERE archive::int = best_archive_rank
+)
+SELECT p.*,
+       count(*) OVER (PARTITION BY p.licence,p.nom,p.prenom,p.date_naissance) match_count
+FROM preferred p;
 
 -- Numéro de licence : définition existante "Numéro de licence".
 INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
