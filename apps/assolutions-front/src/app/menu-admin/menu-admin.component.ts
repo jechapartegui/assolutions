@@ -117,6 +117,13 @@ export class MenuAdminComponent implements OnInit {
           hint: $localize`:@@admin.requirementsHint:Définir les pièces, consentements et validations obligatoires`,
         },
         {
+          label: 'CRA professeurs',
+          icon: 'fa-clock',
+          menu: 'CONTRAT_PROF',
+          route: '/cra-admin',
+          hint: 'Contrôler et valider les CRA mensuels avant facturation',
+        },
+        {
           label: $localize`:@@admin.instructorContracts:Contrats professeurs`,
           icon: 'fa-file-signature',
           menu: 'CONTRAT_PROF',
