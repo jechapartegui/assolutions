@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SCRIPT_VERSION="2026-09-27-04"
+SCRIPT_VERSION="2026-09-27-05"
 
 # Rafraîchit la base de préproduction à partir d'une copie logique complète de
 # la production.
@@ -150,7 +150,16 @@ if [[ "$PREPROD_HAS_DOCUMENT" == "t" ]]; then
   psql "$PREPROD_DATABASE_URL" -X --set=ON_ERROR_STOP=1 --command="TRUNCATE TABLE public.document CASCADE;"
 fi
 
-echo "==> Restauration dans la PREPRODUCTION (transactionnelle hors purge préalable des anciens documents)"
+echo "==> Réinitialisation complète du schéma public PREPROD"
+# PREPROD peut contenir des objets de release absents de PROD. Un restore --clean
+# ne peut pas toujours les supprimer dans le bon ordre (ex. CRA -> contrat_prof).
+# Le dump PROD a déjà été validé : on repart donc d'un schéma public vide.
+psql "$PREPROD_DATABASE_URL" -X --set=ON_ERROR_STOP=1 <<'SQL'
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+SQL
+
+echo "==> Restauration du dump PROD dans la PREPRODUCTION"
 
 # IMPORTANT : ne jamais faire de DROP préalable dans une commande séparée.
 # --single-transaction garantit que les DROP/CREATE/COPY du restore sont validés
@@ -159,8 +168,6 @@ echo "==> Restauration dans la PREPRODUCTION (transactionnelle hors purge préal
 # copies complètes. En cas d'échec, le reste de PREPROD est rollbacké mais ses
 # anciens documents restent purgés ; le cron suivant les reconstruira depuis PROD.
 pg_restore \
-  --clean \
-  --if-exists \
   --no-owner \
   --no-privileges \
   --single-transaction \
