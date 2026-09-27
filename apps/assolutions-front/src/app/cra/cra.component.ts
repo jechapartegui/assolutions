@@ -12,6 +12,7 @@ export class CraComponent {
   loadingCra=false;
   saving=false;
   line={date:'',type:'PRESTATION',libelle:'',quantite:1,taux:0};
+  sessions:any[]=[]; selectedSessionId:number|null=null; sessionQty=1; sessionRate=0;
 
   constructor(private readonly api:CraApiService,private readonly router:Router){}
 
@@ -31,6 +32,7 @@ export class CraComponent {
       this.cra=await this.api.openMine(month.annee,month.mois);
       month.statut=this.cra.statut;month.cra_id=this.cra.id;
       this.resetLine();
+      this.sessions=await this.api.sessions(this.cra.id);
     }catch(error:any){
       ErrorService.instance.emitChange(ErrorService.instance.CreateError('Charger le CRA',error?.message??error));
     }finally{this.loadingCra=false;}
@@ -43,6 +45,20 @@ export class CraComponent {
     try{
       this.cra=await this.api.addLine(this.cra.id,{...this.line});
       this.syncStatus();this.resetLine();
+    }finally{this.saving=false;}
+  }
+
+  async saveLine(line:any){
+    if(!this.cra||this.saving)return;this.saving=true;
+    try{this.cra=await this.api.updateLine(this.cra.id,line.id,Number(line.quantite),Number(line.taux));this.syncStatus();}
+    finally{this.saving=false;}
+  }
+
+  async addSession(){
+    if(!this.cra||!this.selectedSessionId||this.saving)return;this.saving=true;
+    try{
+      this.cra=await this.api.addSession(this.cra.id,this.selectedSessionId,Number(this.sessionQty),Number(this.sessionRate));
+      this.sessions=await this.api.sessions(this.cra.id);this.selectedSessionId=null;this.syncStatus();
     }finally{this.saving=false;}
   }
 
