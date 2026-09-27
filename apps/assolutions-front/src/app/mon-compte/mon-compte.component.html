@@ -12,6 +12,11 @@
   </div>
 
   <div *ngIf="!loading" class="account-content">
+    <section class="box account-card account-subscription-card" *ngIf="selectedProject() && canStartSubscription">
+      <div class="account-card-heading"><div class="account-card-icon"><i class="fas fa-id-card"></i></div><div><h2 class="title is-5 mb-1" i18n>Inscription au club</h2><p class="has-text-grey is-size-7 mb-0" i18n>Inscrire ou renouveler une personne pour {{ selectedProject()?.nom }}.</p></div></div>
+      <a class="button is-primary account-primary-action" [routerLink]="['/souscription']"><span class="icon"><i class="fas fa-arrow-right"></i></span><span i18n>Commencer une inscription</span></a>
+    </section>
+
     <section class="box account-card account-cra-card" *ngIf="selectedProject() && store.isProf()">
       <div class="account-card-heading">
         <div class="account-card-icon account-card-icon--prof"><i class="fas fa-clock"></i></div>
@@ -88,6 +93,7 @@
             </div>
             <div class="buttons mb-0 project-actions">
               <button class="button is-success is-light" (click)="enterProject(project)" i18n>Entrer</button>
+              <a *ngIf="registrationsOpen(project)" class="button is-primary is-light" (click)="store.selectProject(project.id)" [routerLink]="['/souscription']" i18n>S'inscrire</a>
             </div>
           </div>
         </section>
