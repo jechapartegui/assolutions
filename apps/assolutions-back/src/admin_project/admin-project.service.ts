@@ -412,6 +412,14 @@ export class AdminProjectService {
         `,
         [accountId, anonymizedLogin],
       );
+
+      await manager.query(
+        `
+          INSERT INTO rgpd_erasure_log(project_id, compte_id, nb_personnes, traite_par_compte_id)
+          VALUES ($1, $2, $3, $4)
+        `,
+        [projectId, accountId, personIds.length, userId],
+      );
     });
 
     return {
