@@ -4,13 +4,16 @@ import { In, Repository } from 'typeorm';
 
 import { CreatePersonneDto, UpdatePersonneDto } from './personne.dto';
 import { PersonneEntity } from './personne.entity';
+import { RepresentantLegalEntity } from './representant-legal.entity';
+import { RepresentantLegalDto } from './representant-legal.dto';
 
 @Injectable()
 export class PersonneService {
   constructor(
     @InjectRepository(PersonneEntity)
     private readonly repo: Repository<PersonneEntity>,
-    
+    @InjectRepository(RepresentantLegalEntity)
+    private readonly representantRepo: Repository<RepresentantLegalEntity>,
   ) {}
 
   listForCompte(compteId: number) {
@@ -71,6 +74,39 @@ export class PersonneService {
     const saved = await this.repo.save(item);
 
     return saved;
+  }
+
+  listRepresentants(id: number) {
+    return this.representantRepo.find({
+      where: { personne_id: id },
+      order: { ordre: 'ASC', id: 'ASC' },
+    });
+  }
+
+  async replaceRepresentants(id: number, items: RepresentantLegalDto[]) {
+    await this.get(id);
+    if ((items ?? []).length > 2) {
+      throw new Error('Deux représentants légaux maximum.');
+    }
+
+    const clean = (items ?? []).map((item, index) => ({
+      personne_id: id,
+      nom: item.nom.trim(),
+      prenom: item.prenom.trim(),
+      email: item.email.trim(),
+      telephone: item.telephone.trim(),
+      ordre: index + 1,
+    }));
+
+    if (clean.some((item) => !item.nom || !item.prenom || !item.email || !item.telephone)) {
+      throw new Error('Nom, prénom, email et téléphone sont obligatoires pour chaque représentant légal.');
+    }
+
+    await this.representantRepo.manager.transaction(async (manager) => {
+      await manager.delete(RepresentantLegalEntity, { personne_id: id });
+      if (clean.length) await manager.save(RepresentantLegalEntity, clean);
+    });
+    return this.listRepresentants(id);
   }
 
   async remove(id: number) {
