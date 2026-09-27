@@ -85,6 +85,13 @@ export class CraComponent {
     }finally{this.saving=false;}
   }
 
+  async confirmWithoutInvoice(){
+    if(!this.cra||this.saving||!confirm('Confirmer sans facture ? Le montant validé sera transmis à la gestion financière du club.'))return;
+    this.saving=true;
+    try{await this.api.noInvoice(this.cra.id);this.cra=await this.api.get(this.cra.id);this.syncStatus();ErrorService.instance.emitChange(ErrorService.instance.OKMessage('CRA transmis pour paiement sans facture'));}
+    finally{this.saving=false;}
+  }
+
   async validate(){
     if(!this.cra||this.saving||!confirm('Valider définitivement ce CRA ? Après validation, les lignes ne seront plus modifiables.'))return;
     this.saving=true;
