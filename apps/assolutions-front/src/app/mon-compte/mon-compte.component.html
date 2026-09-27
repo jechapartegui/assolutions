@@ -26,6 +26,19 @@
       </a>
     </section>
 
+    <section class="box account-card account-cra-card" *ngIf="selectedProject() && store.isProf()">
+      <div class="account-card-heading">
+        <div class="account-card-icon account-card-icon--prof"><i class="fas fa-clock"></i></div>
+        <div>
+          <h2 class="title is-5 mb-1">Mes heures et prestations</h2>
+          <p class="has-text-grey is-size-7 mb-0">Consultez vos séances, complétez puis validez votre CRA mensuel.</p>
+        </div>
+      </div>
+      <a class="button is-link account-primary-action" [routerLink]="['/cra']">
+        <span class="icon"><i class="fas fa-arrow-right"></i></span><span>Accéder à mes CRA</span>
+      </a>
+    </section>
+
     <section class="box account-card account-people-card">
       <div class="account-section-heading">
         <div>
