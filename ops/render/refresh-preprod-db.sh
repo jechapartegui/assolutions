@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SCRIPT_VERSION="2026-09-27-03"
+SCRIPT_VERSION="2026-09-27-04"
 
 # Rafraîchit la base de préproduction à partir d'une copie logique complète de
 # la production.
@@ -142,8 +142,12 @@ echo "==> Taille PREPROD  : $PREPROD_DB_SIZE (document: $PREPROD_DOCUMENT_SIZE)"
 
 PREPROD_HAS_DOCUMENT="$(sql_scalar "$PREPROD_DATABASE_URL" "SELECT to_regclass('public.document') IS NOT NULL;")"
 if [[ "$PREPROD_HAS_DOCUMENT" == "t" ]]; then
-  echo "==> Libération préventive de l'ancienne table document en PREPROD"
-  psql "$PREPROD_DATABASE_URL" -X --set=ON_ERROR_STOP=1 --command="TRUNCATE TABLE public.document;"
+  echo "==> Libération préventive des anciennes données documentaires en PREPROD"
+  # document est référencée par preuve_medicale (et potentiellement d'autres tables
+  # selon la version du schéma). CASCADE tronque uniquement les tables dépendantes
+  # signalées par PostgreSQL ; elles seront toutes recréées/rechargées juste après
+  # depuis le dump PROD par pg_restore.
+  psql "$PREPROD_DATABASE_URL" -X --set=ON_ERROR_STOP=1 --command="TRUNCATE TABLE public.document CASCADE;"
 fi
 
 echo "==> Restauration dans la PREPRODUCTION (transactionnelle hors purge préalable des anciens documents)"
