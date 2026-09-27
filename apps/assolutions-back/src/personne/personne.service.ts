@@ -83,6 +83,19 @@ export class PersonneService {
     });
   }
 
+  async listRepresentantsForPeople(ids: number[]) {
+    const cleanIds = [...new Set((ids ?? []).map(Number).filter((id) => Number.isInteger(id) && id > 0))];
+    if (!cleanIds.length) return {};
+    const rows = await this.representantRepo.find({
+      where: { personne_id: In(cleanIds) },
+      order: { personne_id: 'ASC', ordre: 'ASC', id: 'ASC' },
+    });
+    return rows.reduce((acc: Record<number, RepresentantLegalEntity[]>, row) => {
+      (acc[row.personne_id] ??= []).push(row);
+      return acc;
+    }, {});
+  }
+
   async replaceRepresentants(id: number, items: RepresentantLegalDto[]) {
     await this.get(id);
     if ((items ?? []).length > 2) {
