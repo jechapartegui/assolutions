@@ -295,11 +295,14 @@ export class CraService {
     cra.updated_at = new Date();
     await this.craRepo.save(cra);
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    const contrat = await this.contratRepo.findOne({ where: { id: cra.contrat_prof_id } });
+    const personne = contrat ? await this.personneRepo.findOne({ where: { id: contrat.professeur_id } }) : null;
+    const professorName = personne ? `${personne.first_name} ${personne.last_name}`.trim() : 'Un professeur';
     if (project?.login) {
       await this.messageService.sendAutomaticMail({
         to: project.login, projectId, record: `CRA_SOUMIS_${cra.id}`,
-        subject: `CRA à valider - ${String(cra.mois).padStart(2,'0')}/${cra.annee}`,
-        html: `<p>Un professeur vient de soumettre son CRA pour <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong>.</p><p>Montant : <strong>${Number(cra.montant_total).toFixed(2)} €</strong>.</p><p>Il est disponible dans l'administration Assolutions.</p>`,
+        subject: `CRA à valider - ${professorName} - ${String(cra.mois).padStart(2,'0')}/${cra.annee}`,
+        html: `<p>Bonjour,</p><p><strong>${professorName}</strong> vient de soumettre son CRA pour <strong>${String(cra.mois).padStart(2,'0')}/${cra.annee}</strong>.</p><p>Montant déclaré : <strong>${Number(cra.montant_total).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})} €</strong>.</p><p>Le CRA est maintenant en attente de contrôle. Vous pouvez consulter le détail, le valider ou le renvoyer au professeur avec un commentaire depuis <strong>Administration → CRA professeurs</strong>.</p><p>Assolutions</p>`,
       });
     }
     return this.get(id, projectId, userId);
@@ -351,6 +354,26 @@ export class CraService {
     const compte=await this.compteRepo.findOne({where:{id:personne.compte}});
     if(!compte?.login)return;
     await this.messageService.sendAutomaticMail({to:compte.login,name:`${personne.first_name} ${personne.last_name}`,projectId:cra.project_id,record:`CRA_CLUB_${cra.id}_${cra.statut}`,subject,html});
+  }
+
+  async finalizeWithoutInvoice(id: number, projectId: number, userId: number) {
+    const cra=await this.craRepo.findOne({where:{id}});
+    if(!cra||cra.project_id!==projectId) throw new NotFoundException('CRA_NOT_FOUND');
+    await this.assertCraOwner(cra,projectId,userId);
+    if(cra.statut!=='VALIDE_CLUB') throw new BadRequestException('CRA_MUST_BE_VALIDATED_BY_CLUB');
+    const {contrat,saison}=await this.contratForProject(cra.contrat_prof_id,projectId);
+    const personne=await this.personneRepo.findOne({where:{id:contrat.professeur_id}});
+    const amount=Number(cra.montant_total);
+    return this.dataSource.transaction(async manager=>{
+      const flux=await manager.getRepository(FluxFinancierEntity).save(manager.getRepository(FluxFinancierEntity).create({
+        libelle:`Rémunération ${personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat.professeur_id}`} - ${String(cra.mois).padStart(2,'0')}/${cra.annee}`,
+        date:this.localIsoDate(new Date()),destinataire:personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat.professeur_id}`,
+        recette:false,statut:0,montant:amount,info:`CRA #${cra.id} - sans facture`,project_id:projectId,saison_id:saison.id,
+        classe_comptable_id:null,nb_paiement:1,type_frais:'REMUNERATION_PROF',personne_id:contrat.professeur_id,contrat_prof_id:contrat.id,flux_systeme:true,origine:'CRA',
+      }));
+      cra.statut='FACTURE';cra.updated_at=new Date();await manager.getRepository(CraEntity).save(cra);
+      return {cra,flux,sans_facture:true};
+    });
   }
 
   async finalizeInvoice(id: number, dto: FinalizeFactureDto, projectId: number, userId: number) {
