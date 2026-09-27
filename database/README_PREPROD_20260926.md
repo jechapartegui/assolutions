@@ -1,30 +1,52 @@
-# Installation PREPROD — release FFRS / QS / CRA
+# Base de données Assolutions
 
-Pour cette release, ne pas rejouer les anciens scripts SQL ponctuels.
+Ce dossier est volontairement organisé pour qu'une installation de PREPROD ne demande pas de deviner quels SQL exécuter.
 
-## Ordre
+## PREPROD — release 2026-09 FFRS / QS Sport / CRA
 
-1. Faire un backup de la base PREPROD.
-2. Exécuter `database/migrations/20260926_release_ffrs_qs_cra.sql`.
-3. Générer l'import FFRS depuis l'extraction officielle :
-   `python scripts/generate_ffrs_import.py extraction_licences_20260926120450.xlsx > database/import_ffrs_2026_2027.generated.sql`
-4. Lire le contrôle en fin de fichier généré puis exécuter ce fichier sur PREPROD.
-5. Déployer/rebuilder le back puis le front de la branche `feature/release-ffrs-cra`.
+### Fichier SQL à passer
 
-## Scripts à NE PAS passer pour cette installation
+Exécuter **uniquement** :
 
-- `database/upgrade_schema.sql` : migration historique globale, conservée comme référence.
-- `database/migrations/20260906_mail_record_monitoring.sql` : migration mail indépendante de cette release.
-- Les anciens scripts ponctuels exigences/Derby/tunnel ont été retirés de la branche : leurs prérequis encore utiles sont consolidés dans la migration du 26/09.
+`migrations/20260926_release_ffrs_qs_cra.sql`
 
-## Import FFRS
+Il contient le schéma nécessaire à cette release (FFRS, représentants légaux, QS Sport et CRA), ainsi que les petits prérequis historiques encore nécessaires.
 
-Le rapprochement utilise nom + prénom + date de naissance.
-Les champs mis à jour sont :
-- Numéro de licence ;
-- Catégorie FFRS ;
-- Type licence FFRS (uniquement Loisir ou Compétition).
+### Mise à jour des licences FFRS
 
-Les types fédéraux Dirigeant / Encadrant sportif / Officiel de compétition ne sont pas convertis artificiellement en Loisir ou Compétition.
+Le fichier SQL de données est généré depuis l'extraction officielle afin d'éviter de maintenir deux sources.
 
-En cas de rapprochement ambigu, l'import doit s'arrêter : ne pas corriger directement en production sans contrôler la personne.
+Depuis la racine du dépôt :
+
+`python database/tools/generate_ffrs_import.py extraction_licences_20260926120450.xlsx > database/generated/import_ffrs_2026_2027.sql`
+
+Puis exécuter :
+
+`database/generated/import_ffrs_2026_2027.sql`
+
+Le script met à jour le numéro de licence, la catégorie FFRS et le type de licence (Loisir / Compétition). Le rapprochement se fait sur nom + prénom + date de naissance et refuse les correspondances ambiguës.
+
+## Passage PREPROD vers LOCAL
+
+Les outils de copie de base restent dans `scripts/` car ils concernent l'environnement, pas une migration SQL :
+
+- `scripts/copy-preprod-to-local.ps1`
+- `scripts/COPY_PREPROD_TO_LOCAL.md`
+- `scripts/anonymize-preprod.cjs`
+- `scripts/ANONYMISATION_PREPROD.md`
+
+Ils servent à remplacer la base locale par une copie de PREPROD puis, si nécessaire, à anonymiser les données. Ils ne sont pas à exécuter comme migration de release.
+
+## OLD
+
+`database/OLD/` contient les anciens SQL conservés uniquement pour historique ou dépannage.
+
+**Ne rien exécuter depuis OLD pour une installation normale.**
+
+## Règle pour la suite
+
+- `database/migrations/` : migrations actives à appliquer aux environnements.
+- `database/tools/` : générateurs/utilitaires liés aux données.
+- `database/generated/` : SQL générés localement, prêts à être passés en base.
+- `database/OLD/` : historique, jamais à passer automatiquement.
+- `scripts/` : scripts d'exploitation généraux (copie/anonymisation/sécurité), pas les migrations SQL.
