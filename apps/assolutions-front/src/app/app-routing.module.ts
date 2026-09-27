@@ -35,6 +35,7 @@ import { CodePromoComponent } from './code-promo/code-promo.component';
 import { ExigenceDossierComponent } from './exigence-dossier/exigence-dossier.component';
 import { HelpComponent } from './help/help.component';
 import { CraComponent } from './cra/cra.component';
+import { CraAdminComponent } from './cra-admin/cra-admin.component';
 
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
 const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
@@ -60,6 +61,7 @@ const routes: Routes = [
   { path: 's/:code/:answer', component: ShortLinkRedirectComponent },
   { path: 'tdb', component: DashboardComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'cra', component: CraComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
+  { path: 'cra-admin', component: CraAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'menu-admin', component: MenuAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'admin-projet', component: AdminProjectComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
   { path: 'addinfo-listes', component: AddinfoListAdminComponent, canActivate: [AuthGuard], data: ADMIN_ONLY },
