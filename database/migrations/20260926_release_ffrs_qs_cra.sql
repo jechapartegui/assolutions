@@ -96,7 +96,12 @@ CREATE INDEX IF NOT EXISTS idx_cra_project_period ON cra(project_id, annee, mois
 CREATE INDEX IF NOT EXISTS idx_cra_ligne_cra ON cra_ligne(cra_id);
 CREATE INDEX IF NOT EXISTS idx_facture_prof_flux ON facture_prof(flux_financier_id);
 
--- Fix #85 : journal minimal des demandes RGPD, sans conserver l'identité effacée.
+-- Fix 98 : permettre l'effacement réel des attributs d'identité sans casser les FK historiques.
+ALTER TABLE personne ALTER COLUMN date_naissance DROP NOT NULL;
+ALTER TABLE personne ALTER COLUMN address DROP NOT NULL;
+ALTER TABLE personne ALTER COLUMN pays DROP NOT NULL;
+
+-- Fix 98 : journal minimal des demandes RGPD, sans conserver l'identité effacée.
 CREATE TABLE IF NOT EXISTS rgpd_erasure_log (
   id serial PRIMARY KEY,
   project_id integer NOT NULL,
