@@ -8,7 +8,8 @@ import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceProfesseurEntity } from '../seance_professeur/seance_professeur.entity';
-import { AddCraLigneDto, FinalizeFactureDto, OpenCraDto } from './cra.dto';
+import { SeanceEntity } from '../seance/seance.entity';
+import { AddCraLigneDto, AddCraSeanceDto, FinalizeFactureDto, OpenCraDto, UpdateCraLigneDto } from './cra.dto';
 import { CraEntity, CraLigneEntity, FactureProfEntity } from './cra.entity';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class CraService {
     @InjectRepository(PersonneEntity) private readonly personneRepo: Repository<PersonneEntity>,
     @InjectRepository(SaisonEntity) private readonly saisonRepo: Repository<SaisonEntity>,
     @InjectRepository(SeanceProfesseurEntity) private readonly spRepo: Repository<SeanceProfesseurEntity>,
+    @InjectRepository(SeanceEntity) private readonly seanceRepo: Repository<SeanceEntity>,
     @InjectRepository(DocumentEntity) private readonly documentRepo: Repository<DocumentEntity>,
     private readonly dataSource: DataSource,
   ) {}
@@ -197,6 +199,71 @@ export class CraService {
     }));
     await this.recalculate(id);
     return this.get(id, projectId, userId);
+  }
+
+  async updateLine(id: number, lineId: number, dto: UpdateCraLigneDto, projectId: number, userId: number) {
+    const cra = await this.craRepo.findOne({ where: { id } });
+    if (!cra || cra.project_id !== projectId) throw new NotFoundException('CRA_NOT_FOUND');
+    await this.assertCraOwner(cra, projectId, userId);
+    if (cra.statut !== 'BROUILLON') throw new BadRequestException('CRA_LOCKED');
+    if (dto.quantite <= 0 || dto.taux < 0) throw new BadRequestException('INVALID_CRA_LINE_AMOUNT');
+    const line = await this.ligneRepo.findOne({ where: { id: lineId, cra_id: id } });
+    if (!line) throw new NotFoundException('CRA_LINE_NOT_FOUND');
+    line.quantite = dto.quantite.toFixed(2);
+    line.taux = dto.taux.toFixed(2);
+    const sign = line.type === 'REDUCTION' ? -1 : 1;
+    line.montant = (sign * dto.quantite * dto.taux).toFixed(2);
+    await this.ligneRepo.save(line);
+    await this.recalculate(id);
+    return this.get(id, projectId, userId);
+  }
+
+  async availableSessions(id: number, projectId: number, userId: number) {
+    const cra = await this.craRepo.findOne({ where: { id } });
+    if (!cra || cra.project_id !== projectId) throw new NotFoundException('CRA_NOT_FOUND');
+    await this.assertCraOwner(cra, projectId, userId);
+    const start = `${cra.annee}-${String(cra.mois).padStart(2,'0')}-01`;
+    const end = this.localIsoDate(new Date(cra.annee, cra.mois, 0));
+    const used = (await this.ligneRepo.find({ where: { cra_id: id } }))
+      .map(x => x.seance_professeur_id).filter((x): x is number => x != null);
+    const sessions = await this.seanceRepo.createQueryBuilder('s')
+      .where('s.saison_id = :saisonId', { saisonId: cra.saison_id })
+      .andWhere('s.date_seance BETWEEN :start AND :end', { start, end })
+      .orderBy('s.date_seance','ASC').addOrderBy('s.heure_debut','ASC').getMany();
+    return sessions.map(s => ({
+      seance_id: s.seance_id, date: s.date_seance, heure_debut: s.heure_debut,
+      duree_seance: s.duree_seance, label: s.label || 'Séance',
+      alreadyLinked: used.length ? false : false,
+    }));
+  }
+
+  async addSession(id: number, dto: AddCraSeanceDto, projectId: number, userId: number) {
+    const cra = await this.craRepo.findOne({ where: { id } });
+    if (!cra || cra.project_id !== projectId) throw new NotFoundException('CRA_NOT_FOUND');
+    await this.assertCraOwner(cra, projectId, userId);
+    if (cra.statut !== 'BROUILLON') throw new BadRequestException('CRA_LOCKED');
+    if (dto.quantite <= 0 || dto.taux < 0) throw new BadRequestException('INVALID_CRA_LINE_AMOUNT');
+    const seance = await this.seanceRepo.findOne({ where: { seance_id: dto.seance_id, saison_id: cra.saison_id } });
+    if (!seance) throw new NotFoundException('SEANCE_NOT_FOUND');
+    if (Number(seance.date_seance.slice(0,4)) !== cra.annee || Number(seance.date_seance.slice(5,7)) !== cra.mois)
+      throw new BadRequestException('SEANCE_OUTSIDE_CRA_PERIOD');
+    const existingSp = await this.spRepo.findOne({ where: { seance_id: seance.seance_id, professeurcontract_id: cra.contrat_prof_id } });
+    let sp = existingSp;
+    if (!sp) {
+      sp = await this.spRepo.save(this.spRepo.create({
+        seance_id: seance.seance_id, professeurcontract_id: cra.contrat_prof_id,
+        minutes: Math.round(dto.quantite * 60), cout: (dto.quantite * dto.taux).toFixed(2), info: 'Ajouté depuis le CRA', statut: 'prévue',
+      }));
+    }
+    if (await this.ligneRepo.findOne({ where: { cra_id: id, seance_professeur_id: sp.id } }))
+      throw new BadRequestException('SEANCE_ALREADY_IN_CRA');
+    await this.ligneRepo.save(this.ligneRepo.create({
+      cra_id:id,seance_professeur_id:sp.id,date:seance.date_seance,type:'SEANCE',
+      libelle:seance.label||'Séance',quantite:dto.quantite.toFixed(2),taux:dto.taux.toFixed(2),
+      montant:(dto.quantite*dto.taux).toFixed(2),
+    }));
+    await this.recalculate(id);
+    return this.get(id,projectId,userId);
   }
 
   async removeLine(id: number, lineId: number, projectId: number, userId: number) {
