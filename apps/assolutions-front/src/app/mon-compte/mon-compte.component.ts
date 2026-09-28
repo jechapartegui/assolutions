@@ -42,7 +42,7 @@ export class MonCompteComponent {
   hasProjects = computed(() => this.projets().length > 0);
 
   registrationsOpen(project:any): boolean {
-    return project?.saison_active?.inscriptions_ouvertes !== false;
+    return project?.saison_active?.inscriptions_ouvertes === true;
   }
 
   get publicProjectsToJoin(): Project[] {
@@ -54,7 +54,7 @@ export class MonCompteComponent {
     const projectId = Number(this.selectedProject()?.id ?? 0);
     const saisonId = Number(this.store.saison_active_id() ?? 0);
     if (!projectId || !this.personnes.length) return false;
-    if (this.selectedProject()?.saison_active?.inscriptions_ouvertes === false) return false;
+    if (!this.registrationsOpen(this.selectedProject())) return false;
 
     return this.personnes.some((personne) => {
       if (!personne?.id || this.isArchived(personne)) return false;
