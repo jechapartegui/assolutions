@@ -39,6 +39,10 @@ export class AppComponent implements OnInit, OnDestroy {
   envt = environment;
   isPublic = false;
   defaultProjectLabel = $localize`Projet`;
+
+  get registrationsOpen(): boolean {
+    return this.store.saison_active()?.inscriptions_ouvertes === true;
+  }
   adminPageMeta: AdminPageMeta | null = null;
 
   private readonly adminPageMetadata: Record<string, AdminPageMeta> = {
