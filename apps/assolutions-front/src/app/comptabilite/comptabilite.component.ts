@@ -504,7 +504,7 @@ get totalBudget(): number {
     const txt = this.filterTexte.trim().toLowerCase();
 
     return this.flux.filter((f) => {
-      if (!this.showSystemFlux && f.flux_systeme) return false;
+      if (!this.showSystemFlux && f.flux_systeme && f.origine !== 'CRA') return false;
 
       const matchTexte =
         !txt ||
