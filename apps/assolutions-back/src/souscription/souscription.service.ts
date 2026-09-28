@@ -82,8 +82,16 @@ export class SouscriptionService {
     private readonly helloAsso: HelloAssoService,
   ) {}
 
-  async getContext(saisonId: number, projectId: number, compteId: number) {
+  private async assertRegistrationsOpen(saisonId: number, projectId: number): Promise<SaisonEntity> {
     const saison = await this.assertSaisonInProject(saisonId, projectId);
+    if (saison.inscriptions_ouvertes !== true) {
+      throw new ForbiddenException('REGISTRATIONS_CLOSED');
+    }
+    return saison;
+  }
+
+  async getContext(saisonId: number, projectId: number, compteId: number) {
+    const saison = await this.assertRegistrationsOpen(saisonId, projectId);
     const personnes = await this.personneRepo.find({
       where: { compte: compteId, archive: false },
       order: { first_name: 'ASC', last_name: 'ASC' },
@@ -270,6 +278,7 @@ export class SouscriptionService {
   }
 
   async saveDraft(dto: SaveSouscriptionDto, projectId: number, compteId: number) {
+    await this.assertRegistrationsOpen(dto.saison_id, projectId);
     const saison = await this.assertSaisonInProject(dto.saison_id, projectId);
     if (!dto.personnes?.length) {
       throw new BadRequestException('Sélectionne au moins une personne');
