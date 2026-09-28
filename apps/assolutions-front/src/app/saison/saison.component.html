@@ -367,6 +367,18 @@
             Inscription en ligne
           </h2>
 
+          <div class="field mb-5">
+            <label class="label" i18n>Ouverture des inscriptions</label>
+            <p *ngIf="!edit" class="readonly-value">
+              {{ Item.inscriptions_ouvertes !== false ? 'Ouvertes' : 'Fermées' }}
+            </p>
+            <label *ngIf="edit" class="checkbox">
+              <input type="checkbox" [ngModel]="Item.inscriptions_ouvertes !== false" (ngModelChange)="updateInscriptionsOuvertes($event)" />
+              <span class="ml-2" i18n>Autoriser les nouvelles inscriptions</span>
+            </label>
+            <p class="help mt-2" i18n>Fermer les inscriptions empêche les adhérents de démarrer une nouvelle inscription sur cette saison. La gestion administrative reste disponible.</p>
+          </div>
+
           <div class="field">
             <label class="label" i18n>Ordre de sélection</label>
 

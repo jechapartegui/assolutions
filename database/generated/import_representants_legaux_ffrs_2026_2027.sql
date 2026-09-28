@@ -1,0 +1,5 @@
+-- Ce fichier n'est volontairement PAS versionné avec les données réelles.
+-- L'import contient des noms, dates de naissance, emails et téléphones.
+-- Générer/utiliser localement le fichier privé :
+--   import_representants_legaux_ffrs_2026_2027.sql
+-- Voir database/README_PREPROD_20260926.md.

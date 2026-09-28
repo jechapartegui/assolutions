@@ -1,0 +1,98 @@
+<div class="cra-shell">
+  <header class="cra-header">
+    <button class="button is-light is-small" type="button" (click)="back()"><span class="icon"><i class="fas fa-arrow-left"></i></span><span>Mon compte</span></button>
+    <div class="cra-heading">
+      <p class="cra-kicker">Espace professeur</p>
+      <h1 class="title is-3 mb-1">Mes heures et prestations</h1>
+      <p class="subtitle is-6 mb-0" *ngIf="context">Saison {{context.saison.nom}} · vérifiez vos séances puis validez chaque mois.</p>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="cra-loading"><progress class="progress is-small is-info" max="100">60%</progress><p>Chargement de vos périodes…</p></div>
+
+  <ng-container *ngIf="!loading && context">
+    <section class="cra-months" *ngIf="context.months.length; else noMonths">
+      <button type="button" class="cra-month-card" *ngFor="let m of context.months"
+        [class.is-selected]="selected?.annee===m.annee && selected?.mois===m.mois" (click)="selectMonth(m)">
+        <span class="cra-month-name">{{monthLabel(m)}}</span>
+        <span class="tag" [ngClass]="statusClass(m.statut)">{{statusLabel(m.statut)}}</span>
+      </button>
+    </section>
+
+    <ng-template #noMonths><div class="notification is-light">Aucun mois n'est encore disponible pour votre contrat sur cette saison.</div></ng-template>
+
+    <div *ngIf="loadingCra" class="cra-inline-loading"><progress class="progress is-small is-info" max="100">60%</progress></div>
+
+    <main *ngIf="cra && selected && !loadingCra" class="cra-content">
+      <section class="box cra-summary">
+        <div>
+          <p class="cra-summary-label">Période</p>
+          <h2 class="title is-4 mb-1">{{monthLabel(selected)}}</h2>
+          <span class="tag is-medium" [ngClass]="statusClass(cra.statut)">{{statusLabel(cra.statut)}}</span>
+        </div>
+        <div class="cra-total-block"><span>Total du mois</span><strong>{{money(cra.montant_total)}}</strong></div>
+      </section>
+
+      <section class="box cra-lines">
+        <div class="cra-section-title">
+          <div><h2 class="title is-5 mb-1">Détail du mois</h2><p class="is-size-7 has-text-grey mb-0">Les séances enregistrées sont chargées automatiquement.</p></div>
+        </div>
+
+        <div class="table-container cra-table-scroll">
+          <table class="table is-fullwidth is-hoverable">
+            <thead><tr><th>Date</th><th>Type</th><th>Libellé</th><th class="has-text-right">Qté / h</th><th class="has-text-right">Taux</th><th class="has-text-right">Montant</th><th *ngIf="isEditable()"></th></tr></thead>
+            <tbody>
+              <tr *ngFor="let l of cra.lignes">
+                <td>{{l.date|date:'dd/MM/yyyy'}}</td><td><span class="tag is-light">{{l.type}}</span></td><td>{{l.libelle}}</td>
+                <td class="has-text-right"><input *ngIf="isEditable(); else qtyRead" class="input is-small cra-number" type="number" min=".25" step=".25" [(ngModel)]="l.quantite"><ng-template #qtyRead>{{qty(l.quantite)}}</ng-template></td>
+                <td class="has-text-right"><input *ngIf="isEditable(); else rateRead" class="input is-small cra-number" type="number" min="0" step=".01" [(ngModel)]="l.taux"><ng-template #rateRead>{{money(l.taux)}}</ng-template></td>
+                <td class="has-text-right"><strong>{{money(l.montant)}}</strong></td>
+                <td *ngIf="isEditable()" class="has-text-right"><div class="buttons are-small is-justify-content-flex-end"><button class="button is-link is-light" type="button" title="Enregistrer" (click)="saveLine(l)"><span class="icon"><i class="fas fa-save"></i></span></button><button class="button is-danger is-light" type="button" title="Supprimer" (click)="remove(l.id)"><span class="icon"><i class="fas fa-trash"></i></span></button></div></td>
+              </tr>
+              <tr *ngIf="!cra.lignes.length"><td [attr.colspan]="isEditable()?7:6" class="has-text-centered has-text-grey py-5">Aucune séance ou prestation sur ce mois.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="box cra-add" *ngIf="isEditable()">
+        <div class="cra-section-title"><div><h2 class="title is-5 mb-1">Ajouter une séance</h2><p class="is-size-7 has-text-grey mb-0">Sélectionnez une séance existante de ce mois qui manque à votre CRA.</p></div></div>
+        <div class="cra-session-grid">
+          <div class="field"><label class="label">Séance</label><div class="select is-fullwidth"><select [(ngModel)]="selectedSessionId"><option [ngValue]="null">Choisir une séance…</option><option *ngFor="let s of sessions" [ngValue]="s.seance_id">{{s.date|date:'dd/MM'}} · {{s.heure_debut}} · {{s.label}}</option></select></div></div>
+          <div class="field"><label class="label">Heures</label><input class="input" type="number" min=".25" step=".25" [(ngModel)]="sessionQty"></div>
+          <div class="field"><label class="label">Taux (€)</label><input class="input" type="number" min="0" step=".01" [(ngModel)]="sessionRate"></div>
+          <div class="field cra-add-button"><label class="label">&nbsp;</label><button class="button is-link is-fullwidth" [disabled]="!selectedSessionId" (click)="addSession()"><span class="icon"><i class="fas fa-calendar-plus"></i></span><span>Ajouter</span></button></div>
+        </div>
+      </section>
+
+      <section class="box cra-add" *ngIf="isEditable()">
+        <div class="cra-section-title"><div><h2 class="title is-5 mb-1">Ajouter une prestation</h2><p class="is-size-7 has-text-grey mb-0">Ajoutez uniquement ce qui n'est pas déjà issu de vos séances.</p></div></div>
+        <div class="cra-form-grid">
+          <div class="field"><label class="label">Date</label><input class="input" type="date" [min]="periodMin" [max]="periodMax" [(ngModel)]="line.date"></div>
+          <div class="field"><label class="label">Type</label><div class="select is-fullwidth"><select [(ngModel)]="line.type"><option value="PRESTATION">Prestation</option><option value="FRAIS">Frais</option><option value="REDUCTION">Réduction</option></select></div></div>
+          <div class="field cra-field-label"><label class="label">Libellé</label><input class="input" placeholder="Ex. préparation événement" [(ngModel)]="line.libelle"></div>
+          <div class="field"><label class="label">Quantité</label><input class="input" type="number" min=".25" step=".25" [(ngModel)]="line.quantite"></div>
+          <div class="field"><label class="label">Taux (€)</label><input class="input" type="number" min="0" step=".01" [(ngModel)]="line.taux"></div>
+          <div class="field cra-add-button"><label class="label">&nbsp;</label><button class="button is-link is-fullwidth" type="button" [class.is-loading]="saving" [disabled]="!line.libelle.trim()||line.quantite<=0||line.taux<0" (click)="add()"><span class="icon"><i class="fas fa-plus"></i></span><span>Ajouter</span></button></div>
+        </div>
+      </section>
+
+      <section class="cra-validation" *ngIf="isEditable()">
+        <div><strong>Tout est correct ?</strong><p class="is-size-7 has-text-grey mb-0">Après validation, ce CRA sera verrouillé.</p></div>
+        <button class="button is-success" type="button" [class.is-loading]="saving" (click)="validate()"><span class="icon"><i class="fas fa-check"></i></span><span>Valider le CRA du mois</span></button>
+      </section>
+
+      <div class="notification is-info is-light" *ngIf="cra.statut==='SOUMIS'"><strong>CRA transmis au club.</strong> Il est verrouillé pendant son contrôle.</div>
+      <section class="box" *ngIf="cra.statut==='VALIDE_CLUB'">
+        <h2 class="title is-5 mb-1">Déposer ma facture</h2><p class="is-size-7 has-text-grey">Le club a validé votre CRA. Si vous émettez une facture, vous pouvez la déposer ci-dessous. Sinon, confirmez simplement que vous n'avez pas de facture à transmettre.</p>
+        <div class="cra-form-grid">
+          <div class="field cra-field-label"><label class="label">Facture PDF / image</label><input class="input" type="file" accept=".pdf,image/*" (change)="chooseInvoice($event)"></div>
+          <div class="field"><label class="label">N° facture</label><input class="input" [(ngModel)]="invoiceNumber"></div>
+          <div class="field"><label class="label">Date facture</label><input class="input" type="date" [(ngModel)]="invoiceDate"></div>
+          <div class="field cra-add-button"><label class="label">&nbsp;</label><button class="button is-success is-fullwidth" [disabled]="!invoiceFile" [class.is-loading]="saving" (click)="depositInvoice()">Déposer</button></div>
+        </div><div class="has-text-centered mt-4"><span class="is-size-7 has-text-grey">Vous n'avez pas de facture ?</span><br><button class="button is-light mt-2" type="button" [class.is-loading]="saving" (click)="confirmWithoutInvoice()"><span class="icon"><i class="fas fa-check"></i></span><span>Je n'ai pas de facture à transmettre</span></button></div>
+      </section>
+      <div class="notification is-success is-light" *ngIf="cra.statut==='FACTURE'"><strong>CRA facturé.</strong> La facture associée a été enregistrée.</div>
+    </main>
+  </ng-container>
+</div>

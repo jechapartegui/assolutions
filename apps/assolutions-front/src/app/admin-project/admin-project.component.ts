@@ -342,6 +342,33 @@ export class AdminProjectComponent implements OnInit {
     }
   }
 
+  // Fix 98 - RGPD / droit à l'effacement
+  async anonymizeAccount(account: AdminProjectAccount): Promise<void> {
+    if (!this.canManageAccount(account)) return;
+    const people = (account.people ?? []).map((p) => this.displayPersonName(p)).join(', ');
+    const target = people || account.login;
+    const confirmation = window.prompt(
+      `ANONYMISATION IRRÉVERSIBLE\n\nCompte : ${account.login}\nPersonne(s) : ${target}\n\nLes coordonnées, champs complémentaires et documents personnels seront supprimés. Le compte sera désactivé et l'identité remplacée par des valeurs anonymes. Les données historiques strictement nécessaires restent rattachées à un identifiant technique.\n\nTape ANONYMISER pour confirmer.`,
+    );
+    if (confirmation !== 'ANONYMISER') return;
+
+    this.saving = true;
+    this.clearFeedback();
+    try {
+      const result = await this.api.anonymizeAccount(
+        account.id,
+        this.isElevated ? this.elevationToken : null,
+      );
+      await this.reload();
+      this.tab = 'ACCOUNTS';
+      this.message = `Compte anonymisé (Fix 98) : ${result.anonymizedPeople} personne(s) traitée(s).`;
+    } catch (error: any) {
+      this.error = this.errorMessage(error, 'Anonymisation impossible.');
+    } finally {
+      this.saving = false;
+    }
+  }
+
   async resetPassword(account: AdminProjectAccount): Promise<void> {
     if (!this.canManageAccount(account)) return;
     if (!window.confirm(`Envoyer un lien de réinitialisation à ${account.login} ?`)) return;

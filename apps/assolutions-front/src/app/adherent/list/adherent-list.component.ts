@@ -43,51 +43,72 @@ export class AdherentListComponent {
     this.selectedPhoto = null;
   }
 
-  exportExcel(): void {
+  async exportExcel(): Promise<void> {
     const rows = this.getFilteredAdherent();
+    const ids = rows.map((a) => Number(a.id)).filter((id) => Number.isInteger(id) && id > 0);
+    const representants = ids.length
+      ? await this.personneApi.listRepresentantsLegauxByIds(ids)
+      : {};
 
-    const columns: ExcelColumn<AdherentListItem_VM>[] = [
-      { header: $localize`:@@common.id:ID`, value: a => a.id },
-      { header: $localize`:@@person.lastname:Nom`, value: a => a.nom },
-      { header: $localize`:@@person.firstname:Prénom`, value: a => a.prenom },
-      { header: $localize`:@@person.nickname:Surnom`, value: a => a.surnom },
+    type ExportRow = {
+      adherent: AdherentListItem_VM;
+      representantsLegaux: any[];
+    };
+    const exportRows: ExportRow[] = rows.map((row) => ({
+      adherent: row,
+      representantsLegaux: representants[Number(row.id)] ?? [],
+    }));
+
+    const columns: ExcelColumn<ExportRow>[] = [
+      { header: $localize`:@@common.id:ID`, value: a => a.adherent.id },
+      { header: $localize`:@@person.lastname:Nom`, value: a => a.adherent.nom },
+      { header: $localize`:@@person.firstname:Prénom`, value: a => a.adherent.prenom },
+      { header: $localize`:@@person.nickname:Surnom`, value: a => a.adherent.surnom },
       {
         header: $localize`:@@common.label:Libellé`,
-        value: a => a.libelle || `${a.prenom ?? ''} ${a.nom ?? ''}`.trim()
+        value: a => a.adherent.libelle || `${a.adherent.prenom ?? ''} ${a.adherent.nom ?? ''}`.trim()
       },
       {
         header: $localize`:@@person.birthdate:Date de naissance`,
-        value: a => this.dateOnly(a.date_naissance)
+        value: a => this.dateOnly(a.adherent.date_naissance)
       },
       {
         header: $localize`:@@person.age:Âge`,
-        value: a => this.ageOnly(a.date_naissance)
+        value: a => this.ageOnly(a.adherent.date_naissance)
       },
       {
         header: $localize`:@@person.gender:Sexe`,
-        value: a => this.getSexeLabel(a.sexe)
+        value: a => this.getSexeLabel(a.adherent.sexe)
       },
       {
         header: $localize`:@@group.active:Groupes actifs`,
-        value: a => (a.groupesActifs ?? []).map(g => g.nom).join(', ')
+        value: a => (a.adherent.groupesActifs ?? []).map(g => g.nom).join(', ')
       },
       {
         header: $localize`:@@address.full:Adresse`,
-        value: a => [a.adresse?.Street, a.adresse?.PostCode, a.adresse?.City, a.adresse?.Country]
+        value: a => [a.adherent.adresse?.Street, a.adherent.adresse?.PostCode, a.adherent.adresse?.City, a.adherent.adresse?.Country]
           .filter(Boolean)
           .join(' ')
       },
       {
         header: $localize`:@@contact.preferred:Contact préféré`,
-        value: a => this.get_contact(a)
+        value: a => this.get_contact(a.adherent)
       },
       {
         header: $localize`:@@member.registered:Inscrit`,
-        value: a => a.inscrit
+        value: a => a.adherent.inscrit
       },
+      { header: 'Représentant légal 1 - Nom', value: a => a.representantsLegaux?.[0]?.nom ?? '' },
+      { header: 'Représentant légal 1 - Prénom', value: a => a.representantsLegaux?.[0]?.prenom ?? '' },
+      { header: 'Représentant légal 1 - Email', value: a => a.representantsLegaux?.[0]?.email ?? '' },
+      { header: 'Représentant légal 1 - Téléphone', value: a => a.representantsLegaux?.[0]?.telephone ?? '' },
+      { header: 'Représentant légal 2 - Nom', value: a => a.representantsLegaux?.[1]?.nom ?? '' },
+      { header: 'Représentant légal 2 - Prénom', value: a => a.representantsLegaux?.[1]?.prenom ?? '' },
+      { header: 'Représentant légal 2 - Email', value: a => a.representantsLegaux?.[1]?.email ?? '' },
+      { header: 'Représentant légal 2 - Téléphone', value: a => a.representantsLegaux?.[1]?.telephone ?? '' },
     ];
 
-    this.excel.export('adherents', rows, columns);
+    this.excel.export('adherents', exportRows, columns);
   }
 
   async exportFfrs(): Promise<void> {

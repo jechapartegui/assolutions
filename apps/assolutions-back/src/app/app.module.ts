@@ -13,6 +13,7 @@ import { CompteBancaireModule } from '../compte_bancaire/compte_bancaire.module'
 import { AccessControlModule } from '../common/access-control.module';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ContactModule } from '../contact/contact.module';
+import { CraModule } from '../cra/cra.module';
 import { ContratProfModule } from '../contrat_prof/contrat_prof.module';
 import { CoursModule } from '../cours/cours.module';
 import { CoursProfesseurModule } from '../cours_professeur/cours_professeur.module';
@@ -140,6 +141,7 @@ const environmentFile = resolveEnvironmentFile();
     AddinfoModule,
     LoginProjectModule,
     ContactModule,
+    CraModule,
     TarifInscriptionModule,
     SouscriptionModule,
     CompteBancaireModule,

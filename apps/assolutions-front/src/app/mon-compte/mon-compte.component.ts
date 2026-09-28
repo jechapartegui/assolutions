@@ -41,6 +41,10 @@ export class MonCompteComponent {
   projets = computed(() => this.store.projects?.() ?? []);
   hasProjects = computed(() => this.projets().length > 0);
 
+  registrationsOpen(project:any): boolean {
+    return project?.saison_active?.inscriptions_ouvertes !== false;
+  }
+
   get publicProjectsToJoin(): Project[] {
     const joinedIds = new Set(this.projets().map((project: any) => Number(project.id)));
     return this.publicProjects.filter((project) => !joinedIds.has(Number(project.id)));
@@ -50,6 +54,7 @@ export class MonCompteComponent {
     const projectId = Number(this.selectedProject()?.id ?? 0);
     const saisonId = Number(this.store.saison_active_id() ?? 0);
     if (!projectId || !this.personnes.length) return false;
+    if (this.selectedProject()?.saison_active?.inscriptions_ouvertes === false) return false;
 
     return this.personnes.some((personne) => {
       if (!personne?.id || this.isArchived(personne)) return false;

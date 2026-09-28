@@ -6,8 +6,8 @@ export class PersonneEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'date' })
-  date_naissance: string;
+  @Column({ type: 'date', nullable: true })
+  date_naissance: string | null;
 
   @Column({ type: 'int' })
   compte: number;
@@ -34,11 +34,11 @@ export class PersonneEntity {
   @Column({ type: 'boolean', default: false })
   gender: boolean;
 
-  @Column({ type: 'varchar', length: 255 })
-  address: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  address: string | null;
 
-  @Column({ type: 'varchar', length: 100, default: 'France' })
-  pays: string;
+  @Column({ type: 'varchar', length: 100, nullable: true, default: 'France' })
+  pays: string | null;
 
   @Column({ type: 'boolean', default: false })
   archive: boolean;

@@ -107,6 +107,12 @@ export class AdminProjectApiService {
     return this.api.POST<AdminProjectAccount>(`${this.base}/accounts/${id}/update`, dto);
   }
 
+  anonymizeAccount(id: number, elevationToken?: string | null): Promise<{ ok: true; accountId: number; anonymizedLogin: string; anonymizedPeople: number }> {
+    return this.api.POST(`${this.base}/accounts/${id}/anonymize`, {
+      elevation_token: elevationToken ?? null,
+    });
+  }
+
   resetPassword(id: number, elevationToken?: string | null): Promise<{ ok: true }> {
     return this.api.POST<{ ok: true }>(`${this.base}/accounts/${id}/reset-password`, {
       elevation_token: elevationToken ?? null,

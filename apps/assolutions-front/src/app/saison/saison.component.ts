@@ -126,6 +126,10 @@ export class SaisonComponent implements OnInit {
     });
   }
 
+  updateInscriptionsOuvertes(value: boolean): void {
+    this.store.patchEditedSaison({ inscriptions_ouvertes: !!value });
+  }
+
   updateTarifAvantGroupes(value: boolean): void {
     this.store.patchEditedSaison({ tarif_avant_groupes: !!value });
   }

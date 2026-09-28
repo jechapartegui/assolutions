@@ -14,6 +14,9 @@ export interface Saison {
    * true : tarif puis groupes accessibles avec ce tarif.
    */
   tarif_avant_groupes?: boolean;
+
+  /** Autorise les adhérents à démarrer une nouvelle inscription sur cette saison. */
+  inscriptions_ouvertes?: boolean;
 }
 
 export type CreateSaisonDto = Omit<Saison, 'id' | 'project_id'>;

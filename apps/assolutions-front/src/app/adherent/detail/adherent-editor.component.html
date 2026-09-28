@@ -403,6 +403,53 @@
           </div>
         </section>
 
+        <section class="box editor-box" *ngIf="isMineur">
+          <div class="editor-box-title-row">
+            <div>
+              <h3 class="subtitle is-6 has-text-primary mb-0" i18n>Représentant légal *</h3>
+              <p class="help mb-0" i18n>Au moins un représentant est obligatoire pour un mineur. Deux maximum.</p>
+            </div>
+          </div>
+
+          <div class="editor-stack">
+            <div class="box mb-3" *ngFor="let r of representantsLegaux; let i = index">
+              <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+                <strong>Représentant {{ i + 1 }}</strong>
+                <button class="button is-small is-light" type="button" (click)="removeRepresentantLegal(i)" i18n>Retirer</button>
+              </div>
+              <div class="editor-fields editor-fields--two">
+                <div class="field">
+                  <label class="label" i18n>Nom *</label>
+                  <input class="input" [(ngModel)]="r.nom" (ngModelChange)="checkall()" />
+                </div>
+                <div class="field">
+                  <label class="label" i18n>Prénom *</label>
+                  <input class="input" [(ngModel)]="r.prenom" (ngModelChange)="checkall()" />
+                </div>
+                <div class="field">
+                  <label class="label" i18n>Email *</label>
+                  <input class="input" type="email" [(ngModel)]="r.email" (ngModelChange)="checkall()" />
+                </div>
+                <div class="field">
+                  <label class="label" i18n>Téléphone *</label>
+                  <input class="input" type="tel" [(ngModel)]="r.telephone" (ngModelChange)="checkall()" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            *ngIf="representantsLegaux.length < 2"
+            class="button is-primary is-light"
+            type="button"
+            (click)="addRepresentantLegal()"
+            i18n
+          >
+            Ajouter un représentant légal
+          </button>
+          <p *ngIf="!rRepresentant.key" class="help is-danger mt-2">{{ rRepresentant.value }}</p>
+        </section>
+
         <section class="box editor-box">
           <div class="editor-box-title-row">
             <div>

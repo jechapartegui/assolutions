@@ -22,6 +22,10 @@ export class CreateSaisonDto {
   @IsOptional()
   @IsBoolean()
   tarif_avant_groupes?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  inscriptions_ouvertes?: boolean;
 }
 
 export class UpdateSaisonDto {
@@ -49,4 +53,8 @@ export class UpdateSaisonDto {
   @IsOptional()
   @IsBoolean()
   tarif_avant_groupes?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  inscriptions_ouvertes?: boolean;
 }

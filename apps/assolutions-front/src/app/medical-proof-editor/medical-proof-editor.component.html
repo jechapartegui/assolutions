@@ -4,108 +4,42 @@
     <span>{{ evaluation?.message || 'Situation médicale à renseigner' }}</span>
   </div>
 
-  <div class="notification is-light is-size-7 mt-3 mb-3">
-    <strong i18n>Règles médicales :</strong>
-
-    <div class="mt-2" *ngIf="evaluation?.mineur === true" i18n>
-      <strong>Mineur (moins de 18 ans) — loisir ou compétition :</strong>
-      deux possibilités : un <strong>certificat médical de moins d'un an</strong>, qui suffit à lui seul,
-      ou le <strong>QS Sport de la saison</strong>. Si toutes les réponses au QS Sport sont négatives,
-      aucun certificat n'est demandé. Si une réponse est positive, un certificat médical de moins d'un an devient nécessaire.
-    </div>
-
-    <div class="mt-2" *ngIf="evaluation?.mineur === false && licenceType !== 'COMPETITION'" i18n>
-      <strong>Adulte (18 ans et plus) — loisir :</strong>
-      le <strong>QS Sport de la saison suffit</strong>. Si toutes les réponses sont négatives,
-      aucun certificat médical n'est obligatoire. Si une réponse est positive, un certificat médical
-      de moins d'un an devient nécessaire. Un certificat médical récent peut également être utilisé.
-    </div>
-
-    <div class="mt-2" *ngIf="evaluation?.mineur === false && licenceType === 'COMPETITION'" i18n>
-      <strong>Adulte (18 ans et plus) — compétition :</strong>
-      un <strong>certificat médical</strong> est obligatoire. S'il a moins d'un an, le dossier est OK.
-      S'il a plus d'un an, il doit être complété par le <strong>QS Sport de la saison</strong>.
-      En cas de réponse positive au QS Sport, un nouveau certificat de moins d'un an est nécessaire.
-    </div>
-
-    <div class="mt-2" *ngIf="evaluation?.mineur == null" i18n>
-      <strong>Mineurs :</strong> certificat médical de moins d'un an <em>ou</em> QS Sport de la saison ; si le QS comporte une réponse positive, un certificat récent devient nécessaire.<br />
-      <strong>Adultes en loisir :</strong> le QS Sport suffit ; certificat récent seulement si le questionnaire comporte une réponse positive.<br />
-      <strong>Adultes en compétition :</strong> certificat de moins d'un an, ou certificat plus ancien complété par le QS Sport de la saison.
-    </div>
-
-    <div class="mt-2">
-      <a href="https://assolutions.club/qs_sport.pdf" target="_blank" rel="noopener" i18n>
-        Ouvrir le questionnaire QS Sport
-      </a>
-    </div>
-  </div>
-
   <div class="medical-history" *ngIf="showHistory && proofs.length">
     <div class="medical-history-item" *ngFor="let proof of proofs">
-      <div>
-        <strong>{{ proofLabel(proof) }}</strong>
-        <small>{{ proof.date_document | date:'dd/MM/yyyy' }}</small>
-      </div>
-      <span class="tag" [ngClass]="proof.valide ? 'is-success is-light' : 'is-light'">
-        {{ proof.valide ? 'Valide' : 'Archivé' }}
-      </span>
+      <div><strong>{{ proofLabel(proof) }}</strong><small>{{ proof.date_document | date:'dd/MM/yyyy' }}</small></div>
+      <span class="tag" [ngClass]="proof.valide ? 'is-success is-light' : 'is-light'">{{ proof.valide ? 'Valide' : 'Archivé' }}</span>
     </div>
   </div>
 
-  <div class="medical-proof-form">
-    <div class="medical-proof-grid">
-      <div class="field">
-        <label class="label" i18n>Justificatif</label>
-        <div class="select is-fullwidth">
-          <select [(ngModel)]="type">
-            <option value="QS_SPORT" i18n>Questionnaire de santé (QS Sport)</option>
-            <option value="CERTIFICAT" i18n>Certificat médical</option>
-          </select>
-        </div>
-      </div>
+  <div class="field mt-4">
+    <label class="label">Justificatif</label>
+    <div class="select is-fullwidth"><select [(ngModel)]="type"><option value="QS_SPORT">Questionnaire de santé en ligne</option><option value="CERTIFICAT">Certificat médical</option></select></div>
+  </div>
 
-      <div class="field">
-        <label class="label" i18n>Date</label>
-        <input class="input" type="date" [(ngModel)]="date" />
-      </div>
-
-      <div class="field" *ngIf="type === 'QS_SPORT'">
-        <label class="label" i18n>Résultat du QS Sport</label>
-        <label class="checkbox checkbox-card" i18n>
-          <input type="checkbox" [(ngModel)]="qsNegative" />
-          Toutes les réponses sont négatives
-        </label>
-        <p class="help" i18n>
-          Décochez cette case si au moins une réponse du questionnaire est positive : un certificat médical récent sera alors nécessaire.
-        </p>
-      </div>
-
-      <div class="field" *ngIf="type === 'CERTIFICAT'">
-        <label class="label" i18n>Nom du médecin</label>
-        <input class="input" [(ngModel)]="doctorName" />
-      </div>
-
-      <div class="field" *ngIf="type === 'CERTIFICAT'">
-        <label class="label" i18n>RPPS</label>
-        <input class="input" [(ngModel)]="rpps" />
-      </div>
-
-      <div class="field medical-file-field">
-        <label class="label" i18n>Fichier justificatif *</label>
-        <input #fileInput class="input" type="file" accept="application/pdf,image/*" (change)="onFileSelected($event)" />
-        <p class="help" *ngIf="selectedFileName">{{ selectedFileName }}</p>
-        <button *ngIf="selectedFileName" class="button is-small is-light mt-2" type="button" (click)="clearFile(fileInput)" i18n>Retirer le fichier</button>
-      </div>
-
-      <div class="field medical-comment-field">
-        <label class="label" i18n>Commentaire</label>
-        <textarea class="textarea" rows="2" [(ngModel)]="comment"></textarea>
+  <ng-container *ngIf="type === 'QS_SPORT'">
+    <div class="notification is-info is-light is-size-7">
+      Répondez vous-même aux questions. Les réponses détaillées ne sont pas enregistrées : Assolutions conserve uniquement l'attestation finale.
+    </div>
+    <div class="qs-question" *ngFor="let question of qsQuestions; let i=index">
+      <div><strong>{{ i + 1 }}.</strong> {{ question }}</div>
+      <div class="buttons has-addons mt-2">
+        <button type="button" class="button is-small" [class.is-selected]="qsAnswers[i] === false" [class.is-success]="qsAnswers[i] === false" (click)="setQsAnswer(i,false)">NON</button>
+        <button type="button" class="button is-small" [class.is-selected]="qsAnswers[i] === true" [class.is-danger]="qsAnswers[i] === true" (click)="setQsAnswer(i,true)">OUI</button>
       </div>
     </div>
+    <div class="notification is-success is-light" *ngIf="qsNegative"><strong>Tout est NON.</strong> Vous pouvez valider l'attestation ; aucun questionnaire rempli ne sera stocké.</div>
+    <div class="notification is-warning is-light" *ngIf="qsHasPositive"><strong>Au moins une réponse est OUI.</strong> Un certificat médical est nécessaire. Vous pouvez valider ce résultat puis déposer le certificat.</div>
+  </ng-container>
 
-    <button class="button is-primary" type="button" [class.is-loading]="loading" [disabled]="loading || !canSave" (click)="save()" i18n>
-      Enregistrer la situation médicale
-    </button>
-  </div>
+  <ng-container *ngIf="type === 'CERTIFICAT'">
+    <div class="columns">
+      <div class="column"><label class="label">Date</label><input class="input" type="date" [(ngModel)]="date"></div>
+      <div class="column"><label class="label">Nom du médecin</label><input class="input" [(ngModel)]="doctorName"></div>
+      <div class="column"><label class="label">RPPS</label><input class="input" [(ngModel)]="rpps"></div>
+    </div>
+    <div class="field"><label class="label">Certificat *</label><input #fileInput class="input" type="file" accept="application/pdf,image/*" (change)="onFileSelected($event)"><p class="help" *ngIf="selectedFileName">{{ selectedFileName }}</p></div>
+  </ng-container>
+
+  <div class="field"><label class="label">Commentaire</label><textarea class="textarea" rows="2" [(ngModel)]="comment"></textarea></div>
+  <button class="button is-primary" type="button" [class.is-loading]="loading" [disabled]="loading || !canSave" (click)="save()">{{ type === 'QS_SPORT' ? 'Valider mon attestation' : 'Enregistrer le certificat' }}</button>
 </section>

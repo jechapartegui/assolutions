@@ -30,6 +30,9 @@ export class SaisonEntity {
   @Column({ type: 'boolean', default: false })
   tarif_avant_groupes: boolean;
 
+  @Column({ type: 'boolean', default: true })
+  inscriptions_ouvertes: boolean;
+
   @Column({ type: 'timestamptz', default: () => 'now()' })
   date_creation: Date;
 
