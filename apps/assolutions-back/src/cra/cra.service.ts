@@ -4,6 +4,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
 import { DocumentEntity } from '../document/document.entity';
 import { FluxFinancierEntity } from '../flux_financier/flux_financier.entity';
+import { ClasseComptableEntity } from '../finance/classe_comptable.entity';
 import { ProfesseurEntity } from '../professeur/professeur.entity';
 import { PersonneEntity } from '../personne/personne.entity';
 import { CompteEntity } from '../compte/compte.entity';
@@ -356,6 +357,21 @@ export class CraService {
     await this.messageService.sendAutomaticMail({to:compte.login,name:`${personne.first_name} ${personne.last_name}`,projectId:cra.project_id,record:`CRA_CLUB_${cra.id}_${cra.statut}`,subject,html});
   }
 
+  private async craExpenseClassId(manager: any, projectId: number): Promise<number | null> {
+    // 64 = charges de personnel. Prefer a project-specific class if configured,
+    // otherwise fall back to the shared French accounting class.
+    const repo = manager.getRepository(ClasseComptableEntity);
+    const projectClass = await repo.findOne({
+      where: { code: '64', project_id: projectId, lang: 'fr', actif: true },
+    });
+    if (projectClass) return projectClass.id;
+
+    const sharedClass = await repo.findOne({
+      where: { code: '64', project_id: null, lang: 'fr', actif: true },
+    });
+    return sharedClass?.id ?? null;
+  }
+
   async finalizeWithoutInvoice(id: number, projectId: number, userId: number) {
     const cra=await this.craRepo.findOne({where:{id}});
     if(!cra||cra.project_id!==projectId) throw new NotFoundException('CRA_NOT_FOUND');
@@ -365,11 +381,12 @@ export class CraService {
     const personne=await this.personneRepo.findOne({where:{id:contrat.professeur_id}});
     const amount=Number(cra.montant_total);
     return this.dataSource.transaction(async manager=>{
+      const craClassId = await this.craExpenseClassId(manager, projectId);
       const flux=await manager.getRepository(FluxFinancierEntity).save(manager.getRepository(FluxFinancierEntity).create({
         libelle:`Rémunération ${personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat.professeur_id}`} - ${String(cra.mois).padStart(2,'0')}/${cra.annee}`,
         date:this.localIsoDate(new Date()),destinataire:personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat.professeur_id}`,
         recette:false,statut:0,montant:amount,info:`CRA #${cra.id} - sans facture`,project_id:projectId,saison_id:saison.id,
-        classe_comptable_id:null,nb_paiement:1,type_frais:'REMUNERATION_PROF',personne_id:contrat.professeur_id,contrat_prof_id:contrat.id,flux_systeme:true,origine:'CRA',
+        classe_comptable_id:craClassId,nb_paiement:1,type_frais:'REMUNERATION_PROF',personne_id:contrat.professeur_id,contrat_prof_id:contrat.id,flux_systeme:true,origine:'CRA',
       }));
       cra.statut='FACTURE';cra.updated_at=new Date();await manager.getRepository(CraEntity).save(cra);
       return {cra,flux,sans_facture:true};
@@ -389,11 +406,12 @@ export class CraService {
     const amount = Number(cra.montant_total);
 
     return this.dataSource.transaction(async (manager) => {
+      const craClassId = await this.craExpenseClassId(manager, projectId);
       const flux = await manager.getRepository(FluxFinancierEntity).save(manager.getRepository(FluxFinancierEntity).create({
         libelle: `Facture professeur ${dto.numero || ''} - ${String(cra.mois).padStart(2, '0')}/${cra.annee}`.trim(),
         date: dto.date_facture, destinataire: `Professeur #${contrat.professeur_id}`, recette: false,
         statut: 0, montant: amount, info: `CRA #${cra.id}`, project_id: projectId, saison_id: saison.id,
-        classe_comptable_id: null, nb_paiement: 1, type_frais: 'FACTURE_PROF', personne_id: contrat.professeur_id,
+        classe_comptable_id: craClassId, nb_paiement: 1, type_frais: 'FACTURE_PROF', personne_id: contrat.professeur_id,
         contrat_prof_id: contrat.id, flux_systeme: true, origine: 'CRA',
       }));
 
