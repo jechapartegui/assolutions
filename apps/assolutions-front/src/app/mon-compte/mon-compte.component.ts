@@ -42,7 +42,8 @@ export class MonCompteComponent {
   hasProjects = computed(() => this.projets().length > 0);
 
   registrationsOpen(project:any): boolean {
-    return project?.saison_active?.inscriptions_ouvertes !== false;
+    const value = project?.saison_active?.inscriptions_ouvertes;
+    return value === true || value === 1 || value === 'true' || value === '1';
   }
 
   get publicProjectsToJoin(): Project[] {
