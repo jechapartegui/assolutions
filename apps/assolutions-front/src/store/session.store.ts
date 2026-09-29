@@ -165,6 +165,18 @@ export class SessionStore {
     this.setConsultationSaison(null);
   }
 
+  updateActiveSeason(saison: any): void {
+    const s = this.session();
+    if (!s || s.selectedProjectId == null || !saison?.id) return;
+
+    const projects = s.projects.map((p) =>
+      Number(p.id) === Number(s.selectedProjectId) && Number(p.saison_active?.id) === Number(saison.id)
+        ? { ...p, saison_active: { ...p.saison_active, ...saison } }
+        : p,
+    );
+    this.session.set({ ...s, projects });
+  }
+
   updateSaisonActive(saisonId: number): void {
     const s = this.session();
     if (!s || s.selectedProjectId == null) return;
