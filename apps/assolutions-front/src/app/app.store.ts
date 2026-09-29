@@ -69,6 +69,10 @@ export class AppStore {
     this.sessionStore.updateSaisonActive(saisonId);
   }
 
+  updateActiveSeason(saison: any): void {
+    this.sessionStore.updateActiveSeason(saison);
+  }
+
   setConsultationSaison(saisonId: number | null): void {
     this.sessionStore.setConsultationSaison(saisonId);
   }
