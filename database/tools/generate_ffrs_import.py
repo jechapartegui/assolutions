@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Génère un SQL idempotent d'import de l'extraction licences FFRS.
 
-Usage recommandé (évite tout problème d'encodage PowerShell) :
+Usage recommandé (evite tout problème d'encodage PowerShell) :
   py database/tools/generate_ffrs_import.py extraction_licences.xlsx database/generated/import_ffrs_2026_2027.sql
 
-Le fichier SQL généré est volontairement ASCII-only : les caractères Unicode
-sont encodés en hexadécimal puis reconstruits par PostgreSQL. Ainsi
-"Compétition" ne peut plus devenir "CompÚtition" lors d'une redirection Windows.
+Le fichier SQL genere est volontairement ASCII-only : les caracteres Unicode
+sont encodes en hexadécimal puis reconstruits par PostgreSQL. Ainsi
+"Competition" ne peut plus devenir "CompÚtition" lors d'une redirection Windows.
 """
 from __future__ import annotations
 import sys
@@ -24,7 +24,7 @@ rows = ws.iter_rows(values_only=True)
 headers = [str(x or "").strip() for x in next(rows)]
 idx = {h: i for i, h in enumerate(headers)}
 
-required = ["Code Adhérent", "Nom", "Prénom", "Date de naissance", "Type", "Catégorie âge"]
+required = ["Code Adhérent", "Nom", "Prénom", "Date de naissance", "Type", "Categorie âge"]
 missing = [x for x in required if x not in idx]
 if missing:
     raise SystemExit("Colonnes manquantes: " + ", ".join(missing))
@@ -89,15 +89,63 @@ SELECT licence, nom, prenom, date_naissance,
 FROM tmp_ffrs_raw
 GROUP BY licence, nom, prenom, date_naissance;
 
--- Garantit les trois champs FFRS, même sur une base qui ne les avait pas encore.
-INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
-SELECT 0, 'PERSONNE', 'string', label, 1
-FROM (VALUES ('Numéro de licence'), ('Catégorie FFRS'), ('Type licence FFRS')) AS wanted(label)
+-- Libelles canoniques reconstruits depuis UTF-8 : le SQL reste 100% ASCII.
+CREATE TEMP TABLE tmp_ffrs_defs(label text, kind text) ON COMMIT DROP;
+INSERT INTO tmp_ffrs_defs VALUES
+  (convert_from(decode('4e756dc3a9726f206465206c6963656e6365','hex'),'UTF8'), 'string'),
+  (convert_from(decode('436174c3a9676f7269652046465253','hex'),'UTF8'), 'string'),
+  ('Type licence FFRS', 'string');
+
+-- Repare les doublons mojibake deja crees (NumÚro / CatÚgorie) en migrant
+-- leurs valeurs vers le champ canonique avant suppression.
+CREATE TEMP TABLE tmp_ffrs_bad_defs AS
+SELECT a.id bad_id, d.label
+FROM addinfo a
+JOIN tmp_ffrs_defs d ON (
+  lower(trim(a.text)) = lower(trim(d.label))
+  OR (d.label = convert_from(decode('4e756dc3a9726f206465206c6963656e6365','hex'),'UTF8') AND lower(trim(a.text)) = lower(convert_from(decode('4e756dc39a726f206465206c6963656e6365','hex'),'UTF8')))
+  OR (d.label = convert_from(decode('436174c3a9676f7269652046465253','hex'),'UTF8') AND lower(trim(a.text)) = lower(convert_from(decode('436174c39a676f7269652046465253','hex'),'UTF8')))
+)
+WHERE a.object_id=0 AND a.object_type='PERSONNE' AND a.project_id=1;
+
+INSERT INTO addinfo(object_id,object_type,value_type,text,project_id)
+SELECT 0,'PERSONNE',d.kind,d.label,1
+FROM tmp_ffrs_defs d
 WHERE NOT EXISTS (
-  SELECT 1 FROM addinfo a
-  WHERE a.object_id=0 AND a.object_type='PERSONNE' AND a.project_id=1
-    AND lower(trim(a.text))=lower(trim(wanted.label))
+ SELECT 1 FROM addinfo a WHERE a.object_id=0 AND a.object_type='PERSONNE'
+ AND a.project_id=1 AND lower(trim(a.text))=lower(trim(d.label))
 );
+
+CREATE TEMP TABLE tmp_ffrs_canonical_defs AS
+SELECT DISTINCT ON (lower(trim(d.label))) a.id canonical_id, d.label
+FROM tmp_ffrs_defs d
+JOIN addinfo a ON a.object_id=0 AND a.object_type='PERSONNE' AND a.project_id=1
+ AND lower(trim(a.text))=lower(trim(d.label))
+ORDER BY lower(trim(d.label)), a.id;
+
+-- Si une valeur existe sur le champ corrompu et pas encore sur le canonique, on la rattache.
+UPDATE addinfo v
+SET value_type=c.canonical_id::text
+FROM tmp_ffrs_bad_defs b
+JOIN tmp_ffrs_canonical_defs c ON lower(trim(c.label))=lower(trim(b.label))
+WHERE v.object_type='PERSONNE' AND v.project_id=1 AND v.value_type=b.bad_id::text
+  AND b.bad_id<>c.canonical_id
+  AND NOT EXISTS (
+    SELECT 1 FROM addinfo x WHERE x.object_type='PERSONNE' AND x.project_id=1
+      AND x.object_id=v.object_id AND x.value_type=c.canonical_id::text
+  );
+
+-- En cas de valeur deja presente sur les deux champs, le champ canonique gagne.
+DELETE FROM addinfo v
+USING tmp_ffrs_bad_defs b, tmp_ffrs_canonical_defs c
+WHERE lower(trim(c.label))=lower(trim(b.label))
+  AND b.bad_id<>c.canonical_id
+  AND v.object_type='PERSONNE' AND v.project_id=1 AND v.value_type=b.bad_id::text;
+
+DELETE FROM addinfo a
+USING tmp_ffrs_bad_defs b, tmp_ffrs_canonical_defs c
+WHERE a.id=b.bad_id AND lower(trim(c.label))=lower(trim(b.label))
+  AND b.bad_id<>c.canonical_id;
 
 CREATE TEMP TABLE tmp_ffrs_match AS
 WITH candidates AS (
@@ -128,15 +176,15 @@ WITH defs AS (
  FROM addinfo
  WHERE object_id=0 AND object_type='PERSONNE' AND project_id=1
    AND lower(trim(text)) IN (
-     lower('Numéro de licence'), lower('Catégorie FFRS'), lower('Type licence FFRS')
+     lower(convert_from(decode('4e756dc3a9726f206465206c6963656e6365','hex'),'UTF8')), lower(convert_from(decode('436174c3a9676f7269652046465253','hex'),'UTF8')), lower('Type licence FFRS')
    )
  ORDER BY lower(trim(text)), id
 ), src AS (
  SELECT m.personne_id, d.id field_id, v.val
  FROM tmp_ffrs_match m
  CROSS JOIN LATERAL (VALUES
-   (lower('Numéro de licence'), m.licence),
-   (lower('Catégorie FFRS'), m.categorie),
+   (lower(convert_from(decode('4e756dc3a9726f206465206c6963656e6365','hex'),'UTF8')), m.licence),
+   (lower(convert_from(decode('436174c3a9676f7269652046465253','hex'),'UTF8')), m.categorie),
    (lower('Type licence FFRS'), m.type_licence)
  ) v(label,val)
  JOIN defs d ON d.label=v.label
@@ -154,15 +202,15 @@ WITH defs AS (
  FROM addinfo
  WHERE object_id=0 AND object_type='PERSONNE' AND project_id=1
    AND lower(trim(text)) IN (
-     lower('Numéro de licence'), lower('Catégorie FFRS'), lower('Type licence FFRS')
+     lower(convert_from(decode('4e756dc3a9726f206465206c6963656e6365','hex'),'UTF8')), lower(convert_from(decode('436174c3a9676f7269652046465253','hex'),'UTF8')), lower('Type licence FFRS')
    )
  ORDER BY lower(trim(text)), id
 ), src AS (
  SELECT m.personne_id, d.id field_id, v.val
  FROM tmp_ffrs_match m
  CROSS JOIN LATERAL (VALUES
-   (lower('Numéro de licence'), m.licence),
-   (lower('Catégorie FFRS'), m.categorie),
+   (lower(convert_from(decode('4e756dc3a9726f206465206c6963656e6365','hex'),'UTF8')), m.licence),
+   (lower(convert_from(decode('436174c3a9676f7269652046465253','hex'),'UTF8')), m.categorie),
    (lower('Type licence FFRS'), m.type_licence)
  ) v(label,val)
  JOIN defs d ON d.label=v.label
