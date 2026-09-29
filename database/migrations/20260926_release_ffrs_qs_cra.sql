@@ -12,32 +12,21 @@ ALTER TABLE public.saison
 ALTER TABLE public.saison
   ADD COLUMN IF NOT EXISTS inscriptions_ouvertes boolean NOT NULL DEFAULT true;
 
--- 1) Addinfo FFRS : on conserve le champ "Numéro de licence" existant.
-DO $$
-DECLARE
-  v_cat_id integer;
-  v_type_id integer;
-BEGIN
-  SELECT id INTO v_cat_id FROM addinfo
-   WHERE object_id = 0 AND object_type = 'PERSONNE' AND text = 'Catégorie FFRS' LIMIT 1;
-  IF v_cat_id IS NULL THEN
-    SELECT COALESCE(MAX(id),0)+1 INTO v_cat_id FROM addinfo;
-    INSERT INTO addinfo(id, object_id, object_type, value_type, text, project_id)
-    VALUES (v_cat_id, 0, 'PERSONNE',
-      'select:["Senior","Senior (U20+)","U6","U7","U8","U9","U10","U11","U12","U13","U14","U15","U16","U18","U19"]',
-      'Catégorie FFRS', 1);
-  END IF;
-
-  SELECT id INTO v_type_id FROM addinfo
-   WHERE object_id = 0 AND object_type = 'PERSONNE' AND text = 'Type licence FFRS' LIMIT 1;
-  IF v_type_id IS NULL THEN
-    SELECT COALESCE(MAX(id),0)+1 INTO v_type_id FROM addinfo;
-    INSERT INTO addinfo(id, object_id, object_type, value_type, text, project_id)
-    VALUES (v_type_id, 0, 'PERSONNE', 'select:["Loisir","Compétition"]', 'Type licence FFRS', 1);
-  END IF;
-
-  PERFORM setval(pg_get_serial_sequence('addinfo','id'), (SELECT MAX(id) FROM addinfo), true);
-END $$;
+-- 1) Addinfo FFRS : trois champs canoniques PERSONNE.
+-- Catégorie reste un champ texte : la liste complète des catégories dépasse la
+-- limite historique de 50 caractères de addinfo.value_type.
+INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
+SELECT 0, 'PERSONNE', 'string', v.label, 1
+FROM (VALUES
+  ('Numéro de licence'),
+  ('Catégorie FFRS'),
+  ('Type licence FFRS')
+) AS v(label)
+WHERE NOT EXISTS (
+  SELECT 1 FROM addinfo a
+  WHERE a.object_id=0 AND a.object_type='PERSONNE' AND a.project_id=1
+    AND lower(trim(a.text))=lower(trim(v.label))
+);
 
 -- 2) Représentants légaux : objet dédié, sans polluer la table générique contacts.
 -- Les DROP corrigent sans risque une exécution d'une version intermédiaire de cette migration.
