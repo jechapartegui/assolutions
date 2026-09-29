@@ -3,6 +3,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { SaisonMapper } from '../mapper/saison.mapper';
 import { SaisonPageVm, SaisonSortField, Saison_VM, SortDirection } from '../vm/saison-page.vm';
 import { SaisonRepository } from '../repository/saison.repository';
+import { AppStore } from '../app/app.store';
 
 @Injectable({ providedIn: 'root' })
 export class SaisonStore {
@@ -35,6 +36,7 @@ export class SaisonStore {
   constructor(
     private readonly repository: SaisonRepository,
     private readonly mapper: SaisonMapper,
+    private readonly appStore: AppStore,
   ) {}
 
   async init(force = false): Promise<void> {
@@ -170,6 +172,7 @@ export class SaisonStore {
           : await this.repository.createSaison(current);
 
       const list = this.upsert(this.state().list, saved);
+      if (saved.active) this.appStore.updateActiveSeason(saved);
 
       this.patch({
         list,
