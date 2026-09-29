@@ -1,42 +1,41 @@
 #!/usr/bin/env python3
 """Génère un SQL idempotent d'import de l'extraction licences FFRS.
 
-Usage:
-  py database/tools/generate_ffrs_import.py extraction_licences.xlsx > database/generated/import_ffrs_2026_2027.sql
+Usage recommandé (évite tout problème d'encodage PowerShell) :
+  py database/tools/generate_ffrs_import.py extraction_licences.xlsx database/generated/import_ffrs_2026_2027.sql
 
-Ce générateur ne se connecte à aucune base. Il produit uniquement le SQL FFRS
-(numéro de licence, catégorie, type Loisir/Compétition). Les représentants légaux
-sont importés séparément dans la table representant_legal.
-
-Le rapprochement se fait sur nom + prénom + date de naissance. Les lignes ambiguës
-ne sont jamais appliquées : elles sont remontées à la fin du script SQL.
+Le fichier SQL généré est volontairement ASCII-only : les caractères Unicode
+sont encodés en hexadécimal puis reconstruits par PostgreSQL. Ainsi
+"Compétition" ne peut plus devenir "CompÚtition" lors d'une redirection Windows.
 """
 from __future__ import annotations
 import sys
 from datetime import date, datetime
-import re
 from openpyxl import load_workbook
 
-if len(sys.argv) != 2:
-    raise SystemExit("Usage: generate_ffrs_import.py <extraction_licences.xlsx>")
+if len(sys.argv) not in (2, 3):
+    raise SystemExit("Usage: generate_ffrs_import.py <extraction_licences.xlsx> [sortie.sql]")
 
-wb = load_workbook(sys.argv[1], read_only=True, data_only=True)
+source = sys.argv[1]
+output = sys.argv[2] if len(sys.argv) == 3 else None
+wb = load_workbook(source, read_only=True, data_only=True)
 ws = wb.active
 rows = ws.iter_rows(values_only=True)
 headers = [str(x or "").strip() for x in next(rows)]
 idx = {h: i for i, h in enumerate(headers)}
 
-required = ["Code Adhérent","Nom","Prénom","Date de naissance","Type","Catégorie âge"]
-missing=[x for x in required if x not in idx]
-if missing: raise SystemExit("Colonnes manquantes: "+", ".join(missing))
+required = ["Code Adhérent", "Nom", "Prénom", "Date de naissance", "Type", "Catégorie âge"]
+missing = [x for x in required if x not in idx]
+if missing:
+    raise SystemExit("Colonnes manquantes: " + ", ".join(missing))
 
-def q(v):
-    if v is None: return "NULL"
-    if isinstance(v,(date,datetime)): return "'" + v.strftime("%Y-%m-%d") + "'"
-    return "'" + str(v).replace("'","''").strip() + "'"
+def sql_text(v):
+    if v is None or str(v).strip() == "":
+        return "NULL"
+    raw = str(v).strip().encode("utf-8").hex()
+    return f"convert_from(decode('{raw}','hex'),'UTF8')"
 
-def q_date(v):
-    """Retourne toujours une date SQL ISO YYYY-MM-DD, même si Excel fournit DD/MM/YYYY."""
+def sql_date(v):
     if v is None or str(v).strip() == "":
         return "NULL"
     if isinstance(v, (date, datetime)):
@@ -49,24 +48,57 @@ def q_date(v):
             pass
     raise SystemExit(f"Date de naissance FFRS invalide ou non reconnue: {s!r}")
 
-vals=[]
-for r in rows:
-    if not r[idx["Nom"]]: continue
-    typ=str(r[idx["Type"]] or "").strip()
-    # Le produit ne conserve volontairement que Loisir / Compétition.
-    typ = typ if typ in ("Loisir","Compétition") else None
-    fields=[r[idx["Code Adhérent"]],r[idx["Nom"]],r[idx["Prénom"]]]
-    birth_date = r[idx["Date de naissance"]]
-    tail=[typ,r[idx["Catégorie âge"]]]
-    vals.append("(" + ",".join(q(x) for x in fields) + "," + q_date(birth_date) + "," + ",".join(q(x) for x in tail) + ")")
+records = []
+for row in rows:
+    if not row[idx["Nom"]]:
+        continue
+    typ = str(row[idx["Type"]] or "").strip()
+    # Les licences techniques/dirigeant ne doivent pas écraser une licence sportive.
+    if typ not in ("Loisir", "Compétition"):
+        typ = None
+    records.append(
+        "(" + ",".join([
+            sql_text(row[idx["Code Adhérent"]]),
+            sql_text(row[idx["Nom"]]),
+            sql_text(row[idx["Prénom"]]),
+            sql_date(row[idx["Date de naissance"]]),
+            sql_text(typ),
+            sql_text(row[idx["Catégorie âge"]]),
+        ]) + ")"
+    )
 
-print("""BEGIN;
-CREATE TEMP TABLE tmp_ffrs(
- licence text, nom text, prenom text, date_naissance date, type_licence text, categorie text
+sql = """BEGIN;
+
+CREATE TEMP TABLE tmp_ffrs_raw(
+  licence text, nom text, prenom text, date_naissance date, type_licence text, categorie text
 ) ON COMMIT DROP;
-INSERT INTO tmp_ffrs VALUES""")
-print(",\n".join(vals) + ";")
-print(r"""
+INSERT INTO tmp_ffrs_raw VALUES
+""" + ",\n".join(records) + """;
+
+-- Une personne peut avoir plusieurs lignes FFRS (ex. Dirigeant + Compétition).
+-- On garde une seule ligne par licencié et on privilégie Compétition puis Loisir.
+CREATE TEMP TABLE tmp_ffrs AS
+SELECT licence, nom, prenom, date_naissance,
+       CASE
+         WHEN bool_or(type_licence = convert_from(decode('436f6d70c3a9746974696f6e','hex'),'UTF8'))
+           THEN convert_from(decode('436f6d70c3a9746974696f6e','hex'),'UTF8')
+         WHEN bool_or(type_licence = 'Loisir') THEN 'Loisir'
+         ELSE NULL
+       END AS type_licence,
+       max(categorie) FILTER (WHERE NULLIF(categorie,'') IS NOT NULL) AS categorie
+FROM tmp_ffrs_raw
+GROUP BY licence, nom, prenom, date_naissance;
+
+-- Garantit les trois champs FFRS, même sur une base qui ne les avait pas encore.
+INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
+SELECT 0, 'PERSONNE', 'string', label, 1
+FROM (VALUES ('Numéro de licence'), ('Catégorie FFRS'), ('Type licence FFRS')) AS wanted(label)
+WHERE NOT EXISTS (
+  SELECT 1 FROM addinfo a
+  WHERE a.object_id=0 AND a.object_type='PERSONNE' AND a.project_id=1
+    AND lower(trim(a.text))=lower(trim(wanted.label))
+);
+
 CREATE TEMP TABLE tmp_ffrs_match AS
 WITH candidates AS (
  SELECT DISTINCT f.*, p.id personne_id, COALESCE(p.archive,false) archive
@@ -90,51 +122,85 @@ SELECT p.*,
        count(*) OVER (PARTITION BY p.licence,p.nom,p.prenom,p.date_naissance) match_count
 FROM preferred p;
 
--- Numéro de licence : définition existante "Numéro de licence".
-INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
-SELECT m.personne_id, 'PERSONNE', d.id::text, m.licence, 1
-FROM tmp_ffrs_match m
-JOIN addinfo d ON d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Numéro de licence'
-WHERE m.match_count=1 AND NULLIF(m.licence,'') IS NOT NULL
-ON CONFLICT DO NOTHING;
-
-UPDATE addinfo a SET text=m.licence
-FROM tmp_ffrs_match m, addinfo d
-WHERE d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Numéro de licence'
-  AND a.object_id=m.personne_id AND a.object_type='PERSONNE' AND a.value_type=d.id::text
-  AND m.match_count=1 AND NULLIF(m.licence,'') IS NOT NULL;
-
--- Catégorie et type.
-INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
-SELECT m.personne_id,'PERSONNE',d.id::text,m.categorie,1
-FROM tmp_ffrs_match m JOIN addinfo d ON d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Catégorie FFRS'
-WHERE m.match_count=1 AND NULLIF(m.categorie,'') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM addinfo a WHERE a.object_id=m.personne_id AND a.object_type='PERSONNE' AND a.value_type=d.id::text);
-UPDATE addinfo a SET text=m.categorie
-FROM tmp_ffrs_match m, addinfo d
-WHERE d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Catégorie FFRS'
-  AND a.object_id=m.personne_id AND a.object_type='PERSONNE' AND a.value_type=d.id::text AND m.match_count=1;
-
-INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
-SELECT m.personne_id,'PERSONNE',d.id::text,m.type_licence,1
-FROM tmp_ffrs_match m JOIN addinfo d ON d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Type licence FFRS'
-WHERE m.match_count=1 AND m.type_licence IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM addinfo a WHERE a.object_id=m.personne_id AND a.object_type='PERSONNE' AND a.value_type=d.id::text);
-UPDATE addinfo a SET text=m.type_licence
-FROM tmp_ffrs_match m, addinfo d
-WHERE d.object_id=0 AND d.object_type='PERSONNE' AND d.text='Type licence FFRS'
-  AND a.object_id=m.personne_id AND a.object_type='PERSONNE' AND a.value_type=d.id::text AND m.match_count=1;
-
--- Les représentants légaux sont volontairement exclus de cet import.
--- Ils sont gérés dans la table dédiée representant_legal par un import séparé.
-
--- Contrôle avant COMMIT : les lignes FFRS sans correspondance exacte restent visibles.
-SELECT f."Nom", f."Prénom", f."Date de naissance", f."Code Adhérent"
-FROM (SELECT nom AS "Nom", prenom AS "Prénom", date_naissance AS "Date de naissance", licence AS "Code Adhérent" FROM tmp_ffrs) f
-WHERE NOT EXISTS (
- SELECT 1 FROM tmp_ffrs_match m WHERE m.nom=f."Nom" AND m.prenom=f."Prénom"
-   AND m.date_naissance=f."Date de naissance" AND m.match_count=1
+-- UPSERT explicite par personne/champ. Ne dépend pas d'une contrainte ON CONFLICT.
+WITH defs AS (
+ SELECT DISTINCT ON (lower(trim(text))) id, lower(trim(text)) label
+ FROM addinfo
+ WHERE object_id=0 AND object_type='PERSONNE' AND project_id=1
+   AND lower(trim(text)) IN (
+     lower('Numéro de licence'), lower('Catégorie FFRS'), lower('Type licence FFRS')
+   )
+ ORDER BY lower(trim(text)), id
+), src AS (
+ SELECT m.personne_id, d.id field_id, v.val
+ FROM tmp_ffrs_match m
+ CROSS JOIN LATERAL (VALUES
+   (lower('Numéro de licence'), m.licence),
+   (lower('Catégorie FFRS'), m.categorie),
+   (lower('Type licence FFRS'), m.type_licence)
+ ) v(label,val)
+ JOIN defs d ON d.label=v.label
+ WHERE m.match_count=1 AND NULLIF(v.val,'') IS NOT NULL
 )
-ORDER BY f."Nom",f."Prénom";
+UPDATE addinfo a
+SET text=src.val, project_id=1
+FROM src
+WHERE a.object_id=src.personne_id
+  AND a.object_type='PERSONNE'
+  AND a.value_type=src.field_id::text;
+
+WITH defs AS (
+ SELECT DISTINCT ON (lower(trim(text))) id, lower(trim(text)) label
+ FROM addinfo
+ WHERE object_id=0 AND object_type='PERSONNE' AND project_id=1
+   AND lower(trim(text)) IN (
+     lower('Numéro de licence'), lower('Catégorie FFRS'), lower('Type licence FFRS')
+   )
+ ORDER BY lower(trim(text)), id
+), src AS (
+ SELECT m.personne_id, d.id field_id, v.val
+ FROM tmp_ffrs_match m
+ CROSS JOIN LATERAL (VALUES
+   (lower('Numéro de licence'), m.licence),
+   (lower('Catégorie FFRS'), m.categorie),
+   (lower('Type licence FFRS'), m.type_licence)
+ ) v(label,val)
+ JOIN defs d ON d.label=v.label
+ WHERE m.match_count=1 AND NULLIF(v.val,'') IS NOT NULL
+)
+INSERT INTO addinfo(object_id, object_type, value_type, text, project_id)
+SELECT src.personne_id, 'PERSONNE', src.field_id::text, src.val, 1
+FROM src
+WHERE NOT EXISTS (
+ SELECT 1 FROM addinfo a
+ WHERE a.object_id=src.personne_id AND a.object_type='PERSONNE'
+   AND a.value_type=src.field_id::text AND a.project_id=1
+);
+
+-- Contrôles : ces SELECT doivent être regardés après import.
+SELECT 'FFRS_SANS_CORRESPONDANCE' controle, f.nom, f.prenom, f.date_naissance, f.licence
+FROM tmp_ffrs f
+WHERE NOT EXISTS (
+ SELECT 1 FROM tmp_ffrs_match m
+ WHERE m.licence=f.licence AND m.nom=f.nom AND m.prenom=f.prenom
+   AND m.date_naissance=f.date_naissance AND m.match_count=1
+)
+ORDER BY f.nom,f.prenom;
+
+SELECT 'FFRS_IMPORTES' controle,
+       count(DISTINCT personne_id) personnes,
+       count(*) FILTER (WHERE NULLIF(licence,'') IS NOT NULL) numeros_licence,
+       count(*) FILTER (WHERE NULLIF(categorie,'') IS NOT NULL) categories,
+       count(*) FILTER (WHERE type_licence IS NOT NULL) types_licence
+FROM tmp_ffrs_match
+WHERE match_count=1;
+
 COMMIT;
-""")
+"""
+
+if output:
+    with open(output, "w", encoding="ascii", newline="\n") as fh:
+        fh.write(sql)
+    print(f"SQL généré : {output}")
+else:
+    sys.stdout.write(sql)
