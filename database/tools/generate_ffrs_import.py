@@ -10,6 +10,7 @@ sont encodes en hexadécimal puis reconstruits par PostgreSQL. Ainsi
 """
 from __future__ import annotations
 import sys
+import unicodedata
 from datetime import date, datetime
 from openpyxl import load_workbook
 
@@ -22,12 +23,20 @@ wb = load_workbook(source, read_only=True, data_only=True)
 ws = wb.active
 rows = ws.iter_rows(values_only=True)
 headers = [str(x or "").strip() for x in next(rows)]
-idx = {h: i for i, h in enumerate(headers)}
 
-required = ["Code Adhérent", "Nom", "Prénom", "Date de naissance", "Type", "Categorie âge"]
-missing = [x for x in required if x not in idx]
+def header_key(value):
+    value = unicodedata.normalize("NFKD", str(value or ""))
+    return "".join(ch for ch in value if not unicodedata.combining(ch)).strip().casefold()
+
+idx = {header_key(h): i for i, h in enumerate(headers)}
+
+required = ["Code Adherent", "Nom", "Prenom", "Date de naissance", "Type", "Categorie age"]
+missing = [x for x in required if header_key(x) not in idx]
 if missing:
     raise SystemExit("Colonnes manquantes: " + ", ".join(missing))
+
+def col(name):
+    return idx[header_key(name)]
 
 def sql_text(v):
     if v is None or str(v).strip() == "":
@@ -50,20 +59,20 @@ def sql_date(v):
 
 records = []
 for row in rows:
-    if not row[idx["Nom"]]:
+    if not row[col("Nom")]:
         continue
-    typ = str(row[idx["Type"]] or "").strip()
+    typ = str(row[col("Type")] or "").strip()
     # Les licences techniques/dirigeant ne doivent pas écraser une licence sportive.
     if typ not in ("Loisir", "Compétition"):
         typ = None
     records.append(
         "(" + ",".join([
-            sql_text(row[idx["Code Adhérent"]]),
-            sql_text(row[idx["Nom"]]),
-            sql_text(row[idx["Prénom"]]),
-            sql_date(row[idx["Date de naissance"]]),
+            sql_text(row[col("Code Adherent")]),
+            sql_text(row[col("Nom")]),
+            sql_text(row[col("Prenom")]),
+            sql_date(row[col("Date de naissance")]),
             sql_text(typ),
-            sql_text(row[idx["Catégorie âge"]]),
+            sql_text(row[col("Categorie age")]),
         ]) + ")"
     )
 
