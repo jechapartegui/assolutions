@@ -242,6 +242,15 @@ export class SessionStore {
       if (exists) return selectedProjectId;
     }
 
+    const storedProjectId = Number(localStorage.getItem('selected_projet'));
+    if (
+      Number.isInteger(storedProjectId) &&
+      storedProjectId > 0 &&
+      projects.some((p) => Number(p.id) === storedProjectId)
+    ) {
+      return storedProjectId;
+    }
+
     if (projects.length === 1) return projects[0].id;
     return null;
   }
