@@ -42,7 +42,7 @@ export class MonCompteComponent {
   hasProjects = computed(() => this.projets().length > 0);
 
   registrationsOpen(project:any): boolean {
-    return project?.saison_active?.inscriptions_ouvertes === true;
+    return project?.saison_active?.inscriptions_ouvertes !== false;
   }
 
   get publicProjectsToJoin(): Project[] {
