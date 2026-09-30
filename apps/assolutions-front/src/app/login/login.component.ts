@@ -516,7 +516,24 @@ export class LoginComponent implements OnInit {
     this.action = $localize`Lister les projets associés au compte`;
 
     try {
-      const projets = await this.adhesion_serv.get();
+      // /auth/login (mr) contient la saison active complete. L'ancien endpoint
+      // /adhesion est encore utile pour les droits/projets, mais sa saison_active
+      // historique ne contient pas tous les champs Saison (notamment
+      // tarif_avant_groupes et inscriptions_ouvertes). On fusionne donc la
+      // saison renvoyee par l'authentification avant de construire la session.
+      const adhesionProjects = await this.adhesion_serv.get();
+      const authProjectsById = new Map(
+        (mr.projects ?? []).map((project) => [Number(project.id), project]),
+      );
+      const projets: ProjetView[] = adhesionProjects.map((project) => {
+        const authProject = authProjectsById.get(Number(project.id));
+        return {
+          ...project,
+          saison_active: authProject?.saison_active
+            ? { ...project.saison_active, ...authProject.saison_active }
+            : project.saison_active,
+        };
+      });
       this.VM.projets = projets;
 
       const projectFromContext = this.findRequestedProject(projets);
