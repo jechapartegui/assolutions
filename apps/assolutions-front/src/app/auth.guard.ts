@@ -77,7 +77,23 @@ export class AuthGuard implements CanActivate {
         }
 
         return from(this.adherentService.get() as Promise<ProjetView[]>).pipe(
-          map((projects: ProjetView[]): boolean => {
+          map((adhesionProjects: ProjetView[]): boolean => {
+            // /auth/me est la source de verite de la session. /adhesion reste
+            // utilise pour les droits/projets historiques, mais sa saison_active
+            // peut etre partielle. On conserve donc la saison complete de /auth/me.
+            const authProjectsById = new Map(
+              (mr.projects ?? []).map((project) => [Number(project.id), project]),
+            );
+            const projects: ProjetView[] = adhesionProjects.map((project) => {
+              const authProject = authProjectsById.get(Number(project.id));
+              return {
+                ...project,
+                saison_active: authProject?.saison_active
+                  ? { ...project.saison_active, ...authProject.saison_active }
+                  : project.saison_active,
+              };
+            });
+
             const selectedProjectId = this.restoreSelectedProjectId(projects);
 
             this.store.setSession({
