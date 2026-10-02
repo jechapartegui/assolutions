@@ -202,7 +202,9 @@ export class GlobalService {
     // ne doit jamais utiliser ce header comme preuve d'identité.
     if (userId !== '-1') headers = headers.set('userid', userId);
 
-    const token = sessionStorage.getItem('auth_token');
+    const token =
+      localStorage.getItem('auth_token') ??
+      sessionStorage.getItem('auth_token');
     if (token) headers = headers.set('Authorization', `Bearer ${token}`);
 
     return headers;
