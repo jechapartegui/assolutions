@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): Observable<boolean> {
-    const token = sessionStorage.getItem('auth_token');
+    const token = this.readStoredToken();
 
     if (!token) {
       this.meAlreadyTried = false;
@@ -120,6 +120,21 @@ export class AuthGuard implements CanActivate {
         return of(false);
       }),
     );
+  }
+
+  private readStoredToken(): string | null {
+    const persistentToken = localStorage.getItem('auth_token');
+    if (persistentToken) return persistentToken;
+
+    // Migration douce pour les sessions ouvertes avant ce correctif.
+    const legacySessionToken = sessionStorage.getItem('auth_token');
+    if (legacySessionToken) {
+      localStorage.setItem('auth_token', legacySessionToken);
+      sessionStorage.removeItem('auth_token');
+      return legacySessionToken;
+    }
+
+    return null;
   }
 
   private restoreSelectedProjectId(projects: ProjetView[]): number | null {
