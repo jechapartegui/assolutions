@@ -100,12 +100,14 @@ export class SessionStore {
     this.session.set(cleanSession);
 
     if (cleanSession.token) {
-      sessionStorage.setItem('auth_token', cleanSession.token);
-      localStorage.removeItem('auth_token');
+      // Session persistante sur l'appareil : le lien reçu par mail peut
+      // s'ouvrir dans un nouvel onglet sans forcer une reconnexion.
+      localStorage.setItem('auth_token', cleanSession.token);
+      sessionStorage.removeItem('auth_token');
     }
 
-    sessionStorage.setItem('auth_mode', cleanSession.mode);
-    localStorage.removeItem('auth_mode');
+    localStorage.setItem('auth_mode', cleanSession.mode);
+    sessionStorage.removeItem('auth_mode');
 
     if (selectedProjectId != null) {
       localStorage.setItem('selected_projet', String(selectedProjectId));

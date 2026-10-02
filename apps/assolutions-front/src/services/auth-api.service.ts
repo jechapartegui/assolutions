@@ -26,8 +26,8 @@ export class AuthApiService {
 
   private persistToken(res: MeResponse): void {
     if (res?.token) {
-      sessionStorage.setItem('auth_token', res.token);
-      localStorage.removeItem('auth_token');
+      localStorage.setItem('auth_token', res.token);
+      sessionStorage.removeItem('auth_token');
     }
   }
 

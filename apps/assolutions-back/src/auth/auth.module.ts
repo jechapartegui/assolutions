@@ -39,7 +39,7 @@ const MIN_SECRET_LENGTH = 32;
         return {
           secret,
           signOptions: {
-            expiresIn: (config.get<string>('JWT_EXPIRES_IN') ?? '12h') as any,
+            expiresIn: (config.get<string>('JWT_EXPIRES_IN') ?? '30d') as any,
           },
         };
       },
