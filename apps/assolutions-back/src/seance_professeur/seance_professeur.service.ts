@@ -1,7 +1,8 @@
-﻿import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+﻿import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { ContratProfEntity } from '../contrat_prof/contrat_prof.entity';
+import { CraEntity, CraLigneEntity } from '../cra/cra.entity';
 
 import { SaisonEntity } from '../saison/saison.entity';
 import { SeanceEntity } from '../seance/seance.entity';
@@ -15,7 +16,7 @@ export class SeanceProfesseurService {
     @InjectRepository(SeanceEntity) private readonly seanceRepo: Repository<SeanceEntity>,
     @InjectRepository(SaisonEntity) private readonly saisonRepo: Repository<SaisonEntity>,
     @InjectRepository(ContratProfEntity) private readonly contratRepo: Repository<ContratProfEntity>,
-    
+    private readonly dataSource: DataSource,
   ) {}
 
   private async assertSeanceInProject(seanceId: number, projectId: number) {
@@ -114,20 +115,76 @@ export class SeanceProfesseurService {
 
   async remove(id: number, projectId: number) {
     const item = await this.getForProject(id, projectId);
-    await this.repo.remove(item);
+
+    await this.dataSource.transaction(async (manager) => {
+      const ligneRepo = manager.getRepository(CraLigneEntity);
+      const craRepo = manager.getRepository(CraEntity);
+      const seanceProfRepo = manager.getRepository(SeanceProfesseurEntity);
+
+      const linkedLines = await ligneRepo.find({
+        where: { seance_professeur_id: item.id },
+      });
+
+      if (linkedLines.length) {
+        const craIds = [...new Set(linkedLines.map((line) => line.cra_id))];
+        const cras = await craRepo.find({ where: { id: In(craIds) } });
+
+        if (cras.some((cra) => cra.project_id !== projectId)) {
+          throw new ForbiddenException('WRONG_PROJECT');
+        }
+
+        if (cras.some((cra) => cra.statut !== 'BROUILLON')) {
+          throw new BadRequestException('CRA_LOCKED');
+        }
+
+        await ligneRepo.delete({ seance_professeur_id: item.id });
+
+        for (const cra of cras) {
+          const remainingLines = await ligneRepo.find({ where: { cra_id: cra.id } });
+          const total = remainingLines.reduce((sum, line) => sum + Number(line.montant), 0);
+          await craRepo.update(cra.id, {
+            montant_total: total.toFixed(2),
+            updated_at: new Date(),
+          });
+        }
+      }
+
+      await seanceProfRepo.delete(item.id);
+    });
+
     return { ok: true };
   }
 
   async updateList(seanceId: number, profsors: number[], projectId: number) {
+    await this.assertSeanceInProject(seanceId, projectId);
+
+    const requestedProfessors = [...new Set((profsors ?? []).map((id) => Number(id)))];
     const existing = await this.repo.find({ where: { seance_id: seanceId } });
-    const toDelete = existing.filter((e) => !profsors.includes(e.professeurcontract_id));
-    const toAdd = profsors.filter((p) => !existing.some((e) => e.professeurcontract_id === p));
-    toDelete.forEach((e) => this.remove(e.id, projectId));
-    toAdd.forEach(async (p) => {
-      const s: {duree_seance: number, statut: string} = await this.getinfoseance(seanceId);
-      let i :CreateSeanceProfesseurDto = { seance_id: seanceId, professeurcontract_id: p, minutes:s.duree_seance, statut:s.statut};
-      
-       this.create(i, projectId)
-  });
+    const toDelete = existing.filter(
+      (item) => !requestedProfessors.includes(item.professeurcontract_id),
+    );
+    const toAdd = requestedProfessors.filter(
+      (contratId) => !existing.some((item) => item.professeurcontract_id === contratId),
+    );
+
+    for (const item of toDelete) {
+      await this.remove(item.id, projectId);
+    }
+
+    const seanceInfo = await this.getinfoseance(seanceId);
+    for (const contratId of toAdd) {
+      const dto: CreateSeanceProfesseurDto = {
+        seance_id: seanceId,
+        professeurcontract_id: contratId,
+        minutes: seanceInfo.duree_seance,
+        statut: seanceInfo.statut,
+      };
+      await this.create(dto, projectId);
+    }
+
+    return this.repo.find({
+      where: { seance_id: seanceId },
+      order: { id: 'ASC' },
+    });
   }
 }
