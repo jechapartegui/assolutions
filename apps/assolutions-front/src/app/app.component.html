@@ -1,4 +1,4 @@
-<div class="app-shell">
+<div class="app-shell" [class.is-admin-mode]="store.mode() === 'ADMIN'">
   <ng-container *ngIf="!isPublic">
     <span class="fullscreen">
       <nav class="navbar app-navbar" role="navigation" aria-label="main navigation" i18n-aria-label>
@@ -24,7 +24,7 @@
 
             <ng-container *ngIf="store.mode() === 'ADMIN'">
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link" i18n>Gestion saison</a>
+                <a class="navbar-link" i18n>Gestion de la saison</a>
                 <div class="navbar-dropdown">
                   <a class="navbar-item" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']" i18n>Adhérents</a>
                   <a class="navbar-item" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']" i18n>Séances</a>
@@ -34,12 +34,13 @@
               </div>
 
               <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link" i18n>Inscriptions</a>
+                <a class="navbar-link" i18n>Gestion des inscriptions</a>
                 <div class="navbar-dropdown">
                   <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/inscription']" i18n>Tarifs d'inscription</a>
                   <a class="navbar-item" (click)="selectMenu('TRACES_PAIEMENT')" [routerLink]="['/suivi-inscriptions']" i18n>Suivi des inscriptions</a>
                   <a class="navbar-item" (click)="selectMenu('INSCRIPTION')" [routerLink]="['/codes-promo']" i18n>Codes promotionnels</a>
                   <a class="navbar-item" (click)="selectMenu('EXIGENCE_DOSSIER')" [routerLink]="['/exigences-dossier']" i18n>Exigences des dossiers</a>
+                  <a class="navbar-item" (click)="selectMenu('CONTRAT_PROF')" [routerLink]="['/cra-admin']">CRA professeurs</a>
                   <a class="navbar-item" (click)="selectMenu('CONTRAT_PROF')" [routerLink]="['/contrat-prof']" i18n>Contrats professeurs</a>
                 </div>
               </div>
@@ -73,6 +74,13 @@
                   <a class="navbar-item" (click)="selectMenu('PROF')" [routerLink]="['/professeur']" i18n>Professeurs</a>
                   <a class="navbar-item" (click)="selectMenu('CB')" [routerLink]="['/compte-bancaire']" i18n>Comptes bancaires</a>
                   <a class="navbar-item" (click)="selectMenu('ADDINFO')" [routerLink]="['/addinfo-listes']" i18n>Champs complémentaires</a>
+                </div>
+              </div>
+
+              <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link" i18n>Assistance</a>
+                <div class="navbar-dropdown">
+                  <a class="navbar-item" (click)="selectMenu('JOURNAL_ERREURS')" [routerLink]="['/menu-admin']" [queryParams]="{ signalerBug: 1 }" i18n>Signaler un bug</a>
                 </div>
               </div>
             </ng-container>

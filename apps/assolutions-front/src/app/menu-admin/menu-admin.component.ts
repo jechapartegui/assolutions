@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppStore } from '../app.store';
 import { SaisonApiService } from '../../services/saison-api.service';
 import { BugReportApiService, BugReportSeverity } from '../../services/bug-report-api.service';
@@ -270,12 +270,24 @@ export class MenuAdminComponent implements OnInit {
   constructor(
     public store: AppStore,
     private router: Router,
+    private readonly route: ActivatedRoute,
     private saisonApi: SaisonApiService,
     private bugReportApi: BugReportApiService,
   ) {}
 
   ngOnInit(): void {
     void this.loadSaisons();
+    this.route.queryParamMap.subscribe((params) => {
+      if (params.get('signalerBug') === '1') {
+        this.openBugReport();
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { signalerBug: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
   }
 
   get activeSaisonId(): number | null {
