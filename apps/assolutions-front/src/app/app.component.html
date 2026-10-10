@@ -1,4 +1,4 @@
-<div class="app-shell">
+<div class="app-shell" [class.is-admin-mode]="store.mode() === 'ADMIN'">
   <ng-container *ngIf="!isPublic">
     <span class="fullscreen">
       <nav class="navbar app-navbar" role="navigation" aria-label="main navigation" i18n-aria-label>
