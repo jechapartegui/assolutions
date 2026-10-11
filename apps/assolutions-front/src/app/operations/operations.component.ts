@@ -716,7 +716,13 @@ export class OperationsComponent implements OnInit {
 
   getClasseChildren(): ClasseComptable[] {
     return this.classes_comptables
-      .filter((c) => !!c.parent_id && c.actif)
+      .filter(
+        (c) =>
+          c.actif &&
+          !this.classes_comptables.some(
+            (child) => child.actif && child.parent_id === c.id,
+          ),
+      )
       .sort((a, b) => a.ordre - b.ordre || a.code.localeCompare(b.code));
   }
 
