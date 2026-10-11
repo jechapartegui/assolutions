@@ -379,16 +379,10 @@ private async resolveDefaultFluxIdForOperation(
   }
 
   const recette = Number(dto.solde ?? 0) > 0;
-  const classeCode = recette ? '7' : '6';
+  // A bank-import placeholder is deliberately unclassified until reviewed.
+  // Do not attach the now-removed 6/7 summary classes to operational flows.
   const origine = recette ? 'IMPORT_A_CLASSER_RECETTE' : 'IMPORT_A_CLASSER_DEPENSE';
   const libelle = recette ? 'À classer - Recettes' : 'À classer - Dépenses';
-
-  const classe = await this.classeRepo.findOne({
-    where: {
-      code: classeCode,
-      lang: 'fr',
-    } as any,
-  });
 
   const existing = await this.fluxRepo.findOne({
     where: {
@@ -414,7 +408,7 @@ private async resolveDefaultFluxIdForOperation(
       info: 'Flux système utilisé pour les opérations bancaires importées non classées.',
       project_id: projectId,
       saison_id: dto.saison_id,
-      classe_comptable_id: classe?.id ?? null,
+      classe_comptable_id: null,
       nb_paiement: 1,
       type_frais: null,
       personne_id: null,
