@@ -113,7 +113,7 @@ export class SouscriptionFinanceService {
 
       const cotisationClass = await classeRepo
         .createQueryBuilder('classe')
-        .where('classe.code = :code', { code: '75' })
+        .where('classe.code = :code', { code: '701' })
         .andWhere('classe.actif = true')
         .andWhere('classe.recette = true')
         .andWhere('classe.lang = :lang', { lang: 'fr' })
@@ -133,7 +133,7 @@ export class SouscriptionFinanceService {
 
       if (!cotisationClass) {
         this.logger.warn(
-          `Souscription ${subscription.id} : classe comptable 75 active introuvable, flux laissé non classé`,
+          `Souscription ${subscription.id} : classe comptable 701 active introuvable, flux laissé non classé`,
         );
       }
 
