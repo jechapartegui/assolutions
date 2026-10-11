@@ -357,19 +357,47 @@ export class CraService {
     await this.messageService.sendAutomaticMail({to:compte.login,name:`${personne.first_name} ${personne.last_name}`,projectId:cra.project_id,record:`CRA_CLUB_${cra.id}_${cra.statut}`,subject,html});
   }
 
-  private async craExpenseClassId(manager: any, projectId: number): Promise<number | null> {
-    // 64 = charges de personnel. Prefer a project-specific class if configured,
-    // otherwise fall back to the shared French accounting class.
-    const repo = manager.getRepository(ClasseComptableEntity);
-    const projectClass = await repo.findOne({
-      where: { code: '64', project_id: projectId, lang: 'fr', actif: true },
-    });
-    if (projectClass) return projectClass.id;
+  private async craExpenseClassId(
+    manager: any,
+    projectId: number,
+    contrat: ContratProfEntity,
+  ): Promise<number> {
+    // Match the detailed accounting codes in the common association budget.
+    // A paid employee is not an external service provider.
+    const contractType = String(contrat.type_contrat ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
 
-    const sharedClass = await repo.findOne({
-      where: { code: '64', project_id: null, lang: 'fr', actif: true },
-    });
-    return sharedClass?.id ?? null;
+    let code: '604' | '641';
+    if (/(cdi|cdd|salari|apprenti|contrat de travail)/.test(contractType)) {
+      code = '641';
+    } else if (/(prestataire|prestation|independant|auto.?entrepreneur|liberal)/.test(contractType)) {
+      code = '604';
+    } else {
+      throw new BadRequestException(
+        'TYPE_CONTRAT_COMPTABLE_INCONNU: précisez Salarié ou Prestataire sur le contrat',
+      );
+    }
+
+    const classe = await manager
+      .getRepository(ClasseComptableEntity)
+      .createQueryBuilder('classe')
+      .where('classe.code = :code', { code })
+      .andWhere('classe.actif = true')
+      .andWhere('classe.recette = false')
+      .andWhere('classe.lang = :lang', { lang: 'fr' })
+      .andWhere('(classe.pays IS NULL OR UPPER(classe.pays) = :pays)', { pays: 'FR' })
+      .andWhere('(classe.project_id IS NULL OR classe.project_id = :projectId)', { projectId })
+      .orderBy('CASE WHEN classe.project_id = :projectId THEN 0 ELSE 1 END', 'ASC')
+      .addOrderBy('classe.id', 'ASC')
+      .getOne();
+
+    if (!classe) {
+      throw new BadRequestException('CLASSE_COMPTABLE_' + code + '_ABSENTE');
+    }
+    return classe.id;
   }
 
   async finalizeWithoutInvoice(id: number, projectId: number, userId: number) {
@@ -381,7 +409,7 @@ export class CraService {
     const personne=await this.personneRepo.findOne({where:{id:contrat.professeur_id}});
     const amount=Number(cra.montant_total);
     return this.dataSource.transaction(async manager=>{
-      const craClassId = await this.craExpenseClassId(manager, projectId);
+      const craClassId = await this.craExpenseClassId(manager, projectId, contrat);
       const flux=await manager.getRepository(FluxFinancierEntity).save(manager.getRepository(FluxFinancierEntity).create({
         libelle:`Rémunération ${personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat.professeur_id}`} - ${String(cra.mois).padStart(2,'0')}/${cra.annee}`,
         date:this.localIsoDate(new Date()),destinataire:personne ? `${personne.first_name} ${personne.last_name}`.trim() : `Professeur #${contrat.professeur_id}`,
@@ -406,7 +434,7 @@ export class CraService {
     const amount = Number(cra.montant_total);
 
     return this.dataSource.transaction(async (manager) => {
-      const craClassId = await this.craExpenseClassId(manager, projectId);
+      const craClassId = await this.craExpenseClassId(manager, projectId, contrat);
       const flux = await manager.getRepository(FluxFinancierEntity).save(manager.getRepository(FluxFinancierEntity).create({
         libelle: `Facture professeur ${dto.numero || ''} - ${String(cra.mois).padStart(2, '0')}/${cra.annee}`.trim(),
         date: dto.date_facture, destinataire: `Professeur #${contrat.professeur_id}`, recette: false,
