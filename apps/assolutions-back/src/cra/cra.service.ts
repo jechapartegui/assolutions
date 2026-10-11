@@ -362,24 +362,12 @@ export class CraService {
     projectId: number,
     contrat: ContratProfEntity,
   ): Promise<number> {
-    // Match the detailed accounting codes in the common association budget.
-    // A paid employee is not an external service provider.
-    const contractType = String(contrat.type_contrat ?? '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
-
-    let code: '604' | '641';
-    if (/(cdi|cdd|salari|apprenti|contrat de travail)/.test(contractType)) {
-      code = '641';
-    } else if (/(prestataire|prestation|independant|auto.?entrepreneur|liberal)/.test(contractType)) {
-      code = '604';
-    } else {
-      throw new BadRequestException(
-        'TYPE_CONTRAT_COMPTABLE_INCONNU: précisez Salarié ou Prestataire sur le contrat',
-      );
-    }
+    // Contract classification: CDI / CDD are employee salaries (641).
+    // Every other contract value (including unspecified values) is an
+    // external service (604), per the association's accounting convention.
+    const contractType = String(contrat.type_contrat ?? '').trim();
+    const isEmploymentContract = /(^|[^a-z0-9])(CDI|CDD)([^a-z0-9]|$)/i.test(contractType);
+    const code: '604' | '641' = isEmploymentContract ? '641' : '604';
 
     const classe = await manager
       .getRepository(ClasseComptableEntity)
