@@ -349,7 +349,7 @@ get totalBudget(): number {
         engage: this.getEngageForClasses(ids),
         paye: this.getPayeForClasses(ids),
         ecart: this.getBudgetForClasses(ids) - this.getEngageForClasses(ids),
-        isParent: true,
+        isParent: descendants.length > 0,
       });
 
       if (this.dashboardDetail) {
@@ -1033,7 +1033,13 @@ async downloadDocument(doc: Document): Promise<void> {
 
   getClasseChildren(): ClasseComptable[] {
     return this.classes
-      .filter((c) => !!c.parent_id && c.actif)
+      .filter(
+        (c) =>
+          c.actif &&
+          !this.classes.some(
+            (child) => child.actif && child.parent_id === c.id,
+          ),
+      )
       .sort((a, b) => a.ordre - b.ordre || a.code.localeCompare(b.code));
   }
 
