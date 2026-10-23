@@ -13,6 +13,9 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CalendrierWorkerService.name);
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
+  private dernierPassage: string | null = null;
+  private dernierResultat = 'NON_DEMARRE';
+  private derniersCalendriersTrouves = 0;
 
   constructor(
     private readonly db: DataSource,
@@ -21,10 +24,21 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit(): void {
-    if (!this.google.enabled || process.env.GOOGLE_CALENDAR_AUTO_SYNC !== 'true') return;
+    const actif = this.google.enabled && process.env.GOOGLE_CALENDAR_AUTO_SYNC === 'true';
+    this.logger.log('EXG auto-sync: ' + (actif ? 'ACTIVE' : 'INACTIVE') +
+      ' (Google=' + this.google.enabled +
+      ', AUTO_SYNC=' + (process.env.GOOGLE_CALENDAR_AUTO_SYNC === 'true') +
+      ', filtre=' + (process.env.GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS || 'TOUS') + ')');
+    if (!actif) {
+      this.dernierResultat = 'DESACTIVE';
+      return;
+    }
     this.timer = setInterval(() => { void this.runOnce(); }, 60_000);
     this.timer.unref?.();
     this.logger.log('Calendrier outbox worker active (Google notifications disabled)');
+    // Premier passage immediat : les changements PENDING precedant le redemarrage
+    // n'attendent pas une minute supplementaire.
+    void this.runOnce();
   }
 
   onModuleDestroy(): void {
@@ -32,9 +46,62 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
     this.timer = null;
   }
 
+
+  /** Diagnostic lecture seule, scope projet exige par le controller. Aucun secret. */
+  async etat(projectId: number, calendrierId: number) {
+    const rows: Array<{
+      id: number; actif: boolean; google_present: boolean;
+      statut_synchro: string; evenements_pending: number;
+    }> = await this.db.query(
+      `SELECT c.id, c.actif, c.google_calendar_id IS NOT NULL AS google_present,
+              c.statut_synchro,
+              count(ce.id) FILTER (WHERE ce.statut_synchro IN (
+                'PENDING','ERROR','DELETE_PENDING','SYNCING'
+              ))::int AS evenements_pending
+       FROM calendrier c
+       LEFT JOIN calendrier_evenement ce ON ce.calendrier_id=c.id
+       WHERE c.id=$1 AND c.project_id=$2
+       GROUP BY c.id, c.actif, c.google_calendar_id, c.statut_synchro`,
+      [calendrierId, projectId],
+    );
+    const calendrier = rows[0] ?? null;
+    if (!calendrier) return { calendrier_trouve: false };
+    const filterRaw = String(process.env.GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS ?? '').trim();
+    const filter = filterRaw ? filterRaw.split(',').map((value) => Number(value.trim())) : [];
+    const filterValid = !filterRaw ||
+      filter.every((id) => Number.isSafeInteger(id) && id > 0) &&
+      new Set(filter).size === filter.length;
+    const dansFiltre = !filterRaw || (filterValid && filter.includes(calendrierId));
+    const autoEnv = process.env.GOOGLE_CALENDAR_AUTO_SYNC === 'true';
+    const active = this.google.enabled && autoEnv && !!this.timer;
+    return {
+      calendrier_trouve: true,
+      calendrier_id: calendrier.id,
+      statut_calendrier: calendrier.statut_synchro,
+      evenements_pending: calendrier.evenements_pending,
+      google_configure: this.google.enabled,
+      auto_sync_configure: autoEnv,
+      worker_demarre: !!this.timer,
+      worker_en_cours: this.running,
+      filtre_valide: filterValid,
+      calendrier_dans_filtre: dansFiltre,
+      calendrier_google_existant: calendrier.google_present,
+      calendrier_actif: calendrier.actif,
+      eligibilite: active && filterValid && dansFiltre &&
+        calendrier.actif && calendrier.google_present &&
+        (calendrier.statut_synchro === 'PENDING' || calendrier.evenements_pending > 0),
+      dernier_passage: this.dernierPassage,
+      dernier_resultat: this.dernierResultat,
+      derniers_calendriers_trouves: this.derniersCalendriersTrouves,
+    };
+  }
+
   private async runOnce(): Promise<void> {
     if (this.running) return;
     this.running = true;
+    this.dernierPassage = new Date().toISOString();
+    this.dernierResultat = 'EN_COURS';
+    this.derniersCalendriersTrouves = 0;
     let connection: QueryRunner | null = null;
     let locked = false;
     try {
@@ -42,7 +109,11 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
       await connection.connect();
       const lock = await connection.query('SELECT pg_try_advisory_lock(2601023) AS acquired');
       locked = lock[0]?.acquired === true;
-      if (!locked) return;
+      if (!locked) {
+        this.dernierResultat = 'VERROU_OCCUPE';
+        this.logger.warn('EXG auto-sync: verrou PostgreSQL deja occupe');
+        return;
+      }
       // EXG-17 : un calendrier doit d'abord etre cree explicitement dans Google.
       // En LOCAL, limiter facultativement le worker a un ou plusieurs IDs pour
       // ne pas traiter les autres calendriers en attente pendant la recette.
@@ -52,6 +123,7 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
             .filter((id) => Number.isSafeInteger(id) && id > 0))]
         : [];
       if (rawIds && (!allowedIds.length || allowedIds.length !== rawIds.split(',').length)) {
+        this.dernierResultat = 'FILTRE_INVALIDE';
         this.logger.warn('Invalid GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS; skipping automatic run');
         return;
       }
@@ -68,14 +140,25 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
          ORDER BY c.id LIMIT 5`,
         [rawIds ? allowedIds : null],
       );
+      this.derniersCalendriersTrouves = calendars.length;
+      this.dernierResultat = calendars.length ? 'TRAITEMENT_TERMINE' : 'AUCUN_CALENDRIER_ELIGIBLE';
+      let errors = 0;
       for (const calendar of calendars) {
-        try { await this.synchronisation.sync(Number(calendar.id), Number(calendar.project_id), false); }
+        try {
+          const result = await this.synchronisation.sync(Number(calendar.id), Number(calendar.project_id), false);
+          if (result.erreurs || result.restants) errors++;
+        }
         catch (e: any) {
+          errors++;
           this.logger.warn('Automatic reconciliation for calendar #' + calendar.id +
             ' failed: ' + String(e?.message || e));
         }
       }
+      if (errors) this.dernierResultat = 'ERREURS=' + errors;
+      this.logger.log('EXG auto-sync: ' + this.dernierResultat +
+        ' (calendriers=' + calendars.length + ', notifications=none)');
     } catch (e: any) {
+      this.dernierResultat = 'ERREUR_WORKER';
       this.logger.warn('Calendar worker failed: ' + String(e?.message || e));
     } finally {
       if (locked && connection) {
