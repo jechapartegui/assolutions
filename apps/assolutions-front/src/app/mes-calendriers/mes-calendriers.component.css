@@ -1,0 +1,57 @@
+/* EXG-UI-02 : rendu adapté aux grands tableaux et au scroll verrouillé de l'app. */
+:host {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - var(--app-topbar-height, 52px));
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
+}
+@supports not (height: 100dvh) {
+  :host { height: calc(100vh - var(--app-topbar-height, 52px)); }
+}
+@media (max-width: 767px) {
+  :host {
+    height: calc(100dvh - var(--mobile-footer-h, 64px) - var(--safe-bottom, 0px));
+    box-sizing: border-box;
+    padding-bottom: calc(1rem + var(--safe-bottom, 0px));
+    scrollbar-gutter: auto;
+  }
+}
+.mes-calendar-table {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.mes-calendar-table table {
+  min-width: 850px;
+  font-size: .88rem;
+}
+.mes-calendar-open {
+  height: auto;
+  text-align: left;
+  white-space: normal;
+  justify-content: flex-start;
+  padding-left: .3rem;
+}
+.mes-calendar-person {
+  padding: .3rem 0;
+  border-bottom: 1px solid rgba(140, 150, 160, .15);
+}
+.mes-calendar-person:last-child { border-bottom: 0; }
+.mes-calendar-person-name {
+  display: block;
+  font-weight: 600;
+  margin-bottom: .3rem;
+}
+.mes-calendar-answer {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 180px;
+}
+.is-nowrap { white-space: nowrap; }
