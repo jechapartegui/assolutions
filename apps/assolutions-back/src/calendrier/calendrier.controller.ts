@@ -1,0 +1,98 @@
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { ProjectId } from '../common/decorators/project-id.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AccessControlService } from '../common/access-control.service';
+import { CalendrierService } from './calendrier.service';
+import { CalendrierSyncService } from './calendrier-sync.service';
+import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto } from './calendrier.dto';
+
+@Controller('calendriers')
+@UseGuards(JwtAuthGuard)
+export class CalendrierController {
+  constructor(
+    private readonly service: CalendrierService,
+    private readonly sync: CalendrierSyncService,
+    private readonly access: AccessControlService,
+  ) {}
+
+  @Get('mes')
+  async mes(@Req() req: any, @ProjectId() projectId: number) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    return this.service.mes(req.user.id, projectId);
+  }
+
+  @Get()
+  async list(
+    @Req() req: any, @ProjectId() projectId: number,
+    @Query('saison_id') saison?: string,
+  ) {
+    await this.access.assertProjectStaff(req.user.id, projectId);
+    const saisonId = saison === undefined ? undefined : Number(saison);
+    return this.service.list(projectId, saisonId);
+  }
+
+  @Get(':id/seances')
+  async seances(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectStaff(req.user.id, projectId);
+    return this.service.seances(id, projectId);
+  }
+
+  @Get(':id/preview')
+  async preview(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.preview(id, projectId);
+  }
+
+  @Get(':id/reponses-google')
+  async responses(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.sync.googleResponses(id, projectId);
+  }
+
+  @Get(':id')
+  async get(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectStaff(req.user.id, projectId);
+    return this.service.get(id, projectId);
+  }
+
+  @Post()
+  async create(@Req() req: any, @ProjectId() projectId: number, @Body() dto: CreateCalendrierDto) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.create(dto, projectId);
+  }
+
+  @Post(':id/update')
+  async update(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: UpdateCalendrierDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.update(id, dto, projectId);
+  }
+
+  @Post(':id/archive')
+  async archive(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.archive(id, projectId);
+  }
+
+  @Post(':id/synchroniser')
+  async synchroniser(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: SynchroniserCalendrierDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    if (dto.mode === 'preview') return this.service.preview(id, projectId);
+    return this.sync.sync(id, projectId, dto.notifier === true);
+  }
+}
