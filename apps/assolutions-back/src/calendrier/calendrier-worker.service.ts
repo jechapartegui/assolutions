@@ -67,7 +67,8 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
         try { await connection.query('SELECT pg_advisory_unlock(2601023)'); }
         catch { /* connexion interrompue : PostgreSQL libere le verrou */ }
       }
-      if (connection) await connection.release();
+      try { if (connection) await connection.release(); }
+      catch { this.logger.warn('Unable to release calendar worker connection'); }
       this.running = false;
     }
   }
