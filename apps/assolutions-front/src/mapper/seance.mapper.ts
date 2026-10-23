@@ -81,7 +81,7 @@ export class SeanceMapper {
     return {
       seance_id: vm.id ?? 0,
       saison_id: vm.saison_id,
-      // Association geree via l'ecran Calendriers (autorisation admin).
+      calendrier_id: vm.calendrier_id ?? null,
       cours: vm.cours || null,
       label: vm.nom ?? null,
       type_seance: vm.type_seance,
