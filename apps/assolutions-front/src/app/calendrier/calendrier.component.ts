@@ -213,7 +213,36 @@ export class CalendrierComponent implements OnInit {
     try {
       const result = await this.api.responses(this.selectedId);
       this.showRsvps = true;
-      this.rsvps = result.lignes || [];
+      this.rsvps = (result.lignes || []).map((row: any) => ({
+        ...row, personne_choisie: null,
+      }));
+    } catch (e: any) { this.error = String(e?.message || e); }
+  }
+
+  async importerReponses() {
+    if (!this.isAdmin || !this.selectedId) return;
+    const selected = this.rsvps.filter((x) =>
+      x.peut_importer && x.personne_choisie &&
+      x.personnes?.includes(Number(x.personne_choisie)));
+    if (!selected.length) {
+      this.error = 'Sélectionne au moins une personne dans les réponses Google.';
+      return;
+    }
+    if (!window.confirm(
+      `Importer ${selected.length} réponse(s) Google dans Assolutions ?\n` +
+      'La réponse de présence sera modifiée uniquement pour les personnes sélectionnées.'
+    )) return;
+    try {
+      const response = await this.api.importerReponses(this.selectedId,
+        selected.map((x) => ({
+          seance_id: Number(x.seance_id),
+          personne_id: Number(x.personne_choisie),
+          google_email: String(x.google_email),
+          google_reponse: x.google_reponse as 'accepted' | 'declined',
+        })));
+      this.error = '';
+      this.info = `${response.importees} réponse(s) importée(s). La présence effective reste inchangée.`;
+      await this.showResponses();
     } catch (e: any) { this.error = String(e?.message || e); }
   }
 
