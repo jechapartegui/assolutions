@@ -6,7 +6,7 @@ import { GroupesApiService } from '../../services/groupes-api.service';
 import { LienGroupeApiService } from '../../services/lien-groupe-api.service';
 import {
   CalendrierApiService, Calendrier, CalendrierPayload,
-  CalendrierPreview, CalendrierSyncResult,
+  CalendrierPreview, CalendrierSyncResult, CalendrierWorkerEtat,
 } from '../../services/calendrier-api.service';
 import { Seance } from '@shared/lib/seance.interface';
 import { Groupe } from '@shared/lib/groupes.interface';
@@ -24,6 +24,8 @@ export class CalendrierComponent implements OnInit {
   saving = false;
   syncing = false;
   checkingGoogle = false;
+  checkingWorker = false;
+  workerEtat: CalendrierWorkerEtat | null = null;
   error = '';
   info = '';
   isEditing = false;
@@ -131,6 +133,7 @@ export class CalendrierComponent implements OnInit {
   newCalendar() {
     this.selectedId = null;
     this.isEditing = true;
+    this.workerEtat = null;
     this.form = this.emptyForm();
     this.selectedGroupId = null;
     this.resetSessionFilters();
@@ -143,6 +146,7 @@ export class CalendrierComponent implements OnInit {
     this.error = '';
     this.selectedId = Number(id);
     this.isEditing = true;
+    this.workerEtat = null;
     this.selectedGroupId = null;
     this.previewData = null;
     this.syncResult = null;
@@ -220,6 +224,19 @@ export class CalendrierComponent implements OnInit {
       this.error = 'Verification Google : ' + String(e?.message || e);
     } finally {
       this.checkingGoogle = false;
+    }
+  }
+
+  async verifierWorker() {
+    if (!this.isAdmin || !this.selectedId || this.checkingWorker) return;
+    this.checkingWorker = true;
+    this.error = '';
+    try {
+      this.workerEtat = await this.api.workerStatus(this.selectedId);
+    } catch (e: any) {
+      this.error = 'Diagnostic auto-sync : ' + String(e?.message || e);
+    } finally {
+      this.checkingWorker = false;
     }
   }
 
