@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ApiClientService } from './api-client.service';
+import { AppStore } from '../app/app.store';
 import { Seance, CreateSeanceDto, UpdateSeanceDto } from '@shared/lib/seance.interface';
 
 @Injectable({ providedIn: 'root' })
 export class SeanceApiService {
   private readonly base = '/seances';
 
-  constructor(private api: ApiClientService) {}
+  constructor(private api: ApiClientService, private readonly store: AppStore) {}
 
   list(saisonId: number): Promise<Seance[]> {
     return this.api.GET<Seance[]>(`${this.base}/saison/${saisonId}`);
@@ -51,6 +52,8 @@ export class SeanceApiService {
   private toPayload(dto: any): Record<string, unknown> {
     return {
       saison_id: dto?.saison_id,
+      // Les encadrants ne peuvent pas modifier le rattachement a un calendrier.
+      ...(this.store.isAdmin() ? { calendrier_id: dto?.calendrier_id ?? null } : {}),
       cours: dto?.cours,
       label: dto?.label,
       type_seance: dto?.type_seance,
