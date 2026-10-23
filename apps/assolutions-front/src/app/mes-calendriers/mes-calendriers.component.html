@@ -1,0 +1,24 @@
+<div class="container is-fluid py-4">
+  <section class="box">
+    <h1 class="title is-4">Mes calendriers</h1>
+    <p class="subtitle is-6">Les calendriers accessibles à ton compte (y compris pour plusieurs membres de ta famille).</p>
+    <div class="notification is-info is-light">
+      <strong>Rappel :</strong> Google Agenda sert à consulter les dates, lieux et horaires.
+      <strong>Assolutions fait foi</strong> pour les convocations et les réponses de présence.
+      Voir un événement ne signifie pas être convoqué !
+    </div>
+    <p *ngIf="loading">Chargement…</p>
+    <div *ngIf="error" class="notification is-danger is-light">{{ error }}</div>
+    <p *ngIf="!loading && !calendriers.length">Aucun calendrier ne concerne actuellement ton compte.</p>
+    <article class="box" *ngFor="let calendar of calendriers">
+      <h2 class="title is-6 mb-2"><i class="fas fa-calendar mr-2"></i>{{ calendar.nom }}</h2>
+      <p *ngIf="calendar.description">{{ calendar.description }}</p>
+      <p class="is-size-7 has-text-grey mb-3">Statut Google : {{ calendar.statut_synchro }}</p>
+      <a *ngIf="calendar.google_calendar_url" class="button is-link is-light" target="_blank"
+         rel="noopener noreferrer" [href]="calendar.google_calendar_url">
+        <i class="fas fa-arrow-up-right-from-square mr-2"></i>Afficher / ajouter dans Google Agenda
+      </a>
+      <p *ngIf="!calendar.google_calendar_url" class="help">Pas encore synchronisé avec Google Agenda.</p>
+    </article>
+  </section>
+</div>
