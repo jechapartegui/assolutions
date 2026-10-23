@@ -39,6 +39,7 @@ import { ProfesseurModule } from '../professeur/professeur.module';
 import { ProjectModule } from '../project/project.module';
 import { SaisonModule } from '../saison/saison.module';
 import { SeanceModule } from '../seance/seance.module';
+import { CalendrierModule } from '../calendrier/calendrier.module';
 import { SeanceProfesseurModule } from '../seance_professeur/seance_professeur.module';
 import { SouscriptionModule } from '../souscription/souscription.module';
 import { StockModule } from '../stock/stock.module';
@@ -171,6 +172,7 @@ const environmentFile = resolveEnvironmentFile();
     ProjectModule,
     SaisonModule,
     SeanceModule,
+    CalendrierModule,
     SeanceProfesseurModule,
     StockModule,
   ],
