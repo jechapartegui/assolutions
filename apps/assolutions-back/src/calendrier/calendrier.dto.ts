@@ -1,4 +1,5 @@
-import { IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, Min, ArrayUnique, IsIn } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, Min, ArrayUnique, IsIn, ArrayMaxSize, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateCalendrierDto {
   @IsInt() @Min(1) saison_id: number;
@@ -23,4 +24,17 @@ export class UpdateCalendrierDto {
 export class SynchroniserCalendrierDto {
   @IsBoolean() notifier: boolean;
   @IsOptional() @IsIn(['preview', 'execute']) mode?: 'preview' | 'execute';
+}
+
+export class GoogleReponseCandidateDto {
+  @IsInt() @Min(1) seance_id: number;
+  @IsInt() @Min(1) personne_id: number;
+  @IsString() @MaxLength(255) google_email: string;
+  @IsIn(['accepted', 'declined']) google_reponse: 'accepted' | 'declined';
+}
+
+export class ImportGoogleReponsesDto {
+  @IsArray() @ArrayMaxSize(20)
+  @ValidateNested({ each: true }) @Type(() => GoogleReponseCandidateDto)
+  lignes: GoogleReponseCandidateDto[];
 }
