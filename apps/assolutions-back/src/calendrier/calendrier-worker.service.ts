@@ -46,8 +46,11 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
       const calendars: Array<{ id: number; project_id: number }> = await connection.query(
         `SELECT DISTINCT c.id, c.project_id
          FROM calendrier c
-         INNER JOIN calendrier_evenement ce ON ce.calendrier_id = c.id
-         WHERE c.actif = true AND ce.statut_synchro IN ('PENDING','ERROR','DELETE_PENDING','SYNCING')
+         LEFT JOIN calendrier_evenement ce ON ce.calendrier_id = c.id
+         WHERE c.actif = true AND (
+             c.statut_synchro = 'PENDING'
+             OR ce.statut_synchro IN ('PENDING','ERROR','DELETE_PENDING','SYNCING')
+         )
          ORDER BY c.id LIMIT 5`,
       );
       for (const calendar of calendars) {
