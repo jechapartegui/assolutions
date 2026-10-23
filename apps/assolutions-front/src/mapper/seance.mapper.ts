@@ -81,6 +81,7 @@ export class SeanceMapper {
     return {
       seance_id: vm.id ?? 0,
       saison_id: vm.saison_id,
+      // Association geree via l'ecran Calendriers (autorisation admin).
       cours: vm.cours || null,
       label: vm.nom ?? null,
       type_seance: vm.type_seance,
@@ -118,6 +119,7 @@ export class SeanceMapper {
     vm.id = raw.seance_id ?? raw.id ?? 0;
     vm.nom = raw.label ?? '';
     vm.saison_id = raw.saison_id ?? 0;
+    vm.calendrier_id = raw.calendrier_id ?? null;
     vm.cours = raw.cours ?? 0;
     vm.type_seance = raw.type_seance as any;
     vm.date_seance = raw.date_seance ? new Date(raw.date_seance) : new Date();
