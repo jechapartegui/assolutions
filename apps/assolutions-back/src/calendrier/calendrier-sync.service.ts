@@ -202,8 +202,14 @@ export class CalendrierSyncService {
        ON CONFLICT (calendrier_id, seance_id) DO NOTHING`, [id],
     );
     const rows: Array<{ id: number; seance_id: number | null; google_event_id: string | null;
-      contenu_hash: string | null; statut_synchro: string }> = await this.db.query(
-      `SELECT ce.* FROM calendrier_evenement ce WHERE ce.calendrier_id = $1
+      contenu_hash: string | null; statut_synchro: string; still_linked: boolean }> = await this.db.query(
+      `SELECT ce.*,
+          EXISTS (
+            SELECT 1 FROM seance se
+            WHERE se.seance_id = ce.seance_id
+              AND se.calendrier_id = ce.calendrier_id
+          ) AS still_linked
+       FROM calendrier_evenement ce WHERE ce.calendrier_id = $1
        AND (ce.statut_synchro IN ('PENDING', 'ERROR', 'DELETE_PENDING', 'SYNCING')
           OR ce.contenu_hash IS NULL)
        ORDER BY (ce.statut_synchro = 'DELETE_PENDING') DESC, ce.id LIMIT 100`, [id],
@@ -211,7 +217,11 @@ export class CalendrierSyncService {
     let success = 0, errors = 0;
     for (const row of rows) {
       try {
-        const isRemoval = row.statut_synchro === 'DELETE_PENDING' || row.seance_id == null;
+        // Le statut ERROR remplace DELETE_PENDING après un échec distant.
+        // L'appartenance actuelle de la séance reste la source de vérité :
+        // une séance détachée doit TOUJOURS être supprimée sur Google au retry.
+        const isRemoval = row.statut_synchro === 'DELETE_PENDING' ||
+          row.seance_id == null || !row.still_linked;
         if (isRemoval) {
           if (row.google_event_id) await this.google.deleteEvent(googleId, row.google_event_id, notify);
           await this.db.query(
