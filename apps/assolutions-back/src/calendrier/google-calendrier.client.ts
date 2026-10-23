@@ -86,13 +86,39 @@ export class GoogleCalendrierClient {
     return (await response.json()) as GoogleObject;
   }
 
+  /** Verifie le vrai compte Google OAuth, jamais l'ID d'un calendrier. */
   async verifyOwner() {
-    const owner = await this.call('GET', '/users/me/calendarList/primary');
-    if (String(owner?.id || '').toLowerCase() !== this.owner) {
-      // L'identifiant du calendrier principal n'est pas toujours l'adresse e-mail ;
-      // l'endpoint userinfo Google doit faire foi pour une verification ferme.
+    const response = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+      headers: { Authorization: 'Bearer ' + await this.accessToken(), Accept: 'application/json' },
+    });
+    if (!response.ok) throw new ServiceUnavailableException('GOOGLE_OIDC_USERINFO_FAILED');
+    const user = (await response.json()) as {
+      sub?: string; email?: string; email_verified?: boolean;
+    };
+    if (!user.sub || user.email_verified !== true ||
+        String(user.email || '').trim().toLowerCase() !== this.owner) {
       throw new ServiceUnavailableException('GOOGLE_CALENDAR_OWNER_MISMATCH');
     }
+    // Un succes UserInfo seul ne prouve pas que Calendar API et ses scopes fonctionnent.
+    const primary = await this.call('GET', '/users/me/calendarList/primary');
+    if (!primary || primary.accessRole !== 'owner') {
+      throw new ServiceUnavailableException('GOOGLE_CALENDAR_PRIMARY_ACCESS_MISSING');
+    }
+  }
+
+  /** Diagnostic en lecture seule : aucun agenda ou evenement cree. */
+  async checkConnection() {
+    const credentials_present = [
+      'GOOGLE_CALENDAR_CLIENT_ID', 'GOOGLE_CALENDAR_CLIENT_SECRET',
+      'GOOGLE_CALENDAR_REFRESH_TOKEN',
+    ].every((key) => Boolean(process.env[key]));
+    if (!this.enabled) {
+      return { actif: false, credentials_present, proprietaire_verifie: false,
+        code: 'GOOGLE_CALENDAR_DISABLED' };
+    }
+    await this.verifyOwner();
+    return { actif: true, credentials_present: true, proprietaire_verifie: true,
+      compte: this.owner, code: 'GOOGLE_CALENDAR_OAUTH_OK' };
   }
 
   async createCalendar(nom: string, description: string | null, timezone: string) {
