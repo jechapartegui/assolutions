@@ -93,6 +93,14 @@ export class CalendrierApiService {
       this.base + '/' + Number(id) + '/synchroniser', { notifier, mode: 'execute' },
     );
   }
+  importerReponses(id: number, lignes: Array<{
+    seance_id: number; personne_id: number;
+    google_email: string; google_reponse: 'accepted' | 'declined';
+  }>): Promise<{ importees: number }> {
+    return this.api.POST<{ importees: number }>(
+      this.base + '/' + Number(id) + '/importer-reponses', { lignes },
+    );
+  }
   responses(id: number): Promise<any> {
     return this.api.GET<any>(this.base + '/' + Number(id) + '/reponses-google');
   }
