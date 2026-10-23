@@ -1,0 +1,6 @@
+.calendar-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.55rem}
+.calendar-choice{display:flex;gap:.6rem;align-items:flex-start;border:1px solid rgba(120,130,140,.25);border-radius:8px;padding:.65rem .8rem;cursor:pointer}
+.calendar-choice input{margin-top:.28rem}
+.calendar-sessions-table{overflow-x:auto;max-height:430px;overflow-y:auto}
+.calendar-sessions-table table{font-size:.86rem;min-width:650px}
+.is-nowrap{white-space:nowrap}
