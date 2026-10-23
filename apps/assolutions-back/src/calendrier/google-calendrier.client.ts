@@ -56,7 +56,25 @@ export class GoogleCalendrierClient {
         refresh_token: refreshToken, grant_type: 'refresh_token',
       }),
     });
-    if (!response.ok) throw new ServiceUnavailableException('GOOGLE_OAUTH_REFRESH_FAILED');
+    if (!response.ok) {
+      // La reponse Google peut contenir des informations sensibles : ne publier
+      // que le code d'erreur OAuth (liste blanche), jamais error_description/token.
+      let code = '';
+      try {
+        const result = (await response.json()) as { error?: unknown };
+        code = typeof result.error === 'string' ? result.error : '';
+      } catch { /* Un corps non JSON ne doit pas masquer l'erreur. */ }
+      if (code === 'invalid_grant') {
+        throw new ServiceUnavailableException('GOOGLE_OAUTH_REFRESH_INVALID_GRANT');
+      }
+      if (code === 'invalid_client') {
+        throw new ServiceUnavailableException('GOOGLE_OAUTH_REFRESH_INVALID_CLIENT');
+      }
+      if (code === 'unauthorized_client') {
+        throw new ServiceUnavailableException('GOOGLE_OAUTH_REFRESH_UNAUTHORIZED_CLIENT');
+      }
+      throw new ServiceUnavailableException('GOOGLE_OAUTH_REFRESH_FAILED_HTTP_' + response.status);
+    }
     const result = (await response.json()) as { access_token?: string; expires_in?: number };
     if (!result.access_token) throw new ServiceUnavailableException('GOOGLE_OAUTH_TOKEN_EMPTY');
     this.cachedToken = {
