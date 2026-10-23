@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { createHash } from 'crypto';
 import { CalendrierService } from './calendrier.service';
 import { GoogleCalendrierClient } from './google-calendrier.client';
+import { ImportGoogleReponsesDto } from './calendrier.dto';
 
 /** Convertit une heure locale IANA en instant UTC ; rejette une heure DST inexistante. */
 function instantLocal(date: string, heure: string, timezone: string): Date {
@@ -208,39 +209,145 @@ export class CalendrierSyncService {
     };
   }
 
+
+  /**
+   * Une adresse invitee correspond a un COMPTE. Les personnes de ce compte
+   * doivent etre selectionnees explicitement pour chaque seance.
+   */
+  private async comptesDuProjet(projectId: number) {
+    const rows: Array<{ id: number; login: string }> = await this.db.query(
+      `SELECT co.id, co.login FROM compte co
+       INNER JOIN login_project lp ON lp.login_id=co.id
+       WHERE lp.project_id=$1 AND co.actif=true`, [projectId],
+    );
+    return rows.map((r) => ({
+      ...r, guestEmail: this.google.recipient(r.login, r.id).toLowerCase(),
+    }));
+  }
+
   async googleResponses(id: number, projectId: number) {
     const calendrier = await this.calendars.get(id, projectId);
     if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
-    const rows = await this.db.query(
+    const rows: Array<{ seance_id: number; google_event_id: string }> = await this.db.query(
       `SELECT ce.seance_id, ce.google_event_id FROM calendrier_evenement ce
-       JOIN seance s ON s.seance_id = ce.seance_id AND s.calendrier_id = ce.calendrier_id
+       JOIN seance se ON se.seance_id=ce.seance_id AND se.calendrier_id=ce.calendrier_id
        WHERE ce.calendrier_id=$1 AND ce.google_event_id IS NOT NULL
-       ORDER BY s.date_seance DESC LIMIT 100`, [id],
+       ORDER BY se.date_seance DESC LIMIT 100`, [id],
     );
-    const results: any[] = [];
+    const comptes = await this.comptesDuProjet(projectId);
+    const resultat: Array<any> = [];
     for (const row of rows) {
-      const googleEvent = await this.google.getEvent(calendrier.google_calendar_id, row.google_event_id);
-      for (const attendee of googleEvent?.attendees ?? []) {
-        const email = String(attendee.email ?? '').toLowerCase();
+      const remote = await this.google.getEvent(calendrier.google_calendar_id, row.google_event_id);
+      for (const attendee of remote?.attendees ?? []) {
+        const email = String(attendee.email ?? '').trim().toLowerCase();
         if (!email || email === this.google.owner) continue;
-        const matches: Array<{ compte_id: number; personne_id: number }> = await this.db.query(
-          `SELECT co.id AS compte_id, p.id AS personne_id
-           FROM compte co JOIN personne p ON p.compte=co.id
-           JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$2
-           WHERE lower(co.login)=$1 AND EXISTS (
-             SELECT 1 FROM inscription_seance ins
-             WHERE ins.personne_id=p.id AND ins.seance_id=$3
-           )`, [email, projectId, row.seance_id],
-        );
-        results.push({
+        const found = comptes.filter((c) => c.guestEmail === email);
+        const accountIds = found.map((c) => Number(c.id));
+        const personnes: Array<{ id: number }> = accountIds.length
+          ? await this.db.query(
+              `SELECT DISTINCT pe.id
+               FROM personne pe JOIN inscription_seance ins ON ins.personne_id=pe.id
+               JOIN seance se ON se.seance_id=ins.seance_id
+               WHERE pe.compte = ANY($1::int[]) AND ins.seance_id=$2
+                 AND se.calendrier_id=$3 AND coalesce(pe.archive,false)=false
+                 AND ins.statut_inscription IS DISTINCT FROM 'essai'
+               ORDER BY pe.id`,
+              [accountIds, row.seance_id, id],
+            ) : [];
+        resultat.push({
           seance_id: row.seance_id, google_email: email,
           google_reponse: attendee.responseStatus ?? 'needsAction',
-          comptes: [...new Set(matches.map((x) => x.compte_id))],
-          personnes: matches.map((x) => x.personne_id),
-          peut_importer: matches.length === 1 && this.google.isProduction(),
+          comptes: accountIds, personnes: personnes.map((p) => Number(p.id)),
+          peut_importer: found.length === 1 && personnes.length > 0 &&
+            ['accepted', 'declined'].includes(String(attendee.responseStatus)),
         });
       }
     }
-    return { calendrier_id: id, apercu_seulement: true, lignes: results };
+    return { calendrier_id: id, apercu_seulement: true, lignes: resultat };
+  }
+
+  /**
+   * Relecture REELLE de Google au moment de l'import pour empecher un client
+   * de forger une reponse. Aucun upsert : uniquement les inscrits existants.
+   * Le statut de presence EFFECTIVE (statut_seance) reste intact.
+   */
+  async importGoogleResponses(
+    id: number, projectId: number, acteurCompteId: number, dto: ImportGoogleReponsesDto,
+  ) {
+    if (!Array.isArray(dto.lignes) || !dto.lignes.length || dto.lignes.length > 20) {
+      throw new BadRequestException('GOOGLE_RSVP_SELECTION_REQUIRED_MAX_20');
+    }
+    const calendar = await this.calendars.get(id, projectId);
+    if (!calendar.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    const accounts = await this.comptesDuProjet(projectId);
+    const keys = new Set<string>();
+    const validated: Array<{ seance_id: number; personne_id: number; status: 'présent'|'absent' }> = [];
+
+    const cached = new Map<number, any>();
+    for (const line of dto.lignes) {
+      const key = line.seance_id + '/' + line.personne_id;
+      if (keys.has(key)) throw new BadRequestException('GOOGLE_RSVP_DUPLICATE_PERSON');
+      keys.add(key);
+      const eventRef: Array<{ google_event_id: string }> = await this.db.query(
+        `SELECT ce.google_event_id FROM calendrier_evenement ce
+         JOIN seance se ON se.seance_id=ce.seance_id AND se.calendrier_id=ce.calendrier_id
+         WHERE ce.calendrier_id=$1 AND ce.seance_id=$2 AND ce.google_event_id IS NOT NULL`,
+        [id, line.seance_id],
+      );
+      if (!eventRef.length) throw new BadRequestException('GOOGLE_RSVP_SEANCE_NOT_PUBLISHED');
+      if (!cached.has(line.seance_id)) {
+        cached.set(line.seance_id, await this.google.getEvent(
+          calendar.google_calendar_id, eventRef[0].google_event_id,
+        ));
+      }
+      const googleEmail = line.google_email.trim().toLowerCase();
+      const attendee = (cached.get(line.seance_id)?.attendees ?? []).find(
+        (candidate: any) => String(candidate.email).toLowerCase() === googleEmail,
+      );
+      if (!attendee || attendee.responseStatus !== line.google_reponse) {
+        throw new BadRequestException('GOOGLE_RSVP_NOT_CONFIRMED_BY_GOOGLE');
+      }
+      const matches = accounts.filter((a) => a.guestEmail === googleEmail);
+      if (matches.length !== 1) throw new BadRequestException('GOOGLE_RSVP_ACCOUNT_AMBIGUOUS');
+      const accountId = Number(matches[0].id);
+      const enrolled: Array<{ personne_id: number }> = await this.db.query(
+        `SELECT ins.personne_id FROM inscription_seance ins
+         JOIN personne pe ON pe.id=ins.personne_id
+         JOIN seance se ON se.seance_id=ins.seance_id
+         WHERE ins.personne_id=$1 AND ins.seance_id=$2
+           AND pe.compte=$3 AND coalesce(pe.archive,false)=false
+           AND se.calendrier_id=$4
+           AND ins.statut_inscription IS DISTINCT FROM 'essai'`,
+        [line.personne_id, line.seance_id, accountId, id],
+      );
+      if (enrolled.length !== 1) throw new BadRequestException('GOOGLE_RSVP_PERSON_NOT_ENROLLED');
+      validated.push({
+        seance_id: line.seance_id, personne_id: line.personne_id,
+        status: line.google_reponse === 'accepted' ? 'présent' : 'absent',
+      });
+    }
+
+    await this.db.transaction(async (manager) => {
+      for (const item of validated) {
+        const updated: Array<{ statut_inscription: string }> = await manager.query(
+          `UPDATE inscription_seance SET statut_inscription=$3, date_inscription=now()
+           WHERE personne_id=$1 AND seance_id=$2 AND statut_inscription IS DISTINCT FROM 'essai'
+           RETURNING statut_inscription`,
+          [item.personne_id, item.seance_id, item.status],
+        );
+        if (!updated.length) throw new BadRequestException('GOOGLE_RSVP_REGISTRATION_GONE');
+        await manager.query(
+          `INSERT INTO calendrier_synchro_log(calendrier_id, seance_id, action, statut, details)
+           VALUES($1,$2,'RSVP_IMPORT','SYNCED',$3::jsonb)`,
+          [id, item.seance_id, JSON.stringify({
+            source:'GOOGLE', acteur_compte_id:acteurCompteId,
+            personne_id:item.personne_id, statut:item.status,
+          })],
+        );
+      }
+    });
+    return { importees: validated.length, ids: validated.map((x) => ({
+      seance_id: x.seance_id, personne_id: x.personne_id, statut: x.status,
+    })) };
   }
 }
