@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AccessControlService } from '../common/access-control.service';
 import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
+import { GoogleCalendrierClient } from './google-calendrier.client';
 import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto } from './calendrier.dto';
 
 @Controller('calendriers')
@@ -13,7 +14,15 @@ export class CalendrierController {
     private readonly service: CalendrierService,
     private readonly sync: CalendrierSyncService,
     private readonly access: AccessControlService,
+    private readonly google: GoogleCalendrierClient,
   ) {}
+
+  /** EXG-06 : test du propriétaire OAuth sans creation d'agenda ni d'evenement. */
+  @Get('google/etat')
+  async googleEtat(@Req() req: any, @ProjectId() projectId: number) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.google.checkConnection();
+  }
 
   @Get('mes')
   async mes(@Req() req: any, @ProjectId() projectId: number) {
