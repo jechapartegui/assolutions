@@ -22,6 +22,9 @@
         </div>
 
         <div class="buttons seance-hero-actions">
+          <a class="button is-link is-light" [routerLink]="['/calendrier']">
+            <span class="icon"><i class="fas fa-calendar-days"></i></span><span>Calendriers</span>
+          </a>
           <button
             *ngIf="hasRefreshAvailable"
             class="button is-warning is-light"
