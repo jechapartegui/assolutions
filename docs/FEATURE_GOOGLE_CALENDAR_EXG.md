@@ -11,7 +11,7 @@
 4. Le propriétaire Google doit être `assolutions.club@gmail.com`. Les secrets ne doivent jamais être dans Git.
 5. Tous les changements Assolutions sont sauvegardés localement avant tout appel à Google. L'outbox conserve l'état d'attente et les échecs : `PENDING`, `SYNCED`, `ERROR`, `DELETE_PENDING`, `DELETED`.
 6. **Google ne garantit pas l'absence totale d'emails** : même avec `sendUpdates=none`, des notifications peuvent survenir et la propagation peut être affectée. Toujours tester en LOCAL puis PREPROD.
-7. L'adresse de l'organisateur Google est toujours réelle. Les emails des adhérents et du projet sont remplacés par des adresses `@yopmail.fr` en LOCAL/PREPROD, avec un identifiant de compte pour éviter les collisions.
+7. L'adresse de l'organisateur Google est toujours réelle. Les emails des adhérents et du projet sont remplacés par des adresses `@yopmail.com` en LOCAL/PREPROD, avec un identifiant de compte pour éviter les collisions.
 
 ## Installation contrôlée
 
