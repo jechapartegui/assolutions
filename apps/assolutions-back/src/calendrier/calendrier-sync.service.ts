@@ -102,7 +102,8 @@ export class CalendrierSyncService {
     ].filter(Boolean).join('\n');
 
     return {
-      summary: (seance.label || seance.type_seance || 'Séance') + (seance.groupes ? ' — ' + seance.groupes : ''),
+      summary: (this.google.isProduction() ? '' : this.google.calendarName('Séance') + ' - ') +
+        (seance.label || seance.type_seance || 'Séance') + (seance.groupes ? ' — ' + seance.groupes : ''),
       description,
       location: [seance.lieu_nom, seance.lieu_adresse].filter(Boolean).join(' — '),
       start: { dateTime: start.toISOString(), timeZone: calendrier.timezone },
