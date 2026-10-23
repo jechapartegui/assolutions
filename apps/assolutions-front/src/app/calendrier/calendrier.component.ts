@@ -231,7 +231,14 @@ export class CalendrierComponent implements OnInit {
       const p = this.previewData;
       if (!window.confirm(
         `Synchroniser ${p.nb_seances} séance(s) avec Google, pour ${p.nb_comptes} compte(s) ?\n\n` +
+        (p.nb_evenements_a_supprimer
+          ? `Attention : ${p.nb_evenements_a_supprimer} événement(s) seront SUPPRIMÉS du calendrier Google.\n\n`
+          : '') +
         'Même avec les notifications désactivées, Google peut envoyer certains e-mails.'
+      )) return;
+      if ((p.nb_evenements_a_supprimer ?? 0) > 0 && !window.confirm(
+        `Confirmer la suppression de ${p.nb_evenements_a_supprimer} événement(s) sur Google ?\n` +
+        'Les séances restent conservées dans Assolutions et peuvent être réassociées.'
       )) return;
       const notificationsAllowed = !!this.form.notifier_mises_a_jour;
       const notify = notificationsAllowed && window.confirm(
