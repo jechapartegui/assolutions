@@ -289,6 +289,59 @@ export class CalendrierSyncService {
     }));
   }
 
+
+  /**
+   * EXG-FIX-05 : meme logique de participants que l'ecran Seance.
+   * Une inscription explicite autorise une correspondance ; sinon le membre
+   * d'un groupe lie a la SEANCE (pas au calendrier) est candidat seulement
+   * si la convocation n'est pas nominative et si les limites d'age s'appliquent.
+   * La presence dans un groupe DESTINATAIRE du calendrier n'est jamais suffisante.
+   */
+  private async candidatsSeance(
+    seanceId: number, calendrierId: number, projectId: number, compteId: number,
+    queryable: { query(sql: string, params?: any[]): Promise<any> } = this.db,
+  ): Promise<Array<{ id: number; nom: string; origine: 'inscription' | 'groupe_seance' }>> {
+    const rows: Array<{ id: number; nom: string; inscription_existante: boolean }> =
+      await queryable.query(
+        `SELECT pe.id, concat_ws(' ', nullif(btrim(pe.first_name), ''), nullif(btrim(pe.last_name), '')) AS nom,
+                (ins.personne_id IS NOT NULL) AS inscription_existante
+           FROM personne pe
+           JOIN seance se ON se.seance_id=$2 AND se.calendrier_id=$3
+           JOIN saison sa ON sa.id=se.saison_id AND sa.project_id=$4
+           LEFT JOIN inscription_seance ins
+             ON ins.personne_id=pe.id AND ins.seance_id=se.seance_id
+          WHERE pe.compte=$1 AND COALESCE(pe.archive,false)=false
+            AND (
+              (ins.personne_id IS NOT NULL AND ins.statut_inscription IS DISTINCT FROM 'essai')
+              OR
+              (ins.personne_id IS NULL
+                AND COALESCE(se.convocation_nominative,false)=false
+                AND EXISTS (
+                  SELECT 1 FROM lien_groupe ls
+                  JOIN lien_groupe lp ON lp.groupe_id=ls.groupe_id
+                   AND lp.object_type='rider' AND lp.object_id=pe.id
+                  WHERE ls.object_type='séance' AND ls.object_id=se.seance_id
+                )
+                AND (se.age_minimum IS NULL OR (
+                  pe.date_naissance IS NOT NULL
+                  AND EXTRACT(YEAR FROM age(CURRENT_DATE, pe.date_naissance)) >= se.age_minimum
+                ))
+                AND (se.age_maximum IS NULL OR (
+                  pe.date_naissance IS NOT NULL
+                  AND EXTRACT(YEAR FROM age(CURRENT_DATE, pe.date_naissance)) <= se.age_maximum
+                ))
+              )
+            )
+          ORDER BY pe.last_name, pe.first_name, pe.id`,
+        [compteId, seanceId, calendrierId, projectId],
+      );
+    return rows.map((p) => ({
+      id: Number(p.id),
+      nom: p.nom || ('Personne #' + p.id),
+      origine: p.inscription_existante ? 'inscription' : 'groupe_seance',
+    }));
+  }
+
   async googleResponses(id: number, projectId: number) {
     const calendrier = await this.calendars.get(id, projectId);
     if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
@@ -307,21 +360,15 @@ export class CalendrierSyncService {
         if (!email || email === this.google.owner) continue;
         const found = comptes.filter((c) => c.guestEmail === email);
         const accountIds = found.map((c) => Number(c.id));
-        const personnes: Array<{ id: number }> = accountIds.length
-          ? await this.db.query(
-              `SELECT DISTINCT pe.id
-               FROM personne pe JOIN inscription_seance ins ON ins.personne_id=pe.id
-               JOIN seance se ON se.seance_id=ins.seance_id
-               WHERE pe.compte = ANY($1::int[]) AND ins.seance_id=$2
-                 AND se.calendrier_id=$3 AND coalesce(pe.archive,false)=false
-                 AND ins.statut_inscription IS DISTINCT FROM 'essai'
-               ORDER BY pe.id`,
-              [accountIds, row.seance_id, id],
-            ) : [];
+        const personnes = found.length === 1
+          ? await this.candidatsSeance(row.seance_id, id, projectId, accountIds[0])
+          : [];
         resultat.push({
           seance_id: row.seance_id, google_email: email,
           google_reponse: attendee.responseStatus ?? 'needsAction',
-          comptes: accountIds, personnes: personnes.map((p) => Number(p.id)),
+          comptes: accountIds,
+          personnes: personnes.map((p) => p.id),
+          personnes_details: personnes,
           peut_importer: found.length === 1 && personnes.length > 0 &&
             ['accepted', 'declined'].includes(String(attendee.responseStatus)),
         });
@@ -332,8 +379,9 @@ export class CalendrierSyncService {
 
   /**
    * Relecture REELLE de Google au moment de l'import pour empecher un client
-   * de forger une reponse. Aucun upsert : uniquement les inscrits existants.
-   * Le statut de presence EFFECTIVE (statut_seance) reste intact.
+   * de forger une reponse. Import MANUEL uniquement : une personne visible
+   * via un groupe de seance peut etre inscrite explicitement lors de ce clic
+   * (jamais juste en consultant Google). Conserver statut_seance intact.
    */
   async importGoogleResponses(
     id: number, projectId: number, acteurCompteId: number, dto: ImportGoogleReponsesDto,
@@ -345,7 +393,7 @@ export class CalendrierSyncService {
     if (!calendar.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
     const accounts = await this.comptesDuProjet(projectId);
     const keys = new Set<string>();
-    const validated: Array<{ seance_id: number; personne_id: number; status: 'présent'|'absent' }> = [];
+    const validated: Array<{ seance_id: number; personne_id: number; status: 'présent'|'absent'; origine: 'inscription'|'groupe_seance' }> = [];
 
     const cached = new Map<number, any>();
     for (const line of dto.lignes) {
@@ -374,28 +422,39 @@ export class CalendrierSyncService {
       const matches = accounts.filter((a) => a.guestEmail === googleEmail);
       if (matches.length !== 1) throw new BadRequestException('GOOGLE_RSVP_ACCOUNT_AMBIGUOUS');
       const accountId = Number(matches[0].id);
-      const enrolled: Array<{ personne_id: number }> = await this.db.query(
-        `SELECT ins.personne_id FROM inscription_seance ins
-         JOIN personne pe ON pe.id=ins.personne_id
-         JOIN seance se ON se.seance_id=ins.seance_id
-         WHERE ins.personne_id=$1 AND ins.seance_id=$2
-           AND pe.compte=$3 AND coalesce(pe.archive,false)=false
-           AND se.calendrier_id=$4
-           AND ins.statut_inscription IS DISTINCT FROM 'essai'`,
-        [line.personne_id, line.seance_id, accountId, id],
-      );
-      if (enrolled.length !== 1) throw new BadRequestException('GOOGLE_RSVP_PERSON_NOT_ENROLLED');
+      const candidats = await this.candidatsSeance(line.seance_id, id, projectId, accountId);
+      const candidat = candidats.find((p) => p.id === line.personne_id);
+      if (!candidat) throw new BadRequestException('GOOGLE_RSVP_PERSON_NOT_ELIGIBLE');
       validated.push({
         seance_id: line.seance_id, personne_id: line.personne_id,
         status: line.google_reponse === 'accepted' ? 'présent' : 'absent',
+        origine: candidat.origine,
       });
     }
 
     await this.db.transaction(async (manager) => {
       for (const item of validated) {
+        // Nouvelle verification dans la transaction : le groupe de la seance
+        // et l'appartenance du compte doivent encore autoriser ce candidat.
+        const account = accounts.find((a) =>
+          a.id > 0 && a.guestEmail === dto.lignes.find((l) =>
+            l.seance_id === item.seance_id && l.personne_id === item.personne_id
+          )?.google_email.trim().toLowerCase());
+        if (!account) throw new BadRequestException('GOOGLE_RSVP_ACCOUNT_AMBIGUOUS');
+        const autorises = await this.candidatsSeance(
+          item.seance_id, id, projectId, Number(account.id), manager,
+        );
+        if (!autorises.some((p) => p.id === item.personne_id)) {
+          throw new BadRequestException('GOOGLE_RSVP_PERSON_NOT_ELIGIBLE');
+        }
+        // L'ajout d'une ligne est UNIQUEMENT declenche par cette confirmation admin.
+        // Un compte repondant sur Google seul n'inscrit personne dans Assolutions.
         const updated: Array<{ statut_inscription: string }> = await manager.query(
-          `UPDATE inscription_seance SET statut_inscription=$3, date_inscription=now()
-           WHERE personne_id=$1 AND seance_id=$2 AND statut_inscription IS DISTINCT FROM 'essai'
+          `INSERT INTO inscription_seance(personne_id,seance_id,statut_inscription,date_inscription)
+           VALUES($1,$2,$3,now())
+           ON CONFLICT (personne_id,seance_id) DO UPDATE
+           SET statut_inscription=EXCLUDED.statut_inscription, date_inscription=now()
+           WHERE inscription_seance.statut_inscription IS DISTINCT FROM 'essai'
            RETURNING statut_inscription`,
           [item.personne_id, item.seance_id, item.status],
         );
@@ -406,6 +465,7 @@ export class CalendrierSyncService {
           [id, item.seance_id, JSON.stringify({
             source:'GOOGLE', acteur_compte_id:acteurCompteId,
             personne_id:item.personne_id, statut:item.status,
+            origine:item.origine, inscription_creee:item.origine === 'groupe_seance',
           })],
         );
       }
