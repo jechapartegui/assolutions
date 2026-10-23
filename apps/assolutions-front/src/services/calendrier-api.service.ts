@@ -60,6 +60,25 @@ export interface CalendrierSyncResult {
   avertissement: string;
 }
 
+export interface CalendrierWorkerEtat {
+  calendrier_trouve: boolean;
+  calendrier_id?: number;
+  statut_calendrier?: string;
+  evenements_pending?: number;
+  google_configure?: boolean;
+  auto_sync_configure?: boolean;
+  worker_demarre?: boolean;
+  worker_en_cours?: boolean;
+  filtre_valide?: boolean;
+  calendrier_dans_filtre?: boolean;
+  calendrier_google_existant?: boolean;
+  calendrier_actif?: boolean;
+  eligibilite?: boolean;
+  dernier_passage?: string | null;
+  dernier_resultat?: string;
+  derniers_calendriers_trouves?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CalendrierApiService {
   private readonly base = '/calendriers';
@@ -70,6 +89,11 @@ export class CalendrierApiService {
     compte?: string; code: string;
   }> {
     return this.api.GET(this.base + '/google/etat');
+  }
+  workerStatus(calendrierId: number): Promise<CalendrierWorkerEtat> {
+    return this.api.GET<CalendrierWorkerEtat>(
+      this.base + '/google/worker-etat?calendrier_id=' + Number(calendrierId),
+    );
   }
 
   list(saisonId: number): Promise<Calendrier[]> {
