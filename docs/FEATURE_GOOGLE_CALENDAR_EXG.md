@@ -22,7 +22,17 @@
 - Relancer une seconde fois le script : il doit être idempotent (tables/index/triggers/FK).
 - Le SQL ne crée aucun agenda Google et n'envoie aucun courriel.
 
-### 2. Configuration des API Google
+### 2. Configuration des API Google (EXG-06)
+- Utiliser un projet Google Cloud dedie ; activer **Google Calendar API**.
+- Google Auth Platform > Audience : type Externe pour un compte Gmail, en phase Testing ajouter **assolutions.club@gmail.com** comme utilisateur de test.
+- Google Auth Platform > Data Access / scopes : demander **`openid`**, **`email`** et **`https://www.googleapis.com/auth/calendar`**. Les scopes OIDC servent a verifier formellement l'adresse authentifiee.
+- Google Auth Platform > Clients : creer un client **Application Web**, avec URI de redirection autorisee **`https://developers.google.com/oauthplayground`** pour le test manuel.
+- Ouvrir https://developers.google.com/oauthplayground ; Settings > "Use your own OAuth credentials", renseigner le Client ID et le secret **uniquement dans l'outil Google**, selectionner les trois scopes ci-dessus et "Offline". Autoriser le **bon compte Gmail**, puis echanger le code contre les tokens. Ne transmettre JAMAIS les tokens en chat/Git.
+- Injecter les variables locales serveur sans les committer, laisser `GOOGLE_CALENDAR_AUTO_SYNC=false`.
+- Une fois le refresh token obtenu, passer `GOOGLE_CALENDAR_ENABLED=true` **en local seulement** ; dans l'administration Calendriers cliquer **Tester connexion Google** : code `GOOGLE_CALENDAR_OAUTH_OK`, proprietaire verifie ; ce test est en **lecture seule**, il ne cree ni agenda ni evenement, ni invitation.
+- Test negatif : autorisation d'un **autre compte Google**, puis bouton diagnostic => `GOOGLE_CALENDAR_OWNER_MISMATCH`. Retablir ensuite le bon refresh token. Ne pas lancer de synchronisation durant EXG-06.
+- Important : en mode OAuth **Testing** avec scope Calendar, Google fait expirer les autorisations, y compris refresh token, au bout de **7 jours** ; pour le fonctionnement permanent, regler la publication et les verifications eventuellement demandees par Google plus tard.
+
 Dans Google Cloud Console :
 - Créer un projet spécifique et **activer Google Calendar API**.
 - Configurer consentement OAuth et un client OAuth 2.0 (type application Web ou client adapté à l'obtention sécurisée d'un refresh token).
@@ -40,7 +50,7 @@ GOOGLE_CALENDAR_CLIENT_SECRET=CHANGE_ME
 GOOGLE_CALENDAR_REFRESH_TOKEN=CHANGE_ME
 ASSOLUTIONS_FRONT_URL=http://localhost:2211
 ```
-Propriété : `assolutions.club@gmail.com`, vérifiée sur l'API `users/me/calendarList/primary` avant publication.
+Propriete : `assolutions.club@gmail.com`, verifiee via Google OpenID Connect `userinfo` (email verifiee) puis controle de l'acces proprietaire `users/me/calendarList/primary` avant toute publication.
 Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altère pas les séances Assolutions.
 
 ### 3. Interface / droits
@@ -57,7 +67,7 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 | EXG-03 | vérifier eventId/status/erreurs de chaque séance | À tester |
 | EXG-04 | calendrier 2 groupes ; refuser groupe autre saison | À tester |
 | EXG-05 | compte avec deux enfants : 1 compte/email | À tester |
-| EXG-06 | OAuth 2.0 identité Gmail propriétaire, volontairement mauvais compte refusé | À tester |
+| EXG-06 | OAuth 2.0 identité Gmail propriétaire, volontairement mauvais compte refusé ; bouton diagnostic read-only | À tester |
 | EXG-07 | créer 1 agenda LOCAL puis PREPROD, noms préfixés | À tester |
 | EXG-08 | renommer, archiver ; **suppression Google distante encore à finaliser** | Partiel |
 | EXG-09 | cocher/décocher séances, filtrer date/nom/groupe/type | À tester |
