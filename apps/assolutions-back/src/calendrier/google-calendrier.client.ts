@@ -79,8 +79,26 @@ export class GoogleCalendrierClient {
     });
     if (response.status === 404 && (method === 'GET' || method === 'DELETE')) return null;
     if (!response.ok) {
-      // Ne jamais exposer les credentials ni le corps potentiel de la reponse Google.
-      throw new Error('GOOGLE_CALENDAR_API_HTTP_' + response.status);
+      // N'exposer que des codes de diagnostic controles, jamais la reponse brute de Google.
+      if (response.status === 403) {
+        let error: any = null;
+        try { error = await response.json(); } catch { /* Corps absent ou invalide. */ }
+        const reasons = [
+          ...(Array.isArray(error?.error?.errors) ? error.error.errors.map((item: any) => item?.reason) : []),
+          ...(Array.isArray(error?.error?.details) ? error.error.details.map((item: any) => item?.reason) : []),
+        ].map((value) => String(value || '').toLowerCase());
+        if (reasons.some((reason) => ['accessnotconfigured', 'service_disabled', 'access_not_configured'].includes(reason))) {
+          throw new ServiceUnavailableException('GOOGLE_CALENDAR_API_DISABLED_IN_CLOUD_PROJECT');
+        }
+        if (reasons.some((reason) => ['insufficientpermissions', 'access_token_scope_insufficient'].includes(reason))) {
+          throw new ServiceUnavailableException('GOOGLE_CALENDAR_OAUTH_SCOPE_INSUFFICIENT');
+        }
+        if (reasons.some((reason) => ['ratelimitexceeded', 'userratelimitexceeded', 'quotaexceeded'].includes(reason))) {
+          throw new ServiceUnavailableException('GOOGLE_CALENDAR_RATE_LIMITED');
+        }
+        throw new ServiceUnavailableException('GOOGLE_CALENDAR_API_FORBIDDEN_403');
+      }
+      throw new ServiceUnavailableException('GOOGLE_CALENDAR_API_HTTP_' + response.status);
     }
     if (response.status === 204) return {};
     return (await response.json()) as GoogleObject;
