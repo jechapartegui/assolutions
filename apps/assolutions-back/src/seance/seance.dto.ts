@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 export class CreateSeanceDto {
   @IsInt() saison_id: number;
   @IsOptional() @IsInt() cours?: number | null;
+  @IsOptional() @IsInt() calendrier_id?: number | null;
   @IsOptional() @IsString() @MaxLength(255) label?: string | null;
   @IsString() type_seance: string;
   @IsDateString() date_seance: string;
@@ -43,6 +44,7 @@ export class CreateSeanceRangeDto {
 export class UpdateSeanceDto {
   @IsOptional() @IsInt() saison_id?: number;
   @IsOptional() @IsInt() cours?: number | null;
+  @IsOptional() @IsInt() calendrier_id?: number | null;
   @IsOptional() @IsString() @MaxLength(255) label?: string | null;
   @IsOptional() @IsString() type_seance?: string;
   @IsOptional() @IsDateString() date_seance?: string;
