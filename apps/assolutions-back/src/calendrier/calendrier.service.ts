@@ -141,14 +141,28 @@ export class CalendrierService {
         `UPDATE calendrier SET statut_synchro = 'PENDING', date_maj = now() WHERE id = $1`,
         [id],
       );
-    } else if (groupes !== undefined) {
-      // Modification de l'audience : mettre a jour les invites Google sur chaque evenement.
+    }
+    // Le formulaire d'edition transmet TOUJOURS les seances ET les groupes.
+    // Ce bloc doit donc rester independant du bloc 'seances' : sinon les
+    // invitations existantes restent SYNCED lors d'un changement d'audience
+    // (notamment apres correction de l'adresse Yopmail de test).
+    if (groupes !== undefined) {
       await db.query(
-        `UPDATE calendrier_evenement SET statut_synchro = 'PENDING', date_maj = now()
-         WHERE calendrier_id = $1 AND statut_synchro NOT IN ('DELETE_PENDING', 'DELETED')`,
+        `UPDATE calendrier_evenement ce
+         SET statut_synchro = 'PENDING', date_maj = now()
+         WHERE ce.calendrier_id = $1
+           AND ce.statut_synchro NOT IN ('DELETE_PENDING', 'DELETED')
+           AND EXISTS (
+             SELECT 1 FROM seance se
+             WHERE se.seance_id = ce.seance_id
+               AND se.calendrier_id = ce.calendrier_id
+           )`,
         [id],
       );
-      await db.query("UPDATE calendrier SET statut_synchro = 'PENDING', date_maj = now() WHERE id = $1", [id]);
+      await db.query(
+        "UPDATE calendrier SET statut_synchro = 'PENDING', date_maj = now() WHERE id = $1",
+        [id],
+      );
     }
   }
 
