@@ -77,7 +77,7 @@ export class GoogleCalendrierClient {
       },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
-    if (response.status === 404) return null;
+    if (response.status === 404 && (method === 'GET' || method === 'DELETE')) return null;
     if (!response.ok) {
       // Ne jamais exposer les credentials ni le corps potentiel de la reponse Google.
       throw new Error('GOOGLE_CALENDAR_API_HTTP_' + response.status);
