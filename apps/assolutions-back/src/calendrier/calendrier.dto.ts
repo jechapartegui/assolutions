@@ -21,6 +21,12 @@ export class UpdateCalendrierDto {
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) seance_ids?: number[];
 }
 
+/** EXG-UI-02 : réponse Assolutions pour une personne de SON compte. */
+export class RepondreCalendrierEvenementDto {
+  @IsInt() @Min(1) personne_id: number;
+  @IsIn(['présent', 'absent']) reponse: 'présent' | 'absent';
+}
+
 export class SynchroniserCalendrierDto {
   @IsBoolean() notifier: boolean;
   @IsOptional() @IsIn(['preview', 'execute']) mode?: 'preview' | 'execute';
