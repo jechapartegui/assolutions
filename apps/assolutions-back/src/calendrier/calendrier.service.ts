@@ -75,6 +75,173 @@ export class CalendrierService {
     );
   }
 
+
+  /**
+   * EXG-20 / EXG-UI-02 : événements du calendrier visibles par le COMPTE courant.
+   * Les groupes destinataires donnent le droit de consulter, jamais de répondre.
+   * Les candidats sont uniquement les personnes de CE compte, inscrites à la
+   * séance ou liées à un groupe de CETTE séance (hors nominatif / bornes d'âge).
+   */
+  async mesEvenements(accountId: number, projectId: number) {
+    const rows: Array<{
+      calendrier_id: number; seance_id: number; date_seance: string;
+      heure_debut: string; duree_seance: number; label: string | null;
+      type_seance: string; statut: string; lieu_nom: string | null;
+      groupes: string; personne_id: number | null; first_name: string | null;
+      last_name: string | null; statut_inscription: string | null;
+      peut_repondre: boolean;
+    }> = await this.dataSource.query(
+      \`SELECT c.id AS calendrier_id, se.seance_id,
+              se.date_seance::text AS date_seance, se.heure_debut,
+              se.duree_seance, se.label, se.type_seance, se.statut,
+              l.nom AS lieu_nom,
+              COALESCE((
+                SELECT string_agg(DISTINCT g.nom, ', ' ORDER BY g.nom)
+                FROM lien_groupe lg JOIN groupes g ON g.id=lg.groupe_id
+                WHERE lg.object_type='séance' AND lg.object_id=se.seance_id
+              ), '') AS groupes,
+              candidat.id AS personne_id, candidat.first_name,
+              candidat.last_name, candidat.statut_inscription,
+              (se.date_seance >= CURRENT_DATE AND se.statut = 'prévue') AS peut_repondre
+       FROM calendrier c
+       JOIN login_project lp ON lp.project_id=c.project_id AND lp.login_id=$1
+       JOIN seance se ON se.calendrier_id=c.id
+       LEFT JOIN lieu l ON l.id=se.lieu_id
+       LEFT JOIN LATERAL (
+         SELECT pe.id, pe.first_name, pe.last_name, ins.statut_inscription
+         FROM personne pe
+         LEFT JOIN inscription_seance ins
+           ON ins.personne_id=pe.id AND ins.seance_id=se.seance_id
+         WHERE pe.compte=$1 AND COALESCE(pe.archive,false)=false
+           AND (
+             (ins.personne_id IS NOT NULL
+               AND ins.statut_inscription IS DISTINCT FROM 'essai')
+             OR
+             (ins.personne_id IS NULL
+               AND COALESCE(se.convocation_nominative,false)=false
+               AND EXISTS (
+                 SELECT 1 FROM lien_groupe ls
+                 JOIN lien_groupe lr ON lr.groupe_id=ls.groupe_id
+                   AND lr.object_type='rider' AND lr.object_id=pe.id
+                 WHERE ls.object_type='séance' AND ls.object_id=se.seance_id
+               )
+               AND (se.age_minimum IS NULL OR (
+                 pe.date_naissance IS NOT NULL
+                 AND EXTRACT(YEAR FROM age(CURRENT_DATE,pe.date_naissance)) >= se.age_minimum
+               ))
+               AND (se.age_maximum IS NULL OR (
+                 pe.date_naissance IS NOT NULL
+                 AND EXTRACT(YEAR FROM age(CURRENT_DATE,pe.date_naissance)) <= se.age_maximum
+               ))
+             )
+           )
+       ) candidat ON TRUE
+       WHERE c.project_id=$2 AND c.actif=true
+         AND EXISTS (
+           SELECT 1 FROM calendrier_groupe cg
+           JOIN lien_groupe lr ON lr.groupe_id=cg.groupe_id
+             AND lr.object_type='rider'
+           JOIN personne membre ON membre.id=lr.object_id
+           WHERE cg.calendrier_id=c.id AND membre.compte=$1
+             AND COALESCE(membre.archive,false)=false
+         )
+       ORDER BY se.date_seance, se.heure_debut, se.seance_id, candidat.last_name, candidat.first_name
+       LIMIT 2000\`,
+      [accountId, projectId],
+    );
+    const result = new Map<string, any>();
+    for (const row of rows) {
+      const key = row.calendrier_id + '/' + row.seance_id;
+      if (!result.has(key)) {
+        result.set(key, {
+          calendrier_id: Number(row.calendrier_id),
+          seance_id: Number(row.seance_id),
+          date_seance: row.date_seance,
+          heure_debut: String(row.heure_debut ?? '').slice(0, 5),
+          duree_seance: Number(row.duree_seance ?? 0),
+          label: row.label,
+          type_seance: row.type_seance,
+          statut: row.statut,
+          lieu_nom: row.lieu_nom,
+          groupes: row.groupes,
+          peut_repondre: row.peut_repondre,
+          personnes: [],
+        });
+      }
+      if (row.personne_id != null) {
+        result.get(key).personnes.push({
+          id: Number(row.personne_id),
+          nom: [row.first_name, row.last_name].filter(Boolean).join(' ').trim(),
+          statut_inscription: row.statut_inscription,
+        });
+      }
+    }
+    return [...result.values()];
+  }
+
+  /**
+   * Réponse Oui/Non uniquement si le compte voit le calendrier ET si la
+   * personne est éligible à CETTE séance. Vérification et mutation atomiques.
+   * Aucun RSVP Google modifié et aucune présence effective touchée.
+   */
+  async repondreEvenement(
+    accountId: number, projectId: number, seanceId: number,
+    personneId: number, statut: 'présent' | 'absent',
+  ) {
+    const updated: Array<{ personne_id: number; seance_id: number; statut_inscription: string }> =
+      await this.dataSource.query(
+        \`INSERT INTO inscription_seance (personne_id,seance_id,statut_inscription,date_inscription)
+         SELECT pe.id, se.seance_id, $5::text::inscription_seance_statut_inscription_enum, now()
+         FROM seance se
+         JOIN calendrier c ON c.id=se.calendrier_id
+         JOIN login_project lp ON lp.project_id=c.project_id AND lp.login_id=$1
+         JOIN personne pe ON pe.id=$4 AND pe.compte=$1 AND COALESCE(pe.archive,false)=false
+         LEFT JOIN inscription_seance ins ON ins.personne_id=pe.id AND ins.seance_id=se.seance_id
+         WHERE se.seance_id=$3 AND c.project_id=$2 AND c.actif=true
+           AND se.statut='prévue' AND se.date_seance>=CURRENT_DATE
+           AND EXISTS (
+             SELECT 1 FROM calendrier_groupe cg
+             JOIN lien_groupe lr ON lr.groupe_id=cg.groupe_id AND lr.object_type='rider'
+             JOIN personne membre ON membre.id=lr.object_id
+             WHERE cg.calendrier_id=c.id AND membre.compte=$1
+               AND COALESCE(membre.archive,false)=false
+           )
+           AND (
+             (ins.personne_id IS NOT NULL AND ins.statut_inscription IS DISTINCT FROM 'essai')
+             OR
+             (ins.personne_id IS NULL AND COALESCE(se.convocation_nominative,false)=false
+               AND EXISTS (
+                 SELECT 1 FROM lien_groupe ls
+                 JOIN lien_groupe lr ON lr.groupe_id=ls.groupe_id
+                   AND lr.object_type='rider' AND lr.object_id=pe.id
+                 WHERE ls.object_type='séance' AND ls.object_id=se.seance_id
+               )
+               AND (se.age_minimum IS NULL OR (
+                 pe.date_naissance IS NOT NULL
+                 AND EXTRACT(YEAR FROM age(CURRENT_DATE,pe.date_naissance)) >= se.age_minimum
+               ))
+               AND (se.age_maximum IS NULL OR (
+                 pe.date_naissance IS NOT NULL
+                 AND EXTRACT(YEAR FROM age(CURRENT_DATE,pe.date_naissance)) <= se.age_maximum
+               ))
+             )
+           )
+         ON CONFLICT (personne_id,seance_id) DO UPDATE
+           SET statut_inscription=EXCLUDED.statut_inscription, date_inscription=now()
+           WHERE inscription_seance.statut_inscription IS DISTINCT FROM 'essai'
+         RETURNING personne_id,seance_id,statut_inscription\`,
+        [accountId, projectId, seanceId, personneId, statut],
+      );
+    if (updated.length !== 1) {
+      throw new ForbiddenException('CALENDAR_SEANCE_RESPONSE_NOT_ALLOWED');
+    }
+    return {
+      seance_id: Number(updated[0].seance_id),
+      personne_id: Number(updated[0].personne_id),
+      statut_inscription: updated[0].statut_inscription,
+    };
+  }
+
   async seances(id: number, projectId: number) {
     await this.get(id, projectId);
     return this.dataSource.query(
