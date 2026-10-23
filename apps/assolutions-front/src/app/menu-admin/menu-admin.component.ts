@@ -69,6 +69,13 @@ export class MenuAdminComponent implements OnInit {
           hint: $localize`:@@admin.sessionsHint:Consulter les séances, présences, essais et encadrants`,
         },
         {
+          label: 'Calendriers Google',
+          icon: 'fa-calendar-days',
+          menu: 'SEANCE',
+          route: '/calendrier',
+          hint: 'Gérer les agendas, les destinataires et la synchronisation des séances',
+        },
+        {
           label: $localize`:@@admin.classes:Cours`,
           icon: 'fa-chalkboard-user',
           menu: 'COURS',
