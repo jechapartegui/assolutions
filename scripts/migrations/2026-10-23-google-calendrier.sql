@@ -232,25 +232,29 @@ FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_lien_seance_mark_dirty();
 
 -- Changement d'appartenance d'un adherent : l'audience Google a change.
 CREATE OR REPLACE FUNCTION public.fn_calendrier_lien_rider_mark_dirty()
-RETURNS trigger LANGUAGE plpgsql AS $
-DECLARE v_groupe integer;
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE v_groupe_ancien integer; v_groupe_nouveau integer;
 BEGIN
-    IF TG_OP='DELETE' THEN
-        IF OLD.object_type <> 'rider' THEN RETURN OLD; END IF;
-        v_groupe := OLD.groupe_id;
-    ELSE
-        IF NEW.object_type <> 'rider' THEN RETURN NEW; END IF;
-        v_groupe := NEW.groupe_id;
+    IF TG_OP <> 'INSERT' AND OLD.object_type = 'rider' THEN
+        v_groupe_ancien := OLD.groupe_id;
     END IF;
-    UPDATE public.calendrier_evenement ce SET statut_synchro='PENDING', date_maj=now()
-    FROM public.calendrier_groupe cg
-    WHERE cg.groupe_id = v_groupe AND cg.calendrier_id = ce.calendrier_id
-      AND ce.statut_synchro NOT IN ('DELETE_PENDING','DELETED');
-    UPDATE public.calendrier c SET statut_synchro='PENDING', date_maj=now()
-    FROM public.calendrier_groupe cg
-    WHERE cg.groupe_id=v_groupe AND c.id=cg.calendrier_id;
-    RETURN CASE WHEN TG_OP='DELETE' THEN OLD ELSE NEW END;
-END $;
+    IF TG_OP <> 'DELETE' AND NEW.object_type = 'rider' THEN
+        v_groupe_nouveau := NEW.groupe_id;
+    END IF;
+    IF v_groupe_ancien IS NOT NULL OR v_groupe_nouveau IS NOT NULL THEN
+        UPDATE public.calendrier_evenement ce SET statut_synchro='PENDING', date_maj=now()
+        FROM public.calendrier_groupe cg
+        WHERE cg.groupe_id IN (v_groupe_ancien, v_groupe_nouveau)
+          AND cg.calendrier_id = ce.calendrier_id
+          AND ce.statut_synchro NOT IN ('DELETE_PENDING','DELETED');
+        UPDATE public.calendrier c SET statut_synchro='PENDING', date_maj=now()
+        FROM public.calendrier_groupe cg
+        WHERE cg.groupe_id IN (v_groupe_ancien, v_groupe_nouveau)
+          AND c.id=cg.calendrier_id;
+    END IF;
+    IF TG_OP='DELETE' THEN RETURN OLD; END IF;
+    RETURN NEW;
+END $$;
 
 DROP TRIGGER IF EXISTS trg_calendrier_lien_rider_mark_dirty ON public.lien_groupe;
 CREATE TRIGGER trg_calendrier_lien_rider_mark_dirty
