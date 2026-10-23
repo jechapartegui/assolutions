@@ -1,24 +1,119 @@
 <div class="container is-fluid py-4">
   <section class="box">
-    <h1 class="title is-4">Mes calendriers</h1>
-    <p class="subtitle is-6">Les calendriers accessibles à ton compte (y compris pour plusieurs membres de ta famille).</p>
-    <div class="notification is-info is-light">
-      <strong>Rappel :</strong> Google Agenda sert à consulter les dates, lieux et horaires.
-      <strong>Assolutions fait foi</strong> pour les convocations et les réponses de présence.
-      Voir un événement ne signifie pas être convoqué !
+    <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap" style="gap:.75rem">
+      <div>
+        <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Mes calendriers</h1>
+        <p class="subtitle is-6">Les calendriers de ton compte, y compris ceux des membres de ta famille.</p>
+      </div>
+      <button class="button is-light" type="button" (click)="recharger()" [disabled]="loading">
+        <i class="fas fa-arrows-rotate mr-2"></i>{{ loading ? 'Chargement…' : 'Actualiser' }}
+      </button>
     </div>
-    <p *ngIf="loading">Chargement…</p>
-    <div *ngIf="error" class="notification is-danger is-light">{{ error }}</div>
+    <div class="notification is-info is-light">
+      <strong>Rappel :</strong> le calendrier est informatif : voir une séance ne signifie pas être convoqué.
+      Les réponses Oui / Non ici sont enregistrées dans <strong>Assolutions</strong>, sans changer automatiquement le RSVP Google.
+    </div>
+    <div class="field">
+      <label class="checkbox">
+        <input type="checkbox" [(ngModel)]="showPast" />
+        Afficher également les séances passées
+      </label>
+    </div>
+    <p *ngIf="loading" class="has-text-grey">Chargement des calendriers et séances…</p>
+    <div *ngIf="error" class="notification is-danger is-light" role="alert">{{ error }}</div>
+    <div *ngIf="info" class="notification is-success is-light" role="status">{{ info }}</div>
     <p *ngIf="!loading && !calendriers.length">Aucun calendrier ne concerne actuellement ton compte.</p>
-    <article class="box" *ngFor="let calendar of calendriers">
-      <h2 class="title is-6 mb-2"><i class="fas fa-calendar mr-2"></i>{{ calendar.nom }}</h2>
-      <p *ngIf="calendar.description">{{ calendar.description }}</p>
-      <p class="is-size-7 has-text-grey mb-3">Statut Google : {{ calendar.statut_synchro }}</p>
-      <a *ngIf="calendar.google_calendar_url" class="button is-link is-light" target="_blank"
-         rel="noopener noreferrer" [href]="calendar.google_calendar_url">
-        <i class="fas fa-arrow-up-right-from-square mr-2"></i>Afficher / ajouter dans Google Agenda
-      </a>
-      <p *ngIf="!calendar.google_calendar_url" class="help">Pas encore synchronisé avec Google Agenda.</p>
-    </article>
   </section>
+
+  <article class="box" *ngFor="let calendar of calendriers">
+    <div class="is-flex is-justify-content-space-between is-flex-wrap-wrap is-align-items-start mb-3" style="gap:.6rem">
+      <div>
+        <h2 class="title is-6 mb-2"><i class="fas fa-calendar mr-2"></i>{{ calendar.nom }}</h2>
+        <p *ngIf="calendar.description" class="mb-1">{{ calendar.description }}</p>
+        <p class="is-size-7 has-text-grey">Statut Google : {{ calendar.statut_synchro }}</p>
+      </div>
+      <a *ngIf="calendar.google_calendar_url" class="button is-link is-light is-small"
+         target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url">
+        <i class="fas fa-arrow-up-right-from-square mr-2"></i>Ouvrir dans Google Agenda
+      </a>
+    </div>
+
+    <ng-container *ngIf="evenementsDuCalendrier(calendar.id) as liste">
+      <h3 class="title is-6 mt-4 mb-2">Séances du calendrier ({{ liste.length }})</h3>
+      <p *ngIf="!liste.length" class="has-text-grey is-size-7">
+        Aucune séance {{ showPast ? 'sur ce calendrier' : 'à venir' }}.
+      </p>
+      <div class="mes-calendar-table" *ngIf="liste.length">
+        <table class="table is-striped is-hoverable is-fullwidth">
+          <thead>
+            <tr>
+              <th>Nom / type</th>
+              <th>Date et heure</th>
+              <th>Groupes séance</th>
+              <th>Lieu</th>
+              <th>Statut</th>
+              <th>Ma réponse</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of liste">
+              <td>
+                <button type="button" class="button is-white is-small mes-calendar-open"
+                        (click)="ouvrirSeance(e.seance_id)" [title]="'Ouvrir la séance ' + e.seance_id">
+                  <i class="fas fa-binoculars mr-2"></i>{{ e.label || typeLabel(e.type_seance) }}
+                </button>
+                <span class="is-block is-size-7 has-text-grey">{{ typeLabel(e.type_seance) }}</span>
+              </td>
+              <td class="is-nowrap">
+                {{ dateFr(e.date_seance) }} {{ e.heure_debut }} – {{ heureFin(e) }}
+                <span *ngIf="e.duree_seance" class="is-block has-text-grey is-size-7">({{ e.duree_seance }} min)</span>
+              </td>
+              <td>{{ e.groupes || '—' }}</td>
+              <td>{{ e.lieu_nom || '—' }}</td>
+              <td><span class="tag is-light">{{ e.statut }}</span></td>
+              <td>
+                <ng-container *ngIf="e.personnes.length; else consultationSeule">
+                  <div *ngFor="let p of e.personnes" class="mes-calendar-person">
+                    <span class="mes-calendar-person-name">{{ p.nom || 'Personne #' + p.id }}</span>
+                    <div *ngIf="e.peut_repondre; else consultationArchivee"
+                         class="mes-calendar-answer" role="group"
+                         [attr.aria-label]="'Réponse de ' + p.nom">
+                      <button type="button" class="button is-small"
+                              [class.is-success]="p.statut_inscription === 'présent'"
+                              [class.is-light]="p.statut_inscription !== 'présent'"
+                              [disabled]="reponsesEnCours.has(cleReponse(e.seance_id, p.id))"
+                              (click)="repondre(e,p,'présent')"
+                              [attr.aria-label]="'Oui, ' + p.nom" title="Je viens">
+                        <i class="fas fa-thumbs-up mr-1"></i>Oui
+                      </button>
+                      <button type="button" class="button is-small"
+                              [class.is-danger]="p.statut_inscription === 'absent'"
+                              [class.is-light]="p.statut_inscription !== 'absent'"
+                              [disabled]="reponsesEnCours.has(cleReponse(e.seance_id, p.id))"
+                              (click)="repondre(e,p,'absent')"
+                              [attr.aria-label]="'Non, ' + p.nom" title="Je ne viens pas">
+                        <i class="fas fa-thumbs-down mr-1"></i>Non
+                      </button>
+                      <span class="is-size-7 has-text-grey" *ngIf="p.statut_inscription !== 'présent' && p.statut_inscription !== 'absent'">
+                        {{ libelleReponse(p.statut_inscription) }}
+                      </span>
+                    </div>
+                    <ng-template #consultationArchivee>
+                      <span class="is-size-7 has-text-grey">{{ libelleReponse(p.statut_inscription) }} · réponse fermée</span>
+                    </ng-template>
+                  </div>
+                </ng-container>
+                <ng-template #consultationSeule>
+                  <span class="tag is-light">Consultation uniquement</span>
+                  <span class="is-block is-size-7 has-text-grey">
+                    Aucune personne de ton compte n'est éligible pour répondre à cette séance.
+                  </span>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </article>
 </div>
