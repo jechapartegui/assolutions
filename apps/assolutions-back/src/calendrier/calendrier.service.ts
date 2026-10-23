@@ -132,7 +132,7 @@ export class CalendrierService {
              SELECT $1, unnest($2::int[]), 'PENDING'
              ON CONFLICT (calendrier_id, seance_id) DO UPDATE
              SET statut_synchro = CASE
-                WHEN calendrier_evenement.statut_synchro = 'DELETE_PENDING'
+                WHEN calendrier_evenement.statut_synchro IN ('DELETE_PENDING', 'DELETED')
                 THEN 'PENDING' ELSE calendrier_evenement.statut_synchro END`,
           [id, seances],
         );
