@@ -151,10 +151,13 @@ export class CalendrierComponent implements OnInit {
     this.error = '';
     this.info = '';
     try {
-      const dto = { ...this.form, saison_id: this.saisonId };
+      // L'API creation exige saison_id, mais l'API modification le refuse.
+      // La saison d'un calendrier existant reste inchangeable.
+      const { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids } = this.form;
+      const dto = { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids };
       const result = this.selectedId
         ? await this.api.update(this.selectedId, dto)
-        : await this.api.create(dto);
+        : await this.api.create({ ...dto, saison_id: this.saisonId });
       this.selectedId = result.id;
       this.info = 'Calendrier enregistré sur Assolutions.';
       await this.reload(result.id);
