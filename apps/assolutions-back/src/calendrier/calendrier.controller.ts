@@ -6,7 +6,7 @@ import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
 import { GoogleCalendrierClient } from './google-calendrier.client';
 import { CalendrierWorkerService } from './calendrier-worker.service';
-import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto } from './calendrier.dto';
+import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto } from './calendrier.dto';
 
 @Controller('calendriers')
 @UseGuards(JwtAuthGuard)
@@ -50,6 +50,26 @@ export class CalendrierController {
     await this.access.assertProjectStaff(req.user.id, projectId);
     const saisonId = saison === undefined ? undefined : Number(saison);
     return this.service.list(projectId, saisonId);
+  }
+
+  /** Événements visibles pour un compte, réponse seulement pour les éligibles. */
+  @Get('mes/evenements')
+  async mesEvenements(@Req() req: any, @ProjectId() projectId: number) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    return this.service.mesEvenements(Number(req.user.id), projectId);
+  }
+
+  @Post('mes/evenements/:seanceId/repondre')
+  async repondreEvenement(
+    @Req() req: any,
+    @ProjectId() projectId: number,
+    @Param('seanceId', ParseIntPipe) seanceId: number,
+    @Body() dto: RepondreCalendrierEvenementDto,
+  ) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    return this.service.repondreEvenement(
+      Number(req.user.id), projectId, seanceId, dto.personne_id, dto.reponse,
+    );
   }
 
   @Get(':id/seances')
