@@ -191,6 +191,9 @@
         <p *ngIf="current?.derniere_erreur" class="help is-danger">{{ current?.derniere_erreur }}</p>
         <div *ngIf="previewData" class="notification is-warning is-light mt-3">
           <strong>Prévisualisation :</strong> {{ previewData.nb_seances }} séance(s), {{ previewData.nb_comptes }} compte(s).
+          <span *ngIf="previewData.nb_evenements_a_supprimer" class="is-block has-text-danger has-text-weight-semibold">
+            {{ previewData.nb_evenements_a_supprimer }} événement(s) à supprimer du calendrier Google.
+          </span>
           <span class="is-block">{{ previewData.avertissement }}</span>
         </div>
         <div *ngIf="syncResult" class="notification is-info is-light mt-3">
