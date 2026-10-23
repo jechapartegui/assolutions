@@ -41,6 +41,27 @@ export interface CalendrierSeance {
   statut_synchro: string | null;
   derniere_erreur: string | null;
 }
+/** EXG-UI-02 : calendrier accessible au compte, réponse par personne éligible. */
+export interface MesCalendriersPersonne {
+  id: number;
+  nom: string;
+  statut_inscription: string | null;
+}
+export interface MesCalendriersEvenement {
+  calendrier_id: number;
+  seance_id: number;
+  date_seance: string;
+  heure_debut: string;
+  duree_seance: number;
+  label: string | null;
+  type_seance: string;
+  statut: string;
+  lieu_nom: string | null;
+  groupes: string;
+  peut_repondre: boolean;
+  personnes: MesCalendriersPersonne[];
+}
+
 export interface CalendrierPreview {
   calendrier_id: number;
   saison_id: number;
@@ -104,6 +125,15 @@ export class CalendrierApiService {
   }
   mes(): Promise<Calendrier[]> {
     return this.api.GET<Calendrier[]>(this.base + '/mes');
+  }
+  mesEvenements(): Promise<MesCalendriersEvenement[]> {
+    return this.api.GET<MesCalendriersEvenement[]>(this.base + '/mes/evenements');
+  }
+
+  repondreEvenement(seanceId: number, personneId: number, reponse: 'présent' | 'absent'):
+    Promise<{ seance_id: number; personne_id: number; statut_inscription: string }> {
+    return this.api.POST(this.base + '/mes/evenements/' + Number(seanceId) + '/repondre',
+      { personne_id: Number(personneId), reponse });
   }
   seances(id: number): Promise<CalendrierSeance[]> {
     return this.api.GET<CalendrierSeance[]>(this.base + '/' + Number(id) + '/seances');
