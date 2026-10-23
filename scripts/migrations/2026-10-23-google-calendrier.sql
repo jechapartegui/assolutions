@@ -166,6 +166,97 @@ CREATE TRIGGER trg_calendrier_seance_reassign
 BEFORE UPDATE OF calendrier_id ON public.seance
 FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_seance_change();
 
+
+-- Une mise a jour metier de seance programme une resynchronisation.
+-- Ne modifie aucun comportement pour les seances sans calendrier.
+CREATE OR REPLACE FUNCTION public.fn_calendrier_seance_mark_dirty()
+RETURNS trigger LANGUAGE plpgsql AS $
+BEGIN
+    IF NEW.calendrier_id IS NOT NULL AND (
+        NEW.date_seance IS DISTINCT FROM OLD.date_seance OR
+        NEW.heure_debut IS DISTINCT FROM OLD.heure_debut OR
+        NEW.duree_seance IS DISTINCT FROM OLD.duree_seance OR
+        NEW.lieu_id IS DISTINCT FROM OLD.lieu_id OR
+        NEW.label IS DISTINCT FROM OLD.label OR
+        NEW.type_seance IS DISTINCT FROM OLD.type_seance OR
+        NEW.info_seance IS DISTINCT FROM OLD.info_seance OR
+        NEW.appointment IS DISTINCT FROM OLD.appointment OR
+        NEW.statut IS DISTINCT FROM OLD.statut
+    ) THEN
+        UPDATE public.calendrier_evenement
+        SET statut_synchro = 'PENDING', date_maj = now()
+        WHERE calendrier_id = NEW.calendrier_id
+          AND seance_id = NEW.seance_id
+          AND statut_synchro NOT IN ('DELETE_PENDING','DELETED');
+        UPDATE public.calendrier
+        SET statut_synchro = 'PENDING', date_maj = now()
+        WHERE id = NEW.calendrier_id;
+    END IF;
+    RETURN NEW;
+END $;
+
+DROP TRIGGER IF EXISTS trg_calendrier_seance_mark_dirty ON public.seance;
+CREATE TRIGGER trg_calendrier_seance_mark_dirty
+AFTER UPDATE OF date_seance, heure_debut, duree_seance, lieu_id,
+    label, type_seance, info_seance, appointment, statut ON public.seance
+FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_seance_mark_dirty();
+
+-- Les groupes effectivement convoques sont geres par lien_groupe et non
+-- par calendrier_groupe. Ils affectent le titre Google, pas les invites.
+CREATE OR REPLACE FUNCTION public.fn_calendrier_lien_seance_mark_dirty()
+RETURNS trigger LANGUAGE plpgsql AS $
+DECLARE v_seance_id integer; v_calendrier_id integer;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        IF OLD.object_type <> 'séance' THEN RETURN OLD; END IF;
+        v_seance_id := OLD.object_id;
+    ELSE
+        IF NEW.object_type <> 'séance' THEN RETURN NEW; END IF;
+        v_seance_id := NEW.object_id;
+    END IF;
+    SELECT calendrier_id INTO v_calendrier_id FROM public.seance WHERE seance_id = v_seance_id;
+    IF v_calendrier_id IS NOT NULL THEN
+        UPDATE public.calendrier_evenement SET statut_synchro = 'PENDING', date_maj=now()
+          WHERE calendrier_id = v_calendrier_id AND seance_id = v_seance_id
+            AND statut_synchro NOT IN ('DELETE_PENDING','DELETED');
+        UPDATE public.calendrier SET statut_synchro = 'PENDING', date_maj=now()
+          WHERE id = v_calendrier_id;
+    END IF;
+    RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+END $;
+
+DROP TRIGGER IF EXISTS trg_calendrier_lien_seance_mark_dirty ON public.lien_groupe;
+CREATE TRIGGER trg_calendrier_lien_seance_mark_dirty
+AFTER INSERT OR UPDATE OR DELETE ON public.lien_groupe
+FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_lien_seance_mark_dirty();
+
+-- Changement d'appartenance d'un adherent : l'audience Google a change.
+CREATE OR REPLACE FUNCTION public.fn_calendrier_lien_rider_mark_dirty()
+RETURNS trigger LANGUAGE plpgsql AS $
+DECLARE v_groupe integer;
+BEGIN
+    IF TG_OP='DELETE' THEN
+        IF OLD.object_type <> 'rider' THEN RETURN OLD; END IF;
+        v_groupe := OLD.groupe_id;
+    ELSE
+        IF NEW.object_type <> 'rider' THEN RETURN NEW; END IF;
+        v_groupe := NEW.groupe_id;
+    END IF;
+    UPDATE public.calendrier_evenement ce SET statut_synchro='PENDING', date_maj=now()
+    FROM public.calendrier_groupe cg
+    WHERE cg.groupe_id = v_groupe AND cg.calendrier_id = ce.calendrier_id
+      AND ce.statut_synchro NOT IN ('DELETE_PENDING','DELETED');
+    UPDATE public.calendrier c SET statut_synchro='PENDING', date_maj=now()
+    FROM public.calendrier_groupe cg
+    WHERE cg.groupe_id=v_groupe AND c.id=cg.calendrier_id;
+    RETURN CASE WHEN TG_OP='DELETE' THEN OLD ELSE NEW END;
+END $;
+
+DROP TRIGGER IF EXISTS trg_calendrier_lien_rider_mark_dirty ON public.lien_groupe;
+CREATE TRIGGER trg_calendrier_lien_rider_mark_dirty
+AFTER INSERT OR UPDATE OR DELETE ON public.lien_groupe
+FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_lien_rider_mark_dirty();
+
 COMMIT;
 
 -- Verifications non destructives :
