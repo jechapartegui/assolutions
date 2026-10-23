@@ -393,7 +393,7 @@ export class CalendrierSyncService {
     if (!calendar.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
     const accounts = await this.comptesDuProjet(projectId);
     const keys = new Set<string>();
-    const validated: Array<{ seance_id: number; personne_id: number; status: 'présent'|'absent'; origine: 'inscription'|'groupe_seance' }> = [];
+    const validated: Array<{ seance_id: number; personne_id: number; compte_id: number; status: 'présent'|'absent'; origine: 'inscription'|'groupe_seance' }> = [];
 
     const cached = new Map<number, any>();
     for (const line of dto.lignes) {
@@ -427,6 +427,7 @@ export class CalendrierSyncService {
       if (!candidat) throw new BadRequestException('GOOGLE_RSVP_PERSON_NOT_ELIGIBLE');
       validated.push({
         seance_id: line.seance_id, personne_id: line.personne_id,
+        compte_id: accountId,
         status: line.google_reponse === 'accepted' ? 'présent' : 'absent',
         origine: candidat.origine,
       });
@@ -436,13 +437,8 @@ export class CalendrierSyncService {
       for (const item of validated) {
         // Nouvelle verification dans la transaction : le groupe de la seance
         // et l'appartenance du compte doivent encore autoriser ce candidat.
-        const account = accounts.find((a) =>
-          a.id > 0 && a.guestEmail === dto.lignes.find((l) =>
-            l.seance_id === item.seance_id && l.personne_id === item.personne_id
-          )?.google_email.trim().toLowerCase());
-        if (!account) throw new BadRequestException('GOOGLE_RSVP_ACCOUNT_AMBIGUOUS');
         const autorises = await this.candidatsSeance(
-          item.seance_id, id, projectId, Number(account.id), manager,
+          item.seance_id, id, projectId, item.compte_id, manager,
         );
         if (!autorises.some((p) => p.id === item.personne_id)) {
           throw new BadRequestException('GOOGLE_RSVP_PERSON_NOT_ELIGIBLE');
