@@ -271,6 +271,23 @@ export class CalendrierComponent implements OnInit {
     } catch (e: any) { this.error = String(e?.message || e); }
   }
 
+  statutReponseGoogle(statut: string): string {
+    const labels: Record<string, string> = {
+      accepted: 'Accepté',
+      declined: 'Refusé',
+      tentative: 'Peut-être',
+      needsAction: 'En attente de réponse',
+    };
+    return labels[statut] ?? 'Inconnu';
+  }
+
+  statutImportGoogle(row: any): string {
+    if (row.peut_importer) return 'Sélection manuelle';
+    if (!['accepted', 'declined'].includes(row.google_reponse)) return 'En attente de réponse';
+    if ((row.comptes || []).length !== 1) return 'Compte non reconnu ou ambigu';
+    return 'Aucune personne éligible sur la séance';
+  }
+
   async showResponses() {
     if (!this.isAdmin || !this.selectedId) return;
     this.error = ''; this.rsvps = [];
@@ -292,9 +309,14 @@ export class CalendrierComponent implements OnInit {
       this.error = 'Sélectionne au moins une personne dans les réponses Google.';
       return;
     }
+    const creation = selected.filter((x) =>
+      x.personnes_details?.some((p: any) =>
+        Number(p.id) === Number(x.personne_choisie) && p.origine === 'groupe_seance'
+      )).length;
     if (!window.confirm(
       `Importer ${selected.length} réponse(s) Google dans Assolutions ?\n` +
-      'La réponse de présence sera modifiée uniquement pour les personnes sélectionnées.'
+      (creation ? `Pour ${creation} personne(s) issue(s) d'un groupe de séance, une inscription explicite à la séance sera créée.\n` : '') +
+      'Seules les personnes choisies seront modifiées. La présence réellement constatée reste inchangée.'
     )) return;
     try {
       const response = await this.api.importerReponses(this.selectedId,
