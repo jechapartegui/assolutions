@@ -45,6 +45,9 @@ Variables du backend :
 APP_ENV=local # local | preprod | production (prioritaire sur NODE_ENV)
 GOOGLE_CALENDAR_ENABLED=false
 GOOGLE_CALENDAR_AUTO_SYNC=false
+# Optionnel pour recette de l'automatisme : IDs de calendriers Assolutions autorises (ex. 7).
+# Vide/absent = tous les calendriers deja crees sur Google si AUTO_SYNC=true.
+GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS=
 GOOGLE_CALENDAR_CLIENT_ID=CHANGE_ME
 GOOGLE_CALENDAR_CLIENT_SECRET=CHANGE_ME
 GOOGLE_CALENDAR_REFRESH_TOKEN=CHANGE_ME
@@ -65,6 +68,7 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 - Écran utilisateur `/mes-calendriers` construit via les personnes rattachées au **compte courant**. Ces données ne donnent aucun accès à une séance non autorisée.
 - Éditeur Séance : associer/dissocier (admin), accéder au calendrier et forcer Google ; après sauvegarde, confirmation.
 - `GOOGLE_CALENDAR_AUTO_SYNC=true` : worker de réconciliation toutes les 60 secondes, avec verrou PostgreSQL et **notifications Google désactivées**. Activez-le uniquement après test manuel.
+- EXG-17 : en mode automatique, les changements de membres des groupes destinataires sont marqués `PENDING` par `fn_calendrier_lien_rider_mark_dirty`, puis réconciliés par le worker. Aucun nouvel agenda Google n'est créé automatiquement : un `google_calendar_id` existant est requis. Pour une recette **strictement limitée à un calendrier**, définir `GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS=<id du calendrier Assolutions>` ; ce filtre limite le worker à cet ID, même si d'autres calendriers sont PENDING. Valeur absente = tous les calendriers Google existants, **attention en production**. L'envoi de notifications Google reste `sendUpdates=none`, qui ne garantit pas zéro mail ni que les nouvelles invitations arrivent à tous les destinataires. Le test se fait avec des comptes fictifs Yopmail uniquement.
 
 ## Recette exigence par exigence
 | Exigence | Test manuel | Statut |
