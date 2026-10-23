@@ -70,37 +70,103 @@
       </div>
 
       <div class="box">
-        <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-          <h3 class="title is-6 mb-0">Groupes destinataires ({{ form.groupe_ids.length }})</h3>
-          <input class="input is-small" style="max-width:220px" [(ngModel)]="groupFilter" placeholder="Rechercher un groupe" />
+        <h3 class="title is-6 mb-3">Groupes destinataires ({{ form.groupe_ids.length }})</h3>
+        <div class="calendar-group-picker">
+          <div class="select is-small is-fullwidth">
+            <select [(ngModel)]="selectedGroupId" aria-label="Choisir un groupe à ajouter"
+                    [disabled]="!isAdmin || !availableGroups.length">
+              <option [ngValue]="null">Choisir un groupe…</option>
+              <option *ngFor="let g of availableGroups" [ngValue]="g.id">{{ g.nom }}</option>
+            </select>
+          </div>
+          <button class="button is-primary is-small" type="button" (click)="addGroup()"
+                  [disabled]="!isAdmin || !selectedGroupId">
+            <i class="fas fa-plus mr-1"></i>Ajouter
+          </button>
         </div>
-        <div class="calendar-choice-grid">
-          <label class="calendar-choice" *ngFor="let g of filteredGroups">
-            <input type="checkbox" [checked]="hasGroup(g.id)" (change)="groupToggle(g.id)" [disabled]="!isAdmin" />
+        <div class="calendar-group-tags mt-3" *ngIf="selectedGroups.length">
+          <span class="tag is-info is-light calendar-group-tag" *ngFor="let g of selectedGroups">
             <span>{{ g.nom }}</span>
-          </label>
+            <button *ngIf="isAdmin" type="button" class="delete is-small"
+                    (click)="removeGroup(g.id)" [attr.aria-label]="'Retirer le groupe ' + g.nom"
+                    [title]="'Retirer ' + g.nom"></button>
+          </span>
         </div>
-        <p class="help mt-2">Les comptes des adhérents de ces groupes seront pris en compte une seule fois, même avec plusieurs personnes rattachées au même compte.</p>
+        <p *ngIf="!selectedGroups.length" class="help mt-2">Aucun groupe ajouté.</p>
+        <p class="help mt-2">Un seul destinataire Google par compte, même si plusieurs personnes appartiennent aux groupes sélectionnés.</p>
       </div>
 
       <div class="box">
-        <div class="is-flex is-justify-content-space-between is-align-items-center mb-3 is-flex-wrap-wrap" style="gap:.8rem">
-          <h3 class="title is-6 mb-0">Séances sélectionnées ({{ selectedCount }})</h3>
-          <input class="input is-small" style="max-width:240px" [(ngModel)]="sessionFilter" placeholder="Date, type, groupe, nom" />
+        <h3 class="title is-6 mb-2">Séances sélectionnées ({{ selectedCount }})</h3>
+        <p class="help mb-3">Les séances retenues restent visibles ici, même quand tu appliques des filtres en dessous. Clique sur Retirer pour les décocher.</p>
+        <div class="calendar-sessions-table calendar-selected-table" *ngIf="selectedSessions.length">
+          <table class="table is-fullwidth is-striped is-hoverable">
+            <thead><tr><th>Date / heure</th><th>Type</th><th>Groupe</th><th>Nom</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of selectedSessions">
+                <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
+                <td>{{ s.type_seance }}</td>
+                <td>{{ s.noms_groupes || '—' }}</td>
+                <td>{{ s.label || '—' }}</td>
+                <td class="is-nowrap">
+                  <button class="button is-small is-danger is-light" type="button"
+                          (click)="sessionToggle(s.seance_id)" [disabled]="!isAdmin"
+                          [attr.aria-label]="'Retirer la séance ' + (s.label || s.seance_id)">
+                    <i class="fas fa-xmark mr-1"></i>Retirer
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p *ngIf="!selectedSessions.length" class="has-text-grey is-size-7 mb-4">Aucune séance sélectionnée.</p>
+
+        <hr class="my-4" />
+        <div class="is-flex is-align-items-center is-justify-content-space-between is-flex-wrap-wrap mb-3" style="gap:.5rem">
+          <h3 class="title is-6 mb-0">Séances disponibles ({{ availableSessions.length }})</h3>
+          <button type="button" class="button is-small is-light" (click)="resetSessionFilters()"
+                  [disabled]="!sessionDateFilter && !sessionNameFilter && !sessionTypeFilter">
+            Effacer les filtres
+          </button>
+        </div>
+        <div class="calendar-filter-grid mb-3">
+          <div class="field mb-0">
+            <label class="label is-small" for="calendrier-filtre-date">Date</label>
+            <input id="calendrier-filtre-date" type="date" class="input is-small" [(ngModel)]="sessionDateFilter" />
+          </div>
+          <div class="field mb-0">
+            <label class="label is-small" for="calendrier-filtre-nom">Nom</label>
+            <input id="calendrier-filtre-nom" type="search" class="input is-small"
+                   [(ngModel)]="sessionNameFilter" placeholder="Rechercher par nom" />
+          </div>
+          <div class="field mb-0">
+            <label class="label is-small" for="calendrier-filtre-type">Type</label>
+            <div class="select is-small is-fullwidth">
+              <select id="calendrier-filtre-type" [(ngModel)]="sessionTypeFilter">
+                <option value="">Tous les types</option>
+                <option *ngFor="let type of sessionTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="calendar-sessions-table">
           <table class="table is-fullwidth is-striped is-hoverable">
             <thead><tr><th>Ajouter</th><th>Date / heure</th><th>Type</th><th>Groupe</th><th>Nom</th><th>Action</th></tr></thead>
             <tbody>
-              <tr *ngFor="let s of filteredSessions">
-                <td><input type="checkbox" [checked]="hasSession(s.seance_id)" (change)="sessionToggle(s.seance_id)" [disabled]="!isAdmin" /></td>
+              <tr *ngFor="let s of availableSessions">
+                <td>
+                  <input type="checkbox" [checked]="false" (change)="sessionToggle(s.seance_id)"
+                         [disabled]="!isAdmin" [attr.aria-label]="'Ajouter la séance ' + (s.label || s.seance_id)" />
+                </td>
                 <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
                 <td>{{ s.type_seance }}</td>
                 <td>{{ s.noms_groupes || '—' }}</td>
                 <td>{{ s.label || '—' }}</td>
                 <td><button class="button is-small is-light" type="button" (click)="openSession(s.seance_id)">Ouvrir</button></td>
               </tr>
-              <tr *ngIf="!filteredSessions.length"><td colspan="6" class="has-text-grey">Aucune séance disponible (celles déjà affectées à un autre calendrier sont masquées).</td></tr>
+              <tr *ngIf="!availableSessions.length">
+                <td colspan="6" class="has-text-grey">Aucune séance disponible pour ces filtres. Les séances déjà sélectionnées figurent au-dessus.</td>
+              </tr>
             </tbody>
           </table>
         </div>
