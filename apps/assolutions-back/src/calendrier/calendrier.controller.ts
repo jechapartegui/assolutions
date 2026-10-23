@@ -5,6 +5,7 @@ import { AccessControlService } from '../common/access-control.service';
 import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
 import { GoogleCalendrierClient } from './google-calendrier.client';
+import { CalendrierWorkerService } from './calendrier-worker.service';
 import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto } from './calendrier.dto';
 
 @Controller('calendriers')
@@ -15,6 +16,7 @@ export class CalendrierController {
     private readonly sync: CalendrierSyncService,
     private readonly access: AccessControlService,
     private readonly google: GoogleCalendrierClient,
+    private readonly worker: CalendrierWorkerService,
   ) {}
 
   /** EXG-06 : test du propriétaire OAuth sans creation d'agenda ni d'evenement. */
@@ -22,6 +24,16 @@ export class CalendrierController {
   async googleEtat(@Req() req: any, @ProjectId() projectId: number) {
     await this.access.assertProjectAdmin(req.user.id, projectId);
     return this.google.checkConnection();
+  }
+
+  /** EXG-17 : lire l'etat du worker pour un calendrier du projet, sans le declencher. */
+  @Get('google/worker-etat')
+  async workerEtat(
+    @Req() req: any, @ProjectId() projectId: number,
+    @Query('calendrier_id', ParseIntPipe) calendrierId: number,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.worker.etat(projectId, calendrierId);
   }
 
   @Get('mes')
