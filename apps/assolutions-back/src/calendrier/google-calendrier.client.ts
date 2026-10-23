@@ -34,7 +34,7 @@ export class GoogleCalendrierClient {
     if (candidate === this.owner) return this.owner;
     if (this.isProduction()) return candidate;
     const local = candidate.split('@')[0].replace(/[^a-z0-9._-]/g, '-').slice(0, 45) || 'sans-mail';
-    return `${local}${accountId ? '-' + accountId : '-projet'}@yopmail.fr`;
+    return `${local}${accountId ? '-' + accountId : '-projet'}@yopmail.com`;
   }
 
   private async accessToken(): Promise<string> {
