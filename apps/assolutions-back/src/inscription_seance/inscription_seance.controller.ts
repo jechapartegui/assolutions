@@ -54,12 +54,17 @@ export class InscriptionSeanceController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':personneId/:seanceId/update')
-  update(
+  async update(
+    @Req() req: any,
     @Param('personneId', ParseIntPipe) personneId: number,
     @Param('seanceId', ParseIntPipe) seanceId: number,
     @ProjectId() projectId: number,
     @Body() dto: UpdateInscriptionSeanceDto,
   ) {
+    // Les liens de sondage sont partageables : un adherent ne doit jamais
+    // pouvoir voter pour la personne d'un autre compte via cette route.
+    // Les administrateurs/professeurs gardent leurs droits metier habituels.
+    await this.access.assertPersonAccess(req.user.id, personneId, projectId);
     return this.service.update(personneId, seanceId, dto, projectId);
   }
 
