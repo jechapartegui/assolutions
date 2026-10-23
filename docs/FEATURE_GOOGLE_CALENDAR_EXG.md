@@ -53,6 +53,13 @@ ASSOLUTIONS_FRONT_URL=http://localhost:2211
 Propriete : `assolutions.club@gmail.com`, verifiee via Google OpenID Connect `userinfo` (email verifiee) puis controle de l'acces proprietaire `users/me/calendarList/primary` avant toute publication.
 Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altère pas les séances Assolutions.
 
+### Diagnostic EXG-06 : Google Calendar repond HTTP 403
+- Si OpenID Connect UserInfo fonctionne, le refresh token, le scope d'identite et le proprietaire sont deja verifies. Le 403 porte alors sur l'appel en lecture seule `GET /calendar/v3/users/me/calendarList/primary`, pas sur les invitations.
+- Dans Google Cloud, verifier le BON projet OAuth et ouvrir https://console.cloud.google.com/apis/library/calendar-json.googleapis.com : bouton **Activer** = API desactivee ; bouton **Gerer** = API activee.
+- Si deja activee, ouvrir OAuth Playground avec **ses propres identifiants OAuth**, Step 3, methode GET sur `https://www.googleapis.com/calendar/v3/users/me/calendarList/primary`. Ne communiquer que `error.status`, `error.errors[].reason` ou `error.details[].reason`, **jamais** les codes ou tokens.
+- `accessNotConfigured` / `SERVICE_DISABLED` : activer l'API Calendar dans le bon projet. `insufficientPermissions` / `ACCESS_TOKEN_SCOPE_INSUFFICIENT` : reautoriser `https://www.googleapis.com/auth/calendar`, nouveau refresh token si necessaire. D'autres motifs 403 doivent etre determines par le code Google ; ne pas deviner.
+- L'API backend convertit maintenant ce 403 en statut 503 avec message de diagnostic prudent, sans exposer le JSON brut Google. Ne jamais synchroniser ni activer le worker en EXG-06.
+
 ### 3. Interface / droits
 - Écran staff `/calendrier` depuis Séances ; seuls les admins peuvent créer, modifier, archiver ou synchroniser.
 - Écran utilisateur `/mes-calendriers` construit via les personnes rattachées au **compte courant**. Ces données ne donnent aucun accès à une séance non autorisée.
