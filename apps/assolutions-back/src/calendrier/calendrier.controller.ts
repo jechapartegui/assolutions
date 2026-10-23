@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AccessControlService } from '../common/access-control.service';
 import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
-import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto } from './calendrier.dto';
+import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto } from './calendrier.dto';
 
 @Controller('calendriers')
 @UseGuards(JwtAuthGuard)
@@ -84,6 +84,15 @@ export class CalendrierController {
   ) {
     await this.access.assertProjectAdmin(req.user.id, projectId);
     return this.service.archive(id, projectId);
+  }
+
+  @Post(':id/importer-reponses')
+  async importerReponses(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: ImportGoogleReponsesDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.sync.importGoogleResponses(id, projectId, Number(req.user.id), dto);
   }
 
   @Post(':id/synchroniser')
