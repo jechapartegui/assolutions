@@ -1,6 +1,83 @@
-.calendar-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.55rem}
-.calendar-choice{display:flex;gap:.6rem;align-items:flex-start;border:1px solid rgba(120,130,140,.25);border-radius:8px;padding:.65rem .8rem;cursor:pointer}
-.calendar-choice input{margin-top:.28rem}
-.calendar-sessions-table{overflow-x:auto;max-height:430px;overflow-y:auto}
-.calendar-sessions-table table{font-size:.86rem;min-width:650px}
-.is-nowrap{white-space:nowrap}
+/* EXG-FIX-01 : l'application verrouille le scroll global (html/body/app-root).
+   Ce composant route doit donc avoir son propre defilement vertical, sans toucher
+   au layout des autres pages admin. */
+:host {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - var(--app-topbar-height, 52px));
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@supports not (height: 100dvh) {
+  :host { height: calc(100vh - var(--app-topbar-height, 52px)); }
+}
+
+@media (max-width: 767px) {
+  :host {
+    /* Pas de navbar desktop sur mobile ; reserver le footer fixe. */
+    height: calc(100dvh - var(--mobile-footer-h, 64px) - var(--safe-bottom, 0px));
+    padding-bottom: calc(1rem + var(--safe-bottom, 0px));
+    box-sizing: border-box;
+    scrollbar-gutter: auto;
+  }
+}
+
+/* La page et les listes disposent d'une barre de defilement perceptible.
+   Le scroll horizontal des tableaux reste possible sur petit ecran. */
+:host,
+.calendar-choice-grid,
+.calendar-sessions-table {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(100, 116, 139, .75) transparent;
+}
+
+:host::-webkit-scrollbar,
+.calendar-choice-grid::-webkit-scrollbar,
+.calendar-sessions-table::-webkit-scrollbar {
+  width: 10px;
+  height: 9px;
+}
+:host::-webkit-scrollbar-thumb,
+.calendar-choice-grid::-webkit-scrollbar-thumb,
+.calendar-sessions-table::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, .65);
+  border-radius: 999px;
+}
+:host::-webkit-scrollbar-track,
+.calendar-choice-grid::-webkit-scrollbar-track,
+.calendar-sessions-table::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  gap: .55rem;
+  max-height: min(38vh, 360px);
+  overflow-y: auto;
+  padding-right: .35rem;
+  align-content: start;
+}
+.calendar-choice {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  border: 1px solid rgba(120, 130, 140, .25);
+  border-radius: 8px;
+  padding: .65rem .8rem;
+  cursor: pointer;
+}
+.calendar-choice input { margin-top: .28rem; }
+.calendar-sessions-table {
+  max-width: 100%;
+  max-height: 430px;
+  overflow: auto;
+}
+.calendar-sessions-table table { font-size: .86rem; min-width: 650px; }
+.is-nowrap { white-space: nowrap; }
