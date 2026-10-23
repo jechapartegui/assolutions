@@ -91,7 +91,7 @@ export class CalendrierService {
       last_name: string | null; statut_inscription: string | null;
       peut_repondre: boolean;
     }> = await this.dataSource.query(
-      \`SELECT c.id AS calendrier_id, se.seance_id,
+      `SELECT c.id AS calendrier_id, se.seance_id,
               se.date_seance::text AS date_seance, se.heure_debut,
               se.duree_seance, se.label, se.type_seance, se.statut,
               l.nom AS lieu_nom,
@@ -146,7 +146,7 @@ export class CalendrierService {
              AND COALESCE(membre.archive,false)=false
          )
        ORDER BY se.date_seance, se.heure_debut, se.seance_id, candidat.last_name, candidat.first_name
-       LIMIT 2000\`,
+       LIMIT 2000`,
       [accountId, projectId],
     );
     const result = new Map<string, any>();
@@ -190,7 +190,7 @@ export class CalendrierService {
   ) {
     const updated: Array<{ personne_id: number; seance_id: number; statut_inscription: string }> =
       await this.dataSource.query(
-        \`INSERT INTO inscription_seance (personne_id,seance_id,statut_inscription,date_inscription)
+        `INSERT INTO inscription_seance (personne_id,seance_id,statut_inscription,date_inscription)
          SELECT pe.id, se.seance_id, $5::text::inscription_seance_statut_inscription_enum, now()
          FROM seance se
          JOIN calendrier c ON c.id=se.calendrier_id
@@ -229,7 +229,7 @@ export class CalendrierService {
          ON CONFLICT (personne_id,seance_id) DO UPDATE
            SET statut_inscription=EXCLUDED.statut_inscription, date_inscription=now()
            WHERE inscription_seance.statut_inscription IS DISTINCT FROM 'essai'
-         RETURNING personne_id,seance_id,statut_inscription\`,
+         RETURNING personne_id,seance_id,statut_inscription`,
         [accountId, projectId, seanceId, personneId, statut],
       );
     if (updated.length !== 1) {
