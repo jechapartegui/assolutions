@@ -217,9 +217,24 @@ export class CalendrierService {
     const sessions: Array<{ seance_id: number }> = await this.dataSource.query(
       'SELECT seance_id FROM seance WHERE calendrier_id = $1', [id],
     );
+    // Apercu des vraies suppressions DISTANTES, y compris un retry en ERROR.
+    // Ne pas confondre seance retiree de l'agenda et seance supprimee d'Assolutions.
+    const suppressions: Array<{ count: number }> = await this.dataSource.query(
+      `SELECT count(*)::int AS count
+       FROM calendrier_evenement ce
+       WHERE ce.calendrier_id = $1 AND ce.google_event_id IS NOT NULL
+         AND ce.statut_synchro <> 'DELETED'
+         AND (
+           ce.statut_synchro = 'DELETE_PENDING' OR NOT EXISTS (
+             SELECT 1 FROM seance se WHERE se.seance_id = ce.seance_id
+               AND se.calendrier_id = ce.calendrier_id
+           )
+         )`, [id],
+    );
     return {
       calendrier_id: id, saison_id: calendar.saison_id, nb_comptes: accounts.length,
-      nb_seances: sessions.length, comptes: accounts.map((x) => ({ id: x.id, email: x.login })),
+      nb_seances: sessions.length, nb_evenements_a_supprimer: Number(suppressions[0]?.count ?? 0),
+      comptes: accounts.map((x) => ({ id: x.id, email: x.login })),
       avertissement: 'Assolutions fait foi. Les convocations et reponses restent sur Assolutions ; les emails Google ne sont pas garantis silencieux.',
     };
   }
