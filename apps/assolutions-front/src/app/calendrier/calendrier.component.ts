@@ -23,6 +23,7 @@ export class CalendrierComponent implements OnInit {
   loading = false;
   saving = false;
   syncing = false;
+  checkingGoogle = false;
   error = '';
   info = '';
   isEditing = false;
@@ -164,6 +165,25 @@ export class CalendrierComponent implements OnInit {
       )) await this.synchroniser();
     } catch (e: any) { this.error = String(e?.message || e); }
     finally { this.saving = false; }
+  }
+
+  async verifierConnexionGoogle() {
+    if (!this.isAdmin || this.checkingGoogle) return;
+    this.checkingGoogle = true;
+    this.error = '';
+    this.info = '';
+    try {
+      const resultat = await this.api.googleStatus();
+      this.info = resultat.proprietaire_verifie
+        ? 'Connexion Google validee : ' + resultat.compte + '. Aucun agenda ou evenement cree.'
+        : 'Google non actif. Configuration presente : ' +
+          (resultat.credentials_present ? 'oui' : 'non') +
+          '. Aucun agenda ou evenement cree.';
+    } catch (e: any) {
+      this.error = 'Verification Google : ' + String(e?.message || e);
+    } finally {
+      this.checkingGoogle = false;
+    }
   }
 
   async synchroniser() {
