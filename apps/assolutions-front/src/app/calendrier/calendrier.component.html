@@ -211,17 +211,24 @@
               <tr *ngFor="let row of rsvps">
                 <td>{{ row.seance_id }}</td>
                 <td>{{ row.google_email }}</td>
-                <td>{{ row.google_reponse }}</td>
+                <td class="is-nowrap">{{ statutReponseGoogle(row.google_reponse) }}</td>
                 <td>
                   <div class="select is-small" *ngIf="row.peut_importer">
-                    <select [(ngModel)]="row.personne_choisie">
+                    <select [(ngModel)]="row.personne_choisie" aria-label="Choisir la personne à associer à cette réponse Google">
                       <option [ngValue]="null">Ne pas importer</option>
-                      <option *ngFor="let p of row.personnes" [ngValue]="p">Personne #{{ p }}</option>
+                      <option *ngFor="let p of row.personnes_details" [ngValue]="p.id">
+                        {{ p.nom }}{{ p.origine === 'groupe_seance' ? ' (groupe de séance)' : '' }}
+                      </option>
                     </select>
                   </div>
-                  <span *ngIf="!row.peut_importer">{{ row.personnes?.join(', ') || 'Aucune' }}</span>
+                  <ng-container *ngIf="!row.peut_importer">
+                    <span *ngFor="let p of row.personnes_details; let dernier = last">
+                      {{ p.nom }}<span *ngIf="p.origine === 'groupe_seance'" class="has-text-grey"> (groupe de séance)</span>{{ dernier ? '' : ', ' }}
+                    </span>
+                    <span *ngIf="!row.personnes_details?.length" class="has-text-grey">Aucune personne associée</span>
+                  </ng-container>
                 </td>
-                <td>{{ row.peut_importer ? 'Sélection manuelle' : 'Non' }}</td>
+                <td>{{ statutImportGoogle(row) }}</td>
               </tr>
               <tr *ngIf="!rsvps.length"><td colspan="5">Aucune réponse récupérée.</td></tr>
             </tbody>
@@ -230,7 +237,7 @@
         <button *ngIf="isAdmin" class="button is-warning mt-3" (click)="importerReponses()">
           Appliquer les réponses sélectionnées sur Assolutions
         </button>
-        <p class="help">Les réponses Google sont vérifiées de nouveau côté serveur. Aucune personne non inscrite à une séance n'est mise à jour.</p>
+        <p class="help">Les réponses Google sont vérifiées à nouveau côté serveur. Les membres des groupes liés à une séance non nominative sont proposés comme candidats ; seul un import explicitement confirmé peut créer leur inscription à cette séance. Un groupe destinataire du calendrier ne vaut jamais convocation. La présence constatée n'est jamais modifiée.</p>
       </div>
     </div>
   </div>
