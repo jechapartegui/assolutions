@@ -185,6 +185,12 @@ export class CalendrierService {
           dto.actif ?? previous.actif],
       );
       await this.replaceSelection(id, previous.saison_id, dto.groupe_ids, dto.seance_ids, db);
+      // Le fuseau/nom/description du calendrier peut alterer les evenements.
+      await db.query(
+        `UPDATE calendrier_evenement SET statut_synchro = 'PENDING', date_maj=now()
+         WHERE calendrier_id = $1 AND statut_synchro NOT IN ('DELETE_PENDING','DELETED')`,
+        [id],
+      );
       return { id };
     });
   }
