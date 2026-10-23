@@ -31,8 +31,11 @@ export class CalendrierComponent implements OnInit {
   calendars: Calendrier[] = [];
   groupes: Groupe[] = [];
   sessions: SessionRow[] = [];
-  sessionFilter = '';
-  groupFilter = '';
+  // Filtres independants pour les seances disponibles uniquement.
+  sessionDateFilter = '';
+  sessionNameFilter = '';
+  sessionTypeFilter = '';
+  selectedGroupId: number | null = null;
   previewData: CalendrierPreview | null = null;
   syncResult: CalendrierSyncResult | null = null;
   showRsvps = false;
@@ -52,16 +55,37 @@ export class CalendrierComponent implements OnInit {
   get saisonId() {
     return Number(this.store.saison_consultation_id() ?? this.store.saison_active_id() ?? 0);
   }
-  get filteredSessions() {
-    const q = this.sessionFilter.trim().toLocaleLowerCase('fr');
-    return this.sessions.filter((s) =>
-      (!s.reserve || s.reserve === this.selectedId) &&
-      (!q || [s.label, s.type_seance, s.noms_groupes, s.date_seance]
-        .some((value) => String(value ?? '').toLocaleLowerCase('fr').includes(q))));
+  /** Tableau recapitulatif, independant des filtres des seances a ajouter. */
+  get selectedSessions(): SessionRow[] {
+    return this.sessions.filter((s) => this.hasSession(Number(s.seance_id ?? s.id)));
   }
-  get filteredGroups() {
-    const q = this.groupFilter.trim().toLocaleLowerCase('fr');
-    return this.groupes.filter((g) => !q || g.nom.toLocaleLowerCase('fr').includes(q));
+  get availableSessions(): SessionRow[] {
+    const nom = this.sessionNameFilter.trim().toLocaleLowerCase('fr');
+    return this.sessions.filter((s) => {
+      const id = Number(s.seance_id ?? s.id);
+      if (this.hasSession(id) || (s.reserve && s.reserve !== this.selectedId)) return false;
+      if (this.sessionDateFilter && String(s.date_seance ?? '').slice(0, 10) !== this.sessionDateFilter) return false;
+      if (nom && !String(s.label ?? '').toLocaleLowerCase('fr').includes(nom)) return false;
+      if (this.sessionTypeFilter && s.type_seance !== this.sessionTypeFilter) return false;
+      return true;
+    });
+  }
+  get sessionTypes(): string[] {
+    return [...new Set(this.sessions.map((s) => s.type_seance).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'fr'));
+  }
+  get selectedGroups(): Groupe[] {
+    return this.groupes.filter((g) => this.hasGroup(g.id))
+      .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  }
+  get availableGroups(): Groupe[] {
+    return this.groupes.filter((g) => !this.hasGroup(g.id))
+      .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  }
+  resetSessionFilters() {
+    this.sessionDateFilter = '';
+    this.sessionNameFilter = '';
+    this.sessionTypeFilter = '';
   }
   get current() { return this.calendars.find((c) => c.id === this.selectedId) ?? null; }
   get selectedCount() { return this.form.seance_ids.length; }
@@ -108,6 +132,8 @@ export class CalendrierComponent implements OnInit {
     this.selectedId = null;
     this.isEditing = true;
     this.form = this.emptyForm();
+    this.selectedGroupId = null;
+    this.resetSessionFilters();
     this.previewData = null;
     this.syncResult = null;
     this.rsvps = [];
@@ -117,6 +143,7 @@ export class CalendrierComponent implements OnInit {
     this.error = '';
     this.selectedId = Number(id);
     this.isEditing = true;
+    this.selectedGroupId = null;
     this.previewData = null;
     this.syncResult = null;
     try {
@@ -133,12 +160,19 @@ export class CalendrierComponent implements OnInit {
 
   hasGroup(id: number) { return this.form.groupe_ids.includes(id); }
   hasSession(id: number) { return this.form.seance_ids.includes(id); }
-  groupToggle(id: number) {
-    this.form.groupe_ids = this.hasGroup(id)
-      ? this.form.groupe_ids.filter((value) => value !== id)
-      : [...this.form.groupe_ids, id];
+  addGroup() {
+    if (!this.isAdmin) return;
+    const id = Number(this.selectedGroupId);
+    if (!id || this.hasGroup(id) || !this.groupes.some((g) => Number(g.id) === id)) return;
+    this.form.groupe_ids = [...this.form.groupe_ids, id];
+    this.selectedGroupId = null;
+  }
+  removeGroup(id: number) {
+    if (!this.isAdmin) return;
+    this.form.groupe_ids = this.form.groupe_ids.filter((value) => value !== id);
   }
   sessionToggle(id: number) {
+    if (!this.isAdmin) return;
     this.form.seance_ids = this.hasSession(id)
       ? this.form.seance_ids.filter((value) => value !== id)
       : [...this.form.seance_ids, id];
