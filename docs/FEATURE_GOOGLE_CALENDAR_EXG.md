@@ -1,0 +1,105 @@
+# Feature Google Agenda — EXG-01 à EXG-26
+
+**GitHub :** issue #105 — branche `feature/google-calendar-sync-exg`
+**Statut :** développement isolé, **non validé**. Aucune fusion en production sans recette.
+
+## Décisions
+
+1. Un calendrier Assolutions appartient à un projet ET à une saison. Une séance appartient à 0 ou 1 calendrier. Un calendrier regroupe 0–N groupes et 0–N séances, indépendamment des groupes convoqués.
+2. La visibilité Google ne vaut pas convocation. Une personne présente dans l'agenda n'obtient aucun droit nouveau pour répondre à la séance Assolutions.
+3. Les personnes d'un même compte donnent un seul invité Google ; les RSVP sont par email/compte et sont appliqués à une personne **sélectionnée manuellement**. L'API refuse toute création implicite d'inscription et préserve la présence réelle.
+4. Le propriétaire Google doit être `assolutions.club@gmail.com`. Les secrets ne doivent jamais être dans Git.
+5. Tous les changements Assolutions sont sauvegardés localement avant tout appel à Google. L'outbox conserve l'état d'attente et les échecs : `PENDING`, `SYNCED`, `ERROR`, `DELETE_PENDING`, `DELETED`.
+6. **Google ne garantit pas l'absence totale d'emails** : même avec `sendUpdates=none`, des notifications peuvent survenir et la propagation peut être affectée. Toujours tester en LOCAL puis PREPROD.
+7. L'adresse de l'organisateur Google est toujours réelle. Les emails des adhérents et du projet sont remplacés par des adresses `@yopmail.fr` en LOCAL/PREPROD, avec un identifiant de compte pour éviter les collisions.
+
+## Installation contrôlée
+
+### 1. Base PostgreSQL (même SQL sur les trois BDD)
+- Sauvegarder la base.
+- Exécuter `scripts/migrations/2026-10-23-google-calendrier.sql` dans pgAdmin connecté à la base cible.
+- Vérifier que **toutes les séances existantes ont `calendrier_id IS NULL`** et qu'aucune table existante n'a été vidée.
+- Relancer une seconde fois le script : il doit être idempotent (tables/index/triggers/FK).
+- Le SQL ne crée aucun agenda Google et n'envoie aucun courriel.
+
+### 2. Configuration des API Google
+Dans Google Cloud Console :
+- Créer un projet spécifique et **activer Google Calendar API**.
+- Configurer consentement OAuth et un client OAuth 2.0 (type application Web ou client adapté à l'obtention sécurisée d'un refresh token).
+- Autoriser réellement `assolutions.club@gmail.com` via le navigateur et obtenir un **refresh token** pour le scope `https://www.googleapis.com/auth/calendar` avec consentement hors ligne.
+- Placer les valeurs uniquement dans les variables du serveur local/Render (jamais côté Angular, jamais dans Git).
+- Garder `GOOGLE_CALENDAR_ENABLED=false` jusqu'au test EXG-06. Le flag `GOOGLE_CALENDAR_AUTO_SYNC` reste `false` jusqu'à la validation.
+
+Variables du backend :
+```dotenv
+APP_ENV=local # local | preprod | production (prioritaire sur NODE_ENV)
+GOOGLE_CALENDAR_ENABLED=false
+GOOGLE_CALENDAR_AUTO_SYNC=false
+GOOGLE_CALENDAR_CLIENT_ID=CHANGE_ME
+GOOGLE_CALENDAR_CLIENT_SECRET=CHANGE_ME
+GOOGLE_CALENDAR_REFRESH_TOKEN=CHANGE_ME
+ASSOLUTIONS_FRONT_URL=http://localhost:2211
+```
+Propriété : `assolutions.club@gmail.com`, vérifiée sur l'API `users/me/calendarList/primary` avant publication.
+Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altère pas les séances Assolutions.
+
+### 3. Interface / droits
+- Écran staff `/calendrier` depuis Séances ; seuls les admins peuvent créer, modifier, archiver ou synchroniser.
+- Écran utilisateur `/mes-calendriers` construit via les personnes rattachées au **compte courant**. Ces données ne donnent aucun accès à une séance non autorisée.
+- Éditeur Séance : associer/dissocier (admin), accéder au calendrier et forcer Google ; après sauvegarde, confirmation.
+- `GOOGLE_CALENDAR_AUTO_SYNC=true` : worker de réconciliation toutes les 60 secondes, avec verrou PostgreSQL et **notifications Google désactivées**. Activez-le uniquement après test manuel.
+
+## Recette exigence par exigence
+| Exigence | Test manuel | Statut |
+|---|---|---|
+| EXG-01 | créer calendrier en local, vérifier projet/saison/nom/options | À tester |
+| EXG-02 | relier une séance, dissocier, contrôler autres séances | À tester |
+| EXG-03 | vérifier eventId/status/erreurs de chaque séance | À tester |
+| EXG-04 | calendrier 2 groupes ; refuser groupe autre saison | À tester |
+| EXG-05 | compte avec deux enfants : 1 compte/email | À tester |
+| EXG-06 | OAuth 2.0 identité Gmail propriétaire, volontairement mauvais compte refusé | À tester |
+| EXG-07 | créer 1 agenda LOCAL puis PREPROD, noms préfixés | À tester |
+| EXG-08 | renommer, archiver ; **suppression Google distante encore à finaliser** | Partiel |
+| EXG-09 | cocher/décocher séances, filtrer date/nom/groupe/type | À tester |
+| EXG-10 | comparer dates/heures/durée/lieu/RDV/notes dans Google | À tester |
+| EXG-11 | ouvrir le lien Assolutions depuis Google ; **liens privés Oui/Non individuels non exposés dans événement partagé** | Partiel |
+| EXG-12 | synchroniser 2 fois, vérifier 0 doublon, détacher une séance et vérifier nettoyage | À tester |
+| EXG-13 | groupe du calendrier ≠ groupe séance : lecture ≠ convocation | À tester |
+| EXG-14 | utilisateur avec 2 personnes et mail projet, dédoublonnage | À tester |
+| EXG-15 | local/preprod : seules les invitations Yopmail + vrai propriétaire | À tester |
+| EXG-16 | mode sans notification/avec notification, 2 confirmations | À tester |
+| EXG-17 | sauvegarde séance : demande de synchro ; worker si activé | À tester |
+| EXG-18 | créer/modifier/sélectionner/synchroniser dans /calendrier | À tester |
+| EXG-19 | choisir calendrier depuis Séance, forcer synchro | À tester |
+| EXG-20 | Mes calendriers basé sur compte multi-personnes | À tester |
+| EXG-21 | lire les réponses Google avec email et candidats | À tester |
+| EXG-22 | choisir une personne, importer, garder présence effective | À tester |
+| EXG-23 | simuler 429, 500, 404, timeout ; idempotence et retries | À tester |
+| EXG-24 | tester lecteur simple, prof, admin, projet externe | À tester |
+| EXG-25 | SQL sur DB sauvegardée, exécution 2 fois | À tester |
+| EXG-26 | bug fiche personne/groupe en mode prof/admin | À traiter séparément |
+
+## Tests minimaux indispensables avant fusion
+
+1. **SQL** en local et préprod, sauvegarde avant. Le test SQL n'a pas été exécuté dans ce dépôt en ligne.
+2. **Compilation** back + front avec `npm run build:prod`, TypeScript et Angular.
+3. **Sécurité** : projet A ne doit jamais lire ni modifier calendrier B. Un simple adhérent ne doit pas appeler l'API d'admin.
+4. **Mass emailing** : test avec 2 comptes Yopmail, 1 compte avec deux personnes. Vérifier destinataires directement sur Google.
+5. **Fuseaux et DST** : 1 séance hiver, 1 été, passage à l'heure d'été/hiver.
+6. **Réponses** : absent, présent, tentative, sans réponse, compte inconnu, parent avec deux enfants ; les cas ambigus n'entrent pas en base sans choix explicite.
+7. **Retrait d'événement**, annulation séance, modification lieu, groupe, temps et dates.
+8. **Répétition/latence** : synchroniser 2 fois, simuler perte réseau, Google 409/429 et réponse API lente.
+
+## Limites connues de cette première implémentation
+
+- L'accès en lecteur à l'agenda secondaire Google n'est **pas encore automatisé par ACL** : le lien dans « Mes calendriers » peut nécessiter un partage du calendrier côté Google. Les invitations aux événements sont un canal distinct de l'abonnement à l'agenda.
+- Google génère lui-même l'objet des emails d'invitation ; Assolutions ne peut pas imposer exactement `[PREPROD] - Type de mise à jour - Séance` à l'email automatique Google. Les **titres des agendas et événements** sont cependant préfixés.
+- L'archivage Assolutions est fonctionnel ; **suppression distante du calendrier Google à finaliser** après un protocole de suppression sans perte involontaire.
+- Les liens d'action Oui/Non individualisés ne doivent jamais être publiés dans une description Google partagée à tous. Un lien vers la séance Assolutions permet à chaque personne connectée de répondre selon ses droits existants.
+- Il n'y a pas encore de parcours OAuth interactif dans le front ; configuration initiale manuelle du compte de service utilisateur OAuth.
+- **Aucun essai réel Google, aucun test de build ni migration locale n'a été exécuté** lors de la création de la branche par connexion GitHub seule. Ne pas activer la fonctionnalité en production.
+
+## Rollback prudent
+1. Désactiver `GOOGLE_CALENDAR_ENABLED` et `GOOGLE_CALENDAR_AUTO_SYNC` dans Render.
+2. Revenir au commit applicatif antérieur après sauvegarde.
+3. Laisser les nouvelles tables/colonnes inactives plutôt que de détruire leurs références Google (permet de reprendre ou supprimer proprement les événements). Retirer les nouvelles structures seulement après vérification de toutes les séances et ressources Google.
