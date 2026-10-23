@@ -83,11 +83,15 @@ export class CalendrierApiService {
   seances(id: number): Promise<CalendrierSeance[]> {
     return this.api.GET<CalendrierSeance[]>(this.base + '/' + Number(id) + '/seances');
   }
-  create(dto: CalendrierPayload): Promise<{ id: number }> {
+  create(dto: CalendrierPayload & { saison_id: number }): Promise<{ id: number }> {
     return this.api.POST<{ id: number }>(this.base, dto);
   }
-  update(id: number, dto: CalendrierPayload): Promise<{ id: number }> {
-    return this.api.POST<{ id: number }>(this.base + '/' + Number(id) + '/update', dto);
+  update(id: number, dto: Omit<CalendrierPayload, 'saison_id'>): Promise<{ id: number }> {
+    // Defense supplementaire : seuls les champs admis par UpdateCalendrierDto
+    // sont transmis, meme si l'appelant inclut accidentellement saison_id.
+    const { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids } = dto;
+    return this.api.POST<{ id: number }>(this.base + '/' + Number(id) + '/update',
+      { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids });
   }
   archive(id: number): Promise<{ id: number; archived: true }> {
     return this.api.POST<{ id: number; archived: true }>(this.base + '/' + Number(id) + '/archive', {});
