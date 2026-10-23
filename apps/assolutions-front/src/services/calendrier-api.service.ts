@@ -64,6 +64,13 @@ export class CalendrierApiService {
   private readonly base = '/calendriers';
   constructor(private readonly api: ApiClientService) {}
 
+  googleStatus(): Promise<{
+    actif: boolean; credentials_present: boolean; proprietaire_verifie: boolean;
+    compte?: string; code: string;
+  }> {
+    return this.api.GET(this.base + '/google/etat');
+  }
+
   list(saisonId: number): Promise<Calendrier[]> {
     return this.api.GET<Calendrier[]>(this.base + '?saison_id=' + Number(saisonId));
   }
