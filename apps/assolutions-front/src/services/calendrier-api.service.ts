@@ -46,6 +46,7 @@ export interface CalendrierPreview {
   saison_id: number;
   nb_comptes: number;
   nb_seances: number;
+  nb_evenements_a_supprimer?: number;
   avertissement: string;
 }
 export interface CalendrierSyncResult {
