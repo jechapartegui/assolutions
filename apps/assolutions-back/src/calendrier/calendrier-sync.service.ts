@@ -39,8 +39,7 @@ function formatDateFr(dateIso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) {
     throw new BadRequestException('CALENDAR_DATE_INVALID');
   }
-  const [year, month, day] = dateIso.split('-');
-  return day + '/' + month + '/' + year;
+  return dateIso.slice(8, 10) + '/' + dateIso.slice(5, 7) + '/' + dateIso.slice(0, 4);
 }
 
 /** Compatibilite avec Adresse de libs/shared : Street, PostCode, City, Country.
