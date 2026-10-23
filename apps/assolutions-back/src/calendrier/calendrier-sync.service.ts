@@ -33,6 +33,47 @@ function instantLocal(date: string, heure: string, timezone: string): Date {
   return new Date(epoch);
 }
 
+
+/** PostgreSQL expose parfois DATE via un objet JS local : ne jamais le passer en UTC. */
+function formatDateFr(dateIso: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) {
+    throw new BadRequestException('CALENDAR_DATE_INVALID');
+  }
+  const [year, month, day] = dateIso.split('-');
+  return day + '/' + month + '/' + year;
+}
+
+/** Compatibilite avec Adresse de libs/shared : Street, PostCode, City, Country.
+ * Le champ historique lieu.adresse reste un TEXT pouvant etre JSON ou texte libre.
+ */
+function formatLieuAdresse(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (!trimmed.startsWith('{')) return trimmed;
+  try {
+    const item = JSON.parse(trimmed);
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return trimmed;
+    const stringValue = (v: unknown) => typeof v === 'string' ? v.trim() : '';
+    const street = stringValue(item.Street);
+    const postCode = stringValue(item.PostCode);
+    const city = stringValue(item.City);
+    const country = stringValue(item.Country);
+    const locality = [postCode, city].filter(Boolean).join(' ');
+    return [street, locality, country].filter(Boolean).join(', ') || trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
+/** Meme route partageable que le sondage WhatsApp : jamais de login ni token individuel.
+ * /s/:slug utilise ensuite l'identite du compte authentifie dans ma-seance.
+ */
+function genericVoteLink(site: string, seanceId: number, response: 0 | 1): string {
+  const slug = Buffer.from(JSON.stringify({ i: seanceId, r: response }), 'utf8').toString('base64url');
+  return site + '/s/' + slug;
+}
+
 @Injectable()
 export class CalendrierSyncService {
   private readonly logger = new Logger(CalendrierSyncService.name);
@@ -58,18 +99,22 @@ export class CalendrierSyncService {
     const contact = projectRows[0]?.contact;
     const projectEmails = [projectRows[0]?.owner_mail, contact?.email, contact?.mail]
       .filter((x) => typeof x === 'string' && x.includes('@'));
+    // Le proprietaire OAuth est deja l'organisateur de l'evenement Google :
+    // l'inviter a nouveau peut produire un doublon dans son agenda principal.
     const emails = [
-      this.google.owner, ...rows.map((r) => this.google.recipient(r.login, r.id)),
+      ...rows.map((r) => this.google.recipient(r.login, r.id)),
       ...projectEmails.map((x: string) => this.google.recipient(x)),
     ];
-    return [...new Set(emails.filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)))];
+    return [...new Set(emails.filter((e) =>
+      e.toLowerCase() !== this.google.owner &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)))];
   }
 
   private async eventBody(
     seanceId: number, calendrier: any, invitees: string[],
   ) {
     const rows = await this.db.query(
-      `SELECT se.*, l.nom AS lieu_nom, l.adresse AS lieu_adresse,
+      `SELECT se.*, se.date_seance::text AS date_iso, l.nom AS lieu_nom, l.adresse AS lieu_adresse,
          COALESCE((SELECT string_agg(DISTINCT g.nom, ', ' ORDER BY g.nom)
           FROM lien_groupe lg JOIN groupes g ON g.id = lg.groupe_id
           WHERE lg.object_type = 'séance' AND lg.object_id = se.seance_id), '') AS groupes
@@ -79,9 +124,9 @@ export class CalendrierSyncService {
     );
     if (!rows.length) throw new NotFoundException('SEANCE_NOT_IN_CALENDAR');
     const seance = rows[0];
-    const date = typeof seance.date_seance === 'string'
-      ? seance.date_seance.slice(0, 10)
-      : new Date(seance.date_seance).toISOString().slice(0, 10);
+    // DATE PostgreSQL conserve son jour civil en SQL ; conversion UTC interdite.
+    const date = String(seance.date_iso ?? '');
+    const dateFr = formatDateFr(date);
     const start = instantLocal(date, seance.heure_debut, calendrier.timezone);
     const end = new Date(start.getTime() + Number(seance.duree_seance) * 60_000);
     if (Number(seance.duree_seance) <= 0) throw new BadRequestException('SEANCE_DURATION_INVALID');
@@ -97,17 +142,26 @@ export class CalendrierSyncService {
       '',
       'Agenda informatif uniquement. Assolutions fait foi.',
       'La presence, les absences et les convocations se gerent EXCLUSIVEMENT dans Assolutions.',
-      // Pas de token personnel Oui/Non dans une description visible de TOUS les invites.
       site ? 'Consulter Assolutions : ' + site + '/ma-seance?id=' + seanceId : '',
+      // Reprise du sondage WhatsApp : le lien est identique pour tous les invites,
+      // ne contient aucune identite personnelle et exige les droits Assolutions.
+      site ? (seance.type_seance + ' ' + (seance.label || '') +
+        ' le ' + dateFr + ' à ' + String(seance.heure_debut).slice(0, 5) + '. Vous venez ?') : '',
+      site ? 'Oui : ' + genericVoteLink(site, seanceId, 1) : '',
+      site ? 'Non : ' + genericVoteLink(site, seanceId, 0) : '',
     ].filter(Boolean).join('\n');
 
     return {
       summary: (this.google.isProduction() ? '' : this.google.calendarName('Séance') + ' - ') +
         (seance.label || seance.type_seance || 'Séance') + (seance.groupes ? ' — ' + seance.groupes : ''),
       description,
-      location: [seance.lieu_nom, seance.lieu_adresse].filter(Boolean).join(' — '),
+      location: [seance.lieu_nom, formatLieuAdresse(seance.lieu_adresse)].filter(Boolean).join(' — '),
       start: { dateTime: start.toISOString(), timeZone: calendrier.timezone },
       end: { dateTime: end.toISOString(), timeZone: calendrier.timezone },
+      // Rappels Google popup : 1h et 1 jour avant le debut (sur l'agenda gere).
+      reminders: { useDefault: false, overrides: [
+        { method: 'popup', minutes: 60 }, { method: 'popup', minutes: 1440 },
+      ] },
       attendees: invitees.map((email) => ({ email })),
       guestsCanInviteOthers: false,
       guestsCanModify: false,
