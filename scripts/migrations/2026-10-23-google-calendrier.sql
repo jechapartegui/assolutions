@@ -170,7 +170,7 @@ FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_seance_change();
 -- Une mise a jour metier de seance programme une resynchronisation.
 -- Ne modifie aucun comportement pour les seances sans calendrier.
 CREATE OR REPLACE FUNCTION public.fn_calendrier_seance_mark_dirty()
-RETURNS trigger LANGUAGE plpgsql AS $
+RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF NEW.calendrier_id IS NOT NULL AND (
         NEW.date_seance IS DISTINCT FROM OLD.date_seance OR
@@ -193,7 +193,7 @@ BEGIN
         WHERE id = NEW.calendrier_id;
     END IF;
     RETURN NEW;
-END $;
+END $$;
 
 DROP TRIGGER IF EXISTS trg_calendrier_seance_mark_dirty ON public.seance;
 CREATE TRIGGER trg_calendrier_seance_mark_dirty
@@ -204,7 +204,7 @@ FOR EACH ROW EXECUTE FUNCTION public.fn_calendrier_seance_mark_dirty();
 -- Les groupes effectivement convoques sont geres par lien_groupe et non
 -- par calendrier_groupe. Ils affectent le titre Google, pas les invites.
 CREATE OR REPLACE FUNCTION public.fn_calendrier_lien_seance_mark_dirty()
-RETURNS trigger LANGUAGE plpgsql AS $
+RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE v_seance_id integer; v_calendrier_id integer;
 BEGIN
     IF TG_OP = 'DELETE' THEN
@@ -223,7 +223,7 @@ BEGIN
           WHERE id = v_calendrier_id;
     END IF;
     RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
-END $;
+END $$;
 
 DROP TRIGGER IF EXISTS trg_calendrier_lien_seance_mark_dirty ON public.lien_groupe;
 CREATE TRIGGER trg_calendrier_lien_seance_mark_dirty
