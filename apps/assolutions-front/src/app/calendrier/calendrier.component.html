@@ -139,13 +139,25 @@
                 <td>{{ row.seance_id }}</td>
                 <td>{{ row.google_email }}</td>
                 <td>{{ row.google_reponse }}</td>
-                <td>{{ row.personnes?.join(', ') || 'Aucune' }}</td>
-                <td>{{ row.peut_importer ? 'À confirmer manuellement' : 'Non' }}</td>
+                <td>
+                  <div class="select is-small" *ngIf="row.peut_importer">
+                    <select [(ngModel)]="row.personne_choisie">
+                      <option [ngValue]="null">Ne pas importer</option>
+                      <option *ngFor="let p of row.personnes" [ngValue]="p">Personne #{{ p }}</option>
+                    </select>
+                  </div>
+                  <span *ngIf="!row.peut_importer">{{ row.personnes?.join(', ') || 'Aucune' }}</span>
+                </td>
+                <td>{{ row.peut_importer ? 'Sélection manuelle' : 'Non' }}</td>
               </tr>
               <tr *ngIf="!rsvps.length"><td colspan="5">Aucune réponse récupérée.</td></tr>
             </tbody>
           </table>
         </div>
+        <button *ngIf="isAdmin" class="button is-warning mt-3" (click)="importerReponses()">
+          Appliquer les réponses sélectionnées sur Assolutions
+        </button>
+        <p class="help">Les réponses Google sont vérifiées de nouveau côté serveur. Aucune personne non inscrite à une séance n'est mise à jour.</p>
       </div>
     </div>
   </div>
