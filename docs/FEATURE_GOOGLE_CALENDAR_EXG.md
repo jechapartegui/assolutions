@@ -1,7 +1,7 @@
 # Feature Google Agenda — EXG-01 à EXG-26
 
 **GitHub :** issue #105 — branche `feature/google-calendar-sync-exg`
-**Statut :** développement isolé, **non validé**. Aucune fusion en production sans recette.
+**Statut :** recette fonctionnelle LOCAL validée le 24/10/2026 ; préparation de la promotion PREPROD. Ne pas fusionner sur master (base pouvant déclencher la production).
 
 ## Décisions
 
@@ -45,9 +45,6 @@ Variables du backend :
 APP_ENV=local # local | preprod | production (prioritaire sur NODE_ENV)
 GOOGLE_CALENDAR_ENABLED=false
 GOOGLE_CALENDAR_AUTO_SYNC=false
-# Optionnel pour recette de l'automatisme : IDs de calendriers Assolutions autorises (ex. 7).
-# Vide/absent = tous les calendriers deja crees sur Google si AUTO_SYNC=true.
-GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS=
 GOOGLE_CALENDAR_CLIENT_ID=CHANGE_ME
 GOOGLE_CALENDAR_CLIENT_SECRET=CHANGE_ME
 GOOGLE_CALENDAR_REFRESH_TOKEN=CHANGE_ME
