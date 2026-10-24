@@ -111,7 +111,7 @@
           Le moteur AddInfo reste générique : PERSONNE est simplement le premier objet administrable depuis cet écran.
         </p>
       </div>
-      <span class="tag is-primary is-light">PERSONNE</span>
+      <span class="tag is-primary is-light" i18n>PERSONNE</span>
     </div>
 
     <article class="message is-info" *ngIf="!fields.length && !loadError">
@@ -127,7 +127,7 @@
             <h3 class="title is-6 mb-1">{{ item.field.text }}</h3>
             <div class="tags mb-1">
               <span class="tag is-light">{{ kindLabel(item.kind) }}</span>
-              <span class="tag is-info is-light" *ngIf="item.usageCount > 0">
+              <span class="tag is-info is-light" *ngIf="item.usageCount > 0" i18n>
                 {{ item.usageCount }} réponse(s)
               </span>
               <span class="tag is-light" *ngIf="item.usageCount === 0" i18n>Non utilisé</span>

@@ -6,6 +6,10 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap seance-card-actions">
+      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées" i18n i18n-title>
+        <input type="checkbox" [(ngModel)]="compactMobile" />
+        Liste simple
+      </label>
       <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel"><span class="icon"><i class="fas fa-sliders"></i></span><span i18n>Filtres</span></button>
       <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()"><span class="icon"><i class="fas fa-file-excel"></i></span><span i18n>Excel</span></button>
       <button class="button is-primary is-light" type="button" (click)="createSeance.emit(false)"><span class="icon"><i class="fas fa-plus"></i></span><span i18n>Créer</span></button>
@@ -29,6 +33,15 @@
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Nom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Lieu</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_lieu"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu">{{ lieu }}</option></select></div></div>
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Statut</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_statut"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let s of vm.refs.listeStatuts" [ngValue]="s">{{ s }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop">
+            <label class="label" for="seance-type-filter" i18n="@@session.type">Type</label>
+            <div class="select is-fullwidth">
+              <select id="seance-type-filter" [(ngModel)]="vm.filter.filter_type">
+                <option [ngValue]="null" i18n>Tous</option>
+                <option *ngFor="let type of seanceTypes" [ngValue]="type.value">{{ type.label }}</option>
+              </select>
+            </div>
+          </div>
           <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Du</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_apres" /></div>
           <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Au</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_avant" /></div>
           <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Professeur</label><input class="input" [(ngModel)]="vm.filter.filter_prof" /></div>
@@ -61,7 +74,21 @@
         </table>
       </div>
 
-      <div class="seance-mobile-list is-hidden-desktop">
+      <div class="exg-mobile-quick-list is-hidden-desktop" *ngIf="compactMobile">
+        <div class="exg-mobile-quick-row" *ngFor="let seance of getFilteredSeances()">
+          <label *ngIf="isAdmin && vm.multiSelectMode" class="checkbox exg-mobile-quick-check">
+            <input type="checkbox" [checked]="isSelected(seance.id)" (change)="toggleSelection(seance.id)" />
+          </label>
+          <button type="button" class="exg-mobile-quick-name" (click)="open(seance)">
+            {{ seance.nom || 'Séance sans nom' }}
+          </button>
+          <span class="exg-mobile-quick-meta">{{ seance.date_seance | date:'dd/MM' }}</span>
+          <button type="button" class="exg-mobile-quick-open" (click)="open(seance)" aria-label="Ouvrir" title="Ouvrir" i18n-aria-label i18n-title>
+            <i class="fas fa-pen"></i>
+          </button>
+        </div>
+      </div>
+      <div class="seance-mobile-list is-hidden-desktop" *ngIf="!compactMobile">
         <article class="seance-tile" *ngFor="let seance of getFilteredSeances()">
           <div class="seance-tile-top">
             <div class="seance-tile-main">

@@ -1,0 +1,319 @@
+/* EXG-UI-02 : rendu adapté aux grands tableaux et au scroll verrouillé de l'app. */
+:host {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - var(--app-topbar-height, 52px));
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
+}
+@supports not (height: 100dvh) {
+  :host { height: calc(100vh - var(--app-topbar-height, 52px)); }
+}
+@media (max-width: 767px) {
+  :host {
+    height: calc(100dvh - var(--mobile-footer-h, 64px) - var(--safe-bottom, 0px));
+    box-sizing: border-box;
+    padding-bottom: calc(1rem + var(--safe-bottom, 0px));
+    scrollbar-gutter: auto;
+  }
+}
+.mes-calendar-table {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.mes-calendar-table table {
+  min-width: 850px;
+  font-size: .80rem;
+}
+.mes-calendar-page .box { border: 1px solid rgba(111, 130, 145, .14); }
+.mes-calendar-page .mes-calendar-intro,
+.mes-calendar-page .mes-calendar-card {
+  padding: .8rem .95rem !important;
+  margin-bottom: .65rem !important;
+  box-shadow: 0 1px 4px rgba(18, 39, 57, .035) !important;
+  border-radius: 8px;
+}
+.mes-calendar-page .mes-calendar-intro .title { font-size: 1.12rem; margin-bottom: .2rem !important; }
+.mes-calendar-page .mes-calendar-intro .subtitle {
+  font-size: .88rem;
+  margin-bottom: .5rem !important;
+}
+.mes-calendar-page .mes-calendar-hint {
+  padding: .55rem .7rem !important;
+  margin-bottom: .65rem !important;
+  font-size: .82rem;
+  line-height: 1.4;
+}
+.mes-calendar-page .mes-calendar-actions { margin-bottom: 0 !important; }
+.mes-calendar-page .mes-calendar-card > div:first-child { margin-bottom: .45rem !important; }
+.mes-calendar-page .mes-calendar-card > div:first-child .title { margin-bottom: .15rem !important; }
+.mes-calendar-page .mes-calendar-table .table th,
+.mes-calendar-page .mes-calendar-table .table td {
+  border-bottom: 1px solid rgba(112, 130, 145, .12);
+  padding: .4rem .48rem;
+  vertical-align: middle;
+}
+.mes-calendar-page .mes-calendar-table .table th {
+  font-size: .76rem;
+  font-weight: 600;
+  text-transform: none;
+}
+.mes-calendar-page .mes-calendar-table .table.is-striped tbody tr:not(.is-selected):nth-child(even) {
+  background: rgba(235, 241, 246, .22);
+}
+.mes-calendar-page .mes-calendar-table .tag { font-size: .72rem; height: 1.55em; }
+.mes-calendar-page .mes-calendar-table .button.is-small {
+  font-size: .76rem;
+  height: 1.95rem;
+}
+
+.mes-calendar-open {
+  height: auto;
+  text-align: left;
+  white-space: normal;
+  justify-content: flex-start;
+  padding-left: .3rem;
+}
+.mes-calendar-person {
+  padding: .3rem 0;
+  border-bottom: 1px solid rgba(140, 150, 160, .15);
+}
+.mes-calendar-person:last-child { border-bottom: 0; }
+.mes-calendar-person-name {
+  display: block;
+  font-weight: 600;
+  margin-bottom: .3rem;
+}
+.mes-calendar-answer {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 180px;
+}
+.is-nowrap { white-space: nowrap; }
+
+.mes-calendar-page .mes-calendar-person { padding: .2rem 0; }
+.mes-calendar-page .mes-calendar-person-name { font-size: .77rem; margin-bottom: .15rem; }
+@media (max-width: 767px) {
+  .mes-calendar-page .mes-calendar-intro,
+  .mes-calendar-page .mes-calendar-card { padding: .7rem !important; }
+  .mes-calendar-page .mes-calendar-table table { min-width: 760px; }
+}
+
+/* EXG-33 : les cartes mobiles se substituent réellement au tableau desktop. */
+.mes-calendar-mobile-list,
+.mes-calendar-past-toggle { display: none !important; }
+.mes-calendar-toolbar { display: flex; align-items: center; gap: .35rem; }
+.mes-calendar-page .mes-calendar-table table th,
+.mes-calendar-page .mes-calendar-table table td { border-width: 0 0 1px !important; }
+@media (max-width: 767px) {
+  .mes-calendar-page {
+    padding: .4rem .45rem .85rem !important;
+    max-width: 100%;
+  }
+  .mes-calendar-page .mes-calendar-intro {
+    margin-bottom: .4rem !important;
+    padding: .45rem .65rem !important;
+  }
+  .mes-calendar-page .mes-calendar-intro .title {
+    font-size: .94rem !important;
+    margin: 0 !important;
+  }
+  .mes-calendar-mobile-extras,
+  .mes-calendar-hint,
+  .mes-calendar-share-note,
+  .mes-calendar-past-field,
+  .mes-calendar-table,
+  .mes-calendar-page .notification.is-success {
+    display: none !important;
+  }
+  .mes-calendar-mobile-list { display: grid !important; gap: .48rem; }
+  .mes-calendar-page .mes-calendar-card {
+    padding: .5rem .55rem !important;
+    margin-bottom: .5rem !important;
+    border-radius: 12px;
+  }
+  .mes-calendar-page .mes-calendar-card > div:first-child {
+    display: flex;
+    align-items: center !important;
+    gap: .4rem !important;
+    margin-bottom: .25rem !important;
+  }
+  .mes-calendar-page .mes-calendar-card h2 {
+    font-size: .84rem !important;
+    margin: 0 !important;
+    letter-spacing: .01em;
+  }
+  .mes-calendar-page .mes-calendar-card h2 i { margin-right: .25rem !important; }
+  .mes-calendar-list-title {
+    font-size: .74rem !important;
+    margin: .4rem 0 .45rem !important;
+  }
+  .mes-calendar-actions { display: flex; align-items: center; gap: .25rem; flex-wrap: nowrap; }
+  .mes-calendar-page .mes-calendar-actions .button,
+  .mes-calendar-refresh,
+  .mes-calendar-past-toggle {
+    width: 2rem;
+    min-width: 2rem;
+    height: 2rem;
+    padding: .15rem !important;
+    border-radius: 9px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .mes-calendar-page .mes-calendar-actions .button { margin-bottom: 0 !important; }
+  .mes-calendar-past-toggle.is-active { background: #d9f3f0 !important; color: #006f60; }
+  .mes-calendar-page .mes-calendar-intro .is-flex { gap: .25rem !important; }
+  .mes-calendar-mobile-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2.25rem;
+    gap: .5rem;
+    padding: .65rem .6rem .6rem;
+    border: 1px solid rgba(132, 150, 168, .16);
+    border-radius: 14px;
+    background: var(--bulma-scheme-main, #fff);
+    box-shadow: 0 2px 7px rgba(12, 36, 57, .045);
+    min-width: 0;
+  }
+  .mes-calendar-mobile-body { min-width: 0; }
+  .mes-calendar-mobile-title {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    font-size: .82rem;
+    font-weight: 700;
+    line-height: 1.28;
+    overflow-wrap: anywhere;
+  }
+  .mes-calendar-mobile-title i { color: #223850; font-size: .8rem; }
+  .mes-calendar-mobile-meta {
+    font-size: .73rem;
+    line-height: 1.3;
+    color: #687891;
+    margin-top: .22rem;
+  }
+  .mes-calendar-mobile-location {
+    margin-top: .34rem;
+    font-size: .75rem;
+    color: #303e50;
+    line-height: 1.3;
+  }
+  .mes-calendar-mobile-location i { color: #7a8ca0; }
+  .mes-calendar-mobile-person {
+    margin-top: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .32rem;
+    padding-top: .38rem;
+    border-top: 1px solid rgba(123, 142, 159, .10);
+  }
+  .mes-calendar-mobile-person-name {
+    font-size: .72rem;
+    font-weight: 600;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .mes-calendar-mobile-person-status,
+  .mes-calendar-mobile-consult {
+    font-size: .7rem;
+    color: #64748b;
+  }
+  .mes-calendar-mobile-consult { margin-top: .4rem; }
+  .mes-calendar-mobile-replies {
+    display: flex;
+    gap: .35rem;
+    margin-left: auto;
+  }
+  .mes-calendar-mobile-reply,
+  .mes-calendar-mobile-open {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #d3dfed;
+    background: #f9fbfd;
+    color: #334155;
+    cursor: pointer;
+  }
+  .mes-calendar-mobile-reply:first-child { color: #13a47a; }
+  .mes-calendar-mobile-reply:last-child { color: #e45b70; }
+  .mes-calendar-mobile-reply.is-yes {
+    background: #d8f6e8;
+    border-color: #6bd3a1;
+  }
+  .mes-calendar-mobile-reply.is-no {
+    background: #ffe1e6;
+    border-color: #f4a3b2;
+  }
+  .mes-calendar-mobile-reply:disabled { opacity: .48; }
+  .mes-calendar-mobile-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .3rem;
+  }
+  .mes-calendar-mobile-state {
+    font-size: .63rem;
+    color: #64748b;
+    overflow-wrap: anywhere;
+    text-align: center;
+    max-width: 3.5rem;
+  }
+  .mes-calendar-page .mes-calendar-intro .box,
+  .mes-calendar-page .mes-calendar-card .box { box-shadow: none; }
+}
+
+
+/* EXG-PP03-UX-01 — contraste lisible sur iOS et Android en mode sombre.
+   Les couleurs fixes du mobile (#687891 / #303e50 / #223850) étaient
+   prévues pour un fond clair : elles devenaient presque invisibles sur
+   les cartes sombres. Le thème clair n'est volontairement pas modifié. */
+@media (prefers-color-scheme: dark) {
+  .mes-calendar-page .mes-calendar-mobile-title,
+  .mes-calendar-page .mes-calendar-mobile-person-name,
+  .mes-calendar-page .mes-calendar-card h2,
+  .mes-calendar-page .mes-calendar-list-title {
+    color: #f8fafc !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-title i,
+  .mes-calendar-page .mes-calendar-mobile-location i {
+    color: #d6e2ee !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-meta,
+  .mes-calendar-page .mes-calendar-mobile-location {
+    color: #e0eaf4 !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-person-status,
+  .mes-calendar-page .mes-calendar-mobile-consult,
+  .mes-calendar-page .mes-calendar-mobile-state {
+    color: #becfdf !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-item {
+    border-color: rgba(203, 213, 225, .27);
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-person {
+    border-top-color: rgba(203, 213, 225, .2);
+  }
+}

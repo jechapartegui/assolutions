@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { CalendrierApiService, Calendrier } from '../../services/calendrier-api.service';
 import { ValidationItem } from '@shared/lib/autres.interface';
 import { SeanceProfesseur_VM, Seance_VM } from '@shared/index';
 
@@ -25,6 +26,8 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
   @ViewChild('addInfoEditor') addInfoEditor?: AddInfoEditorComponent;
 
   saving = false;
+  calendriers: Calendrier[] = [];
+  syncGoogleBusy = false;
   currentProfId: number | null = null;
   profDispo: any[] = [];
   serieDateDebut = '';
@@ -38,6 +41,7 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
     private readonly store: SeanceStore,
     private readonly router: Router,
     private readonly contratProfDataStore: ContratProfDataStore,
+    private readonly calendrierApi: CalendrierApiService,
   ) {}
 
   get seance(): Seance_VM {
@@ -46,6 +50,47 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.syncViewState();
+    void this.loadCalendriers();
+  }
+
+  private async loadCalendriers(): Promise<void> {
+    const saison = Number(this.seance?.saison_id || this.vm?.activeSaison?.id || 0);
+    if (!saison) return;
+    try { this.calendriers = await this.calendrierApi.list(saison); }
+    catch { this.calendriers = []; }
+  }
+
+  get calendrierAssocie(): Calendrier | null {
+    return this.calendriers.find((item) => item.id === Number(this.seance?.calendrier_id)) ?? null;
+  }
+
+  allerCalendrier(): void {
+    this.router.navigate(['/calendrier']);
+  }
+
+  async forcerGoogle(): Promise<void> {
+    const id = Number(this.seance?.calendrier_id || 0);
+    if (!this.isAdmin || !id || this.syncGoogleBusy) return;
+    if (!window.confirm(
+      'Synchroniser le calendrier Google lié à cette séance ? Google peut envoyer certains e-mails.'
+    )) return;
+    const notifier = !!this.calendrierAssocie?.notifier_mises_a_jour &&
+      window.confirm('Demander explicitement à Google d’envoyer les notifications aux invités ?');
+    if (notifier && !window.confirm('Confirmer définitivement l’envoi des notifications Google ?')) return;
+    this.syncGoogleBusy = true;
+    try {
+      const result = await this.calendrierApi.sync(id, notifier);
+      if (result.erreurs || result.restants) {
+        ErrorService.instance.emitChange(
+          ErrorService.instance.CreateError('Google Agenda',
+            `Synchronisation incomplète : ${result.erreurs} erreur(s), ${result.restants} en attente.`),
+        );
+      } else {
+        ErrorService.instance.emitChange(ErrorService.instance.OKMessage('Google Agenda synchronisé'));
+      }
+    } catch (error: unknown) {
+      ErrorService.instance.emitChange(ErrorService.instance.CreateError('Google Agenda', error));
+    } finally { this.syncGoogleBusy = false; }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -105,6 +150,11 @@ export class SeanceEditorComponent implements OnInit, OnChanges {
       if (this.addInfoEditor && saved?.id > 0) {
         this.addInfoEditor.objectId = saved.id;
         await this.addInfoEditor.save();
+      }
+      // Le traitement Assolutions est reussi. L'echec Google ne doit jamais
+      // faire croire que l'enregistrement de la seance a echoue.
+      if (this.isAdmin && saved?.calendrier_id) {
+        await this.forcerGoogle();
       }
       errors.emitChange(
         errors.OKMessage(wasExisting ? $localize`Mettre à jour une séance` : $localize`Ajouter une séance`),

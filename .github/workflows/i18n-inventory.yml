@@ -4,6 +4,12 @@ on:
   pull_request:
     branches:
       - master
+      - integration/exg-preprod
+  push:
+    branches:
+      - integration/exg-preprod
+
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -60,6 +66,9 @@ jobs:
           if (missing.length || empty.length) process.exit(1);
           NODE
 
+      - name: Build English frontend explicitly
+        run: npx nx build assolutions-front --configuration=development-en --skip-nx-cache
+
       - name: Check residual template strings
         run: |
           node --input-type=module - <<'NODE'
@@ -106,5 +115,3 @@ jobs:
           }
           NODE
 
-      - name: Build English frontend explicitly
-        run: npx nx build assolutions-front --configuration=development-en --skip-nx-cache

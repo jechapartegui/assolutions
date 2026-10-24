@@ -71,6 +71,9 @@ export class SeanceController {
     @Body() dto: CreateSeanceDto,
   ) {
     await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    if (dto.calendrier_id !== undefined && dto.calendrier_id !== null) {
+      await this.access.assertProjectAdmin(req.user.id, projectId);
+    }
     return this.service.create(dto, projectId);
   }
 
@@ -83,6 +86,10 @@ export class SeanceController {
     @Body() dto: UpdateSeanceDto,
   ) {
     await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    // Modifier le calendrier d'une seance est reserve au responsable du projet.
+    if (dto.calendrier_id !== undefined) {
+      await this.access.assertProjectAdmin(req.user.id, projectId);
+    }
     return this.service.update(id, dto, projectId);
   }
 

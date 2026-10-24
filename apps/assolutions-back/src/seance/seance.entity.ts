@@ -9,6 +9,9 @@ export class SeanceEntity {
   saison_id: number;
 
   @Column({ type: 'int', nullable: true })
+  calendrier_id: number | null;
+
+  @Column({ type: 'int', nullable: true })
   cours: number | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

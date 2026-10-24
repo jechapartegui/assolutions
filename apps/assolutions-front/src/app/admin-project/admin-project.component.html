@@ -1,18 +1,18 @@
 <div class="admin-project-page" *ngIf="store.isLoggedIn() && store.hasProjet()">
   <header class="project-hero">
     <div class="hero-title">
-      <button type="button" class="back-button" routerLink="/menu-admin" title="Retour à l'administration">
+      <button type="button" class="back-button" routerLink="/menu-admin" title="Retour à l'administration" i18n-title>
         <i class="fa-solid fa-arrow-left"></i>
       </button>
       <div>
-        <p class="eyebrow">Administration</p>
+        <p class="eyebrow" i18n>Administration</p>
         <h1>{{ project?.nom || 'Projet' }}</h1>
-        <p class="subtitle">Le référentiel du club, indépendant de la saison consultée.</p>
+        <p class="subtitle" i18n>Le référentiel du club, indépendant de la saison consultée.</p>
       </div>
     </div>
     <div class="hero-stats" *ngIf="overview">
-      <span><strong>{{ overview.accountCount }}</strong> comptes</span>
-      <span><strong>{{ overview.personCount }}</strong> personnes</span>
+      <span i18n><strong>{{ overview.accountCount }}</strong> comptes</span>
+      <span i18n><strong>{{ overview.personCount }}</strong> personnes</span>
     </div>
   </header>
 
@@ -21,8 +21,8 @@
       <i class="fa-solid" [ngClass]="isElevated ? 'fa-unlock-keyhole' : 'fa-shield-halved'"></i>
       <div>
         <strong>{{ isElevated ? 'Super Admin temporaire actif' : 'Accès Super Admin' }}</strong>
-        <p *ngIf="!isElevated">Nécessaire pour modifier un compte partagé avec plusieurs projets. Le code n'est jamais conservé dans le navigateur.</p>
-        <p *ngIf="isElevated">Autorisation limitée à ce projet et à cette session d'écran.</p>
+        <p *ngIf="!isElevated" i18n>Nécessaire pour modifier un compte partagé avec plusieurs projets. Le code n'est jamais conservé dans le navigateur.</p>
+        <p *ngIf="isElevated" i18n>Autorisation limitée à ce projet et à cette session d'écran.</p>
       </div>
     </div>
     <div class="elevation-actions" *ngIf="!isElevated">
@@ -33,12 +33,12 @@
         (keyup.enter)="unlockSuperAdmin()"
         placeholder="Code Super Admin"
         autocomplete="off"
-      />
-      <button type="button" class="button is-small is-dark" (click)="unlockSuperAdmin()">
+       i18n-placeholder/>
+      <button type="button" class="button is-small is-dark" (click)="unlockSuperAdmin()" i18n>
         Déverrouiller
       </button>
     </div>
-    <button *ngIf="isElevated" type="button" class="button is-small" (click)="lockSuperAdmin()">
+    <button *ngIf="isElevated" type="button" class="button is-small" (click)="lockSuperAdmin()" i18n>
       Verrouiller
     </button>
   </section>
@@ -46,27 +46,27 @@
   <div class="notification is-success is-light py-2" *ngIf="message">{{ message }}</div>
   <div class="notification is-danger is-light py-2" *ngIf="error">{{ error }}</div>
 
-  <nav class="project-tabs" aria-label="Administration du projet">
+  <nav class="project-tabs" aria-label="Administration du projet" i18n-aria-label>
     <button type="button" [class.active]="tab === 'PROJECT'" (click)="setTab('PROJECT')">
-      <i class="fa-solid fa-sliders"></i><span>Projet</span>
+      <i class="fa-solid fa-sliders"></i><span i18n>Projet</span>
     </button>
     <button type="button" [class.active]="tab === 'ACCOUNTS'" (click)="setTab('ACCOUNTS')">
-      <i class="fa-solid fa-key"></i><span>Comptes</span>
+      <i class="fa-solid fa-key"></i><span i18n>Comptes</span>
     </button>
     <button type="button" [class.active]="tab === 'PEOPLE'" (click)="setTab('PEOPLE')">
-      <i class="fa-solid fa-address-book"></i><span>Personnes</span>
+      <i class="fa-solid fa-address-book"></i><span i18n>Personnes</span>
     </button>
   </nav>
 
-  <div class="loading-box" *ngIf="loading">
+  <div class="loading-box" *ngIf="loading" i18n>
     <span class="loader-dot"></span> Chargement…
   </div>
 
   <section class="content-card" *ngIf="!loading && tab === 'PROJECT'">
     <header class="content-header">
       <div>
-        <h2>Informations du projet</h2>
-        <p>Ces données sont stables et ne dépendent pas d'une saison.</p>
+        <h2 i18n>Informations du projet</h2>
+        <p i18n>Ces données sont stables et ne dépendent pas d'une saison.</p>
       </div>
       <span class="status-pill" [class.inactive]="!project?.actif">
         {{ project?.actif ? 'Projet actif' : 'Projet inactif' }}
@@ -75,43 +75,43 @@
 
     <div class="form-grid">
       <div class="field span-2">
-        <label class="label">Nom du projet</label>
+        <label class="label" i18n>Nom du projet</label>
         <input class="input" [(ngModel)]="projectDraft.nom" />
       </div>
       <div class="field">
-        <label class="label">Email du projet</label>
+        <label class="label" i18n>Email du projet</label>
         <input class="input" type="email" [(ngModel)]="projectDraft.login" />
       </div>
       <div class="field">
-        <label class="label">Activité</label>
-        <input class="input" [(ngModel)]="projectDraft.activite" placeholder="Roller, association sportive…" />
+        <label class="label" i18n>Activité</label>
+        <input class="input" [(ngModel)]="projectDraft.activite" placeholder="Roller, association sportive…"  i18n-placeholder/>
       </div>
       <div class="field">
-        <label class="label">Langue</label>
-        <input class="input" [(ngModel)]="projectDraft.lang" placeholder="fr" />
+        <label class="label" i18n>Langue</label>
+        <input class="input" [(ngModel)]="projectDraft.lang" placeholder="fr"  i18n-placeholder/>
       </div>
       <div class="field">
-        <label class="label">Couleur</label>
-        <input class="input" [(ngModel)]="projectDraft.couleur" placeholder="#1e3a5f" />
+        <label class="label" i18n>Couleur</label>
+        <input class="input" [(ngModel)]="projectDraft.couleur" placeholder="#1e3a5f"  i18n-placeholder/>
       </div>
       <div class="field">
-        <label class="label">Date de début</label>
+        <label class="label" i18n>Date de début</label>
         <input class="input" type="date" [(ngModel)]="projectDraft.date_debut" />
       </div>
       <div class="field">
-        <label class="label">Date de fin</label>
+        <label class="label" i18n>Date de fin</label>
         <input class="input" type="date" [(ngModel)]="projectDraft.date_fin" />
       </div>
       <label class="check-row span-2">
         <input type="checkbox" [(ngModel)]="projectDraft.public" />
-        <span>Projet visible publiquement</span>
+        <span i18n>Projet visible publiquement</span>
       </label>
 
       <section class="coordinate-panel span-2">
         <div class="coordinate-title">
           <div>
-            <h3>Contacts principaux</h3>
-            <p>Même fonctionnement que sur une fiche personne : email, téléphone, contact préféré et diffusion.</p>
+            <h3 i18n>Contacts principaux</h3>
+            <p i18n>Même fonctionnement que sur une fiche personne : email, téléphone, contact préféré et diffusion.</p>
           </div>
         </div>
 
@@ -119,8 +119,8 @@
           <div class="project-contact-row" *ngFor="let contact of projectDraft.contacts; let i = index; trackBy: trackByIndex">
             <div class="select">
               <select [ngModel]="contact.Type" (ngModelChange)="onProjectContactTypeChange(contact, $event)">
-                <option [ngValue]="'EMAIL'">Email</option>
-                <option [ngValue]="'PHONE'">Téléphone</option>
+                <option [ngValue]="'EMAIL'" i18n>Email</option>
+                <option [ngValue]="'PHONE'" i18n>Téléphone</option>
               </select>
             </div>
             <input
@@ -129,61 +129,61 @@
               [(ngModel)]="contact.Value"
               [placeholder]="contact.Type === 'PHONE' ? 'Téléphone' : 'Email'"
             />
-            <label class="check-row compact">
+            <label class="check-row compact" i18n>
               <input type="radio" name="project-preferred-contact" [checked]="contact.Pref" (change)="setPreferredProjectContact(i)" />
               Préféré
             </label>
-            <label class="check-row compact" *ngIf="contact.Type === 'EMAIL'">
+            <label class="check-row compact" *ngIf="contact.Type === 'EMAIL'" i18n>
               <input type="checkbox" [(ngModel)]="contact.Diffusion" />
               Recevoir les emails
             </label>
-            <button type="button" class="button is-light contact-delete" title="Supprimer" (click)="removeProjectContact(i)">
+            <button type="button" class="button is-light contact-delete" title="Supprimer" (click)="removeProjectContact(i)" i18n-title>
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
         </div>
 
         <div class="buttons mt-3 mb-0">
-          <button type="button" class="button is-primary is-light" (click)="addProjectContact('EMAIL')">Ajouter un email</button>
-          <button type="button" class="button is-primary is-light" (click)="addProjectContact('PHONE')">Ajouter un téléphone</button>
+          <button type="button" class="button is-primary is-light" (click)="addProjectContact('EMAIL')" i18n>Ajouter un email</button>
+          <button type="button" class="button is-primary is-light" (click)="addProjectContact('PHONE')" i18n>Ajouter un téléphone</button>
         </div>
       </section>
 
       <section class="coordinate-panel span-2">
         <div class="coordinate-title">
           <div>
-            <h3>Adresse</h3>
-            <p>Adresse structurée comme sur une fiche personne.</p>
+            <h3 i18n>Adresse</h3>
+            <p i18n>Adresse structurée comme sur une fiche personne.</p>
           </div>
         </div>
         <div class="form-grid address-grid">
           <div class="field span-2">
-            <label class="label">Adresse</label>
-            <input class="input" [(ngModel)]="projectDraft.adresse.Street" placeholder="Adresse" />
+            <label class="label" i18n>Adresse</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.Street" placeholder="Adresse"  i18n-placeholder/>
           </div>
           <div class="field">
-            <label class="label">Code postal</label>
-            <input class="input" [(ngModel)]="projectDraft.adresse.PostCode" placeholder="Code postal" />
+            <label class="label" i18n>Code postal</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.PostCode" placeholder="Code postal"  i18n-placeholder/>
           </div>
           <div class="field">
-            <label class="label">Ville</label>
-            <input class="input" [(ngModel)]="projectDraft.adresse.City" placeholder="Ville" />
+            <label class="label" i18n>Ville</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.City" placeholder="Ville"  i18n-placeholder/>
           </div>
           <div class="field span-2">
-            <label class="label">Pays</label>
-            <input class="input" [(ngModel)]="projectDraft.adresse.Country" placeholder="Pays" />
+            <label class="label" i18n>Pays</label>
+            <input class="input" [(ngModel)]="projectDraft.adresse.Country" placeholder="Pays"  i18n-placeholder/>
           </div>
         </div>
       </section>
     </div>
 
-    <div class="security-note">
+    <div class="security-note" i18n>
       <i class="fa-solid fa-lock"></i>
       Les champs techniques sensibles de la table project (mot de passe, token d'activation, compte propriétaire) ne sont volontairement jamais exposés ici.
     </div>
 
     <div class="form-actions">
-      <button type="button" class="button is-primary" [class.is-loading]="saving" (click)="saveProject()">
+      <button type="button" class="button is-primary" [class.is-loading]="saving" (click)="saveProject()" i18n>
         <i class="fa-solid fa-floppy-disk mr-2"></i>Enregistrer
       </button>
     </div>
@@ -192,16 +192,16 @@
   <section class="content-card" *ngIf="!loading && tab === 'ACCOUNTS'">
     <header class="content-header list-header">
       <div>
-        <h2>Comptes du projet</h2>
-        <p>Tous les comptes reliés au projet via <code>login_project</code>.</p>
+        <h2 i18n>Comptes du projet</h2>
+        <p i18n>Tous les comptes reliés au projet via <code>login_project</code>.</p>
       </div>
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input class="input" [(ngModel)]="accountSearch" placeholder="Email, personne, projet…" />
+        <input class="input" [(ngModel)]="accountSearch" placeholder="Email, personne, projet…"  i18n-placeholder/>
       </div>
     </header>
 
-    <div class="empty-state" *ngIf="filteredAccounts.length === 0">Aucun compte trouvé.</div>
+    <div class="empty-state" *ngIf="filteredAccounts.length === 0" i18n>Aucun compte trouvé.</div>
 
     <div class="account-list">
       <article class="account-card" *ngFor="let account of filteredAccounts; trackBy: trackById">
@@ -216,60 +216,60 @@
               <span class="tag" [class.is-info]="account.mail_actif">
                 {{ account.mail_actif ? 'Mails actifs' : 'Mails désactivés' }}
               </span>
-              <span class="tag is-warning is-light" *ngIf="account.mail_ko">Mail en erreur</span>
-              <span class="tag shared-tag" *ngIf="account.project_count > 1">
+              <span class="tag is-warning is-light" *ngIf="account.mail_ko" i18n>Mail en erreur</span>
+              <span class="tag shared-tag" *ngIf="account.project_count > 1" i18n>
                 <i class="fa-solid fa-share-nodes mr-1"></i>{{ account.project_count }} projets
               </span>
-              <span class="tag is-light" *ngIf="account.project_count <= 1">Compte propre au projet</span>
+              <span class="tag is-light" *ngIf="account.project_count <= 1" i18n>Compte propre au projet</span>
             </div>
           </div>
         </div>
 
         <div class="account-meta">
           <div>
-            <span class="meta-label">Personnes</span>
+            <span class="meta-label" i18n>Personnes</span>
             <div class="person-chips" *ngIf="account.people?.length; else noPersonAccount">
               <button type="button" class="person-chip" *ngFor="let person of account.people" (click)="openPerson(person)">
                 {{ displayPersonName(person) }}
               </button>
             </div>
-            <ng-template #noPersonAccount><span class="muted">Aucune personne rattachée</span></ng-template>
+            <ng-template #noPersonAccount><span class="muted" i18n>Aucune personne rattachée</span></ng-template>
           </div>
           <div *ngIf="account.projects?.length">
-            <span class="meta-label">Projets liés</span>
+            <span class="meta-label" i18n>Projets liés</span>
             <span class="muted">{{ projectNames(account) }}</span>
           </div>
         </div>
 
-        <div class="locked-hint" *ngIf="account.project_count > 1 && !isElevated">
+        <div class="locked-hint" *ngIf="account.project_count > 1 && !isElevated" i18n>
           <i class="fa-solid fa-shield-halved"></i>
           Compte partagé : déverrouille le mode Super Admin pour modifier ses données globales.
         </div>
 
         <div class="account-edit" *ngIf="editingAccountId === account.id && accountDraft">
           <div class="field grow">
-            <label class="label is-size-7">Email / login</label>
+            <label class="label is-size-7" i18n>Email / login</label>
             <input class="input is-small" type="email" [(ngModel)]="accountDraft.login" />
           </div>
-          <label class="check-row compact"><input type="checkbox" [(ngModel)]="accountDraft.actif" /> Compte actif</label>
-          <label class="check-row compact"><input type="checkbox" [(ngModel)]="accountDraft.mail_actif" /> Mails actifs</label>
+          <label class="check-row compact" i18n><input type="checkbox" [(ngModel)]="accountDraft.actif" /> Compte actif</label>
+          <label class="check-row compact" i18n><input type="checkbox" [(ngModel)]="accountDraft.mail_actif" /> Mails actifs</label>
         </div>
 
         <div class="card-actions">
           <ng-container *ngIf="editingAccountId !== account.id">
-            <button type="button" class="button is-small" [disabled]="!canManageAccount(account)" (click)="beginAccountEdit(account)">
+            <button type="button" class="button is-small" [disabled]="!canManageAccount(account)" (click)="beginAccountEdit(account)" i18n>
               <i class="fa-solid fa-pen mr-1"></i>Modifier
             </button>
-            <button type="button" class="button is-small" [disabled]="!canManageAccount(account)" (click)="resetPassword(account)">
+            <button type="button" class="button is-small" [disabled]="!canManageAccount(account)" (click)="resetPassword(account)" i18n>
               <i class="fa-solid fa-key mr-1"></i>Réinitialiser le mot de passe
             </button>
-            <button type="button" class="button is-small is-danger is-light" [disabled]="!canManageAccount(account) || saving" (click)="anonymizeAccount(account)">
+            <button type="button" class="button is-small is-danger is-light" [disabled]="!canManageAccount(account) || saving" (click)="anonymizeAccount(account)" i18n>
               <i class="fa-solid fa-user-slash mr-1"></i>Anonymiser (RGPD)
             </button>
           </ng-container>
           <ng-container *ngIf="editingAccountId === account.id">
-            <button type="button" class="button is-small is-primary" [class.is-loading]="saving" (click)="saveAccount(account)">Enregistrer</button>
-            <button type="button" class="button is-small" (click)="cancelAccountEdit()">Annuler</button>
+            <button type="button" class="button is-small is-primary" [class.is-loading]="saving" (click)="saveAccount(account)" i18n>Enregistrer</button>
+            <button type="button" class="button is-small" (click)="cancelAccountEdit()" i18n>Annuler</button>
           </ng-container>
         </div>
       </article>
@@ -279,16 +279,16 @@
   <section class="content-card" *ngIf="!loading && tab === 'PEOPLE'">
     <header class="content-header list-header">
       <div>
-        <h2>Personnes du projet</h2>
-        <p>Y compris les personnes qui ne sont inscrites à aucune saison.</p>
+        <h2 i18n>Personnes du projet</h2>
+        <p i18n>Y compris les personnes qui ne sont inscrites à aucune saison.</p>
       </div>
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input class="input" [(ngModel)]="personSearch" placeholder="Nom, prénom ou email…" />
+        <input class="input" [(ngModel)]="personSearch" placeholder="Nom, prénom ou email…"  i18n-placeholder/>
       </div>
     </header>
 
-    <div class="empty-state" *ngIf="filteredPeople.length === 0">Aucune personne trouvée.</div>
+    <div class="empty-state" *ngIf="filteredPeople.length === 0" i18n>Aucune personne trouvée.</div>
 
     <div class="people-list">
       <article class="person-card" *ngFor="let person of filteredPeople; trackBy: trackById">
@@ -298,26 +298,26 @@
             <p>{{ person.login }}</p>
           </div>
           <div class="tags">
-            <span class="tag is-danger is-light" *ngIf="person.archive">Archivée</span>
-            <span class="tag is-success is-light" *ngIf="!person.archive">Active</span>
-            <span class="tag is-warning is-light" *ngIf="!person.compte_actif">Compte inactif</span>
+            <span class="tag is-danger is-light" *ngIf="person.archive" i18n>Archivée</span>
+            <span class="tag is-success is-light" *ngIf="!person.archive" i18n>Active</span>
+            <span class="tag is-warning is-light" *ngIf="!person.compte_actif" i18n>Compte inactif</span>
           </div>
         </div>
 
         <div class="season-history">
-          <span class="meta-label">Historique d'inscription</span>
+          <span class="meta-label" i18n>Historique d'inscription</span>
           <div class="tags" *ngIf="person.saisons?.length; else noSeason">
             <span class="tag is-light" *ngFor="let season of person.saisons">
-              {{ season.nom }}<span *ngIf="season.active === false"> · inactive</span>
+              {{ season.nom }}<span *ngIf="season.active === false" i18n> · inactive</span>
             </span>
           </div>
           <ng-template #noSeason>
-            <span class="never-registered"><i class="fa-solid fa-circle-info"></i> Jamais inscrite à une saison de ce projet</span>
+            <span class="never-registered" i18n><i class="fa-solid fa-circle-info"></i> Jamais inscrite à une saison de ce projet</span>
           </ng-template>
         </div>
 
         <div class="person-actions">
-          <button type="button" class="button is-small" (click)="openPerson(person)">
+          <button type="button" class="button is-small" (click)="openPerson(person)" i18n>
             <i class="fa-solid fa-user-pen mr-1"></i>Modifier la fiche
           </button>
 

@@ -15,6 +15,15 @@ import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/serv
 export class SeanceListComponent {
   @Input({ required: true }) vm!: SeancePageVm;
   @Input() isAdmin = false;
+  /** EXG-PP04-UX-02 : filtrer sur la vraie valeur de type_seance, pas cours_nom. */
+  readonly seanceTypes = [
+    { value: 'ENTRAINEMENT', label: $localize`:@@session.type.training:Cours` },
+    { value: 'MATCH', label: $localize`:@@session.type.match:Match` },
+    { value: 'SORTIE', label: $localize`:@@session.type.outing:Sortie` },
+    { value: 'EVENEMENT', label: $localize`:@@session.type.event:Événement` },
+  ] as const;
+  /** EXG-35 : choix mobile, liste simple par défaut. */
+  compactMobile = true;
   @Output() openSeance = new EventEmitter<number>();
   @Output() createSeance = new EventEmitter<boolean>();
 
@@ -34,23 +43,22 @@ export class SeanceListComponent {
   }
 
   exportExcel(): void {
-    const rows = this.vm.list ?? [];
+    // Exporter exactement les lignes visibles dans la liste, avec les filtres actifs.
+    const rows = this.getFilteredSeances();
     const columns: ExcelColumn<Seance_VM>[] = [
       { header: $localize`:@@common.id:ID`, value: s => s.id },
-      { header: $localize`:@@session.name:Séance`, value: s => s.nom },
+      { header: $localize`:@@session.name:Séance`, value: s => s.nom ?? '' },
       { header: $localize`:@@course.name:Cours`, value: s => s.cours_nom ?? '' },
-      { header: $localize`:@@session.type:Type`, value: s => this.getTypeLabel(s) },
+      { header: $localize`:@@session.type:Type`, value: s => this.seanceTypes.find(t => t.value === s.type_seance)?.label ?? s.type_seance ?? '' },
       { header: $localize`:@@session.date:Date`, value: s => this.dateOnly(s.date_seance) },
       { header: $localize`:@@session.start:Heure début`, value: s => s.heure_debut },
-      { header: $localize`:@@session.end:Heure fin`, value: s => s.heure_fin },
+      { header: $localize`:@@session.end:Heure fin`, value: s => s.heure_fin || this.calculerHeureFin(s.heure_debut, s.duree_seance) },
       { header: $localize`:@@course.duration:Durée`, value: s => s.duree_seance },
       { header: $localize`:@@place.name:Lieu`, value: s => s.lieu_nom ?? '' },
       { header: $localize`:@@group.list:Groupes`, value: s => (s.groupes ?? []).map(g => g.nom).join(', ') },
       {
         header: $localize`:@@teacher.list:Professeurs`,
-        value: s => (s.seanceProfesseurs ?? [])
-          .map(p => `${p.prenom ?? ''} ${p.nom ?? ''}`.trim())
-          .join(', '),
+        value: s => this.getProfesseursLabel(s),
       },
       { header: $localize`:@@session.status:Statut`, value: s => this.getStatusLabel(s.statut) },
       { header: $localize`:@@member.minAge:Âge minimum`, value: s => s.age_minimum },
@@ -112,6 +120,7 @@ export class SeanceListComponent {
       (!this.vm.filter.filter_date_avant || new Date(seance.date_seance) <= new Date(this.vm.filter.filter_date_avant)) &&
       (!this.vm.filter.filter_date_apres || new Date(seance.date_seance) >= new Date(this.vm.filter.filter_date_apres)) &&
       (!this.vm.filter.filter_statut || seance.statut === this.vm.filter.filter_statut) &&
+      (!this.vm.filter.filter_type || seance.type_seance === this.vm.filter.filter_type) &&
       (!this.vm.filter.filter_groupe || (seance.groupes ?? []).some((x: any) =>
         (x.nom ?? '').toLowerCase().includes(this.vm.filter.filter_groupe!.toLowerCase()))) &&
       (!this.vm.filter.filter_prof || (seance.seanceProfesseurs ?? []).some((x: any) =>

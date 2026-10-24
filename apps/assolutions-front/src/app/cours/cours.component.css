@@ -22,3 +22,7 @@
   .cours-hero-actions .button .icon{margin:0!important;}
   .cours-hero-actions .button .icon + span,.cours-hero-actions .button > span:not(.icon){display:none;}
 }
+
+@media (max-width:767px) {
+ .cours-shell {height:calc(100dvh - var(--mobile-footer-h,64px) - 52px - var(--safe-bottom,0px)) !important;}
+}

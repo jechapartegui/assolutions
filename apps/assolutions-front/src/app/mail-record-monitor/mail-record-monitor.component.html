@@ -1,17 +1,17 @@
 <div class="mail-monitor-page">
   <header class="monitor-hero">
     <div class="hero-title">
-      <a class="back-button" routerLink="/menu-admin" title="Retour au centre de pilotage">
+      <a class="back-button" routerLink="/menu-admin" title="Retour au centre de pilotage" i18n-title>
         <i class="fa-solid fa-arrow-left"></i>
       </a>
       <div>
-        <p class="eyebrow">Communication</p>
-        <h1>Suivi des mails</h1>
-        <p class="subtitle">Consulte les envois enregistrés par Assolutions et repère rapidement les échecs.</p>
+        <p class="eyebrow" i18n>Communication</p>
+        <h1 i18n>Suivi des mails</h1>
+        <p class="subtitle" i18n>Consulte les envois enregistrés par Assolutions et repère rapidement les échecs.</p>
       </div>
     </div>
 
-    <button type="button" class="button is-light" [class.is-loading]="loading" (click)="reload()">
+    <button type="button" class="button is-light" [class.is-loading]="loading" (click)="reload()" i18n>
       <i class="fa-solid fa-rotate mr-2"></i>Actualiser
     </button>
   </header>
@@ -19,43 +19,43 @@
   <section class="summary-grid">
     <article class="summary-card">
       <span class="summary-icon"><i class="fa-solid fa-envelope"></i></span>
-      <div><strong>{{ records.length }}</strong><span>traces</span></div>
+      <div><strong>{{ records.length }}</strong><span i18n>traces</span></div>
     </article>
     <article class="summary-card success">
       <span class="summary-icon"><i class="fa-solid fa-circle-check"></i></span>
-      <div><strong>{{ sentCount }}</strong><span>envoyés</span></div>
+      <div><strong>{{ sentCount }}</strong><span i18n>envoyés</span></div>
     </article>
     <article class="summary-card danger">
       <span class="summary-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-      <div><strong>{{ failedCount }}</strong><span>échecs</span></div>
+      <div><strong>{{ failedCount }}</strong><span i18n>échecs</span></div>
     </article>
   </section>
 
   <section class="filter-panel">
     <div class="field search-field">
-      <label class="label is-size-7">Recherche</label>
+      <label class="label is-size-7" i18n>Recherche</label>
       <div class="control has-icons-left">
-        <input class="input" [(ngModel)]="search" placeholder="Destinataire, sujet, type ou erreur…" />
+        <input class="input" [(ngModel)]="search" placeholder="Destinataire, sujet, type ou erreur…"  i18n-placeholder/>
         <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
       </div>
     </div>
 
     <div class="field">
-      <label class="label is-size-7">Statut</label>
+      <label class="label is-size-7" i18n>Statut</label>
       <div class="select is-fullwidth">
         <select [(ngModel)]="statusFilter">
-          <option value="ALL">Tous</option>
-          <option value="SENT">Envoyés</option>
-          <option value="FAILED">Échecs</option>
+          <option value="ALL" i18n>Tous</option>
+          <option value="SENT" i18n>Envoyés</option>
+          <option value="FAILED" i18n>Échecs</option>
         </select>
       </div>
     </div>
 
     <div class="field">
-      <label class="label is-size-7">Type</label>
+      <label class="label is-size-7" i18n>Type</label>
       <div class="select is-fullwidth">
         <select [(ngModel)]="typeFilter">
-          <option value="ALL">Tous les types</option>
+          <option value="ALL" i18n>Tous les types</option>
           <option *ngFor="let type of recordTypes" [value]="type">{{ type }}</option>
         </select>
       </div>
@@ -65,14 +65,14 @@
   <div class="notification is-danger is-light" *ngIf="error">{{ error }}</div>
 
   <section class="records-panel">
-    <div class="loading-state" *ngIf="loading">
+    <div class="loading-state" *ngIf="loading" i18n>
       <span class="loader-dot"></span> Chargement des traces…
     </div>
 
     <div class="empty-state" *ngIf="!loading && filteredRecords.length === 0">
       <i class="fa-regular fa-envelope-open"></i>
-      <strong>Aucun mail ne correspond aux filtres.</strong>
-      <span>Les nouvelles traces apparaîtront ici après les envois.</span>
+      <strong i18n>Aucun mail ne correspond aux filtres.</strong>
+      <span i18n>Les nouvelles traces apparaîtront ici après les envois.</span>
     </div>
 
     <div class="record-list" *ngIf="!loading && filteredRecords.length > 0">

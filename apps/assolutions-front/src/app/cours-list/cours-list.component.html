@@ -6,6 +6,10 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap cours-card-actions">
+      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées" i18n i18n-title>
+        <input type="checkbox" [(ngModel)]="compactMobile" />
+        Liste simple
+      </label>
       <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel"><span class="icon"><i class="fas fa-sliders"></i></span><span i18n>Filtres</span></button>
       <button class="button is-success is-light mobile-optional-action" type="button" (click)="exportExcel()"><span class="icon"><i class="fas fa-file-excel"></i></span><span i18n>Excel</span></button>
       <button class="button is-primary is-light" type="button" (click)="createCours.emit()"><span class="icon"><i class="fas fa-plus"></i></span><span i18n>Créer</span></button>
@@ -43,7 +47,21 @@
         </table>
       </div>
 
-      <div class="cours-mobile-list is-hidden-desktop">
+      <div class="exg-mobile-quick-list is-hidden-desktop" *ngIf="compactMobile">
+        <div class="exg-mobile-quick-row" *ngFor="let cours of getFilteredCours()">
+          <label *ngIf="isAdmin && vm.multiSelectMode" class="checkbox exg-mobile-quick-check">
+            <input type="checkbox" [checked]="isSelected(cours.id)" (change)="toggleSelection(cours.id)" />
+          </label>
+          <button type="button" class="exg-mobile-quick-name" (click)="open(cours)">
+            {{ cours.nom || 'Cours sans nom' }}
+          </button>
+          <span class="exg-mobile-quick-meta">{{ getJourLabel(cours.jour_semaine) }}</span>
+          <button type="button" class="exg-mobile-quick-open" (click)="open(cours)" aria-label="Ouvrir" title="Ouvrir" i18n-aria-label i18n-title>
+            <i class="fas fa-pen"></i>
+          </button>
+        </div>
+      </div>
+      <div class="cours-mobile-list is-hidden-desktop" *ngIf="!compactMobile">
         <article class="cours-tile" *ngFor="let cours of getFilteredCours()">
           <div class="cours-tile-top">
             <div class="cours-tile-main">

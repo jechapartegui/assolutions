@@ -10,6 +10,7 @@ export interface Seance {
   project_id: number;
 
   saison_id: number;
+  calendrier_id?: number | null;
 
   cours?: number | null;
   label?: string | null;
@@ -66,6 +67,7 @@ export interface AdherentSeance_VM {
 
 export class Seance_VM extends corelistobject {
   saison_id: number = 0;
+  calendrier_id: number | null = null;
   cours: number = 0;
   type_seance: 'ENTRAINEMENT' | 'MATCH' | 'SORTIE' | 'EVENEMENT';
   date_seance: Date = new Date();
@@ -148,6 +150,7 @@ export function mapSeanceToVM(
   vm.nom = (s.label ?? '').toString();
 
   vm.saison_id = s.saison_id ?? 0;
+  vm.calendrier_id = s.calendrier_id ?? null;
   vm.cours = s.cours ?? 0;
 
   vm.type_seance = s.type_seance as any;
