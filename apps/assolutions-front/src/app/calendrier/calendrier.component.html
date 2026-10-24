@@ -1,0 +1,273 @@
+<div class="container is-fluid py-3 exg-compact">
+  <section class="box">
+    <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap mb-3" style="gap:1rem">
+      <div>
+        <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Calendriers</h1>
+        <p class="subtitle is-6 calendar-intro-subtitle">Calendriers liés aux séances de la saison — Assolutions fait foi.</p>
+      </div>
+      <div class="buttons">
+        <a class="button is-light" routerLink="/seance" title="Retour aux séances" aria-label="Retour aux séances"><i class="fas fa-arrow-left"></i><span class="calendar-mobile-hide-label ml-2">Séances</span></a>
+        <button class="button is-info is-light" (click)="reload()" [disabled]="loading" title="Actualiser" aria-label="Actualiser"><i class="fas fa-arrows-rotate"></i><span class="calendar-mobile-hide-label ml-2">Actualiser</span></button>
+        <button *ngIf="isAdmin" class="button is-warning is-light"
+          (click)="verifierConnexionGoogle()" [disabled]="checkingGoogle">
+          {{ checkingGoogle ? 'Vérification…' : 'État de la connexion Google' }}
+        </button>
+        <button *ngIf="isAdmin" class="button is-primary" (click)="newCalendar()">Nouveau calendrier</button>
+      </div>
+    </div>
+    <div *ngIf="error" class="notification is-danger is-light">{{ error }}</div>
+    <div *ngIf="info" class="notification is-success is-light">{{ info }}</div>
+    <div *ngIf="loading" class="notification is-info is-light">Chargement…</div>
+    <div *ngIf="!isAdmin" class="notification is-warning is-light calendar-prof-help">Les professeurs peuvent modifier les calendriers existants. La création, l’archivage, le diagnostic et la synchronisation manuelle Google restent réservés aux administrateurs.</div>
+  </section>
+
+  <div class="columns is-variable is-4">
+    <div class="column is-12-tablet is-4-desktop">
+      <div class="box">
+        <h2 class="title is-6">Calendriers existants ({{ calendars.length }})</h2>
+        <p *ngIf="!calendars.length" class="has-text-grey">Aucun calendrier pour cette saison.</p>
+        <button *ngFor="let calendar of calendars"
+          class="button is-fullwidth mb-2 is-justify-content-space-between"
+          [class.is-link]="selectedId === calendar.id"
+          [class.is-light]="selectedId !== calendar.id"
+          (click)="edit(calendar.id)" style="height:auto;white-space:normal;text-align:left">
+          <span><strong>{{ calendar.nom }}</strong>
+            <small class="is-block">{{ calendar.nb_seances || 0 }} séance(s) · {{ groupNames(calendar) }}</small>
+            <small class="is-block">{{ calendar.statut_synchro }}<span *ngIf="!calendar.actif"> · Archivé</span></small>
+          </span>
+          <i class="fas fa-angle-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="column is-12-tablet is-8-desktop" *ngIf="isEditing && (isAdmin || selectedId)">
+      <div class="box">
+        <h2 class="title is-5">{{ selectedId ? 'Modifier le calendrier' : 'Nouveau calendrier' }}</h2>
+        <div class="columns">
+          <div class="column is-8">
+            <label class="label">Nom</label>
+            <input class="input" maxlength="255" [(ngModel)]="form.nom" placeholder="Ex. RollerSoccer — Adultes" [disabled]="!canEdit" />
+          </div>
+          <div class="column is-4">
+            <label class="label">Fuseau horaire</label>
+            <input class="input" [(ngModel)]="form.timezone" [disabled]="!canEdit" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Description</label>
+          <textarea class="textarea" rows="2" [(ngModel)]="form.description" [disabled]="!canEdit"></textarea>
+        </div>
+        <div class="field">
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="form.notifier_mises_a_jour" [disabled]="!isAdmin" />
+            Autoriser les notifications Google lors des synchronisations (confirmation obligatoire)
+          </label>
+        </div>
+        <div class="notification is-info is-light calendar-information-note">
+          <strong>Important :</strong> le calendrier est informatif. La liste des groupes de ce calendrier ne modifie pas la convocation à une séance.
+          Les réponses aux convocations se font dans Assolutions.
+        </div>
+      </div>
+
+      <div class="box">
+        <h3 class="title is-6 mb-3">Groupes destinataires ({{ form.groupe_ids.length }})</h3>
+        <div class="calendar-group-picker">
+          <div class="select is-small is-fullwidth">
+            <select [(ngModel)]="selectedGroupId" aria-label="Choisir un groupe à ajouter"
+                    [disabled]="!canEdit || !availableGroups.length">
+              <option [ngValue]="null">Choisir un groupe…</option>
+              <option *ngFor="let g of availableGroups" [ngValue]="g.id">{{ g.nom }}</option>
+            </select>
+          </div>
+          <button class="button is-primary is-small" type="button" (click)="addGroup()"
+                  [disabled]="!canEdit || !selectedGroupId">
+            <i class="fas fa-plus mr-1"></i>Ajouter
+          </button>
+        </div>
+        <div class="calendar-group-tags mt-3" *ngIf="selectedGroups.length">
+          <span class="tag is-info is-light calendar-group-tag" *ngFor="let g of selectedGroups">
+            <span>{{ g.nom }}</span>
+            <button *ngIf="canEdit" type="button" class="delete is-small"
+                    (click)="removeGroup(g.id)" [attr.aria-label]="'Retirer le groupe ' + g.nom"
+                    [title]="'Retirer ' + g.nom"></button>
+          </span>
+        </div>
+        <p *ngIf="!selectedGroups.length" class="help mt-2">Aucun groupe ajouté.</p>
+        <p class="help mt-2">Un seul destinataire Google par compte, même si plusieurs personnes appartiennent aux groupes sélectionnés.</p>
+      </div>
+
+      <div class="box">
+        <h3 class="title is-6 mb-2">Séances sélectionnées ({{ selectedCount }})</h3>
+        <p class="help mb-3 calendar-selection-help">Les séances sélectionnées restent visibles ici, même passées ou annulées, pour permettre leur retrait.</p>
+        <div class="calendar-sessions-table calendar-selected-table" *ngIf="selectedSessions.length">
+          <table class="table is-fullwidth is-striped is-hoverable">
+            <thead><tr><th>Date / heure</th><th>Type</th><th>Groupe</th><th>Nom</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of selectedSessions">
+                <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
+                <td>{{ typeLabel(s.type_seance) }}</td>
+                <td>{{ s.noms_groupes || '—' }}</td>
+                <td>{{ s.label || '—' }}</td>
+                <td class="is-nowrap">
+                  <button class="button is-small is-danger is-light" type="button"
+                          (click)="sessionToggle(s.seance_id)" [disabled]="!canEdit"
+                          [attr.aria-label]="'Retirer la séance ' + (s.label || s.seance_id)">
+                    <i class="fas fa-xmark mr-1"></i>Retirer
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p *ngIf="!selectedSessions.length" class="has-text-grey is-size-7 mb-4">Aucune séance sélectionnée.</p>
+
+        <hr class="my-4" />
+        <div class="is-flex is-align-items-center is-justify-content-space-between is-flex-wrap-wrap mb-3" style="gap:.5rem">
+          <h3 class="title is-6 mb-0">Séances disponibles ({{ availableSessions.length }})</h3>
+          <button type="button" class="button is-small is-light" (click)="resetSessionFilters()"
+                  [disabled]="!sessionDateFilter && !sessionNameFilter && !sessionTypeFilter">
+            Effacer les filtres
+          </button>
+        </div>
+        <div class="calendar-visibility-filters mb-3">
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="hidePastSessions" />
+            Masquer les séances passées</label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="hideCancelledSessions" />
+            Masquer les séances annulées</label>
+        </div>
+        <div class="calendar-filter-grid mb-3">
+          <div class="field mb-0">
+            <label class="label is-small" for="calendrier-filtre-date">Date</label>
+            <input id="calendrier-filtre-date" type="date" class="input is-small" [(ngModel)]="sessionDateFilter" />
+          </div>
+          <div class="field mb-0">
+            <label class="label is-small" for="calendrier-filtre-nom">Nom</label>
+            <input id="calendrier-filtre-nom" type="search" class="input is-small"
+                   [(ngModel)]="sessionNameFilter" placeholder="Rechercher par nom" />
+          </div>
+          <div class="field mb-0">
+            <label class="label is-small" for="calendrier-filtre-type">Type</label>
+            <div class="select is-small is-fullwidth">
+              <select id="calendrier-filtre-type" [(ngModel)]="sessionTypeFilter">
+                <option value="">Tous les types</option>
+                <option *ngFor="let type of sessionTypes" [value]="type">{{ typeLabel(type) }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="calendar-sessions-table">
+          <table class="table is-fullwidth is-striped is-hoverable">
+            <thead><tr><th>Ajouter</th><th>Date / heure</th><th>Type</th><th>Groupe</th><th>Nom</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of availableSessions">
+                <td>
+                  <input type="checkbox" [checked]="false" (change)="sessionToggle(s.seance_id)"
+                         [disabled]="!canEdit" [attr.aria-label]="'Ajouter la séance ' + (s.label || s.seance_id)" />
+                </td>
+                <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
+                <td>{{ typeLabel(s.type_seance) }}</td>
+                <td>{{ s.noms_groupes || '—' }}</td>
+                <td>{{ s.label || '—' }}</td>
+                <td><button class="button is-small is-light" type="button" (click)="openSession(s.seance_id)">Ouvrir</button></td>
+              </tr>
+              <tr *ngIf="!availableSessions.length">
+                <td colspan="6" class="has-text-grey">Aucune séance disponible pour ces filtres. Les séances déjà sélectionnées figurent au-dessus.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="buttons is-flex-wrap-wrap">
+          <button *ngIf="canEdit" class="button is-success" (click)="save()" [disabled]="saving || !form.nom.trim()">
+            <i class="fas fa-floppy-disk mr-2"></i>{{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+          <button *ngIf="isAdmin && selectedId" class="button is-link is-light" (click)="synchroniser()" [disabled]="syncing || saving">
+            <i class="fas fa-arrows-rotate mr-2"></i>{{ syncing ? 'Synchronisation…' : 'Synchroniser Google' }}
+          </button>
+          <a *ngIf="current?.google_calendar_url" class="button is-info is-light"
+             [href]="current?.google_calendar_url" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-arrow-up-right-from-square mr-2"></i>Ouvrir dans Google
+          </a>
+          <button *ngIf="isAdmin && selectedId && current?.actif" class="button is-danger is-light" (click)="archive()">Archiver</button>
+          <button *ngIf="isAdmin && selectedId" class="button is-light" (click)="showResponses()">Aperçu réponses Google</button>
+          <button *ngIf="isAdmin && selectedId" class="button is-info is-light"
+                  (click)="verifierWorker()" [disabled]="checkingWorker">
+            <i class="fas fa-stethoscope mr-2"></i>{{ checkingWorker ? 'Vérification…' : 'État auto-sync' }}
+          </button>
+        </div>
+        <p class="help">La sauvegarde Assolutions ne synchronise pas automatiquement Google depuis cet écran : une confirmation explicite est demandée.</p>
+        <div *ngIf="workerEtat" class="notification is-info is-light mt-3">
+          <strong>État de la synchronisation automatique (lecture seule)</strong>
+          <p class="mt-2">
+            Google : <strong>{{ workerEtat.google_configure ? 'activé' : 'désactivé' }}</strong>
+            · AUTO_SYNC : <strong>{{ workerEtat.auto_sync_configure ? 'activé' : 'désactivé' }}</strong>
+            · Worker démarré : <strong>{{ workerEtat.worker_demarre ? 'oui' : 'non' }}</strong>
+          </p>
+          <p>Agenda Google existant : {{ workerEtat.calendrier_google_existant ? 'oui' : 'non' }}
+            · Événements en attente : <strong>{{ workerEtat.evenements_pending ?? 0 }}</strong>
+          </p>
+          <p>Dernier passage : <strong>{{ workerEtat.dernier_passage ? (workerEtat.dernier_passage | date:'dd/MM/yyyy HH:mm:ss') : 'aucun depuis le démarrage' }}</strong>
+            · Résultat : <strong>{{ workerEtat.dernier_resultat || 'inconnu' }}</strong>
+            · Calendriers trouvés au dernier passage : {{ workerEtat.derniers_calendriers_trouves ?? 0 }}
+          </p>
+          <p *ngIf="!workerEtat.worker_demarre" class="help is-danger">
+            Le worker ne tourne pas dans ce processus backend : vérifier la configuration de l'environnement backend et le redémarrer.
+          </p>
+          <p class="help">Ce bouton vérifie seulement l'état : il n'envoie aucun mail et ne synchronise rien.</p>
+        </div>
+        <p *ngIf="current?.derniere_erreur" class="help is-danger">{{ current?.derniere_erreur }}</p>
+        <div *ngIf="previewData" class="notification is-warning is-light mt-3">
+          <strong>Prévisualisation :</strong> {{ previewData.nb_seances }} séance(s), {{ previewData.nb_comptes }} compte(s).
+          <span *ngIf="previewData.nb_evenements_a_supprimer" class="is-block has-text-danger has-text-weight-semibold">
+            {{ previewData.nb_evenements_a_supprimer }} événement(s) à supprimer du calendrier Google.
+          </span>
+          <span class="is-block">{{ previewData.avertissement }}</span>
+        </div>
+        <div *ngIf="syncResult" class="notification is-info is-light mt-3">
+          Google : {{ syncResult.succes }} réussite(s), {{ syncResult.erreurs }} échec(s), {{ syncResult.restants }} en attente.
+          <span class="is-block">{{ syncResult.avertissement }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="showRsvps" class="box">
+        <h3 class="title is-6">Aperçu des RSVP Google — aucune modification automatique</h3>
+        <div class="calendar-sessions-table">
+          <table class="table is-fullwidth is-striped">
+            <thead><tr><th>Séance</th><th>Courriel Google</th><th>Réponse</th><th>Personnes candidates</th><th>Import possible</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of rsvps">
+                <td>{{ row.seance_id }}</td>
+                <td>{{ row.google_email }}</td>
+                <td class="is-nowrap">{{ statutReponseGoogle(row.google_reponse) }}</td>
+                <td>
+                  <div class="select is-small" *ngIf="row.peut_importer">
+                    <select [(ngModel)]="row.personne_choisie" aria-label="Choisir la personne à associer à cette réponse Google">
+                      <option [ngValue]="null">Ne pas importer</option>
+                      <option *ngFor="let p of row.personnes_details" [ngValue]="p.id">
+                        {{ p.nom }}{{ p.origine === 'groupe_seance' ? ' (groupe de séance)' : '' }}
+                      </option>
+                    </select>
+                  </div>
+                  <ng-container *ngIf="!row.peut_importer">
+                    <span *ngFor="let p of row.personnes_details; let dernier = last">
+                      {{ p.nom }}<span *ngIf="p.origine === 'groupe_seance'" class="has-text-grey"> (groupe de séance)</span>{{ dernier ? '' : ', ' }}
+                    </span>
+                    <span *ngIf="!row.personnes_details?.length" class="has-text-grey">Aucune personne associée</span>
+                  </ng-container>
+                </td>
+                <td>{{ statutImportGoogle(row) }}</td>
+              </tr>
+              <tr *ngIf="!rsvps.length"><td colspan="5">Aucune réponse récupérée.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button *ngIf="isAdmin" class="button is-warning mt-3" (click)="importerReponses()">
+          Appliquer les réponses sélectionnées sur Assolutions
+        </button>
+        <p class="help">Les réponses Google sont vérifiées à nouveau côté serveur. Les membres des groupes liés à une séance non nominative sont proposés comme candidats ; seul un import explicitement confirmé peut créer leur inscription à cette séance. Un groupe destinataire du calendrier ne vaut jamais convocation. La présence constatée n'est jamais modifiée.</p>
+      </div>
+    </div>
+  </div>
+</div>

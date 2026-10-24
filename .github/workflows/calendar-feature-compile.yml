@@ -1,0 +1,27 @@
+name: Calendar feature isolated compile
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  feature-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: npm
+      - run: npm ci
+      - name: Build backend independently from audit job
+        run: npm run build:back
+      - name: Build frontend preprod
+        run: npm run build:front:preprod
+      - name: Build frontend production
+        run: npm run build:front:prod

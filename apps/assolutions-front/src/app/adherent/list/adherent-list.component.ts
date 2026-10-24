@@ -14,6 +14,8 @@ import { AdherentListItem_VM, AdherentPageVm } from 'apps/assolutions-front/src/
 export class AdherentListComponent {
   @Input({ required: true }) vm!: AdherentPageVm;
   @Input() isAdmin = false;
+  /** EXG-35 : choix mobile, liste simple par défaut. */
+  compactMobile = true;
   @Output() openAdherent = new EventEmitter<number>();
   @Output() createAdherent = new EventEmitter<void>();
 

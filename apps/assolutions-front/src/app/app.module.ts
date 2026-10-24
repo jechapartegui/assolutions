@@ -11,6 +11,8 @@ import { MenuComponent } from './menu/menu.component';
 import { AdherentComponent } from './adherent/main/adherent.component';
 import { CoursComponent } from './cours/cours.component';
 import { SeanceComponent } from './seance/seance.component';
+import { CalendrierComponent } from './calendrier/calendrier.component';
+import { MesCalendriersComponent } from './mes-calendriers/mes-calendriers.component';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import { CustomButtonComponent } from './custom-button/custom-button.component';
 import { MultifiltersMenuPipe } from '../filters/multifilters-menu.pipe';
@@ -90,6 +92,8 @@ import { CoursStore } from '../store/cours.store';
     MultifiltersMenuPipe,
     CustomButtonComponent,
     SeanceComponent,
+    CalendrierComponent,
+    MesCalendriersComponent,
     SeanceEditorComponent,
     SeanceListComponent,
     LieuComponent,

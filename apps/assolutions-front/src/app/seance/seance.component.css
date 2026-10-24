@@ -22,3 +22,8 @@
   .seance-hero-actions .button .icon{margin:0!important;}
   .seance-hero-actions .button .icon + span,.seance-hero-actions .button > span:not(.icon){display:none;}
 }
+
+/* EXG-34 : éviter que les contrôles de liste passent derrière la barre mobile. */
+@media (max-width:767px) {
+ .seance-shell {height:calc(100dvh - var(--mobile-footer-h,64px) - 52px - var(--safe-bottom,0px)) !important;}
+}

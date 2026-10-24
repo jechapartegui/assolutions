@@ -28,6 +28,7 @@
                 <div class="navbar-dropdown">
                   <a class="navbar-item" (click)="selectMenu('ADHERENT')" [routerLink]="['/adherent']" i18n>Adhérents</a>
                   <a class="navbar-item" (click)="selectMenu('SEANCE')" [routerLink]="['/seance']" i18n>Séances</a>
+                  <a class="navbar-item" [routerLink]="['/calendrier']">Calendriers Google</a>
                   <a class="navbar-item" (click)="selectMenu('COURS')" [routerLink]="['/cours']" i18n>Cours</a>
                   <a class="navbar-item" (click)="selectMenu('GROUPE')" [routerLink]="['/groupe']" i18n>Groupes</a>
                 </div>
@@ -87,6 +88,7 @@
           </div>
 
           <div class="navbar-end" *ngIf="store.isLoggedIn()">
+
             <div class="navbar-item account-navbar">
               <div class="account-pill" *ngIf="store.hasProjet()">
                 <span class="icon"><i class="fa-solid fa-diagram-project"></i></span>

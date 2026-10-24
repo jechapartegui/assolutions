@@ -319,3 +319,7 @@
     border-color: rgba(203, 213, 225, 0.18);
   }
 }
+
+@media (max-width:767px) {
+ .adherent-shell {height:calc(100dvh - var(--mobile-footer-h,64px) - 52px - var(--safe-bottom,0px)) !important;}
+}
