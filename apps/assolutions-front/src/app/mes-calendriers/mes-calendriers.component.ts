@@ -127,6 +127,34 @@ export class MesCalendriersComponent implements OnInit {
     }
   }
 
+  /**
+   * EXG-31 : partager le lien du calendrier Google, pas une URL privée Assolutions.
+   * Un agenda Google privé nécessite toujours une autorisation de consultation.
+   */
+  async partager(calendar: Calendrier) {
+    this.error = '';
+    this.info = '';
+    const url = String(calendar.google_calendar_url ?? '').trim();
+    if (!url || !/^https:\/\/calendar\.google\.com\//i.test(url)) {
+      this.error = 'Ce calendrier ne dispose pas encore d’un lien Google partageable.';
+      return;
+    }
+    const message = 'Voici le calendrier « ' + calendar.nom +
+      ' » : ' + url +
+      '\nSi l’agenda est privé, le club doit aussi autoriser ton compte Google à y accéder.';
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({ title: calendar.nom, text: message, url });
+        return;
+      }
+      await navigator.clipboard.writeText(message);
+      this.info = 'Lien du calendrier copié. Tu peux maintenant l’envoyer par message.';
+    } catch (e: any) {
+      if (e?.name === 'AbortError') return;
+      this.error = 'Impossible de partager automatiquement ce lien sur cet appareil.';
+    }
+  }
+
   ouvrirSeance(id: number) {
     void this.router.navigate(['/ma-seance'], { queryParams: { id } });
   }
