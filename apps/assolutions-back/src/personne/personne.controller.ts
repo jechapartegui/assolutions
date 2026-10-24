@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -191,9 +192,16 @@ export class PersonneController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdatePersonneDto,
   ) {
-    await this.access.assertPersonAccess(req.user.id, id, projectId);
-    if (dto.compte != null) {
-      await this.access.assertAccountAccess(req.user.id, dto.compte, projectId);
+    // EXG-FIX-07 : la fiche adhérent renvoie toujours compte, y compris
+    // lorsqu'il est inchangé. Ne pas exiger le rôle ADMIN pour une simple
+    // mise à jour par un professeur autorisé dans le projet.
+    const personne = await this.access.assertPersonAccess(req.user.id, id, projectId);
+    if (dto.compte != null && Number(dto.compte) !== Number(personne.compte)) {
+      // La réaffectation effective d'une personne à un autre compte reste
+      // exclusivement administrative et contrôlée dans le projet.
+      if (projectId == null) throw new ForbiddenException('PROJECT_ID_REQUIRED');
+      await this.access.assertProjectAdmin(req.user.id, projectId);
+      await this.access.assertAccountAccess(req.user.id, Number(dto.compte), projectId);
     }
     return this.service.update(id, dto);
   }
