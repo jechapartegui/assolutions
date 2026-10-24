@@ -3,11 +3,11 @@
     <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap mb-3" style="gap:1rem">
       <div>
         <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Calendriers</h1>
-        <p class="subtitle is-6">Calendriers liés aux séances de la saison — Assolutions fait foi.</p>
+        <p class="subtitle is-6 calendar-intro-subtitle">Calendriers liés aux séances de la saison — Assolutions fait foi.</p>
       </div>
       <div class="buttons">
-        <a class="button is-light" routerLink="/seance"><i class="fas fa-arrow-left mr-2"></i>Séances</a>
-        <button class="button is-info is-light" (click)="reload()" [disabled]="loading">Actualiser</button>
+        <a class="button is-light" routerLink="/seance" title="Retour aux séances" aria-label="Retour aux séances"><i class="fas fa-arrow-left"></i><span class="calendar-mobile-hide-label ml-2">Séances</span></a>
+        <button class="button is-info is-light" (click)="reload()" [disabled]="loading" title="Actualiser" aria-label="Actualiser"><i class="fas fa-arrows-rotate"></i><span class="calendar-mobile-hide-label ml-2">Actualiser</span></button>
         <button *ngIf="isAdmin" class="button is-warning is-light"
           (click)="verifierConnexionGoogle()" [disabled]="checkingGoogle">
           {{ checkingGoogle ? 'Vérification…' : 'Tester connexion Google' }}
@@ -18,7 +18,7 @@
     <div *ngIf="error" class="notification is-danger is-light">{{ error }}</div>
     <div *ngIf="info" class="notification is-success is-light">{{ info }}</div>
     <div *ngIf="loading" class="notification is-info is-light">Chargement…</div>
-    <div *ngIf="!isAdmin" class="notification is-warning is-light">Les professeurs peuvent modifier les calendriers existants. La création, l’archivage, le diagnostic et la synchronisation manuelle Google restent réservés aux administrateurs.</div>
+    <div *ngIf="!isAdmin" class="notification is-warning is-light calendar-prof-help">Les professeurs peuvent modifier les calendriers existants. La création, l’archivage, le diagnostic et la synchronisation manuelle Google restent réservés aux administrateurs.</div>
   </section>
 
   <div class="columns is-variable is-4">
@@ -63,7 +63,7 @@
             Autoriser les notifications Google lors des synchronisations (confirmation obligatoire)
           </label>
         </div>
-        <div class="notification is-info is-light">
+        <div class="notification is-info is-light calendar-information-note">
           <strong>Important :</strong> le calendrier est informatif. La liste des groupes de ce calendrier ne modifie pas la convocation à une séance.
           Les réponses aux convocations se font dans Assolutions.
         </div>
@@ -98,7 +98,7 @@
 
       <div class="box">
         <h3 class="title is-6 mb-2">Séances sélectionnées ({{ selectedCount }})</h3>
-        <p class="help mb-3">Les séances sélectionnées restent visibles ici, même passées ou annulées, pour permettre leur retrait.</p>
+        <p class="help mb-3 calendar-selection-help">Les séances sélectionnées restent visibles ici, même passées ou annulées, pour permettre leur retrait.</p>
         <div class="calendar-sessions-table calendar-selected-table" *ngIf="selectedSessions.length">
           <table class="table is-fullwidth is-striped is-hoverable">
             <thead><tr><th>Date / heure</th><th>Type</th><th>Groupe</th><th>Nom</th><th>Action</th></tr></thead>
