@@ -1187,6 +1187,7 @@
     padding-bottom: .4rem !important;
   }
   .menu-hero-title .subtitle,
+  .menu-card-subtitle,
   .contact-panel-head .subtitle {display:none !important;}
   .menu-content {min-height:0; overflow:hidden;}
   .menu-main-card {min-height:0;}
