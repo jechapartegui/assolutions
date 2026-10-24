@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StaticClass } from './global';
 import { NotifJechaComponent } from './custom-notification/custom-notification.component';
 import { environment } from '../environments/environment.prod';
@@ -7,7 +7,6 @@ import { NavigationEnd, Router } from '@angular/router';
 import { AppStore } from './app.store';
 import { distinctUntilChanged, filter, map, startWith, Subscription } from 'rxjs';
 import { MenuType } from '../store/session.store';
-import { CalendrierApiService } from '../services/calendrier-api.service';
 
 type HelpAudience = 'USER' | 'PROF' | 'ADMIN';
 
@@ -40,8 +39,6 @@ export class AppComponent implements OnInit, OnDestroy {
   envt = environment;
   isPublic = false;
   defaultProjectLabel = $localize`Projet`;
-  showMesCalendriers = false;
-  private calendarVisibilityRequest = 0;
 
   get registrationsOpen(): boolean {
     return this.store.saison_active()?.inscriptions_ouvertes === true;
@@ -181,29 +178,9 @@ export class AppComponent implements OnInit, OnDestroy {
     public globals: StaticClass,
     public router: Router,
     public store: AppStore,
-    private readonly calendrierApi: CalendrierApiService,
   ) {
     this.g = globals;
     erroservice.changeEmitted$.subscribe((data) => this.DisplayError(data));
-    // EXG-30 : réagir au login/changement de projet, jamais afficher par défaut.
-    effect(() => {
-      const logged = this.store.isLoggedIn();
-      const projectId = this.store.selectedProjectId();
-      const request = ++this.calendarVisibilityRequest;
-      this.showMesCalendriers = false;
-      if (logged && projectId) void this.fetchMesCalendriers(request);
-    });
-  }
-
-  private async fetchMesCalendriers(request: number): Promise<void> {
-    try {
-      const response = await this.calendrierApi.mesExiste();
-      if (request === this.calendarVisibilityRequest) {
-        this.showMesCalendriers = response.existe === true;
-      }
-    } catch {
-      if (request === this.calendarVisibilityRequest) this.showMesCalendriers = false;
-    }
   }
 
   get visibleHelpTopics(): HelpTopic[] {
@@ -230,11 +207,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.isPublic = this.isPublicUrl(url);
         this.adminPageMeta = this.resolveAdminPageMeta(url);
         this.helpOpen = false;
-        // Un nouveau calendrier ou rattachement de groupe peut apparaître
-        // sans changement de projet : actualiser après navigation également.
-        if (this.store.isLoggedIn() && this.store.selectedProjectId()) {
-          void this.fetchMesCalendriers(++this.calendarVisibilityRequest);
-        }
       });
   }
 
