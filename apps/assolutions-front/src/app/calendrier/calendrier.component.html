@@ -232,41 +232,76 @@
       </div>
 
       <div *ngIf="showRsvps" class="box">
-        <h3 class="title is-6" i18n>Aperçu des RSVP Google — aucune modification automatique</h3>
-        <div class="calendar-sessions-table">
-          <table class="table is-fullwidth is-striped">
-            <thead><tr><th i18n>Séance</th><th i18n>Courriel Google</th><th i18n>Réponse</th><th i18n>Personnes candidates</th><th i18n>Import possible</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let row of rsvps">
-                <td>{{ row.seance_id }}</td>
-                <td>{{ row.google_email }}</td>
-                <td class="is-nowrap">{{ statutReponseGoogle(row.google_reponse) }}</td>
-                <td>
-                  <div class="select is-small" *ngIf="row.peut_importer">
-                    <select [(ngModel)]="row.personne_choisie" aria-label="Choisir la personne à associer à cette réponse Google" i18n-aria-label>
-                      <option [ngValue]="null" i18n>Ne pas importer</option>
-                      <option *ngFor="let p of row.personnes_details" [ngValue]="p.id">
-                        {{ p.nom }}{{ p.origine === 'groupe_seance' ? ' (groupe de séance)' : '' }}
-                      </option>
-                    </select>
-                  </div>
-                  <ng-container *ngIf="!row.peut_importer">
-                    <span *ngFor="let p of row.personnes_details; let dernier = last">
-                      {{ p.nom }}<span *ngIf="p.origine === 'groupe_seance'" class="has-text-grey" i18n> (groupe de séance)</span>{{ dernier ? '' : ', ' }}
-                    </span>
-                    <span *ngIf="!row.personnes_details?.length" class="has-text-grey" i18n>Aucune personne associée</span>
-                  </ng-container>
-                </td>
-                <td>{{ statutImportGoogle(row) }}</td>
-              </tr>
-              <tr *ngIf="!rsvps.length"><td colspan="5" i18n>Aucune réponse récupérée.</td></tr>
-            </tbody>
-          </table>
+        <h3 class="title is-6 mb-2" i18n>Réponses Google — import manuel</h3>
+        <p class="help mb-3" i18n>Les réponses dans Google ne modifient pas automatiquement Assolutions.</p>
+        <div class="tags mb-3">
+          <span class="tag is-light" i18n>{{ rsvps.length }} invité(s)</span>
+          <span class="tag is-warning is-light" i18n>{{ rsvpActionsCount }} réponse(s) à traiter</span>
+          <span class="tag is-success is-light" i18n>{{ rsvpSyncedCount }} déjà à jour</span>
         </div>
-        <button *ngIf="isAdmin" class="button is-warning mt-3" (click)="importerReponses()" i18n>
-          Appliquer les réponses sélectionnées sur Assolutions
+        <div class="buttons has-addons mb-3">
+          <button type="button" class="button is-small" [class.is-link]="rsvpFilter === 'actions'"
+                  (click)="rsvpFilter = 'actions'" i18n>À traiter</button>
+          <button type="button" class="button is-small" [class.is-link]="rsvpFilter === 'all'"
+                  (click)="rsvpFilter = 'all'" i18n>Toutes</button>
+          <button type="button" class="button is-small" [class.is-link]="rsvpFilter === 'synced'"
+                  (click)="rsvpFilter = 'synced'" i18n>Déjà à jour</button>
+        </div>
+        <p *ngIf="!rsvpGroups.length" class="notification is-info is-light" i18n>
+          Aucune réponse dans ce filtre.
+        </p>
+        <section *ngFor="let group of rsvpGroups" class="mb-4">
+          <h4 class="title is-6 mb-2">
+            <span i18n>Séance</span> #{{ group.id }}
+            <span *ngIf="group.actions" class="tag is-warning is-light ml-2" i18n>
+              {{ group.actions }} action(s) manuelle(s)
+            </span>
+            <button type="button" class="button is-small is-light ml-2"
+                    (click)="openSession(group.id)" i18n>Ouvrir</button>
+          </h4>
+          <div class="calendar-sessions-table">
+            <table class="table is-fullwidth is-striped is-hoverable">
+              <thead><tr><th i18n>Courriel Google</th><th i18n>Réponse Google</th>
+                <th i18n>Rapprochement Assolutions</th><th i18n>État</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let row of group.rows">
+                  <td>{{ row.google_email }}</td>
+                  <td class="is-nowrap">{{ statutReponseGoogle(row.google_reponse) }}</td>
+                  <td>
+                    <div class="select is-small" *ngIf="actionRequise(row)">
+                      <select [(ngModel)]="row.personne_choisie"
+                              aria-label="Choisir la personne à associer à cette réponse Google" i18n-aria-label>
+                        <option [ngValue]="null" i18n>Choisir une personne…</option>
+                        <option *ngFor="let p of candidatsAImporter(row)" [ngValue]="p.id">
+                          {{ p.nom }}{{ p.origine === 'groupe_seance' ? ' (groupe de séance)' : '' }}
+                        </option>
+                      </select>
+                    </div>
+                    <ng-container *ngIf="!actionRequise(row)">
+                      <span *ngFor="let p of row.personnes_details; let dernier = last">
+                        {{ p.nom }}{{ dernier ? '' : ', ' }}
+                      </span>
+                      <span *ngIf="!row.personnes_details?.length" class="has-text-grey" i18n>Aucune personne associée</span>
+                    </ng-container>
+                  </td>
+                  <td>
+                    <span *ngIf="dejaAJour(row)" class="tag is-success is-light" i18n>Déjà à jour</span>
+                    <span *ngIf="!dejaAJour(row)" class="is-size-7">{{ statutImportGoogle(row) }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <button *ngIf="isAdmin && rsvpSelectedCount" class="button is-warning mt-2"
+                [disabled]="importingRsvps" (click)="importerReponses()" i18n>
+          Appliquer {{ rsvpSelectedCount }} réponse(s) sélectionnée(s) sur Assolutions
         </button>
-        <p class="help" i18n>Les réponses Google sont vérifiées à nouveau côté serveur. Les membres des groupes liés à une séance non nominative sont proposés comme candidats ; seul un import explicitement confirmé peut créer leur inscription à cette séance. Un groupe destinataire du calendrier ne vaut jamais convocation. La présence constatée n'est jamais modifiée.</p>
+        <p class="help mt-3" i18n>
+          Les réponses sont revérifiées côté Google lors de l'import. Une personne issue d'un
+          groupe de séance peut être inscrite après confirmation explicite. La présence réellement
+          constatée et les réponses Google ne sont jamais modifiées par cet import.
+        </p>
       </div>
     </div>
   </div>
