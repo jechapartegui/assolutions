@@ -3,13 +3,13 @@
     <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap" style="gap:.75rem">
       <div>
         <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Mes calendriers</h1>
-        <p class="subtitle is-6">Les calendriers de ton compte, y compris ceux des membres de ta famille.</p>
+        <p class="subtitle is-6 mes-calendar-mobile-extras">Les calendriers de ton compte, y compris ceux des membres de ta famille.</p>
       </div>
-      <button class="button is-light" type="button" (click)="recharger()" [disabled]="loading">
-        <i class="fas fa-arrows-rotate mr-2"></i>{{ loading ? 'Chargement…' : 'Actualiser' }}
+      <button class="button is-light mes-calendar-refresh" type="button" (click)="recharger()" [disabled]="loading" aria-label="Actualiser les calendriers" title="Actualiser">
+        <i class="fas fa-arrows-rotate"></i><span class="mes-calendar-mobile-extras ml-2">{{ loading ? 'Chargement…' : 'Actualiser' }}</span>
       </button>
     </div>
-    <div class="notification is-info is-light mes-calendar-hint">
+    <div class="notification is-info is-light mes-calendar-hint mes-calendar-mobile-extras">
       <strong>Rappel :</strong> le calendrier est informatif : voir une séance ne signifie pas être convoqué.
       Les réponses Oui / Non ici sont enregistrées dans <strong>Assolutions</strong>, sans changer automatiquement le RSVP Google.
     </div>
@@ -29,29 +29,84 @@
     <div class="is-flex is-justify-content-space-between is-flex-wrap-wrap is-align-items-start mb-3" style="gap:.6rem">
       <div>
         <h2 class="title is-6 mb-2"><i class="fas fa-calendar mr-2"></i>{{ calendar.nom }}</h2>
-        <p *ngIf="calendar.description" class="mb-1">{{ calendar.description }}</p>
-        <p class="is-size-7 has-text-grey">Statut Google : {{ calendar.statut_synchro }}</p>
+        <p *ngIf="calendar.description" class="mb-1 mes-calendar-mobile-extras">{{ calendar.description }}</p>
+        <p class="is-size-7 has-text-grey mes-calendar-mobile-extras">Statut Google : {{ calendar.statut_synchro }}</p>
       </div>
       <div class="buttons are-small mes-calendar-actions">
         <a *ngIf="calendar.google_calendar_url" class="button is-link is-light"
            target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url">
-          <i class="fas fa-arrow-up-right-from-square mr-2"></i>Google Agenda
+          <i class="fas fa-arrow-up-right-from-square"></i><span class="mes-calendar-mobile-extras ml-1">Google Agenda</span>
         </a>
         <button *ngIf="calendar.google_calendar_url" class="button is-light" type="button"
                 (click)="partager(calendar)" [attr.aria-label]="'Partager le calendrier ' + calendar.nom">
-          <i class="fas fa-share-nodes mr-2"></i>Partager
+          <i class="fas fa-share-nodes"></i><span class="mes-calendar-mobile-extras ml-1">Partager</span>
         </button>
       </div>
     </div>
-    <p *ngIf="calendar.google_calendar_url" class="help mes-calendar-share-note">
+    <p *ngIf="calendar.google_calendar_url" class="help mes-calendar-share-note mes-calendar-mobile-extras">
       Partager transmet le lien Google ; l'accès à un agenda privé nécessite toujours une autorisation Google séparée.
     </p>
 
     <ng-container *ngIf="evenementsDuCalendrier(calendar.id) as liste">
-      <h3 class="title is-6 mt-4 mb-2">Séances du calendrier ({{ liste.length }})</h3>
+      <h3 class="title is-6 mt-3 mb-2 mes-calendar-list-title">Séances ({{ liste.length }})</h3>
       <p *ngIf="!liste.length" class="has-text-grey is-size-7">
         Aucune séance {{ showPast ? 'sur ce calendrier' : 'à venir' }}.
       </p>
+      <!-- EXG-33 : vraie vue cartes sur mobile, comme Mon menu : aucun tableau horizontal. -->
+      <div class="mes-calendar-mobile-list" *ngIf="liste.length">
+        <article class="mes-calendar-mobile-item" *ngFor="let e of liste">
+          <div class="mes-calendar-mobile-body">
+            <button type="button" class="mes-calendar-mobile-title" (click)="ouvrirSeance(e.seance_id)">
+              <i class="fas fa-dumbbell mr-1" aria-hidden="true"></i>
+              {{ e.label || typeLabel(e.type_seance) }}
+            </button>
+            <div class="mes-calendar-mobile-meta">
+              {{ dateFr(e.date_seance) }} · {{ e.heure_debut }} – {{ heureFin(e) }}
+            </div>
+            <div class="mes-calendar-mobile-location" *ngIf="e.lieu_nom">
+              <i class="fas fa-location-dot" aria-hidden="true"></i> {{ e.lieu_nom }}
+            </div>
+            <div class="mes-calendar-mobile-person"
+                 *ngFor="let p of e.personnes">
+              <span class="mes-calendar-mobile-person-name">{{ p.nom }}</span>
+              <span class="mes-calendar-mobile-person-status" *ngIf="!e.peut_repondre">
+                {{ libelleReponse(p.statut_inscription) }}
+              </span>
+              <div class="mes-calendar-mobile-replies" *ngIf="e.peut_repondre"
+                   role="group" [attr.aria-label]="'Réponse de ' + p.nom">
+                <button type="button" class="mes-calendar-mobile-reply"
+                        [class.is-yes]="p.statut_inscription === 'présent'"
+                        [disabled]="reponsesEnCours.has(cleReponse(e.seance_id,p.id))"
+                        [attr.aria-label]="'Oui pour ' + p.nom"
+                        title="Je viens" (click)="repondre(e,p,'présent')">
+                  <i class="fas fa-thumbs-up"></i>
+                </button>
+                <button type="button" class="mes-calendar-mobile-reply"
+                        [class.is-no]="p.statut_inscription === 'absent'"
+                        [disabled]="reponsesEnCours.has(cleReponse(e.seance_id,p.id))"
+                        [attr.aria-label]="'Non pour ' + p.nom"
+                        title="Je ne viens pas" (click)="repondre(e,p,'absent')">
+                  <i class="fas fa-thumbs-down"></i>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="!e.personnes.length" class="mes-calendar-mobile-consult">
+              <i class="fas fa-eye mr-1" aria-hidden="true"></i> Consultation
+            </div>
+          </div>
+          <div class="mes-calendar-mobile-side">
+            <button class="mes-calendar-mobile-open" type="button"
+                    (click)="ouvrirSeance(e.seance_id)"
+                    [attr.aria-label]="'Voir la séance ' + (e.label || e.seance_id)"
+                    title="Détails">
+              <i class="fas fa-binoculars"></i>
+            </button>
+            <span *ngIf="e.statut !== 'prévue'" class="mes-calendar-mobile-state">
+              {{ e.statut }}
+            </span>
+          </div>
+        </article>
+      </div>
       <div class="mes-calendar-table" *ngIf="liste.length">
         <table class="table is-striped is-hoverable is-fullwidth">
           <thead>
