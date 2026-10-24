@@ -119,7 +119,6 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
            )
          ORDER BY c.id LIMIT 5`,
       );
-      );
       this.derniersCalendriersTrouves = calendars.length;
       this.dernierResultat = calendars.length ? 'TRAITEMENT_TERMINE' : 'AUCUN_CALENDRIER_ELIGIBLE';
       let errors = 0;
