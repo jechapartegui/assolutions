@@ -112,7 +112,7 @@
           <div class="record-title-row">
             <strong>#{{ item.id }}</strong>
             <span class="tag" [ngClass]="statusClass(item.statut)">{{ statusLabel(item.statut) }}</span>
-            <span class="tag is-danger is-light" *ngIf="item.warnings.length">
+            <span class="tag is-danger is-light" *ngIf="item.warnings.length" i18n>
               {{ item.warnings.length }} alerte(s)
             </span>
           </div>
@@ -144,7 +144,7 @@
       <div>
         <p class="page-kicker" i18n>Diagnostic</p>
         <div class="detail-title-row">
-          <h2 class="title is-4 mb-0">Souscription #{{ detail.souscription.id }}</h2>
+          <h2 class="title is-4 mb-0" i18n>Souscription #{{ detail.souscription.id }}</h2>
           <span class="tag is-medium" [ngClass]="statusClass(detail.souscription.statut)">
             {{ statusLabel(detail.souscription.statut) }}
           </span>
@@ -218,7 +218,7 @@
             </span>
           </div>
 
-          <p class="help mb-2">
+          <p class="help mb-2" i18n>
             {{ money(person.prix_final_centimes) }}
             <span *ngIf="person.remise_centimes"> · remise {{ money(person.remise_centimes) }}</span>
             · inscription saison {{ person.inscription_saison_id || '—' }}
@@ -263,7 +263,7 @@
       <h3 class="title is-6 mb-2" i18n>Finalisation financière</h3>
       <ng-container *ngIf="detail.finance; else noFinance">
         <p class="mb-2">
-          <strong>Flux #{{ detail.finance.flux_id }}</strong> · {{ detail.finance.montant | number:'1.2-2' }} € · {{ detail.finance.date }}
+          <strong i18n>Flux #{{ detail.finance.flux_id }}</strong> · {{ detail.finance.montant | number:'1.2-2' }} € · {{ detail.finance.date }}
         </p>
         <div class="table-container" *ngIf="detail.finance.operations.length">
           <table class="table is-fullwidth is-size-7">
