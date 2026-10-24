@@ -28,8 +28,50 @@
 }
 .mes-calendar-table table {
   min-width: 850px;
-  font-size: .88rem;
+  font-size: .80rem;
 }
+.mes-calendar-page .box { border: 1px solid rgba(111, 130, 145, .14); }
+.mes-calendar-page .mes-calendar-intro,
+.mes-calendar-page .mes-calendar-card {
+  padding: .8rem .95rem !important;
+  margin-bottom: .65rem !important;
+  box-shadow: 0 1px 4px rgba(18, 39, 57, .035) !important;
+  border-radius: 8px;
+}
+.mes-calendar-page .mes-calendar-intro .title { font-size: 1.12rem; margin-bottom: .2rem !important; }
+.mes-calendar-page .mes-calendar-intro .subtitle {
+  font-size: .88rem;
+  margin-bottom: .5rem !important;
+}
+.mes-calendar-page .mes-calendar-hint {
+  padding: .55rem .7rem !important;
+  margin-bottom: .65rem !important;
+  font-size: .82rem;
+  line-height: 1.4;
+}
+.mes-calendar-page .mes-calendar-actions { margin-bottom: 0 !important; }
+.mes-calendar-page .mes-calendar-card > div:first-child { margin-bottom: .45rem !important; }
+.mes-calendar-page .mes-calendar-card > div:first-child .title { margin-bottom: .15rem !important; }
+.mes-calendar-page .mes-calendar-table .table th,
+.mes-calendar-page .mes-calendar-table .table td {
+  border-bottom: 1px solid rgba(112, 130, 145, .12);
+  padding: .4rem .48rem;
+  vertical-align: middle;
+}
+.mes-calendar-page .mes-calendar-table .table th {
+  font-size: .76rem;
+  font-weight: 600;
+  text-transform: none;
+}
+.mes-calendar-page .mes-calendar-table .table.is-striped tbody tr:not(.is-selected):nth-child(even) {
+  background: rgba(235, 241, 246, .22);
+}
+.mes-calendar-page .mes-calendar-table .tag { font-size: .72rem; height: 1.55em; }
+.mes-calendar-page .mes-calendar-table .button.is-small {
+  font-size: .76rem;
+  height: 1.95rem;
+}
+
 .mes-calendar-open {
   height: auto;
   text-align: left;
@@ -55,3 +97,11 @@
   min-width: 180px;
 }
 .is-nowrap { white-space: nowrap; }
+
+.mes-calendar-page .mes-calendar-person { padding: .2rem 0; }
+.mes-calendar-page .mes-calendar-person-name { font-size: .77rem; margin-bottom: .15rem; }
+@media (max-width: 767px) {
+  .mes-calendar-page .mes-calendar-intro,
+  .mes-calendar-page .mes-calendar-card { padding: .7rem !important; }
+  .mes-calendar-page .mes-calendar-table table { min-width: 760px; }
+}
