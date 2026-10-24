@@ -1,6 +1,7 @@
 -- ============================================================================
 -- ASSOLUTIONS / US IVRY ROLLER : IMPORT DES MATCHS 2026-2027 EN PREPROD
--- CORRECTIF V2 : évite conflit variable RECORD « r » / alias SQL « r » au bilan.
+-- CORRECTIF V3 : identifiants 41/42/43/45/48 = contrats (contrat_prof.id), et non professeur_id.
+-- Conserve le contrôle de saison et de validité du contrat, sans créer de contrat.
 -- 29 matchs, 9 journées, 7 groupes (28,29,30,45,46,47,48), 4 lieux (2,5,6,7).
 -- Aucun Google ni cours récurrent. Interventions professeur liées aux contrats actifs.
 --
@@ -104,7 +105,7 @@ DECLARE
   v_seance_id integer;
   v_existants integer;
   r record;
-  v_prof_id integer;
+  v_contrat_attendu_id integer;
   v_contrat_id integer;
   v_nb_contrats integer;
 BEGIN
@@ -213,9 +214,10 @@ BEGIN
         AND lg.object_type='séance'
     );
 
-    -- Professeurs reliés par contrat actif à la date du match.
+    -- Les listes ci-dessous contiennent des IDs de CONTRATS (contrat_prof.id),
+    -- pas des IDs de professeurs (contrat_prof.professeur_id).
     -- Chris n'ayant pas d'ID fourni, Daniel seul pour U11/U15.
-    FOR v_prof_id IN
+    FOR v_contrat_attendu_id IN
       SELECT DISTINCT unnest(CASE
           WHEN r.cle LIKE '%_RB_%' THEN ARRAY[45,41]::integer[]
           WHEN r.cle LIKE '%_RS_U11_%' OR r.cle LIKE '%_RS_U15_%' THEN ARRAY[48]::integer[]
@@ -225,10 +227,10 @@ BEGIN
     LOOP
       SELECT COUNT(*), MIN(cp.id) INTO v_nb_contrats,v_contrat_id
       FROM public.contrat_prof cp
-      WHERE cp.professeur_id=v_prof_id AND cp.saison_id=v_saison_id
+      WHERE cp.id=v_contrat_attendu_id AND cp.saison_id=v_saison_id
         AND cp.date_debut<=r.jour AND (cp.date_fin IS NULL OR cp.date_fin>=r.jour);
       IF v_nb_contrats<>1 THEN
-        RAISE EXCEPTION 'Professeur % : % contrats actifs pour % (attendu 1).',v_prof_id,v_nb_contrats,r.jour;
+        RAISE EXCEPTION 'Contrat professeur % : % contrats actifs pour % (attendu 1).',v_contrat_attendu_id,v_nb_contrats,r.jour;
       END IF;
       INSERT INTO public.seance_professeur
         (seance_id,minutes,cout,info,created_at,updated_at,professeurcontract_id,statut)
