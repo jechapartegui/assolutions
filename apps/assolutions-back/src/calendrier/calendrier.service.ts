@@ -61,15 +61,13 @@ export class CalendrierService {
     return rows[0];
   }
 
-  /** EXG-30 : uniquement calendriers actifs, membres destinataires ou admin propriétaire. */
+  /** EXG-32 : uniquement calendriers actifs des groupes destinataires du compte. */
   async mesExiste(accountId: number, projectId: number): Promise<{ existe: boolean }> {
     const rows: Array<{ existe: boolean }> = await this.dataSource.query(
       `SELECT EXISTS (
           SELECT 1 FROM calendrier c
           WHERE c.project_id=$2 AND c.actif=true
             AND (
-              EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
-              OR (
                 EXISTS (SELECT 1 FROM login_project lp
                         WHERE lp.project_id=c.project_id AND lp.login_id=$1)
                 AND EXISTS (
@@ -79,7 +77,6 @@ export class CalendrierService {
                   WHERE cg.calendrier_id=c.id AND pe.compte=$1
                     AND COALESCE(pe.archive,false)=false
                 )
-              )
             )
         ) AS existe`, [accountId,projectId],
     );
@@ -93,8 +90,6 @@ export class CalendrierService {
        FROM calendrier c
        WHERE c.project_id=$2 AND c.actif=true
          AND (
-           EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
-           OR (
              EXISTS (SELECT 1 FROM login_project lp WHERE lp.project_id=c.project_id AND lp.login_id=$1)
              AND EXISTS (
                SELECT 1 FROM calendrier_groupe cg
@@ -103,7 +98,6 @@ export class CalendrierService {
                WHERE cg.calendrier_id=c.id AND pe.compte=$1
                  AND COALESCE(pe.archive,false)=false
              )
-           )
          )
        ORDER BY c.nom`,[accountId,projectId],
     );
@@ -170,8 +164,6 @@ export class CalendrierService {
        ) candidat ON TRUE
        WHERE c.project_id=$2 AND c.actif=true
          AND (
-           EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
-           OR (
              EXISTS (SELECT 1 FROM login_project lp WHERE lp.project_id=c.project_id AND lp.login_id=$1)
              AND EXISTS (
                SELECT 1 FROM calendrier_groupe cg
@@ -180,7 +172,6 @@ export class CalendrierService {
                WHERE cg.calendrier_id=c.id AND membre.compte=$1
                  AND COALESCE(membre.archive,false)=false
              )
-           )
          )
        ORDER BY se.date_seance, se.heure_debut, se.seance_id, candidat.last_name, candidat.first_name
        LIMIT 2000`,
@@ -236,8 +227,6 @@ export class CalendrierService {
          WHERE se.seance_id=$3 AND c.project_id=$2 AND c.actif=true
            AND se.statut='prévue' AND se.date_seance>=CURRENT_DATE
            AND (
-             EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
-             OR (
                EXISTS (SELECT 1 FROM login_project lp WHERE lp.project_id=c.project_id AND lp.login_id=$1)
                AND EXISTS (
                  SELECT 1 FROM calendrier_groupe cg
@@ -246,7 +235,6 @@ export class CalendrierService {
                  WHERE cg.calendrier_id=c.id AND membre.compte=$1
                    AND COALESCE(membre.archive,false)=false
                )
-             )
            )
            AND (
              (ins.personne_id IS NOT NULL AND ins.statut_inscription IS DISTINCT FROM 'essai')
