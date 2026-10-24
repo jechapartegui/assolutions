@@ -6,6 +6,10 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap adherent-card-actions">
+      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées">
+        <input type="checkbox" [(ngModel)]="compactMobile" />
+        Liste simple
+      </label>
       <button class="button is-light" type="button" (click)="vm.showFilterPanel = !vm.showFilterPanel">
         <span class="icon"><i class="fas fa-sliders"></i></span><span i18n>Filtres</span>
       </button>
@@ -85,7 +89,21 @@
         </table>
       </div>
 
-      <div class="adherent-mobile-list is-hidden-desktop">
+      <div class="exg-mobile-quick-list is-hidden-desktop" *ngIf="compactMobile">
+        <div class="exg-mobile-quick-row" *ngFor="let adherent of getFilteredAdherent()">
+          <label *ngIf="isAdmin && vm.multiSelectMode" class="checkbox exg-mobile-quick-check">
+            <input type="checkbox" [checked]="isSelected(adherent.id)" (change)="toggleSelection(adherent.id)" />
+          </label>
+          <button type="button" class="exg-mobile-quick-name" (click)="open(adherent)">
+            {{ adherent.libelle || (adherent.prenom + ' ' + adherent.nom) }}
+          </button>
+          <span class="exg-mobile-quick-meta">{{ adherent.inscrit ? '✓' : '–' }}</span>
+          <button type="button" class="exg-mobile-quick-open" (click)="open(adherent)" aria-label="Ouvrir" title="Ouvrir">
+            <i class="fas fa-pen"></i>
+          </button>
+        </div>
+      </div>
+      <div class="adherent-mobile-list is-hidden-desktop" *ngIf="!compactMobile">
         <article class="adherent-tile" *ngFor="let adherent of getFilteredAdherent()">
           <div class="adherent-tile-top">
             <div class="adherent-tile-main">
