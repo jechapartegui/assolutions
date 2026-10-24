@@ -107,7 +107,7 @@ DECLARE
   v_contrat_id integer;
   v_nb_contrats integer;
 BEGIN
-  IF (SELECT COUNT(*) FROM _matchs_import_plan) <> 33 THEN
+  IF (SELECT COUNT(*) FROM _matchs_import_plan) <> 28 THEN
     RAISE EXCEPTION 'Le planning doit contenir exactement 28 matchs.';
   END IF;
 
