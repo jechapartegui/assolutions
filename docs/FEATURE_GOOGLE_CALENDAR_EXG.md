@@ -65,7 +65,7 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 - Écran utilisateur `/mes-calendriers` construit via les personnes rattachées au **compte courant**. Ces données ne donnent aucun accès à une séance non autorisée.
 - Éditeur Séance : associer/dissocier (admin), accéder au calendrier et forcer Google ; après sauvegarde, confirmation.
 - `GOOGLE_CALENDAR_AUTO_SYNC=true` : worker de réconciliation toutes les 60 secondes, avec verrou PostgreSQL et **notifications Google désactivées**. Activez-le uniquement après test manuel.
-- EXG-17 : en mode automatique, les changements de membres des groupes destinataires sont marqués `PENDING` par `fn_calendrier_lien_rider_mark_dirty`, puis réconciliés par le worker. Aucun nouvel agenda Google n'est créé automatiquement : un `google_calendar_id` existant est requis. Pour une recette **strictement limitée à un calendrier**, définir `GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS=<id du calendrier Assolutions>` ; ce filtre limite le worker à cet ID, même si d'autres calendriers sont PENDING. Valeur absente = tous les calendriers Google existants, **attention en production**. L'envoi de notifications Google reste `sendUpdates=none`, qui ne garantit pas zéro mail ni que les nouvelles invitations arrivent à tous les destinataires. Le test se fait avec des comptes fictifs Yopmail uniquement.
+- EXG-17 : en mode automatique, les changements de membres des groupes destinataires sont marqués `PENDING` par `fn_calendrier_lien_rider_mark_dirty`, puis réconciliés par le worker. Aucun nouvel agenda Google n'est créé automatiquement : un `google_calendar_id` existant est requis. Le filtre d'IDs réservé à la recette LOCAL a été supprimé avant la préparation PREPROD. Quand `GOOGLE_CALENDAR_AUTO_SYNC=true`, tous les calendriers actifs ayant déjà un `google_calendar_id` existant et des modifications en attente sont traités. **Ne pas activer le worker avant les essais manuels PREPROD et l'examen des notifications.** L'envoi de notifications Google reste `sendUpdates=none`, qui ne garantit pas zéro mail ni que les nouvelles invitations arrivent à tous les destinataires. Le test se fait avec des comptes fictifs Yopmail uniquement.
 
 ## Recette exigence par exigence
 | Exigence | Test manuel | Statut |
@@ -151,3 +151,23 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 4. Desktop : tableau conservé avec colonnes et actions d'origine. Partage toujours soumis aux droits Google. Vérifier l'app et les erreurs réseau sur 360–390 px de large.
 5. Confirmer compilation isolée backend + frontend PREPROD/PROD, puis recette fonctionnelle LOCAL avant toute promotion PREPROD. Ne pas merger vers master ni modifier PROD.
 
+
+## Passage LOCAL -> PREPROD (24/10/2026)
+
+**GitHub :** PR d'intégration [#108](https://github.com/jechapartegui/assolutions/pull/108) de `feature/google-calendar-sync-exg` vers `integration/exg-preprod`. La branche `master` et la PR PROD #106 restent indépendantes. **La création ou fusion d'une branche Git ne déploie pas automatiquement l'application** : vérifier les services Render/OVH avant toute modification.
+
+### Nettoyage effectué
+- Retrait des filtres ID `GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS` des services, interfaces et documentation.
+- Préfixe LOCAL renommé en `[LOCAL]`, préfixe `[PREPROD]` maintenu pour les agendas de staging, sans préfixe pour PROD.
+- Restent **volontairement** : adresses `@yopmail.com` pour les invités hors PROD, vérification OAuth propriétaire, diagnostic admin en lecture seule, sécurité de création Google manuelle et flags de désactivation.
+
+### Ordre de livraison PREPROD
+1. Vérifier que la version Git/artefacts visée et les services Render/OVH sont exclusivement PREPROD ; **ne pas pointer de build vers la PROD**.
+2. Faire une sauvegarde / un snapshot de la **base PREPROD**, puis exécuter `scripts/migrations/2026-10-23-google-calendrier.sql` dans cette base uniquement (une fois, puis vérifier l'idempotence à froid si nécessaire).
+3. Vérifier les tables `calendrier`, `calendrier_groupe`, `calendrier_evenement`, `calendrier_sync_audit` (noms exacts dans le SQL), la colonne `seance.calendrier_id`, et que les séances existantes ne changent pas d'état.
+4. Variables Render PREPROD : `APP_ENV=preprod`, `MAIL_SANDBOX=true`, `GOOGLE_CALENDAR_ENABLED=false`, `GOOGLE_CALENDAR_AUTO_SYNC=false`, `ASSOLUTIONS_FRONT_URL=https://preprod.assolutions.club`. **Ne pas définir** l'ancien filtre d'IDs. Secrets Google OAuth configurés côté Render uniquement si les essais Google sont prévus.
+5. Compiler le **front PREPROD** et publier uniquement dans l'hébergement PREPROD ; déployer le back sur le service PREPROD Render. Vérifier login/menus et CRUD calendrier **sans Google activé**.
+6. Après validation des droits et des écrans, activer temporairement `GOOGLE_CALENDAR_ENABLED=true` sur PREPROD, vérifier le propriétaire et créer un agenda `[PREPROD]` avec Yopmail. **Ne pas activer AUTO_SYNC sans second feu vert après tests manuels**.
+7. Surveiller les notifications Google même avec `sendUpdates=none` (elles ne sont pas garanties nulles). Réparer l'audit critique et l'i18n avant tout merge vers `master`.
+
+**Non réalisés par le présent changement de branche :** sauvegarde/migration de la base PREPROD, configuration des secrets, publication OVH, déploiement Render, envoi d'invitations, merge master.
