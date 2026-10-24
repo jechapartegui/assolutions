@@ -12,34 +12,34 @@
   </div>
 
   <div class="field mt-4">
-    <label class="label">Justificatif</label>
-    <div class="select is-fullwidth"><select [(ngModel)]="type"><option value="QS_SPORT">Questionnaire de santé en ligne</option><option value="CERTIFICAT">Certificat médical</option></select></div>
+    <label class="label" i18n>Justificatif</label>
+    <div class="select is-fullwidth"><select [(ngModel)]="type"><option value="QS_SPORT" i18n>Questionnaire de santé en ligne</option><option value="CERTIFICAT" i18n>Certificat médical</option></select></div>
   </div>
 
   <ng-container *ngIf="type === 'QS_SPORT'">
-    <div class="notification is-info is-light is-size-7">
+    <div class="notification is-info is-light is-size-7" i18n>
       Répondez vous-même aux questions. Les réponses détaillées ne sont pas enregistrées : Assolutions conserve uniquement l'attestation finale.
     </div>
     <div class="qs-question" *ngFor="let question of qsQuestions; let i=index">
       <div><strong>{{ i + 1 }}.</strong> {{ question }}</div>
       <div class="buttons has-addons mt-2">
-        <button type="button" class="button is-small" [class.is-selected]="qsAnswers[i] === false" [class.is-success]="qsAnswers[i] === false" (click)="setQsAnswer(i,false)">NON</button>
-        <button type="button" class="button is-small" [class.is-selected]="qsAnswers[i] === true" [class.is-danger]="qsAnswers[i] === true" (click)="setQsAnswer(i,true)">OUI</button>
+        <button type="button" class="button is-small" [class.is-selected]="qsAnswers[i] === false" [class.is-success]="qsAnswers[i] === false" (click)="setQsAnswer(i,false)" i18n>NON</button>
+        <button type="button" class="button is-small" [class.is-selected]="qsAnswers[i] === true" [class.is-danger]="qsAnswers[i] === true" (click)="setQsAnswer(i,true)" i18n>OUI</button>
       </div>
     </div>
-    <div class="notification is-success is-light" *ngIf="qsNegative"><strong>Tout est NON.</strong> Vous pouvez valider l'attestation ; aucun questionnaire rempli ne sera stocké.</div>
-    <div class="notification is-warning is-light" *ngIf="qsHasPositive"><strong>Au moins une réponse est OUI.</strong> Un certificat médical est nécessaire. Vous pouvez valider ce résultat puis déposer le certificat.</div>
+    <div class="notification is-success is-light" *ngIf="qsNegative" i18n><strong>Tout est NON.</strong> Vous pouvez valider l'attestation ; aucun questionnaire rempli ne sera stocké.</div>
+    <div class="notification is-warning is-light" *ngIf="qsHasPositive" i18n><strong>Au moins une réponse est OUI.</strong> Un certificat médical est nécessaire. Vous pouvez valider ce résultat puis déposer le certificat.</div>
   </ng-container>
 
   <ng-container *ngIf="type === 'CERTIFICAT'">
     <div class="columns">
-      <div class="column"><label class="label">Date</label><input class="input" type="date" [(ngModel)]="date"></div>
-      <div class="column"><label class="label">Nom du médecin</label><input class="input" [(ngModel)]="doctorName"></div>
-      <div class="column"><label class="label">RPPS</label><input class="input" [(ngModel)]="rpps"></div>
+      <div class="column"><label class="label" i18n>Date</label><input class="input" type="date" [(ngModel)]="date"></div>
+      <div class="column"><label class="label" i18n>Nom du médecin</label><input class="input" [(ngModel)]="doctorName"></div>
+      <div class="column"><label class="label" i18n>RPPS</label><input class="input" [(ngModel)]="rpps"></div>
     </div>
-    <div class="field"><label class="label">Certificat *</label><input #fileInput class="input" type="file" accept="application/pdf,image/*" (change)="onFileSelected($event)"><p class="help" *ngIf="selectedFileName">{{ selectedFileName }}</p></div>
+    <div class="field"><label class="label" i18n>Certificat *</label><input #fileInput class="input" type="file" accept="application/pdf,image/*" (change)="onFileSelected($event)"><p class="help" *ngIf="selectedFileName">{{ selectedFileName }}</p></div>
   </ng-container>
 
-  <div class="field"><label class="label">Commentaire</label><textarea class="textarea" rows="2" [(ngModel)]="comment"></textarea></div>
+  <div class="field"><label class="label" i18n>Commentaire</label><textarea class="textarea" rows="2" [(ngModel)]="comment"></textarea></div>
   <button class="button is-primary" type="button" [class.is-loading]="loading" [disabled]="loading || !canSave" (click)="save()">{{ type === 'QS_SPORT' ? 'Valider mon attestation' : 'Enregistrer le certificat' }}</button>
 </section>

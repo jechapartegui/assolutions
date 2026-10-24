@@ -2,36 +2,36 @@
   <section class="box mes-calendar-intro">
     <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap" style="gap:.75rem">
       <div>
-        <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Mes calendriers</h1>
-        <p class="subtitle is-6 mes-calendar-mobile-extras">Les calendriers de ton compte, y compris ceux des membres de ta famille.</p>
+        <h1 class="title is-4 mb-1" i18n><i class="fas fa-calendar-days mr-2"></i>Mes calendriers</h1>
+        <p class="subtitle is-6 mes-calendar-mobile-extras" i18n>Les calendriers de ton compte, y compris ceux des membres de ta famille.</p>
       </div>
       <div class="mes-calendar-toolbar">
         <button class="button is-light mes-calendar-past-toggle" type="button"
                 (click)="showPast = !showPast" [class.is-active]="showPast"
                 [attr.aria-pressed]="showPast"
                 [attr.aria-label]="showPast ? 'Masquer les séances passées' : 'Afficher les séances passées'"
-                title="Afficher ou masquer les séances passées">
+                title="Afficher ou masquer les séances passées" i18n-title>
           <i class="fas fa-clock-rotate-left"></i>
         </button>
-      <button class="button is-light mes-calendar-refresh" type="button" (click)="recharger()" [disabled]="loading" aria-label="Actualiser les calendriers" title="Actualiser">
+      <button class="button is-light mes-calendar-refresh" type="button" (click)="recharger()" [disabled]="loading" aria-label="Actualiser les calendriers" title="Actualiser" i18n-aria-label i18n-title>
         <i class="fas fa-arrows-rotate"></i><span class="mes-calendar-mobile-extras ml-2">{{ loading ? 'Chargement…' : 'Actualiser' }}</span>
       </button>
       </div>
     </div>
-    <div class="notification is-info is-light mes-calendar-hint mes-calendar-mobile-extras">
+    <div class="notification is-info is-light mes-calendar-hint mes-calendar-mobile-extras" i18n>
       <strong>Rappel :</strong> le calendrier est informatif : voir une séance ne signifie pas être convoqué.
       Les réponses Oui / Non ici sont enregistrées dans <strong>Assolutions</strong>, sans changer automatiquement le RSVP Google.
     </div>
     <div class="field mes-calendar-past-field">
-      <label class="checkbox">
+      <label class="checkbox" i18n>
         <input type="checkbox" [(ngModel)]="showPast" />
         Afficher également les séances passées
       </label>
     </div>
-    <p *ngIf="loading" class="has-text-grey">Chargement des calendriers et séances…</p>
+    <p *ngIf="loading" class="has-text-grey" i18n>Chargement des calendriers et séances…</p>
     <div *ngIf="error" class="notification is-danger is-light" role="alert">{{ error }}</div>
     <div *ngIf="info" class="notification is-success is-light" role="status">{{ info }}</div>
-    <p *ngIf="!loading && !calendriers.length">Aucun calendrier ne concerne actuellement ton compte.</p>
+    <p *ngIf="!loading && !calendriers.length" i18n>Aucun calendrier ne concerne actuellement ton compte.</p>
   </section>
 
   <article class="box mes-calendar-card" *ngFor="let calendar of calendriers">
@@ -39,28 +39,28 @@
       <div>
         <h2 class="title is-6 mb-2"><i class="fas fa-calendar mr-2"></i>{{ calendar.nom }}</h2>
         <p *ngIf="calendar.description" class="mb-1 mes-calendar-mobile-extras">{{ calendar.description }}</p>
-        <p class="is-size-7 has-text-grey mes-calendar-mobile-extras">Statut Google : {{ calendar.statut_synchro }}</p>
+        <p class="is-size-7 has-text-grey mes-calendar-mobile-extras" i18n>Statut Google : {{ calendar.statut_synchro }}</p>
       </div>
       <div class="buttons are-small mes-calendar-actions">
         <a *ngIf="calendar.google_calendar_url" class="button is-link is-light"
            target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url"
            [attr.aria-label]="'Ouvrir le calendrier ' + calendar.nom + ' dans Google Agenda'"
-           title="Ouvrir dans Google Agenda">
-          <i class="fas fa-arrow-up-right-from-square"></i><span class="mes-calendar-mobile-extras ml-1">Google Agenda</span>
+           title="Ouvrir dans Google Agenda" i18n-title>
+          <i class="fas fa-arrow-up-right-from-square"></i><span class="mes-calendar-mobile-extras ml-1" i18n>Google Agenda</span>
         </a>
         <button *ngIf="calendar.google_calendar_url" class="button is-light" type="button"
                 (click)="partager(calendar)" [attr.aria-label]="'Partager le calendrier ' + calendar.nom">
-          <i class="fas fa-share-nodes"></i><span class="mes-calendar-mobile-extras ml-1">Partager</span>
+          <i class="fas fa-share-nodes"></i><span class="mes-calendar-mobile-extras ml-1" i18n>Partager</span>
         </button>
       </div>
     </div>
-    <p *ngIf="calendar.google_calendar_url" class="help mes-calendar-share-note mes-calendar-mobile-extras">
+    <p *ngIf="calendar.google_calendar_url" class="help mes-calendar-share-note mes-calendar-mobile-extras" i18n>
       Partager transmet le lien Google ; l'accès à un agenda privé nécessite toujours une autorisation Google séparée.
     </p>
 
     <ng-container *ngIf="evenementsDuCalendrier(calendar.id) as liste">
-      <h3 class="title is-6 mt-3 mb-2 mes-calendar-list-title">Séances ({{ liste.length }})</h3>
-      <p *ngIf="!liste.length" class="has-text-grey is-size-7">
+      <h3 class="title is-6 mt-3 mb-2 mes-calendar-list-title" i18n>Séances ({{ liste.length }})</h3>
+      <p *ngIf="!liste.length" class="has-text-grey is-size-7" i18n>
         Aucune séance {{ showPast ? 'sur ce calendrier' : 'à venir' }}.
       </p>
       <!-- EXG-33 : vraie vue cartes sur mobile, comme Mon menu : aucun tableau horizontal. -->
@@ -89,19 +89,19 @@
                         [class.is-yes]="p.statut_inscription === 'présent'"
                         [disabled]="reponsesEnCours.has(cleReponse(e.seance_id,p.id))"
                         [attr.aria-label]="'Oui pour ' + p.nom"
-                        title="Je viens" (click)="repondre(e,p,'présent')">
+                        title="Je viens" (click)="repondre(e,p,'présent')" i18n-title>
                   <i class="fas fa-thumbs-up"></i>
                 </button>
                 <button type="button" class="mes-calendar-mobile-reply"
                         [class.is-no]="p.statut_inscription === 'absent'"
                         [disabled]="reponsesEnCours.has(cleReponse(e.seance_id,p.id))"
                         [attr.aria-label]="'Non pour ' + p.nom"
-                        title="Je ne viens pas" (click)="repondre(e,p,'absent')">
+                        title="Je ne viens pas" (click)="repondre(e,p,'absent')" i18n-title>
                   <i class="fas fa-thumbs-down"></i>
                 </button>
               </div>
             </div>
-            <div *ngIf="!e.personnes.length" class="mes-calendar-mobile-consult">
+            <div *ngIf="!e.personnes.length" class="mes-calendar-mobile-consult" i18n>
               <i class="fas fa-eye mr-1" aria-hidden="true"></i> Consultation
             </div>
           </div>
@@ -109,7 +109,7 @@
             <button class="mes-calendar-mobile-open" type="button"
                     (click)="ouvrirSeance(e.seance_id)"
                     [attr.aria-label]="'Voir la séance ' + (e.label || e.seance_id)"
-                    title="Détails">
+                    title="Détails" i18n-title>
               <i class="fas fa-binoculars"></i>
             </button>
             <span *ngIf="e.statut !== 'prévue'" class="mes-calendar-mobile-state">
@@ -122,12 +122,12 @@
         <table class="table is-striped is-hoverable is-fullwidth">
           <thead>
             <tr>
-              <th>Nom / type</th>
-              <th>Date et heure</th>
-              <th>Groupes séance</th>
-              <th>Lieu</th>
-              <th>Statut</th>
-              <th>Ma réponse</th>
+              <th i18n>Nom / type</th>
+              <th i18n>Date et heure</th>
+              <th i18n>Groupes séance</th>
+              <th i18n>Lieu</th>
+              <th i18n>Statut</th>
+              <th i18n>Ma réponse</th>
             </tr>
           </thead>
           <tbody>
@@ -141,7 +141,7 @@
               </td>
               <td class="is-nowrap">
                 {{ dateFr(e.date_seance) }} {{ e.heure_debut }} – {{ heureFin(e) }}
-                <span *ngIf="e.duree_seance" class="is-block has-text-grey is-size-7">({{ e.duree_seance }} min)</span>
+                <span *ngIf="e.duree_seance" class="is-block has-text-grey is-size-7" i18n>({{ e.duree_seance }} min)</span>
               </td>
               <td>{{ e.groupes || '—' }}</td>
               <td>{{ e.lieu_nom || '—' }}</td>
@@ -158,7 +158,7 @@
                               [class.is-light]="p.statut_inscription !== 'présent'"
                               [disabled]="reponsesEnCours.has(cleReponse(e.seance_id, p.id))"
                               (click)="repondre(e,p,'présent')"
-                              [attr.aria-label]="'Oui, ' + p.nom" title="Je viens">
+                              [attr.aria-label]="'Oui, ' + p.nom" title="Je viens" i18n i18n-title>
                         <i class="fas fa-thumbs-up mr-1"></i>Oui
                       </button>
                       <button type="button" class="button is-small"
@@ -166,7 +166,7 @@
                               [class.is-light]="p.statut_inscription !== 'absent'"
                               [disabled]="reponsesEnCours.has(cleReponse(e.seance_id, p.id))"
                               (click)="repondre(e,p,'absent')"
-                              [attr.aria-label]="'Non, ' + p.nom" title="Je ne viens pas">
+                              [attr.aria-label]="'Non, ' + p.nom" title="Je ne viens pas" i18n i18n-title>
                         <i class="fas fa-thumbs-down mr-1"></i>Non
                       </button>
                       <span class="is-size-7 has-text-grey" *ngIf="p.statut_inscription !== 'présent' && p.statut_inscription !== 'absent'">
@@ -174,13 +174,13 @@
                       </span>
                     </div>
                     <ng-template #consultationArchivee>
-                      <span class="is-size-7 has-text-grey">{{ libelleReponse(p.statut_inscription) }} · réponse fermée</span>
+                      <span class="is-size-7 has-text-grey" i18n>{{ libelleReponse(p.statut_inscription) }} · réponse fermée</span>
                     </ng-template>
                   </div>
                 </ng-container>
                 <ng-template #consultationSeule>
-                  <span class="tag is-light">Consultation uniquement</span>
-                  <span class="is-block is-size-7 has-text-grey">
+                  <span class="tag is-light" i18n>Consultation uniquement</span>
+                  <span class="is-block is-size-7 has-text-grey" i18n>
                     Aucune personne de ton compte n'est éligible pour répondre à cette séance.
                   </span>
                 </ng-template>
