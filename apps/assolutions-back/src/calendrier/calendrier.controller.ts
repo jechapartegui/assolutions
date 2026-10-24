@@ -36,6 +36,13 @@ export class CalendrierController {
     return this.worker.etat(projectId, calendrierId);
   }
 
+  /** EXG-30 : ne pas afficher Mes calendriers sans agenda actif accessible. */
+  @Get('mes/existe')
+  async mesExiste(@Req() req: any, @ProjectId() projectId: number) {
+    await this.access.assertAccountHasProjectContext(req.user.id, projectId);
+    return this.service.mesExiste(Number(req.user.id), projectId);
+  }
+
   @Get('mes')
   async mes(@Req() req: any, @ProjectId() projectId: number) {
     await this.access.assertAccountHasProjectContext(req.user.id, projectId);
