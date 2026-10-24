@@ -1,4 +1,4 @@
-<div class="container is-fluid py-4">
+<div class="container is-fluid py-3 exg-compact">
   <section class="box">
     <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap mb-3" style="gap:1rem">
       <div>
@@ -18,7 +18,7 @@
     <div *ngIf="error" class="notification is-danger is-light">{{ error }}</div>
     <div *ngIf="info" class="notification is-success is-light">{{ info }}</div>
     <div *ngIf="loading" class="notification is-info is-light">Chargement…</div>
-    <div *ngIf="!isAdmin" class="notification is-warning is-light">Consultation uniquement : la création, la configuration et la synchronisation sont réservées aux administrateurs du projet.</div>
+    <div *ngIf="!isAdmin" class="notification is-warning is-light">Les professeurs peuvent modifier les calendriers existants. La création, l’archivage, le diagnostic et la synchronisation manuelle Google restent réservés aux administrateurs.</div>
   </section>
 
   <div class="columns is-variable is-4">
@@ -46,7 +46,7 @@
         <div class="columns">
           <div class="column is-8">
             <label class="label">Nom</label>
-            <input class="input" maxlength="255" [(ngModel)]="form.nom" placeholder="Ex. RollerSoccer — Adultes" [disabled]="!isAdmin" />
+            <input class="input" maxlength="255" [(ngModel)]="form.nom" placeholder="Ex. RollerSoccer — Adultes" [disabled]="!canEdit" />
           </div>
           <div class="column is-4">
             <label class="label">Fuseau horaire</label>
@@ -87,7 +87,7 @@
         <div class="calendar-group-tags mt-3" *ngIf="selectedGroups.length">
           <span class="tag is-info is-light calendar-group-tag" *ngFor="let g of selectedGroups">
             <span>{{ g.nom }}</span>
-            <button *ngIf="isAdmin" type="button" class="delete is-small"
+            <button *ngIf="canEdit" type="button" class="delete is-small"
                     (click)="removeGroup(g.id)" [attr.aria-label]="'Retirer le groupe ' + g.nom"
                     [title]="'Retirer ' + g.nom"></button>
           </span>
@@ -98,14 +98,14 @@
 
       <div class="box">
         <h3 class="title is-6 mb-2">Séances sélectionnées ({{ selectedCount }})</h3>
-        <p class="help mb-3">Les séances retenues restent visibles ici, même quand tu appliques des filtres en dessous. Clique sur Retirer pour les décocher.</p>
+        <p class="help mb-3">Les séances sélectionnées restent visibles ici, même passées ou annulées, pour permettre leur retrait.</p>
         <div class="calendar-sessions-table calendar-selected-table" *ngIf="selectedSessions.length">
           <table class="table is-fullwidth is-striped is-hoverable">
             <thead><tr><th>Date / heure</th><th>Type</th><th>Groupe</th><th>Nom</th><th>Action</th></tr></thead>
             <tbody>
               <tr *ngFor="let s of selectedSessions">
                 <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
-                <td>{{ s.type_seance }}</td>
+                <td>{{ typeLabel(s.type_seance) }}</td>
                 <td>{{ s.noms_groupes || '—' }}</td>
                 <td>{{ s.label || '—' }}</td>
                 <td class="is-nowrap">
@@ -129,6 +129,12 @@
             Effacer les filtres
           </button>
         </div>
+        <div class="calendar-visibility-filters mb-3">
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="hidePastSessions" />
+            Masquer les séances passées</label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="hideCancelledSessions" />
+            Masquer les séances annulées</label>
+        </div>
         <div class="calendar-filter-grid mb-3">
           <div class="field mb-0">
             <label class="label is-small" for="calendrier-filtre-date">Date</label>
@@ -144,7 +150,7 @@
             <div class="select is-small is-fullwidth">
               <select id="calendrier-filtre-type" [(ngModel)]="sessionTypeFilter">
                 <option value="">Tous les types</option>
-                <option *ngFor="let type of sessionTypes" [value]="type">{{ type }}</option>
+                <option *ngFor="let type of sessionTypes" [value]="type">{{ typeLabel(type) }}</option>
               </select>
             </div>
           </div>
@@ -159,7 +165,7 @@
                          [disabled]="!isAdmin" [attr.aria-label]="'Ajouter la séance ' + (s.label || s.seance_id)" />
                 </td>
                 <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
-                <td>{{ s.type_seance }}</td>
+                <td>{{ typeLabel(s.type_seance) }}</td>
                 <td>{{ s.noms_groupes || '—' }}</td>
                 <td>{{ s.label || '—' }}</td>
                 <td><button class="button is-small is-light" type="button" (click)="openSession(s.seance_id)">Ouvrir</button></td>
@@ -174,7 +180,7 @@
 
       <div class="box">
         <div class="buttons is-flex-wrap-wrap">
-          <button *ngIf="isAdmin" class="button is-success" (click)="save()" [disabled]="saving || !form.nom.trim()">
+          <button *ngIf="canEdit" class="button is-success" (click)="save()" [disabled]="saving || !form.nom.trim()">
             <i class="fas fa-floppy-disk mr-2"></i>{{ saving ? 'Enregistrement…' : 'Enregistrer' }}
           </button>
           <button *ngIf="isAdmin && selectedId" class="button is-link is-light" (click)="synchroniser()" [disabled]="syncing || saving">
