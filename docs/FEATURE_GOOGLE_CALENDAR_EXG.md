@@ -124,3 +124,19 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 1. Désactiver `GOOGLE_CALENDAR_ENABLED` et `GOOGLE_CALENDAR_AUTO_SYNC` dans Render.
 2. Revenir au commit applicatif antérieur après sauvegarde.
 3. Laisser les nouvelles tables/colonnes inactives plutôt que de détruire leurs références Google (permet de reprendre ou supprimer proprement les événements). Retirer les nouvelles structures seulement après vérification de toutes les séances et ressources Google.
+
+## Lot final d'ergonomie avant PREPROD (EXG-27 à EXG-31)
+
+- **EXG-27** : page `/calendrier`, cases « Masquer les séances passées » et « Masquer les séances annulées » cochées par défaut. Ces filtres touchent **les séances disponibles**, pas le tableau des séances retenues (toujours visibles afin de pouvoir les retirer). Libellés métier type de séance traduisibles via `$localize`, aucune modification du code/type stocké.
+- **EXG-28** : densité harmonisée sur les écrans Séances/Cours/Adhérents, avec tableaux compacts, traits fins, notifications discrètes et scroll responsive pour les deux pages calendrier.
+- **EXG-29** : un professeur du projet peut modifier un **calendrier existant**, sans pouvoir en créer, en archiver, modifier l'option d'envoi des notifications, consulter/importer des réponses Google ni lancer la synchronisation manuelle. Contrôles côté **API** via `assertProjectStaff` et `assertProjectAdmin` sur modification de l'option notifier / actif ; l'administrateur reste pleinement habilité.
+- **EXG-30** : retrait du menu principal « Calendriers » des professeurs (accès conservé depuis Séances). « Mes calendriers » visible seulement lorsqu'au moins un calendrier actif est accessible au compte dans le projet courant, ou à l'administrateur propriétaire ; contrôle serveur `GET /calendriers/mes/existe`, sans consultation interprojet.
+- **EXG-31** : bouton « Partager » sur `/mes-calendriers`, utilisant le partage natif du navigateur si disponible, ou la copie d'un texte/lien Google dans le presse-papiers sinon. **Ne donne pas de droits Google** à un tiers sur un calendrier privé : partage des autorisations à réaliser séparément dans Google / par l'administrateur. Aucun jeton Assolutions personnel copié ou envoyé.
+
+### Recette LOCAL requise avant promotion
+1. Calendrier #7 contenant une séance future et une séance passée/annulée : vérifier filtres cochés par défaut, décoches indépendantes et séances déjà retenues toujours visibles ; vérifier libellés traduits et tableau compact sur desktop et mobile.
+2. Professeur authentifié : accéder depuis `/seance`, éditer un calendrier existant et sauvegarder, vérifier absence de droits création/archivage/synchro et refus API de modification des notifications. Admin : toutes opérations habituelles fonctionnelles.
+3. Trois comptes : aucun calendrier actif → aucun lien « Mes calendriers » ; adhérent membre d'un groupe destinataire → lien visible ; admin propriétaire → lien visible si calendrier actif. Tester changement de projet, accès direct à la route, et changement d'appartenance aux groupes.
+4. « Mes calendriers » : tableau compact, réponses Oui/Non fonctionnelles sans modifier Google RSVP. Partager : menu de partage (mobile) ou texte copié (desktop), avec avertissement explicite sur les permissions d'un agenda privé.
+5. Vérifier que `GOOGLE_CALENDAR_AUTO_SYNC=false` avant PREPROD et que les profils non autorisés restent bloqués. Aucun merge PROD depuis la branche de recette.
+
