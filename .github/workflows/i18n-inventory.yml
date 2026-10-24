@@ -4,6 +4,12 @@ on:
   pull_request:
     branches:
       - master
+      - integration/exg-preprod
+  push:
+    branches:
+      - integration/exg-preprod
+
+  workflow_dispatch:
 
 permissions:
   contents: read
