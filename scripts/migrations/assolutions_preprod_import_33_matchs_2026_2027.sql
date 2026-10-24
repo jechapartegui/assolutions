@@ -1,7 +1,7 @@
 -- ============================================================================
 -- ASSOLUTIONS / US IVRY ROLLER : IMPORT DES MATCHS 2026-2027 EN PREPROD
 -- CORRECTIF V2 : évite conflit variable RECORD « r » / alias SQL « r » au bilan.
--- 28 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 3 lieux (5,6,7).
+-- 29 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 4 lieux (2,5,6,7).
 -- Aucun Google ni cours récurrent. Interventions professeur liées aux contrats actifs.
 --
 -- DATES INTERPRÉTÉES : « 22/ » = 22/11/2026 ; 08/05 = 08/05/2027.
@@ -29,7 +29,7 @@ SET LOCAL lock_timeout = '8s';
 SET LOCAL statement_timeout = '120s';
 SELECT pg_advisory_xact_lock(hashtext('ASSOLUTIONS_MATCHS_2026_2027_PREPROD'));
 
--- Source des 28 matchs : une clé stable et UNIQUE par rencontre.
+-- Source des 29 matchs : une clé stable et UNIQUE par rencontre.
 CREATE TEMP TABLE _matchs_import_plan (
   cle text PRIMARY KEY,
   jour date NOT NULL,
@@ -47,12 +47,13 @@ VALUES
   ('MATCH2627_20261115_RB_FR_DE_F', '2026-11-15'::date, 'RollBall France (F) vs Allemagne (F)', 45, 7, '09:00', 540, false),
   ('MATCH2627_20261115_RB_FR_DE_H', '2026-11-15'::date, 'RollBall France (H) vs Allemagne (H)', 46, 7, '09:00', 540, false),
   ('MATCH2627_20261115_RS_AMICAL', '2026-11-15'::date, 'RollerSoccer - Match amical', 48, 7, '09:00', 540, false),
-  ('MATCH2627_20261122_RS_N1_SAVIGNY', '2026-11-22'::date, 'RollerSoccer N1 vs Savigny', 48, 5, '14:30', 120, true),
+  ('MATCH2627_20261122_RS_N1_CABRIES', '2026-11-22'::date, 'RollerSoccer N1 vs Cabriès (à Savigny)', 48, 5, '14:30', 120, true),
   ('MATCH2627_20261212_RS_U11_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U11 vs Savigny', 30, 7, '09:00', 540, false),
   ('MATCH2627_20261212_RS_U15_E1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Savigny', 29, 7, '09:00', 540, false),
   ('MATCH2627_20261212_RS_U19_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Savigny', 28, 7, '09:00', 540, false),
   ('MATCH2627_20261212_RS_N1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer N1 vs Savigny', 48, 7, '09:00', 540, false),
   ('MATCH2627_20261212_RS_ELITE_SAVIGNY', '2026-12-12'::date, 'RollerSoccer Élite vs Savigny', 47, 7, '09:00', 540, false),
+  ('MATCH2627_20270117_RS_N1_CABRIES', '2027-01-17'::date, 'RollerSoccer N1 vs Cabriès (à domicile)', 48, 2, '14:45', 120, true),
   ('MATCH2627_20270124_RS_U11_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U11 vs Argenteuil', 30, 7, '09:00', 540, false),
   ('MATCH2627_20270124_RS_U15_E1_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Argenteuil', 29, 7, '09:00', 540, false),
   ('MATCH2627_20270124_RS_U19_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Argenteuil', 28, 7, '09:00', 540, false),
@@ -107,8 +108,8 @@ DECLARE
   v_contrat_id integer;
   v_nb_contrats integer;
 BEGIN
-  IF (SELECT COUNT(*) FROM _matchs_import_plan) <> 28 THEN
-    RAISE EXCEPTION 'Le planning doit contenir exactement 28 matchs.';
+  IF (SELECT COUNT(*) FROM _matchs_import_plan) <> 29 THEN
+    RAISE EXCEPTION 'Le planning doit contenir exactement 29 matchs.';
   END IF;
 
   IF EXISTS (
@@ -137,7 +138,7 @@ BEGIN
     LEFT JOIN public.lieu l ON l.id=p.lieu_id
     WHERE l.id IS NULL OR l.project_id <> v_projet_id
   ) THEN
-    RAISE EXCEPTION 'Un des lieux 5,6,7 est absent ou rattaché à un autre projet.';
+    RAISE EXCEPTION 'Un des lieux 2,5,6,7 est absent ou rattaché à un autre projet.';
   END IF;
 
   IF EXISTS (
@@ -242,7 +243,7 @@ BEGIN
     SET seance_id=EXCLUDED.seance_id,mis_a_jour_le=now();
   END LOOP;
 
-  IF (SELECT COUNT(*) FROM _matchs_import_resultats)<>28 THEN
+  IF (SELECT COUNT(*) FROM _matchs_import_resultats)<>29 THEN
     RAISE EXCEPTION 'Tous les matchs n ont pas été importés.';
   END IF;
   -- Vérification stricte de CHAQUE association séance/groupe attendue.
@@ -263,13 +264,13 @@ BEGIN
     RAISE EXCEPTION 'Une séance ne possède pas son lien groupe attendu.';
   END IF;
 
-  RAISE NOTICE 'PREPROD : projet %, saison %, 28 matchs vérifiés.',v_projet_id,v_saison_id;
+  RAISE NOTICE 'PREPROD : projet %, saison %, 29 matchs vérifiés.',v_projet_id,v_saison_id;
 END
 $matchs$;
 
 -- ============================================================================
--- BILAN : attendu lors du 1er passage : 28 CRÉÉ ; après COMMIT/réexécution :
--- 28 DÉJÀ_IMPORTÉ (les lignes existantes ne sont pas écrasées).
+-- BILAN : attendu lors du 1er passage : 29 CRÉÉ ; après COMMIT/réexécution :
+-- 29 DÉJÀ_IMPORTÉ (les lignes existantes ne sont pas écrasées).
 -- ============================================================================
 SELECT action,COUNT(*) AS nombre
 FROM _matchs_import_resultats GROUP BY action ORDER BY action;
