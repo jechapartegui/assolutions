@@ -34,9 +34,9 @@
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Lieu</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_lieu"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu">{{ lieu }}</option></select></div></div>
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Statut</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_statut"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let s of vm.refs.listeStatuts" [ngValue]="s">{{ s }}</option></select></div></div>
           <div class="column is-12-mobile is-6-tablet is-4-desktop">
-            <label class="label" i18n="@@session.type">Type</label>
+            <label class="label" for="seance-type-filter" i18n="@@session.type">Type</label>
             <div class="select is-fullwidth">
-              <select [(ngModel)]="vm.filter.filter_type" aria-label="Filtrer par type de séance" i18n-aria-label>
+              <select id="seance-type-filter" [(ngModel)]="vm.filter.filter_type">
                 <option [ngValue]="null" i18n>Tous</option>
                 <option *ngFor="let type of seanceTypes" [ngValue]="type.value">{{ type.label }}</option>
               </select>
