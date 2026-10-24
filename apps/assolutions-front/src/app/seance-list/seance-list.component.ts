@@ -15,6 +15,8 @@ import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/serv
 export class SeanceListComponent {
   @Input({ required: true }) vm!: SeancePageVm;
   @Input() isAdmin = false;
+  /** EXG-35 : choix mobile, liste simple par défaut. */
+  compactMobile = true;
   @Output() openSeance = new EventEmitter<number>();
   @Output() createSeance = new EventEmitter<boolean>();
 
