@@ -1,5 +1,5 @@
-<div class="container is-fluid py-4">
-  <section class="box">
+<div class="container is-fluid py-3 mes-calendar-page">
+  <section class="box mes-calendar-intro">
     <div class="is-flex is-justify-content-space-between is-align-items-center is-flex-wrap-wrap" style="gap:.75rem">
       <div>
         <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Mes calendriers</h1>
@@ -9,7 +9,7 @@
         <i class="fas fa-arrows-rotate mr-2"></i>{{ loading ? 'Chargement…' : 'Actualiser' }}
       </button>
     </div>
-    <div class="notification is-info is-light">
+    <div class="notification is-info is-light mes-calendar-hint">
       <strong>Rappel :</strong> le calendrier est informatif : voir une séance ne signifie pas être convoqué.
       Les réponses Oui / Non ici sont enregistrées dans <strong>Assolutions</strong>, sans changer automatiquement le RSVP Google.
     </div>
@@ -25,17 +25,23 @@
     <p *ngIf="!loading && !calendriers.length">Aucun calendrier ne concerne actuellement ton compte.</p>
   </section>
 
-  <article class="box" *ngFor="let calendar of calendriers">
+  <article class="box mes-calendar-card" *ngFor="let calendar of calendriers">
     <div class="is-flex is-justify-content-space-between is-flex-wrap-wrap is-align-items-start mb-3" style="gap:.6rem">
       <div>
         <h2 class="title is-6 mb-2"><i class="fas fa-calendar mr-2"></i>{{ calendar.nom }}</h2>
         <p *ngIf="calendar.description" class="mb-1">{{ calendar.description }}</p>
         <p class="is-size-7 has-text-grey">Statut Google : {{ calendar.statut_synchro }}</p>
       </div>
-      <a *ngIf="calendar.google_calendar_url" class="button is-link is-light is-small"
-         target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url">
-        <i class="fas fa-arrow-up-right-from-square mr-2"></i>Ouvrir dans Google Agenda
-      </a>
+      <div class="buttons are-small mes-calendar-actions">
+        <a *ngIf="calendar.google_calendar_url" class="button is-link is-light"
+           target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url">
+          <i class="fas fa-arrow-up-right-from-square mr-2"></i>Google Agenda
+        </a>
+        <button *ngIf="calendar.google_calendar_url" class="button is-light" type="button"
+                (click)="partager(calendar)" [attr.aria-label]="'Partager le calendrier ' + calendar.nom">
+          <i class="fas fa-share-nodes mr-2"></i>Partager
+        </button>
+      </div>
     </div>
 
     <ng-container *ngIf="evenementsDuCalendrier(calendar.id) as liste">
