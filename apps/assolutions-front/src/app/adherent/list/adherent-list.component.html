@@ -6,7 +6,7 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap adherent-card-actions">
-      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées">
+      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées" i18n i18n-title>
         <input type="checkbox" [(ngModel)]="compactMobile" />
         Liste simple
       </label>
@@ -98,7 +98,7 @@
             {{ adherent.libelle || (adherent.prenom + ' ' + adherent.nom) }}
           </button>
           <span class="exg-mobile-quick-meta">{{ adherent.inscrit ? '✓' : '–' }}</span>
-          <button type="button" class="exg-mobile-quick-open" (click)="open(adherent)" aria-label="Ouvrir" title="Ouvrir">
+          <button type="button" class="exg-mobile-quick-open" (click)="open(adherent)" aria-label="Ouvrir" title="Ouvrir" i18n-aria-label i18n-title>
             <i class="fas fa-pen"></i>
           </button>
         </div>

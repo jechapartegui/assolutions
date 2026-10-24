@@ -414,7 +414,7 @@
           <div class="editor-stack">
             <div class="box mb-3" *ngFor="let r of representantsLegaux; let i = index">
               <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
-                <strong>Représentant {{ i + 1 }}</strong>
+                <strong i18n>Représentant {{ i + 1 }}</strong>
                 <button class="button is-small is-light" type="button" (click)="removeRepresentantLegal(i)" i18n>Retirer</button>
               </div>
               <div class="editor-fields editor-fields--two">
