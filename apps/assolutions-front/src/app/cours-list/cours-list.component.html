@@ -6,7 +6,7 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap cours-card-actions">
-      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées">
+      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées" i18n i18n-title>
         <input type="checkbox" [(ngModel)]="compactMobile" />
         Liste simple
       </label>
@@ -56,7 +56,7 @@
             {{ cours.nom || 'Cours sans nom' }}
           </button>
           <span class="exg-mobile-quick-meta">{{ getJourLabel(cours.jour_semaine) }}</span>
-          <button type="button" class="exg-mobile-quick-open" (click)="open(cours)" aria-label="Ouvrir" title="Ouvrir">
+          <button type="button" class="exg-mobile-quick-open" (click)="open(cours)" aria-label="Ouvrir" title="Ouvrir" i18n-aria-label i18n-title>
             <i class="fas fa-pen"></i>
           </button>
         </div>
