@@ -94,5 +94,19 @@
   "member.exportFfrsTitle": "Export in FFRS import format",
   "member.exportFfrsEmpty": "No member to export to FFRS.",
   "member.exportFfrsError": "Unable to generate the FFRS export.",
-  "common.errorOccurred": "An error occurred"
+  "common.errorOccurred": "An error occurred",
+  "2412494988565289055": "Google responses — manual import",
+  "2085129891865030124": "Google responses do not automatically update Assolutions.",
+  "2372390193633192176": "{$INTERPOLATION} guest(s)",
+  "8450357290179210062": "{$INTERPOLATION} response(s) to review",
+  "3005928474895761521": "{$INTERPOLATION} already up to date",
+  "6182506781555621566": "To review",
+  "7381793772387924851": "Already up to date",
+  "7208576125432878732": "No responses in this filter.",
+  "5903920409883617270": "{$INTERPOLATION} manual action(s)",
+  "2361753298880522963": "Google response",
+  "899110913095235644": "Assolutions matching",
+  "8444626340370864343": "Choose a person…",
+  "6314976177247159040": "Apply {$INTERPOLATION} selected response(s) to Assolutions",
+  "8996016395045771235": "Responses are checked again against Google during import. Someone from a session group may be registered after explicit confirmation. Actual attendance and Google responses are never changed by this import."
 }
