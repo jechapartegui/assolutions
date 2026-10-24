@@ -2,6 +2,7 @@
 -- ASSOLUTIONS / US IVRY ROLLER : IMPORT DES MATCHS 2026-2027 EN PREPROD
 -- CORRECTIF V3 : identifiants 41/42/43/45/48 = contrats (contrat_prof.id), et non professeur_id.
 -- Conserve le contrôle de saison et de validité du contrat, sans créer de contrat.
+-- Matchs du 12/12 reportes au 13/12 (cles d'import stables pour eviter les doublons).
 -- 29 matchs, 9 journées, 7 groupes (28,29,30,45,46,47,48), 4 lieux (2,5,6,7).
 -- Aucun Google ni cours récurrent. Interventions professeur liées aux contrats actifs.
 --
@@ -49,11 +50,11 @@ VALUES
   ('MATCH2627_20261115_RB_FR_DE_H', '2026-11-15'::date, 'RollBall France (H) vs Allemagne (H)', 46, 7, '09:00', 540, false),
   ('MATCH2627_20261115_RS_AMICAL', '2026-11-15'::date, 'RollerSoccer - Match amical', 48, 7, '09:00', 540, false),
   ('MATCH2627_20261122_RS_N1_CABRIES', '2026-11-22'::date, 'RollerSoccer N1 vs Cabriès (à Savigny)', 48, 5, '14:30', 120, true),
-  ('MATCH2627_20261212_RS_U11_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U11 vs Savigny', 30, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_U15_E1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Savigny', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_U19_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Savigny', 28, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_N1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer N1 vs Savigny', 48, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_ELITE_SAVIGNY', '2026-12-12'::date, 'RollerSoccer Élite vs Savigny', 47, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_U11_SAVIGNY', '2026-12-13'::date, 'RollerSoccer U11 vs Savigny', 30, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_U15_E1_SAVIGNY', '2026-12-13'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Savigny', 29, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_U19_SAVIGNY', '2026-12-13'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Savigny', 28, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_N1_SAVIGNY', '2026-12-13'::date, 'RollerSoccer N1 vs Savigny', 48, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_ELITE_SAVIGNY', '2026-12-13'::date, 'RollerSoccer Élite vs Savigny', 47, 7, '09:00', 540, false),
   ('MATCH2627_20270117_RS_N1_CABRIES', '2027-01-17'::date, 'RollerSoccer N1 vs Cabriès (à domicile)', 48, 2, '14:45', 120, true),
   ('MATCH2627_20270124_RS_U11_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U11 vs Argenteuil', 30, 7, '09:00', 540, false),
   ('MATCH2627_20270124_RS_U15_E1_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Argenteuil', 29, 7, '09:00', 540, false),
