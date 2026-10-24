@@ -1,12 +1,12 @@
 -- ============================================================================
 -- ASSOLUTIONS / US IVRY ROLLER : IMPORT DES MATCHS 2026-2027 EN PREPROD
 -- CORRECTIF V2 : évite conflit variable RECORD « r » / alias SQL « r » au bilan.
--- 29 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 4 lieux (2,5,6,7).
+-- 29 matchs, 9 journées, 7 groupes (28,29,30,45,46,47,48), 4 lieux (2,5,6,7).
 -- Aucun Google ni cours récurrent. Interventions professeur liées aux contrats actifs.
 --
 -- DATES INTERPRÉTÉES : « 22/ » = 22/11/2026 ; 08/05 = 08/05/2027.
 -- Les heures non précisées sont PROVISOIRES 09h00 -> 18h00 (540 min).
--- Les heures connues sont 22/11 à 14h30 et 08/05 à 19h30 (120 min).
+-- Les heures connues sont 22/11 à 14h30, 17/01 à 14h45 et 08/05 à 19h30 (120 min).
 -- Toutes les séances indiquent : « RDV directement au gymnase ».
 -- U15 : une séance par journée pour les deux équipes. Chris absent des IDs : non lié.
 --
