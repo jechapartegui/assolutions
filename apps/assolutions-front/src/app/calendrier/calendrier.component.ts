@@ -37,6 +37,9 @@ export class CalendrierComponent implements OnInit {
   sessionDateFilter = '';
   sessionNameFilter = '';
   sessionTypeFilter = '';
+  // EXG-27 : par defaut, ne proposer que les seances futures non annulees.
+  hidePastSessions = true;
+  hideCancelledSessions = true;
   selectedGroupId: number | null = null;
   previewData: CalendrierPreview | null = null;
   syncResult: CalendrierSyncResult | null = null;
@@ -54,6 +57,27 @@ export class CalendrierComponent implements OnInit {
   ) {}
 
   get isAdmin() { return this.store.isAdmin(); }
+  get canEdit() { return this.isAdmin || (this.store.isProf() && !!this.selectedId); }
+  typeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      ENTRAINEMENT: $localize`Entraînement`,
+      MATCH: $localize`Match`,
+      SORTIE: $localize`Sortie`,
+      EVENEMENT: $localize`Événement`,
+    };
+    return labels[type] ?? type;
+  }
+  private todayIso(): string {
+    const d = new Date();
+    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0')].join('-');
+  }
+  private matchesVisibleSession(s: SessionRow): boolean {
+    if (this.hidePastSessions && String(s.date_seance ?? '').slice(0, 10) < this.todayIso()) return false;
+    if (this.hideCancelledSessions &&
+      String(s.statut ?? '').trim().toLocaleLowerCase('fr') === 'annulée') return false;
+    return true;
+  }
   get saisonId() {
     return Number(this.store.saison_consultation_id() ?? this.store.saison_active_id() ?? 0);
   }
@@ -66,6 +90,7 @@ export class CalendrierComponent implements OnInit {
     return this.sessions.filter((s) => {
       const id = Number(s.seance_id ?? s.id);
       if (this.hasSession(id) || (s.reserve && s.reserve !== this.selectedId)) return false;
+      if (!this.matchesVisibleSession(s)) return false;
       if (this.sessionDateFilter && String(s.date_seance ?? '').slice(0, 10) !== this.sessionDateFilter) return false;
       if (nom && !String(s.label ?? '').toLocaleLowerCase('fr').includes(nom)) return false;
       if (this.sessionTypeFilter && s.type_seance !== this.sessionTypeFilter) return false;
@@ -165,25 +190,25 @@ export class CalendrierComponent implements OnInit {
   hasGroup(id: number) { return this.form.groupe_ids.includes(id); }
   hasSession(id: number) { return this.form.seance_ids.includes(id); }
   addGroup() {
-    if (!this.isAdmin) return;
+    if (!this.canEdit) return;
     const id = Number(this.selectedGroupId);
     if (!id || this.hasGroup(id) || !this.groupes.some((g) => Number(g.id) === id)) return;
     this.form.groupe_ids = [...this.form.groupe_ids, id];
     this.selectedGroupId = null;
   }
   removeGroup(id: number) {
-    if (!this.isAdmin) return;
+    if (!this.canEdit) return;
     this.form.groupe_ids = this.form.groupe_ids.filter((value) => value !== id);
   }
   sessionToggle(id: number) {
-    if (!this.isAdmin) return;
+    if (!this.canEdit) return;
     this.form.seance_ids = this.hasSession(id)
       ? this.form.seance_ids.filter((value) => value !== id)
       : [...this.form.seance_ids, id];
   }
 
   async save() {
-    if (!this.isAdmin || this.saving) return;
+    if (!this.canEdit || this.saving) return;
     if (!this.form.nom.trim()) { this.error = 'Le nom du calendrier est obligatoire.'; return; }
     this.saving = true;
     this.error = '';
@@ -200,10 +225,12 @@ export class CalendrierComponent implements OnInit {
       this.info = 'Calendrier enregistré sur Assolutions.';
       await this.reload(result.id);
       this.info = 'Calendrier enregistré localement. Synchronisation Google non lancée.';
-      if (window.confirm(
+      if (this.isAdmin && window.confirm(
         'Souhaites-tu maintenant synchroniser ce calendrier vers Google Agenda ?\n' +
         'Cela peut générer de nombreux e-mails Google.'
       )) await this.synchroniser();
+      if (!this.isAdmin) this.info =
+        'Modifications enregistrées. La synchronisation Google sera effectuée par un administrateur ou par le service automatique si activé.';
     } catch (e: any) { this.error = String(e?.message || e); }
     finally { this.saving = false; }
   }
