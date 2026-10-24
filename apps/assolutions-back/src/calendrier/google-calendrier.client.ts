@@ -206,7 +206,11 @@ export class GoogleCalendrierClient {
     notify: boolean, automatic = false) {
     const path = '/calendars/' + encodeURIComponent(calendarId) + '/events';
     const existing = await this.getEvent(calendarId, eventId);
-    const shouldNotify = notify && (!automatic || this.automaticNotify(existing, body));
+    const removedGuest = !!existing && (existing.attendees ?? []).some((guest: any) =>
+      !(body.attendees ?? []).some((next: any) =>
+        String(next.email ?? '').toLowerCase() === String(guest.email ?? '').toLowerCase()));
+    const shouldNotify = notify && !removedGuest &&
+      (!automatic || this.automaticNotify(existing, body));
     if (existing) {
       // Preserver les RSVP Google sur les adresses toujours presentes.
       const old = new Map<string, string>((existing.attendees ?? []).map((x: any) =>
@@ -231,6 +235,6 @@ export class GoogleCalendrierClient {
 
   async deleteEvent(calendarId: string, eventId: string, notify: boolean) {
     return this.call('DELETE', '/calendars/' + encodeURIComponent(calendarId) +
-      '/events/' + encodeURIComponent(eventId), undefined, notify ? 'all' : 'none');
+      '/events/' + encodeURIComponent(eventId), undefined, 'none');
   }
 }
