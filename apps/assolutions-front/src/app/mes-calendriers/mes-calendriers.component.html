@@ -43,6 +43,9 @@
         </button>
       </div>
     </div>
+    <p *ngIf="calendar.google_calendar_url" class="help mes-calendar-share-note">
+      Partager transmet le lien Google ; l'accès à un agenda privé nécessite toujours une autorisation Google séparée.
+    </p>
 
     <ng-container *ngIf="evenementsDuCalendrier(calendar.id) as liste">
       <h3 class="title is-6 mt-4 mb-2">Séances du calendrier ({{ liste.length }})</h3>
