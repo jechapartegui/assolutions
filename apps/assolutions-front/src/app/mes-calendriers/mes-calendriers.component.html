@@ -43,7 +43,9 @@
       </div>
       <div class="buttons are-small mes-calendar-actions">
         <a *ngIf="calendar.google_calendar_url" class="button is-link is-light"
-           target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url">
+           target="_blank" rel="noopener noreferrer" [href]="calendar.google_calendar_url"
+           [attr.aria-label]="'Ouvrir le calendrier ' + calendar.nom + ' dans Google Agenda'"
+           title="Ouvrir dans Google Agenda">
           <i class="fas fa-arrow-up-right-from-square"></i><span class="mes-calendar-mobile-extras ml-1">Google Agenda</span>
         </a>
         <button *ngIf="calendar.google_calendar_url" class="button is-light" type="button"
