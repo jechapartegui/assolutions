@@ -1145,3 +1145,30 @@
 .trial-action-icon {
   line-height: 1;
 }
+
+/* EXG-32 : deux actions au même niveau, aussi utilisables sur mobile. */
+.menu-calendar-toggle {
+  text-decoration: none;
+  color: #174a8b;
+  background: rgba(222, 247, 250, .95) !important;
+  box-shadow: 0 5px 14px rgba(31, 112, 149, .10);
+}
+@media (max-width: 767px) {
+  .menu-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: .38rem;
+  }
+  .menu-hero-actions .menu-contact-toggle {
+    width: 100%;
+    font-size: .76rem;
+    height: 2.2rem;
+    padding: .4rem !important;
+    margin: 0;
+    min-width: 0;
+  }
+  .menu-hero-actions > .button:not(.menu-contact-toggle) {
+    grid-column: 1 / -1;
+  }
+}
