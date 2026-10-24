@@ -90,8 +90,6 @@ export interface CalendrierWorkerEtat {
   auto_sync_configure?: boolean;
   worker_demarre?: boolean;
   worker_en_cours?: boolean;
-  filtre_valide?: boolean;
-  calendrier_dans_filtre?: boolean;
   calendrier_google_existant?: boolean;
   calendrier_actif?: boolean;
   eligibilite?: boolean;
