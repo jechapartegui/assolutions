@@ -7,6 +7,8 @@ import { LoginComponent } from './login/login.component';
 import { MenuComponent } from './menu/menu.component';
 import { AdherentComponent } from './adherent/main/adherent.component';
 import { SeanceComponent } from './seance/seance.component';
+import { CalendrierComponent } from './calendrier/calendrier.component';
+import { MesCalendriersComponent } from './mes-calendriers/mes-calendriers.component';
 import { CoursComponent } from './cours/cours.component';
 import { MaSeanceComponent } from './ma-seance/ma-seance.component';
 import { ShortLinkRedirectComponent } from './short-link-redirect/short-link-redirect.component';
@@ -53,6 +55,8 @@ const routes: Routes = [
   { path: 'souscription', component: SouscriptionTunnelComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'cours', component: CoursComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
   { path: 'seance', component: SeanceComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
+  { path: 'calendrier', component: CalendrierComponent, canActivate: [AuthGuard], data: { auth: { requireProf: true } } },
+  { path: 'mes-calendriers', component: MesCalendriersComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'ma-seance', component: MaSeanceComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'adherent', component: AdherentComponent, canActivate: [AuthGuard], data: LOGGED_ANY },
   { path: 'groupe', component: GroupeComponent, canActivate: [AuthGuard], data: LOGGED_ANY },

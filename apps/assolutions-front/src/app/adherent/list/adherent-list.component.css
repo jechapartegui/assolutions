@@ -88,3 +88,36 @@
   .adherent-card-body { padding: 0.5rem; }
   .adherent-bulk-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+/* EXG-35 : fiche complète ou liste mobile à une seule ligne par item. */
+.exg-mobile-list-toggle { display:none; }
+@media (max-width:1023px) {
+ .adherent-card-actions .exg-mobile-list-toggle {
+   display:inline-flex; align-items:center; gap:.25rem; font-size:.75rem;
+   font-weight:600; white-space:nowrap; padding:.28rem .45rem;
+   border-radius:8px; background:#effaf8; color:#116e60; cursor:pointer;
+   margin:0; flex:0 0 auto;
+ }
+ .exg-mobile-list-toggle input { margin:0; accent-color:#00a995; }
+ .exg-mobile-quick-list { display:grid; gap:0; width:100%; padding:.25rem .35rem; }
+ .exg-mobile-quick-row {
+   display:flex; flex-wrap:nowrap; align-items:center; gap:.3rem;
+   width:100%; min-width:0; height:2.55rem; border-bottom:1px solid rgba(90,108,132,.14);
+   padding:.25rem .28rem; background:#fff;
+ }
+ .exg-mobile-quick-row:last-child {border-bottom:0;}
+ .exg-mobile-quick-name {
+   flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;
+   white-space:nowrap; text-align:left; border:0; background:none;
+   color:#152d45; font-weight:600; font-size:.79rem; cursor:pointer; padding:.2rem 0;
+ }
+ .exg-mobile-quick-meta {
+   flex:0 0 auto; max-width:4.7rem; white-space:nowrap; overflow:hidden;
+   text-overflow:ellipsis; font-size:.7rem; color:#748196;
+ }
+ .exg-mobile-quick-open {
+   flex:0 0 1.8rem; width:1.8rem; height:1.8rem; display:grid; place-items:center;
+   border:0; background:#f1f4f8; color:#365064; border-radius:6px; cursor:pointer;
+ }
+ .exg-mobile-quick-check { flex:0 0 auto; }
+}

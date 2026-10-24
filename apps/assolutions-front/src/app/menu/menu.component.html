@@ -16,7 +16,7 @@
           </p>
         </div>
 
-        <div class="menu-hero-actions">
+        <div class="menu-hero-actions" [class.has-calendar-shortcut]="showMesCalendriers">
           <button
             class="button is-link is-light menu-contact-toggle"
             type="button"
@@ -29,6 +29,15 @@
               {{ showContactClub ? 'Fermer le contact club' : 'Contacter le club' }}
             </span>
           </button>
+          <a
+            *ngIf="showMesCalendriers"
+            class="button is-link is-light menu-contact-toggle menu-calendar-toggle"
+            [routerLink]="['/mes-calendriers']"
+            i18n-title title="Consulter mes calendriers et répondre aux séances"
+          >
+            <span class="icon"><i class="fas fa-calendar-days"></i></span>
+            <span>Mes calendriers</span>
+          </a>
           <button
             *ngIf="refreshAvailable"
             class="button is-warning is-light"

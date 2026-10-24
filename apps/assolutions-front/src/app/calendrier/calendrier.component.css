@@ -1,0 +1,175 @@
+/* EXG-FIX-01 : l'application verrouille le scroll global (html/body/app-root).
+   Ce composant route doit donc avoir son propre defilement vertical, sans toucher
+   au layout des autres pages admin. */
+:host {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - var(--app-topbar-height, 52px));
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@supports not (height: 100dvh) {
+  :host { height: calc(100vh - var(--app-topbar-height, 52px)); }
+}
+
+@media (max-width: 767px) {
+  :host {
+    /* Pas de navbar desktop sur mobile ; reserver le footer fixe. */
+    height: calc(100dvh - var(--mobile-footer-h, 64px) - var(--safe-bottom, 0px));
+    padding-bottom: calc(1rem + var(--safe-bottom, 0px));
+    box-sizing: border-box;
+    scrollbar-gutter: auto;
+  }
+}
+
+/* La page et les listes disposent d'une barre de defilement perceptible.
+   Le scroll horizontal des tableaux reste possible sur petit ecran. */
+:host,
+.calendar-group-tags,
+.calendar-sessions-table {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(100, 116, 139, .75) transparent;
+}
+
+:host::-webkit-scrollbar,
+.calendar-group-tags::-webkit-scrollbar,
+.calendar-sessions-table::-webkit-scrollbar {
+  width: 10px;
+  height: 9px;
+}
+:host::-webkit-scrollbar-thumb,
+.calendar-group-tags::-webkit-scrollbar-thumb,
+.calendar-sessions-table::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, .65);
+  border-radius: 999px;
+}
+:host::-webkit-scrollbar-track,
+.calendar-group-tags::-webkit-scrollbar-track,
+.calendar-sessions-table::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Ajouter un groupe, puis le retrouver sous forme de pastille compacte. */
+.calendar-group-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.calendar-group-picker > .select {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 400px;
+}
+.calendar-group-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+}
+.calendar-group-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  max-width: 100%;
+  height: auto;
+  min-height: 1.85rem;
+  padding: .25rem .55rem;
+  white-space: normal;
+}
+.calendar-group-tag > span {
+  overflow-wrap: anywhere;
+}
+
+/* Trois filtres explicites plutôt qu'un seul champ imprécis. */
+.calendar-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: .7rem;
+}
+.calendar-filter-grid .field,
+.calendar-filter-grid .input,
+.calendar-filter-grid .select { min-width: 0; }
+.calendar-filter-grid .input { width: 100%; }
+
+/* Tableau du haut toujours visible indépendamment des filtres du bas. */
+.calendar-selected-table { max-height: 265px !important; margin-bottom: .6rem; }
+
+@media (max-width: 720px) {
+  .calendar-filter-grid { grid-template-columns: minmax(0, 1fr); }
+  .calendar-group-picker > .select { max-width: none; }
+}
+
+.calendar-sessions-table {
+  max-width: 100%;
+  max-height: 430px;
+  overflow: auto;
+}
+.calendar-sessions-table table { font-size: .86rem; min-width: 650px; }
+.is-nowrap { white-space: nowrap; }
+
+/* EXG-28 : aligner la densité sur les vues Séances / Cours / Adhérents. */
+.exg-compact > .box,
+.exg-compact .column > .box {
+  padding: .85rem .95rem;
+  border: 1px solid rgba(106, 129, 148, .14);
+  box-shadow: 0 1px 4px rgba(18, 39, 57, .035);
+  border-radius: 8px;
+  margin-bottom: .65rem;
+}
+.exg-compact .title.is-4 { font-size: 1.15rem; }
+.exg-compact .title.is-5 { font-size: 1.02rem; }
+.exg-compact .title.is-6 { font-size: .88rem; }
+.exg-compact .subtitle { font-size: .84rem; margin-bottom: .3rem; }
+.exg-compact .notification { padding: .65rem .8rem; font-size: .83rem; }
+.exg-compact .calendar-sessions-table .table { font-size: .80rem; }
+.exg-compact .calendar-sessions-table .table th,
+.exg-compact .calendar-sessions-table .table td {
+  padding: .39rem .48rem;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(111, 130, 150, .13);
+}
+.exg-compact .calendar-sessions-table .table th { font-size: .77rem; }
+.exg-compact .calendar-sessions-table .table.is-striped tbody tr:not(.is-selected):nth-child(even) {
+  background: rgba(235, 241, 246, .20);
+}
+.exg-compact .calendar-sessions-table .button.is-small { height: 1.95rem; font-size: .76rem; }
+.calendar-visibility-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.25rem;
+  align-items: center;
+  font-size: .85rem;
+}
+.calendar-visibility-filters input[type=checkbox] { margin-right: .35rem; }
+@media (max-width: 767px) {
+  .exg-compact > .box,
+  .exg-compact .column > .box { padding: .7rem; }
+}
+
+/* EXG-34 : aucun pavé d'explication sur mobile, actions compactes. */
+@media (max-width:767px) {
+  .exg-compact .calendar-mobile-hide-label,
+  .exg-compact .calendar-intro-subtitle,
+  .exg-compact .calendar-prof-help,
+  .exg-compact .calendar-information-note,
+  .exg-compact .calendar-selection-help {
+    display:none !important;
+  }
+  .exg-compact > section.box {padding:.5rem .6rem !important;}
+  .exg-compact > section.box > .is-flex {margin-bottom:0 !important;gap:.35rem !important;}
+  .exg-compact > section.box .title {margin:0 !important;font-size:.96rem;}
+  .exg-compact > section.box .buttons {margin:0 !important;gap:.3rem;}
+  .exg-compact > section.box .buttons .button {
+    min-width:2.2rem;min-height:2.1rem;padding:.3rem .45rem;
+    margin:0 !important;font-size:.77rem;
+  }
+  .exg-compact .calendar-sessions-table {max-height:48vh;}
+}

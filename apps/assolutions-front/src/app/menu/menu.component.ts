@@ -17,6 +17,7 @@ import { MenuRepository } from '../../repository/menu.repository';
 import { ErrorService } from '../../services/error.service';
 import { MessageApiService } from '../../services/message-api.service';
 import { ProjectApiService } from '../../services/project-api.service';
+import { CalendrierApiService } from '../../services/calendrier-api.service';
 import { MenuStore } from '../../store/menu.store';
 import { AppStore } from '../app.store';
 import { StaticClass } from '../global';
@@ -36,6 +37,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   public showScrollToTop = false;
   public denseMode = false;
   public showContactClub = false;
+  public showMesCalendriers = false;
   public contactClubMessage = '';
   public action = '';
 
@@ -50,6 +52,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     private readonly messageservice: MessageApiService,
     private readonly multifiltersPipe: MultifiltersMenuPipe,
     private readonly projectapi: ProjectApiService,
+    private readonly calendriersApi: CalendrierApiService,
   ) {}
 
   get Riders(): AdherentMenu[] {
@@ -121,6 +124,14 @@ export class MenuComponent implements OnInit, OnDestroy {
       const rights = selectedProject.rights;
 
       await this.menuStore.init(projectId, saisonId, rights);
+      // Vérifier les agendas actifs accessibles UNIQUEMENT dans Mon menu,
+      // jamais dans le menu administrateur.
+      try {
+        const etat = await this.calendriersApi.mesExiste();
+        this.showMesCalendriers = etat.existe === true;
+      } catch {
+        this.showMesCalendriers = false;
+      }
     } catch (err: any) {
       errorService.emitChange(
         errorService.CreateError(
