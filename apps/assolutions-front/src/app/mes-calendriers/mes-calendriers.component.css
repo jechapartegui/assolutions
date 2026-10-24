@@ -279,3 +279,41 @@
   .mes-calendar-page .mes-calendar-intro .box,
   .mes-calendar-page .mes-calendar-card .box { box-shadow: none; }
 }
+
+
+/* EXG-PP03-UX-01 — contraste lisible sur iOS et Android en mode sombre.
+   Les couleurs fixes du mobile (#687891 / #303e50 / #223850) étaient
+   prévues pour un fond clair : elles devenaient presque invisibles sur
+   les cartes sombres. Le thème clair n'est volontairement pas modifié. */
+@media (prefers-color-scheme: dark) {
+  .mes-calendar-page .mes-calendar-mobile-title,
+  .mes-calendar-page .mes-calendar-mobile-person-name,
+  .mes-calendar-page .mes-calendar-card h2,
+  .mes-calendar-page .mes-calendar-list-title {
+    color: #f8fafc !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-title i,
+  .mes-calendar-page .mes-calendar-mobile-location i {
+    color: #d6e2ee !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-meta,
+  .mes-calendar-page .mes-calendar-mobile-location {
+    color: #e0eaf4 !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-person-status,
+  .mes-calendar-page .mes-calendar-mobile-consult,
+  .mes-calendar-page .mes-calendar-mobile-state {
+    color: #becfdf !important;
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-item {
+    border-color: rgba(203, 213, 225, .27);
+  }
+
+  .mes-calendar-page .mes-calendar-mobile-person {
+    border-top-color: rgba(203, 213, 225, .2);
+  }
+}
