@@ -156,6 +156,7 @@
 
 /* EXG-34 : aucun pavé d'explication sur mobile, actions compactes. */
 @media (max-width:767px) {
+  .exg-compact .calendar-mobile-hide-label,
   .exg-compact .calendar-intro-subtitle,
   .exg-compact .calendar-prof-help,
   .exg-compact .calendar-information-note,
