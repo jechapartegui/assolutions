@@ -61,20 +61,53 @@ export class CalendrierService {
     return rows[0];
   }
 
-  async mes(accountId: number, projectId: number) {
-    return this.dataSource.query(
-      `SELECT DISTINCT c.id, c.nom, c.description, c.timezone, c.saison_id,
-           c.google_calendar_url, c.statut_synchro
-       FROM calendrier c
-       INNER JOIN calendrier_groupe cg ON cg.calendrier_id = c.id
-       INNER JOIN lien_groupe lg ON lg.groupe_id = cg.groupe_id AND lg.object_type = 'rider'
-       INNER JOIN personne p ON p.id = lg.object_id AND p.compte = $1 AND COALESCE(p.archive, false) = false
-       INNER JOIN login_project lp ON lp.login_id = p.compte AND lp.project_id = c.project_id
-       WHERE c.project_id = $2 AND c.actif = true ORDER BY c.nom`,
-      [accountId, projectId],
+  /** EXG-30 : uniquement calendriers actifs, membres destinataires ou admin propriétaire. */
+  async mesExiste(accountId: number, projectId: number): Promise<{ existe: boolean }> {
+    const rows: Array<{ existe: boolean }> = await this.dataSource.query(
+      `SELECT EXISTS (
+          SELECT 1 FROM calendrier c
+          WHERE c.project_id=$2 AND c.actif=true
+            AND (
+              EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
+              OR (
+                EXISTS (SELECT 1 FROM login_project lp
+                        WHERE lp.project_id=c.project_id AND lp.login_id=$1)
+                AND EXISTS (
+                  SELECT 1 FROM calendrier_groupe cg
+                  JOIN lien_groupe lg ON lg.groupe_id=cg.groupe_id AND lg.object_type='rider'
+                  JOIN personne pe ON pe.id=lg.object_id
+                  WHERE cg.calendrier_id=c.id AND pe.compte=$1
+                    AND COALESCE(pe.archive,false)=false
+                )
+              )
+            )
+        ) AS existe`, [accountId,projectId],
     );
+    return { existe: rows[0]?.existe === true };
   }
 
+  async mes(accountId: number, projectId: number) {
+    return this.dataSource.query(
+      `SELECT c.id,c.nom,c.description,c.timezone,c.saison_id,
+              c.google_calendar_url,c.statut_synchro
+       FROM calendrier c
+       WHERE c.project_id=$2 AND c.actif=true
+         AND (
+           EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
+           OR (
+             EXISTS (SELECT 1 FROM login_project lp WHERE lp.project_id=c.project_id AND lp.login_id=$1)
+             AND EXISTS (
+               SELECT 1 FROM calendrier_groupe cg
+               JOIN lien_groupe lg ON lg.groupe_id=cg.groupe_id AND lg.object_type='rider'
+               JOIN personne pe ON pe.id=lg.object_id
+               WHERE cg.calendrier_id=c.id AND pe.compte=$1
+                 AND COALESCE(pe.archive,false)=false
+             )
+           )
+         )
+       ORDER BY c.nom`,[accountId,projectId],
+    );
+  }
 
   /**
    * EXG-20 / EXG-UI-02 : événements du calendrier visibles par le COMPTE courant.
@@ -104,7 +137,6 @@ export class CalendrierService {
               candidat.last_name, candidat.statut_inscription,
               (se.date_seance >= CURRENT_DATE AND se.statut = 'prévue') AS peut_repondre
        FROM calendrier c
-       JOIN login_project lp ON lp.project_id=c.project_id AND lp.login_id=$1
        JOIN seance se ON se.calendrier_id=c.id
        LEFT JOIN lieu l ON l.id=se.lieu_id
        LEFT JOIN LATERAL (
@@ -137,13 +169,18 @@ export class CalendrierService {
            )
        ) candidat ON TRUE
        WHERE c.project_id=$2 AND c.actif=true
-         AND EXISTS (
-           SELECT 1 FROM calendrier_groupe cg
-           JOIN lien_groupe lr ON lr.groupe_id=cg.groupe_id
-             AND lr.object_type='rider'
-           JOIN personne membre ON membre.id=lr.object_id
-           WHERE cg.calendrier_id=c.id AND membre.compte=$1
-             AND COALESCE(membre.archive,false)=false
+         AND (
+           EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
+           OR (
+             EXISTS (SELECT 1 FROM login_project lp WHERE lp.project_id=c.project_id AND lp.login_id=$1)
+             AND EXISTS (
+               SELECT 1 FROM calendrier_groupe cg
+               JOIN lien_groupe lr ON lr.groupe_id=cg.groupe_id AND lr.object_type='rider'
+               JOIN personne membre ON membre.id=lr.object_id
+               WHERE cg.calendrier_id=c.id AND membre.compte=$1
+                 AND COALESCE(membre.archive,false)=false
+             )
+           )
          )
        ORDER BY se.date_seance, se.heure_debut, se.seance_id, candidat.last_name, candidat.first_name
        LIMIT 2000`,
@@ -194,17 +231,22 @@ export class CalendrierService {
          SELECT pe.id, se.seance_id, $5::text::inscription_seance_statut_inscription_enum, now()
          FROM seance se
          JOIN calendrier c ON c.id=se.calendrier_id
-         JOIN login_project lp ON lp.project_id=c.project_id AND lp.login_id=$1
          JOIN personne pe ON pe.id=$4 AND pe.compte=$1 AND COALESCE(pe.archive,false)=false
          LEFT JOIN inscription_seance ins ON ins.personne_id=pe.id AND ins.seance_id=se.seance_id
          WHERE se.seance_id=$3 AND c.project_id=$2 AND c.actif=true
            AND se.statut='prévue' AND se.date_seance>=CURRENT_DATE
-           AND EXISTS (
-             SELECT 1 FROM calendrier_groupe cg
-             JOIN lien_groupe lr ON lr.groupe_id=cg.groupe_id AND lr.object_type='rider'
-             JOIN personne membre ON membre.id=lr.object_id
-             WHERE cg.calendrier_id=c.id AND membre.compte=$1
-               AND COALESCE(membre.archive,false)=false
+           AND (
+             EXISTS (SELECT 1 FROM project pr WHERE pr.id=c.project_id AND pr.compte=$1)
+             OR (
+               EXISTS (SELECT 1 FROM login_project lp WHERE lp.project_id=c.project_id AND lp.login_id=$1)
+               AND EXISTS (
+                 SELECT 1 FROM calendrier_groupe cg
+                 JOIN lien_groupe lr ON lr.groupe_id=cg.groupe_id AND lr.object_type='rider'
+                 JOIN personne membre ON membre.id=lr.object_id
+                 WHERE cg.calendrier_id=c.id AND membre.compte=$1
+                   AND COALESCE(membre.archive,false)=false
+               )
+             )
            )
            AND (
              (ins.personne_id IS NOT NULL AND ins.statut_inscription IS DISTINCT FROM 'essai')
