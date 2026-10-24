@@ -18,7 +18,7 @@ export class GoogleCalendrierClient {
     const env = (process.env.APP_ENV ?? process.env.NODE_ENV ?? 'local').toLowerCase();
     if (env === 'preprod' || env === 'preproduction') return '[PREPROD] - ' + nom;
     if (env === 'prod' || env === 'production') return nom;
-    return '[LOCAL - TEST] - ' + nom;
+    return '[LOCAL] - ' + nom;
   }
   calendarName(nom: string) { return this.prefix(nom); }
 

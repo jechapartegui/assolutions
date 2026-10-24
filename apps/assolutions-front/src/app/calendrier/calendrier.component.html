@@ -10,7 +10,7 @@
         <button class="button is-info is-light" (click)="reload()" [disabled]="loading" title="Actualiser" aria-label="Actualiser"><i class="fas fa-arrows-rotate"></i><span class="calendar-mobile-hide-label ml-2">Actualiser</span></button>
         <button *ngIf="isAdmin" class="button is-warning is-light"
           (click)="verifierConnexionGoogle()" [disabled]="checkingGoogle">
-          {{ checkingGoogle ? 'Vérification…' : 'Tester connexion Google' }}
+          {{ checkingGoogle ? 'Vérification…' : 'État de la connexion Google' }}
         </button>
         <button *ngIf="isAdmin" class="button is-primary" (click)="newCalendar()">Nouveau calendrier</button>
       </div>
@@ -194,20 +194,18 @@
           <button *ngIf="isAdmin && selectedId" class="button is-light" (click)="showResponses()">Aperçu réponses Google</button>
           <button *ngIf="isAdmin && selectedId" class="button is-info is-light"
                   (click)="verifierWorker()" [disabled]="checkingWorker">
-            <i class="fas fa-stethoscope mr-2"></i>{{ checkingWorker ? 'Diagnostic…' : 'Diagnostic auto-sync' }}
+            <i class="fas fa-stethoscope mr-2"></i>{{ checkingWorker ? 'Vérification…' : 'État auto-sync' }}
           </button>
         </div>
         <p class="help">La sauvegarde Assolutions ne synchronise pas automatiquement Google depuis cet écran : une confirmation explicite est demandée.</p>
         <div *ngIf="workerEtat" class="notification is-info is-light mt-3">
-          <strong>Diagnostic de synchronisation automatique (lecture seule)</strong>
+          <strong>État de la synchronisation automatique (lecture seule)</strong>
           <p class="mt-2">
             Google : <strong>{{ workerEtat.google_configure ? 'activé' : 'désactivé' }}</strong>
             · AUTO_SYNC : <strong>{{ workerEtat.auto_sync_configure ? 'activé' : 'désactivé' }}</strong>
             · Worker démarré : <strong>{{ workerEtat.worker_demarre ? 'oui' : 'non' }}</strong>
-            · Calendrier dans le filtre : <strong>{{ workerEtat.calendrier_dans_filtre ? 'oui' : 'non' }}</strong>
           </p>
-          <p>Filtre valide : {{ workerEtat.filtre_valide ? 'oui' : 'non' }}
-            · Agenda Google existant : {{ workerEtat.calendrier_google_existant ? 'oui' : 'non' }}
+          <p>Agenda Google existant : {{ workerEtat.calendrier_google_existant ? 'oui' : 'non' }}
             · Événements en attente : <strong>{{ workerEtat.evenements_pending ?? 0 }}</strong>
           </p>
           <p>Dernier passage : <strong>{{ workerEtat.dernier_passage ? (workerEtat.dernier_passage | date:'dd/MM/yyyy HH:mm:ss') : 'aucun depuis le démarrage' }}</strong>
@@ -215,10 +213,7 @@
             · Calendriers trouvés au dernier passage : {{ workerEtat.derniers_calendriers_trouves ?? 0 }}
           </p>
           <p *ngIf="!workerEtat.worker_demarre" class="help is-danger">
-            Le worker ne tourne pas dans ce processus backend : vérifier .env.local et redémarrer le backend.
-          </p>
-          <p *ngIf="workerEtat.worker_demarre && !workerEtat.calendrier_dans_filtre" class="help is-danger">
-            Ce calendrier n'est pas autorisé par GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS.
+            Le worker ne tourne pas dans ce processus backend : vérifier la configuration de l'environnement backend et le redémarrer.
           </p>
           <p class="help">Ce bouton vérifie seulement l'état : il n'envoie aucun mail et ne synchronise rien.</p>
         </div>

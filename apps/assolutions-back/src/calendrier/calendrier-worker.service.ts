@@ -28,7 +28,7 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('EXG auto-sync: ' + (actif ? 'ACTIVE' : 'INACTIVE') +
       ' (Google=' + this.google.enabled +
       ', AUTO_SYNC=' + (process.env.GOOGLE_CALENDAR_AUTO_SYNC === 'true') +
-      ', filtre=' + (process.env.GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS || 'TOUS') + ')');
+      ', calendriers=actifs avec agenda Google existant)');
     if (!actif) {
       this.dernierResultat = 'DESACTIVE';
       return;
@@ -66,12 +66,6 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
     );
     const calendrier = rows[0] ?? null;
     if (!calendrier) return { calendrier_trouve: false };
-    const filterRaw = String(process.env.GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS ?? '').trim();
-    const filter = filterRaw ? filterRaw.split(',').map((value) => Number(value.trim())) : [];
-    const filterValid = !filterRaw ||
-      filter.every((id) => Number.isSafeInteger(id) && id > 0) &&
-      new Set(filter).size === filter.length;
-    const dansFiltre = !filterRaw || (filterValid && filter.includes(calendrierId));
     const autoEnv = process.env.GOOGLE_CALENDAR_AUTO_SYNC === 'true';
     const active = this.google.enabled && autoEnv && !!this.timer;
     return {
@@ -83,11 +77,9 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
       auto_sync_configure: autoEnv,
       worker_demarre: !!this.timer,
       worker_en_cours: this.running,
-      filtre_valide: filterValid,
-      calendrier_dans_filtre: dansFiltre,
       calendrier_google_existant: calendrier.google_present,
       calendrier_actif: calendrier.actif,
-      eligibilite: active && filterValid && dansFiltre &&
+      eligibilite: active &&
         calendrier.actif && calendrier.google_present &&
         (calendrier.statut_synchro === 'PENDING' || calendrier.evenements_pending > 0),
       dernier_passage: this.dernierPassage,
@@ -114,19 +106,8 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
         this.logger.warn('EXG auto-sync: verrou PostgreSQL deja occupe');
         return;
       }
-      // EXG-17 : un calendrier doit d'abord etre cree explicitement dans Google.
-      // En LOCAL, limiter facultativement le worker a un ou plusieurs IDs pour
-      // ne pas traiter les autres calendriers en attente pendant la recette.
-      const rawIds = String(process.env.GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS ?? '').trim();
-      const allowedIds = rawIds
-        ? [...new Set(rawIds.split(',').map((v) => Number(v.trim()))
-            .filter((id) => Number.isSafeInteger(id) && id > 0))]
-        : [];
-      if (rawIds && (!allowedIds.length || allowedIds.length !== rawIds.split(',').length)) {
-        this.dernierResultat = 'FILTRE_INVALIDE';
-        this.logger.warn('Invalid GOOGLE_CALENDAR_AUTO_SYNC_CALENDAR_IDS; skipping automatic run');
-        return;
-      }
+      // Ne traiter que les agendas Google effectivement créés et actifs.
+      // Aucun filtre d'ID propre à la recette locale en PREPROD/PROD.
       const calendars: Array<{ id: number; project_id: number }> = await connection.query(
         `SELECT DISTINCT c.id, c.project_id
          FROM calendrier c
@@ -136,9 +117,7 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
              c.statut_synchro = 'PENDING'
              OR ce.statut_synchro IN ('PENDING','ERROR','DELETE_PENDING','SYNCING')
            )
-           AND ($1::int[] IS NULL OR c.id = ANY($1::int[]))
          ORDER BY c.id LIMIT 5`,
-        [rawIds ? allowedIds : null],
       );
       this.derniersCalendriersTrouves = calendars.length;
       this.dernierResultat = calendars.length ? 'TRAITEMENT_TERMINE' : 'AUCUN_CALENDRIER_ELIGIBLE';
