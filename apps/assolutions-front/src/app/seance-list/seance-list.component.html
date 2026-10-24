@@ -6,7 +6,7 @@
     </div>
 
     <div class="buttons is-flex-wrap-wrap seance-card-actions">
-      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées">
+      <label class="checkbox exg-mobile-list-toggle" title="Basculer entre liste simple et fiches détaillées" i18n i18n-title>
         <input type="checkbox" [(ngModel)]="compactMobile" />
         Liste simple
       </label>
@@ -74,7 +74,7 @@
             {{ seance.nom || 'Séance sans nom' }}
           </button>
           <span class="exg-mobile-quick-meta">{{ seance.date_seance | date:'dd/MM' }}</span>
-          <button type="button" class="exg-mobile-quick-open" (click)="open(seance)" aria-label="Ouvrir" title="Ouvrir">
+          <button type="button" class="exg-mobile-quick-open" (click)="open(seance)" aria-label="Ouvrir" title="Ouvrir" i18n-aria-label i18n-title>
             <i class="fas fa-pen"></i>
           </button>
         </div>

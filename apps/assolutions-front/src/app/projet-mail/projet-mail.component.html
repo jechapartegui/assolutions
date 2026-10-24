@@ -15,7 +15,7 @@
       </p>
     </div>
     <div class="hero-status">
-      <span class="tag is-info is-light">{{ fieldsCount }} champ(s)</span>
+      <span class="tag is-info is-light" i18n>{{ fieldsCount }} champ(s)</span>
       <span class="tag is-success is-light" *ngIf="previewHtml" i18n>Aperçu prêt</span>
     </div>
   </section>
@@ -105,7 +105,7 @@
         </div>
 
         <div class="fields-toolbar" *ngIf="fieldsCount > 0">
-          <span class="tag is-info is-light">{{ fieldsCount }} champ(s) détecté(s)</span>
+          <span class="tag is-info is-light" i18n>{{ fieldsCount }} champ(s) détecté(s)</span>
           <button type="button" class="button is-small is-light" (click)="remplirExemples()">
             <span class="icon"><i class="fa-solid fa-dice"></i></span>
             <span i18n>Remplir avec des exemples</span>

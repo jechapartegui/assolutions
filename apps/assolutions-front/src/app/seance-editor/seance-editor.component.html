@@ -168,25 +168,25 @@
       </section>
 
       <section class="box editor-box">
-        <h3 class="subtitle is-6 has-text-primary mb-3">Google Agenda</h3>
+        <h3 class="subtitle is-6 has-text-primary mb-3" i18n>Google Agenda</h3>
         <div class="field" *ngIf="isAdmin">
-          <label class="label">Calendrier de la séance</label>
+          <label class="label" i18n>Calendrier de la séance</label>
           <div class="select is-fullwidth">
             <select [(ngModel)]="seance.calendrier_id" [disabled]="saving">
-              <option [ngValue]="null">Aucun calendrier</option>
+              <option [ngValue]="null" i18n>Aucun calendrier</option>
               <option *ngFor="let cal of calendriers" [ngValue]="cal.id">{{ cal.nom }}</option>
             </select>
           </div>
         </div>
-        <p *ngIf="!isAdmin" class="help">Calendrier associé : {{ calendrierAssocie?.nom || 'Aucun' }}</p>
-        <p class="help">L'agenda Google est informatif ; les convocations et réponses restent dans Assolutions.</p>
+        <p *ngIf="!isAdmin" class="help" i18n>Calendrier associé : {{ calendrierAssocie?.nom || 'Aucun' }}</p>
+        <p class="help" i18n>L'agenda Google est informatif ; les convocations et réponses restent dans Assolutions.</p>
         <div class="buttons mt-3">
-          <button class="button is-link is-light" type="button" (click)="allerCalendrier()">
+          <button class="button is-link is-light" type="button" (click)="allerCalendrier()" i18n>
             <i class="fas fa-calendar-days mr-2"></i>Calendriers
           </button>
           <button *ngIf="isAdmin && seance.id > 0 && seance.calendrier_id"
             class="button is-warning is-light" type="button" (click)="forcerGoogle()"
-            [disabled]="saving || syncGoogleBusy">
+            [disabled]="saving || syncGoogleBusy" i18n>
             <i class="fas fa-arrows-rotate mr-2"></i>Forcer la synchronisation
           </button>
         </div>
