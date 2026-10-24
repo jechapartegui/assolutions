@@ -126,6 +126,9 @@ export class CalendrierApiService {
   mes(): Promise<Calendrier[]> {
     return this.api.GET<Calendrier[]>(this.base + '/mes');
   }
+  mesExiste(): Promise<{ existe: boolean }> {
+    return this.api.GET<{ existe: boolean }>(this.base + '/mes/existe');
+  }
   mesEvenements(): Promise<MesCalendriersEvenement[]> {
     return this.api.GET<MesCalendriersEvenement[]>(this.base + '/mes/evenements');
   }
