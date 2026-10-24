@@ -66,6 +66,9 @@ jobs:
           if (missing.length || empty.length) process.exit(1);
           NODE
 
+      - name: Build English frontend explicitly
+        run: npx nx build assolutions-front --configuration=development-en --skip-nx-cache
+
       - name: Check residual template strings
         run: |
           node --input-type=module - <<'NODE'
@@ -112,5 +115,3 @@ jobs:
           }
           NODE
 
-      - name: Build English frontend explicitly
-        run: npx nx build assolutions-front --configuration=development-en --skip-nx-cache
