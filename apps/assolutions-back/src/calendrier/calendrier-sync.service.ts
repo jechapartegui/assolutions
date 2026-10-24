@@ -300,11 +300,11 @@ export class CalendrierSyncService {
   private async candidatsSeance(
     seanceId: number, calendrierId: number, projectId: number, compteId: number,
     queryable: { query(sql: string, params?: any[]): Promise<any> } = this.db,
-  ): Promise<Array<{ id: number; nom: string; origine: 'inscription' | 'groupe_seance' }>> {
-    const rows: Array<{ id: number; nom: string; inscription_existante: boolean }> =
+  ): Promise<Array<{ id: number; nom: string; origine: 'inscription' | 'groupe_seance'; statut_inscription: string | null }>> {
+    const rows: Array<{ id: number; nom: string; inscription_existante: boolean; statut_inscription: string | null }> =
       await queryable.query(
         `SELECT pe.id, concat_ws(' ', nullif(btrim(pe.first_name), ''), nullif(btrim(pe.last_name), '')) AS nom,
-                (ins.personne_id IS NOT NULL) AS inscription_existante
+                (ins.personne_id IS NOT NULL) AS inscription_existante, ins.statut_inscription
            FROM personne pe
            JOIN seance se ON se.seance_id=$2 AND se.calendrier_id=$3
            JOIN saison sa ON sa.id=se.saison_id AND sa.project_id=$4
@@ -339,6 +339,7 @@ export class CalendrierSyncService {
       id: Number(p.id),
       nom: p.nom || ('Personne #' + p.id),
       origine: p.inscription_existante ? 'inscription' : 'groupe_seance',
+      statut_inscription: p.statut_inscription,
     }));
   }
 
