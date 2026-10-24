@@ -6,7 +6,7 @@ import { GoogleCalendrierClient } from './google-calendrier.client';
 /**
  * Reconciliation optionnelle (OFF par defaut). Elle sert aux mises a jour faites
  * hors de l'editeur (edition seance/groupe/API) et aux erreurs Google temporaires.
- * Les notifications sont TOUJOURS desactivees sur ce canal automatique.
+ * Les notifications automatiques sont conditionnees aux changements metier et a l'option du calendrier.
  */
 @Injectable()
 export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
@@ -35,7 +35,7 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
     }
     this.timer = setInterval(() => { void this.runOnce(); }, 60_000);
     this.timer.unref?.();
-    this.logger.log('Calendrier outbox worker active (Google notifications disabled)');
+    this.logger.log('Calendrier outbox worker active (business-change notifications conditional)');
     // Premier passage immediat : les changements PENDING precedant le redemarrage
     // n'attendent pas une minute supplementaire.
     void this.runOnce();
@@ -124,7 +124,7 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
       let errors = 0;
       for (const calendar of calendars) {
         try {
-          const result = await this.synchronisation.sync(Number(calendar.id), Number(calendar.project_id), false);
+          const result = await this.synchronisation.sync(Number(calendar.id), Number(calendar.project_id), false, true);
           if (result.erreurs || result.restants) errors++;
         }
         catch (e: any) {
@@ -135,7 +135,7 @@ export class CalendrierWorkerService implements OnModuleInit, OnModuleDestroy {
       }
       if (errors) this.dernierResultat = 'ERREURS=' + errors;
       this.logger.log('EXG auto-sync: ' + this.dernierResultat +
-        ' (calendriers=' + calendars.length + ', notifications=none)');
+        ' (calendriers=' + calendars.length + ', notifications=conditional)');
     } catch (e: any) {
       this.dernierResultat = 'ERREUR_WORKER';
       this.logger.warn('Calendar worker failed: ' + String(e?.message || e));
