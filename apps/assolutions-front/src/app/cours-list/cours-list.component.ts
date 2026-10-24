@@ -13,6 +13,8 @@ import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/serv
 export class CoursListComponent {
   @Input({ required: true }) vm!: CoursPageVm;
   @Input() isAdmin = false;
+  /** EXG-35 : choix mobile, liste simple par défaut. */
+  compactMobile = true;
   @Output() openCours = new EventEmitter<number>();
   @Output() createCours = new EventEmitter<void>();
 
