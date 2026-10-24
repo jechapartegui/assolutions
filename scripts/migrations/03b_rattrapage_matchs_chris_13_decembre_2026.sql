@@ -43,11 +43,10 @@ BEGIN
   SELECT count(*), min(p.id) INTO v_nb, v_chris
   FROM public.personne p
   JOIN public.professeur prof ON prof.id=p.id
-  WHERE lower(p.first_name || ' ' || p.last_name) LIKE '%chris%'
-    AND lower(p.first_name || ' ' || p.last_name) LIKE '%alune%'
-    AND lower(p.first_name || ' ' || p.last_name) ~ '(^|[^[:alpha:]])ba([^[:alpha:]]|$)';
+  WHERE lower(btrim(p.first_name)) = 'alune'
+    AND lower(btrim(p.last_name)) = 'ba';
   IF v_nb <> 1 THEN
-    RAISE EXCEPTION 'Chris Alune BA : % professeurs correspondants (attendu 1). Vérifier personne/contrat_prof.', v_nb;
+    RAISE EXCEPTION 'Alune BA : % professeurs correspondants (attendu 1). Vérifier personne/contrat_prof.', v_nb;
   END IF;
   FOR v_match IN SELECT * FROM _matchs_ujeunes LOOP
     SELECT count(*), min(cp.id) INTO v_nb, v_contrat
@@ -59,7 +58,7 @@ BEGIN
            CASE WHEN v_match.date_avant=DATE '2026-12-12'
                 THEN DATE '2026-12-13' ELSE v_match.date_avant END);
     IF v_nb <> 1 THEN
-      RAISE EXCEPTION 'Chris (personne %), match % : % contrats actifs (attendu 1).',
+      RAISE EXCEPTION 'Alune BA (personne %), match % : % contrats actifs (attendu 1).',
         v_chris, v_match.cle, v_nb;
     END IF;
   END LOOP;
@@ -77,9 +76,8 @@ INSERT INTO public.seance_professeur
 SELECT s.seance_id, s.duree_seance, NULL, 'Encadrement match', now(), now(), cp.id, 'prévue'
 FROM _matchs_ujeunes m
 JOIN public.seance s ON s.seance_id=m.seance_id
-JOIN public.personne p ON lower(p.first_name || ' ' || p.last_name) LIKE '%chris%'
- AND lower(p.first_name || ' ' || p.last_name) LIKE '%alune%'
- AND lower(p.first_name || ' ' || p.last_name) ~ '(^|[^[:alpha:]])ba([^[:alpha:]]|$)'
+JOIN public.personne p ON lower(btrim(p.first_name)) = 'alune'
+ AND lower(btrim(p.last_name)) = 'ba'
 JOIN public.professeur prof ON prof.id=p.id
 JOIN public.contrat_prof cp ON cp.professeur_id=p.id
  AND cp.saison_id=s.saison_id AND cp.date_debut<=s.date_seance::date
