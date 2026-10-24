@@ -164,7 +164,7 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 ### Ordre de livraison PREPROD
 1. Vérifier que la version Git/artefacts visée et les services Render/OVH sont exclusivement PREPROD ; **ne pas pointer de build vers la PROD**.
 2. Faire une sauvegarde / un snapshot de la **base PREPROD**, puis exécuter `scripts/migrations/2026-10-23-google-calendrier.sql` dans cette base uniquement (une fois, puis vérifier l'idempotence à froid si nécessaire).
-3. Vérifier les tables `calendrier`, `calendrier_groupe`, `calendrier_evenement`, `calendrier_sync_audit` (noms exacts dans le SQL), la colonne `seance.calendrier_id`, et que les séances existantes ne changent pas d'état.
+3. Vérifier les tables `calendrier`, `calendrier_groupe`, `calendrier_evenement`, `calendrier_synchro_log`, la colonne `seance.calendrier_id`, et que les séances existantes ne changent pas d'état.
 4. Variables Render PREPROD : `APP_ENV=preprod`, `MAIL_SANDBOX=true`, `GOOGLE_CALENDAR_ENABLED=false`, `GOOGLE_CALENDAR_AUTO_SYNC=false`, `ASSOLUTIONS_FRONT_URL=https://preprod.assolutions.club`. **Ne pas définir** l'ancien filtre d'IDs. Secrets Google OAuth configurés côté Render uniquement si les essais Google sont prévus.
 5. Compiler le **front PREPROD** et publier uniquement dans l'hébergement PREPROD ; déployer le back sur le service PREPROD Render. Vérifier login/menus et CRUD calendrier **sans Google activé**.
 6. Après validation des droits et des écrans, activer temporairement `GOOGLE_CALENDAR_ENABLED=true` sur PREPROD, vérifier le propriétaire et créer un agenda `[PREPROD]` avec Yopmail. **Ne pas activer AUTO_SYNC sans second feu vert après tests manuels**.
