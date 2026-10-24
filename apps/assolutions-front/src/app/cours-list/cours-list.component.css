@@ -3,7 +3,7 @@
 
 /* EXG-35 : fiche complète ou liste mobile à une seule ligne par item. */
 .exg-mobile-list-toggle { display:none; }
-@media (max-width:767px) {
+@media (max-width:1023px) {
  .cours-card-actions .exg-mobile-list-toggle {
    display:inline-flex; align-items:center; gap:.25rem; font-size:.75rem;
    font-weight:600; white-space:nowrap; padding:.28rem .45rem;
