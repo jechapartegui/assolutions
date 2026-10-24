@@ -230,6 +230,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.isPublic = this.isPublicUrl(url);
         this.adminPageMeta = this.resolveAdminPageMeta(url);
         this.helpOpen = false;
+        // Un nouveau calendrier ou rattachement de groupe peut apparaître
+        // sans changement de projet : actualiser après navigation également.
+        if (this.store.isLoggedIn() && this.store.selectedProjectId()) {
+          void this.fetchMesCalendriers(++this.calendarVisibilityRequest);
+        }
       });
   }
 
