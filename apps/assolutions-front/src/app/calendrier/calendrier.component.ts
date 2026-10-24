@@ -45,6 +45,8 @@ export class CalendrierComponent implements OnInit {
   syncResult: CalendrierSyncResult | null = null;
   showRsvps = false;
   rsvps: Array<any> = [];
+  rsvpFilter: 'actions' | 'all' | 'synced' = 'actions';
+  importingRsvps = false;
   form: CalendrierPayload = this.emptyForm();
 
   constructor(
@@ -325,7 +327,56 @@ export class CalendrierComponent implements OnInit {
     return labels[statut] ?? 'Inconnu';
   }
 
+  reponseDejaAJour(row: any, p: any): boolean {
+    const attendu = row.google_reponse === 'accepted' ? 'présent'
+      : row.google_reponse === 'declined' ? 'absent' : null;
+    return !!attendu && p?.origine === 'inscription' && p.statut_inscription === attendu;
+  }
+
+  candidatsAImporter(row: any): any[] {
+    return (row.personnes_details || []).filter((p: any) => !this.reponseDejaAJour(row, p));
+  }
+
+  dejaAJour(row: any): boolean {
+    return !!row.peut_importer && !!row.personnes_details?.length
+      && this.candidatsAImporter(row).length === 0;
+  }
+
+  actionRequise(row: any): boolean {
+    return !!row.peut_importer && !this.dejaAJour(row);
+  }
+
+  get rsvpGroups(): Array<{ id: number; rows: any[]; actions: number }> {
+    const grouped = new Map<number, any[]>();
+    for (const row of this.rsvps) {
+      const id = Number(row.seance_id);
+      if (!grouped.has(id)) grouped.set(id, []);
+      grouped.get(id)!.push(row);
+    }
+    return [...grouped.entries()].map(([id, rows]) => ({
+      id, rows: rows.filter((r) =>
+        this.rsvpFilter === 'all' ||
+        (this.rsvpFilter === 'actions' ? this.actionRequise(r)
+          : this.dejaAJour(r))),
+      actions: rows.filter((r) => this.actionRequise(r)).length,
+    })).filter((group) => group.rows.length > 0);
+  }
+
+  get rsvpActionsCount(): number {
+    return this.rsvps.filter((r) => this.actionRequise(r)).length;
+  }
+
+  get rsvpSyncedCount(): number {
+    return this.rsvps.filter((r) => this.dejaAJour(r)).length;
+  }
+
+  get rsvpSelectedCount(): number {
+    return this.rsvps.filter((r) => this.actionRequise(r) &&
+      this.candidatsAImporter(r).some((p) => Number(p.id) === Number(r.personne_choisie))).length;
+  }
+
   statutImportGoogle(row: any): string {
+    if (this.dejaAJour(row)) return 'Déjà à jour dans Assolutions';
     if (row.peut_importer) return 'Sélection manuelle';
     if (!['accepted', 'declined'].includes(row.google_reponse)) return 'En attente de réponse';
     if ((row.comptes || []).length !== 1) return 'Compte non reconnu ou ambigu';
@@ -338,6 +389,7 @@ export class CalendrierComponent implements OnInit {
     try {
       const result = await this.api.responses(this.selectedId);
       this.showRsvps = true;
+      this.rsvpFilter = 'actions';
       this.rsvps = (result.lignes || []).map((row: any) => ({
         ...row, personne_choisie: null,
       }));
@@ -346,9 +398,10 @@ export class CalendrierComponent implements OnInit {
 
   async importerReponses() {
     if (!this.isAdmin || !this.selectedId) return;
+    if (this.importingRsvps) return;
     const selected = this.rsvps.filter((x) =>
-      x.peut_importer && x.personne_choisie &&
-      x.personnes?.includes(Number(x.personne_choisie)));
+      this.actionRequise(x) && x.personne_choisie &&
+      this.candidatsAImporter(x).some((p) => Number(p.id) === Number(x.personne_choisie)));
     if (!selected.length) {
       this.error = 'Sélectionne au moins une personne dans les réponses Google.';
       return;
@@ -362,6 +415,7 @@ export class CalendrierComponent implements OnInit {
       (creation ? `Pour ${creation} personne(s) issue(s) d'un groupe de séance, une inscription explicite à la séance sera créée.\n` : '') +
       'Seules les personnes choisies seront modifiées. La présence réellement constatée reste inchangée.'
     )) return;
+    this.importingRsvps = true;
     try {
       const response = await this.api.importerReponses(this.selectedId,
         selected.map((x) => ({
@@ -374,6 +428,7 @@ export class CalendrierComponent implements OnInit {
       this.info = `${response.importees} réponse(s) importée(s). La présence effective reste inchangée.`;
       await this.showResponses();
     } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.importingRsvps = false; }
   }
 
   openSession(id: number) {
