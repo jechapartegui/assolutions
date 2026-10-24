@@ -169,7 +169,7 @@ export class CalendrierSyncService {
     };
   }
 
-  async sync(id: number, projectId: number, notifier = false) {
+  async sync(id: number, projectId: number, notifier = false, automatic = false) {
     if (!this.google.enabled) {
       throw new BadRequestException('GOOGLE_CALENDAR_DISABLED');
     }
@@ -177,7 +177,7 @@ export class CalendrierSyncService {
     if (!calendrier.actif) throw new BadRequestException('CALENDAR_ARCHIVED');
     // Refuser un owner OAuth differant avant toute creation d'agenda.
     await this.google.verifyOwner();
-    const notify = notifier === true && calendrier.notifier_mises_a_jour === true;
+    const notify = (notifier === true || automatic) && calendrier.notifier_mises_a_jour === true;
     let googleId = calendrier.google_calendar_id as string | null;
     if (!googleId) {
       const created = await this.google.createCalendar(
@@ -223,7 +223,7 @@ export class CalendrierSyncService {
         const isRemoval = row.statut_synchro === 'DELETE_PENDING' ||
           row.seance_id == null || !row.still_linked;
         if (isRemoval) {
-          if (row.google_event_id) await this.google.deleteEvent(googleId, row.google_event_id, notify);
+          if (row.google_event_id) await this.google.deleteEvent(googleId, row.google_event_id, automatic ? false : notify);
           await this.db.query(
             `UPDATE calendrier_evenement SET statut_synchro='DELETED',
              derniere_synchro=now(), derniere_erreur=NULL, date_maj=now()
@@ -236,7 +236,7 @@ export class CalendrierSyncService {
         const contentHash = createHash('sha256').update(JSON.stringify(body)).digest('hex');
         const eventId = row.google_event_id ||
           ('assol' + Number(id).toString(32) + 's' + Number(row.seance_id).toString(32));
-        const event = await this.google.upsertEvent(googleId, eventId, body, notify);
+        const event = await this.google.upsertEvent(googleId, eventId, body, notify, automatic);
         await this.db.query(
           `UPDATE calendrier_evenement SET google_event_id=$2, google_etag=$3,
             contenu_hash=$4, statut_synchro='SYNCED', tentatives=tentatives+1,
