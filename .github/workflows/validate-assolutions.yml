@@ -7,6 +7,7 @@ on:
       - integration/exg-preprod
   push:
     branches:
+      - master
       - integration/exg-preprod
   workflow_dispatch:
 
