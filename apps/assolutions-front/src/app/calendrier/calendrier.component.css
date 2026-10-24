@@ -153,3 +153,22 @@
   .exg-compact > .box,
   .exg-compact .column > .box { padding: .7rem; }
 }
+
+/* EXG-34 : aucun pavé d'explication sur mobile, actions compactes. */
+@media (max-width:767px) {
+  .exg-compact .calendar-intro-subtitle,
+  .exg-compact .calendar-prof-help,
+  .exg-compact .calendar-information-note,
+  .exg-compact .calendar-selection-help {
+    display:none !important;
+  }
+  .exg-compact > section.box {padding:.5rem .6rem !important;}
+  .exg-compact > section.box > .is-flex {margin-bottom:0 !important;gap:.35rem !important;}
+  .exg-compact > section.box .title {margin:0 !important;font-size:.96rem;}
+  .exg-compact > section.box .buttons {margin:0 !important;gap:.3rem;}
+  .exg-compact > section.box .buttons .button {
+    min-width:2.2rem;min-height:2.1rem;padding:.3rem .45rem;
+    margin:0 !important;font-size:.77rem;
+  }
+  .exg-compact .calendar-sessions-table {max-height:48vh;}
+}
