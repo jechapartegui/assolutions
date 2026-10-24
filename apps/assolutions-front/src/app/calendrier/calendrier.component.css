@@ -114,3 +114,42 @@
 }
 .calendar-sessions-table table { font-size: .86rem; min-width: 650px; }
 .is-nowrap { white-space: nowrap; }
+
+/* EXG-28 : aligner la densité sur les vues Séances / Cours / Adhérents. */
+.exg-compact > .box,
+.exg-compact .column > .box {
+  padding: .85rem .95rem;
+  border: 1px solid rgba(106, 129, 148, .14);
+  box-shadow: 0 1px 4px rgba(18, 39, 57, .035);
+  border-radius: 8px;
+  margin-bottom: .65rem;
+}
+.exg-compact .title.is-4 { font-size: 1.15rem; }
+.exg-compact .title.is-5 { font-size: 1.02rem; }
+.exg-compact .title.is-6 { font-size: .88rem; }
+.exg-compact .subtitle { font-size: .84rem; margin-bottom: .3rem; }
+.exg-compact .notification { padding: .65rem .8rem; font-size: .83rem; }
+.exg-compact .calendar-sessions-table .table { font-size: .80rem; }
+.exg-compact .calendar-sessions-table .table th,
+.exg-compact .calendar-sessions-table .table td {
+  padding: .39rem .48rem;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(111, 130, 150, .13);
+}
+.exg-compact .calendar-sessions-table .table th { font-size: .77rem; }
+.exg-compact .calendar-sessions-table .table.is-striped tbody tr:not(.is-selected):nth-child(even) {
+  background: rgba(235, 241, 246, .20);
+}
+.exg-compact .calendar-sessions-table .button.is-small { height: 1.95rem; font-size: .76rem; }
+.calendar-visibility-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.25rem;
+  align-items: center;
+  font-size: .85rem;
+}
+.calendar-visibility-filters input[type=checkbox] { margin-right: .35rem; }
+@media (max-width: 767px) {
+  .exg-compact > .box,
+  .exg-compact .column > .box { padding: .7rem; }
+}
