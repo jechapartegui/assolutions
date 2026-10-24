@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <div class="column is-12-tablet is-8-desktop" *ngIf="isEditing">
+    <div class="column is-12-tablet is-8-desktop" *ngIf="isEditing && (isAdmin || selectedId)">
       <div class="box">
         <h2 class="title is-5">{{ selectedId ? 'Modifier le calendrier' : 'Nouveau calendrier' }}</h2>
         <div class="columns">
@@ -50,12 +50,12 @@
           </div>
           <div class="column is-4">
             <label class="label">Fuseau horaire</label>
-            <input class="input" [(ngModel)]="form.timezone" [disabled]="!isAdmin" />
+            <input class="input" [(ngModel)]="form.timezone" [disabled]="!canEdit" />
           </div>
         </div>
         <div class="field">
           <label class="label">Description</label>
-          <textarea class="textarea" rows="2" [(ngModel)]="form.description" [disabled]="!isAdmin"></textarea>
+          <textarea class="textarea" rows="2" [(ngModel)]="form.description" [disabled]="!canEdit"></textarea>
         </div>
         <div class="field">
           <label class="checkbox">
@@ -74,13 +74,13 @@
         <div class="calendar-group-picker">
           <div class="select is-small is-fullwidth">
             <select [(ngModel)]="selectedGroupId" aria-label="Choisir un groupe à ajouter"
-                    [disabled]="!isAdmin || !availableGroups.length">
+                    [disabled]="!canEdit || !availableGroups.length">
               <option [ngValue]="null">Choisir un groupe…</option>
               <option *ngFor="let g of availableGroups" [ngValue]="g.id">{{ g.nom }}</option>
             </select>
           </div>
           <button class="button is-primary is-small" type="button" (click)="addGroup()"
-                  [disabled]="!isAdmin || !selectedGroupId">
+                  [disabled]="!canEdit || !selectedGroupId">
             <i class="fas fa-plus mr-1"></i>Ajouter
           </button>
         </div>
@@ -110,7 +110,7 @@
                 <td>{{ s.label || '—' }}</td>
                 <td class="is-nowrap">
                   <button class="button is-small is-danger is-light" type="button"
-                          (click)="sessionToggle(s.seance_id)" [disabled]="!isAdmin"
+                          (click)="sessionToggle(s.seance_id)" [disabled]="!canEdit"
                           [attr.aria-label]="'Retirer la séance ' + (s.label || s.seance_id)">
                     <i class="fas fa-xmark mr-1"></i>Retirer
                   </button>
@@ -162,7 +162,7 @@
               <tr *ngFor="let s of availableSessions">
                 <td>
                   <input type="checkbox" [checked]="false" (change)="sessionToggle(s.seance_id)"
-                         [disabled]="!isAdmin" [attr.aria-label]="'Ajouter la séance ' + (s.label || s.seance_id)" />
+                         [disabled]="!canEdit" [attr.aria-label]="'Ajouter la séance ' + (s.label || s.seance_id)" />
                 </td>
                 <td class="is-nowrap">{{ s.date_seance | date:'dd/MM/yyyy' }} {{ s.heure_debut }}</td>
                 <td>{{ typeLabel(s.type_seance) }}</td>
