@@ -5,15 +5,24 @@
         <h1 class="title is-4 mb-1"><i class="fas fa-calendar-days mr-2"></i>Mes calendriers</h1>
         <p class="subtitle is-6 mes-calendar-mobile-extras">Les calendriers de ton compte, y compris ceux des membres de ta famille.</p>
       </div>
+      <div class="mes-calendar-toolbar">
+        <button class="button is-light mes-calendar-past-toggle" type="button"
+                (click)="showPast = !showPast" [class.is-active]="showPast"
+                [attr.aria-pressed]="showPast"
+                [attr.aria-label]="showPast ? 'Masquer les séances passées' : 'Afficher les séances passées'"
+                title="Afficher ou masquer les séances passées">
+          <i class="fas fa-clock-rotate-left"></i>
+        </button>
       <button class="button is-light mes-calendar-refresh" type="button" (click)="recharger()" [disabled]="loading" aria-label="Actualiser les calendriers" title="Actualiser">
         <i class="fas fa-arrows-rotate"></i><span class="mes-calendar-mobile-extras ml-2">{{ loading ? 'Chargement…' : 'Actualiser' }}</span>
       </button>
+      </div>
     </div>
     <div class="notification is-info is-light mes-calendar-hint mes-calendar-mobile-extras">
       <strong>Rappel :</strong> le calendrier est informatif : voir une séance ne signifie pas être convoqué.
       Les réponses Oui / Non ici sont enregistrées dans <strong>Assolutions</strong>, sans changer automatiquement le RSVP Google.
     </div>
-    <div class="field">
+    <div class="field mes-calendar-past-field">
       <label class="checkbox">
         <input type="checkbox" [(ngModel)]="showPast" />
         Afficher également les séances passées
