@@ -33,6 +33,15 @@
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Nom</label><input class="input" [(ngModel)]="vm.filter.filter_nom" /></div>
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Lieu</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_lieu"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let lieu of vm.refs.liste_lieu_filter" [ngValue]="lieu">{{ lieu }}</option></select></div></div>
           <div class="column is-12-mobile is-6-tablet is-4-desktop"><label class="label" i18n>Statut</label><div class="select is-fullwidth"><select [(ngModel)]="vm.filter.filter_statut"><option [ngValue]="null" i18n>Tous</option><option *ngFor="let s of vm.refs.listeStatuts" [ngValue]="s">{{ s }}</option></select></div></div>
+          <div class="column is-12-mobile is-6-tablet is-4-desktop">
+            <label class="label" i18n="@@session.type">Type</label>
+            <div class="select is-fullwidth">
+              <select [(ngModel)]="vm.filter.filter_type" aria-label="Filtrer par type de séance" i18n-aria-label>
+                <option [ngValue]="null" i18n>Tous</option>
+                <option *ngFor="let type of seanceTypes" [ngValue]="type.value">{{ type.label }}</option>
+              </select>
+            </div>
+          </div>
           <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Du</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_apres" /></div>
           <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Au</label><input class="input" type="date" [(ngModel)]="vm.filter.filter_date_avant" /></div>
           <div class="column is-12-mobile is-6-tablet is-3-desktop"><label class="label" i18n>Professeur</label><input class="input" [(ngModel)]="vm.filter.filter_prof" /></div>

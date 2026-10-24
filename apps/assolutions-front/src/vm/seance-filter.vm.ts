@@ -7,6 +7,7 @@ export class SeanceFilterVm {
     groupe: false,
     prof: false,
     statut: false,
+    type: false,
   };
 
   private _filter_nom: string | null = null;
@@ -14,6 +15,7 @@ export class SeanceFilterVm {
   private _filter_date_avant: string | null = this.calcISO(0, 2);
   private _filter_prof: string | null = null;
   private _filter_statut: StatutSeance | null = StatutSeance.prévue;
+  private _filter_type: 'ENTRAINEMENT' | 'MATCH' | 'SORTIE' | 'EVENEMENT' | null = null;
   private _filter_groupe: string | null = null;
   private _filter_lieu: string | null = null;
 
@@ -52,6 +54,13 @@ export class SeanceFilterVm {
     this._filter_statut = value;
   }
 
+  get filter_type(): 'ENTRAINEMENT' | 'MATCH' | 'SORTIE' | 'EVENEMENT' | null {
+    return this._filter_type;
+  }
+  set filter_type(value: 'ENTRAINEMENT' | 'MATCH' | 'SORTIE' | 'EVENEMENT' | null) {
+    this._filter_type = value || null;
+  }
+
   get filter_groupe(): string | null {
     return this._filter_groupe;
   }
@@ -72,6 +81,7 @@ export class SeanceFilterVm {
     this.filter_date_avant = null;
     this.filter_prof = null;
     this.filter_statut = null;
+    this.filter_type = null;
     this.filter_groupe = null;
     this.filter_lieu = null;
   }

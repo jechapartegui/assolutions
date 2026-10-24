@@ -15,6 +15,13 @@ import { ExcelExportService, ExcelColumn } from 'apps/assolutions-front/src/serv
 export class SeanceListComponent {
   @Input({ required: true }) vm!: SeancePageVm;
   @Input() isAdmin = false;
+  /** EXG-PP04-UX-02 : filtrer sur la vraie valeur de type_seance, pas cours_nom. */
+  readonly seanceTypes = [
+    { value: 'ENTRAINEMENT', label: $localize`:@@session.type.training:Cours` },
+    { value: 'MATCH', label: $localize`:@@session.type.match:Match` },
+    { value: 'SORTIE', label: $localize`:@@session.type.outing:Sortie` },
+    { value: 'EVENEMENT', label: $localize`:@@session.type.event:Événement` },
+  ] as const;
   /** EXG-35 : choix mobile, liste simple par défaut. */
   compactMobile = true;
   @Output() openSeance = new EventEmitter<number>();
@@ -114,6 +121,7 @@ export class SeanceListComponent {
       (!this.vm.filter.filter_date_avant || new Date(seance.date_seance) <= new Date(this.vm.filter.filter_date_avant)) &&
       (!this.vm.filter.filter_date_apres || new Date(seance.date_seance) >= new Date(this.vm.filter.filter_date_apres)) &&
       (!this.vm.filter.filter_statut || seance.statut === this.vm.filter.filter_statut) &&
+      (!this.vm.filter.filter_type || seance.type_seance === this.vm.filter.filter_type) &&
       (!this.vm.filter.filter_groupe || (seance.groupes ?? []).some((x: any) =>
         (x.nom ?? '').toLowerCase().includes(this.vm.filter.filter_groupe!.toLowerCase()))) &&
       (!this.vm.filter.filter_prof || (seance.seanceProfesseurs ?? []).some((x: any) =>
