@@ -1,14 +1,14 @@
 -- ============================================================================
 -- ASSOLUTIONS / US IVRY ROLLER : IMPORT DES MATCHS 2026-2027 EN PREPROD
 -- CORRECTIF V2 : évite conflit variable RECORD « r » / alias SQL « r » au bilan.
--- 33 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 3 lieux (5,6,7).
--- AUCUN agenda Google, AUCUN cours récurrent, AUCUN professeur/CRA modifié.
+-- 27 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 3 lieux (5,6,7).
+-- Aucun Google ni cours récurrent. Interventions professeur liées aux contrats actifs.
 --
 -- DATES INTERPRÉTÉES : « 22/ » = 22/11/2026 ; 08/05 = 08/05/2027.
 -- Les heures non précisées sont PROVISOIRES 09h00 -> 18h00 (540 min).
 -- Les heures connues sont 22/11 à 14h30 et 08/05 à 19h30 (120 min).
 -- Toutes les séances indiquent : « RDV directement au gymnase ».
--- U15 équipes 1 et 2 : DEUX SÉANCES avec le MÊME groupe 29 par journée.
+-- U15 : une séance par journée pour les deux équipes. Chris absent des IDs : non lié.
 --
 -- IMPORTANT : connexion PostgreSQL PREPROD uniquement. Vérifiez la base
 -- dans VS Code. Ne rejouez ni la migration Google ni la fusion des séances.
@@ -29,7 +29,7 @@ SET LOCAL lock_timeout = '8s';
 SET LOCAL statement_timeout = '120s';
 SELECT pg_advisory_xact_lock(hashtext('ASSOLUTIONS_MATCHS_2026_2027_PREPROD'));
 
--- Source des 33 matchs : une clé stable et UNIQUE par rencontre.
+-- Source des 27 matchs : une clé stable et UNIQUE par rencontre.
 CREATE TEMP TABLE _matchs_import_plan (
   cle text PRIMARY KEY,
   jour date NOT NULL,
@@ -49,31 +49,26 @@ VALUES
   ('MATCH2627_20261115_RS_AMICAL', '2026-11-15'::date, 'RollerSoccer - Match amical', 48, 7, '09:00', 540, false),
   ('MATCH2627_20261122_RS_N1_SAVIGNY', '2026-11-22'::date, 'RollerSoccer N1 vs Savigny', 48, 5, '14:30', 120, true),
   ('MATCH2627_20261212_RS_U11_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U11 vs Savigny', 30, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_U15_E1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U15 - Équipe 1 vs Savigny', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_U15_E2_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U15 - Équipe 2 vs Savigny', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20261212_RS_U19_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U19 vs Savigny', 28, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_U15_E1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Savigny', 29, 7, '09:00', 540, false),
+  ('MATCH2627_20261212_RS_U19_SAVIGNY', '2026-12-12'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Savigny', 28, 7, '09:00', 540, false),
   ('MATCH2627_20261212_RS_N1_SAVIGNY', '2026-12-12'::date, 'RollerSoccer N1 vs Savigny', 48, 7, '09:00', 540, false),
   ('MATCH2627_20261212_RS_ELITE_SAVIGNY', '2026-12-12'::date, 'RollerSoccer Élite vs Savigny', 47, 7, '09:00', 540, false),
   ('MATCH2627_20270124_RS_U11_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U11 vs Argenteuil', 30, 7, '09:00', 540, false),
-  ('MATCH2627_20270124_RS_U15_E1_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U15 - Équipe 1 vs Argenteuil', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20270124_RS_U15_E2_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U15 - Équipe 2 vs Argenteuil', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20270124_RS_U19_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U19 vs Argenteuil', 28, 7, '09:00', 540, false),
+  ('MATCH2627_20270124_RS_U15_E1_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Argenteuil', 29, 7, '09:00', 540, false),
+  ('MATCH2627_20270124_RS_U19_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Argenteuil', 28, 7, '09:00', 540, false),
   ('MATCH2627_20270124_RS_N1_ARGENTEUIL', '2027-01-24'::date, 'RollerSoccer N1 vs Argenteuil', 48, 7, '09:00', 540, false),
   ('MATCH2627_20270131_RS_U11_SAVIGNY', '2027-01-31'::date, 'RollerSoccer U11 vs Savigny', 30, 5, '09:00', 540, false),
-  ('MATCH2627_20270131_RS_U15_E1_SAVIGNY', '2027-01-31'::date, 'RollerSoccer U15 - Équipe 1 vs Savigny', 29, 5, '09:00', 540, false),
-  ('MATCH2627_20270131_RS_U15_E2_SAVIGNY', '2027-01-31'::date, 'RollerSoccer U15 - Équipe 2 vs Savigny', 29, 5, '09:00', 540, false),
-  ('MATCH2627_20270131_RS_U19_SAVIGNY', '2027-01-31'::date, 'RollerSoccer U19 vs Savigny', 28, 5, '09:00', 540, false),
+  ('MATCH2627_20270131_RS_U15_E1_SAVIGNY', '2027-01-31'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Savigny', 29, 5, '09:00', 540, false),
+  ('MATCH2627_20270131_RS_U19_SAVIGNY', '2027-01-31'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Savigny', 28, 5, '09:00', 540, false),
   ('MATCH2627_20270131_RS_N1_SAVIGNY', '2027-01-31'::date, 'RollerSoccer N1 vs Savigny', 48, 5, '09:00', 540, false),
   ('MATCH2627_20270131_RS_ELITE_SAVIGNY', '2027-01-31'::date, 'RollerSoccer Élite vs Savigny', 47, 5, '09:00', 540, false),
-  ('MATCH2627_20270228_RS_U15_E1_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer U15 - Équipe 1 vs Pontault-Combault', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20270228_RS_U15_E2_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer U15 - Équipe 2 vs Pontault-Combault', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20270228_RS_U19_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer U19 vs Pontault-Combault', 28, 7, '09:00', 540, false),
+  ('MATCH2627_20270228_RS_U15_E1_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Pontault-Combault', 29, 7, '09:00', 540, false),
+  ('MATCH2627_20270228_RS_U19_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Pontault-Combault', 28, 7, '09:00', 540, false),
   ('MATCH2627_20270228_RS_N1_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer N1 vs Pontault-Combault', 48, 7, '09:00', 540, false),
   ('MATCH2627_20270228_RS_ELITE_PONTAULT_COMBAULT', '2027-02-28'::date, 'RollerSoccer Élite vs Pontault-Combault', 47, 7, '09:00', 540, false),
   ('MATCH2627_20270321_RS_U11_BRUXELLES', '2027-03-21'::date, 'RollerSoccer U11 vs Bruxelles', 30, 7, '09:00', 540, false),
-  ('MATCH2627_20270321_RS_U15_E1_BRUXELLES', '2027-03-21'::date, 'RollerSoccer U15 - Équipe 1 vs Bruxelles', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20270321_RS_U15_E2_BRUXELLES', '2027-03-21'::date, 'RollerSoccer U15 - Équipe 2 vs Bruxelles', 29, 7, '09:00', 540, false),
-  ('MATCH2627_20270321_RS_U19_BRUXELLES', '2027-03-21'::date, 'RollerSoccer U19 vs Bruxelles', 28, 7, '09:00', 540, false),
+  ('MATCH2627_20270321_RS_U15_E1_BRUXELLES', '2027-03-21'::date, 'RollerSoccer U15 - Match équipe 1 puis Match équipe 2 vs Bruxelles', 29, 7, '09:00', 540, false),
+  ('MATCH2627_20270321_RS_U19_BRUXELLES', '2027-03-21'::date, 'RollerSoccer U19 - Match équipe 1 puis Match équipe 2 vs Bruxelles', 28, 7, '09:00', 540, false),
   ('MATCH2627_20270321_RS_N1_BRUXELLES', '2027-03-21'::date, 'RollerSoccer N1 vs Bruxelles', 48, 7, '09:00', 540, false),
   ('MATCH2627_20270321_RS_ELITE_BRUXELLES', '2027-03-21'::date, 'RollerSoccer Élite vs Bruxelles', 47, 7, '09:00', 540, false),
   ('MATCH2627_20270508_RS_ELITE_BRUXELLES', '2027-05-08'::date, 'RollerSoccer Élite vs Bruxelles', 47, 6, '19:30', 120, true);
@@ -108,9 +103,12 @@ DECLARE
   v_seance_id integer;
   v_existants integer;
   r record;
+  v_prof_id integer;
+  v_contrat_id integer;
+  v_nb_contrats integer;
 BEGIN
   IF (SELECT COUNT(*) FROM _matchs_import_plan) <> 33 THEN
-    RAISE EXCEPTION 'Le planning doit contenir exactement 33 matchs.';
+    RAISE EXCEPTION 'Le planning doit contenir exactement 27 matchs.';
   END IF;
 
   IF EXISTS (
@@ -214,13 +212,37 @@ BEGIN
         AND lg.object_type='séance'
     );
 
+    -- Professeurs reliés par contrat actif à la date du match.
+    -- Chris n'ayant pas d'ID fourni, Daniel seul pour U11/U15.
+    FOR v_prof_id IN
+      SELECT DISTINCT unnest(CASE
+          WHEN r.cle LIKE '%_RB_%' THEN ARRAY[45,41]::integer[]
+          WHEN r.cle LIKE '%_RS_U11_%' OR r.cle LIKE '%_RS_U15_%' THEN ARRAY[48]::integer[]
+          WHEN r.cle = 'MATCH2627_20270321_RS_N1_BRUXELLES' THEN ARRAY[48]::integer[]
+          ELSE ARRAY[41,42,43]::integer[]
+        END)
+    LOOP
+      SELECT COUNT(*), MIN(cp.id) INTO v_nb_contrats,v_contrat_id
+      FROM public.contrat_prof cp
+      WHERE cp.professeur_id=v_prof_id AND cp.saison_id=v_saison_id
+        AND cp.date_debut<=r.jour AND (cp.date_fin IS NULL OR cp.date_fin>=r.jour);
+      IF v_nb_contrats<>1 THEN
+        RAISE EXCEPTION 'Professeur % : % contrats actifs pour % (attendu 1).',v_prof_id,v_nb_contrats,r.jour;
+      END IF;
+      INSERT INTO public.seance_professeur
+        (seance_id,minutes,cout,info,created_at,updated_at,professeurcontract_id,statut)
+      SELECT v_seance_id,r.duree_minutes,NULL,'Encadrement match',now(),now(),v_contrat_id,'prévue'
+      WHERE NOT EXISTS (SELECT 1 FROM public.seance_professeur sp
+        WHERE sp.seance_id=v_seance_id AND sp.professeurcontract_id=v_contrat_id);
+    END LOOP;
+
     INSERT INTO public.assolutions_match_import (cle,seance_id)
     VALUES (r.cle,v_seance_id)
     ON CONFLICT (cle) DO UPDATE
     SET seance_id=EXCLUDED.seance_id,mis_a_jour_le=now();
   END LOOP;
 
-  IF (SELECT COUNT(*) FROM _matchs_import_resultats)<>33 THEN
+  IF (SELECT COUNT(*) FROM _matchs_import_resultats)<>27 THEN
     RAISE EXCEPTION 'Tous les matchs n ont pas été importés.';
   END IF;
   -- Vérification stricte de CHAQUE association séance/groupe attendue.
@@ -241,13 +263,13 @@ BEGIN
     RAISE EXCEPTION 'Une séance ne possède pas son lien groupe attendu.';
   END IF;
 
-  RAISE NOTICE 'PREPROD : projet %, saison %, 33 matchs vérifiés.',v_projet_id,v_saison_id;
+  RAISE NOTICE 'PREPROD : projet %, saison %, 27 matchs vérifiés.',v_projet_id,v_saison_id;
 END
 $matchs$;
 
 -- ============================================================================
--- BILAN : attendu lors du 1er passage : 33 CRÉÉ ; après COMMIT/réexécution :
--- 33 DÉJÀ_IMPORTÉ (les lignes existantes ne sont pas écrasées).
+-- BILAN : attendu lors du 1er passage : 27 CRÉÉ ; après COMMIT/réexécution :
+-- 27 DÉJÀ_IMPORTÉ (les lignes existantes ne sont pas écrasées).
 -- ============================================================================
 SELECT action,COUNT(*) AS nombre
 FROM _matchs_import_resultats GROUP BY action ORDER BY action;
@@ -255,7 +277,8 @@ FROM _matchs_import_resultats GROUP BY action ORDER BY action;
 SELECT p.jour,p.libelle,p.groupe_id,p.lieu_id,p.heure_debut,
        p.duree_minutes AS minutes,
        CASE WHEN p.heure_confirmee THEN 'Heure précisée' ELSE 'Horaire à préciser' END AS precision_horaire,
-       r.seance_id,r.action
+       r.seance_id,r.action,
+       (SELECT COUNT(*) FROM public.seance_professeur sp WHERE sp.seance_id=r.seance_id) AS professeurs_lies
 FROM _matchs_import_plan p
 JOIN _matchs_import_resultats r ON r.cle=p.cle
 ORDER BY p.jour,p.groupe_id,p.libelle;
