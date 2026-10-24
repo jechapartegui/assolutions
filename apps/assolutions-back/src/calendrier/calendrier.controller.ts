@@ -115,7 +115,15 @@ export class CalendrierController {
     @Req() req: any, @Param('id', ParseIntPipe) id: number,
     @ProjectId() projectId: number, @Body() dto: UpdateCalendrierDto,
   ) {
-    await this.access.assertProjectAdmin(req.user.id, projectId);
+    await this.access.assertProjectStaff(req.user.id, projectId);
+    // EXG-29 : les professeurs peuvent modifier un calendrier existant,
+    // mais pas changer les options de notifications Google ni l'archiver.
+    const current = await this.service.get(id, projectId);
+    if ((dto.notifier_mises_a_jour !== undefined &&
+         dto.notifier_mises_a_jour !== current.notifier_mises_a_jour) ||
+        (dto.actif !== undefined && dto.actif !== current.actif)) {
+      await this.access.assertProjectAdmin(req.user.id, projectId);
+    }
     return this.service.update(id, dto, projectId);
   }
 
