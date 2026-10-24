@@ -1178,3 +1178,19 @@
     grid-column: 1 / -1;
   }
 }
+
+/* EXG-34 : réserver physiquement l'espace de la barre d'onglets FIXE. */
+@media (max-width:767px) {
+  .menu-shell {
+    height: calc(100dvh - var(--mobile-footer-h,64px) - 52px - var(--safe-bottom,0px)) !important;
+    max-height: calc(100dvh - var(--mobile-footer-h,64px) - 52px - var(--safe-bottom,0px));
+    padding-bottom: .4rem !important;
+  }
+  .menu-hero-title .subtitle,
+  .contact-panel-head .subtitle {display:none !important;}
+  .menu-content {min-height:0; overflow:hidden;}
+  .menu-main-card {min-height:0;}
+  .menu-footer-panel {padding: .45rem .55rem .5rem !important; }
+  .menu-footer-toggle {min-height:2.2rem; font-size:.78rem;}
+  .menu-scroll-zone {scroll-padding-bottom:1rem; padding-bottom:1rem !important;}
+}
