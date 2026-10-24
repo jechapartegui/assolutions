@@ -1,7 +1,7 @@
 -- ============================================================================
 -- ASSOLUTIONS / US IVRY ROLLER : IMPORT DES MATCHS 2026-2027 EN PREPROD
 -- CORRECTIF V2 : évite conflit variable RECORD « r » / alias SQL « r » au bilan.
--- 27 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 3 lieux (5,6,7).
+-- 28 matchs, 8 journées, 7 groupes (28,29,30,45,46,47,48), 3 lieux (5,6,7).
 -- Aucun Google ni cours récurrent. Interventions professeur liées aux contrats actifs.
 --
 -- DATES INTERPRÉTÉES : « 22/ » = 22/11/2026 ; 08/05 = 08/05/2027.
@@ -29,7 +29,7 @@ SET LOCAL lock_timeout = '8s';
 SET LOCAL statement_timeout = '120s';
 SELECT pg_advisory_xact_lock(hashtext('ASSOLUTIONS_MATCHS_2026_2027_PREPROD'));
 
--- Source des 27 matchs : une clé stable et UNIQUE par rencontre.
+-- Source des 28 matchs : une clé stable et UNIQUE par rencontre.
 CREATE TEMP TABLE _matchs_import_plan (
   cle text PRIMARY KEY,
   jour date NOT NULL,
@@ -108,7 +108,7 @@ DECLARE
   v_nb_contrats integer;
 BEGIN
   IF (SELECT COUNT(*) FROM _matchs_import_plan) <> 33 THEN
-    RAISE EXCEPTION 'Le planning doit contenir exactement 27 matchs.';
+    RAISE EXCEPTION 'Le planning doit contenir exactement 28 matchs.';
   END IF;
 
   IF EXISTS (
@@ -242,7 +242,7 @@ BEGIN
     SET seance_id=EXCLUDED.seance_id,mis_a_jour_le=now();
   END LOOP;
 
-  IF (SELECT COUNT(*) FROM _matchs_import_resultats)<>27 THEN
+  IF (SELECT COUNT(*) FROM _matchs_import_resultats)<>28 THEN
     RAISE EXCEPTION 'Tous les matchs n ont pas été importés.';
   END IF;
   -- Vérification stricte de CHAQUE association séance/groupe attendue.
@@ -263,13 +263,13 @@ BEGIN
     RAISE EXCEPTION 'Une séance ne possède pas son lien groupe attendu.';
   END IF;
 
-  RAISE NOTICE 'PREPROD : projet %, saison %, 27 matchs vérifiés.',v_projet_id,v_saison_id;
+  RAISE NOTICE 'PREPROD : projet %, saison %, 28 matchs vérifiés.',v_projet_id,v_saison_id;
 END
 $matchs$;
 
 -- ============================================================================
--- BILAN : attendu lors du 1er passage : 27 CRÉÉ ; après COMMIT/réexécution :
--- 27 DÉJÀ_IMPORTÉ (les lignes existantes ne sont pas écrasées).
+-- BILAN : attendu lors du 1er passage : 28 CRÉÉ ; après COMMIT/réexécution :
+-- 28 DÉJÀ_IMPORTÉ (les lignes existantes ne sont pas écrasées).
 -- ============================================================================
 SELECT action,COUNT(*) AS nombre
 FROM _matchs_import_resultats GROUP BY action ORDER BY action;
