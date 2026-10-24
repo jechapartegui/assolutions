@@ -140,3 +140,17 @@ Une déconnexion/révocation OAuth provoque des erreurs journalisées et n'altè
 4. « Mes calendriers » : tableau compact, réponses Oui/Non fonctionnelles sans modifier Google RSVP. Partager : menu de partage (mobile) ou texte copié (desktop), avec avertissement explicite sur les permissions d'un agenda privé.
 5. Vérifier que `GOOGLE_CALENDAR_AUTO_SYNC=false` avant PREPROD et que les profils non autorisés restent bloqués. Aucun merge PROD depuis la branche de recette.
 
+
+## EXG-32 / EXG-33 — Dernières finitions mobile et accès Mon menu (24/10/2026)
+
+- **EXG-32** — `Mes calendriers` **n'est plus dans la barre de navigation globale**. Son raccourci figure dans **Mon menu**, à côté de « Contacter le club », sur desktop et mobile **uniquement si** `GET /calendriers/mes/existe` renvoie `existe=true` (calendrier actif dont un membre du compte appartient à un groupe destinataire, dans le projet courant). `Mon menu` redirige déjà en mode ADMIN vers `menu-admin` ; les admins gardent leur gestion des calendriers sur `/calendrier`. Le privilège implicite du propriétaire du projet pour l'accès à `/mes-calendriers` a été supprimé du backend : être admin n'est **pas** être destinataire. L'appartenance explicite à un groupe destinataire demeure le critère.
+- **EXG-33** — `/mes-calendriers` conserve son tableau sur desktop, mais affiche **sur mobile uniquement** des cartes complètes comme les séances de `Mon menu`, sans tableau horizontal. Informations utiles : titre, date, heures, lieu, statut particulier ; réponses Oui/Non avec état par personne éligible, ouverture séance. Masquage mobile des explications longues, statut technique Google, description, avis de partage et notifications de succès ; les erreurs restent visibles. Google Agenda, Partager et Actualiser deviennent des icônes compactes accessibles (titres et `aria-label`). Affichage des anciennes séances piloté par une icône horloge et ses attributs `aria-pressed`.
+- Aucun changement de la logique de synchronisation ni de la signification des RSVP. Une invitation Google seule ne donne toujours aucun droit de réponse sur Assolutions.
+
+### Recette LOCAL EXG-32/33
+1. Compte administrateur en mode ADMIN : **aucun** lien `Mes calendriers` dans la navbar ; gestion `Calendriers Google` disponible ; un propriétaire de projet non inscrit dans un groupe destinataire ne reçoit pas de calendrier dans `GET /mes`.
+2. Compte adhérent **avec** calendrier actif : `Mon menu` propose « Contacter le club » **et** « Mes calendriers » côte à côte sur mobile, et en ligne sur desktop. Compte **sans** calendrier : « Mes calendriers » absent et « Contacter le club » pleine largeur mobile.
+3. Sur `/mes-calendriers` mobile : comparer visuellement à `Mon menu` (une carte par séance, pas de scroll horizontal), accès Oui/Non par personne, calendrier partagé/Google/Actualiser iconifiés, ancien événements via horloge.
+4. Desktop : tableau conservé avec colonnes et actions d'origine. Partage toujours soumis aux droits Google. Vérifier l'app et les erreurs réseau sur 360–390 px de large.
+5. Confirmer compilation isolée backend + frontend PREPROD/PROD, puis recette fonctionnelle LOCAL avant toute promotion PREPROD. Ne pas merger vers master ni modifier PROD.
+
