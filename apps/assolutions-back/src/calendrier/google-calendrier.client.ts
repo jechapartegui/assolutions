@@ -177,9 +177,36 @@ export class GoogleCalendrierClient {
       '/events/' + encodeURIComponent(eventId));
   }
 
-  async upsertEvent(calendarId: string, eventId: string, body: GoogleObject, notify: boolean) {
+  /**
+   * EXG-PP-FIX03: automatic notifications require a real business change.
+   * Read the remote event so a retry after a successful Google write cannot
+   * resend the same notification. Removals always suppress requested emails.
+   * Google's own delivery behavior remains outside our control.
+   */
+  private automaticNotify(existing: GoogleObject | null, body: GoogleObject): boolean {
+    if (!existing) return true;
+    const previous = new Set((existing.attendees ?? []).map((a: any) =>
+      String(a.email ?? '').trim().toLowerCase()).filter(Boolean));
+    const next = new Set((body.attendees ?? []).map((a: any) =>
+      String(a.email ?? '').trim().toLowerCase()).filter(Boolean));
+    // A removal (even together with an addition) must not trigger an email.
+    if ([...previous].some(email => !next.has(email))) return false;
+    if ([...next].some(email => !previous.has(email))) return true;
+
+    const comparableDate = (v: any) => v?.dateTime
+      ? new Date(v.dateTime).toISOString() : String(v?.date ?? '');
+    return String(existing.summary ?? '') !== String(body.summary ?? '')
+      || String(existing.description ?? '') !== String(body.description ?? '')
+      || String(existing.location ?? '') !== String(body.location ?? '')
+      || comparableDate(existing.start) !== comparableDate(body.start)
+      || comparableDate(existing.end) !== comparableDate(body.end);
+  }
+
+  async upsertEvent(calendarId: string, eventId: string, body: GoogleObject,
+    notify: boolean, automatic = false) {
     const path = '/calendars/' + encodeURIComponent(calendarId) + '/events';
     const existing = await this.getEvent(calendarId, eventId);
+    const shouldNotify = notify && (!automatic || this.automaticNotify(existing, body));
     if (existing) {
       // Preserver les RSVP Google sur les adresses toujours presentes.
       const old = new Map<string, string>((existing.attendees ?? []).map((x: any) =>
@@ -189,14 +216,14 @@ export class GoogleCalendrierClient {
           ? { responseStatus: old.get(String(x.email).toLowerCase()) } : {}),
       }));
       return this.call('PUT', path + '/' + encodeURIComponent(eventId),
-        { ...body, attendees, id: eventId }, notify ? 'all' : 'none');
+        { ...body, attendees, id: eventId }, shouldNotify ? 'all' : 'none');
     }
     try {
-      return await this.call('POST', path, { ...body, id: eventId }, notify ? 'all' : 'none');
+      return await this.call('POST', path, { ...body, id: eventId }, shouldNotify ? 'all' : 'none');
     } catch (e: any) {
       if (e?.message === 'GOOGLE_CALENDAR_API_HTTP_409') {
         return this.call('PUT', path + '/' + encodeURIComponent(eventId),
-          { ...body, id: eventId }, notify ? 'all' : 'none');
+          { ...body, id: eventId }, shouldNotify ? 'all' : 'none');
       }
       throw e;
     }
