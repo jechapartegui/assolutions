@@ -462,7 +462,10 @@ export class CalendrierService {
          VALUES ($1,$2,$3,$4,CASE WHEN $3='CONFIRME_MANUELLEMENT' THEN now() ELSE NULL END,now())
          ON CONFLICT(calendrier_id,compte_id) DO UPDATE
          SET statut=EXCLUDED.statut, invitation_forcee=EXCLUDED.invitation_forcee,
-             confirme_le=EXCLUDED.confirme_le,date_maj=now()`,
+             confirme_le=EXCLUDED.confirme_le,
+             propose_le=CASE WHEN EXCLUDED.statut='NON_CONTACTE' THEN NULL ELSE calendrier_destinataire.propose_le END,
+             relance_le=CASE WHEN EXCLUDED.statut='NON_CONTACTE' THEN NULL ELSE calendrier_destinataire.relance_le END,
+             date_maj=now()`,
         [id, compteId, action, forced],
       );
       await db.query(
