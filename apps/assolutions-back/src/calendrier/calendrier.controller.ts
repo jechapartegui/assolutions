@@ -6,7 +6,7 @@ import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
 import { GoogleCalendrierClient } from './google-calendrier.client';
 import { CalendrierWorkerService } from './calendrier-worker.service';
-import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto, CalendrierDestinataireActionDto } from './calendrier.dto';
+import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto, CalendrierDestinataireActionDto, CalendrierProposerAbonnementDto } from './calendrier.dto';
 
 @Controller('calendriers')
 @UseGuards(JwtAuthGuard)
@@ -93,6 +93,15 @@ export class CalendrierController {
   ) {
     await this.access.assertProjectAdmin(req.user.id, projectId);
     return this.service.destinataires(id, projectId);
+  }
+
+  @Post(':id/destinataires/proposer')
+  async proposerAbonnement(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: CalendrierProposerAbonnementDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.proposerAbonnement(id, projectId, dto.compte_id, dto.action);
   }
 
   @Post(':id/destinataires/action')
