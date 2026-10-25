@@ -47,6 +47,7 @@ export class CalendrierComponent implements OnInit {
   rsvps: Array<any> = [];
   rsvpFilter: 'actions' | 'all' | 'synced' = 'actions';
   importingRsvps = false;
+  loadingRsvps = false;
   form: CalendrierPayload = this.emptyForm();
 
   constructor(
@@ -384,8 +385,8 @@ export class CalendrierComponent implements OnInit {
   }
 
   async showResponses() {
-    if (!this.isAdmin || !this.selectedId) return;
-    this.error = ''; this.rsvps = [];
+    if (!this.isAdmin || !this.selectedId || this.loadingRsvps) return;
+    this.error = ''; this.rsvps = []; this.loadingRsvps = true;
     try {
       const result = await this.api.responses(this.selectedId);
       this.showRsvps = true;
@@ -394,6 +395,7 @@ export class CalendrierComponent implements OnInit {
         ...row, personne_choisie: null,
       }));
     } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.loadingRsvps = false; }
   }
 
   async importerReponses() {
