@@ -377,8 +377,14 @@ export class CalendrierSyncService {
     );
     const comptes = await this.comptesDuProjet(projectId);
     const resultat: Array<any> = [];
-    for (const row of rows) {
-      const remote = await this.google.getEvent(calendrier.google_calendar_id, row.google_event_id);
+    // Trois lectures Google maximum en parallele au lieu d'un N+1 sequentiel.
+    const batches = [];
+    for (let i = 0; i < rows.length; i += 3) batches.push(rows.slice(i, i + 3));
+    for (const batch of batches) {
+      const remoteBatch = await Promise.all(batch.map(async (row) => ({
+        row, remote: await this.google.getEvent(calendrier.google_calendar_id, row.google_event_id),
+      })));
+      for (const { row, remote } of remoteBatch) {
       for (const attendee of remote?.attendees ?? []) {
         const email = String(attendee.email ?? '').trim().toLowerCase();
         if (!email || email === this.google.owner) continue;
@@ -396,6 +402,7 @@ export class CalendrierSyncService {
           peut_importer: found.length === 1 && personnes.length > 0 &&
             ['accepted', 'declined'].includes(String(attendee.responseStatus)),
         });
+      }
       }
     }
     return { calendrier_id: id, apercu_seulement: true, lignes: resultat };
