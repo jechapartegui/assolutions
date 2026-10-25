@@ -174,6 +174,10 @@ export class CalendrierApiService {
     confirme_le: string | null }>> {
     return this.api.GET(this.base + '/' + Number(id) + '/destinataires');
   }
+  proposerAbonnement(id: number, compte_id: number, action: 'PROPOSER' | 'RELANCER'):
+    Promise<{ envoye: boolean; compte_id: number; action: string }> {
+    return this.api.POST(this.base + '/' + Number(id) + '/destinataires/proposer', { compte_id, action });
+  }
   actionDestinataire(id: number, compte_id: number,
     action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU'): Promise<any> {
     return this.api.POST(this.base + '/' + Number(id) + '/destinataires/action', { compte_id, action });
