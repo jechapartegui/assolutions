@@ -221,9 +221,23 @@ export class CalendrierComponent implements OnInit {
     finally { this.sendingSubscriptionAccountId = null; }
   }
 
+  statutDestinataire(statut: string): string {
+    switch (statut) {
+      case 'NON_CONTACTE': return $localize`:@@calendar.statusNotContacted:Pas encore contacté`;
+      case 'PROPOSE': return $localize`:@@calendar.statusProposed:Abonnement proposé`;
+      case 'CONFIRME_MANUELLEMENT': return $localize`:@@calendar.statusConfirmed:Abonnement confirmé manuellement`;
+      case 'INVITATIONS_FORCEES': return $localize`:@@calendar.statusForced:Invitations individuelles activées`;
+      case 'EXCLU': return $localize`:@@calendar.statusExcluded:Exclu de la diffusion`;
+      default: return $localize`:@@calendar.statusUnknown:Statut inconnu`;
+    }
+  }
+
   async suiviDestinataire(compteId: number,
     action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU') {
     if (!this.isAdmin || !this.selectedId) return;
+    if (action === 'NON_CONTACTE' && !window.confirm(
+      'Réinitialiser le suivi de cette personne ? Cela retire aussi son éventuel forçage d’invitations, mais ne supprime pas son abonnement Google.'
+    )) return;
     if (action === 'INVITATIONS_FORCEES' && !window.confirm(
       'Cette personne recevra des invitations Google pour chaque événement du calendrier. Confirmer ?'
     )) return;
