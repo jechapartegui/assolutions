@@ -178,18 +178,21 @@ export class GoogleCalendrierClient {
    * Lecture seule pour un compte ciblé : ne rend JAMAIS le calendrier public.
    * Désactive le mail de partage Google ; Assolutions enverra un mail unique.
    */
-  async shareCalendarReader(calendarId: string, email: string): Promise<void> {
+  async shareCalendarReader(calendarId: string, email: string): Promise<boolean> {
     const calendar = encodeURIComponent(calendarId);
     const ruleId = encodeURIComponent('user:' + email.toLowerCase());
     const existing = await this.call('GET', '/calendars/' + calendar + '/acl/' + ruleId);
-    if (existing?.role === 'reader' || existing?.role === 'writer' || existing?.role === 'owner') return;
-    if (existing) {
-      await this.call('PATCH', '/calendars/' + calendar + '/acl/' + ruleId, { role: 'reader' });
-      return;
-    }
+    // Ne jamais ecraser des droits preexistants dont Assolutions n'est pas l'auteur.
+    if (existing) return false;
     await this.call('POST', '/calendars/' + calendar + '/acl?sendNotifications=false', {
       role: 'reader', scope: { type: 'user', value: email.toLowerCase() },
     });
+    return true;
+  }
+
+  async unshareCalendarReader(calendarId: string, email: string): Promise<void> {
+    await this.call('DELETE', '/calendars/' + encodeURIComponent(calendarId) +
+      '/acl/' + encodeURIComponent('user:' + email.toLowerCase()));
   }
 
   async getEvent(calendarId: string, eventId: string) {
