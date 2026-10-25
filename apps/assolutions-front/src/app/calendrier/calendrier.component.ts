@@ -48,6 +48,8 @@ export class CalendrierComponent implements OnInit {
   rsvpFilter: 'actions' | 'all' | 'synced' = 'actions';
   importingRsvps = false;
   loadingRsvps = false;
+  loadingDestinataires = false;
+  destinataires: Array<{ compte_id: number; email: string; personnes: string; statut: string; invitation_forcee: boolean }> = [];
   form: CalendrierPayload = this.emptyForm();
 
   constructor(
@@ -168,6 +170,7 @@ export class CalendrierComponent implements OnInit {
     this.previewData = null;
     this.syncResult = null;
     this.rsvps = [];
+    this.destinataires = [];
   }
 
   async edit(id: number) {
@@ -188,6 +191,28 @@ export class CalendrierComponent implements OnInit {
         groupe_ids: (selected.groupe_ids || []).map(Number),
         seance_ids: (selected.seance_ids || []).map(Number),
       };
+      if (this.isAdmin) await this.reloadDestinataires();
+    } catch (e: any) { this.error = String(e?.message || e); }
+  }
+
+  async reloadDestinataires() {
+    if (!this.selectedId || !this.isAdmin) return;
+    this.loadingDestinataires = true;
+    try {
+      this.destinataires = await this.api.destinataires(this.selectedId);
+    } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.loadingDestinataires = false; }
+  }
+
+  async suiviDestinataire(compteId: number,
+    action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU') {
+    if (!this.isAdmin || !this.selectedId) return;
+    if (action === 'INVITATIONS_FORCEES' && !window.confirm(
+      'Cette personne recevra des invitations Google pour chaque événement du calendrier. Confirmer ?'
+    )) return;
+    try {
+      await this.api.actionDestinataire(this.selectedId, compteId, action);
+      await this.reloadDestinataires();
     } catch (e: any) { this.error = String(e?.message || e); }
   }
 
