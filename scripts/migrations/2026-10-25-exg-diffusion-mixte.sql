@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.calendrier_destinataire (
   compte_id integer NOT NULL REFERENCES public.compte(id) ON DELETE CASCADE,
   statut varchar(32) NOT NULL DEFAULT 'NON_CONTACTE',
   invitation_forcee boolean NOT NULL DEFAULT false,
+  acl_gere boolean NOT NULL DEFAULT false,
   propose_le timestamptz,
   relance_le timestamptz,
   confirme_le timestamptz,
@@ -21,4 +22,5 @@ CREATE TABLE IF NOT EXISTS public.calendrier_destinataire (
   CONSTRAINT chk_calendrier_destinataire_statut
   CHECK (statut IN ('NON_CONTACTE','PROPOSE','CONFIRME_MANUELLEMENT','INVITATIONS_FORCEES','EXCLU'))
 );
+ALTER TABLE public.calendrier_destinataire ADD COLUMN IF NOT EXISTS acl_gere boolean NOT NULL DEFAULT false;
 COMMIT;
