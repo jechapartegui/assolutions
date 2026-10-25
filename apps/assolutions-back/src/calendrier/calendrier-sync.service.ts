@@ -169,6 +169,35 @@ export class CalendrierSyncService {
     };
   }
 
+  /** Retrait des seuls ACL Google créés par Assolutions, si accès au groupe perdu. */
+  private async revokeIneligibleShares(calendrierId: number, projectId: number, googleId: string) {
+    const revoked: Array<{ compte_id: number; login: string }> = await this.db.query(
+      `SELECT cd.compte_id, co.login FROM calendrier_destinataire cd
+       JOIN compte co ON co.id=cd.compte_id
+       WHERE cd.calendrier_id=$1 AND cd.acl_gere=true
+         AND (cd.statut='EXCLU' OR co.actif=false OR NOT EXISTS (
+            SELECT 1 FROM login_project lp WHERE lp.login_id=co.id AND lp.project_id=$2
+         ) OR NOT EXISTS (
+            SELECT 1 FROM personne pe
+            JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=pe.id
+            JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id
+            WHERE cg.calendrier_id=$1 AND pe.compte=co.id
+              AND COALESCE(pe.archive,false)=false
+         ))`, [calendrierId, projectId],
+    );
+    for (const entry of revoked) {
+      await this.google.unshareCalendarReader(googleId,
+        this.google.recipient(entry.login, Number(entry.compte_id)));
+      await this.db.query(
+        `UPDATE calendrier_destinataire SET acl_gere=false, invitation_forcee=false,
+           statut=CASE WHEN statut='EXCLU' THEN 'EXCLU' ELSE 'NON_CONTACTE' END,
+           propose_le=NULL, relance_le=NULL, confirme_le=NULL, date_maj=now()
+         WHERE calendrier_id=$1 AND compte_id=$2`,
+        [calendrierId, entry.compte_id],
+      );
+    }
+  }
+
   async sync(id: number, projectId: number, notifier = false, automatic = false) {
     if (!this.google.enabled) {
       throw new BadRequestException('GOOGLE_CALENDAR_DISABLED');
@@ -194,6 +223,7 @@ export class CalendrierSyncService {
         googleId, calendrier.nom, calendrier.description, calendrier.timezone,
       );
     }
+    await this.revokeIneligibleShares(id, projectId, googleId);
     // Un abonnement n'est PAS une invitation Google par evenement.
     // Le mode mixte invite seulement les comptes explicitement forces.
     let invitees: string[] = [];
