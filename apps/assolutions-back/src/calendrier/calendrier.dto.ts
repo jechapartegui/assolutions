@@ -40,6 +40,11 @@ export class GoogleReponseCandidateDto {
   @IsIn(['accepted', 'declined']) google_reponse: 'accepted' | 'declined';
 }
 
+export class CalendrierProposerAbonnementDto {
+  @IsInt() @Min(1) compte_id: number;
+  @IsIn(['PROPOSER', 'RELANCER']) action: 'PROPOSER' | 'RELANCER';
+}
+
 export class CalendrierDestinataireActionDto {
   @IsInt() @Min(1) compte_id: number;
   @IsIn(['CONFIRME_MANUELLEMENT', 'INVITATIONS_FORCEES', 'NON_CONTACTE', 'EXCLU'])
