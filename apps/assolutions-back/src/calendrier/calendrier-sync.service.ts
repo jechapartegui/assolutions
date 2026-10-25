@@ -208,6 +208,7 @@ export class CalendrierSyncService {
     await this.google.verifyOwner();
     const notify = (notifier === true || automatic) && calendrier.notifier_mises_a_jour === true;
     let googleId = calendrier.google_calendar_id as string | null;
+    if (googleId) await this.google.assertCalendarEnvironment(googleId);
     if (!googleId) {
       const created = await this.google.createCalendar(
         calendrier.nom, calendrier.description, calendrier.timezone,
@@ -399,6 +400,7 @@ export class CalendrierSyncService {
   async googleResponses(id: number, projectId: number) {
     const calendrier = await this.calendars.get(id, projectId);
     if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendrier.google_calendar_id);
     const rows: Array<{ seance_id: number; google_event_id: string }> = await this.db.query(
       `SELECT ce.seance_id, ce.google_event_id FROM calendrier_evenement ce
        JOIN seance se ON se.seance_id=ce.seance_id AND se.calendrier_id=ce.calendrier_id
@@ -452,6 +454,7 @@ export class CalendrierSyncService {
     }
     const calendar = await this.calendars.get(id, projectId);
     if (!calendar.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendar.google_calendar_id);
     const accounts = await this.comptesDuProjet(projectId);
     const keys = new Set<string>();
     const validated: Array<{ seance_id: number; personne_id: number; compte_id: number; status: 'présent'|'absent'; origine: 'inscription'|'groupe_seance' }> = [];
