@@ -9,6 +9,7 @@ export interface Calendrier {
   description: string | null;
   timezone: string;
   notifier_mises_a_jour: boolean;
+  diffusion_mode: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   actif: boolean;
   google_calendar_id: string | null;
   google_calendar_url: string | null;
@@ -145,9 +146,9 @@ export class CalendrierApiService {
   update(id: number, dto: Omit<CalendrierPayload, 'saison_id'>): Promise<{ id: number }> {
     // Defense supplementaire : seuls les champs admis par UpdateCalendrierDto
     // sont transmis, meme si l'appelant inclut accidentellement saison_id.
-    const { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids } = dto;
+    const { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids } = dto;
     return this.api.POST<{ id: number }>(this.base + '/' + Number(id) + '/update',
-      { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids });
+      { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids });
   }
   archive(id: number): Promise<{ id: number; archived: true }> {
     return this.api.POST<{ id: number; archived: true }>(this.base + '/' + Number(id) + '/archive', {});
