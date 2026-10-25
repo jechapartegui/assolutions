@@ -80,6 +80,40 @@
         </div>
       </div>
 
+      <div class="box" *ngIf="selectedId && isAdmin">
+        <h3 class="title is-6">Suivi des destinataires ({{ destinataires.length }})</h3>
+        <p class="help mb-3">Statut déclaré dans Assolutions ; Google ne confirme pas automatiquement les abonnements.</p>
+        <button type="button" class="button is-light is-small mb-3"
+                (click)="reloadDestinataires()" [disabled]="loadingDestinataires">
+          Actualiser la liste
+        </button>
+        <div class="table-container">
+          <table class="table is-fullwidth is-striped is-narrow">
+            <thead><tr><th>Personne</th><th>Email</th><th>Suivi</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let d of destinataires">
+                <td>{{ d.personnes }}</td>
+                <td>{{ d.email }}</td>
+                <td>{{ d.statut }}</td>
+                <td>
+                  <div class="buttons are-small">
+                    <button type="button" class="button is-success is-light"
+                            (click)="suiviDestinataire(d.compte_id, 'CONFIRME_MANUELLEMENT')">Confirmé</button>
+                    <button *ngIf="form.diffusion_mode === 'MIXTE'" type="button"
+                            class="button is-warning is-light"
+                            [disabled]="d.invitation_forcee"
+                            (click)="suiviDestinataire(d.compte_id, 'INVITATIONS_FORCEES')">Forcer invitations</button>
+                    <button type="button" class="button is-light"
+                            (click)="suiviDestinataire(d.compte_id, 'NON_CONTACTE')">Réinitialiser</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!destinataires.length"><td colspan="4">Aucun destinataire pour les groupes associés.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="box">
         <h3 class="title is-6 mb-3" i18n>Groupes destinataires ({{ form.groupe_ids.length }})</h3>
         <div class="calendar-group-picker">
