@@ -204,6 +204,23 @@ export class CalendrierComponent implements OnInit {
     finally { this.loadingDestinataires = false; }
   }
 
+  sendingSubscriptionAccountId: number | null = null;
+
+  async proposerAbonnement(compteId: number, action: 'PROPOSER' | 'RELANCER') {
+    if (!this.isAdmin || !this.selectedId || this.sendingSubscriptionAccountId !== null) return;
+    if (!window.confirm(action === 'RELANCER'
+      ? 'Renvoyer un rappel d’abonnement à cette personne ?'
+      : 'Partager ce calendrier en lecture seule et envoyer un seul mail à cette personne ?')) return;
+    this.sendingSubscriptionAccountId = compteId;
+    this.error = '';
+    try {
+      await this.api.proposerAbonnement(this.selectedId, compteId, action);
+      await this.reloadDestinataires();
+      this.info = action === 'RELANCER' ? 'Relance envoyée.' : 'Proposition d’abonnement envoyée.';
+    } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.sendingSubscriptionAccountId = null; }
+  }
+
   async suiviDestinataire(compteId: number,
     action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU') {
     if (!this.isAdmin || !this.selectedId) return;
