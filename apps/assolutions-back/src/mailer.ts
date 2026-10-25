@@ -2,17 +2,17 @@
 import nodemailer from 'nodemailer';
 
 export function createTransport() {
-  const host = process.env.SMTP_HOST ?? 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = (process.env.SMTP_SECURE ?? 'false') === 'true';
+  const host = process.env.MAIL_SMTP_HOST ?? process.env.SMTP_HOST ?? 'smtp.gmail.com';
+  const port = Number(process.env.MAIL_SMTP_PORT ?? process.env.SMTP_PORT ?? 587);
+  const secure = (process.env.MAIL_SMTP_SECURE ?? process.env.SMTP_SECURE ?? 'false') === 'true';
 
   const transporter = nodemailer.createTransport({
     host,
     port,
     secure,               // false pour 587 (STARTTLS)
     auth: {
-      user: process.env.SMTP_USER!,
-      pass: process.env.SMTP_PASS!,
+      user: (process.env.MAIL_SMTP_USER ?? process.env.SMTP_USER)!,
+      pass: (process.env.MAIL_SMTP_PASS ?? process.env.SMTP_PASS)!,
     },
     pool: true,           // pooling pour de meilleurs perfs
     maxConnections: 3,
@@ -39,7 +39,7 @@ export type MailInput = {
 
 export async function sendMail(input: MailInput) {
   const transporter = createTransport();
-  const from = input.from ?? process.env.MAIL_FROM ?? process.env.SMTP_USER!;
+  const from = input.from ?? process.env.MAIL_FROM ?? process.env.MAIL_SMTP_USER ?? process.env.SMTP_USER!;
 
   const info = await transporter.sendMail({
     from,
