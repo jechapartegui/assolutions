@@ -80,7 +80,7 @@
         </div>
       </div>
 
-      <div class="box" *ngIf="selectedId && isAdmin">
+      <div class="box calendar-recipient-panel" *ngIf="selectedId && isAdmin">
         <h3 class="title is-6" i18n="@@calendar.recipientTracking">Suivi des destinataires ({{ destinataires.length }})</h3>
         <p class="help mb-3" i18n="@@calendar.recipientDisclaimer">Statut déclaré dans Assolutions ; Google ne confirme pas automatiquement les abonnements.</p>
         <button type="button" class="button is-light is-small mb-3"
@@ -94,9 +94,9 @@
               <tr *ngFor="let d of destinataires">
                 <td>{{ d.personnes }}</td>
                 <td>{{ d.email }}</td>
-                <td>{{ d.statut }}</td>
+                <td>{{ statutDestinataire(d.statut) }}</td>
                 <td>
-                  <div class="buttons are-small">
+                  <div class="buttons are-small calendar-recipient-actions">
                     <button type="button" class="button is-link is-light"
                             *ngIf="d.statut === 'NON_CONTACTE'"
                             [disabled]="sendingSubscriptionAccountId !== null"
@@ -106,13 +106,13 @@
                             [disabled]="sendingSubscriptionAccountId !== null"
                             (click)="proposerAbonnement(d.compte_id, 'RELANCER')" i18n="@@calendar.remindSubscription">Relancer</button>
                     <button type="button" class="button is-success is-light"
-                            (click)="suiviDestinataire(d.compte_id, 'CONFIRME_MANUELLEMENT')" i18n="@@calendar.recipientConfirmed">Confirmé</button>
+                            (click)="suiviDestinataire(d.compte_id, 'CONFIRME_MANUELLEMENT')" i18n="@@calendar.recipientConfirmed">Marquer comme abonné</button>
                     <button *ngIf="form.diffusion_mode === 'MIXTE'" type="button"
                             class="button is-warning is-light"
                             [disabled]="d.invitation_forcee"
                             (click)="suiviDestinataire(d.compte_id, 'INVITATIONS_FORCEES')" i18n="@@calendar.forceInvitations">Forcer invitations</button>
                     <button type="button" class="button is-light"
-                            (click)="suiviDestinataire(d.compte_id, 'NON_CONTACTE')" i18n="@@calendar.recipientReset">Réinitialiser</button>
+                            (click)="suiviDestinataire(d.compte_id, 'NON_CONTACTE')" i18n="@@calendar.recipientReset">Réinitialiser le suivi</button>
                   </div>
                 </td>
               </tr>
