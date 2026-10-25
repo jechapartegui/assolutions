@@ -108,5 +108,10 @@
   "899110913095235644": "Assolutions matching",
   "8444626340370864343": "Choose a person…",
   "6314976177247159040": "Apply {$INTERPOLATION} selected response(s) to Assolutions",
-  "8996016395045771235": "Responses are checked again against Google during import. Someone from a session group may be registered after explicit confirmation. Actual attendance and Google responses are never changed by this import."
+  "8996016395045771235": "Responses are checked again against Google during import. Someone from a session group may be registered after explicit confirmation. Actual attendance and Google responses are never changed by this import.",
+  "calendar.deliveryMode": "Member delivery",
+  "calendar.deliverySubscription": "Subscription (no invitation per match)",
+  "calendar.deliveryMixed": "Mixed (subscription and targeted invitations)",
+  "calendar.deliveryInvitations": "Individual invitations (all events)",
+  "calendar.deliveryHelp": "Subscription mode sends no Google invitations for each session. Subscription requests and reminders are managed separately."
 }
