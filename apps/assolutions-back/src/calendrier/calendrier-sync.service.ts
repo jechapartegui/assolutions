@@ -194,7 +194,30 @@ export class CalendrierSyncService {
         googleId, calendrier.nom, calendrier.description, calendrier.timezone,
       );
     }
-    const invitees = await this.invitees(id, projectId);
+    // Un abonnement n'est PAS une invitation Google par evenement.
+    // Le mode mixte invite seulement les comptes explicitement forces.
+    let invitees: string[] = [];
+    if (calendrier.diffusion_mode === 'INVITATIONS') {
+      invitees = await this.invitees(id, projectId);
+    } else if (calendrier.diffusion_mode === 'MIXTE') {
+      const forced: Array<{ id: number; login: string }> = await this.db.query(
+        `SELECT DISTINCT co.id, co.login
+         FROM calendrier_destinataire cd
+         JOIN compte co ON co.id=cd.compte_id AND co.actif=true
+         JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$2
+         WHERE cd.calendrier_id=$1 AND cd.invitation_forcee=true
+           AND cd.statut <> 'EXCLU'
+           AND EXISTS (
+             SELECT 1 FROM personne p
+             JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=p.id
+             JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id
+             WHERE p.compte=co.id AND COALESCE(p.archive,false)=false
+               AND cg.calendrier_id=$1
+           )`,
+        [id, projectId],
+      );
+      invitees = forced.map(c => this.google.recipient(c.login, c.id));
+    }
     // Une tranche par appel limite les quotas et les envois de masse involontaires.
     await this.db.query(
       `INSERT INTO calendrier_evenement (calendrier_id, seance_id, statut_synchro)
