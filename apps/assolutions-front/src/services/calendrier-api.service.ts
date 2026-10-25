@@ -169,6 +169,16 @@ export class CalendrierApiService {
       this.base + '/' + Number(id) + '/importer-reponses', { lignes },
     );
   }
+  destinataires(id: number): Promise<Array<{ compte_id: number; email: string; personnes: string;
+    statut: string; invitation_forcee: boolean; propose_le: string | null; relance_le: string | null;
+    confirme_le: string | null }>> {
+    return this.api.GET(this.base + '/' + Number(id) + '/destinataires');
+  }
+  actionDestinataire(id: number, compte_id: number,
+    action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU'): Promise<any> {
+    return this.api.POST(this.base + '/' + Number(id) + '/destinataires/action', { compte_id, action });
+  }
+
   responses(id: number): Promise<any> {
     return this.api.GET<any>(this.base + '/' + Number(id) + '/reponses-google');
   }
