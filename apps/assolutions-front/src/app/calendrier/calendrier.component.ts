@@ -433,6 +433,7 @@ export class CalendrierComponent implements OnInit {
     try {
       const result = await this.api.responses(this.selectedId);
       this.showRsvps = true;
+      this.info = 'Aperçu des 10 dernières séances synchronisées.';
       this.rsvpFilter = 'actions';
       this.rsvps = (result.lignes || []).map((row: any) => ({
         ...row, personne_choisie: null,
