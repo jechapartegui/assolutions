@@ -6,7 +6,7 @@ import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
 import { GoogleCalendrierClient } from './google-calendrier.client';
 import { CalendrierWorkerService } from './calendrier-worker.service';
-import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto } from './calendrier.dto';
+import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto, CalendrierDestinataireActionDto } from './calendrier.dto';
 
 @Controller('calendriers')
 @UseGuards(JwtAuthGuard)
@@ -85,6 +85,23 @@ export class CalendrierController {
   ) {
     await this.access.assertProjectStaff(req.user.id, projectId);
     return this.service.seances(id, projectId);
+  }
+
+  @Get(':id/destinataires')
+  async destinataires(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.destinataires(id, projectId);
+  }
+
+  @Post(':id/destinataires/action')
+  async actionDestinataire(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: CalendrierDestinataireActionDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.actionDestinataire(id, projectId, dto.compte_id, dto.action);
   }
 
   @Get(':id/preview')
