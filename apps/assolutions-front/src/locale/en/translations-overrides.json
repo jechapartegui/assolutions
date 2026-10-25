@@ -113,5 +113,18 @@
   "calendar.deliverySubscription": "Subscription (no invitation per match)",
   "calendar.deliveryMixed": "Mixed (subscription and targeted invitations)",
   "calendar.deliveryInvitations": "Individual invitations (all events)",
-  "calendar.deliveryHelp": "Subscription mode sends no Google invitations for each session. Subscription requests and reminders are managed separately."
+  "calendar.deliveryHelp": "Subscription mode sends no Google invitations for each session. Subscription requests and reminders are managed separately.",
+  "calendar.recipientTracking": "Recipient tracking ({$INTERPOLATION})",
+  "calendar.recipientDisclaimer": "Assolutions status; Google does not confirm subscriptions automatically.",
+  "calendar.recipientRefresh": "Refresh list",
+  "calendar.recipientPerson": "Person",
+  "calendar.recipientEmail": "Email",
+  "calendar.recipientStatus": "Status",
+  "calendar.recipientActions": "Actions",
+  "calendar.proposeSubscription": "Offer subscription",
+  "calendar.remindSubscription": "Remind",
+  "calendar.recipientConfirmed": "Confirmed",
+  "calendar.forceInvitations": "Force invitations",
+  "calendar.recipientReset": "Reset",
+  "calendar.recipientEmpty": "No recipients in selected groups."
 }
