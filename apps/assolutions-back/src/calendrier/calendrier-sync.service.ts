@@ -169,6 +169,35 @@ export class CalendrierSyncService {
     };
   }
 
+  /** Retrait des seuls ACL Google créés par Assolutions, si accès au groupe perdu. */
+  private async revokeIneligibleShares(calendrierId: number, projectId: number, googleId: string) {
+    const revoked: Array<{ compte_id: number; login: string }> = await this.db.query(
+      `SELECT cd.compte_id, co.login FROM calendrier_destinataire cd
+       JOIN compte co ON co.id=cd.compte_id
+       WHERE cd.calendrier_id=$1 AND cd.acl_gere=true
+         AND (cd.statut='EXCLU' OR co.actif=false OR NOT EXISTS (
+            SELECT 1 FROM login_project lp WHERE lp.login_id=co.id AND lp.project_id=$2
+         ) OR NOT EXISTS (
+            SELECT 1 FROM personne pe
+            JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=pe.id
+            JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id
+            WHERE cg.calendrier_id=$1 AND pe.compte=co.id
+              AND COALESCE(pe.archive,false)=false
+         ))`, [calendrierId, projectId],
+    );
+    for (const entry of revoked) {
+      await this.google.unshareCalendarReader(googleId,
+        this.google.recipient(entry.login, Number(entry.compte_id)));
+      await this.db.query(
+        `UPDATE calendrier_destinataire SET acl_gere=false, invitation_forcee=false,
+           statut=CASE WHEN statut='EXCLU' THEN 'EXCLU' ELSE 'NON_CONTACTE' END,
+           propose_le=NULL, relance_le=NULL, confirme_le=NULL, date_maj=now()
+         WHERE calendrier_id=$1 AND compte_id=$2`,
+        [calendrierId, entry.compte_id],
+      );
+    }
+  }
+
   async sync(id: number, projectId: number, notifier = false, automatic = false) {
     if (!this.google.enabled) {
       throw new BadRequestException('GOOGLE_CALENDAR_DISABLED');
@@ -179,6 +208,7 @@ export class CalendrierSyncService {
     await this.google.verifyOwner();
     const notify = (notifier === true || automatic) && calendrier.notifier_mises_a_jour === true;
     let googleId = calendrier.google_calendar_id as string | null;
+    if (googleId) await this.google.assertCalendarEnvironment(googleId);
     if (!googleId) {
       const created = await this.google.createCalendar(
         calendrier.nom, calendrier.description, calendrier.timezone,
@@ -194,7 +224,31 @@ export class CalendrierSyncService {
         googleId, calendrier.nom, calendrier.description, calendrier.timezone,
       );
     }
-    const invitees = await this.invitees(id, projectId);
+    await this.revokeIneligibleShares(id, projectId, googleId);
+    // Un abonnement n'est PAS une invitation Google par evenement.
+    // Le mode mixte invite seulement les comptes explicitement forces.
+    let invitees: string[] = [];
+    if (calendrier.diffusion_mode === 'INVITATIONS') {
+      invitees = await this.invitees(id, projectId);
+    } else if (calendrier.diffusion_mode === 'MIXTE') {
+      const forced: Array<{ id: number; login: string }> = await this.db.query(
+        `SELECT DISTINCT co.id, co.login
+         FROM calendrier_destinataire cd
+         JOIN compte co ON co.id=cd.compte_id AND co.actif=true
+         JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$2
+         WHERE cd.calendrier_id=$1 AND cd.invitation_forcee=true
+           AND cd.statut <> 'EXCLU'
+           AND EXISTS (
+             SELECT 1 FROM personne p
+             JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=p.id
+             JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id
+             WHERE p.compte=co.id AND COALESCE(p.archive,false)=false
+               AND cg.calendrier_id=$1
+           )`,
+        [id, projectId],
+      );
+      invitees = forced.map(c => this.google.recipient(c.login, c.id));
+    }
     // Une tranche par appel limite les quotas et les envois de masse involontaires.
     await this.db.query(
       `INSERT INTO calendrier_evenement (calendrier_id, seance_id, statut_synchro)
@@ -346,16 +400,23 @@ export class CalendrierSyncService {
   async googleResponses(id: number, projectId: number) {
     const calendrier = await this.calendars.get(id, projectId);
     if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendrier.google_calendar_id);
     const rows: Array<{ seance_id: number; google_event_id: string }> = await this.db.query(
       `SELECT ce.seance_id, ce.google_event_id FROM calendrier_evenement ce
        JOIN seance se ON se.seance_id=ce.seance_id AND se.calendrier_id=ce.calendrier_id
        WHERE ce.calendrier_id=$1 AND ce.google_event_id IS NOT NULL
-       ORDER BY se.date_seance DESC LIMIT 100`, [id],
+       ORDER BY se.date_seance DESC LIMIT 10`, [id],
     );
     const comptes = await this.comptesDuProjet(projectId);
     const resultat: Array<any> = [];
-    for (const row of rows) {
-      const remote = await this.google.getEvent(calendrier.google_calendar_id, row.google_event_id);
+    // Trois lectures Google maximum en parallele au lieu d'un N+1 sequentiel.
+    const batches = [];
+    for (let i = 0; i < rows.length; i += 3) batches.push(rows.slice(i, i + 3));
+    for (const batch of batches) {
+      const remoteBatch = await Promise.all(batch.map(async (row) => ({
+        row, remote: await this.google.getEvent(calendrier.google_calendar_id, row.google_event_id),
+      })));
+      for (const { row, remote } of remoteBatch) {
       for (const attendee of remote?.attendees ?? []) {
         const email = String(attendee.email ?? '').trim().toLowerCase();
         if (!email || email === this.google.owner) continue;
@@ -374,8 +435,9 @@ export class CalendrierSyncService {
             ['accepted', 'declined'].includes(String(attendee.responseStatus)),
         });
       }
+      }
     }
-    return { calendrier_id: id, apercu_seulement: true, lignes: resultat };
+    return { calendrier_id: id, apercu_seulement: true, lignes: resultat, limite_seances: 10 };
   }
 
   /**
@@ -392,6 +454,7 @@ export class CalendrierSyncService {
     }
     const calendar = await this.calendars.get(id, projectId);
     if (!calendar.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendar.google_calendar_id);
     const accounts = await this.comptesDuProjet(projectId);
     const keys = new Set<string>();
     const validated: Array<{ seance_id: number; personne_id: number; compte_id: number; status: 'présent'|'absent'; origine: 'inscription'|'groupe_seance' }> = [];

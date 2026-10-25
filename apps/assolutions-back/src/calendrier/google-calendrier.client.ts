@@ -88,6 +88,8 @@ export class GoogleCalendrierClient {
     const q = sendUpdates ? '?sendUpdates=' + sendUpdates : '';
     const response = await fetch('https://www.googleapis.com/calendar/v3' + path + q, {
       method,
+      // Coupe les lectures Google trop lentes : elles bloquaient l'aperçu RSVP.
+      signal: AbortSignal.timeout(method === 'GET' ? 6000 : 20000),
       headers: {
         Authorization: 'Bearer ' + await this.accessToken(),
         Accept: 'application/json',
@@ -170,6 +172,38 @@ export class GoogleCalendrierClient {
     return this.call('PATCH', '/calendars/' + encodeURIComponent(googleId), {
       summary: this.calendarName(nom), description: description || '', timeZone: timezone,
     });
+  }
+
+  /**
+   * Lecture seule pour un compte ciblé : ne rend JAMAIS le calendrier public.
+   * Désactive le mail de partage Google ; Assolutions enverra un mail unique.
+   */
+  async shareCalendarReader(calendarId: string, email: string): Promise<boolean> {
+    const calendar = encodeURIComponent(calendarId);
+    const ruleId = encodeURIComponent('user:' + email.toLowerCase());
+    const existing = await this.call('GET', '/calendars/' + calendar + '/acl/' + ruleId);
+    // Ne jamais ecraser des droits preexistants dont Assolutions n'est pas l'auteur.
+    if (existing) return false;
+    await this.call('POST', '/calendars/' + calendar + '/acl?sendNotifications=false', {
+      role: 'reader', scope: { type: 'user', value: email.toLowerCase() },
+    });
+    return true;
+  }
+
+  async unshareCalendarReader(calendarId: string, email: string): Promise<void> {
+    await this.call('DELETE', '/calendars/' + encodeURIComponent(calendarId) +
+      '/acl/' + encodeURIComponent('user:' + email.toLowerCase()));
+  }
+
+  /** Bloque toute mutation d'un agenda PROD depuis PREPROD/LOCAL,
+   * notamment apres clonage nocturne de la base PROD. */
+  async assertCalendarEnvironment(calendarId: string): Promise<void> {
+    if (this.isProduction()) return;
+    const remote = await this.call('GET', '/calendars/' + encodeURIComponent(calendarId));
+    const prefix = this.calendarName('');
+    if (!remote || !String(remote.summary ?? '').startsWith(prefix)) {
+      throw new ServiceUnavailableException('GOOGLE_CALENDAR_ENVIRONMENT_MISMATCH');
+    }
   }
 
   async getEvent(calendarId: string, eventId: string) {

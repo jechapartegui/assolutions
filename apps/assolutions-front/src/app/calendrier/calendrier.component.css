@@ -173,3 +173,15 @@
   }
   .exg-compact .calendar-sessions-table {max-height:48vh;}
 }
+
+/* FIX04 : suivi destinataires plus discret que les formulaires principaux. */
+.calendar-recipient-panel { font-size: .84rem; }
+.calendar-recipient-panel .title { font-size: .94rem !important; }
+.calendar-recipient-panel .table { font-size: .83rem; }
+.calendar-recipient-panel .table th,
+.calendar-recipient-panel .table td { padding: .45rem .55rem; vertical-align: middle; }
+.calendar-recipient-panel .help { font-size: .76rem; }
+.calendar-recipient-panel .calendar-recipient-actions { gap: .3rem; margin: 0; }
+.calendar-recipient-panel .calendar-recipient-actions .button {
+  font-size: .74rem; min-height: 1.8rem; padding: .25rem .55rem; margin: 0;
+}

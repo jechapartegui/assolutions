@@ -6,7 +6,7 @@ import { CalendrierService } from './calendrier.service';
 import { CalendrierSyncService } from './calendrier-sync.service';
 import { GoogleCalendrierClient } from './google-calendrier.client';
 import { CalendrierWorkerService } from './calendrier-worker.service';
-import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto } from './calendrier.dto';
+import { CreateCalendrierDto, UpdateCalendrierDto, SynchroniserCalendrierDto, ImportGoogleReponsesDto, RepondreCalendrierEvenementDto, CalendrierDestinataireActionDto, CalendrierProposerAbonnementDto } from './calendrier.dto';
 
 @Controller('calendriers')
 @UseGuards(JwtAuthGuard)
@@ -87,6 +87,32 @@ export class CalendrierController {
     return this.service.seances(id, projectId);
   }
 
+  @Get(':id/destinataires')
+  async destinataires(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.destinataires(id, projectId);
+  }
+
+  @Post(':id/destinataires/proposer')
+  async proposerAbonnement(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: CalendrierProposerAbonnementDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.proposerAbonnement(id, projectId, dto.compte_id, dto.action);
+  }
+
+  @Post(':id/destinataires/action')
+  async actionDestinataire(
+    @Req() req: any, @Param('id', ParseIntPipe) id: number,
+    @ProjectId() projectId: number, @Body() dto: CalendrierDestinataireActionDto,
+  ) {
+    await this.access.assertProjectAdmin(req.user.id, projectId);
+    return this.service.actionDestinataire(id, projectId, dto.compte_id, dto.action);
+  }
+
   @Get(':id/preview')
   async preview(
     @Req() req: any, @Param('id', ParseIntPipe) id: number, @ProjectId() projectId: number,
@@ -128,7 +154,8 @@ export class CalendrierController {
     const current = await this.service.get(id, projectId);
     if ((dto.notifier_mises_a_jour !== undefined &&
          dto.notifier_mises_a_jour !== current.notifier_mises_a_jour) ||
-        (dto.actif !== undefined && dto.actif !== current.actif)) {
+        (dto.actif !== undefined && dto.actif !== current.actif) ||
+        (dto.diffusion_mode !== undefined && dto.diffusion_mode !== current.diffusion_mode)) {
       await this.access.assertProjectAdmin(req.user.id, projectId);
     }
     return this.service.update(id, dto, projectId);

@@ -47,6 +47,9 @@ export class CalendrierComponent implements OnInit {
   rsvps: Array<any> = [];
   rsvpFilter: 'actions' | 'all' | 'synced' = 'actions';
   importingRsvps = false;
+  loadingRsvps = false;
+  loadingDestinataires = false;
+  destinataires: Array<{ compte_id: number; email: string; personnes: string; statut: string; invitation_forcee: boolean }> = [];
   form: CalendrierPayload = this.emptyForm();
 
   constructor(
@@ -122,7 +125,7 @@ export class CalendrierComponent implements OnInit {
   private emptyForm(): CalendrierPayload {
     return {
       nom: '', description: null, timezone: 'Europe/Paris',
-      notifier_mises_a_jour: false, groupe_ids: [], seance_ids: [],
+      notifier_mises_a_jour: false, diffusion_mode: 'ABONNEMENT', groupe_ids: [], seance_ids: [],
     };
   }
 
@@ -167,6 +170,7 @@ export class CalendrierComponent implements OnInit {
     this.previewData = null;
     this.syncResult = null;
     this.rsvps = [];
+    this.destinataires = [];
   }
 
   async edit(id: number) {
@@ -183,9 +187,63 @@ export class CalendrierComponent implements OnInit {
         nom: selected.nom, description: selected.description,
         timezone: selected.timezone || 'Europe/Paris',
         notifier_mises_a_jour: !!selected.notifier_mises_a_jour,
+        diffusion_mode: selected.diffusion_mode || 'INVITATIONS',
         groupe_ids: (selected.groupe_ids || []).map(Number),
         seance_ids: (selected.seance_ids || []).map(Number),
       };
+      if (this.isAdmin) await this.reloadDestinataires();
+    } catch (e: any) { this.error = String(e?.message || e); }
+  }
+
+  async reloadDestinataires() {
+    if (!this.selectedId || !this.isAdmin) return;
+    this.loadingDestinataires = true;
+    try {
+      this.destinataires = await this.api.destinataires(this.selectedId);
+    } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.loadingDestinataires = false; }
+  }
+
+  sendingSubscriptionAccountId: number | null = null;
+
+  async proposerAbonnement(compteId: number, action: 'PROPOSER' | 'RELANCER') {
+    if (!this.isAdmin || !this.selectedId || this.sendingSubscriptionAccountId !== null) return;
+    if (!window.confirm(action === 'RELANCER'
+      ? 'Renvoyer un rappel d’abonnement à cette personne ?'
+      : 'Partager ce calendrier en lecture seule et envoyer un seul mail à cette personne ?')) return;
+    this.sendingSubscriptionAccountId = compteId;
+    this.error = '';
+    try {
+      await this.api.proposerAbonnement(this.selectedId, compteId, action);
+      await this.reloadDestinataires();
+      this.info = action === 'RELANCER' ? 'Relance envoyée.' : 'Proposition d’abonnement envoyée.';
+    } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.sendingSubscriptionAccountId = null; }
+  }
+
+  statutDestinataire(statut: string): string {
+    switch (statut) {
+      case 'NON_CONTACTE': return $localize`:@@calendar.statusNotContacted:Pas encore contacté`;
+      case 'PROPOSE': return $localize`:@@calendar.statusProposed:Abonnement proposé`;
+      case 'CONFIRME_MANUELLEMENT': return $localize`:@@calendar.statusConfirmed:Abonnement confirmé manuellement`;
+      case 'INVITATIONS_FORCEES': return $localize`:@@calendar.statusForced:Invitations individuelles activées`;
+      case 'EXCLU': return $localize`:@@calendar.statusExcluded:Exclu de la diffusion`;
+      default: return $localize`:@@calendar.statusUnknown:Statut inconnu`;
+    }
+  }
+
+  async suiviDestinataire(compteId: number,
+    action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU') {
+    if (!this.isAdmin || !this.selectedId) return;
+    if (action === 'NON_CONTACTE' && !window.confirm(
+      'Réinitialiser le suivi de cette personne ? Cela retire aussi son éventuel forçage d’invitations, mais ne supprime pas son abonnement Google.'
+    )) return;
+    if (action === 'INVITATIONS_FORCEES' && !window.confirm(
+      'Cette personne recevra des invitations Google pour chaque événement du calendrier. Confirmer ?'
+    )) return;
+    try {
+      await this.api.actionDestinataire(this.selectedId, compteId, action);
+      await this.reloadDestinataires();
     } catch (e: any) { this.error = String(e?.message || e); }
   }
 
@@ -218,8 +276,8 @@ export class CalendrierComponent implements OnInit {
     try {
       // L'API creation exige saison_id, mais l'API modification le refuse.
       // La saison d'un calendrier existant reste inchangeable.
-      const { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids } = this.form;
-      const dto = { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids };
+      const { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids } = this.form;
+      const dto = { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids };
       const result = this.selectedId
         ? await this.api.update(this.selectedId, dto)
         : await this.api.create({ ...dto, saison_id: this.saisonId });
@@ -384,16 +442,18 @@ export class CalendrierComponent implements OnInit {
   }
 
   async showResponses() {
-    if (!this.isAdmin || !this.selectedId) return;
-    this.error = ''; this.rsvps = [];
+    if (!this.isAdmin || !this.selectedId || this.loadingRsvps) return;
+    this.error = ''; this.rsvps = []; this.loadingRsvps = true;
     try {
       const result = await this.api.responses(this.selectedId);
       this.showRsvps = true;
+      this.info = 'Aperçu des 10 dernières séances synchronisées.';
       this.rsvpFilter = 'actions';
       this.rsvps = (result.lignes || []).map((row: any) => ({
         ...row, personne_choisie: null,
       }));
     } catch (e: any) { this.error = String(e?.message || e); }
+    finally { this.loadingRsvps = false; }
   }
 
   async importerReponses() {

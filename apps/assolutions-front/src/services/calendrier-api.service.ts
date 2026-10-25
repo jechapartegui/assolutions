@@ -9,6 +9,7 @@ export interface Calendrier {
   description: string | null;
   timezone: string;
   notifier_mises_a_jour: boolean;
+  diffusion_mode: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   actif: boolean;
   google_calendar_id: string | null;
   google_calendar_url: string | null;
@@ -25,6 +26,7 @@ export interface CalendrierPayload {
   description: string | null;
   timezone: string;
   notifier_mises_a_jour: boolean;
+  diffusion_mode: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   groupe_ids: number[];
   seance_ids: number[];
 }
@@ -145,9 +147,9 @@ export class CalendrierApiService {
   update(id: number, dto: Omit<CalendrierPayload, 'saison_id'>): Promise<{ id: number }> {
     // Defense supplementaire : seuls les champs admis par UpdateCalendrierDto
     // sont transmis, meme si l'appelant inclut accidentellement saison_id.
-    const { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids } = dto;
+    const { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids } = dto;
     return this.api.POST<{ id: number }>(this.base + '/' + Number(id) + '/update',
-      { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids });
+      { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids });
   }
   archive(id: number): Promise<{ id: number; archived: true }> {
     return this.api.POST<{ id: number; archived: true }>(this.base + '/' + Number(id) + '/archive', {});
@@ -168,6 +170,20 @@ export class CalendrierApiService {
       this.base + '/' + Number(id) + '/importer-reponses', { lignes },
     );
   }
+  destinataires(id: number): Promise<Array<{ compte_id: number; email: string; personnes: string;
+    statut: string; invitation_forcee: boolean; propose_le: string | null; relance_le: string | null;
+    confirme_le: string | null }>> {
+    return this.api.GET(this.base + '/' + Number(id) + '/destinataires');
+  }
+  proposerAbonnement(id: number, compte_id: number, action: 'PROPOSER' | 'RELANCER'):
+    Promise<{ envoye: boolean; compte_id: number; action: string }> {
+    return this.api.POST(this.base + '/' + Number(id) + '/destinataires/proposer', { compte_id, action });
+  }
+  actionDestinataire(id: number, compte_id: number,
+    action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU'): Promise<any> {
+    return this.api.POST(this.base + '/' + Number(id) + '/destinataires/action', { compte_id, action });
+  }
+
   responses(id: number): Promise<any> {
     return this.api.GET<any>(this.base + '/' + Number(id) + '/reponses-google');
   }

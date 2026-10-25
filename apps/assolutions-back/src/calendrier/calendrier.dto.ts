@@ -7,6 +7,7 @@ export class CreateCalendrierDto {
   @IsOptional() @IsString() description?: string | null;
   @IsOptional() @IsString() @MaxLength(64) timezone?: string;
   @IsOptional() @IsBoolean() notifier_mises_a_jour?: boolean;
+  @IsOptional() @IsIn(['ABONNEMENT', 'INVITATIONS', 'MIXTE']) diffusion_mode?: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) groupe_ids?: number[];
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) seance_ids?: number[];
 }
@@ -16,6 +17,7 @@ export class UpdateCalendrierDto {
   @IsOptional() @IsString() description?: string | null;
   @IsOptional() @IsString() @MaxLength(64) timezone?: string;
   @IsOptional() @IsBoolean() notifier_mises_a_jour?: boolean;
+  @IsOptional() @IsIn(['ABONNEMENT', 'INVITATIONS', 'MIXTE']) diffusion_mode?: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   @IsOptional() @IsBoolean() actif?: boolean;
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) groupe_ids?: number[];
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) seance_ids?: number[];
@@ -37,6 +39,17 @@ export class GoogleReponseCandidateDto {
   @IsInt() @Min(1) personne_id: number;
   @IsString() @MaxLength(255) google_email: string;
   @IsIn(['accepted', 'declined']) google_reponse: 'accepted' | 'declined';
+}
+
+export class CalendrierProposerAbonnementDto {
+  @IsInt() @Min(1) compte_id: number;
+  @IsIn(['PROPOSER', 'RELANCER']) action: 'PROPOSER' | 'RELANCER';
+}
+
+export class CalendrierDestinataireActionDto {
+  @IsInt() @Min(1) compte_id: number;
+  @IsIn(['CONFIRME_MANUELLEMENT', 'INVITATIONS_FORCEES', 'NON_CONTACTE', 'EXCLU'])
+  action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU';
 }
 
 export class ImportGoogleReponsesDto {

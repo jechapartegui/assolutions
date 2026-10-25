@@ -1,6 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CreateCalendrierDto, UpdateCalendrierDto } from './calendrier.dto';
+import { GoogleCalendrierClient } from './google-calendrier.client';
+import { queueMail } from '../mail-queue';
 
 /**
  * EXG-01..05/09/20: etat local des calendriers et selection explicite des seances.
@@ -8,7 +10,7 @@ import { CreateCalendrierDto, UpdateCalendrierDto } from './calendrier.dto';
  */
 @Injectable()
 export class CalendrierService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource, private readonly google: GoogleCalendrierClient) {}
 
   private ids(values: number[] | undefined): number[] {
     return [...new Set((values ?? []).map(Number))].filter((n) => Number.isInteger(n) && n > 0);
@@ -368,10 +370,11 @@ export class CalendrierService {
     return this.dataSource.transaction(async (db) => {
       await this.assertSaison(dto.saison_id, projectId, db);
       const result = await db.query(
-        `INSERT INTO calendrier (project_id, saison_id, nom, description, timezone, notifier_mises_a_jour)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        `INSERT INTO calendrier (project_id, saison_id, nom, description, timezone, notifier_mises_a_jour, diffusion_mode)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
         [projectId, dto.saison_id, dto.nom.trim(), dto.description ?? null,
-          dto.timezone || 'Europe/Paris', dto.notifier_mises_a_jour ?? false],
+          dto.timezone || 'Europe/Paris', dto.notifier_mises_a_jour ?? false,
+          dto.diffusion_mode ?? 'ABONNEMENT'],
       );
       const id = Number(result[0].id);
       await this.replaceSelection(id, dto.saison_id, dto.groupe_ids ?? [], dto.seance_ids ?? [], db);
@@ -387,13 +390,13 @@ export class CalendrierService {
       const previous = rows[0];
       await db.query(
         `UPDATE calendrier SET nom = $2, description = $3, timezone = $4,
-           notifier_mises_a_jour = $5, actif = $6, date_maj = now(),
+           notifier_mises_a_jour = $5, actif = $6, diffusion_mode = $7, date_maj = now(),
            statut_synchro = 'PENDING' WHERE id = $1`,
         [id, dto.nom?.trim() ?? previous.nom,
           dto.description === undefined ? previous.description : dto.description,
           dto.timezone ?? previous.timezone,
           dto.notifier_mises_a_jour ?? previous.notifier_mises_a_jour,
-          dto.actif ?? previous.actif],
+          dto.actif ?? previous.actif, dto.diffusion_mode ?? previous.diffusion_mode],
       );
       await this.replaceSelection(id, previous.saison_id, dto.groupe_ids, dto.seance_ids, db);
       // Le fuseau/nom/description du calendrier peut alterer les evenements.
@@ -404,6 +407,142 @@ export class CalendrierService {
       );
       return { id };
     });
+  }
+
+  /** Contacts du calendrier, filtrés par groupe et projet ; aucun envoi ici. */
+  async destinataires(id: number, projectId: number) {
+    await this.get(id, projectId);
+    return this.dataSource.query(
+      `SELECT co.id AS compte_id, co.login AS email,
+              string_agg(DISTINCT trim(pe.first_name || ' ' || pe.last_name), ', ') AS personnes,
+              COALESCE(cd.statut,'NON_CONTACTE') AS statut,
+              COALESCE(cd.invitation_forcee,false) AS invitation_forcee,
+              cd.propose_le, cd.relance_le, cd.confirme_le
+       FROM compte co
+       JOIN personne pe ON pe.compte=co.id AND COALESCE(pe.archive,false)=false
+       JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=pe.id
+       JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id AND cg.calendrier_id=$1
+       JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$2
+       LEFT JOIN calendrier_destinataire cd ON cd.calendrier_id=$1 AND cd.compte_id=co.id
+       WHERE co.actif=true
+       GROUP BY co.id, co.login, cd.statut, cd.invitation_forcee,
+                cd.propose_le, cd.relance_le, cd.confirme_le
+       ORDER BY personnes, co.id`,
+      [id, projectId],
+    );
+  }
+
+  /** Suivi manuel sans prétendre connaître l'abonnement réel chez Google. */
+  async actionDestinataire(id: number, projectId: number, compteId: number,
+    action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU') {
+    return this.dataSource.transaction(async db => {
+      const calendrier = await db.query(
+        'SELECT id, diffusion_mode FROM calendrier WHERE id=$1 AND project_id=$2 FOR UPDATE',
+        [id, projectId],
+      );
+      if (!calendrier.length) throw new NotFoundException('CALENDRIER_NOT_FOUND');
+      const membre = await db.query(
+        `SELECT 1 FROM compte co JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$3
+         WHERE co.id=$2 AND co.actif=true AND EXISTS(
+           SELECT 1 FROM personne p
+           JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=p.id
+           JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id
+           WHERE p.compte=co.id AND COALESCE(p.archive,false)=false
+             AND cg.calendrier_id=$1)`,
+        [id, compteId, projectId],
+      );
+      if (!membre.length) throw new ForbiddenException('CALENDAR_RECIPIENT_NOT_ELIGIBLE');
+      if (action === 'INVITATIONS_FORCEES' && calendrier[0].diffusion_mode !== 'MIXTE') {
+        throw new BadRequestException('CALENDAR_MIXED_MODE_REQUIRED');
+      }
+      const forced = action === 'INVITATIONS_FORCEES';
+      await db.query(
+        `INSERT INTO calendrier_destinataire(calendrier_id, compte_id, statut,
+             invitation_forcee, confirme_le, date_maj)
+         VALUES ($1,$2,$3,$4,CASE WHEN $3='CONFIRME_MANUELLEMENT' THEN now() ELSE NULL END,now())
+         ON CONFLICT(calendrier_id,compte_id) DO UPDATE
+         SET statut=EXCLUDED.statut, invitation_forcee=EXCLUDED.invitation_forcee,
+             confirme_le=EXCLUDED.confirme_le,
+             propose_le=CASE WHEN EXCLUDED.statut='NON_CONTACTE' THEN NULL ELSE calendrier_destinataire.propose_le END,
+             relance_le=CASE WHEN EXCLUDED.statut='NON_CONTACTE' THEN NULL ELSE calendrier_destinataire.relance_le END,
+             date_maj=now()`,
+        [id, compteId, action, forced],
+      );
+      await db.query(
+        `UPDATE calendrier_evenement SET statut_synchro='PENDING', date_maj=now()
+         WHERE calendrier_id=$1 AND statut_synchro NOT IN ('DELETE_PENDING','DELETED')`, [id],
+      );
+      await db.query(
+        "UPDATE calendrier SET statut_synchro='PENDING',date_maj=now() WHERE id=$1", [id],
+      );
+      return { calendrier_id:id, compte_id:compteId, statut:action, invitation_forcee:forced };
+    });
+  }
+
+  /** Action volontaire : partage Google privé + un seul mail Assolutions. */
+  async proposerAbonnement(id: number, projectId: number, compteId: number,
+    action: 'PROPOSER' | 'RELANCER') {
+    const calendrier = await this.get(id, projectId);
+    if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendrier.google_calendar_id);
+    const personnes = await this.destinataires(id, projectId);
+    const personne = personnes.find((x: any) => Number(x.compte_id) === compteId);
+    if (!personne) throw new ForbiddenException('CALENDAR_RECIPIENT_NOT_ELIGIBLE');
+    if (personne.statut === 'CONFIRME_MANUELLEMENT' || personne.statut === 'EXCLU') {
+      throw new BadRequestException('CALENDAR_RECIPIENT_ALREADY_CONFIRMED_OR_EXCLUDED');
+    }
+    if (action === 'PROPOSER' && personne.propose_le) {
+      throw new BadRequestException('CALENDAR_SUBSCRIPTION_ALREADY_PROPOSED');
+    }
+    if (action === 'RELANCER' && !personne.propose_le) {
+      throw new BadRequestException('CALENDAR_SUBSCRIPTION_NOT_PROPOSED');
+    }
+    const previousDate = action === 'RELANCER'
+      ? (personne.relance_le ?? personne.propose_le) : personne.propose_le;
+    if (previousDate && Date.now() - new Date(previousDate).getTime() < 86400000) {
+      throw new BadRequestException('CALENDAR_REMINDER_TOO_SOON_24H');
+    }
+    const target = this.google.recipient(personne.email, compteId);
+    const aclCreated = await this.google.shareCalendarReader(calendrier.google_calendar_id, target);
+    const link = calendrier.google_calendar_url ||
+      'https://calendar.google.com/calendar/u/0/r?cid=' +
+        encodeURIComponent(calendrier.google_calendar_id);
+    const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char));
+    const title = escapeHtml(String(calendrier.nom));
+    const safeLink = escapeHtml(link);
+    const subject = (action === 'RELANCER' ? 'Rappel : ' : 'Ajouter ') +
+      'le calendrier ' + calendrier.nom;
+    const result = await queueMail({
+      to: target, subject,
+      text: ['Bonjour,', '',
+        'Le calendrier « ' + calendrier.nom + ' » est disponible en lecture seule.',
+        'Pour le consulter dans Google Agenda, connectez-vous avec ce compte : ' + target,
+        '', 'Ajouter le calendrier : ' + link, '',
+        'Les réponses de présence restent gérées dans Assolutions.', ''].join('\n'),
+      html: '<div style="font:15px/1.6 Arial,sans-serif;color:#243044;max-width:580px;margin:auto">' +
+        '<p>Bonjour,</p><p>Le calendrier <strong>' + title +
+        '</strong> est disponible en lecture seule.</p>' +
+        '<p>Ouvrez Google Agenda avec le compte associé à cette adresse et ajoutez le calendrier :</p>' +
+        '<p><a href="' + safeLink +
+        '" style="display:inline-block;background:#1769aa;color:#fff;text-decoration:none;' +
+        'padding:10px 18px;border-radius:6px">Ajouter le calendrier</a></p>' +
+        '<p style="font-size:13px;color:#596475">Les réponses de présence restent gérées dans Assolutions.</p>' +
+        '</div>',
+    });
+    if (!result.ok) throw new BadRequestException('CALENDAR_SUBSCRIPTION_EMAIL_FAILED');
+    await this.dataSource.query(
+      `INSERT INTO calendrier_destinataire (calendrier_id,compte_id,statut,propose_le,relance_le,acl_gere)
+       VALUES ($1,$2,'PROPOSE',now(),CASE WHEN $3='RELANCER' THEN now() ELSE NULL END,$4)
+       ON CONFLICT (calendrier_id,compte_id) DO UPDATE
+       SET statut='PROPOSE',
+           acl_gere=calendrier_destinataire.acl_gere OR EXCLUDED.acl_gere,
+           propose_le=COALESCE(calendrier_destinataire.propose_le,now()),
+           relance_le=CASE WHEN $3='RELANCER' THEN now() ELSE calendrier_destinataire.relance_le END,
+           date_maj=now()`,
+      [id, compteId, action, aclCreated],
+    );
+    return { envoye: true, compte_id: compteId, action };
   }
 
   async archive(id: number, projectId: number) {
