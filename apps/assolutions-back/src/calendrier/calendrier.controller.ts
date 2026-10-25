@@ -128,7 +128,8 @@ export class CalendrierController {
     const current = await this.service.get(id, projectId);
     if ((dto.notifier_mises_a_jour !== undefined &&
          dto.notifier_mises_a_jour !== current.notifier_mises_a_jour) ||
-        (dto.actif !== undefined && dto.actif !== current.actif)) {
+        (dto.actif !== undefined && dto.actif !== current.actif) ||
+        (dto.diffusion_mode !== undefined && dto.diffusion_mode !== current.diffusion_mode)) {
       await this.access.assertProjectAdmin(req.user.id, projectId);
     }
     return this.service.update(id, dto, projectId);
