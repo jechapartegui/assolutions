@@ -26,6 +26,7 @@ export interface CalendrierPayload {
   description: string | null;
   timezone: string;
   notifier_mises_a_jour: boolean;
+  diffusion_mode: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   groupe_ids: number[];
   seance_ids: number[];
 }
