@@ -40,6 +40,12 @@ export class GoogleReponseCandidateDto {
   @IsIn(['accepted', 'declined']) google_reponse: 'accepted' | 'declined';
 }
 
+export class CalendrierDestinataireActionDto {
+  @IsInt() @Min(1) compte_id: number;
+  @IsIn(['CONFIRME_MANUELLEMENT', 'INVITATIONS_FORCEES', 'NON_CONTACTE', 'EXCLU'])
+  action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU';
+}
+
 export class ImportGoogleReponsesDto {
   @IsArray() @ArrayMaxSize(20)
   @ValidateNested({ each: true }) @Type(() => GoogleReponseCandidateDto)
