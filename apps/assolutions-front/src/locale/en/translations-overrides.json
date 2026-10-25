@@ -123,8 +123,14 @@
   "calendar.recipientActions": "Actions",
   "calendar.proposeSubscription": "Offer subscription",
   "calendar.remindSubscription": "Remind",
-  "calendar.recipientConfirmed": "Confirmed",
+  "calendar.recipientConfirmed": "Mark as subscribed",
   "calendar.forceInvitations": "Force invitations",
-  "calendar.recipientReset": "Reset",
-  "calendar.recipientEmpty": "No recipients in selected groups."
+  "calendar.recipientReset": "Reset tracking",
+  "calendar.recipientEmpty": "No recipients in selected groups.",
+  "calendar.statusNotContacted": "Not contacted",
+  "calendar.statusProposed": "Subscription offered",
+  "calendar.statusConfirmed": "Subscription manually confirmed",
+  "calendar.statusForced": "Individual invitations enabled",
+  "calendar.statusExcluded": "Excluded from delivery",
+  "calendar.statusUnknown": "Unknown status"
 }
