@@ -481,6 +481,7 @@ export class CalendrierService {
     action: 'PROPOSER' | 'RELANCER') {
     const calendrier = await this.get(id, projectId);
     if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendrier.google_calendar_id);
     const personnes = await this.destinataires(id, projectId);
     const personne = personnes.find((x: any) => Number(x.compte_id) === compteId);
     if (!personne) throw new ForbiddenException('CALENDAR_RECIPIENT_NOT_ELIGIBLE');
