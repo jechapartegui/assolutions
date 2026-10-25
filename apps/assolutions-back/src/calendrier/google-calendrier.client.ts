@@ -195,6 +195,17 @@ export class GoogleCalendrierClient {
       '/acl/' + encodeURIComponent('user:' + email.toLowerCase()));
   }
 
+  /** Bloque toute mutation d'un agenda PROD depuis PREPROD/LOCAL,
+   * notamment apres clonage nocturne de la base PROD. */
+  async assertCalendarEnvironment(calendarId: string): Promise<void> {
+    if (this.isProduction()) return;
+    const remote = await this.call('GET', '/calendars/' + encodeURIComponent(calendarId));
+    const prefix = this.calendarName('');
+    if (!remote || !String(remote.summary ?? '').startsWith(prefix)) {
+      throw new ServiceUnavailableException('GOOGLE_CALENDAR_ENVIRONMENT_MISMATCH');
+    }
+  }
+
   async getEvent(calendarId: string, eventId: string) {
     return this.call('GET', '/calendars/' + encodeURIComponent(calendarId) +
       '/events/' + encodeURIComponent(eventId));
