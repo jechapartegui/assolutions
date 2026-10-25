@@ -97,6 +97,14 @@
                 <td>{{ d.statut }}</td>
                 <td>
                   <div class="buttons are-small">
+                    <button type="button" class="button is-link is-light"
+                            *ngIf="d.statut === 'NON_CONTACTE'"
+                            [disabled]="sendingSubscriptionAccountId !== null"
+                            (click)="proposerAbonnement(d.compte_id, 'PROPOSER')">Proposer abonnement</button>
+                    <button type="button" class="button is-info is-light"
+                            *ngIf="d.statut === 'PROPOSE'"
+                            [disabled]="sendingSubscriptionAccountId !== null"
+                            (click)="proposerAbonnement(d.compte_id, 'RELANCER')">Relancer</button>
                     <button type="button" class="button is-success is-light"
                             (click)="suiviDestinataire(d.compte_id, 'CONFIRME_MANUELLEMENT')">Confirmé</button>
                     <button *ngIf="form.diffusion_mode === 'MIXTE'" type="button"
