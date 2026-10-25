@@ -58,6 +58,17 @@
           <textarea class="textarea" rows="2" [(ngModel)]="form.description" [disabled]="!canEdit"></textarea>
         </div>
         <div class="field">
+          <label class="label" i18n="@@calendar.deliveryMode">Diffusion aux adhérents</label>
+          <div class="select is-fullwidth">
+            <select [(ngModel)]="form.diffusion_mode" [disabled]="!isAdmin">
+              <option value="ABONNEMENT" i18n="@@calendar.deliverySubscription">Abonnement (aucune invitation par match)</option>
+              <option value="MIXTE" i18n="@@calendar.deliveryMixed">Mixte (abonnement + invitations ciblées)</option>
+              <option value="INVITATIONS" i18n="@@calendar.deliveryInvitations">Invitations individuelles (tous les événements)</option>
+            </select>
+          </div>
+          <p class="help" i18n="@@calendar.deliveryHelp">En mode abonnement, aucun mail d'invitation Google n'est envoyé pour chaque séance. L'abonnement et les relances se gèrent séparément.</p>
+        </div>
+        <div class="field">
           <label class="checkbox" i18n>
             <input type="checkbox" [(ngModel)]="form.notifier_mises_a_jour" [disabled]="!isAdmin" />
             Autoriser les notifications Google lors des synchronisations (confirmation obligatoire)
