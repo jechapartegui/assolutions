@@ -435,7 +435,7 @@ export class CalendrierSyncService {
       }
       }
     }
-    return { calendrier_id: id, apercu_seulement: true, lignes: resultat };
+    return { calendrier_id: id, apercu_seulement: true, lignes: resultat, limite_seances: 10 };
   }
 
   /**
