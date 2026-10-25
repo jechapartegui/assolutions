@@ -7,6 +7,7 @@ export class CreateCalendrierDto {
   @IsOptional() @IsString() description?: string | null;
   @IsOptional() @IsString() @MaxLength(64) timezone?: string;
   @IsOptional() @IsBoolean() notifier_mises_a_jour?: boolean;
+  @IsOptional() @IsIn(['ABONNEMENT', 'INVITATIONS', 'MIXTE']) diffusion_mode?: 'ABONNEMENT' | 'INVITATIONS' | 'MIXTE';
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) groupe_ids?: number[];
   @IsOptional() @IsArray() @ArrayUnique() @IsInt({ each: true }) seance_ids?: number[];
 }
