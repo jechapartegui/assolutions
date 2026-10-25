@@ -499,7 +499,7 @@ export class CalendrierService {
       throw new BadRequestException('CALENDAR_REMINDER_TOO_SOON_24H');
     }
     const target = this.google.recipient(personne.email, compteId);
-    await this.google.shareCalendarReader(calendrier.google_calendar_id, target);
+    const aclCreated = await this.google.shareCalendarReader(calendrier.google_calendar_id, target);
     const link = calendrier.google_calendar_url ||
       'https://calendar.google.com/calendar/u/0/r?cid=' +
         encodeURIComponent(calendrier.google_calendar_id);
@@ -514,14 +514,15 @@ export class CalendrierService {
     });
     if (!result.ok) throw new BadRequestException('CALENDAR_SUBSCRIPTION_EMAIL_FAILED');
     await this.dataSource.query(
-      `INSERT INTO calendrier_destinataire (calendrier_id,compte_id,statut,propose_le,relance_le)
-       VALUES ($1,$2,'PROPOSE',now(),CASE WHEN $3='RELANCER' THEN now() ELSE NULL END)
+      `INSERT INTO calendrier_destinataire (calendrier_id,compte_id,statut,propose_le,relance_le,acl_gere)
+       VALUES ($1,$2,'PROPOSE',now(),CASE WHEN $3='RELANCER' THEN now() ELSE NULL END,$4)
        ON CONFLICT (calendrier_id,compte_id) DO UPDATE
        SET statut='PROPOSE',
+           acl_gere=calendrier_destinataire.acl_gere OR EXCLUDED.acl_gere,
            propose_le=COALESCE(calendrier_destinataire.propose_le,now()),
            relance_le=CASE WHEN $3='RELANCER' THEN now() ELSE calendrier_destinataire.relance_le END,
            date_maj=now()`,
-      [id, compteId, action],
+      [id, compteId, action, aclCreated],
     );
     return { envoye: true, compte_id: compteId, action };
   }
