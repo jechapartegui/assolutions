@@ -172,6 +172,24 @@ export class GoogleCalendrierClient {
     });
   }
 
+  /**
+   * Lecture seule pour un compte ciblé : ne rend JAMAIS le calendrier public.
+   * Désactive le mail de partage Google ; Assolutions enverra un mail unique.
+   */
+  async shareCalendarReader(calendarId: string, email: string): Promise<void> {
+    const calendar = encodeURIComponent(calendarId);
+    const ruleId = encodeURIComponent('user:' + email.toLowerCase());
+    const existing = await this.call('GET', '/calendars/' + calendar + '/acl/' + ruleId);
+    if (existing?.role === 'reader' || existing?.role === 'writer' || existing?.role === 'owner') return;
+    if (existing) {
+      await this.call('PATCH', '/calendars/' + calendar + '/acl/' + ruleId, { role: 'reader' });
+      return;
+    }
+    await this.call('POST', '/calendars/' + calendar + '/acl?sendNotifications=false', {
+      role: 'reader', scope: { type: 'user', value: email.toLowerCase() },
+    });
+  }
+
   async getEvent(calendarId: string, eventId: string) {
     return this.call('GET', '/calendars/' + encodeURIComponent(calendarId) +
       '/events/' + encodeURIComponent(eventId));
