@@ -1,6 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CreateCalendrierDto, UpdateCalendrierDto } from './calendrier.dto';
+import { GoogleCalendrierClient } from './google-calendrier.client';
+import { queueMail } from '../mail-queue';
 
 /**
  * EXG-01..05/09/20: etat local des calendriers et selection explicite des seances.
@@ -8,7 +10,7 @@ import { CreateCalendrierDto, UpdateCalendrierDto } from './calendrier.dto';
  */
 @Injectable()
 export class CalendrierService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource, private readonly google: GoogleCalendrierClient) {}
 
   private ids(values: number[] | undefined): number[] {
     return [...new Set((values ?? []).map(Number))].filter((n) => Number.isInteger(n) && n > 0);
@@ -472,6 +474,56 @@ export class CalendrierService {
       );
       return { calendrier_id:id, compte_id:compteId, statut:action, invitation_forcee:forced };
     });
+  }
+
+  /** Action volontaire : partage Google privé + un seul mail Assolutions. */
+  async proposerAbonnement(id: number, projectId: number, compteId: number,
+    action: 'PROPOSER' | 'RELANCER') {
+    const calendrier = await this.get(id, projectId);
+    if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    const personnes = await this.destinataires(id, projectId);
+    const personne = personnes.find((x: any) => Number(x.compte_id) === compteId);
+    if (!personne) throw new ForbiddenException('CALENDAR_RECIPIENT_NOT_ELIGIBLE');
+    if (personne.statut === 'CONFIRME_MANUELLEMENT' || personne.statut === 'EXCLU') {
+      throw new BadRequestException('CALENDAR_RECIPIENT_ALREADY_CONFIRMED_OR_EXCLUDED');
+    }
+    if (action === 'PROPOSER' && personne.propose_le) {
+      throw new BadRequestException('CALENDAR_SUBSCRIPTION_ALREADY_PROPOSED');
+    }
+    if (action === 'RELANCER' && !personne.propose_le) {
+      throw new BadRequestException('CALENDAR_SUBSCRIPTION_NOT_PROPOSED');
+    }
+    const previousDate = action === 'RELANCER'
+      ? (personne.relance_le ?? personne.propose_le) : personne.propose_le;
+    if (previousDate && Date.now() - new Date(previousDate).getTime() < 86400000) {
+      throw new BadRequestException('CALENDAR_REMINDER_TOO_SOON_24H');
+    }
+    const target = this.google.recipient(personne.email, compteId);
+    await this.google.shareCalendarReader(calendrier.google_calendar_id, target);
+    const link = calendrier.google_calendar_url ||
+      'https://calendar.google.com/calendar/u/0/r?cid=' +
+        encodeURIComponent(calendrier.google_calendar_id);
+    const result = await queueMail({
+      to: target, subject: action === 'RELANCER'
+        ? 'Rappel : calendrier ' + calendrier.nom
+        : 'Ajouter le calendrier ' + calendrier.nom,
+      text: 'Bonjour,\\n\\nLe calendrier « ' + calendrier.nom +
+        ' » est disponible en lecture seule. Pour le retrouver dans votre Google Agenda, ' +
+        'ouvrez ce lien avec le compte associé à cette adresse :\\n' + link +
+        '\\n\\nLes réponses de présence restent gérées dans Assolutions.\\n',
+    });
+    if (!result.ok) throw new BadRequestException('CALENDAR_SUBSCRIPTION_EMAIL_FAILED');
+    await this.dataSource.query(
+      `INSERT INTO calendrier_destinataire (calendrier_id,compte_id,statut,propose_le,relance_le)
+       VALUES ($1,$2,'PROPOSE',now(),CASE WHEN $3='RELANCER' THEN now() ELSE NULL END)
+       ON CONFLICT (calendrier_id,compte_id) DO UPDATE
+       SET statut='PROPOSE',
+           propose_le=COALESCE(calendrier_destinataire.propose_le,now()),
+           relance_le=CASE WHEN $3='RELANCER' THEN now() ELSE calendrier_destinataire.relance_le END,
+           date_maj=now()`,
+      [id, compteId, action],
+    );
+    return { envoye: true, compte_id: compteId, action };
   }
 
   async archive(id: number, projectId: number) {
