@@ -407,6 +407,73 @@ export class CalendrierService {
     });
   }
 
+  /** Contacts du calendrier, filtrés par groupe et projet ; aucun envoi ici. */
+  async destinataires(id: number, projectId: number) {
+    await this.get(id, projectId);
+    return this.dataSource.query(
+      `SELECT co.id AS compte_id, co.login AS email,
+              string_agg(DISTINCT trim(pe.first_name || ' ' || pe.last_name), ', ') AS personnes,
+              COALESCE(cd.statut,'NON_CONTACTE') AS statut,
+              COALESCE(cd.invitation_forcee,false) AS invitation_forcee,
+              cd.propose_le, cd.relance_le, cd.confirme_le
+       FROM compte co
+       JOIN personne pe ON pe.compte=co.id AND COALESCE(pe.archive,false)=false
+       JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=pe.id
+       JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id AND cg.calendrier_id=$1
+       JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$2
+       LEFT JOIN calendrier_destinataire cd ON cd.calendrier_id=$1 AND cd.compte_id=co.id
+       WHERE co.actif=true
+       GROUP BY co.id, co.login, cd.statut, cd.invitation_forcee,
+                cd.propose_le, cd.relance_le, cd.confirme_le
+       ORDER BY personnes, co.id`,
+      [id, projectId],
+    );
+  }
+
+  /** Suivi manuel sans prétendre connaître l'abonnement réel chez Google. */
+  async actionDestinataire(id: number, projectId: number, compteId: number,
+    action: 'CONFIRME_MANUELLEMENT' | 'INVITATIONS_FORCEES' | 'NON_CONTACTE' | 'EXCLU') {
+    return this.dataSource.transaction(async db => {
+      const calendrier = await db.query(
+        'SELECT id, diffusion_mode FROM calendrier WHERE id=$1 AND project_id=$2 FOR UPDATE',
+        [id, projectId],
+      );
+      if (!calendrier.length) throw new NotFoundException('CALENDRIER_NOT_FOUND');
+      const membre = await db.query(
+        `SELECT 1 FROM compte co JOIN login_project lp ON lp.login_id=co.id AND lp.project_id=$3
+         WHERE co.id=$2 AND co.actif=true AND EXISTS(
+           SELECT 1 FROM personne p
+           JOIN lien_groupe lg ON lg.object_type='rider' AND lg.object_id=p.id
+           JOIN calendrier_groupe cg ON cg.groupe_id=lg.groupe_id
+           WHERE p.compte=co.id AND COALESCE(p.archive,false)=false
+             AND cg.calendrier_id=$1)`,
+        [id, compteId, projectId],
+      );
+      if (!membre.length) throw new ForbiddenException('CALENDAR_RECIPIENT_NOT_ELIGIBLE');
+      if (action === 'INVITATIONS_FORCEES' && calendrier[0].diffusion_mode !== 'MIXTE') {
+        throw new BadRequestException('CALENDAR_MIXED_MODE_REQUIRED');
+      }
+      const forced = action === 'INVITATIONS_FORCEES';
+      await db.query(
+        `INSERT INTO calendrier_destinataire(calendrier_id, compte_id, statut,
+             invitation_forcee, confirme_le, date_maj)
+         VALUES ($1,$2,$3,$4,CASE WHEN $3='CONFIRME_MANUELLEMENT' THEN now() ELSE NULL END,now())
+         ON CONFLICT(calendrier_id,compte_id) DO UPDATE
+         SET statut=EXCLUDED.statut, invitation_forcee=EXCLUDED.invitation_forcee,
+             confirme_le=EXCLUDED.confirme_le,date_maj=now()`,
+        [id, compteId, action, forced],
+      );
+      await db.query(
+        `UPDATE calendrier_evenement SET statut_synchro='PENDING', date_maj=now()
+         WHERE calendrier_id=$1 AND statut_synchro NOT IN ('DELETE_PENDING','DELETED')`, [id],
+      );
+      await db.query(
+        "UPDATE calendrier SET statut_synchro='PENDING',date_maj=now() WHERE id=$1", [id],
+      );
+      return { calendrier_id:id, compte_id:compteId, statut:action, invitation_forcee:forced };
+    });
+  }
+
   async archive(id: number, projectId: number) {
     await this.get(id, projectId);
     // Pas de suppression physique : on preserve les correspondances pour nettoyage Google.
