@@ -350,7 +350,7 @@ export class CalendrierSyncService {
       `SELECT ce.seance_id, ce.google_event_id FROM calendrier_evenement ce
        JOIN seance se ON se.seance_id=ce.seance_id AND se.calendrier_id=ce.calendrier_id
        WHERE ce.calendrier_id=$1 AND ce.google_event_id IS NOT NULL
-       ORDER BY se.date_seance DESC LIMIT 100`, [id],
+       ORDER BY se.date_seance DESC LIMIT 10`, [id],
     );
     const comptes = await this.comptesDuProjet(projectId);
     const resultat: Array<any> = [];
