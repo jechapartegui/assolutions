@@ -88,6 +88,8 @@ export class GoogleCalendrierClient {
     const q = sendUpdates ? '?sendUpdates=' + sendUpdates : '';
     const response = await fetch('https://www.googleapis.com/calendar/v3' + path + q, {
       method,
+      // Coupe les lectures Google trop lentes : elles bloquaient l'aperçu RSVP.
+      signal: AbortSignal.timeout(method === 'GET' ? 6000 : 20000),
       headers: {
         Authorization: 'Bearer ' + await this.accessToken(),
         Accept: 'application/json',
