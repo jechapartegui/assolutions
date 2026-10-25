@@ -123,7 +123,7 @@ export class CalendrierComponent implements OnInit {
   private emptyForm(): CalendrierPayload {
     return {
       nom: '', description: null, timezone: 'Europe/Paris',
-      notifier_mises_a_jour: false, groupe_ids: [], seance_ids: [],
+      notifier_mises_a_jour: false, diffusion_mode: 'ABONNEMENT', groupe_ids: [], seance_ids: [],
     };
   }
 
@@ -184,6 +184,7 @@ export class CalendrierComponent implements OnInit {
         nom: selected.nom, description: selected.description,
         timezone: selected.timezone || 'Europe/Paris',
         notifier_mises_a_jour: !!selected.notifier_mises_a_jour,
+        diffusion_mode: selected.diffusion_mode || 'INVITATIONS',
         groupe_ids: (selected.groupe_ids || []).map(Number),
         seance_ids: (selected.seance_ids || []).map(Number),
       };
@@ -219,8 +220,8 @@ export class CalendrierComponent implements OnInit {
     try {
       // L'API creation exige saison_id, mais l'API modification le refuse.
       // La saison d'un calendrier existant reste inchangeable.
-      const { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids } = this.form;
-      const dto = { nom, description, timezone, notifier_mises_a_jour, groupe_ids, seance_ids };
+      const { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids } = this.form;
+      const dto = { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids };
       const result = this.selectedId
         ? await this.api.update(this.selectedId, dto)
         : await this.api.create({ ...dto, saison_id: this.saisonId });
