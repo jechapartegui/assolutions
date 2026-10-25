@@ -368,10 +368,11 @@ export class CalendrierService {
     return this.dataSource.transaction(async (db) => {
       await this.assertSaison(dto.saison_id, projectId, db);
       const result = await db.query(
-        `INSERT INTO calendrier (project_id, saison_id, nom, description, timezone, notifier_mises_a_jour)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        `INSERT INTO calendrier (project_id, saison_id, nom, description, timezone, notifier_mises_a_jour, diffusion_mode)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
         [projectId, dto.saison_id, dto.nom.trim(), dto.description ?? null,
-          dto.timezone || 'Europe/Paris', dto.notifier_mises_a_jour ?? false],
+          dto.timezone || 'Europe/Paris', dto.notifier_mises_a_jour ?? false,
+          dto.diffusion_mode ?? 'ABONNEMENT'],
       );
       const id = Number(result[0].id);
       await this.replaceSelection(id, dto.saison_id, dto.groupe_ids ?? [], dto.seance_ids ?? [], db);
@@ -387,13 +388,13 @@ export class CalendrierService {
       const previous = rows[0];
       await db.query(
         `UPDATE calendrier SET nom = $2, description = $3, timezone = $4,
-           notifier_mises_a_jour = $5, actif = $6, date_maj = now(),
+           notifier_mises_a_jour = $5, actif = $6, diffusion_mode = $7, date_maj = now(),
            statut_synchro = 'PENDING' WHERE id = $1`,
         [id, dto.nom?.trim() ?? previous.nom,
           dto.description === undefined ? previous.description : dto.description,
           dto.timezone ?? previous.timezone,
           dto.notifier_mises_a_jour ?? previous.notifier_mises_a_jour,
-          dto.actif ?? previous.actif],
+          dto.actif ?? previous.actif, dto.diffusion_mode ?? previous.diffusion_mode],
       );
       await this.replaceSelection(id, previous.saison_id, dto.groupe_ids, dto.seance_ids, db);
       // Le fuseau/nom/description du calendrier peut alterer les evenements.
