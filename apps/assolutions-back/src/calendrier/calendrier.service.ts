@@ -504,14 +504,28 @@ export class CalendrierService {
     const link = calendrier.google_calendar_url ||
       'https://calendar.google.com/calendar/u/0/r?cid=' +
         encodeURIComponent(calendrier.google_calendar_id);
+    const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char));
+    const title = escapeHtml(String(calendrier.nom));
+    const safeLink = escapeHtml(link);
+    const subject = (action === 'RELANCER' ? 'Rappel : ' : 'Ajouter ') +
+      'le calendrier ' + calendrier.nom;
     const result = await queueMail({
-      to: target, subject: action === 'RELANCER'
-        ? 'Rappel : calendrier ' + calendrier.nom
-        : 'Ajouter le calendrier ' + calendrier.nom,
-      text: 'Bonjour,\\n\\nLe calendrier « ' + calendrier.nom +
-        ' » est disponible en lecture seule. Pour le retrouver dans votre Google Agenda, ' +
-        'ouvrez ce lien avec le compte associé à cette adresse :\\n' + link +
-        '\\n\\nLes réponses de présence restent gérées dans Assolutions.\\n',
+      to: target, subject,
+      text: ['Bonjour,', '',
+        'Le calendrier « ' + calendrier.nom + ' » est disponible en lecture seule.',
+        'Pour le consulter dans Google Agenda, connectez-vous avec ce compte : ' + target,
+        '', 'Ajouter le calendrier : ' + link, '',
+        'Les réponses de présence restent gérées dans Assolutions.', ''].join('\n'),
+      html: '<div style="font:15px/1.6 Arial,sans-serif;color:#243044;max-width:580px;margin:auto">' +
+        '<p>Bonjour,</p><p>Le calendrier <strong>' + title +
+        '</strong> est disponible en lecture seule.</p>' +
+        '<p>Ouvrez Google Agenda avec le compte associé à cette adresse et ajoutez le calendrier :</p>' +
+        '<p><a href="' + safeLink +
+        '" style="display:inline-block;background:#1769aa;color:#fff;text-decoration:none;' +
+        'padding:10px 18px;border-radius:6px">Ajouter le calendrier</a></p>' +
+        '<p style="font-size:13px;color:#596475">Les réponses de présence restent gérées dans Assolutions.</p>' +
+        '</div>',
     });
     if (!result.ok) throw new BadRequestException('CALENDAR_SUBSCRIPTION_EMAIL_FAILED');
     await this.dataSource.query(
