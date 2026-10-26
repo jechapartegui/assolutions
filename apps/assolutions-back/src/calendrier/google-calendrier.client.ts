@@ -178,6 +178,25 @@ export class GoogleCalendrierClient {
    * Lecture seule pour un compte ciblé : ne rend JAMAIS le calendrier public.
    * Désactive le mail de partage Google ; Assolutions enverra un mail unique.
    */
+  /** Publication explicite via ACL Google "default/reader".
+   * Une ACL déjà configurée ailleurs ne doit pas être écrasée par Assolutions.
+   */
+  async publierCalendrier(calendarId: string): Promise<void> {
+    const path = '/calendars/' + encodeURIComponent(calendarId) + '/acl';
+    const existing = await this.call('GET', path + '/default');
+    if (existing) {
+      throw new ServiceUnavailableException('GOOGLE_PUBLIC_ACL_ALREADY_MANAGED_EXTERNALLY');
+    }
+    await this.call('POST', path + '?sendNotifications=false', {
+      role: 'reader', scope: { type: 'default' },
+    });
+  }
+
+  async retirerPublicationCalendrier(calendarId: string): Promise<void> {
+    const path = '/calendars/' + encodeURIComponent(calendarId) + '/acl/default';
+    await this.call('DELETE', path);
+  }
+
   async shareCalendarReader(calendarId: string, email: string): Promise<boolean> {
     const calendar = encodeURIComponent(calendarId);
     const ruleId = encodeURIComponent('user:' + email.toLowerCase());
