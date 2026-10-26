@@ -91,6 +91,10 @@
               <span i18n="@@calendar.makePrivate">Retirer l'accès public</span>
             </button>
           </div>
+          <p class="help mt-2" *ngIf="current?.est_public && current?.google_calendar_url">
+            <a [href]="current?.google_calendar_url" target="_blank" rel="noopener noreferrer"
+               i18n="@@calendar.publicCalendarLink">Ouvrir / partager le calendrier Google</a>
+          </p>
           <p class="help" *ngIf="!current?.google_calendar_id" i18n="@@calendar.publicNeedsSync">Synchronisez d'abord cet agenda avec Google.</p>
         </div>
         <div class="notification is-info is-light calendar-information-note" i18n>
