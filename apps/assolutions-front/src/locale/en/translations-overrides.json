@@ -139,5 +139,6 @@
   "calendar.publicStatus": "Public — read only",
   "calendar.makePublic": "Make public",
   "calendar.makePrivate": "Remove public access",
-  "calendar.publicNeedsSync": "Synchronize this calendar with Google first."
+  "calendar.publicNeedsSync": "Synchronize this calendar with Google first.",
+  "calendar.publicCalendarLink": "Open / share Google calendar"
 }
