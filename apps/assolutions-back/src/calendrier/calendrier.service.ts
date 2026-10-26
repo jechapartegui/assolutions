@@ -545,6 +545,42 @@ export class CalendrierService {
     return { envoye: true, compte_id: compteId, action };
   }
 
+  /** Publication Google explicite, admin uniquement via controller.
+   * L'état local est écrit seulement après succès de l'ACL distante.
+   */
+  async publicationPublique(id: number, projectId: number, rendrePublic: boolean) {
+    const calendrier = await this.get(id, projectId);
+    if (!calendrier.actif) throw new BadRequestException('CALENDAR_ARCHIVED');
+    if (!calendrier.google_calendar_id) throw new BadRequestException('CALENDAR_NOT_SYNCED');
+    await this.google.assertCalendarEnvironment(calendrier.google_calendar_id);
+    if (rendrePublic === (calendrier.est_public === true)) {
+      return { calendrier_id: id, est_public: rendrePublic };
+    }
+    if (rendrePublic) {
+      try {
+        await this.google.publierCalendrier(calendrier.google_calendar_id);
+        await this.dataSource.query(
+          'UPDATE calendrier SET est_public=true, public_acl_gere=true, date_maj=now() WHERE id=$1 AND project_id=$2',
+          [id, projectId],
+        );
+      } catch (error) {
+        // Si le partage a bien été créé mais que l'écriture locale a échoué,
+        // il reste à réconcilier manuellement la publication Google.
+        throw error;
+      }
+    } else {
+      if (!calendrier.public_acl_gere) {
+        throw new BadRequestException('CALENDAR_PUBLIC_ACL_NOT_MANAGED_BY_ASSOLUTIONS');
+      }
+      await this.google.retirerPublicationCalendrier(calendrier.google_calendar_id);
+      await this.dataSource.query(
+        'UPDATE calendrier SET est_public=false, public_acl_gere=false, date_maj=now() WHERE id=$1 AND project_id=$2',
+        [id, projectId],
+      );
+    }
+    return { calendrier_id: id, est_public: rendrePublic };
+  }
+
   async archive(id: number, projectId: number) {
     await this.get(id, projectId);
     // Pas de suppression physique : on preserve les correspondances pour nettoyage Google.
