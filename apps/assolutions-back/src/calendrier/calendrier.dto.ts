@@ -29,6 +29,10 @@ export class RepondreCalendrierEvenementDto {
   @IsIn(['présent', 'absent']) reponse: 'présent' | 'absent';
 }
 
+export class CalendrierPublicationDto {
+  @IsBoolean() est_public: boolean;
+}
+
 export class SynchroniserCalendrierDto {
   @IsBoolean() notifier: boolean;
   @IsOptional() @IsIn(['preview', 'execute']) mode?: 'preview' | 'execute';
