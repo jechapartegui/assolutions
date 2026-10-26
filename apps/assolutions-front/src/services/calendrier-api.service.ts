@@ -13,6 +13,7 @@ export interface Calendrier {
   actif: boolean;
   google_calendar_id: string | null;
   google_calendar_url: string | null;
+  est_public: boolean;
   statut_synchro: string;
   derniere_synchro: string | null;
   derniere_erreur: string | null;
@@ -150,6 +151,9 @@ export class CalendrierApiService {
     const { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids } = dto;
     return this.api.POST<{ id: number }>(this.base + '/' + Number(id) + '/update',
       { nom, description, timezone, notifier_mises_a_jour, diffusion_mode, groupe_ids, seance_ids });
+  }
+  publication(id: number, est_public: boolean): Promise<{ calendrier_id: number; est_public: boolean }> {
+    return this.api.POST(this.base + '/' + Number(id) + '/publication', { est_public });
   }
   archive(id: number): Promise<{ id: number; archived: true }> {
     return this.api.POST<{ id: number; archived: true }>(this.base + '/' + Number(id) + '/archive', {});
