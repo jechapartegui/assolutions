@@ -133,6 +133,7 @@
   "calendar.statusForced": "Individual invitations enabled",
   "calendar.statusExcluded": "Excluded from delivery",
   "calendar.statusUnknown": "Unknown status",
+<<<<<<< HEAD
   "5769900852994066965": "Discover Assolutions",
   "8393472153703114984": "Privacy",
   "7508413582939637531": "Terms of use",
@@ -143,4 +144,13 @@
   "legal.privacy": "Privacy policy",
   "legal.terms": "Terms of use",
   "legal.contact": "Contact"
+=======
+  "calendar.publicAccessLabel": "Google calendar access",
+  "calendar.publicAccessHelp": "A public calendar can be viewed by anyone, including event titles, times, locations and descriptions. It does not grant editing access.",
+  "calendar.privateStatus": "Private",
+  "calendar.publicStatus": "Public — read only",
+  "calendar.makePublic": "Make public",
+  "calendar.makePrivate": "Remove public access",
+  "calendar.publicNeedsSync": "Synchronize this calendar with Google first."
+>>>>>>> 6bb3db18 (i18n(calendar): public calendar sharing labels in English)
 }
