@@ -23,6 +23,7 @@ export class CalendrierComponent implements OnInit {
   loading = false;
   saving = false;
   syncing = false;
+  publicationEnCours = false;
   checkingGoogle = false;
   checkingWorker = false;
   workerEtat: CalendrierWorkerEtat | null = null;
@@ -265,6 +266,29 @@ export class CalendrierComponent implements OnInit {
     this.form.seance_ids = this.hasSession(id)
       ? this.form.seance_ids.filter((value) => value !== id)
       : [...this.form.seance_ids, id];
+  }
+
+  async changerPublication() {
+    const calendrier = this.current;
+    if (!this.isAdmin || !calendrier || !calendrier.google_calendar_id || this.publicationEnCours) return;
+    const rendrePublic = !calendrier.est_public;
+    const confirmation = rendrePublic
+      ? 'Rendre cet agenda PUBLIC ? Tous les événements, leurs titres, lieux et descriptions pourront être consultés par n’importe qui, même hors de l’association. Continuer ?'
+      : 'Retirer l’accès public à ce calendrier Google ? Les personnes déjà abonnées ou disposant de droits individuels peuvent conserver un accès.';
+    if (!window.confirm(confirmation)) return;
+    this.publicationEnCours = true;
+    this.error = '';
+    try {
+      await this.api.publication(calendrier.id, rendrePublic);
+      await this.reload(calendrier.id);
+      this.info = rendrePublic
+        ? 'Calendrier rendu public en lecture seule.'
+        : 'Accès public retiré du calendrier.';
+    } catch (e: any) {
+      this.error = String(e?.message || e);
+    } finally {
+      this.publicationEnCours = false;
+    }
   }
 
   async save() {
