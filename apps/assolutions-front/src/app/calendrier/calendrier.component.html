@@ -74,6 +74,25 @@
             Autoriser les notifications Google lors des synchronisations (confirmation obligatoire)
           </label>
         </div>
+        <div class="field" *ngIf="selectedId && isAdmin">
+          <label class="label" i18n="@@calendar.publicAccessLabel">Accès au calendrier Google</label>
+          <p class="help mb-2" i18n="@@calendar.publicAccessHelp">Un calendrier public est consultable par tous : titres, horaires, lieux et descriptions de ses événements. Cela ne donne aucun droit de modification.</p>
+          <div class="is-flex is-align-items-center" style="gap: .75rem">
+            <span class="tag is-light" *ngIf="!current?.est_public" i18n="@@calendar.privateStatus">Privé</span>
+            <span class="tag is-warning is-light" *ngIf="current?.est_public" i18n="@@calendar.publicStatus">Public en lecture seule</span>
+            <button type="button" class="button is-small is-warning is-light"
+                    *ngIf="!current?.est_public" (click)="changerPublication()"
+                    [disabled]="!current?.google_calendar_id || publicationEnCours">
+              <span i18n="@@calendar.makePublic">Rendre public</span>
+            </button>
+            <button type="button" class="button is-small is-light"
+                    *ngIf="current?.est_public" (click)="changerPublication()"
+                    [disabled]="publicationEnCours">
+              <span i18n="@@calendar.makePrivate">Retirer l'accès public</span>
+            </button>
+          </div>
+          <p class="help" *ngIf="!current?.google_calendar_id" i18n="@@calendar.publicNeedsSync">Synchronisez d'abord cet agenda avec Google.</p>
+        </div>
         <div class="notification is-info is-light calendar-information-note" i18n>
           <strong>Important :</strong> le calendrier est informatif. La liste des groupes de ce calendrier ne modifie pas la convocation à une séance.
           Les réponses aux convocations se font dans Assolutions.
