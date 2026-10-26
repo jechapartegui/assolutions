@@ -132,5 +132,12 @@
   "calendar.statusConfirmed": "Subscription manually confirmed",
   "calendar.statusForced": "Individual invitations enabled",
   "calendar.statusExcluded": "Excluded from delivery",
-  "calendar.statusUnknown": "Unknown status"
+  "calendar.statusUnknown": "Unknown status",
+  "calendar.publicAccessLabel": "Google calendar access",
+  "calendar.publicAccessHelp": "A public calendar can be viewed by anyone, including event titles, times, locations and descriptions. It does not grant editing access.",
+  "calendar.privateStatus": "Private",
+  "calendar.publicStatus": "Public — read only",
+  "calendar.makePublic": "Make public",
+  "calendar.makePrivate": "Remove public access",
+  "calendar.publicNeedsSync": "Synchronize this calendar with Google first."
 }
