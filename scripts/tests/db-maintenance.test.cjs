@@ -18,7 +18,7 @@ const ENV = [
   'PREPROD_TEST_PASSWORD=testPassword1234',
 ].join('\n') + '\n';
 
-function run(args, mutate = x => x) {
+function run(args, mutate = x => x, scriptName = 'db-maintenance.cjs') {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'assolutions-db-test-'));
   try {
     const scripts = path.join(root, 'scripts');
@@ -26,8 +26,9 @@ function run(args, mutate = x => x) {
     fs.mkdirSync(scripts, {recursive:true});
     fs.mkdirSync(config, {recursive:true});
     fs.copyFileSync(SOURCE, path.join(scripts,'db-maintenance.cjs'));
+    fs.copyFileSync(path.resolve(__dirname, '..', 'configure-db-maintenance.cjs'), path.join(scripts,'configure-db-maintenance.cjs'));
     fs.writeFileSync(path.join(config,'.env.local'), mutate(ENV));
-    return cp.spawnSync(process.execPath, [path.join(scripts,'db-maintenance.cjs'), ...args], {
+    return cp.spawnSync(process.execPath, [path.join(scripts,scriptName), ...args], {
       encoding:'utf8', timeout:5000
     });
   } finally {
@@ -80,4 +81,42 @@ test('backup-prod refuse une source localhost', () => {
       .replace('PROD_EXPECTED_HOST_FRAGMENT=dpg-prod','PROD_EXPECTED_HOST_FRAGMENT=local'));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /base distante obligatoire/);
+});
+
+
+test('backup-prod indique précisément si DATABASE_PROD manque', () => {
+  const r=run(['backup-prod'], c => c.replace(/^DATABASE_PROD=.*\n/m, ''));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /DATABASE_PROD manquante/);
+  assert.match(r.stderr, /npm run db:setup/);
+});
+
+test('backup-prod --plan peut vérifier une URL seule en lecture seule', () => {
+  const r=run(['backup-prod','--plan'], c =>
+    c.replace(/^PROD_EXPECTED_DATABASE=.*\n/m, '')
+     .replace(/^PROD_EXPECTED_HOST_FRAGMENT=.*\n/m, ''));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /PLAN VALIDE/);
+  assert.match(r.stderr, /lecture seule/);
+});
+
+test('prod-to-preprod --plan exige les gardes indépendantes', () => {
+  const r=run(['prod-to-preprod','--plan'], c =>
+    c.replace(/^PROD_EXPECTED_DATABASE=.*\n/m, '')
+     .replace(/^PROD_EXPECTED_HOST_FRAGMENT=.*\n/m, ''));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /requise pour restauration/);
+});
+
+test('db:setup --check n’affiche pas de mot de passe', () => {
+  const r=run(['--check'], c=>c, 'configure-db-maintenance.cjs');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /vérification OK/);
+  assert.doesNotMatch(r.stdout + r.stderr, /fakepass/);
+});
+
+test('db:setup --check indique les paramètres PROD manquants sans connexion', () => {
+  const r=run(['--check'], c => c.replace(/^DATABASE_PROD=.*\n/m, ''), 'configure-db-maintenance.cjs');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /PROD : manquante/);
 });
