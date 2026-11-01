@@ -120,3 +120,11 @@ test('db:setup --check indique les paramètres PROD manquants sans connexion', (
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /PROD : manquante/);
 });
+
+
+test('commandes npm plan : flags explicites, jamais option à transmettre', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'package.json'), 'utf8'));
+  assert.equal(packageJson.scripts['db:backup:prod:plan'], 'node scripts/db-maintenance.cjs backup-prod --plan');
+  assert.equal(packageJson.scripts['db:prod-to-preprod:plan'], 'node scripts/db-maintenance.cjs prod-to-preprod --plan');
+  assert.equal(packageJson.scripts['db:setup:check'], 'node scripts/configure-db-maintenance.cjs --check');
+});
