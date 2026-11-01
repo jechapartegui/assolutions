@@ -6,6 +6,9 @@ Objectif : remplacer **après recette** le cron PROD → PREPROD, conserver PREP
 
 ## Les commandes Windows (à lancer depuis la racine du dépôt)
 
+**IMPORTANT — simulation sans danger :** utiliser les commandes distinctes `db:backup:prod:plan` et `db:prod-to-preprod:plan`. Sur une installation Windows, la transmission de `-- --plan` à `npm run` a été observée comme non effective : l'export PROD a démarré. Ne plus utiliser cette syntaxe pour choisir entre simulation et exécution. Le mode plan affiche **PLAN VALIDE — aucune connexion ou modification** et ne doit jamais afficher **Export PROD**.
+
+
 ### Première utilisation : configuration guidée
 
 Exécuter **npm run db:setup**. L'assistant lit le fichier local apps/assolutions-back/.env.local sans jamais envoyer les secrets à GitHub, et indique quelles connexions sont déjà configurées.
@@ -14,7 +17,7 @@ Exécuter **npm run db:setup**. L'assistant lit le fichier local apps/assolution
 - Le programme affiche seulement l'hôte et le nom de la base. Confirmer par **OUI** si la destination est correcte.
 - Si DATABASE_PREPROD existe déjà, ses valeurs sont conservées ; le programme peut compléter les garde-fous après confirmation. Sinon, renseigner l'URL externe PREPROD maintenant ou laisser vide pour plus tard.
 - Il enregistre DATABASE_PROD / DATABASE_PREPROD et les champs *_EXPECTED_DATABASE et *_EXPECTED_HOST_FRAGMENT dans le fichier local **ignoré par Git**, sans enregistrer ni afficher les mots de passe dans les logs.
-- Pour vérifier la configuration **sans connexion** et **sans afficher les secrets** : npm run db:setup -- --check.
+- Pour vérifier la configuration **sans connexion** et **sans afficher les secrets** : npm run db:setup:check.
 
 **Attention** : le terminal est destiné à un usage personnel. Ne pas copier les URL de connexion dans un ticket, un chat ou une capture d'écran. La protection contre l'écho dépend du terminal ; si le terminal n'est pas fiable, coller l'URL directement dans le fichier .env.local via un éditeur local sécurisé.
 
@@ -24,10 +27,10 @@ Exécuter **npm run db:setup**. L'assistant lit le fichier local apps/assolution
 | Commande | Effet |
 | --- | --- |
 | npm run db:setup | Assistant de configuration locale, sans connexion |
-| npm run db:setup -- --check | État de configuration sans secrets et sans connexion |
-| npm run db:backup:prod -- --plan | Vérification de configuration, sans connexion |
+| npm run db:setup:check | État de configuration sans secrets et sans connexion |
+| npm run db:backup:prod:plan | Vérification de configuration, sans connexion |
 | npm run db:backup:prod | Export PROD compressé vers le disque local |
-| npm run db:prod-to-preprod -- --plan | Vérification de configuration, sans connexion |
+| npm run db:prod-to-preprod:plan | Vérification de configuration, sans connexion |
 | npm run db:prod-to-preprod -- --execute --preprod-isolated | Copie destructive vers PREPROD avec anonymisation et confirmation |
 | npm run db:preprod-to-local | Copie PREPROD → PostgreSQL local, script PowerShell existant |
 
@@ -59,7 +62,7 @@ Installer les outils PostgreSQL (psql, pg_dump, pg_restore). Le programme cherch
 1. Vérifier les sauvegardes existantes et la disponibilité d'un retour arrière.
 2. **Suspendre manuellement les API, workers et crons PREPROD dans Render**. Aucune requête métier ne doit s'exécuter pendant la restauration/anonymisation.
 3. Désactiver les effets externes PREPROD : MAIL_SANDBOX=true, HELLOASSO_ENV=sandbox, GOOGLE_CALENDAR_ENABLED=false, GOOGLE_CALENDAR_AUTO_SYNC=false ; vérifier également les autres intégrations et secrets.
-4. Exécuter le plan : npm run db:prod-to-preprod -- --plan
+4. Exécuter le plan : npm run db:prod-to-preprod:plan
 5. Exécuter : npm run db:prod-to-preprod -- --execute --preprod-isolated ; saisir exactement REMPLACER_PREPROD. **Le paramètre --preprod-isolated est une attestation manuelle, pas une vérification de Render.**
 6. Le programme réalise successivement : export PROD, vérification de l'archive, sauvegarde initiale PREPROD, remplacement du schéma public PREPROD, puis appel de scripts/anonymize-preprod.cjs.
 7. En cas d'échec, il tente de restaurer l'ancienne PREPROD. **Si le rollback échoue, conserver PREPROD hors service** et restaurer manuellement l'archive assolutions-preprod-avant-*.dump.
