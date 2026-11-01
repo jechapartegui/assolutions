@@ -27,7 +27,8 @@
     "security:check": "node scripts/security-check.cjs",
     "db:backup:prod": "node scripts/db-maintenance.cjs backup-prod",
     "db:prod-to-preprod": "node scripts/db-maintenance.cjs prod-to-preprod",
-    "db:test:maintenance": "node --test scripts/tests/db-maintenance.test.cjs"
+    "db:test:maintenance": "node --test scripts/tests/db-maintenance.test.cjs",
+    "db:setup": "node scripts/configure-db-maintenance.cjs"
   },
   "dependencies": {
     "@angular/animations": "20.3.29",
