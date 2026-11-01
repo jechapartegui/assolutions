@@ -31,10 +31,10 @@ Exécuter **npm run db:setup**. L'assistant lit le fichier local apps/assolution
 | npm run db:backup:prod:plan | Vérification de configuration, sans connexion |
 | npm run db:backup:prod | Export PROD compressé vers le disque local |
 | npm run db:prod-to-preprod:plan | Vérification de configuration, sans connexion |
-| npm run db:prod-to-preprod -- --execute --preprod-isolated | Copie destructive vers PREPROD avec anonymisation et confirmation |
+| node scripts/db-maintenance.cjs prod-to-preprod --execute --preprod-isolated | Copie destructive vers PREPROD avec anonymisation et confirmation |
 | npm run db:preprod-to-local | Copie PREPROD → PostgreSQL local, script PowerShell existant |
 
-Les dumps sont déposés par défaut dans Documents/Assolutions/Backups, hors Git. Pour utiliser D:\AssolutionsBackups, ajouter -- --output-dir=D:\AssolutionsBackups à la commande npm de sauvegarde ; pour PROD → PREPROD, ajouter --output-dir=D:\AssolutionsBackups après les autres arguments.
+Les dumps sont déposés par défaut dans Documents/Assolutions/Backups, hors Git. Pour utiliser D:\AssolutionsBackups, utiliser directement `node scripts/db-maintenance.cjs backup-prod --output-dir=D:\AssolutionsBackups` ; pour PROD → PREPROD, ajouter `--output-dir=D:\AssolutionsBackups` à la commande `node` directe, après les autres arguments. On évite la transmission incertaine des options par npm.
 
 Les archives brutes contiennent des données personnelles. Activer le chiffrement du disque (BitLocker), protéger l'accès au dossier, et **chiffrer côté client avant tout dépôt cloud**.
 
@@ -63,7 +63,7 @@ Installer les outils PostgreSQL (psql, pg_dump, pg_restore). Le programme cherch
 2. **Suspendre manuellement les API, workers et crons PREPROD dans Render**. Aucune requête métier ne doit s'exécuter pendant la restauration/anonymisation.
 3. Désactiver les effets externes PREPROD : MAIL_SANDBOX=true, HELLOASSO_ENV=sandbox, GOOGLE_CALENDAR_ENABLED=false, GOOGLE_CALENDAR_AUTO_SYNC=false ; vérifier également les autres intégrations et secrets.
 4. Exécuter le plan : npm run db:prod-to-preprod:plan
-5. Exécuter : npm run db:prod-to-preprod -- --execute --preprod-isolated ; saisir exactement REMPLACER_PREPROD. **Le paramètre --preprod-isolated est une attestation manuelle, pas une vérification de Render.**
+5. Exécuter : node scripts/db-maintenance.cjs prod-to-preprod --execute --preprod-isolated ; saisir exactement REMPLACER_PREPROD. **Le paramètre --preprod-isolated est une attestation manuelle, pas une vérification de Render.**
 6. Le programme réalise successivement : export PROD, vérification de l'archive, sauvegarde initiale PREPROD, remplacement du schéma public PREPROD, puis appel de scripts/anonymize-preprod.cjs.
 7. En cas d'échec, il tente de restaurer l'ancienne PREPROD. **Si le rollback échoue, conserver PREPROD hors service** et restaurer manuellement l'archive assolutions-preprod-avant-*.dump.
 8. Lire le rapport d'anonymisation et vérifier les colonnes sensibles restantes. **L'anonymiseur existant doit encore être audité ; son succès technique ne prouve pas l'anonymisation exhaustive.**
