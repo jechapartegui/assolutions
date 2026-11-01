@@ -11,10 +11,10 @@ const SOURCE = path.resolve(__dirname, '..', 'db-maintenance.cjs');
 const ENV = [
   'DATABASE_PROD=postgresql://user:fakepass@dpg-prod.example.invalid:5432/prod_db?sslmode=require',
   'PROD_EXPECTED_DATABASE=prod_db',
-  'PROD_EXPECTED_HOST_FRAGMENT=dpg-prod',
+  'PROD_EXPECTED_HOST_FRAGMENT=dpg-prod.example.invalid',
   'DATABASE_PREPROD=postgresql://user:fakepass@dpg-preprod.example.invalid:5432/preprod_db?sslmode=require',
   'PREPROD_EXPECTED_DATABASE=preprod_db',
-  'PREPROD_EXPECTED_HOST_FRAGMENT=dpg-preprod',
+  'PREPROD_EXPECTED_HOST_FRAGMENT=dpg-preprod.example.invalid',
   'PREPROD_TEST_PASSWORD=testPassword1234',
 ].join('\n') + '\n';
 
@@ -63,7 +63,7 @@ test('prod-to-preprod refuse par défaut sans drapeaux destructifs', () => {
 test('prod-to-preprod refuse source et cible sur le même host', () => {
   const r=run(['prod-to-preprod','--plan'], contents =>
     contents.replace('dpg-preprod.example.invalid','dpg-prod.example.invalid')
-      .replace('PREPROD_EXPECTED_HOST_FRAGMENT=dpg-preprod','PREPROD_EXPECTED_HOST_FRAGMENT=dpg-prod'));
+      .replace('PREPROD_EXPECTED_HOST_FRAGMENT=dpg-preprod.example.invalid','PREPROD_EXPECTED_HOST_FRAGMENT=dpg-prod.example.invalid'));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /même host/);
 });
@@ -78,7 +78,7 @@ test('backup-prod refuse les identités inattendues', () => {
 test('backup-prod refuse une source localhost', () => {
   const r=run(['backup-prod','--plan'], contents =>
     contents.replace('dpg-prod.example.invalid','localhost')
-      .replace('PROD_EXPECTED_HOST_FRAGMENT=dpg-prod','PROD_EXPECTED_HOST_FRAGMENT=local'));
+      .replace('PROD_EXPECTED_HOST_FRAGMENT=dpg-prod.example.invalid','PROD_EXPECTED_HOST_FRAGMENT=localhost'));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /base distante obligatoire/);
 });
