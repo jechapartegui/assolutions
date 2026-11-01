@@ -6,8 +6,25 @@ Objectif : remplacer **après recette** le cron PROD → PREPROD, conserver PREP
 
 ## Les commandes Windows (à lancer depuis la racine du dépôt)
 
+### Première utilisation : configuration guidée
+
+Exécuter **npm run db:setup**. L'assistant lit le fichier local apps/assolutions-back/.env.local sans jamais envoyer les secrets à GitHub, et indique quelles connexions sont déjà configurées.
+
+- Si DATABASE_PROD manque, ouvrir Render > PostgreSQL > assolutions-db > informations de connexion et copier la **External Database URL**. La coller au prompt (saisie masquée). Une URL interne Render ne fonctionne généralement pas depuis le PC.
+- Le programme affiche seulement l'hôte et le nom de la base. Confirmer par **OUI** si la destination est correcte.
+- Si DATABASE_PREPROD existe déjà, ses valeurs sont conservées ; le programme peut compléter les garde-fous après confirmation. Sinon, renseigner l'URL externe PREPROD maintenant ou laisser vide pour plus tard.
+- Il enregistre DATABASE_PROD / DATABASE_PREPROD et les champs *_EXPECTED_DATABASE et *_EXPECTED_HOST_FRAGMENT dans le fichier local **ignoré par Git**, sans enregistrer ni afficher les mots de passe dans les logs.
+- Pour vérifier la configuration **sans connexion** et **sans afficher les secrets** : npm run db:setup -- --check.
+
+**Attention** : le terminal est destiné à un usage personnel. Ne pas copier les URL de connexion dans un ticket, un chat ou une capture d'écran. La protection contre l'écho dépend du terminal ; si le terminal n'est pas fiable, coller l'URL directement dans le fichier .env.local via un éditeur local sécurisé.
+
+**Une sauvegarde PROD (lecture seule)** peut démarrer avec seulement DATABASE_PROD configurée : les deux champs PROD_EXPECTED_* sont alors optionnels, avec un avertissement. En revanche, **PROD → PREPROD est destructif**, et les champs PROD_EXPECTED_* et PREPROD_EXPECTED_* restent strictement obligatoires. Leurs valeurs doivent être confirmées par l'opérateur, pas déduites silencieusement au moment de détruire PREPROD.
+
+
 | Commande | Effet |
 | --- | --- |
+| npm run db:setup | Assistant de configuration locale, sans connexion |
+| npm run db:setup -- --check | État de configuration sans secrets et sans connexion |
 | npm run db:backup:prod -- --plan | Vérification de configuration, sans connexion |
 | npm run db:backup:prod | Export PROD compressé vers le disque local |
 | npm run db:prod-to-preprod -- --plan | Vérification de configuration, sans connexion |
@@ -33,7 +50,7 @@ Ajouter à apps/assolutions-back/.env.local les variables suivantes (utiliser le
 
     DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/DB_LOCALE
 
-Toutes les valeurs ci-dessus sont des EXEMPLES et doivent être remplacées. Les paramètres EXPECTED sont obligatoires pour empêcher une mauvaise destination. DATABASE_URL est déjà utilisé par l'ancien script PREPROD → LOCAL.
+Toutes les valeurs ci-dessus sont des EXEMPLES et doivent être remplacées. L'assistant npm run db:setup crée ou complète ces variables sans avoir à saisir manuellement les garde-fous. Les paramètres EXPECTED restent obligatoires pour PROD → PREPROD. DATABASE_URL est déjà utilisé par l'ancien script PREPROD → LOCAL.
 
 Installer les outils PostgreSQL (psql, pg_dump, pg_restore). Le programme cherche les versions Windows dans C:\Program Files\PostgreSQL et prend la plus récente.
 
