@@ -22,8 +22,8 @@ function help() {
     '  prod-to-preprod --plan [--output-dir=CHEMIN]',
     '  prod-to-preprod --execute --preprod-isolated [--output-dir=CHEMIN]',
     'Variables requises dans apps/assolutions-back/.env.local :',
-    '  DATABASE_PROD, PROD_EXPECTED_DATABASE, PROD_EXPECTED_HOST_FRAGMENT',
-    '  DATABASE_PREPROD, PREPROD_EXPECTED_DATABASE, PREPROD_EXPECTED_HOST_FRAGMENT',
+    '  DATABASE_PROD (les autres paramètres peuvent être créés via npm run db:setup)',
+    '  DATABASE_PREPROD et garde-fous : requis seulement pour restaurer PREPROD',
     '  PREPROD_TEST_PASSWORD (restauration seulement)',
     'Sauvegardes hors Git. Aucun lancement automatique ni accès en écriture à la PROD.',
   ].join('\n'));
@@ -59,23 +59,35 @@ function readEnv() {
   }
   return values;
 }
-function connect(url, label, env) {
-  if (!url) fail(label + ' : URL manquante.');
+function connect(url, label, env, requireIdentity = false) {
+  const variable = label === 'PROD' ? 'DATABASE_PROD' : 'DATABASE_PREPROD';
+  if (!url) fail(variable + ' manquante dans apps/assolutions-back/.env.local. Lance npm run db:setup.');
   let parsed;
-  try { parsed = new URL(url); } catch { fail(label + ' : URL PostgreSQL invalide.'); }
-  if (!['postgres:', 'postgresql:'].includes(parsed.protocol)) fail(label + ' : protocole refusé.');
+  try { parsed = new URL(url); } catch { fail(variable + ' : URL PostgreSQL invalide. Lance npm run db:setup.'); }
+  if (!['postgres:', 'postgresql:'].includes(parsed.protocol)) fail(variable + ' : protocole PostgreSQL requis.');
   const host = parsed.hostname.toLowerCase();
   const name = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
   const username = decodeURIComponent(parsed.username);
   const expectedName = env[label + '_EXPECTED_DATABASE'];
   const expectedHost = env[label + '_EXPECTED_HOST_FRAGMENT'];
-  if (!host || !name || !username || !expectedName || !expectedHost || expectedHost.length < 4) fail(label + ' : URL et garde-fous EXPECTED_DATABASE/EXPECTED_HOST_FRAGMENT requis.');
-  if (name !== expectedName || !host.includes(expectedHost.toLowerCase())) fail(label + ' : destination inattendue (' + host + '/' + name + ').');
+  if (!host || !name || !username || !parsed.password) fail(variable + ' : hôte, base, utilisateur et mot de passe requis.');
   if (['localhost','127.0.0.1','::1','[::1]'].includes(host)) fail(label + ' : base distante obligatoire.');
+  if ((expectedName && !expectedHost) || (!expectedName && expectedHost)) {
+    fail(label + ' : identifiants de contrôle incomplets. Lance npm run db:setup.');
+  }
+  if (requireIdentity && (!expectedName || !expectedHost)) {
+    fail(label + ' : vérification indépendante de la destination requise pour restauration. Lance npm run db:setup.');
+  }
+  if (expectedName && (name !== expectedName || host !== expectedHost.toLowerCase())) {
+    fail(label + ' : destination inattendue (' + host + '/' + name + ').');
+  }
+  if (!expectedName) {
+    console.warn('ATTENTION : ' + label + ' sans identifiants de contrôle ; sauvegarde en lecture seule. Lance npm run db:setup pour valider la cible.');
+  }
   return {
     label, host, name, username,
     password: decodeURIComponent(parsed.password), port: parsed.port || '5432',
-    sslmode: parsed.searchParams.get('sslmode') || 'prefer',
+    sslmode: parsed.searchParams.get('sslmode') || 'require',
   };
 }
 function tool(name) {
@@ -147,8 +159,9 @@ async function prompt() {
 async function main() {
   const options = cli(process.argv.slice(2));
   const env = readEnv();
-  const prod = connect(env.DATABASE_PROD,'PROD',env);
-  const preprod = options.operation === 'prod-to-preprod' ? connect(env.DATABASE_PREPROD,'PREPROD',env) : null;
+  const destructive = options.operation === 'prod-to-preprod';
+  const prod = connect(env.DATABASE_PROD, 'PROD', env, destructive);
+  const preprod = destructive ? connect(env.DATABASE_PREPROD, 'PREPROD', env, true) : null;
   if (preprod && prod.host === preprod.host) fail('Source et destination partagent le même host : refus.');
   console.log('\n' + options.operation + ' : source=' + prod.host + '/' + prod.name);
   if (preprod) console.log('Destination=' + preprod.host + '/' + preprod.name);
