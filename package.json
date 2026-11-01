@@ -26,9 +26,12 @@
     "anonymize:preprod": "node scripts/anonymize-preprod.cjs",
     "security:check": "node scripts/security-check.cjs",
     "db:backup:prod": "node scripts/db-maintenance.cjs backup-prod",
+    "db:backup:prod:plan": "node scripts/db-maintenance.cjs backup-prod --plan",
     "db:prod-to-preprod": "node scripts/db-maintenance.cjs prod-to-preprod",
+    "db:prod-to-preprod:plan": "node scripts/db-maintenance.cjs prod-to-preprod --plan",
     "db:test:maintenance": "node --test scripts/tests/db-maintenance.test.cjs",
-    "db:setup": "node scripts/configure-db-maintenance.cjs"
+    "db:setup": "node scripts/configure-db-maintenance.cjs",
+    "db:setup:check": "node scripts/configure-db-maintenance.cjs --check"
   },
   "dependencies": {
     "@angular/animations": "20.3.29",
