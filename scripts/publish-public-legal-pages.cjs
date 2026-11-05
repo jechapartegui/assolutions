@@ -1,29 +1,24 @@
-/* Publish crawlable, standalone brand/legal pages at the site root.
- * Angular localized bundles are normally in dist/.../fr and dist/.../en.
- * Keep root / as the existing login/locale redirect; never overwrite index.html.
+/* Copy standalone Google OAuth branding pages to the top level of an OVH deployment.
+ * This avoids depending on Angular's localized output structure.
+ * Never overwrite the root index.html: it remains the login/locale entry.
  */
 const fs = require('node:fs');
 const path = require('node:path');
 
-const root = path.resolve(__dirname, '..', '..', 'dist/apps/assolutions-front-prod');
-const sourceCandidates = [path.join(root, 'fr'), path.join(root, 'browser', 'fr'), root];
-const source = sourceCandidates.find((candidate) =>
-  fs.existsSync(path.join(candidate, 'public', 'index.html')) &&
-  fs.existsSync(path.join(candidate, 'confidentialite', 'index.html')) &&
-  fs.existsSync(path.join(candidate, 'conditions', 'index.html')));
-if (!source) throw new Error('Pages publiques non générées dans le build Angular.');
-const dest = source.endsWith(path.join('browser', 'fr')) ? path.join(root, 'browser') : root;
-for (const directory of ['public', 'confidentialite', 'conditions']) {
-  const src = path.join(source, directory, 'index.html');
-  const target = path.join(dest, directory, 'index.html');
-  if (src !== target) {
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.copyFileSync(src, target);
+const source = path.resolve(__dirname, '..', 'apps/assolutions-front/src/seo');
+const output = path.resolve(__dirname, '..', 'dist/apps/assolutions-front-prod');
+if (!fs.existsSync(output)) throw new Error('Build frontend production introuvable.');
+const targets = [output];
+if (fs.existsSync(path.join(output, 'browser'))) targets.push(path.join(output, 'browser'));
+
+for (const target of targets) {
+  for (const folder of ['public', 'confidentialite', 'conditions']) {
+    const src = path.join(source, folder, 'index.html');
+    if (!fs.existsSync(src)) throw new Error('Page source manquante : ' + src);
+    const dest = path.join(target, folder, 'index.html');
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(src, dest);
   }
+  fs.copyFileSync(path.join(source, 'site.css'), path.join(target, 'site.css'));
 }
-const css = path.join(source, 'site.css');
-if (fs.existsSync(css)) {
-  const target = path.join(dest, 'site.css');
-  if (css !== target) fs.copyFileSync(css, target);
-}
-console.log('Pages Google OAuth publiées à la racine du build : /public/, /confidentialite/, /conditions/');
+console.log('Pages Google OAuth publiées dans le build : /public/, /confidentialite/, /conditions/');
