@@ -38,6 +38,7 @@ import { ExigenceDossierComponent } from './exigence-dossier/exigence-dossier.co
 import { HelpComponent } from './help/help.component';
 import { CraComponent } from './cra/cra.component';
 import { CraAdminComponent } from './cra-admin/cra-admin.component';
+import { PublicLandingComponent } from './public-landing/public-landing.component';
 
 const APPLI_ONLY = { auth: { modes: ['APPLI'] as AppMode[] } };
 const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
@@ -45,7 +46,8 @@ const LOGGED_ANY = { auth: {} };
 
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'public', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'public', component: PublicLandingComponent },
+  { path: 'demarrer', component: PublicLandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'creer-compte', component: CreerCompteComponent },
   { path: 'onboarding', redirectTo: 'menu-admin', pathMatch: 'full' },
