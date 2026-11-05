@@ -222,7 +222,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const hasPublicSuffix = /(^|\/)[^?#]*-public(\/|$|\?)/.test(url);
     const inPublicSegment = /(^|\/)public(\/|$|\?)/.test(url);
     const embedParam = url.includes('embed=1');
-    return hasPublicSuffix || inPublicSegment || embedParam;
+    const onboardingPage = /(^|\/)demarrer(\/|$|\?)/.test(url);
+    return hasPublicSuffix || inPublicSegment || onboardingPage || embedParam;
   }
 
   isact(): void { this.isactive = !this.isactive; }
