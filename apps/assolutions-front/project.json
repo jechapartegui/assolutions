@@ -32,6 +32,11 @@
           "apps/assolutions-front/src/favicon.ico",
           "apps/assolutions-front/src/assets",
           {
+            "glob": "**/*",
+            "input": "apps/assolutions-front/src/seo",
+            "output": "/"
+          },
+          {
             "glob": "**/*.pdf",
             "input": "tutos",
             "output": "/tutos/"
