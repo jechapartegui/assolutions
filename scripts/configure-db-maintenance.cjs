@@ -91,7 +91,11 @@ async function main() {
     changes[label+'_EXPECTED_DATABASE']=d.database;
     changes[label+'_EXPECTED_HOST_FRAGMENT']=d.host;
   }
-  if (!Object.keys(changes).length) {console.log('Aucune modification.');return;}
+  if (!Object.keys(changes).length) {
+    console.log('Aucune modification.');
+    console.log('Étape suivante (simulation sans connexion) : npm run db:backup:prod:plan');
+    return;
+  }
   fs.mkdirSync(path.dirname(envFile),{recursive:true});
   const temp=envFile+'.dbsetup-'+process.pid+'.tmp';
   try {
