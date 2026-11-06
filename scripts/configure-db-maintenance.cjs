@@ -100,6 +100,6 @@ async function main() {
   } finally {if (fs.existsSync(temp)) fs.unlinkSync(temp);}
   console.log('Configuration enregistrée localement, secrets non affichés.');
   status(parseEnv(fs.readFileSync(envFile,'utf8')));
-  console.log('Étape suivante : npm run db:backup:prod -- --plan');
+  console.log('Étape suivante (simulation sans connexion) : npm run db:backup:prod:plan');
 }
 main().catch(e=>{console.error('[ERREUR] '+e.message);process.exitCode=1;});
