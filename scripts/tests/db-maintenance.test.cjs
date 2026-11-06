@@ -122,6 +122,13 @@ test('db:setup --check indique les paramètres PROD manquants sans connexion', (
 });
 
 
+test('db:setup propose uniquement la commande de simulation explicite', () => {
+  const r=run([], c=>c, 'configure-db-maintenance.cjs');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /db:backup:prod:plan/);
+  assert.doesNotMatch(r.stdout, /db:backup:prod -- --plan/);
+});
+
 test('commandes npm plan : flags explicites, jamais option à transmettre', () => {
   const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'package.json'), 'utf8'));
   assert.equal(packageJson.scripts['db:backup:prod:plan'], 'node scripts/db-maintenance.cjs backup-prod --plan');
