@@ -2,7 +2,7 @@
 
 Objectif : remplacer **après recette** le cron PROD → PREPROD, conserver PREPROD → LOCAL existant et produire des sauvegardes portables de PROD.
 
-**Ce lot ne crée aucun cron ni ne modifie Render. Le cron existant reste actif jusqu'à son arrêt manuel après recette.**
+**Ce lot ne crée aucun cron et ne modifie pas Render. Le cron de copie PROD → PREPROD est actuellement suspendu sur Render (vérifié le 6 novembre 2026) : ne pas le réactiver avant la fin de la recette et une décision explicite sur son remplacement.**
 
 ## Les commandes Windows (à lancer depuis la racine du dépôt)
 
