@@ -45,7 +45,7 @@ const ADMIN_ONLY = { auth: { modes: ['ADMIN'] as AppMode[] } };
 const LOGGED_ANY = { auth: {} };
 
 const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'menu', pathMatch: 'full' },
   { path: 'public', component: PublicLandingComponent },
   { path: 'demarrer', component: PublicLandingComponent },
   { path: 'login', component: LoginComponent },
