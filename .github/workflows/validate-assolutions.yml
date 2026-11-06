@@ -4,10 +4,12 @@ on:
   pull_request:
     branches:
       - master
+      - preprod
       - integration/exg-preprod
   push:
     branches:
       - master
+      - preprod
       - integration/exg-preprod
   workflow_dispatch:
 
@@ -33,6 +35,14 @@ jobs:
         run: |
           node --check scripts/anonymize-preprod.cjs
           node --check scripts/security-check.cjs
+
+      - name: Test database maintenance scripts when present
+        run: |
+          if [ -f scripts/tests/db-maintenance.test.cjs ]; then
+            node --test scripts/tests/db-maintenance.test.cjs
+          else
+            echo "No database maintenance test suite on this branch"
+          fi
 
       - name: Block critical production dependency vulnerabilities
         run: npm audit --omit=dev --audit-level=critical
