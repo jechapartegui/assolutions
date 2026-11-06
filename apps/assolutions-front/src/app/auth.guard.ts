@@ -4,6 +4,7 @@ import { catchError, from, map, Observable, of, switchMap } from 'rxjs';
 
 import { AppStore } from './app.store';
 import { AuthApiService } from '../services/auth-api.service';
+import { ApiError } from '../services/api-client.service';
 import { ProjetView } from '@shared/index';
 import type { AppMode } from '@shared/lib/compte.interface';
 import { AdhesionApiService } from '../services/adhesion-api.service';
@@ -113,10 +114,15 @@ export class AuthGuard implements CanActivate {
         );
       }),
 
-      catchError((): Observable<boolean> => {
-        this.store.clearSession();
+      catchError((error: unknown): Observable<boolean> => {
+        // Seul un JWT invalide/expiré (401), ou un compte désactivé,
+        // justifie une déconnexion. Une coupure réseau, un 403 ou un 5xx
+        // ne doivent pas faire perdre la session mémorisée.
+        const authInvalid = error instanceof ApiError &&
+          (error.status === 401 || error.code === 'ACCOUNT_NOT_ACTIVE');
+        if (authInvalid) this.store.clearSession();
         this.meAlreadyTried = false;
-        this.gotoLogin(state.url);
+        this.gotoLogin(state.url, !authInvalid);
         return of(false);
       }),
     );
@@ -165,9 +171,12 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private gotoLogin(redirectUrl: string): void {
+  private gotoLogin(redirectUrl: string, sessionRetry = false): void {
     this.router.navigate(['/login'], {
-      queryParams: { redirect: redirectUrl },
+      queryParams: {
+        redirect: redirectUrl,
+        ...(sessionRetry ? { sessionRetry: '1' } : {}),
+      },
     });
   }
 
