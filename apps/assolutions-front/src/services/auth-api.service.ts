@@ -3,6 +3,7 @@ import { GlobalService } from './global.services';
 import { environment } from '../environments/environment';
 import { MeResponse } from '@shared/lib/compte.interface';
 import { CompteApiService } from './compte-api.service';
+import { ApiClientService } from './api-client.service';
 
 export type AppMode = 'ADMIN' | 'APPLI';
 
@@ -17,7 +18,8 @@ export class AuthApiService {
 
   constructor(
     private global: GlobalService,
-    private compteApi: CompteApiService
+    private compteApi: CompteApiService,
+    private readonly api: ApiClientService
   ) {}
 
   private url(path: string): string {
@@ -90,7 +92,7 @@ export class AuthApiService {
   }
 
   async me(): Promise<MeResponse> {
-    return await this.global.GET(this.url('/auth/me'));
+    return await this.api.GET<MeResponse>('/auth/me');
   }
 
   async changeMyPassword(newPassword: string | null): Promise<boolean> {

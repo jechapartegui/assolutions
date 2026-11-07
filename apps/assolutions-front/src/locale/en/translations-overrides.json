@@ -1,4 +1,6 @@
 {
+  "8044737384764777492": "Your session is saved, but we could not verify it. Try again without re-entering your email address.",
+  "5478865012361596197": "Retry my session",
   "2038082152527034775": "Name",
   "location.name": "Name",
   "530325689928281558": "Revenues",
@@ -142,5 +144,13 @@
   "legal.public": "Overview",
   "legal.privacy": "Privacy policy",
   "legal.terms": "Terms of use",
-  "legal.contact": "Contact"
+  "legal.contact": "Contact",
+  "calendar.publicAccessLabel": "Google calendar access",
+  "calendar.publicAccessHelp": "A public calendar can be viewed by anyone, including event titles, times, locations and descriptions. It does not grant editing access.",
+  "calendar.privateStatus": "Private",
+  "calendar.publicStatus": "Public — read only",
+  "calendar.makePublic": "Make public",
+  "calendar.makePrivate": "Remove public access",
+  "calendar.publicNeedsSync": "Synchronize this calendar with Google first.",
+  "calendar.publicCalendarLink": "Open / share Google calendar"
 }

@@ -4,10 +4,12 @@ on:
   pull_request:
     branches:
       - master
+      - preprod
       - integration/exg-preprod
   push:
     branches:
       - master
+      - preprod
       - integration/exg-preprod
 
   workflow_dispatch:

@@ -24,7 +24,14 @@
     "check": "npm run security:check && npm audit --omit=dev --audit-level=critical && npm run build:prod",
     "db:preprod-to-local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/copy-preprod-to-local.ps1",
     "anonymize:preprod": "node scripts/anonymize-preprod.cjs",
-    "security:check": "node scripts/security-check.cjs"
+    "security:check": "node scripts/security-check.cjs",
+    "db:backup:prod": "node scripts/db-maintenance.cjs backup-prod",
+    "db:backup:prod:plan": "node scripts/db-maintenance.cjs backup-prod --plan",
+    "db:prod-to-preprod": "node scripts/db-maintenance.cjs prod-to-preprod",
+    "db:prod-to-preprod:plan": "node scripts/db-maintenance.cjs prod-to-preprod --plan",
+    "db:test:maintenance": "node --test scripts/tests/db-maintenance.test.cjs",
+    "db:setup": "node scripts/configure-db-maintenance.cjs",
+    "db:setup:check": "node scripts/configure-db-maintenance.cjs --check"
   },
   "dependencies": {
     "@angular/animations": "20.3.29",
