@@ -7,8 +7,8 @@
     "start:local": "cd ../.. && nx serve assolutions-front --configuration=development",
     "start:local:en": "cd ../.. && node tools/i18n/build-en-translations.mjs && nx serve assolutions-front --configuration=development-en",
     "build": "npm run build:prod",
-    "build:preprod": "cd ../.. && nx build assolutions-front --configuration=preprod --skip-nx-cache",
-    "build:prod": "cd ../.. && nx build assolutions-front --configuration=production --skip-nx-cache && node scripts/publish-public-legal-pages.cjs",
+    "build:preprod": "cd ../.. && nx build assolutions-front --configuration=preprod --skip-nx-cache && node scripts/publish-public-legal-pages.cjs preprod",
+    "build:prod": "cd ../.. && nx build assolutions-front --configuration=production --skip-nx-cache && node scripts/publish-public-legal-pages.cjs prod",
     "deploy:preprod": "npm run build:preprod",
     "deploy:prod": "npm run build:prod",
     "nx:reset": "cd ../.. && nx reset"
