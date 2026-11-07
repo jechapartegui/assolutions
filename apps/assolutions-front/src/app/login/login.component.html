@@ -23,6 +23,14 @@
             </p>
           </header>
 
+          <div *ngIf="sessionRestoreError" class="notification is-warning is-light">
+            <p i18n>Votre session est conservée, mais nous n'avons pas pu la vérifier. Vous pouvez réessayer sans ressaisir votre email.</p>
+            <button type="button" class="button is-link is-light mt-2"
+              (click)="retryStoredSession()" i18n>
+              Réessayer ma connexion
+            </button>
+          </div>
+
           <!-- CORPS DU FORMULAIRE -->
           <section class="login-body">
             <!-- Email -->

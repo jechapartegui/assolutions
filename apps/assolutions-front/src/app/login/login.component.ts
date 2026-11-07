@@ -42,6 +42,7 @@ export class LoginComponent implements OnInit {
   @Input() login_seance: string = null;
 
   loading = false;
+  sessionRestoreError = false;
   libelle_titre: string = $localize`Saisissez votre email pour vous connecter`;
 
   constructor(
@@ -133,6 +134,42 @@ export class LoginComponent implements OnInit {
       this.VM.compte.login = environment.defaultlogin ?? '';
       this.validateLogin();
     }
+
+    // On ne doit pas forcer un email alors que le même navigateur possède
+    // déjà un JWT. La route protégée vérifie /auth/me avant de l'utiliser.
+    // Ne pas détourner les liens d'activation, de connexion magique, de
+    // réinitialisation ou d'inscription d'un autre compte.
+    this.sessionRestoreError = params['sessionRetry'] === '1';
+    const ordinaryLogin = this.context === 'MENU' || this.context === 'ESSAI';
+    const explicitUser = !!params['user'] || !!params['created'] || !!params['activationMail'];
+    const storedToken =
+      localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    if (ordinaryLogin && !explicitUser && !this.sessionRestoreError && storedToken) {
+      this.loading = true;
+      try {
+        await this.router.navigateByUrl(this.sessionDestination());
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+
+  private sessionDestination(): string {
+    const redirect = this.redirectUrl;
+    // Uniquement des chemins internes, jamais de boucle vers /login.
+    if (
+      redirect && redirect.startsWith('/') &&
+      !redirect.startsWith('//') && !redirect.startsWith('/\\') &&
+      !/^\/login(?:[/?#]|$)/i.test(redirect)
+    ) {
+      return redirect;
+    }
+    return '/menu';
+  }
+
+  retryStoredSession(): void {
+    this.sessionRestoreError = false;
+    void this.router.navigateByUrl(this.sessionDestination());
   }
 
   private activationProcessingKey: string | null = null;
